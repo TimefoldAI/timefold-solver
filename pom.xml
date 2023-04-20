@@ -85,17 +85,17 @@
   </mailingLists>
 
   <modules>
-    <module>build/optaplanner-bom</module>
-    <module>build/optaplanner-ide-config</module>
-    <module>build/optaplanner-build-parent</module>
+    <module>build/bom</module>
+    <module>build/ide-config</module>
+    <module>build/build-parent</module>
     <module>core</module>
-    <module>optaplanner-persistence</module>
-    <module>optaplanner-benchmark</module>
-    <module>optaplanner-test</module>
-    <module>optaplanner-spring-integration</module>
-    <module>optaplanner-quarkus-integration</module>
-    <module>optaplanner-migration</module>
-    <module>optaplanner-examples</module>
+    <module>persistence</module>
+    <module>benchmark</module>
+    <module>test</module>
+    <module>spring-integration</module>
+    <module>quarkus-integration</module>
+    <module>migration</module>
+    <module>examples</module>
   </modules>
 
   <profiles>
@@ -107,9 +107,9 @@
         </property>
       </activation>
       <modules>
-        <module>optaplanner-docs</module>
-        <module>build/optaplanner-javadoc</module>
-        <module>build/optaplanner-distribution-internal</module>
+        <module>docs</module>
+        <module>build/javadoc</module>
+        <module>build/distribution-internal</module>
       </modules>
     </profile>
     <profile>
@@ -120,7 +120,7 @@
         </property>
       </activation>
       <modules>
-        <module>optaplanner-operator</module>
+        <module>operator</module>
       </modules>
     </profile>
     <profile>

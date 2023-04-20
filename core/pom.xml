@@ -25,11 +25,11 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>optaplanner-core</module>
-    <module>optaplanner-core-impl</module>
-    <module>optaplanner-constraint-streams-common</module>
-    <module>optaplanner-constraint-streams-drools</module>
-    <module>optaplanner-constraint-drl</module>
+    <module>core</module>
+    <module>core-impl</module>
+    <module>constraint-streams-common</module>
+    <module>constraint-streams-drools</module>
+    <module>constraint-drl</module>
   </modules>
 
   <profiles>
@@ -41,7 +41,7 @@
         </property>
       </activation>
       <modules>
-        <module>optaplanner-constraint-streams-bavet</module>
+        <module>constraint-streams-bavet</module>
       </modules>
     </profile>
   </profiles>

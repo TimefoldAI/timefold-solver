@@ -24,8 +24,8 @@
   <url>https://www.optaplanner.org</url>
 
   <modules>
-    <module>optaplanner-spring-boot-autoconfigure</module>
-    <module>optaplanner-spring-boot-starter</module>
+    <module>spring-boot-autoconfigure</module>
+    <module>spring-boot-starter</module>
   </modules>
 
   <!-- TODO: Move to optaplanner-build-parent once https://github.com/quarkusio/quarkus-platform-bom-generator/issues/64 is solved.  -->
