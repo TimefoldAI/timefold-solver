@@ -1,21 +1,21 @@
 type: specs.openrewrite.org/v1beta/recipe
-name: org.optaplanner.migration.ToLatest9
-displayName: Upgrade to the latest OptaPlanner 9
-description: 'Upgrade to the latest OptaPlanner 9 and migrate to Jakarta packages.'
+name: ai.timefold.solver.migration.ToLatest9
+displayName: Upgrade to the latest Timefold 9
+description: 'Upgrade to the latest Timefold 9 and migrate to Jakarta packages.'
 recipeList:
-  - org.optaplanner.migration.ToLatest
+  - ai.timefold.solver.migration.ToLatest
   - io.quarkus.updates.core.quarkus30.Quarkus3
   - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.optaplanner
-      artifactId: optaplanner-bom
+      groupId: ai.timefold.solver
+      artifactId: timefold-solver-bom
       newVersion: 9.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.optaplanner
-      artifactId: optaplanner-quarkus
+      groupId: ai.timefold.solver
+      artifactId: timefold-solver-quarkus
       newVersion: 9.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.optaplanner
-      artifactId: optaplanner-core
+      groupId: ai.timefold.solver
+      artifactId: timefold-solver-core
       newVersion: 9.x
 #####
 # Rules coming from https://github.com/quarkusio/jbang-catalog/blob/main/quarkus3.yml

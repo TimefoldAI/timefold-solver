@@ -6,10 +6,10 @@ import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.maven.tree.ResolvedPom;
 import org.openrewrite.xml.tree.Xml;
 
-final class InternalOptaPlannerMavenVisitor extends MavenVisitor<ExecutionContext> {
+final class InternalTimefoldMavenVisitor extends MavenVisitor<ExecutionContext> {
 
-    private static final String GROUP_ID = "org.optaplanner";
-    private static final String ARTIFACT_ID_PREFIX = "optaplanner-";
+    private static final String GROUP_ID = "ai.timefold.solver";
+    private static final String ARTIFACT_ID_PREFIX = "timefold-solver-";
 
     @Override
     public Xml visitDocument(Xml.Document document, ExecutionContext executionContext) {

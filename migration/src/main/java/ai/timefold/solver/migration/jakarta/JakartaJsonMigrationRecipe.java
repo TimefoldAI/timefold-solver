@@ -14,7 +14,7 @@ import org.openrewrite.xml.tree.Xml;
 
 public class JakartaJsonMigrationRecipe extends Recipe {
 
-    private static final String OPTAPLANNER_JSONB_MODULE = "optaplanner-persistence-jsonb";
+    private static final String TIMEFOLD_JSONB_MODULE = "timefold-solver-jsonb";
     private static final String ORG_GLASSFISH = "org.glassfish";
     private static final String ORG_ECLIPSE = "org.eclipse";
     private static final String JAKARTA_JSON = "jakarta.json";
@@ -33,7 +33,7 @@ public class JakartaJsonMigrationRecipe extends Recipe {
 
     @Override
     protected MavenVisitor<ExecutionContext> getSingleSourceApplicableTest() {
-        return new InternalOptaPlannerMavenVisitor();
+        return new InternalTimefoldMavenVisitor();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class JakartaJsonMigrationRecipe extends Recipe {
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext executionContext) {
                 Path parent = document.getSourcePath().getParent();
-                if (parent != null && parent.toString().endsWith(OPTAPLANNER_JSONB_MODULE)) {
+                if (parent != null && parent.toString().endsWith(TIMEFOLD_JSONB_MODULE)) {
                     doNext(new RemoveDependency(ORG_GLASSFISH, JAKARTA_JSON, "runtime"));
                     doNext(new RemoveExclusion(ORG_ECLIPSE, YASSON, JAKARTA_JSON, JAKARTA_JSON_API, false));
                     doNext(new RemoveExclusion(ORG_ECLIPSE, YASSON, ORG_GLASSFISH, JAKARTA_JSON, false));

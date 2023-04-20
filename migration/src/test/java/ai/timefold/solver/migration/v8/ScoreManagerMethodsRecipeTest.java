@@ -39,10 +39,10 @@ class ScoreManagerMethodsRecipeTest implements RewriteTest {
     }
 
     private static String wrap(String content, boolean addImport) {
-        return "import org.optaplanner.core.api.score.ScoreManager;\n" +
-                (addImport ? "import org.optaplanner.core.api.solver.SolutionUpdatePolicy;\n" : "") +
-                "import org.optaplanner.core.api.score.ScoreExplanation;\n" +
-                "import org.optaplanner.core.api.solver.SolverFactory;\n" +
+        return "import ai.timefold.solver.core.api.score.ScoreManager;\n" +
+                (addImport ? "import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;\n" : "") +
+                "import ai.timefold.solver.core.api.score.ScoreExplanation;\n" +
+                "import ai.timefold.solver.core.api.solver.SolverFactory;\n" +
                 "\n" +
                 "class Test {\n" +
                 "    public static void main(String[] args) {\n" +

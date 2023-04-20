@@ -128,7 +128,7 @@ public class ScoreGettersRecipe extends Recipe {
     }
 
     public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion().classpath("optaplanner-core-impl");
+        return JavaParser.fromJavaVersion().classpath("timefold-solver-core-impl");
     }
 
     private static final class MatcherMeta {
@@ -142,10 +142,10 @@ public class ScoreGettersRecipe extends Recipe {
             switch (select) {
                 case "Score":
                 case "IBendableScore":
-                    className = "org.optaplanner.core.api.score." + select;
+                    className = "ai.timefold.solver.core.api.score." + select;
                     break;
                 default:
-                    className = "org.optaplanner.core.api.score.buildin."
+                    className = "ai.timefold.solver.core.api.score.buildin."
                             + select.toLowerCase().replace("score", "")
                             + "."
                             + select;

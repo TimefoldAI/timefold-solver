@@ -69,10 +69,10 @@ public class ScoreManagerMethodsRecipe extends Recipe {
                                 : matcherMeta.methodName.replace(")", ", SolutionUpdatePolicy.UPDATE_SCORE_ONLY)")
                                         .replace("..", "#{any()}")
                                         .replace("Score(", "("));
-                maybeAddImport("org.optaplanner.core.api.solver.SolutionUpdatePolicy");
+                maybeAddImport("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy");
                 JavaTemplate template = JavaTemplate.builder(() -> getCursor().getParentOrThrow(), pattern)
                         .javaParser(() -> buildJavaParser().build())
-                        .imports("org.optaplanner.core.api.solver.SolutionUpdatePolicy")
+                        .imports("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy")
                         .build();
                 return e.withTemplate(template, e.getCoordinates().replace(), select, arguments.get(0));
             }
@@ -80,7 +80,7 @@ public class ScoreManagerMethodsRecipe extends Recipe {
     }
 
     public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion().classpath("optaplanner-core-impl");
+        return JavaParser.fromJavaVersion().classpath("timefold-solver-core-impl");
     }
 
     private static final class MatcherMeta {
@@ -90,7 +90,7 @@ public class ScoreManagerMethodsRecipe extends Recipe {
         public final String methodName;
 
         public MatcherMeta(String method) {
-            this.classFqn = "org.optaplanner.core.api.score.ScoreManager";
+            this.classFqn = "ai.timefold.solver.core.api.score.ScoreManager";
             this.methodMatcher = new MethodMatcher(classFqn + " " + method);
             this.methodName = method;
         }

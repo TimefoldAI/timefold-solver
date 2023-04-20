@@ -16,7 +16,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void bendableScore() {
-        runTest("org.optaplanner.core.api.score.buildin.bendable.BendableScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.bendable.BendableScore",
                 "BendableScore score = BendableScore.of(new int[] {1, 2}, new int[] {3, 4});",
                 "int scoreLevelsSize = score.getLevelsSize();\n" +
                         "int hardScoreLevelsSize = score.getHardLevelsSize();\n" +
@@ -38,7 +38,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void bendableBigDecimalScore() {
-        runTest("org.optaplanner.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore",
                 "BendableBigDecimalScore score = BendableBigDecimalScore.of(\n" +
                         "   new BigDecimal[] {BigDecimal.ONE},\n" +
                         "   new BigDecimal[] {BigDecimal.ONE, BigDecimal.TEN});",
@@ -62,7 +62,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void bendableLongScore() {
-        runTest("org.optaplanner.core.api.score.buildin.bendablelong.BendableLongScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore",
                 "BendableLongScore score = BendableLongScore.of(" +
                         "   new long[] {1L}, " +
                         "   new long[] {1L, 10L});",
@@ -86,7 +86,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void hardMediumSoftScore() {
-        runTest("org.optaplanner.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore",
                 "HardMediumSoftScore score = HardMediumSoftScore.of(1, 2, 3);",
                 "int hardScore = score.getHardScore();\n" +
                         "int mediumScore = score.getMediumScore();\n" +
@@ -100,7 +100,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void hardMediumSoftBigDecimalScore() {
-        runTest("org.optaplanner.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore",
                 "HardMediumSoftBigDecimalScore score = HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.TEN);",
                 "BigDecimal hardScore = score.getHardScore();\n" +
                         "BigDecimal mediumScore = score.getMediumScore();\n" +
@@ -114,7 +114,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void hardMediumSoftLongScore() {
-        runTest("org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore",
                 "HardMediumSoftLongScore score = HardMediumSoftLongScore.of(1L, 2L, 3L);",
                 "long hardScore = score.getHardScore();\n" +
                         "long mediumScore = score.getMediumScore();\n" +
@@ -128,7 +128,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void hardSoftScore() {
-        runTest("org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore",
                 "HardSoftScore score = HardSoftScore.of(1, 2);",
                 "int hardScore = score.getHardScore();\n" +
                         "int softScore = score.getSoftScore();\n" +
@@ -140,7 +140,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void hardSoftBigDecimalScore() {
-        runTest("org.optaplanner.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore",
                 "HardSoftBigDecimalScore score = HardSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ONE);",
                 "BigDecimal hardScore = score.getHardScore();\n" +
                         "BigDecimal softScore = score.getSoftScore();\n" +
@@ -152,7 +152,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void hardSoftLongScore() {
-        runTest("org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore",
                 "HardSoftLongScore score = HardSoftLongScore.of(1L, 2L);",
                 "long hardScore = score.getHardScore();\n" +
                         "long softScore = score.getSoftScore();\n" +
@@ -164,7 +164,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void simpleScore() {
-        runTest("org.optaplanner.core.api.score.buildin.simple.SimpleScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
                 "SimpleScore score = SimpleScore.of(1);",
                 "int value = score.getScore();\n" +
                         "int initScore = score.getInitScore();\n",
@@ -174,7 +174,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void simpleBigDecimalScore() {
-        runTest("org.optaplanner.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore",
                 "SimpleBigDecimalScore score = SimpleBigDecimalScore.of(BigDecimal.ONE);",
                 "BigDecimal value = score.getScore();\n" +
                         "int initScore = score.getInitScore();\n",
@@ -184,7 +184,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
 
     @Test
     void simpleLongScore() {
-        runTest("org.optaplanner.core.api.score.buildin.simplelong.SimpleLongScore",
+        runTest("ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
                 "SimpleLongScore score = SimpleLongScore.of(1L);",
                 "long value = score.getScore();\n" +
                         "int initScore = score.getInitScore();\n",

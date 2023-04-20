@@ -2122,11 +2122,11 @@ class AsConstraintRecipeTest implements RewriteTest {
 
     private static String wrap(String content) {
         return "import java.math.BigDecimal;\n" +
-                "import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;\n" +
-                "import org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore;\n" +
-                "import org.optaplanner.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;\n" +
-                "import org.optaplanner.core.api.score.stream.ConstraintFactory;\n" +
-                "import org.optaplanner.core.api.score.stream.Constraint;\n" +
+                "import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;\n" +
+                "import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;\n" +
+                "import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;\n" +
+                "import ai.timefold.solver.core.api.score.stream.ConstraintFactory;\n" +
+                "import ai.timefold.solver.core.api.score.stream.Constraint;\n" +
                 "\n" +
                 "class Test {\n" +
                 "    Constraint myConstraint(ConstraintFactory f) {\n" +

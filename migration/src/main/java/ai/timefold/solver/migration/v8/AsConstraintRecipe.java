@@ -214,13 +214,13 @@ public class AsConstraintRecipe extends Recipe {
         return new JavaIsoVisitor<>() {
 
             private final Pattern uniConstraintStreamPattern = Pattern.compile(
-                    "org.optaplanner.core.api.score.stream.uni.UniConstraintStream");
+                    "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream");
             private final Pattern biConstraintStreamPattern = Pattern.compile(
-                    "org.optaplanner.core.api.score.stream.bi.BiConstraintStream");
+                    "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream");
             private final Pattern triConstraintStreamPattern = Pattern.compile(
-                    "org.optaplanner.core.api.score.stream.tri.TriConstraintStream");
+                    "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream");
             private final Pattern quadConstraintStreamPattern = Pattern.compile(
-                    "org.optaplanner.core.api.score.stream.quad.QuadConstraintStream");
+                    "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream");
 
             @Override
             public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
@@ -237,13 +237,13 @@ public class AsConstraintRecipe extends Recipe {
 
                 String templateCode;
                 if (select.getType().isAssignableFrom(uniConstraintStreamPattern)) {
-                    templateCode = "#{any(org.optaplanner.core.api.score.stream.uni.UniConstraintStream)}\n";
+                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream)}\n";
                 } else if (select.getType().isAssignableFrom(biConstraintStreamPattern)) {
-                    templateCode = "#{any(org.optaplanner.core.api.score.stream.bi.BiConstraintStream)}\n";
+                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream)}\n";
                 } else if (select.getType().isAssignableFrom(triConstraintStreamPattern)) {
-                    templateCode = "#{any(org.optaplanner.core.api.score.stream.tri.TriConstraintStream)}\n";
+                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream)}\n";
                 } else if (select.getType().isAssignableFrom(quadConstraintStreamPattern)) {
-                    templateCode = "#{any(org.optaplanner.core.api.score.stream.quad.QuadConstraintStream)}\n";
+                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream)}\n";
                 } else {
                     LOGGER.warn("Cannot refactor to asConstraint() method" +
                             " for deprecated method called in expression (" + e + ").");
@@ -251,9 +251,9 @@ public class AsConstraintRecipe extends Recipe {
                 }
                 if (!matcherMeta.configurable) {
                     if (!matcherMeta.matchWeigherIncluded) {
-                        templateCode += "." + matcherMeta.methodName + "(#{any(org.optaplanner.core.api.score.Score)})\n";
+                        templateCode += "." + matcherMeta.methodName + "(#{any(ai.timefold.solver.core.api.score.Score)})\n";
                     } else {
-                        templateCode += "." + matcherMeta.methodName + "(#{any(org.optaplanner.core.api.score.Score)}," +
+                        templateCode += "." + matcherMeta.methodName + "(#{any(ai.timefold.solver.core.api.score.Score)}," +
                                 " #{any(" + matcherMeta.functionType + ")})\n";
                     }
                 } else {
@@ -322,7 +322,7 @@ public class AsConstraintRecipe extends Recipe {
     }
 
     public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion().classpath("optaplanner-core-impl");
+        return JavaParser.fromJavaVersion().classpath("timefold-solver-core-impl");
     }
 
     private static class MatcherMeta {
@@ -336,31 +336,31 @@ public class AsConstraintRecipe extends Recipe {
         public MatcherMeta(String select, String method) {
             String signature;
             if (select.equals("ConstraintStream")) {
-                signature = "org.optaplanner.core.api.score.stream.ConstraintStream";
+                signature = "ai.timefold.solver.core.api.score.stream.ConstraintStream";
             } else if (select.equals("UniConstraintStream")) {
-                signature = "org.optaplanner.core.api.score.stream.uni.UniConstraintStream";
+                signature = "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream";
             } else if (select.equals("BiConstraintStream")) {
-                signature = "org.optaplanner.core.api.score.stream.bi.BiConstraintStream";
+                signature = "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream";
             } else if (select.equals("TriConstraintStream")) {
-                signature = "org.optaplanner.core.api.score.stream.tri.TriConstraintStream";
+                signature = "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream";
             } else if (select.equals("QuadConstraintStream")) {
-                signature = "org.optaplanner.core.api.score.stream.quad.QuadConstraintStream";
+                signature = "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream";
             } else {
                 throw new IllegalArgumentException("Invalid select (" + select + ").");
             }
-            signature += " " + method.replace(" Score", " org.optaplanner.core.api.score.Score")
+            signature += " " + method.replace(" Score", " ai.timefold.solver.core.api.score.Score")
                     .replace(" ToIntFunction", " java.util.function.ToIntFunction")
                     .replace(" ToLongFunction", " java.util.function.ToLongFunction")
                     .replace(" Function", " java.util.function.Function")
                     .replace(" ToIntBiFunction", " java.util.function.ToIntBiFunction")
                     .replace(" ToLongBiFunction", " java.util.function.ToLongBiFunction")
                     .replace(" BiFunction", " java.util.function.BiFunction")
-                    .replace(" ToIntTriFunction", " org.optaplanner.core.api.function.ToIntTriFunction")
-                    .replace(" ToLongTriFunction", " org.optaplanner.core.api.function.ToLongTriFunction")
-                    .replace(" TriFunction", " org.optaplanner.core.api.function.TriFunction")
-                    .replace(" ToIntQuadFunction", " org.optaplanner.core.api.function.ToIntQuadFunction")
-                    .replace(" ToLongQuadFunction", " org.optaplanner.core.api.function.ToLongQuadFunction")
-                    .replace(" QuadFunction", " org.optaplanner.core.api.function.QuadFunction");
+                    .replace(" ToIntTriFunction", " ai.timefold.solver.core.api.function.ToIntTriFunction")
+                    .replace(" ToLongTriFunction", " ai.timefold.solver.core.api.function.ToLongTriFunction")
+                    .replace(" TriFunction", " ai.timefold.solver.core.api.function.TriFunction")
+                    .replace(" ToIntQuadFunction", " ai.timefold.solver.core.api.function.ToIntQuadFunction")
+                    .replace(" ToLongQuadFunction", " ai.timefold.solver.core.api.function.ToLongQuadFunction")
+                    .replace(" QuadFunction", " ai.timefold.solver.core.api.function.QuadFunction");
             methodMatcher = new MethodMatcher(signature);
             constraintPackageIncluded = method.contains("String, String");
             configurable = method.contains("Configurable");

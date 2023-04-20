@@ -9,19 +9,19 @@ import org.openrewrite.test.RewriteTest;
 class JakartaJsonMigrationRecipeTest implements RewriteTest {
 
     @Test
-    void migrateOptaPlannerPersistenceJsonB() {
+    void migrateTimefoldPersistenceJsonB() {
         rewriteRun(
                 spec -> spec.recipe(new JakartaJsonMigrationRecipe())
                         .expectedCyclesThatMakeChanges(1),
-                mavenProject("optaplanner-persistence-jsonb",
+                mavenProject("timefold-solver-jsonb",
                         pomXml(
                                 "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
                                         +
                                         "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
                                         +
                                         "    <modelVersion>4.0.0</modelVersion>\n" +
-                                        "    <groupId>org.optaplanner</groupId>\n" +
-                                        "    <artifactId>optaplanner-persistence-jsonb</artifactId>\n" +
+                                        "    <groupId>ai.timefold.solver</groupId>\n" +
+                                        "    <artifactId>timefold-solver-jsonb</artifactId>\n" +
                                         "    <version>0.0.1-SNAPSHOT</version>\n" +
                                         "    <dependencies>\n" +
                                         "        <dependency>\n" +
@@ -53,8 +53,8 @@ class JakartaJsonMigrationRecipeTest implements RewriteTest {
                                         "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
                                         +
                                         "    <modelVersion>4.0.0</modelVersion>\n" +
-                                        "    <groupId>org.optaplanner</groupId>\n" +
-                                        "    <artifactId>optaplanner-persistence-jsonb</artifactId>\n" +
+                                        "    <groupId>ai.timefold.solver</groupId>\n" +
+                                        "    <artifactId>timefold-solver-jsonb</artifactId>\n" +
                                         "    <version>0.0.1-SNAPSHOT</version>\n" +
                                         "    <dependencies>\n" +
                                         "        <dependency>\n" +
@@ -81,8 +81,8 @@ class JakartaJsonMigrationRecipeTest implements RewriteTest {
                                         "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
                                         +
                                         "    <modelVersion>4.0.0</modelVersion>\n" +
-                                        "    <groupId>org.optaplanner</groupId>\n" +
-                                        "    <artifactId>optaplanner-examples</artifactId>\n" +
+                                        "    <groupId>ai.timefold.solver</groupId>\n" +
+                                        "    <artifactId>timefold-solver-examples</artifactId>\n" +
                                         "    <version>0.0.1-SNAPSHOT</version>\n" +
                                         "    <dependencies>\n" +
                                         "        <dependency>\n" +
@@ -97,8 +97,8 @@ class JakartaJsonMigrationRecipeTest implements RewriteTest {
                                         "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n"
                                         +
                                         "    <modelVersion>4.0.0</modelVersion>\n" +
-                                        "    <groupId>org.optaplanner</groupId>\n" +
-                                        "    <artifactId>optaplanner-examples</artifactId>\n" +
+                                        "    <groupId>ai.timefold.solver</groupId>\n" +
+                                        "    <artifactId>timefold-solver-examples</artifactId>\n" +
                                         "    <version>0.0.1-SNAPSHOT</version>\n" +
                                         "    <dependencies>\n" +
                                         "        <dependency>\n" +
