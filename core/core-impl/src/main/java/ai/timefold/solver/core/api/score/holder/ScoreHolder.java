@@ -8,8 +8,8 @@ import org.kie.api.runtime.rule.RuleContext;
 /**
  * This is the base interface for all score holder implementations.
  *
- * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
- *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL to
+ * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+ *             See <a href="https://timefold.ai/docs/">DRL to
  *             Constraint Streams migration recipe</a>.
  * @param <Score_> the {@link Score} type
  */

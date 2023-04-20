@@ -46,7 +46,7 @@ public abstract class AbstractScoreHolder<Score_ extends Score<Score_>> implemen
 
     @Deprecated(forRemoval = true)
     private static final String CUSTOM_SCORE_HOLDER_CLASS_PROPERTY_NAME =
-            "org.optaplanner.score.drools.holder";
+            "ai.timefold.solver.score.drools.holder";
 
     public static <Score_ extends Score<Score_>, ScoreHolder_ extends AbstractScoreHolder<Score_>> ScoreHolder_
             buildScoreHolder(ScoreDefinition<Score_> scoreDefinition, boolean constraintMatchEnabled) {
@@ -88,14 +88,14 @@ public abstract class AbstractScoreHolder<Score_ extends Score<Score_>> implemen
                         "If you're attempting to use a custom score, " +
                         "provide your " + AbstractScoreHolder.class.getSimpleName() + " implementation using the '" +
                         CUSTOM_SCORE_HOLDER_CLASS_PROPERTY_NAME + "' system property.\n" +
-                        "Note: support for custom scores will be removed in OptaPlanner 9.0.");
+                        "Note: support for custom scores will be removed in Timefold 9.0.");
             }
             try {
                 Class<?> customScoreHolderClass = Class.forName(customScoreHolderClassName);
                 if (!AbstractScoreHolder.class.isAssignableFrom(customScoreHolderClass)) {
                     throw new IllegalStateException("Custom score holder class (" + customScoreHolderClassName +
                             ") does not extend " + AbstractScoreHolder.class.getCanonicalName() + ".\n" +
-                            "Note: support for custom scores will be removed in OptaPlanner 9.0.");
+                            "Note: support for custom scores will be removed in Timefold 9.0.");
                 }
                 return ((Class<ScoreHolder_>) customScoreHolderClass).getConstructor()
                         .newInstance();
@@ -104,7 +104,7 @@ public abstract class AbstractScoreHolder<Score_ extends Score<Score_>> implemen
                 throw new IllegalStateException("Custom score holder class (" + customScoreHolderClassName +
                         ") can not be instantiated.\n" +
                         "Maybe add a no-arg public constructor?\n" +
-                        "Note: support for custom scores will be removed in OptaPlanner 9.0.", cause);
+                        "Note: support for custom scores will be removed in Timefold 9.0.", cause);
             }
         }
     }

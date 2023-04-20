@@ -60,7 +60,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
     /**
      * Private default constructor for default marshalling/unmarshalling of unknown frameworks that use reflection.
      * Such integration is always inferior to the specialized integration modules, such as
-     * optaplanner-persistence-jpa, optaplanner-persistence-jackson, optaplanner-persistence-jaxb, ...
+     * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
     private HardSoftBigDecimalScore() {

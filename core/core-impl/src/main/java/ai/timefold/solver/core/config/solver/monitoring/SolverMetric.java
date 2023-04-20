@@ -23,19 +23,19 @@ import io.micrometer.core.instrument.Tags;
 
 @XmlEnum
 public enum SolverMetric {
-    SOLVE_DURATION("optaplanner.solver.solve.duration", false),
-    ERROR_COUNT("optaplanner.solver.errors", false),
-    BEST_SCORE("optaplanner.solver.best.score", new BestScoreStatistic<>(), true),
-    STEP_SCORE("optaplanner.solver.step.score", false),
-    SCORE_CALCULATION_COUNT("optaplanner.solver.score.calculation.count", false),
-    BEST_SOLUTION_MUTATION("optaplanner.solver.best.solution.mutation", new BestSolutionMutationCountStatistic<>(), true),
-    MOVE_COUNT_PER_STEP("optaplanner.solver.step.move.count", false),
+    SOLVE_DURATION("timefold.solver.solve.duration", false),
+    ERROR_COUNT("timefold.solver.errors", false),
+    BEST_SCORE("timefold.solver.best.score", new BestScoreStatistic<>(), true),
+    STEP_SCORE("timefold.solver.step.score", false),
+    SCORE_CALCULATION_COUNT("timefold.solver.score.calculation.count", false),
+    BEST_SOLUTION_MUTATION("timefold.solver.best.solution.mutation", new BestSolutionMutationCountStatistic<>(), true),
+    MOVE_COUNT_PER_STEP("timefold.solver.step.move.count", false),
     MEMORY_USE("jvm.memory.used", new MemoryUseStatistic<>(), false),
-    CONSTRAINT_MATCH_TOTAL_BEST_SCORE("optaplanner.solver.constraint.match.best.score", true),
-    CONSTRAINT_MATCH_TOTAL_STEP_SCORE("optaplanner.solver.constraint.match.step.score", false),
-    PICKED_MOVE_TYPE_BEST_SCORE_DIFF("optaplanner.solver.move.type.best.score.diff", new PickedMoveBestScoreDiffStatistic<>(),
+    CONSTRAINT_MATCH_TOTAL_BEST_SCORE("timefold.solver.constraint.match.best.score", true),
+    CONSTRAINT_MATCH_TOTAL_STEP_SCORE("timefold.solver.constraint.match.step.score", false),
+    PICKED_MOVE_TYPE_BEST_SCORE_DIFF("timefold.solver.move.type.best.score.diff", new PickedMoveBestScoreDiffStatistic<>(),
             true),
-    PICKED_MOVE_TYPE_STEP_SCORE_DIFF("optaplanner.solver.move.type.step.score.diff", new PickedMoveStepScoreDiffStatistic<>(),
+    PICKED_MOVE_TYPE_STEP_SCORE_DIFF("timefold.solver.move.type.step.score.diff", new PickedMoveStepScoreDiffStatistic<>(),
             false);
 
     String meterId;

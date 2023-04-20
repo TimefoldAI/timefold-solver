@@ -40,7 +40,7 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     /**
-     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of OptaPlanner.
+     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of Timefold.
      */
     @Deprecated(forRemoval = true)
     private Class<? extends Termination> terminationClass = null;
@@ -76,7 +76,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     private List<TerminationConfig> terminationConfigList = null;
 
     /**
-     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of OptaPlanner.
+     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of Timefold.
      */
     @Deprecated(forRemoval = true)
     public Class<? extends Termination> getTerminationClass() {
@@ -84,7 +84,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     }
 
     /**
-     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of OptaPlanner.
+     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of Timefold.
      */
     @Deprecated(forRemoval = true)
     public void setTerminationClass(Class<? extends Termination> terminationClass) {
@@ -256,7 +256,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     // ************************************************************************
 
     /**
-     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of OptaPlanner.
+     * @deprecated A custom terminationClass is deprecated and will be removed in a future major version of Timefold.
      */
     @Deprecated(forRemoval = true)
     public TerminationConfig withTerminationClass(Class<? extends Termination> terminationClass) {

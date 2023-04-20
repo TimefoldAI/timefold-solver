@@ -152,7 +152,7 @@ public class GizmoSolutionClonerImplementor {
             classBytecodeHolder.setValue(byteCode);
 
             if (DEBUG) {
-                Path debugRoot = Paths.get("target/optaplanner-generated-classes");
+                Path debugRoot = Paths.get("target/timefold-solver-generated-classes");
                 Path rest = Paths.get(path + ".class");
                 Path destination = debugRoot.resolve(rest);
 

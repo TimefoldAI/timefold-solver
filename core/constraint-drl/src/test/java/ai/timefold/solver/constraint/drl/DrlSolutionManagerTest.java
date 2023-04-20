@@ -8,7 +8,7 @@ final class DrlSolutionManagerTest extends AbstractSolutionManagerTest {
     @Override
     protected ScoreDirectorFactoryConfig buildScoreDirectorFactoryConfig() {
         return new ScoreDirectorFactoryConfig()
-                .withScoreDrls("org/optaplanner/constraint/drl/solutionManagerDroolsConstraints.drl");
+                .withScoreDrls("ai/timefold/solver/constraint/drl/solutionManagerDroolsConstraints.drl");
     }
 
 }

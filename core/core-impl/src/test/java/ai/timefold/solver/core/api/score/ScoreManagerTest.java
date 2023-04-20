@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 public class ScoreManagerTest {
 
     public static final SolverFactory<TestdataSolution> SOLVER_FACTORY =
-            SolverFactory.createFromXmlResource("org/optaplanner/core/api/solver/testdataSolverConfig.xml");
+            SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataSolverConfig.xml");
 
     @ParameterizedTest
     @EnumSource(ScoreManagerSource.class)
@@ -41,7 +41,7 @@ public class ScoreManagerTest {
             softly.assertThat(scoreExplanation.getScore()).isNotNull();
             softly.assertThat(scoreExplanation.getSummary()).isNotBlank();
             softly.assertThat(scoreExplanation.getConstraintMatchTotalMap())
-                    .containsOnlyKeys("org.optaplanner.core.impl.testdata.domain/testConstraint");
+                    .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain/testConstraint");
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .containsOnlyKeys(solution.getEntityList().toArray());
 

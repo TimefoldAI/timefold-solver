@@ -1,7 +1,7 @@
 <solver>
-  <solutionClass>org.optaplanner.core.impl.testdata.domain.shadow.TestdataShadowedSolution</solutionClass>
-  <entityClass>org.optaplanner.core.impl.testdata.domain.shadow.TestdataShadowedEntity</entityClass>
+  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedEntity</entityClass>
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>org.optaplanner.core.impl.testdata.domain.shadow.TestdataShadowedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
 </solver>

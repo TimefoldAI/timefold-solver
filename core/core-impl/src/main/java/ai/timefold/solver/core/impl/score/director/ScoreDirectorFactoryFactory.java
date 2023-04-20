@@ -147,11 +147,11 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
             return constraintStreamScoreDirectorFactorySupplier.get();
         } else if (config.getConstraintProviderClass() != null) {
             String expectedModule = config.getConstraintStreamImplType() == BAVET
-                    ? "optaplanner-constraint-streams-bavet"
-                    : "optaplanner-constraint-streams-drools";
+                    ? "timefold-solver-constraint-streams-bavet"
+                    : "timefold-solver-constraint-streams-drools";
             throw new IllegalStateException("Constraint Streams requested via constraintProviderClass (" +
                     config.getConstraintProviderClass() + ") but the supporting classes were not found on the classpath.\n"
-                    + "Maybe include org.optaplanner:" + expectedModule + " dependency in your project?\n"
+                    + "Maybe include ai.timefold.solver:" + expectedModule + " dependency in your project?\n"
                     + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
         }
 
@@ -163,7 +163,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                 throw new IllegalStateException("DRL constraints requested via scoreDrlList (" + config.getScoreDrlList()
                         + ") or scoreDrlFileList (" + config.getScoreDrlFileList() + "), "
                         + "but the supporting classes were not found on the classpath.\n"
-                        + "Maybe include org.optaplanner:optaplanner-constraint-drl dependency in your project?\n"
+                        + "Maybe include ai.timefold.solver:timefold-solver-constraint-drl dependency in your project?\n"
                         + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
             }
         }

@@ -6,8 +6,8 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 /**
- * This POJO does not depend on OptaPlanner:
- * it has no OptaPlanner imports (annotations, score, ...) except for test imports.
+ * This POJO does not depend on Timefold:
+ * it has no Timefold imports (annotations, score, ...) except for test imports.
  */
 public class TestdataThirdPartySolutionPojo extends TestdataObject {
 

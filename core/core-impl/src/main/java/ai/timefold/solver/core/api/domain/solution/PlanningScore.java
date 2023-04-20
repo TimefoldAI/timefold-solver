@@ -52,7 +52,7 @@ public @interface PlanningScore {
      * If this is not specified, the {@link ScoreDefinition} is automatically determined
      * based on the return type of the annotated property (or field) on a {@link PlanningSolution}.
      *
-     * @deprecated Support for custom scores is deprecated and will be removed in OptaPlanner 9.0.
+     * @deprecated Support for custom scores is deprecated and will be removed in Timefold 9.0.
      * @return {@link NullScoreDefinition} when it is null (workaround for annotation limitation)
      */
     @Deprecated(forRemoval = true)

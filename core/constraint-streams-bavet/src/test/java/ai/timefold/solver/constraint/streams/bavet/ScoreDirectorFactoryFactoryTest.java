@@ -29,7 +29,7 @@ class ScoreDirectorFactoryFactoryTest {
                 EnvironmentMode.FAST_ASSERT,
                 TestdataSolution.buildSolutionDescriptor()))
                 .hasMessage("If there is no scoreDrl (null), scoreDrlFile (null) or constraintProviderClass "
-                        + "(class org.optaplanner.constraint.streams.bavet.ScoreDirectorFactoryFactoryTest$TestdataConstraintProvider)"
+                        + "(class ai.timefold.solver.constraint.streams.bavet.ScoreDirectorFactoryFactoryTest$TestdataConstraintProvider)"
                         + " with DROOLS impl type (BAVET), there can be no droolsAlphaNetworkCompilationEnabled (true) either.");
     }
 

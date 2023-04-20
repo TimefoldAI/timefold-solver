@@ -315,13 +315,13 @@ class DefaultSolverTest {
         solverConfig.setMonitoringConfig(new MonitoringConfig()
                 .withSolverMetricList(List.of(SolverMetric.BEST_SCORE)));
         solverConfig.setPhaseConfigList(List.of(
-                // Force OptaPlanner to select "none" value which reward 0 soft
+                // Force Timefold to select "none" value which reward 0 soft
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT)
                         .withMoveSelectorConfigList(
                                 List.of(new ChangeMoveSelectorConfig()
                                         .withFilterClass(NoneValueSelectionFilter.class))),
-                // Then do a local search, which allow OptaPlanner to select "reward" value
+                // Then do a local search, which allow Timefold to select "reward" value
                 // which reward 1 soft per entity
                 new LocalSearchPhaseConfig()
                         .withLocalSearchType(LocalSearchType.HILL_CLIMBING)));
@@ -416,7 +416,7 @@ class DefaultSolverTest {
         solution.setEntityList(Arrays.asList(e1, e2, e3));
 
         solverConfig.setPhaseConfigList(List.of(
-                // Force OptaPlanner to select "none" value which reward 0 soft
+                // Force Timefold to select "none" value which reward 0 soft
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT)
                         .withMoveSelectorConfigList(

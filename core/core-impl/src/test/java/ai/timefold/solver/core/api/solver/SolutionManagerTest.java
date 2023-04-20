@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 public class SolutionManagerTest {
 
     public static final SolverFactory<TestdataShadowedSolution> SOLVER_FACTORY =
-            SolverFactory.createFromXmlResource("org/optaplanner/core/api/solver/testdataShadowedSolverConfig.xml");
+            SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowedSolverConfig.xml");
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -84,7 +84,7 @@ public class SolutionManagerTest {
             softly.assertThat(scoreExplanation.getScore()).isNotNull();
             softly.assertThat(scoreExplanation.getSummary()).isNotBlank();
             softly.assertThat(scoreExplanation.getConstraintMatchTotalMap())
-                    .containsOnlyKeys("org.optaplanner.core.impl.testdata.domain.shadow/testConstraint");
+                    .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.shadow/testConstraint");
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .containsOnlyKeys(solution.getEntityList().toArray());
 

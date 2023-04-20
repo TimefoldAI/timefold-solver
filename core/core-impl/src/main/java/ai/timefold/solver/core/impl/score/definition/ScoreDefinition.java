@@ -109,7 +109,7 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
     /**
      * The opposite of {@link Score#toLevelNumbers()}.
      *
-     * @param initScore {@code <= 0}, managed by OptaPlanner, needed as a parameter in the {@link Score}'s creation
+     * @param initScore {@code <= 0}, managed by Timefold, needed as a parameter in the {@link Score}'s creation
      *        method, see {@link Score#initScore()}
      * @param levelNumbers never null
      * @return never null

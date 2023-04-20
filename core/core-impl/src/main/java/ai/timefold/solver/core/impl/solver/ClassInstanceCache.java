@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
 
 /**
  * Exists so that particular user-provided classes,
- * which are instantiated by OptaPlanner from {@link SolverConfig},
+ * which are instantiated by Timefold from {@link SolverConfig},
  * only ever have one instance.
  * Each solver instance needs to get a fresh instance of this class,
  * so that solvers can not share state between them.

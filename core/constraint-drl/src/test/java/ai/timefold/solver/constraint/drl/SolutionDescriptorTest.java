@@ -28,7 +28,7 @@ class SolutionDescriptorTest {
                 solverConfig.getScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(null);
         scoreDirectorFactoryConfig.setScoreDrlList(
-                Collections.singletonList("org/optaplanner/constraint/drl/dummySimpleScoreDroolsConstraints.drl"));
+                Collections.singletonList("ai/timefold/solver/constraint/drl/dummySimpleScoreDroolsConstraints.drl"));
         return SolverFactory.create(solverConfig);
     }
 

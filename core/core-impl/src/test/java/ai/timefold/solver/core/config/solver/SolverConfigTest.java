@@ -94,7 +94,7 @@ class SolverConfigTest {
 
     @Test
     void whiteCharsInClassName() {
-        String solutionClassName = "org.optaplanner.core.impl.testdata.domain.TestdataSolution";
+        String solutionClassName = "ai.timefold.solver.core.impl.testdata.domain.TestdataSolution";
         String xmlFragment = String.format("<solver xmlns=\"https://timefold.ai/xsd/solver\">%n"
                 + "  <solutionClass>  %s  %n" // Intentionally included white chars around the class name.
                 + "  </solutionClass>%n"

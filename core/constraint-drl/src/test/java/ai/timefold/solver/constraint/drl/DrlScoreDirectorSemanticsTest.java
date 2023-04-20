@@ -15,8 +15,8 @@ final class DrlScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantics
     protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
             buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
-                .withScoreDrls("org/optaplanner/constraint/drl/scoreDirectorSemanticsDroolsConstraints.drl",
-                        "org/optaplanner/constraint/drl/scoreDirectorSemanticsDroolsConstraints2.drl");
+                .withScoreDrls("ai/timefold/solver/constraint/drl/scoreDirectorSemanticsDroolsConstraints.drl",
+                        "ai/timefold/solver/constraint/drl/scoreDirectorSemanticsDroolsConstraints2.drl");
         ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),

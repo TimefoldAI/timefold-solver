@@ -136,8 +136,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint Streams migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
@@ -146,8 +146,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -157,8 +157,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -168,8 +168,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -201,8 +201,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -212,8 +212,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -283,8 +283,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -295,8 +295,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -307,8 +307,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */
@@ -319,8 +319,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of OptaPlanner.
-     *             See <a href="https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html">DRL
+     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
+     *             See <a href="https://timefold.ai/docs/">DRL
      *             to Constraint
      *             Streams migration recipe</a>.
      */

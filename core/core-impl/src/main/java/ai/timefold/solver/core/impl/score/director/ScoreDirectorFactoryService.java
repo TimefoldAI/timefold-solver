@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 
 /**
  * All {@link ScoreDirectorFactory} implementations must provide an implementation of this interface,
- * as well as an entry in META-INF/services/org.optaplanner.core.impl.score.director.ScoreDirectorFactoryService file.
+ * as well as an entry in META-INF/services/ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService file.
  * This makes it available for discovery in {@link ScoreDirectorFactoryFactory} via {@link java.util.ServiceLoader}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation

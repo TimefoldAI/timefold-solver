@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * It allows to provide a sequence of pre-defined "random" values.
  * It throws an exception if that sequence has been exhausted.
  *
- * Due to some internals of OptaPlanner where randoms are read from
+ * Due to some internals of Timefold where randoms are read from
  * {@link ai.timefold.solver.core.impl.solver.scope.SolverScope}
  * and never updated in later phases and steps,
  * we need to be able to reset the same random to start running a new sequence of numbers.

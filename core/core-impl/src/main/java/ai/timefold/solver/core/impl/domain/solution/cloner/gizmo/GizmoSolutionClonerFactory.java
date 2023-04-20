@@ -15,7 +15,7 @@ public final class GizmoSolutionClonerFactory {
      * @return The generated class name for solutionDescriptor
      */
     public static String getGeneratedClassName(SolutionDescriptor<?> solutionDescriptor) {
-        return solutionDescriptor.getSolutionClass().getName() + "$OptaPlanner$SolutionCloner";
+        return solutionDescriptor.getSolutionClass().getName() + "$Timefold$SolutionCloner";
     }
 
     public static <T> SolutionCloner<T> build(SolutionDescriptor<T> solutionDescriptor, GizmoClassLoader gizmoClassLoader) {

@@ -69,7 +69,7 @@ class ScoreDirectorFactoryFactoryTest {
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withEasyScoreCalculatorClass(TestCustomPropertiesEasyScoreCalculator.class)
                 .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class)
-                .withScoreDrls("org/optaplanner/solver/score/dummySimpleScoreDroolsConstraints.drl");
+                .withScoreDrls("ai/timefold/solver/solver/score/dummySimpleScoreDroolsConstraints.drl");
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> buildTestdataScoreDirectoryFactory(config))
                 .withMessageContaining("scoreDirectorFactory")
                 .withMessageContaining("together");

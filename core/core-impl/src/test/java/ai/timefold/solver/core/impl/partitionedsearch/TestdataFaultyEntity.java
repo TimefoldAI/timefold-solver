@@ -20,7 +20,7 @@ public class TestdataFaultyEntity extends TestdataEntity {
     @Override
     public void setValue(TestdataValue value) {
         super.setValue(value);
-        if (Thread.currentThread().getName().matches("OptaPool-\\d+-PartThread-\\d+")) {
+        if (Thread.currentThread().getName().matches("Timefold-\\d+-PartThread-\\d+")) {
             LOGGER.info("Throwing exception on a partition thread.");
             throw new TestException();
         }

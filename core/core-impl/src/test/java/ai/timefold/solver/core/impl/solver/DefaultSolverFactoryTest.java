@@ -65,7 +65,7 @@ class DefaultSolverFactoryTest {
     @Test
     void cachesScoreDirectorFactory() {
         SolverConfig solverConfig =
-                SolverConfig.createFromXmlResource("org/optaplanner/core/config/solver/testdataSolverConfig.xml");
+                SolverConfig.createFromXmlResource("ai/timefold/solver/core/config/solver/testdataSolverConfig.xml");
         DefaultSolverFactory<TestdataSolution> defaultSolverFactory = new DefaultSolverFactory<>(solverConfig);
 
         SolutionDescriptor<TestdataSolution> solutionDescriptor1 = defaultSolverFactory.getSolutionDescriptor();

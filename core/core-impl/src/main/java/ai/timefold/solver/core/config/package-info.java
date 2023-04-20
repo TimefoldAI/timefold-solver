@@ -1,5 +1,5 @@
 /**
- * Classes which represent the XML Solver configuration of OptaPlanner.
+ * Classes which represent the XML Solver configuration of Timefold.
  * <p>
  * The XML Solver configuration is backwards compatible for all elements,
  * except for elements that require the use of non-public API classes.

@@ -2,44 +2,44 @@
 <solver>
   <environmentMode>FULL_ASSERT</environmentMode>
   <moveThreadCount>AUTO</moveThreadCount>
-  <solutionClass>org.optaplanner.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution</solutionClass>
-  <entityClass>org.optaplanner.core.impl.testdata.domain.TestdataEntity</entityClass>
-  <entityClass>org.optaplanner.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity</entityClass>
+  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity</entityClass>
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyEasyScoreCalculator</easyScoreCalculatorClass>
-    <constraintProviderClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyConstraintProvider</constraintProviderClass>
-    <incrementalScoreCalculatorClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
-    <scoreDrl>org/optaplanner/config/firstNonExistingConstraints.drl</scoreDrl>
-    <scoreDrl>org/optaplanner/config/secondNonExistingConstraints.drl</scoreDrl>
+    <easyScoreCalculatorClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyEasyScoreCalculator</easyScoreCalculatorClass>
+    <constraintProviderClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyConstraintProvider</constraintProviderClass>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <scoreDrl>ai/timefold/solver/config/firstNonExistingConstraints.drl</scoreDrl>
+    <scoreDrl>ai/timefold/solver/config/secondNonExistingConstraints.drl</scoreDrl>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
   <constructionHeuristic>
     <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
     <queuedEntityPlacer>
       <entitySelector id="placerEntitySelector">
-        <entityClass>org.optaplanner.core.impl.testdata.domain.TestdataEntity</entityClass>
+        <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
-        <filterClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyEntityFilter</filterClass>
+        <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyEntityFilter</filterClass>
         <sorterManner>DECREASING_DIFFICULTY</sorterManner>
       </entitySelector>
       <cartesianProductMoveSelector>
         <changeMoveSelector>
           <entitySelector mimicSelectorRef="placerEntitySelector"/>
           <valueSelector variableName="subValue">
-            <downcastEntityClass>org.optaplanner.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity</downcastEntityClass>
+            <downcastEntityClass>ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity</downcastEntityClass>
             <cacheType>PHASE</cacheType>
             <selectionOrder>SORTED</selectionOrder>
             <sorterManner>INCREASING_STRENGTH</sorterManner>
           </valueSelector>
         </changeMoveSelector>
         <changeMoveSelector>
-          <filterClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyChangeMoveFilter</filterClass>
+          <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyChangeMoveFilter</filterClass>
           <entitySelector mimicSelectorRef="placerEntitySelector"/>
           <valueSelector variableName="value">
             <cacheType>PHASE</cacheType>
             <selectionOrder>SORTED</selectionOrder>
-            <filterClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyValueFilter</filterClass>
+            <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyValueFilter</filterClass>
             <sorterManner>INCREASING_STRENGTH</sorterManner>
           </valueSelector>
         </changeMoveSelector>
@@ -56,14 +56,14 @@
     </forager>
   </constructionHeuristic>
   <customPhase>
-    <customPhaseCommandClass>org.optaplanner.core.impl.phase.custom.CustomPhaseCommand</customPhaseCommandClass>
+    <customPhaseCommandClass>ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand</customPhaseCommandClass>
   </customPhase>
   <exhaustiveSearch>
     <exhaustiveSearchType>BRANCH_AND_BOUND</exhaustiveSearchType>
     <nodeExplorationType>BREADTH_FIRST</nodeExplorationType>
     <changeMoveSelector>
       <valueSelector variableName="value">
-        <filterClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyValueFilter</filterClass>
+        <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyValueFilter</filterClass>
       </valueSelector>
     </changeMoveSelector>
   </exhaustiveSearch>
@@ -86,7 +86,7 @@
       <pillarSwapMoveSelector>
         <pillarSelector>
           <entitySelector>
-            <filterClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyEntityFilter</filterClass>
+            <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyEntityFilter</filterClass>
           </entitySelector>
           <minimumSubPillarSize>5</minimumSubPillarSize>
           <maximumSubPillarSize>10</maximumSubPillarSize>
@@ -94,14 +94,14 @@
       </pillarSwapMoveSelector>
       <moveIteratorFactory>
         <fixedProbabilityWeight>30.0</fixedProbabilityWeight>
-        <moveIteratorFactoryClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyMoveIteratorFactory</moveIteratorFactoryClass>
+        <moveIteratorFactoryClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyMoveIteratorFactory</moveIteratorFactoryClass>
         <moveIteratorFactoryCustomProperties>
           <property name="moveIteratorProperty" value="moveIteratorPropertyValue"/>
         </moveIteratorFactoryCustomProperties>
       </moveIteratorFactory>
       <moveListFactory>
         <selectedCountLimit>500</selectedCountLimit>
-        <moveListFactoryClass>org.optaplanner.core.config.solver.SolverConfigTest$DummyMoveListFactory</moveListFactoryClass>
+        <moveListFactoryClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyMoveListFactory</moveListFactoryClass>
         <moveListFactoryCustomProperties>
           <property name="moveListProperty" value="moveListPropertyValue"/>
         </moveListFactoryCustomProperties>
@@ -124,7 +124,7 @@
   </localSearch>
   <noChangePhase/>
   <partitionedSearch>
-    <solutionPartitionerClass>org.optaplanner.core.config.solver.SolverConfigTest$DummySolutionPartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummySolutionPartitioner</solutionPartitionerClass>
     <solutionPartitionerCustomProperties>
       <property name="minimumProcessListSize" value="300"/>
       <property name="partCount" value="4"/>

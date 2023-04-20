@@ -55,9 +55,9 @@ public final class DrlScoreDirectorFactoryService<Solution_, Score_ extends Scor
         }
 
         if (!DRL_DEPRECATION_MESSAGE_SHOWN.getAndSet(true)) {
-            LOGGER.info("Score DRL is deprecated and will be removed in a future major version of OptaPlanner.\n" +
+            LOGGER.info("Score DRL is deprecated and will be removed in a future major version of Timefold.\n" +
                     "Consider migrating to the Constraint Streams API.\n" +
-                    "See migration recipe: https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html");
+                    "See migration recipe: https://timefold.ai/docs/");
         }
 
         List<String> scoreDrlList = new ArrayList<>();

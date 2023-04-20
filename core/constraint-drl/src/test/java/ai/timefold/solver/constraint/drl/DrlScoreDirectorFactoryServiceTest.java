@@ -30,7 +30,7 @@ class DrlScoreDirectorFactoryServiceTest {
     @Test
     void invalidDrlResource_throwsException() {
         ScoreDirectorFactoryConfig config = new ScoreDirectorFactoryConfig()
-                .withScoreDrls("org/optaplanner/constraint/drl/invalidDroolsConstraints.drl");
+                .withScoreDrls("ai/timefold/solver/constraint/drl/invalidDroolsConstraints.drl");
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> buildScoreDirectoryFactory(config))
                 .withMessageContaining("scoreDrl")
