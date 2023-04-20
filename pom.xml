@@ -113,17 +113,6 @@
       </modules>
     </profile>
     <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>!productized</name>
-        </property>
-      </activation>
-      <modules>
-        <module>operator</module>
-      </modules>
-    </profile>
-    <profile>
       <!--
         Migration to OptaPlanner 9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
         OptaPlanner 8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.

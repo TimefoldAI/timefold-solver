@@ -109,31 +109,4 @@
     </dependency>
   </dependencies>
 
-  <profiles>
-    <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>!productized</name>
-        </property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>ai.timefold.solver</groupId>
-          <artifactId>timefold-solver-operator</artifactId>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>productized</id>
-      <activation>
-        <property>
-          <name>productized</name>
-        </property>
-      </activation>
-      <properties>
-        <assembly.descriptor>assembly-optaplanner-productized.xml</assembly.descriptor>
-      </properties>
-    </profile>
-  </profiles>
 </project>
