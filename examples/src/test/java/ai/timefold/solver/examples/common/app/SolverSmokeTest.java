@@ -23,7 +23,6 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testutil.DisabledInProductization;
 import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
@@ -71,7 +70,6 @@ public abstract class SolverSmokeTest<Solution_, Score_ extends Score<Score_>> e
         return runSpeedTest(ConstraintStreamImplType.DROOLS);
     }
 
-    @DisabledInProductization
     @TestFactory
     @Execution(ExecutionMode.CONCURRENT)
     @Timeout(600)
@@ -120,7 +118,6 @@ public abstract class SolverSmokeTest<Solution_, Score_ extends Score<Score_>> e
     @TestFactory
     @Execution(ExecutionMode.CONCURRENT)
     @Timeout(600)
-    @DisabledInProductization
     Stream<DynamicTest> runConstraintStreamsMutualCorrectnessTest() {
         SolverFactory<Solution_> solverFactory = buildMutualCorrectnessSolverFactory();
         return testData()

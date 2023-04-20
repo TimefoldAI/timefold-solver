@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
-import ai.timefold.solver.core.impl.testutil.DisabledInProductizationCheck;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -36,15 +35,9 @@ public abstract class AbstractConstraintProviderTest<ConstraintProvider_ extends
     protected abstract ConstraintVerifier<ConstraintProvider_, Solution_> createConstraintVerifier();
 
     protected final Stream<? extends Arguments> getDroolsAndBavetConstraintVerifierImpls() {
-        if (DisabledInProductizationCheck.isProductized()) {
-            return Stream.of(
-                    arguments(named("DROOLS (without ANC)", droolsWithoutAncConstraintVerifier)),
-                    arguments(named("DROOLS (with ANC)", droolsWithAncConstraintVerifier)));
-        } else {
-            return Stream.of(
-                    arguments(named("BAVET", bavetConstraintVerifier)),
-                    arguments(named("DROOLS (without ANC)", droolsWithoutAncConstraintVerifier)),
-                    arguments(named("DROOLS (with ANC)", droolsWithAncConstraintVerifier)));
-        }
+        return Stream.of(
+                arguments(named("BAVET", bavetConstraintVerifier)),
+                arguments(named("DROOLS (without ANC)", droolsWithoutAncConstraintVerifier)),
+                arguments(named("DROOLS (with ANC)", droolsWithAncConstraintVerifier)));
     }
 }

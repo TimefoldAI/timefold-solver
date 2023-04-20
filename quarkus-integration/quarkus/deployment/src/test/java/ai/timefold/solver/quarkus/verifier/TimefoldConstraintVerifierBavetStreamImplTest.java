@@ -6,7 +6,6 @@ import javax.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
-import ai.timefold.solver.core.impl.testutil.DisabledInProductization;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-@DisabledInProductization
 class TimefoldConstraintVerifierBavetStreamImplTest {
 
     @RegisterExtension

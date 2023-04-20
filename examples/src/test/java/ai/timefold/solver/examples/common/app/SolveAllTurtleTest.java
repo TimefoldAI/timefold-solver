@@ -16,7 +16,6 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testutil.DisabledInProductizationCheck;
 import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.TurtleTest;
 
@@ -68,7 +67,7 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(solverConfigResource);
         if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null) {
             ConstraintStreamImplType constraintStreamImplType = resolveConstraintStreamType();
-            if (constraintStreamImplType == ConstraintStreamImplType.BAVET && DisabledInProductizationCheck.isProductized()) {
+            if (constraintStreamImplType == ConstraintStreamImplType.BAVET) {
                 throw new UnsupportedOperationException("Bavet not supported in a productized profile.");
             }
             solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamImplType(constraintStreamImplType);

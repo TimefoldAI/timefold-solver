@@ -29,7 +29,6 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
-import ai.timefold.solver.core.impl.testutil.DisabledInProductization;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.ChainedSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.TestdataChainedSpringConstraintProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringEntity;
@@ -204,7 +203,6 @@ class TimefoldAutoConfigurationTest {
                 });
     }
 
-    @DisabledInProductization
     @Test
     void solverPropertiesBavet() {
         contextRunner
@@ -384,7 +382,6 @@ class TimefoldAutoConfigurationTest {
                 });
     }
 
-    @DisabledInProductization
     @Test
     void constraintVerifierBavet() {
         contextRunner
