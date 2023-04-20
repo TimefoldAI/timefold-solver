@@ -1,0 +1,2 @@
+ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactoryService
+ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactoryService
