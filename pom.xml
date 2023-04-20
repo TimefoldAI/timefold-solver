@@ -42,19 +42,6 @@
     <version.rewrite.plugin>4.43.0</version.rewrite.plugin>
   </properties>
 
-  <distributionManagement>
-    <repository>
-      <id>jboss-releases-repository</id>
-      <name>JBoss Releases Repository</name>
-      <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>jboss-snapshots-repository</id>
-      <name>JBoss Snapshot Repository</name>
-      <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <scm>
     <connection>scm:git:git@github.com:TimefoldAI/timefold-solver.git</connection>
     <developerConnection>scm:git:git@github.com:TimefoldAI/timefold-solver.git</developerConnection>
@@ -85,6 +72,38 @@
     <module>migration</module>
     <module>examples</module>
   </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jreleaser</groupId>
+        <artifactId>jreleaser-maven-plugin</artifactId>
+        <version>1.5.1</version>
+        <inherited>false</inherited>
+        <configuration>
+          <jreleaser>
+            <signing>
+              <active>ALWAYS</active>
+              <armored>true</armored>
+            </signing>
+            <deploy>
+              <maven>
+                <nexus2>
+                  <maven-central>
+                    <active>ALWAYS</active>
+                    <url>https://s01.oss.sonatype.org/service/local</url>
+                    <closeRepository>true</closeRepository>
+                    <releaseRepository>false</releaseRepository>
+                    <stagingRepositories>target/staging-deploy</stagingRepositories>
+                  </maven-central>
+                </nexus2>
+              </maven>
+            </deploy>
+          </jreleaser>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
     <profile>
