@@ -33,28 +33,28 @@ public class TimefoldBenchmarkAutoConfiguration
         implements BeanClassLoaderAware {
 
     private final ApplicationContext context;
-    private final TimefoldProperties optaPlannerProperties;
+    private final TimefoldProperties timefoldProperties;
     private ClassLoader beanClassLoader;
 
     protected TimefoldBenchmarkAutoConfiguration(ApplicationContext context,
-            TimefoldProperties optaPlannerProperties) {
+            TimefoldProperties timefoldProperties) {
         this.context = context;
-        this.optaPlannerProperties = optaPlannerProperties;
+        this.timefoldProperties = timefoldProperties;
     }
 
     @Bean
     public PlannerBenchmarkConfig plannerBenchmarkConfig(SolverConfig solverConfig) {
         PlannerBenchmarkConfig benchmarkConfig;
-        if (optaPlannerProperties.getBenchmark() != null
-                && optaPlannerProperties.getBenchmark().getSolverBenchmarkConfigXml() != null) {
-            if (beanClassLoader.getResource(optaPlannerProperties.getBenchmark().getSolverBenchmarkConfigXml()) == null) {
+        if (timefoldProperties.getBenchmark() != null
+                && timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml() != null) {
+            if (beanClassLoader.getResource(timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml()) == null) {
                 throw new IllegalStateException(
-                        "Invalid optaplanner.benchmark.solverBenchmarkConfigXml property ("
-                                + optaPlannerProperties.getBenchmark().getSolverBenchmarkConfigXml()
+                        "Invalid timefold.benchmark.solverBenchmarkConfigXml property ("
+                                + timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml()
                                 + "): that classpath resource does not exist.");
             }
             benchmarkConfig = PlannerBenchmarkConfig
-                    .createFromXmlResource(optaPlannerProperties.getBenchmark().getSolverBenchmarkConfigXml(), beanClassLoader);
+                    .createFromXmlResource(timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml(), beanClassLoader);
         } else if (beanClassLoader.getResource(BenchmarkProperties.DEFAULT_SOLVER_BENCHMARK_CONFIG_URL) != null) {
             benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource(
                     TimefoldProperties.DEFAULT_SOLVER_BENCHMARK_CONFIG_URL, beanClassLoader);
@@ -63,18 +63,18 @@ public class TimefoldBenchmarkAutoConfiguration
             benchmarkConfig.setBenchmarkDirectory(new File(BenchmarkProperties.DEFAULT_BENCHMARK_RESULT_DIRECTORY));
         }
 
-        if (optaPlannerProperties.getBenchmark() != null && optaPlannerProperties.getBenchmark().getResultDirectory() != null) {
-            benchmarkConfig.setBenchmarkDirectory(new File(optaPlannerProperties.getBenchmark().getResultDirectory()));
+        if (timefoldProperties.getBenchmark() != null && timefoldProperties.getBenchmark().getResultDirectory() != null) {
+            benchmarkConfig.setBenchmarkDirectory(new File(timefoldProperties.getBenchmark().getResultDirectory()));
         }
 
         if (benchmarkConfig.getBenchmarkDirectory() == null) {
             benchmarkConfig.setBenchmarkDirectory(new File(BenchmarkProperties.DEFAULT_BENCHMARK_RESULT_DIRECTORY));
         }
 
-        if (optaPlannerProperties.getBenchmark() != null && optaPlannerProperties.getBenchmark().getSolver() != null) {
+        if (timefoldProperties.getBenchmark() != null && timefoldProperties.getBenchmark().getSolver() != null) {
             TimefoldAutoConfiguration
                     .applyTerminationProperties(benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig(),
-                            optaPlannerProperties.getBenchmark().getSolver().getTermination());
+                            timefoldProperties.getBenchmark().getSolver().getTermination());
         }
 
         if (benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig().getTerminationConfig() == null ||
@@ -83,9 +83,9 @@ public class TimefoldBenchmarkAutoConfiguration
             List<String> unconfiguredTerminationSolverBenchmarkList = new ArrayList<>();
             if (solverBenchmarkConfigList == null) {
                 throw new IllegalStateException("At least one of the properties " +
-                        "optaplanner.benchmark.solver.termination.spent-limit, " +
-                        "optaplanner.benchmark.solver.termination.best-score-limit, " +
-                        "optaplanner.benchmark.solver.termination.unimproved-spent-limit " +
+                        "timefold.benchmark.solver.termination.spent-limit, " +
+                        "timefold.benchmark.solver.termination.best-score-limit, " +
+                        "timefold.benchmark.solver.termination.unimproved-spent-limit " +
                         "is required if termination is not configured in the " +
                         "inherited solver benchmark config and solverBenchmarkBluePrint is used.");
             }
@@ -120,9 +120,9 @@ public class TimefoldBenchmarkAutoConfiguration
                                 .collect(Collectors.joining(", ", "[", "]"))
                         + ". " +
                         "At least one of the properties " +
-                        "optaplanner.benchmark.solver.termination.spent-limit, " +
-                        "optaplanner.benchmark.solver.termination.best-score-limit, " +
-                        "optaplanner.benchmark.solver.termination.unimproved-spent-limit " +
+                        "timefold.benchmark.solver.termination.spent-limit, " +
+                        "timefold.benchmark.solver.termination.best-score-limit, " +
+                        "timefold.benchmark.solver.termination.unimproved-spent-limit " +
                         "is required if termination is not configured in a solver benchmark and the " +
                         "inherited solver benchmark config.");
             }

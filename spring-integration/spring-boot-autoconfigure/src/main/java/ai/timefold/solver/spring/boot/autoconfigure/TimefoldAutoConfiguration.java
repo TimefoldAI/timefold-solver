@@ -65,13 +65,13 @@ import com.fasterxml.jackson.databind.Module;
 public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
 
     private final ApplicationContext context;
-    private final TimefoldProperties optaPlannerProperties;
+    private final TimefoldProperties timefoldProperties;
     private ClassLoader beanClassLoader;
 
     protected TimefoldAutoConfiguration(ApplicationContext context,
-            TimefoldProperties optaPlannerProperties) {
+            TimefoldProperties timefoldProperties) {
         this.context = context;
-        this.optaPlannerProperties = optaPlannerProperties;
+        this.timefoldProperties = timefoldProperties;
     }
 
     @Override
@@ -84,7 +84,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     public <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory solverFactory) {
         // TODO supply ThreadFactory
         SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-        SolverManagerProperties solverManagerProperties = optaPlannerProperties.getSolverManager();
+        SolverManagerProperties solverManagerProperties = timefoldProperties.getSolverManager();
         if (solverManagerProperties != null) {
             if (solverManagerProperties.getParallelSolverCount() != null) {
                 solverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());
@@ -117,11 +117,11 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     @Bean
     @ConditionalOnMissingBean
     public SolverConfig solverConfig() {
-        String solverConfigXml = optaPlannerProperties.getSolverConfigXml();
+        String solverConfigXml = timefoldProperties.getSolverConfigXml();
         SolverConfig solverConfig;
         if (solverConfigXml != null) {
             if (beanClassLoader.getResource(solverConfigXml) == null) {
-                throw new IllegalStateException("Invalid optaplanner.solverConfigXml property (" + solverConfigXml
+                throw new IllegalStateException("Invalid timefold.solverConfigXml property (" + solverConfigXml
                         + "): that classpath resource does not exist.");
             }
             solverConfig = SolverConfig.createFromXmlResource(solverConfigXml, beanClassLoader);
@@ -139,7 +139,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     // @Bean wrapped by static class to avoid classloading issues if dependencies are absent
     @ConditionalOnClass({ ConstraintVerifier.class })
     @ConditionalOnMissingBean({ ConstraintVerifier.class })
-    static class OptaPlannerConstraintVerifierConfiguration {
+    static class TimefoldConstraintVerifierConfiguration {
 
         @Bean
         @SuppressWarnings("unchecked")
@@ -149,7 +149,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
             if (scoreDirectorFactoryConfig.getConstraintProviderClass() == null) {
                 // Return a mock ConstraintVerifier so not having ConstraintProvider doesn't crash tests
                 // (Cannot create custom condition that checks SolverConfig, since that
-                //  requires OptaPlannerAutoConfiguration to have a no-args constructor)
+                //  requires TimefoldAutoConfiguration to have a no-args constructor)
                 final String noConstraintProviderErrorMsg =
                         "Cannot provision a ConstraintVerifier because there is no ConstraintProvider class.";
                 return new ConstraintVerifier<>() {
@@ -191,7 +191,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
             solverConfig.setEntityClassList(findEntityClassList(entityScanner));
         }
         applyScoreDirectorFactoryProperties(solverConfig);
-        SolverProperties solverProperties = optaPlannerProperties.getSolver();
+        SolverProperties solverProperties = timefoldProperties.getSolver();
         if (solverProperties != null) {
             if (solverProperties.getEnvironmentMode() != null) {
                 solverConfig.setEnvironmentMode(solverProperties.getEnvironmentMode());
@@ -275,7 +275,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     }
 
     protected String constraintsDrl() {
-        String constraintsDrl = optaPlannerProperties.getScoreDrl();
+        String constraintsDrl = timefoldProperties.getScoreDrl();
 
         if (constraintsDrl != null) {
             if (beanClassLoader.getResource(constraintsDrl) == null) {
@@ -384,7 +384,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     // @Bean wrapped by static class to avoid classloading issues if dependencies are absent
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass({ Jackson2ObjectMapperBuilder.class, Score.class })
-    static class OptaPlannerJacksonConfiguration {
+    static class TimefoldJacksonConfiguration {
 
         @Bean
         Module jacksonModule() {

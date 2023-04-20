@@ -7,13 +7,13 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-@ConfigurationProperties(value = "optaplanner", ignoreUnknownFields = false)
+@ConfigurationProperties(value = "timefold", ignoreUnknownFields = false)
 public class TimefoldProperties {
 
     public static final String DEFAULT_SOLVER_CONFIG_URL = "solverConfig.xml";
     public static final String DEFAULT_SOLVER_BENCHMARK_CONFIG_URL = "solverBenchmarkConfig.xml";
     public static final String DEFAULT_CONSTRAINTS_DRL_URL = "constraints.drl";
-    public static final String SCORE_DRL_PROPERTY = "optaplanner.score-drl";
+    public static final String SCORE_DRL_PROPERTY = "timefold.score-drl";
 
     @NestedConfigurationProperty
     private SolverManagerProperties solverManager;

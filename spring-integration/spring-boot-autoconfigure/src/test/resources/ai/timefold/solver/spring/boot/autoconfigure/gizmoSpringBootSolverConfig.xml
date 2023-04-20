@@ -3,7 +3,7 @@
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <domainAccessType>GIZMO</domainAccessType>
   <scoreDirectorFactory>
-      <constraintProviderClass>org.optaplanner.spring.boot.autoconfigure.gizmo.constraints.TestdataGizmoConstraintProvider</constraintProviderClass>
+      <constraintProviderClass>ai.timefold.solver.spring.boot.autoconfigure.gizmo.constraints.TestdataGizmoConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
   <termination>
     <minutesSpentLimit>3</minutesSpentLimit>

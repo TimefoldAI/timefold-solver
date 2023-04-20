@@ -1,2 +1,2 @@
-org.optaplanner.spring.boot.autoconfigure.OptaPlannerAutoConfiguration
-org.optaplanner.spring.boot.autoconfigure.OptaPlannerBenchmarkAutoConfiguration
+ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration
+ai.timefold.solver.spring.boot.autoconfigure.TimefoldBenchmarkAutoConfiguration

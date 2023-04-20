@@ -2,7 +2,7 @@
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider</constraintProviderClass>
     <constraintStreamImplType>DROOLS</constraintStreamImplType>
     <droolsAlphaNetworkCompilationEnabled>false</droolsAlphaNetworkCompilationEnabled>
   </scoreDirectorFactory>

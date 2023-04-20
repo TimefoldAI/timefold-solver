@@ -90,7 +90,7 @@ class TimefoldAutoConfigurationTest {
                 .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
                 .withUserConfiguration(MultiModuleSpringTestConfiguration.class);
         allDefaultsFilteredClassLoader =
-                new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("org.optaplanner.test"),
+                new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
                         FilteredClassLoader.ClassPathResourceFilter
                                 .of(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)),
                         FilteredClassLoader.ClassPathResourceFilter
@@ -152,7 +152,7 @@ class TimefoldAutoConfigurationTest {
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues(
-                        "optaplanner.solver-config-xml=org/optaplanner/spring/boot/autoconfigure/customSpringBootSolverConfig.xml")
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/customSpringBootSolverConfig.xml")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
@@ -173,14 +173,14 @@ class TimefoldAutoConfigurationTest {
     void solverProperties() {
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.environment-mode=FULL_ASSERT")
+                .withPropertyValues("timefold.solver.environment-mode=FULL_ASSERT")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         gizmoContextRunner
-                .withPropertyValues("optaplanner.solver.domain-access-type=GIZMO")
+                .withPropertyValues("timefold.solver.domain-access-type=GIZMO")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getDomainAccessType()).isEqualTo(DomainAccessType.GIZMO);
@@ -188,7 +188,7 @@ class TimefoldAutoConfigurationTest {
                 });
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.daemon=true")
+                .withPropertyValues("timefold.solver.daemon=true")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getDaemon()).isTrue();
@@ -196,7 +196,7 @@ class TimefoldAutoConfigurationTest {
                 });
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.move-thread-count=2")
+                .withPropertyValues("timefold.solver.move-thread-count=2")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getMoveThreadCount()).isEqualTo("2");
@@ -209,7 +209,7 @@ class TimefoldAutoConfigurationTest {
     void solverPropertiesBavet() {
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.constraint-stream-impl-type=BAVET")
+                .withPropertyValues("timefold.solver.constraint-stream-impl-type=BAVET")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType())
@@ -222,7 +222,7 @@ class TimefoldAutoConfigurationTest {
     void terminationProperties() {
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.termination.spent-limit=4h")
+                .withPropertyValues("timefold.solver.termination.spent-limit=4h")
                 .run(context -> {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getSpentLimit()).isEqualTo(Duration.ofHours(4));
@@ -230,7 +230,7 @@ class TimefoldAutoConfigurationTest {
                 });
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.termination.unimproved-spent-limit=5h")
+                .withPropertyValues("timefold.solver.termination.unimproved-spent-limit=5h")
                 .run(context -> {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getUnimprovedSpentLimit()).isEqualTo(Duration.ofHours(5));
@@ -238,7 +238,7 @@ class TimefoldAutoConfigurationTest {
                 });
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.termination.best-score-limit=6")
+                .withPropertyValues("timefold.solver.termination.best-score-limit=6")
                 .run(context -> {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getBestScoreLimit()).isEqualTo(SimpleScore.of(6).toString());
@@ -272,7 +272,7 @@ class TimefoldAutoConfigurationTest {
     void solve() {
         contextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.termination.best-score-limit=0")
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
                     SolverManager<TestdataSpringSolution, Long> solverManager = context.getBean(SolverManager.class);
                     TestdataSpringSolution problem = new TestdataSpringSolution();
@@ -293,7 +293,7 @@ class TimefoldAutoConfigurationTest {
     void multimoduleSolve() {
         multimoduleRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.termination.best-score-limit=0")
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
                     SolverManager<TestdataSpringSolution, Long> solverManager = context.getBean(SolverManager.class);
                     TestdataSpringSolution problem = new TestdataSpringSolution();
@@ -314,7 +314,7 @@ class TimefoldAutoConfigurationTest {
     void benchmark() {
         benchmarkContextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("optaplanner.solver.termination.best-score-limit=0")
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
                     PlannerBenchmarkFactory benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
                     TestdataSpringSolution problem = new TestdataSpringSolution();
@@ -358,7 +358,7 @@ class TimefoldAutoConfigurationTest {
         contextRunner
                 .withClassLoader(testFilteredClassLoader)
                 .withPropertyValues(
-                        "optaplanner.solver-config-xml=org/optaplanner/spring/boot/autoconfigure/droolsSolverConfig.xml")
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/droolsSolverConfig.xml")
                 .run(context -> {
                     ConstraintVerifier<TestdataSpringConstraintProvider, TestdataSpringSolution> constraintVerifier =
                             context.getBean(ConstraintVerifier.class);
@@ -390,7 +390,7 @@ class TimefoldAutoConfigurationTest {
         contextRunner
                 .withClassLoader(testFilteredClassLoader)
                 .withPropertyValues(
-                        "optaplanner.solver-config-xml=org/optaplanner/spring/boot/autoconfigure/bavetSolverConfig.xml")
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/bavetSolverConfig.xml")
                 .run(context -> {
                     ConstraintVerifier<TestdataSpringConstraintProvider, TestdataSpringSolution> constraintVerifier =
                             context.getBean(ConstraintVerifier.class);
@@ -416,7 +416,7 @@ class TimefoldAutoConfigurationTest {
 
     @Test
     void constraintVerifierOnDrl() {
-        String constraintsUrl = "org/optaplanner/spring/boot/autoconfigure/customConstraints.drl";
+        String constraintsUrl = "ai/timefold/solver/spring/boot/autoconfigure/customConstraints.drl";
         noConstraintsContextRunner
                 .withPropertyValues(TimefoldProperties.SCORE_DRL_PROPERTY + "=" + constraintsUrl)
                 .withClassLoader(testFilteredClassLoader)
@@ -451,7 +451,7 @@ class TimefoldAutoConfigurationTest {
 
     @Test
     void constraintsDrlProperty() {
-        String constraintsUrl = "org/optaplanner/spring/boot/autoconfigure/customConstraints.drl";
+        String constraintsUrl = "ai/timefold/solver/spring/boot/autoconfigure/customConstraints.drl";
         noConstraintsContextRunner
                 .withPropertyValues(TimefoldProperties.SCORE_DRL_PROPERTY + "=" + constraintsUrl)
                 .run(context -> {
@@ -475,7 +475,7 @@ class TimefoldAutoConfigurationTest {
 
     @Test
     void constraintsDrlProperty_conflictWithConstraintProvider() {
-        String constraintsUrl = "org/optaplanner/spring/boot/autoconfigure/customConstraints.drl";
+        String constraintsUrl = "ai/timefold/solver/spring/boot/autoconfigure/customConstraints.drl";
         contextRunner
                 .withPropertyValues(TimefoldProperties.SCORE_DRL_PROPERTY + "=" + constraintsUrl)
                 .run(context -> {
@@ -536,7 +536,7 @@ class TimefoldAutoConfigurationTest {
             gizmoContextRunner
                     .withClassLoader(noGizmoFilteredClassLoader)
                     .withPropertyValues(
-                            "optaplanner.solver-config-xml=org/optaplanner/spring/boot/autoconfigure/gizmoSpringBootSolverConfig.xml")
+                            "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/gizmoSpringBootSolverConfig.xml")
                     .run(context -> {
                         context.getBean(SolverFactory.class);
                     });
