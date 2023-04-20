@@ -65,6 +65,10 @@
     </dependency>
     <dependency>
       <groupId>org.openrewrite</groupId>
+      <artifactId>rewrite-gradle</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openrewrite</groupId>
       <artifactId>rewrite-xml</artifactId>
     </dependency>
     <dependency>
@@ -111,5 +115,17 @@
       <scope>runtime</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>src/main/filtered-resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
 
 </project>
