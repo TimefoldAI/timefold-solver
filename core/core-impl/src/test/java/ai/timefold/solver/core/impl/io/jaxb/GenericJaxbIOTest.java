@@ -13,10 +13,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
+
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXParseException;
-
-import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 
 class GenericJaxbIOTest {
 

@@ -118,7 +118,8 @@ class PlannerBenchmarkFactoryTest {
         // Mocking loadClass doesn't work well enough, because the className still differs from class.getName()
         ClassLoader classLoader = new DivertingClassLoader(getClass().getClassLoader());
         PlannerBenchmarkFactory plannerBenchmarkFactory = PlannerBenchmarkFactory.createFromXmlResource(
-                "divertThroughClassLoader/ai/timefold/solver/benchmark/api/classloaderTestdataBenchmarkConfig.xml", classLoader);
+                "divertThroughClassLoader/ai/timefold/solver/benchmark/api/classloaderTestdataBenchmarkConfig.xml",
+                classLoader);
         PlannerBenchmark plannerBenchmark = plannerBenchmarkFactory.buildPlannerBenchmark();
         assertThat(plannerBenchmark).isNotNull();
         assertThat(plannerBenchmark.benchmark()).exists();

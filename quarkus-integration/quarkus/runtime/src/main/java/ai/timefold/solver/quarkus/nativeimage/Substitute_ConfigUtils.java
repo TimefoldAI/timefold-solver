@@ -4,9 +4,9 @@ import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.CDI;
 
-import com.oracle.svm.core.annotate.Substitute;
-
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
+
+import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
 @TargetClass(className = "ai.timefold.solver.core.config.util.ConfigUtils")

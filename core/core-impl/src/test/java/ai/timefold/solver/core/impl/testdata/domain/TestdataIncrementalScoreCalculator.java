@@ -26,7 +26,8 @@ public class TestdataIncrementalScoreCalculator
     @Override
     public void resetWorkingSolution(TestdataSolution workingSolution) {
         score = 0;
-        constraintMatchTotal = new DefaultConstraintMatchTotal<>("ai.timefold.solver.core.impl.testdata.domain", "testConstraint");
+        constraintMatchTotal =
+                new DefaultConstraintMatchTotal<>("ai.timefold.solver.core.impl.testdata.domain", "testConstraint");
         indictmentMap = new HashMap<>();
         for (TestdataEntity left : workingSolution.getEntityList()) {
             TestdataValue value = left.getValue();

@@ -68,7 +68,8 @@ public class TimefoldDevUITest {
         String model = Objects.requireNonNull(findById("timefold-solver-model", node)).toString();
         assertThat(model)
                 .contains("value=[Solution: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution]");
-        assertThat(model).contains("value=[Entity: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity]");
+        assertThat(model)
+                .contains("value=[Entity: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity]");
         assertThat(model).contains(
                 "value=[Genuine Variables]]]]]], tbody[attributes={}; value=[tr[attributes={}; value=[td[attributes={colspan=1, rowspan=1}; value=[value]]");
         assertThat(model).contains(
