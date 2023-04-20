@@ -2,6 +2,7 @@ package ai.timefold.solver.constraint.streams.bavet;
 
 import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.DROOLS;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
@@ -34,7 +35,8 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
     public Supplier<AbstractScoreDirectorFactory<Solution_, Score_>> buildScoreDirectorFactory(ClassLoader classLoader,
             SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
             EnvironmentMode environmentMode) {
-        ConstraintStreamImplType constraintStreamImplType_ = config.getConstraintStreamImplType();
+        ConstraintStreamImplType constraintStreamImplType_ =
+                Objects.requireNonNullElse(config.getConstraintStreamImplType(), ConstraintStreamImplType.BAVET);
         if (constraintStreamImplType_ == DROOLS) {
             return null;
         }

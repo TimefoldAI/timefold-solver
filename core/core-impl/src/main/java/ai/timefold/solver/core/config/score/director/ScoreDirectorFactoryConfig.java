@@ -409,7 +409,7 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         } else if (constraintProviderClass == null) { // We know we're neither in DRL nor in CS.
             return false;
         }
-        return (constraintStreamImplType == null || constraintStreamImplType == ConstraintStreamImplType.DROOLS);
+        return (constraintStreamImplType == ConstraintStreamImplType.DROOLS);
     }
 
     // TODO: Replace all usages of this message with {@link getDroolsAlphaNetworkCompilationEnabled()} when

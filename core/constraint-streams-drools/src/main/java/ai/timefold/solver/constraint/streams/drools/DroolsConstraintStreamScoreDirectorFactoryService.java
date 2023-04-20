@@ -31,7 +31,7 @@ public final class DroolsConstraintStreamScoreDirectorFactoryService<Solution_, 
             SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
             EnvironmentMode environmentMode) {
         ConstraintStreamImplType constraintStreamImplType_ =
-                Objects.requireNonNullElse(config.getConstraintStreamImplType(), ConstraintStreamImplType.DROOLS);
+                Objects.requireNonNullElse(config.getConstraintStreamImplType(), ConstraintStreamImplType.BAVET);
         if (constraintStreamImplType_ == BAVET) {
             return null;
         }
