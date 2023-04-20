@@ -3,14 +3,14 @@ package ai.timefold.solver.jsonb.api.score;
 import javax.json.bind.adapter.JsonbAdapter;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.jsonb.api.OptaPlannerJsonbConfig;
+import ai.timefold.solver.jsonb.api.TimefoldJsonbConfig;
 
 /**
  * JSON-B binding support for a {@link Score} type.
  * <p>
  * For example: use {@code @JsonbTypeAdapter(HardSoftScoreJsonbAdapter.class)}
  * on a {@code HardSoftScore score} field and it will be serialized to JSON as {@code "score":"-999hard/-999soft"}.
- * Or better yet, use {@link OptaPlannerJsonbConfig} instead.
+ * Or better yet, use {@link TimefoldJsonbConfig} instead.
  *
  * @see Score
  * @param <Score_> the actual score type

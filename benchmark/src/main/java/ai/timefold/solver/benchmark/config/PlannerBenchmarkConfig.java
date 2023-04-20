@@ -27,7 +27,7 @@ import ai.timefold.solver.benchmark.config.blueprint.SolverBenchmarkBluePrintCon
 import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
 import ai.timefold.solver.benchmark.impl.io.PlannerBenchmarkConfigIO;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.io.OptaPlannerXmlSerializationException;
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -124,7 +124,7 @@ public class PlannerBenchmarkConfig {
                 throw new IllegalArgumentException(errorMessage);
             }
             return createFromXmlInputStream(in, classLoader);
-        } catch (OptaPlannerXmlSerializationException e) {
+        } catch (TimefoldXmlSerializationException e) {
             throw new IllegalArgumentException("Unmarshalling of benchmarkConfigResource (" + benchmarkConfigResource
                     + ") fails.", e);
         } catch (IOException e) {
@@ -157,7 +157,7 @@ public class PlannerBenchmarkConfig {
     public static PlannerBenchmarkConfig createFromXmlFile(File benchmarkConfigFile, ClassLoader classLoader) {
         try (InputStream in = new FileInputStream(benchmarkConfigFile)) {
             return createFromXmlInputStream(in, classLoader);
-        } catch (OptaPlannerXmlSerializationException e) {
+        } catch (TimefoldXmlSerializationException e) {
             throw new IllegalArgumentException("Unmarshalling the benchmarkConfigFile (" + benchmarkConfigFile + ") fails.", e);
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("The benchmarkConfigFile (" + benchmarkConfigFile + ") was not found.", e);

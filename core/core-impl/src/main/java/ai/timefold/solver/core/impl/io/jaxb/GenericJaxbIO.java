@@ -38,9 +38,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import ai.timefold.solver.core.impl.io.OptaPlannerXmlSerializationException;
-
 import org.w3c.dom.Document;
+
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -77,7 +77,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         } catch (JAXBException jaxbException) {
             String errorMessage = String.format("Failed to create JAXB Marshaller for a root element class (%s).",
                     rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, jaxbException);
+            throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
         }
     }
 
@@ -88,7 +88,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
             return (T) createUnmarshaller().unmarshal(reader);
         } catch (JAXBException jaxbException) {
             String errorMessage = String.format(ERR_MSG_READ, rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, jaxbException);
+            throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
         }
     }
 
@@ -117,7 +117,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
             String errorMessage = String.format(
                     "Failed to configure the %s to validate an XML for a root class (%s) using the (%s) XML Schema.",
                     SchemaFactory.class.getSimpleName(), rootClass.getName(), schemaResource);
-            throw new OptaPlannerXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(errorMessage, saxException);
         }
 
         try {
@@ -126,7 +126,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
             String errorMessage =
                     String.format("Failed to read an XML Schema resource (%s) to validate an XML for a root class (%s).",
                             nonNullSchemaResource, rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(errorMessage, saxException);
         }
     }
 
@@ -147,7 +147,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         } catch (JAXBException jaxbException) {
             String errorMessage = String.format("Failed to set a validation event handler to the %s for "
                     + "a root element class (%s).", Unmarshaller.class.getSimpleName(), rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, jaxbException);
+            throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
         }
 
         try {
@@ -162,10 +162,10 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
                                 + validationEvent.getLocator().getNode().getNodeName())
                         .collect(Collectors.joining("\n"));
                 String errorMessageWithValidationEvents = errorMessage + "\n" + validationErrors;
-                throw new OptaPlannerXmlSerializationException(errorMessageWithValidationEvents, jaxbException);
+                throw new TimefoldXmlSerializationException(errorMessageWithValidationEvents, jaxbException);
             } else {
                 String errorMessage = String.format(ERR_MSG_READ, rootClass.getName());
-                throw new OptaPlannerXmlSerializationException(errorMessage, jaxbException);
+                throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
             }
         }
     }
@@ -202,7 +202,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         } catch (JAXBException e) {
             final String errorMessage = String.format(ERR_MSG_READ_OVERRIDE_NAMESPACE, rootClass.getName(),
                     Arrays.toString(elementNamespaceOverrides));
-            throw new OptaPlannerXmlSerializationException(errorMessage, e);
+            throw new TimefoldXmlSerializationException(errorMessage, e);
         }
     }
 
@@ -217,17 +217,17 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         } catch (ParserConfigurationException e) {
             String errorMessage = String.format("Failed to create a %s instance to parse an XML for a root class (%s).",
                     DocumentBuilder.class.getSimpleName(), rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, e);
+            throw new TimefoldXmlSerializationException(errorMessage, e);
         }
 
         try (Reader nonNullReader = Objects.requireNonNull(reader)) {
             return builder.parse(new InputSource(nonNullReader));
         } catch (SAXException saxException) {
             String errorMessage = String.format("Failed to parse an XML for a root class (%s).", rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(errorMessage, saxException);
         } catch (IOException ioException) {
             String errorMessage = String.format("Failed to read an XML for a root class (%s).", rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, ioException);
+            throw new TimefoldXmlSerializationException(errorMessage, ioException);
         }
     }
 
@@ -237,7 +237,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         } catch (JAXBException e) {
             String errorMessage = String.format("Failed to create a JAXB %s for a root element class (%s).",
                     Unmarshaller.class.getSimpleName(), rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, e);
+            throw new TimefoldXmlSerializationException(errorMessage, e);
         }
     }
 
@@ -255,11 +255,11 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
                     String.format("XML validation failed for a root element class (%s).", rootClass.getName())
                             + "\n"
                             + saxException.getMessage();
-            throw new OptaPlannerXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(errorMessage, saxException);
         } catch (IOException ioException) {
             String errorMessage = String.format("Failed to read an XML for a root element class (%s) during validation.",
                     rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, ioException);
+            throw new TimefoldXmlSerializationException(errorMessage, ioException);
         }
     }
 
@@ -275,7 +275,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         try (InputStream xsltInputStream = getClass().getResourceAsStream("removeNamespaces.xslt")) {
             formatXml(new DOMSource(domResult.getNode()), new StreamSource(xsltInputStream), nonNullWriter);
         } catch (IOException e) {
-            throw new OptaPlannerXmlSerializationException(String.format(ERR_MSG_WRITE, rootClass.getName()), e);
+            throw new TimefoldXmlSerializationException(String.format(ERR_MSG_WRITE, rootClass.getName()), e);
         }
     }
 
@@ -285,7 +285,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         try {
             marshaller.marshal(root, domResult);
         } catch (JAXBException jaxbException) {
-            throw new OptaPlannerXmlSerializationException(String.format(ERR_MSG_WRITE, rootClass.getName()), jaxbException);
+            throw new TimefoldXmlSerializationException(String.format(ERR_MSG_WRITE, rootClass.getName()), jaxbException);
         }
         return domResult;
     }
@@ -307,7 +307,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
             transformer.transform(source, new StreamResult(writer));
         } catch (TransformerException transformerException) {
             String errorMessage = String.format("Failed to format XML for a root element class (%s).", rootClass.getName());
-            throw new OptaPlannerXmlSerializationException(errorMessage, transformerException);
+            throw new TimefoldXmlSerializationException(errorMessage, transformerException);
         }
     }
 

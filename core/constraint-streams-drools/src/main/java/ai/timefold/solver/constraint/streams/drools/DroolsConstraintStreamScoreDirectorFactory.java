@@ -107,7 +107,7 @@ public final class DroolsConstraintStreamScoreDirectorFactory<Solution_, Score_ 
                 .collect(toMap(Function.identity(), constraint -> constraint.extractConstraintWeight(workingSolution)));
         // Create the session itself.
         KieSession kieSession = buildKieSessionFromKieBase(kieBaseDescriptor.get());
-        ((RuleEventManager) kieSession).addEventListener(new OptaPlannerRuleEventListener()); // Enables undo in rules.
+        ((RuleEventManager) kieSession).addEventListener(new TimefoldRuleEventListener()); // Enables undo in rules.
         // Build and set the impacters for each constraint; this locks in the constraint weights.
         ScoreDefinition<Score_> scoreDefinition = solutionDescriptor.getScoreDefinition();
         AbstractScoreInliner<Score_> scoreInliner = AbstractScoreInliner.buildScoreInliner(scoreDefinition,

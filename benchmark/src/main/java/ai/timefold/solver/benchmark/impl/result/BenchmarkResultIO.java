@@ -16,7 +16,7 @@ import java.util.List;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.io.OptaPlannerXmlSerializationException;
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.io.jaxb.ElementNamespaceOverride;
 import ai.timefold.solver.core.impl.io.jaxb.GenericJaxbIO;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
@@ -74,7 +74,7 @@ public class BenchmarkResultIO {
         PlannerBenchmarkResult plannerBenchmarkResult;
         try (Reader reader = new InputStreamReader(new FileInputStream(plannerBenchmarkResultFile), StandardCharsets.UTF_8)) {
             plannerBenchmarkResult = read(reader);
-        } catch (OptaPlannerXmlSerializationException e) {
+        } catch (TimefoldXmlSerializationException e) {
             LOGGER.warn("Failed reading plannerBenchmarkResultFile ({}).", plannerBenchmarkResultFile, e);
             // If the plannerBenchmarkResultFile's format has changed, the app should not crash entirely
             String benchmarkReportDirectoryName = plannerBenchmarkResultFile.getParentFile().getName();

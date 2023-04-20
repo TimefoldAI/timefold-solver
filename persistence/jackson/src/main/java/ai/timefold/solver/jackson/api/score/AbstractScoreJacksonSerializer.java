@@ -3,7 +3,7 @@ package ai.timefold.solver.jackson.api.score;
 import java.io.IOException;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.jackson.api.OptaPlannerJacksonModule;
+import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ser.ContextualSerializer;
  * For example: use
  * {@code @JsonSerialize(using = HardSoftScoreJacksonSerializer.class) @JsonDeserialize(using = HardSoftScoreJacksonDeserializer.class)}
  * on a {@code HardSoftScore score} field and it will marshalled to JSON as {@code "score":"-999hard/-999soft"}.
- * Or better yet, use {@link OptaPlannerJacksonModule} instead.
+ * Or better yet, use {@link TimefoldJacksonModule} instead.
  *
  * @see Score
  * @param <Score_> the actual score type

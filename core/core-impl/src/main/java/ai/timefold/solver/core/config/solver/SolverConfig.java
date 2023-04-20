@@ -44,8 +44,8 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.io.OptaPlannerXmlSerializationException;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 
@@ -111,7 +111,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
                 throw new IllegalArgumentException(errorMessage);
             }
             return createFromXmlInputStream(in, classLoader);
-        } catch (OptaPlannerXmlSerializationException e) {
+        } catch (TimefoldXmlSerializationException e) {
             throw new IllegalArgumentException("Unmarshalling of solverConfigResource (" + solverConfigResource + ") fails.",
                     e);
         } catch (IOException e) {
@@ -143,7 +143,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     public static SolverConfig createFromXmlFile(File solverConfigFile, ClassLoader classLoader) {
         try (InputStream in = new FileInputStream(solverConfigFile)) {
             return createFromXmlInputStream(in, classLoader);
-        } catch (OptaPlannerXmlSerializationException e) {
+        } catch (TimefoldXmlSerializationException e) {
             throw new IllegalArgumentException("Unmarshalling the solverConfigFile (" + solverConfigFile + ") fails.", e);
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("The solverConfigFile (" + solverConfigFile + ") was not found.", e);

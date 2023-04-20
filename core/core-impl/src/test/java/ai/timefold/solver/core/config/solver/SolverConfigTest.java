@@ -23,12 +23,12 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.io.OptaPlannerXmlSerializationException;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
@@ -117,7 +117,7 @@ class SolverConfigTest {
                 + "</solver>";
 
         StringReader stringReader = new StringReader(solverConfigXml);
-        assertThatExceptionOfType(OptaPlannerXmlSerializationException.class)
+        assertThatExceptionOfType(TimefoldXmlSerializationException.class)
                 .isThrownBy(() -> solverConfigIO.read(stringReader))
                 .withRootCauseExactlyInstanceOf(SAXParseException.class)
                 .withMessageContaining("Node: variableName");

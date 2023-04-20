@@ -13,10 +13,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
-import ai.timefold.solver.core.impl.io.OptaPlannerXmlSerializationException;
-
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXParseException;
+
+import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 
 class GenericJaxbIOTest {
 
@@ -50,7 +50,7 @@ class GenericJaxbIOTest {
     void readThrowsExceptionOnInvalidXml() {
         String invalidXml = "<unknownRootElement/>";
         StringReader stringReader = new StringReader(invalidXml);
-        assertThatExceptionOfType(OptaPlannerXmlSerializationException.class).isThrownBy(() -> xmlIO.read(stringReader));
+        assertThatExceptionOfType(TimefoldXmlSerializationException.class).isThrownBy(() -> xmlIO.read(stringReader));
     }
 
     @Test
@@ -61,7 +61,7 @@ class GenericJaxbIOTest {
                 + "  <!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]"
                 + ">"
                 + "<dummyJaxbClass>&xxe;</dummyJaxbClass>";
-        assertThatExceptionOfType(OptaPlannerXmlSerializationException.class)
+        assertThatExceptionOfType(TimefoldXmlSerializationException.class)
                 .isThrownBy(() -> xmlIO.readOverridingNamespace(new StringReader(maliciousXml)))
                 .withRootCauseExactlyInstanceOf(SAXParseException.class)
                 .withStackTraceContaining("accessExternalDTD");

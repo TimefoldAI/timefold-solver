@@ -60,7 +60,7 @@ public class DrlScoreDirector<Solution_, Score_ extends Score<Score_>>
             kieSession.dispose();
         }
         kieSession = scoreDirectorFactory.newKieSession();
-        ((RuleEventManager) kieSession).addEventListener(new OptaPlannerRuleEventListener());
+        ((RuleEventManager) kieSession).addEventListener(new TimefoldRuleEventListener());
         resetScoreHolder();
         // TODO Adjust when uninitialized entities from getWorkingFacts get added automatically too (and call afterEntityAdded)
         getSolutionDescriptor().visitAll(workingSolution, kieSession::insert);

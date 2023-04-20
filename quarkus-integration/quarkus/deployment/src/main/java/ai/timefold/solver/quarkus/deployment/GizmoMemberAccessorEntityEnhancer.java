@@ -40,7 +40,7 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCl
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerImplementor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionOrEntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.quarkus.gizmo.OptaPlannerGizmoBeanFactory;
+import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
@@ -377,17 +377,17 @@ final class GizmoMemberAccessorEntityEnhancer {
 
     public String generateGizmoBeanFactory(ClassOutput classOutput, Set<Class<?>> beanClasses,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
-        String generatedClassName = OptaPlannerGizmoBeanFactory.class.getName() + "$Implementation";
+        String generatedClassName = TimefoldGizmoBeanFactory.class.getName() + "$Implementation";
 
         ClassCreator classCreator = ClassCreator
                 .builder()
                 .className(generatedClassName)
-                .interfaces(OptaPlannerGizmoBeanFactory.class)
+                .interfaces(TimefoldGizmoBeanFactory.class)
                 .classOutput(classOutput)
                 .build();
 
         classCreator.addAnnotation(ApplicationScoped.class);
-        MethodCreator methodCreator = classCreator.getMethodCreator(MethodDescriptor.ofMethod(OptaPlannerGizmoBeanFactory.class,
+        MethodCreator methodCreator = classCreator.getMethodCreator(MethodDescriptor.ofMethod(TimefoldGizmoBeanFactory.class,
                 "newInstance", Object.class, Class.class));
         ResultHandle query = methodCreator.getMethodParam(0);
         BytecodeCreator currentBranch = methodCreator;

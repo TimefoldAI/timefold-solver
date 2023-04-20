@@ -7,6 +7,6 @@ class GeneralBenchmarkConfigTest extends AbstractBenchmarkConfigTest {
 
     @Override
     protected CommonBenchmarkApp getBenchmarkApp() {
-        return new GeneralOptaPlannerBenchmarkApp();
+        return new GeneralTimefoldBenchmarkApp();
     }
 }
