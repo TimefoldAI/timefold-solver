@@ -4,17 +4,17 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-quarkus-jsonb-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-quarkus-jsonb-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>optaplanner-quarkus-jsonb-integration-test</artifactId>
-  <name>OptaPlanner Quarkus JSON-B - Integration tests</name>
+  <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
+  <name>Timefold Solver Quarkus JSON-B - Integration tests</name>
   <description>Quarkus integration tests for OptaPlanner with JSON-B</description>
 
   <properties>
-    <java.module.name>org.optaplanner.quarkus.jsonb.integrationtest</java.module.name>
+    <java.module.name>ai.timefold.solver.quarkus.jsonb.integrationtest</java.module.name>
     <!-- Code of integration tests should not be a part of test coverage reports. -->
     <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
   </properties>
@@ -33,12 +33,12 @@
       <artifactId>quarkus-resteasy-jsonb</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-quarkus</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-quarkus</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-quarkus-jsonb</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-quarkus-jsonb</artifactId>
     </dependency>
 
     <!-- test dependencies -->

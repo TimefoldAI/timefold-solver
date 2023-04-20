@@ -4,16 +4,16 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-build-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-build-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
-    <relativePath>../optaplanner-build-parent/pom.xml</relativePath>
+    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>optaplanner-distribution-internal</artifactId>
+  <artifactId>timefold-solver-distribution-internal</artifactId>
   <packaging>pom</packaging>
 
-  <name>OptaPlanner distribution internal</name>
+  <name>Timefold Solver distribution internal</name>
   <description>
     OptaPlanner solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
@@ -21,10 +21,10 @@
 
     This module builds an internal distribution that is a part of the download zip.
   </description>
-  <url>https://www.optaplanner.org</url>
+  <url>https://timefold.ai</url>
 
   <properties>
-    <assembly.descriptor>assembly-optaplanner.xml</assembly.descriptor>
+    <assembly.descriptor>assembly-timefold.xml</assembly.descriptor>
   </properties>
 
   <build>
@@ -53,58 +53,58 @@
   <dependencies>
     <!-- Binaries and sources -->
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-core</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-core-impl</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-constraint-drl</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-constraint-drl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-benchmark</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-benchmark</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-common</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-persistence-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-xstream</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-xstream</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jaxb</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jaxb</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jackson</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jackson</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jsonb</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jsonb</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jpa</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jpa</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-test</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-test</artifactId>
     </dependency>
 
     <!-- Examples -->
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-examples</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-examples</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-examples</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-examples</artifactId>
       <classifier>sources</classifier>
     </dependency>
   </dependencies>
@@ -119,8 +119,8 @@
       </activation>
       <dependencies>
         <dependency>
-          <groupId>org.optaplanner</groupId>
-          <artifactId>optaplanner-operator</artifactId>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-operator</artifactId>
         </dependency>
       </dependencies>
     </profile>

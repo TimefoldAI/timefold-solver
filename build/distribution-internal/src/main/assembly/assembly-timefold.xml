@@ -3,7 +3,7 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.1 https://maven.apache.org/xsd/assembly-2.1.1.xsd">
 
-  <id>assembly-optaplanner</id>
+  <id>assembly-timefold</id>
   <formats>
     <format>zip</format>
   </formats>
@@ -39,7 +39,7 @@
     </fileSet>
     <!-- Examples -->
     <fileSet><!-- Note: going outside the module dir is bad, but it is not fetching generated files -->
-      <directory>../../optaplanner-examples</directory>
+      <directory>../../examples</directory>
       <outputDirectory>examples/sources</outputDirectory>
       <excludes>
         <exclude>data/**/tmp-*.*</exclude>
@@ -53,21 +53,13 @@
         <exclude>.git/**</exclude>
       </excludes>
     </fileSet>
-    <!-- OptaPlanner Operator distribution. -->
-    <fileSet>
-      <directory>../../optaplanner-operator/target/install</directory>
-      <outputDirectory>extra/optaplanner-operator</outputDirectory>
-    </fileSet>
   </fileSets>
 
   <dependencySets>
     <dependencySet>
       <includes>
-        <include>org.optaplanner:*:jar</include>
+        <include>ai.timefold.solver:*:jar</include>
       </includes>
-      <excludes>
-        <exclude>org.optaplanner:optaplanner-operator:jar</exclude>
-      </excludes>
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>examples/binaries</outputDirectory>
       <useStrictFiltering>true</useStrictFiltering>

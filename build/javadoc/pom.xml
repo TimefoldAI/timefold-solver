@@ -3,58 +3,58 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-build-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-build-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
-    <relativePath>../optaplanner-build-parent/pom.xml</relativePath>
+    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>optaplanner-javadoc</artifactId>
+  <artifactId>timefold-solver-javadoc</artifactId>
   <packaging>pom</packaging>
-  <name>OptaPlanner Javadoc</name>
+  <name>Timefold Solver Javadoc</name>
 
   <dependencies>
     <!-- Javadoc dependencies -->
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-core-impl</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-constraint-drl</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-constraint-drl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-benchmark</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-benchmark</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-common</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-persistence-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-xstream</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-xstream</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jaxb</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jaxb</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jackson</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jackson</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jsonb</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jsonb</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-persistence-jpa</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jpa</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-test</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-test</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus.gizmo</groupId>
@@ -90,7 +90,7 @@
               <reportOutputDirectory>${project.build.directory}/aggregated-javadocs</reportOutputDirectory>
               <includeDependencySources>true</includeDependencySources>
               <dependencySourceIncludes>
-                <dependencySourceInclude>org.optaplanner:*</dependencySourceInclude>
+                <dependencySourceInclude>ai.timefold.solver:*</dependencySourceInclude>
               </dependencySourceIncludes>
             </configuration>
           </execution>

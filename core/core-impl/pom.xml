@@ -4,14 +4,14 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-core-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-core-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>optaplanner-core-impl</artifactId>
+  <artifactId>timefold-solver-core-impl</artifactId>
 
-  <name>OptaPlanner core implementation</name>
+  <name>Timefold Solver core implementation</name>
   <description>
     OptaPlanner solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
@@ -19,10 +19,10 @@
 
     This module contains the planning engine itself.
   </description>
-  <url>https://www.optaplanner.org</url>
+  <url>https://timefold.ai</url>
 
   <properties>
-    <java.module.name>org.optaplanner.core.impl</java.module.name>
+    <java.module.name>ai.timefold.solver.core.impl</java.module.name>
   </properties>
 
   <dependencies>

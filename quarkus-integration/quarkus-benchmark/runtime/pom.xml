@@ -4,17 +4,17 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-quarkus-benchmark-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-quarkus-benchmark-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>optaplanner-quarkus-benchmark</artifactId>
-  <name>OptaPlanner Quarkus Benchmark - Runtime</name>
+  <artifactId>timefold-solver-quarkus-benchmark</artifactId>
+  <name>Timefold Solver Quarkus Benchmark - Runtime</name>
   <description>Benchmark an OptaPlanner project to power tweak the solver configuration for speed and scalability.</description>
 
   <properties>
-    <java.module.name>org.optaplanner.quarkus.benchmark</java.module.name>
+    <java.module.name>ai.timefold.solver.quarkus.benchmark</java.module.name>
   </properties>
 
   <dependencies>
@@ -28,8 +28,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-quarkus</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-quarkus</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -37,12 +37,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-benchmark</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-benchmark</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>org.optaplanner</groupId>
-          <artifactId>optaplanner-core</artifactId>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -60,7 +60,7 @@
             <phase>compile</phase>
             <configuration>
               <capabilities>
-                <provides>org.optaplanner.optaplanner-quarkus-benchmark</provides>
+                <provides>ai.timefold.solver.timefold-quarkus-benchmark</provides>
               </capabilities>
             </configuration>
           </execution>

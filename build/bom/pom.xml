@@ -4,20 +4,20 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>optaplanner-bom</artifactId>
+  <artifactId>timefold-solver-bom</artifactId>
   <packaging>pom</packaging>
 
   <properties>
-    <version.org.optaplanner>${project.version}</version.org.optaplanner>
+    <version.ai.timefold.solver>${project.version}</version.ai.timefold.solver>
   </properties>
 
-  <name>OptaPlanner BOM (Bill Of Materials)</name>
+  <name>Timefold Solver BOM (Bill Of Materials)</name>
   <description>
     Import this BOM in your dependencyManagement if you want to depend on multiple OptaPlanner artifacts.
   </description>
@@ -31,471 +31,471 @@
         Always declare the sources jar and the test-jar too.
       -->
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-core</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-core</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-core-impl</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-core-impl</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-core-impl</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-core-impl</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-core-impl</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-core-impl</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-drl</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-drl</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-drl</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-drl</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-drl</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-drl</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-common</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-common</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-common</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-common</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-common</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-common</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-bavet</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-bavet</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-bavet</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-bavet</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-bavet</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-bavet</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-drools</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-drools</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-drools</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-drools</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-constraint-streams-drools</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-constraint-streams-drools</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-common</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-persistence-common</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-common</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-persistence-common</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-common</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-persistence-common</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-xstream</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-xstream</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-xstream</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-xstream</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-xstream</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-xstream</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jaxb</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jaxb</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jaxb</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jaxb</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jaxb</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jaxb</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jackson</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jackson</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jackson</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jackson</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jackson</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jackson</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jsonb</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jsonb</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jsonb</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jsonb</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jsonb</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jsonb</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jpa</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jpa</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jpa</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jpa</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-persistence-jpa</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jpa</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-benchmark</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-benchmark</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-benchmark</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-benchmark</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-benchmark</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-benchmark</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-test</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-test</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-test</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-test</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-examples</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-examples</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-examples</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-examples</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-examples</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-examples</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <!-- quarkus-integration -->
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-deployment</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-deployment</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson-deployment</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson-deployment</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson-integration-test</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson-integration-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson-integration-test</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson-integration-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jackson-integration-test</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jackson-integration-test</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb-deployment</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb-integration-test</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb-integration-test</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-jsonb-integration-test</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-benchmark</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-benchmark</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-benchmark</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-benchmark</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-benchmark</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-benchmark</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-benchmark-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-benchmark-deployment</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-quarkus-benchmark-deployment</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <!-- spring-integration -->
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-spring-boot-autoconfigure</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-boot-autoconfigure</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-spring-boot-autoconfigure</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-boot-autoconfigure</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-spring-boot-autoconfigure</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-boot-autoconfigure</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-spring-boot-starter</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-boot-starter</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-spring-boot-starter</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-boot-starter</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-spring-boot-starter</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-boot-starter</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <!-- OptaPlanner operator -->
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-operator</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-operator</artifactId>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-operator</artifactId>
-        <version>${version.org.optaplanner}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-operator</artifactId>
+        <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-operator</artifactId>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-operator</artifactId>
         <type>test-jar</type>
-        <version>${version.org.optaplanner}</version>
+        <version>${version.ai.timefold.solver}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

@@ -3,17 +3,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-quarkus-benchmark-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-quarkus-benchmark-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>optaplanner-quarkus-benchmark-deployment</artifactId>
-  <name>OptaPlanner Quarkus Benchmark - Deployment</name>
+  <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
+  <name>Timefold Solver Quarkus Benchmark - Deployment</name>
   <description>Quarkus deployment module for optaplanner-quarkus-benchmark.</description>
 
   <properties>
-    <java.module.name>org.optaplanner.quarkus.benchmark.deployment</java.module.name>
+    <java.module.name>ai.timefold.solver.quarkus.benchmark.deployment</java.module.name>
   </properties>
 
   <dependencies>
@@ -30,12 +30,12 @@
       <artifactId>quarkus-awt-deployment</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-quarkus-deployment</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-quarkus-deployment</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-quarkus-benchmark</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-quarkus-benchmark</artifactId>
     </dependency>
 
     <dependency>
@@ -59,8 +59,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-test</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

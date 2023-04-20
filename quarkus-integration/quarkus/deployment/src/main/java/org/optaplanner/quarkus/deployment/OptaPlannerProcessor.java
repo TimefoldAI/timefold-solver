@@ -129,7 +129,7 @@ class OptaPlannerProcessor {
     @BuildStep
     IndexDependencyBuildItem indexDependencyBuildItem() {
         // Add @PlanningEntity and other annotations in the Jandex index for Gizmo
-        return new IndexDependencyBuildItem("org.optaplanner", "optaplanner-core-impl");
+        return new IndexDependencyBuildItem("ai.timefold.solver", "timefold-solver-core-impl");
     }
 
     @BuildStep(onlyIf = NativeBuild.class)

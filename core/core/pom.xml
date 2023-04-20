@@ -3,15 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.optaplanner</groupId>
-    <artifactId>optaplanner-core-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-core-parent</artifactId>
     <version>8.38.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>optaplanner-core</artifactId>
+  <artifactId>timefold-solver-core</artifactId>
 
-  <name>OptaPlanner core</name>
+  <name>Timefold Solver core</name>
   <description>
     OptaPlanner solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
@@ -19,24 +19,24 @@
 
     Aggregate dependency to bring in optaplanner-core and all the score directors.
   </description>
-  <url>https://www.optaplanner.org</url>
+  <url>https://timefold.ai</url>
 
   <properties>
-    <java.module.name>org.optaplanner.core</java.module.name>
+    <java.module.name>ai.timefold.solver.core</java.module.name>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-core-impl</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-constraint-streams-drools</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-constraint-streams-drools</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-constraint-drl</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-constraint-drl</artifactId>
     </dependency>
   </dependencies>
 
@@ -66,8 +66,8 @@
       </activation>
       <dependencies>
         <dependency>
-          <groupId>org.optaplanner</groupId>
-          <artifactId>optaplanner-constraint-streams-bavet</artifactId>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-constraint-streams-bavet</artifactId>
         </dependency>
       </dependencies>
     </profile>
