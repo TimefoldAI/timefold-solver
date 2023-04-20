@@ -19,9 +19,6 @@ class MeetingSchedulingSmokeTest extends SolverSmokeTest<MeetingSchedule, HardMe
     @Override
     protected Stream<TestData<HardMediumSoftScore>> testData() {
         return Stream.of(
-                TestData.of(ConstraintStreamImplType.DROOLS, UNSOLVED_DATA_FILE,
-                        HardMediumSoftScore.ofUninitialized(-6, -58, -300, -7065),
-                        HardMediumSoftScore.ofUninitialized(-14, -93, -220, -5746)),
                 TestData.of(ConstraintStreamImplType.BAVET, UNSOLVED_DATA_FILE,
                         HardMediumSoftScore.of(-29, -344, -9227),
                         HardMediumSoftScore.ofUninitialized(-20, -116, -143, -5094)));

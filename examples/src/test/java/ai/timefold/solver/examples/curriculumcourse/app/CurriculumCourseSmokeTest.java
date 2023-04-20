@@ -19,9 +19,6 @@ class CurriculumCourseSmokeTest extends SolverSmokeTest<CourseSchedule, HardSoft
     @Override
     protected Stream<TestData<HardSoftScore>> testData() {
         return Stream.of(
-                TestData.of(ConstraintStreamImplType.DROOLS, UNSOLVED_DATA_FILE,
-                        HardSoftScore.ofSoft(-64),
-                        HardSoftScore.ofSoft(-84)),
                 TestData.of(ConstraintStreamImplType.BAVET, UNSOLVED_DATA_FILE,
                         HardSoftScore.ofSoft(-55),
                         HardSoftScore.ofSoft(-64)));

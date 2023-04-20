@@ -352,37 +352,6 @@ class TimefoldAutoConfigurationTest {
     }
 
     @Test
-    void constraintVerifierDrools() {
-        contextRunner
-                .withClassLoader(testFilteredClassLoader)
-                .withPropertyValues(
-                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/droolsSolverConfig.xml")
-                .run(context -> {
-                    ConstraintVerifier<TestdataSpringConstraintProvider, TestdataSpringSolution> constraintVerifier =
-                            context.getBean(ConstraintVerifier.class);
-
-                    assertThat(((DefaultConstraintVerifier) constraintVerifier).getConstraintStreamImplType())
-                            .isEqualTo(ConstraintStreamImplType.DROOLS);
-                    assertThat(((DefaultConstraintVerifier) constraintVerifier).isDroolsAlphaNetworkCompilationEnabled())
-                            .isFalse();
-                    TestdataSpringSolution problem = new TestdataSpringSolution();
-                    problem.setValueList(IntStream.range(1, 3)
-                            .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
-                    problem.setEntityList(IntStream.range(1, 3)
-                            .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
-
-                    problem.getEntityList().get(0).setValue("v1");
-                    problem.getEntityList().get(1).setValue("v1");
-                    constraintVerifier.verifyThat().givenSolution(problem).scores(SimpleScore.of(-2));
-
-                    problem.getEntityList().get(1).setValue("v2");
-                    constraintVerifier.verifyThat().givenSolution(problem).scores(SimpleScore.of(0));
-                });
-    }
-
-    @Test
     void constraintVerifierBavet() {
         contextRunner
                 .withClassLoader(testFilteredClassLoader)

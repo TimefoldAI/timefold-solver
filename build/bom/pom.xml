@@ -105,23 +105,6 @@
       </dependency>
       <dependency>
         <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-constraint-streams-drools</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-constraint-streams-drools</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-constraint-streams-drools</artifactId>
-        <type>test-jar</type>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-persistence-common</artifactId>
         <version>${version.ai.timefold.solver}</version>
       </dependency>

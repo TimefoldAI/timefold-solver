@@ -23,21 +23,11 @@ public abstract class AbstractConstraintProviderTest<ConstraintProvider_ extends
 
     private final ConstraintVerifier<ConstraintProvider_, Solution_> bavetConstraintVerifier = createConstraintVerifier()
             .withConstraintStreamImplType(ConstraintStreamImplType.BAVET);
-    private final ConstraintVerifier<ConstraintProvider_, Solution_> droolsWithoutAncConstraintVerifier =
-            createConstraintVerifier()
-                    .withConstraintStreamImplType(ConstraintStreamImplType.DROOLS)
-                    .withDroolsAlphaNetworkCompilationEnabled(false);
-    private final ConstraintVerifier<ConstraintProvider_, Solution_> droolsWithAncConstraintVerifier =
-            createConstraintVerifier()
-                    .withConstraintStreamImplType(ConstraintStreamImplType.DROOLS)
-                    .withDroolsAlphaNetworkCompilationEnabled(true);
 
     protected abstract ConstraintVerifier<ConstraintProvider_, Solution_> createConstraintVerifier();
 
-    protected final Stream<? extends Arguments> getDroolsAndBavetConstraintVerifierImpls() {
+    protected final Stream<? extends Arguments> getBavetConstraintVerifierImpl() {
         return Stream.of(
-                arguments(named("BAVET", bavetConstraintVerifier)),
-                arguments(named("DROOLS (without ANC)", droolsWithoutAncConstraintVerifier)),
-                arguments(named("DROOLS (with ANC)", droolsWithAncConstraintVerifier)));
+                arguments(named("BAVET", bavetConstraintVerifier)));
     }
 }

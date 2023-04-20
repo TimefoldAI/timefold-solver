@@ -19,9 +19,6 @@ class FlightCrewSchedulingSmokeTest extends SolverSmokeTest<FlightCrewSolution, 
     @Override
     protected Stream<TestData<HardSoftLongScore>> testData() {
         return Stream.of(
-                TestData.of(ConstraintStreamImplType.DROOLS, UNSOLVED_DATA_FILE,
-                        HardSoftLongScore.ofSoft(-129000000),
-                        HardSoftLongScore.ofSoft(-130000000)),
                 TestData.of(ConstraintStreamImplType.BAVET, UNSOLVED_DATA_FILE,
                         HardSoftLongScore.ofSoft(-129000000),
                         HardSoftLongScore.ofSoft(-129000000)));

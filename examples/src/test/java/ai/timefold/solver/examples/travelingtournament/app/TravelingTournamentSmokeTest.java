@@ -19,9 +19,6 @@ class TravelingTournamentSmokeTest extends SolverSmokeTest<TravelingTournament, 
     @Override
     protected Stream<TestData<HardSoftScore>> testData() {
         return Stream.of(
-                TestData.of(ConstraintStreamImplType.DROOLS, UNSOLVED_DATA_FILE,
-                        HardSoftScore.ofSoft(-72772),
-                        HardSoftScore.ofSoft(-72772)),
                 TestData.of(ConstraintStreamImplType.BAVET, UNSOLVED_DATA_FILE,
                         HardSoftScore.ofSoft(-72772),
                         HardSoftScore.ofSoft(-72772)));

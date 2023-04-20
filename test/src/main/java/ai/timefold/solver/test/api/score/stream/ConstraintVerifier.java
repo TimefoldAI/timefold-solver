@@ -94,7 +94,9 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
      *
      * @param droolsAlphaNetworkCompilationEnabled true to enable the alpha network compiler
      * @return this
+     * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
      */
+    @Deprecated(forRemoval = true)
     ConstraintVerifier<ConstraintProvider_, Solution_> withDroolsAlphaNetworkCompilationEnabled(
             boolean droolsAlphaNetworkCompilationEnabled);
 

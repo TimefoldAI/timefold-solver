@@ -67,13 +67,6 @@ public abstract class SolverSmokeTest<Solution_, Score_ extends Score<Score_>> e
     @Execution(ExecutionMode.CONCURRENT)
     @Timeout(600)
     Stream<DynamicTest> runSpeedTest() {
-        return runSpeedTest(ConstraintStreamImplType.DROOLS);
-    }
-
-    @TestFactory
-    @Execution(ExecutionMode.CONCURRENT)
-    @Timeout(600)
-    Stream<DynamicTest> runSpeedTestBavet() {
         return runSpeedTest(ConstraintStreamImplType.BAVET);
     }
 
@@ -115,27 +108,6 @@ public abstract class SolverSmokeTest<Solution_, Score_ extends Score<Score_>> e
                         moveThreadCount));
     }
 
-    @TestFactory
-    @Execution(ExecutionMode.CONCURRENT)
-    @Timeout(600)
-    Stream<DynamicTest> runConstraintStreamsMutualCorrectnessTest() {
-        SolverFactory<Solution_> solverFactory = buildMutualCorrectnessSolverFactory();
-        return testData()
-                .map(testData -> new File(testData.unsolvedDataFile))
-                .distinct()
-                .map(inputSolutionFile -> createConstraintStreamsMutualCorrectnessTest(solverFactory, inputSolutionFile));
-    }
-
-    private DynamicTest createConstraintStreamsMutualCorrectnessTest(SolverFactory<Solution_> solverFactory,
-            File unsolvedDataFile) {
-        String testName = "DROOLS v. BAVET, " +
-                unsolvedDataFile.toString().replaceFirst(".*/", "")
-                + ", "
-                + FULL_ASSERT;
-        return dynamicTest(testName,
-                () -> runConstraintStreamsMutualCorrectnessTest(solverFactory, unsolvedDataFile));
-    }
-
     protected abstract CommonApp<Solution_> createCommonApp();
 
     protected abstract Stream<TestData<Score_>> testData();
@@ -165,34 +137,6 @@ public abstract class SolverSmokeTest<Solution_, Score_ extends Score<Score_>> e
             Assertions.fail("Test does not support constraint streams.");
         }
         scoreDirectorFactoryConfig.setConstraintStreamImplType(constraintStreamImplType);
-        solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
-        return SolverFactory.create(solverConfig);
-    }
-
-    private void runConstraintStreamsMutualCorrectnessTest(SolverFactory<Solution_> solverFactory, File unsolvedDataFile) {
-        Solution_ problem = solutionFileIO.read(unsolvedDataFile);
-        logger.info("Opened: {}", unsolvedDataFile);
-        Solver<Solution_> solver = solverFactory.buildSolver();
-        Assertions.assertThatNoException()
-                .isThrownBy(() -> solver.solve(problem));
-    }
-
-    private SolverFactory<Solution_> buildMutualCorrectnessSolverFactory() {
-        SolverConfig solverConfig = SolverConfig.createFromXmlResource(solverConfigResource);
-        solverConfig.withEnvironmentMode(FULL_ASSERT)
-                .withTerminationConfig(new TerminationConfig()
-                        .withSecondsSpentLimit(10L)); // 10 seconds is not nearly enough; but better than nothing.
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig =
-                Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(),
-                        ScoreDirectorFactoryConfig::new);
-        if (scoreDirectorFactoryConfig.getConstraintProviderClass() == null) {
-            Assertions.fail("Test does not support constraint streams.");
-        }
-        scoreDirectorFactoryConfig.setConstraintStreamImplType(ConstraintStreamImplType.DROOLS);
-        ScoreDirectorFactoryConfig assertionScoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
-        assertionScoreDirectorFactoryConfig.setConstraintProviderClass(scoreDirectorFactoryConfig.getConstraintProviderClass());
-        assertionScoreDirectorFactoryConfig.setConstraintStreamImplType(ConstraintStreamImplType.BAVET);
-        scoreDirectorFactoryConfig.setAssertionScoreDirectorFactory(assertionScoreDirectorFactoryConfig);
         solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
         return SolverFactory.create(solverConfig);
     }

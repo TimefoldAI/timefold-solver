@@ -63,6 +63,7 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     @XmlTransient
     protected Supplier gizmoKieBaseSupplier = null;
 
+    @Deprecated(forRemoval = true)
     protected Boolean droolsAlphaNetworkCompilationEnabled = null;
     @Deprecated(forRemoval = true)
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
@@ -178,6 +179,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         this.scoreDrlFileList = scoreDrlFileList;
     }
 
+    /**
+     * @return sometimes null
+     * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
+     */
+    @Deprecated(forRemoval = true)
     public Boolean getDroolsAlphaNetworkCompilationEnabled() {
         return droolsAlphaNetworkCompilationEnabled;
     }
@@ -196,6 +202,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         this.gizmoKieBaseSupplier = gizmoKieBaseSupplier;
     }
 
+    /**
+     * @param droolsAlphaNetworkCompilationEnabled sometimes null
+     * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
+     */
+    @Deprecated(forRemoval = true)
     public void setDroolsAlphaNetworkCompilationEnabled(Boolean droolsAlphaNetworkCompilationEnabled) {
         this.droolsAlphaNetworkCompilationEnabled = droolsAlphaNetworkCompilationEnabled;
     }

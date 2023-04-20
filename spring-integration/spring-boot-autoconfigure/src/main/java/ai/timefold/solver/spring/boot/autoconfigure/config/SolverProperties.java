@@ -37,7 +37,7 @@ public class SolverProperties {
     private DomainAccessType domainAccessType;
 
     /**
-     * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#DROOLS}.
+     * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
      */
     private ConstraintStreamImplType constraintStreamImplType;
 

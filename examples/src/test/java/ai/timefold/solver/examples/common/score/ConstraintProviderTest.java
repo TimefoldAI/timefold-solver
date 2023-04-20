@@ -15,11 +15,11 @@ import org.junit.jupiter.params.provider.MethodSource;
  *
  * <p>
  * Each such test expects exactly one argument of type {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier}.
- * Values for that argument are read from {@link AbstractConstraintProviderTest#getDroolsAndBavetConstraintVerifierImpls()}.
+ * Values for that argument are read from {@link AbstractConstraintProviderTest#getBavetConstraintVerifierImpl()}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Execution(ExecutionMode.CONCURRENT)
 @ParameterizedTest(name = "constraintStreamImplType = {0}")
-@MethodSource("getDroolsAndBavetConstraintVerifierImpls")
+@MethodSource("getBavetConstraintVerifierImpl")
 public @interface ConstraintProviderTest {
 }

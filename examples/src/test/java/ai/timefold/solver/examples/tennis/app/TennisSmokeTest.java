@@ -19,9 +19,6 @@ class TennisSmokeTest extends SolverSmokeTest<TennisSolution, HardMediumSoftScor
     @Override
     protected Stream<TestData<HardMediumSoftScore>> testData() {
         return Stream.of(
-                TestData.of(ConstraintStreamImplType.DROOLS, UNSOLVED_DATA_FILE,
-                        HardMediumSoftScore.of(0, -27239, -23706),
-                        HardMediumSoftScore.of(0, -27239, -23706)),
                 TestData.of(ConstraintStreamImplType.BAVET, UNSOLVED_DATA_FILE,
                         HardMediumSoftScore.of(0, -27239, -23706),
                         HardMediumSoftScore.of(0, -27239, -23706)));

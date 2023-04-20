@@ -43,7 +43,7 @@ public class SolverBuildTimeConfig {
     public Optional<DomainAccessType> domainAccessType;
 
     /**
-     * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#DROOLS}.
+     * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
      */
     @ConfigItem
     public Optional<ConstraintStreamImplType> constraintStreamImplType;
