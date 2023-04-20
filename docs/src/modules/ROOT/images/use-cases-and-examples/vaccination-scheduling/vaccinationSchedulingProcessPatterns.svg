@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-    xmlns:dc="http://purl.org/dc/elements/1.1/"
-    xmlns:cc="http://creativecommons.org/ns#"
-    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-    inkscape:export-ydpi="96"
-    inkscape:export-xdpi="96"
-    inkscape:export-filename="vaccinationSchedulingProcessPatterns.png"
-    sodipodi:docname="vaccinationSchedulingProcessPatterns.svg"
-    inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
-    version="1.1"
-    id="svg2"
-    height="600"
-    width="800">
+   inkscape:export-ydpi="96"
+   inkscape:export-xdpi="96"
+   inkscape:export-filename="vaccinationSchedulingProcessPatterns.png"
+   sodipodi:docname="vaccinationSchedulingProcessPatterns.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   version="1.1"
+   id="svg2"
+   height="600"
+   width="800"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4"><marker
    inkscape:isstock="true"
@@ -171,6 +172,7 @@
      style="fill-rule:evenodd;stroke:#ef2929;stroke-width:1pt;stroke-opacity:1;fill:#ef2929;fill-opacity:1"
      transform="scale(0.8) translate(12.5,0)" />
 </marker>
+
 
 
 
@@ -7051,15 +7053,6 @@
      id="stop15241" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_1_-9-0-2-4"
-   id="radialGradient14391"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3774"
-   cy="136.03909"
-   r="75.406197" />
-<radialGradient
    id="SVGID_1_-9-0-2-4"
    cx="134.3774"
    cy="136.03909"
@@ -7075,15 +7068,6 @@
      style="stop-color:#C3EB8E"
      id="stop8-9-3-0-5" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_2_-0-85-9-0"
-   id="radialGradient14393"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3765"
-   cy="136.0332"
-   r="75.4655" />
 <radialGradient
    id="SVGID_2_-0-85-9-0"
    cx="134.3765"
@@ -7101,15 +7085,6 @@
      id="stop15-8-1-6-8" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_3_-5-15-0-7"
-   id="radialGradient14395"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.38721"
-   cy="136.03709"
-   r="75.413902" />
-<radialGradient
    id="SVGID_3_-5-15-0-7"
    cx="134.38721"
    cy="136.03709"
@@ -7125,15 +7100,6 @@
      style="stop-color:#C3EB8E"
      id="stop22-9-8-2-7" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_4_-6-4-6-2"
-   id="radialGradient14397"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3804"
-   cy="136.0293"
-   r="75.399101" />
 <radialGradient
    id="SVGID_4_-6-4-6-2"
    cx="134.3804"
@@ -7151,15 +7117,6 @@
      id="stop29-8-1-8-2" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_5_-5-0-7-2"
-   id="radialGradient14399"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.38429"
-   cy="136.0352"
-   r="75.396896" />
-<radialGradient
    id="SVGID_5_-5-0-7-2"
    cx="134.38429"
    cy="136.0352"
@@ -7175,15 +7132,6 @@
      style="stop-color:#C3EB8E"
      id="stop36-1-0-2-1" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_6_-1-4-0-0"
-   id="radialGradient14401"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.37061"
-   cy="136.02541"
-   r="75.369499" />
 <radialGradient
    id="SVGID_6_-1-4-0-0"
    cx="134.37061"
@@ -7201,15 +7149,6 @@
      id="stop43-9-4-3-1" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_7_-8-4-7-5"
-   id="radialGradient14403"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3999"
-   cy="136.03909"
-   r="75.437302" />
-<radialGradient
    id="SVGID_7_-8-4-7-5"
    cx="134.3999"
    cy="136.03909"
@@ -7225,15 +7164,6 @@
      style="stop-color:#C3EB8E"
      id="stop50-8-6-9-4" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_8_-1-3-2-9"
-   id="radialGradient14405"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3521"
-   cy="136.0332"
-   r="75.445" />
 <radialGradient
    id="SVGID_8_-1-3-2-9"
    cx="134.3521"
@@ -7251,15 +7181,6 @@
      id="stop57-3-7-8-9" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_9_-0-5-9-1"
-   id="radialGradient14407"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.38921"
-   cy="136.02251"
-   r="75.491402" />
-<radialGradient
    id="SVGID_9_-0-5-9-1"
    cx="134.38921"
    cy="136.02251"
@@ -7275,15 +7196,6 @@
      style="stop-color:#C3EB8E"
      id="stop64-4-6-3-7" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_10_-4-2-6-1"
-   id="radialGradient14409"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.7579,0,0,2.7579,-270.7756,-170.3279)"
-   cx="114.2798"
-   cy="127.6553"
-   r="15.8311" />
 <radialGradient
    id="SVGID_10_-4-2-6-1"
    cx="114.2798"
@@ -7329,15 +7241,6 @@
      id="stop85-6-9-8-6" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_11_-2-75-4-5"
-   id="radialGradient14411"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.7579,0,0,2.7579,-270.7756,-170.3279)"
-   cx="169.27879"
-   cy="87.6548"
-   r="21.8731" />
-<radialGradient
    id="SVGID_11_-2-75-4-5"
    cx="169.27879"
    cy="87.6548"
@@ -7381,15 +7284,6 @@
      style="stop-color:#C3EB8E"
      id="stop106-5-3-2-3" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_12_-9-3-0-9"
-   id="radialGradient14413"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.7579,0,0,2.7579,-270.7756,-170.3279)"
-   cx="157.6118"
-   cy="112.6572"
-   r="18.355801" />
 <radialGradient
    id="SVGID_12_-9-3-0-9"
    cx="157.6118"
@@ -7513,15 +7407,6 @@
      id="stop16005" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_1_-9-0-2-8"
-   id="radialGradient14445"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3774"
-   cy="136.03909"
-   r="75.406197" />
-<radialGradient
    id="SVGID_1_-9-0-2-8"
    cx="134.3774"
    cy="136.03909"
@@ -7537,15 +7422,6 @@
      style="stop-color:#C3EB8E"
      id="stop8-9-3-0-8" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_2_-0-85-9-1"
-   id="radialGradient14447"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3765"
-   cy="136.0332"
-   r="75.4655" />
 <radialGradient
    id="SVGID_2_-0-85-9-1"
    cx="134.3765"
@@ -7563,15 +7439,6 @@
      id="stop15-8-1-6-3" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_3_-5-15-0-0"
-   id="radialGradient14449"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.38721"
-   cy="136.03709"
-   r="75.413902" />
-<radialGradient
    id="SVGID_3_-5-15-0-0"
    cx="134.38721"
    cy="136.03709"
@@ -7587,15 +7454,6 @@
      style="stop-color:#C3EB8E"
      id="stop22-9-8-2-4" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_4_-6-4-6-4"
-   id="radialGradient14451"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3804"
-   cy="136.0293"
-   r="75.399101" />
 <radialGradient
    id="SVGID_4_-6-4-6-4"
    cx="134.3804"
@@ -7613,15 +7471,6 @@
      id="stop29-8-1-8-7" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_5_-5-0-7-6"
-   id="radialGradient14453"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.38429"
-   cy="136.0352"
-   r="75.396896" />
-<radialGradient
    id="SVGID_5_-5-0-7-6"
    cx="134.38429"
    cy="136.0352"
@@ -7637,15 +7486,6 @@
      style="stop-color:#C3EB8E"
      id="stop36-1-0-2-17" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_6_-1-4-0-5"
-   id="radialGradient14455"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.37061"
-   cy="136.02541"
-   r="75.369499" />
 <radialGradient
    id="SVGID_6_-1-4-0-5"
    cx="134.37061"
@@ -7663,15 +7503,6 @@
      id="stop43-9-4-3-6" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_7_-8-4-7-2"
-   id="radialGradient14457"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3999"
-   cy="136.03909"
-   r="75.437302" />
-<radialGradient
    id="SVGID_7_-8-4-7-2"
    cx="134.3999"
    cy="136.03909"
@@ -7687,15 +7518,6 @@
      style="stop-color:#C3EB8E"
      id="stop50-8-6-9-7" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_8_-1-3-2-8"
-   id="radialGradient14459"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.3521"
-   cy="136.0332"
-   r="75.445" />
 <radialGradient
    id="SVGID_8_-1-3-2-8"
    cx="134.3521"
@@ -7713,15 +7535,6 @@
      id="stop57-3-7-8-7" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_9_-0-5-9-4"
-   id="radialGradient14461"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.9789,0,0,2.9789,-286.963,-274.0724)"
-   cx="134.38921"
-   cy="136.02251"
-   r="75.491402" />
-<radialGradient
    id="SVGID_9_-0-5-9-4"
    cx="134.38921"
    cy="136.02251"
@@ -7737,15 +7550,6 @@
      style="stop-color:#C3EB8E"
      id="stop64-4-6-3-8" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_10_-4-2-6-5"
-   id="radialGradient14463"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.7579,0,0,2.7579,-270.7756,-170.3279)"
-   cx="114.2798"
-   cy="127.6553"
-   r="15.8311" />
 <radialGradient
    id="SVGID_10_-4-2-6-5"
    cx="114.2798"
@@ -7791,15 +7595,6 @@
      id="stop85-6-9-8-8" />
 </radialGradient>
 <radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_11_-2-75-4-9"
-   id="radialGradient14465"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.7579,0,0,2.7579,-270.7756,-170.3279)"
-   cx="169.27879"
-   cy="87.6548"
-   r="21.8731" />
-<radialGradient
    id="SVGID_11_-2-75-4-9"
    cx="169.27879"
    cy="87.6548"
@@ -7843,15 +7638,6 @@
      style="stop-color:#C3EB8E"
      id="stop106-5-3-2-8" />
 </radialGradient>
-<radialGradient
-   inkscape:collect="always"
-   xlink:href="#SVGID_12_-9-3-0-8"
-   id="radialGradient14467"
-   gradientUnits="userSpaceOnUse"
-   gradientTransform="matrix(2.7579,0,0,2.7579,-270.7756,-170.3279)"
-   cx="157.6118"
-   cy="112.6572"
-   r="18.355801" />
 <radialGradient
    id="SVGID_12_-9-3-0-8"
    cx="157.6118"
@@ -8004,17 +7790,20 @@
      borderlayer="true"
      width="800px"
      showgrid="true"
-     inkscape:current-layer="layer7"
+     inkscape:current-layer="layer8"
      inkscape:document-units="px"
      inkscape:cy="300"
-     inkscape:cx="400"
-     inkscape:zoom="1.245"
+     inkscape:cx="399.6063"
+     inkscape:zoom="1.27"
      inkscape:pageshadow="2"
      inkscape:pageopacity="1"
      borderopacity="1.0"
      bordercolor="#666666"
      pagecolor="#ffffff"
-     id="base">
+     id="base"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        originy="0"
        originx="0"
@@ -8036,20 +7825,9 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:title />
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -23694,74 +23472,14 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <g
-       style="display:inline;stroke-width:14.2215"
-       transform="matrix(0.0703158,0,0,0.0703158,381.53826,496.00073)"
-       id="g151-7">
+       id="Layer_1-2"
+       transform="matrix(0.02931034,0,0,0.02931034,381.5,499.13866)"
+       style="display:inline;stroke-width:34.1176"
+       inkscape:label="Timefold logomark">
       <path
-         style="stroke-width:113.767"
-         id="path4-7"
-         d="m 240.677,73.635 c 0.062,-9.31 -2.878,-18.864 -8.813,-26.925 V 46.702 C 222.956,34.62 209.08,28.138 195.188,28.169 191.756,28.161 188.403,28.563 185.025,29.327 165.346,16.048 142.274,9.125 118.995,9.149 103.27,9.133 87.421,12.351 72.488,18.805 L 58.515,0 44.307,32.857 42.139,37.81 C 15.389,60.824 1.232,93.802 1.232,127.064 c 0,11.341 1.696,22.721 5.046,33.82 C 2.188,167.873 0,175.821 0,183.785 c 0,9.32 2.929,18.86 8.857,26.917 8.888,12.059 22.705,18.564 36.573,18.564 0.039,0 0.055,0 0.078,0 4.083,0 8.19,-0.577 12.211,-1.717 18.634,11.412 39.99,17.309 61.463,17.309 h 0.031 c 14.933,0 29.955,-2.862 44.175,-8.658 l 14.438,19.788 17.261,-38.882 c 27.386,-23.096 41.901,-56.479 41.862,-90.171 0,-9.555 -1.248,-19.133 -3.564,-28.547 4.835,-7.441 7.355,-16.072 7.292,-24.753 z"
-         fill="#dceac5" />
-      <path
-         style="fill:url(#radialGradient14445);stroke-width:14.2215"
-         id="path11-6"
-         d="M 40.864,183.785 C 48.071,170.4 58.277,158.451 71.303,148.904 v 0 C 90.108,135.008 112.112,128.3 133.835,128.3 v 0 c 14.827,0 29.601,3.097 43.234,9.185 v 0 l -4.641,10.475 c -12.145,-5.397 -25.342,-8.174 -38.594,-8.174 v 0 c -19.391,0 -38.925,5.959 -55.766,18.368 v 0 c -11.61,8.533 -20.646,19.173 -27.124,31.075 v 0 0.023 z"
-         fill="url(#SVGID_1_)" />
-      <polygon
-         style="fill:url(#radialGradient14447);stroke-width:14.2215"
-         id="polygon18-4"
-         points="98.45,153.911 90.139,131.916 113.329,135.761 "
-         fill="url(#SVGID_2_)" />
-      <path
-         style="fill:url(#radialGradient14449);stroke-width:14.2215"
-         id="path25-3"
-         d="M 40.825,184.558 C 9.032,141.33 18.31,80.534 61.545,48.734 v 0 C 104.78,16.934 165.58,26.22 197.396,69.454 v 0 c 31.808,43.215 22.557,104.02 -20.701,135.843 v 0 C 133.459,237.066 72.613,227.808 40.825,184.558 Z m 10.272,-7.559 c 27.701,37.525 80.405,45.567 118,18.01 v 0 c 37.549,-27.674 45.544,-80.393 17.995,-117.989 v 0 C 159.433,39.515 106.706,31.465 69.095,59.022 v 0 C 31.601,86.704 23.579,139.411 51.097,176.999 Z"
-         fill="url(#SVGID_3_)" />
-      <path
-         style="fill:url(#radialGradient14451);stroke-width:14.2215"
-         id="path32-0"
-         d="m 29.721,172.912 0.211,-5.749 c 1.416,-35.75 18.56,-70.651 49.658,-93.528 v 0 c 21.766,-15.978 47.124,-23.72 72.223,-23.72 v 0 c 9.329,0 18.657,1.084 27.76,3.214 v 0 l 5.562,1.294 -3.791,16.458 -11.185,-2.617 1.162,-5.097 c -6.436,-1.189 -12.972,-1.739 -19.508,-1.739 v 0 c -22.744,0 -45.688,6.981 -65.39,21.481 v 0 C 59.88,102.413 44.6,131.51 41.827,161.898 v 0 l 5.23,0.203 v 0.062 l -0.433,11.403 z"
-         fill="url(#SVGID_4_)" />
-      <path
-         style="fill:url(#radialGradient14453);stroke-width:14.2215"
-         id="path39-3"
-         d="m 37.533,189.604 3.292,-12.315 c 34.144,9.203 71.993,3.338 102.674,-19.228 v 0 c 29.491,-21.699 46.175,-54.248 48.718,-88.107 v 0 l 12.722,0.944 c -2.753,37.412 -21.286,73.467 -53.874,97.413 v 0 C 117.119,193.277 75.25,199.767 37.533,189.604 Z m -0.015,0 c 0,0 0,0 0.016,0 v 0 0 z"
-         fill="url(#SVGID_5_)" />
-      <polygon
-         style="fill:url(#radialGradient14455);stroke-width:14.2215"
-         id="polygon46-0"
-         points="53.924,62.625 63.253,41.09 77.25,59.938 "
-         fill="url(#SVGID_6_)" />
-      <polygon
-         style="fill:url(#radialGradient14457);stroke-width:14.2215"
-         id="polygon53-9"
-         points="70.542,87.729 79.894,66.174 93.911,85.058 "
-         fill="url(#SVGID_7_)" />
-      <polygon
-         style="fill:url(#radialGradient14459);stroke-width:14.2215"
-         id="polygon60-2"
-         points="182.966,193.371 159.582,195.906 173.45,214.836 "
-         fill="url(#SVGID_8_)" />
-      <polygon
-         style="fill:url(#radialGradient14461);stroke-width:14.2215"
-         id="polygon67-5"
-         points="122.883,176.819 99.71,172.725 107.767,194.814 "
-         fill="url(#SVGID_9_)" />
-      <path
-         style="fill:url(#radialGradient14463);stroke-width:14.2215"
-         id="path88-4"
-         d="m 65.511,169.051 c 8.112,11.037 5.76,26.574 -5.3,34.71 -11.025,8.104 -26.574,5.725 -34.702,-5.312 -8.1,-11.021 -5.752,-26.535 5.312,-34.687 11.045,-8.112 26.602,-5.732 34.69,5.289 z"
-         fill="url(#SVGID_10_)" />
-      <path
-         style="fill:url(#radialGradient14465);stroke-width:14.2215"
-         id="path109-0"
-         d="m 215.203,58.987 c 8.128,11.041 5.687,26.57 -5.288,34.698 -11.061,8.112 -26.551,5.741 -34.694,-5.292 -8.104,-11.045 -5.748,-26.574 5.289,-34.698 11.059,-8.132 26.597,-5.768 34.693,5.292 z"
-         fill="url(#SVGID_11_)" />
-      <path
-         style="fill:url(#radialGradient14467);stroke-width:14.2215"
-         id="path130-5"
-         d="m 187.03,127.049 c 8.119,11.037 5.764,26.59 -5.288,34.74 -11.045,8.081 -26.574,5.718 -34.702,-5.335 -8.12,-11.029 -5.748,-26.582 5.312,-34.702 11.036,-8.104 26.573,-5.74 34.678,5.297 z"
-         fill="url(#SVGID_12_)" />
+         d="M 208,100 V 0 H 100 V 100 H 36.4 L 0,200 h 100 v 200 h 113.4 c 21.02,0 39.8,-13.15 46.98,-32.9 l 21.86,-60.06 c 0,0 2.58,-7.04 10.06,-7.04 H 450.8 L 487.2,200 H 356.21 c -21.02,0 -39.8,13.15 -46.98,32.9 l -21.86,60.05 c 0,0 -2.57,7.05 -10.06,7.05 H 208 V 200 h 78.2 c 21.02,0 39.8,-13.15 46.98,-32.9 l 21.86,-60.06 c 0,0 2.58,-7.04 10.06,-7.04 H 543.6 L 580,0 H 429.01 c -21.02,0 -39.8,13.15 -46.98,32.9 l -21.86,60.05 c 0,0 -2.57,7.05 -10.06,7.05 h -142.1 z"
+         id="path2612"
+         style="stroke-width:34.1176" />
     </g>
     <flowRoot
        transform="matrix(0,-0.79968251,0.79661921,0,97.418057,639.36852)"
@@ -23778,6 +23496,16 @@
            id="rect14477" /></flowRegion><flowPara
          style="font-size:17.2274px;line-height:1.25;text-align:center;text-anchor:middle;fill:#4e9a06"
          id="flowPara14481">21:00</flowPara></flowRoot>
+    <g
+       id="g15702"
+       transform="matrix(0.02931034,0,0,0.02931034,381.5,499.13866)"
+       style="display:inline;stroke-width:34.1176"
+       inkscape:label="Timefold logomark">
+      <path
+         d="M 208,100 V 0 H 100 V 100 H 36.4 L 0,200 h 100 v 200 h 113.4 c 21.02,0 39.8,-13.15 46.98,-32.9 l 21.86,-60.06 c 0,0 2.58,-7.04 10.06,-7.04 H 450.8 L 487.2,200 H 356.21 c -21.02,0 -39.8,13.15 -46.98,32.9 l -21.86,60.05 c 0,0 -2.57,7.05 -10.06,7.05 H 208 V 200 h 78.2 c 21.02,0 39.8,-13.15 46.98,-32.9 l 21.86,-60.06 c 0,0 2.58,-7.04 10.06,-7.04 H 543.6 L 580,0 H 429.01 c -21.02,0 -39.8,13.15 -46.98,32.9 l -21.86,60.05 c 0,0 -2.57,7.05 -10.06,7.05 h -142.1 z"
+         id="path15700"
+         style="stroke-width:34.1176" />
+    </g>
   </g>
   <g
      inkscape:groupmode="layer"
@@ -24325,74 +24053,14 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <g
-       style="display:inline;stroke-width:14.2215"
-       transform="matrix(0.0703158,0,0,0.0703158,441.53826,496.00073)"
-       id="g14389">
+       id="g15702-7"
+       transform="matrix(0.02931034,0,0,0.02931034,441.5,499.13866)"
+       style="display:inline;stroke-width:34.1176"
+       inkscape:label="Timefold logomark">
       <path
-         style="stroke-width:113.767"
-         id="path14363"
-         d="m 240.677,73.635 c 0.062,-9.31 -2.878,-18.864 -8.813,-26.925 V 46.702 C 222.956,34.62 209.08,28.138 195.188,28.169 191.756,28.161 188.403,28.563 185.025,29.327 165.346,16.048 142.274,9.125 118.995,9.149 103.27,9.133 87.421,12.351 72.488,18.805 L 58.515,0 44.307,32.857 42.139,37.81 C 15.389,60.824 1.232,93.802 1.232,127.064 c 0,11.341 1.696,22.721 5.046,33.82 C 2.188,167.873 0,175.821 0,183.785 c 0,9.32 2.929,18.86 8.857,26.917 8.888,12.059 22.705,18.564 36.573,18.564 0.039,0 0.055,0 0.078,0 4.083,0 8.19,-0.577 12.211,-1.717 18.634,11.412 39.99,17.309 61.463,17.309 h 0.031 c 14.933,0 29.955,-2.862 44.175,-8.658 l 14.438,19.788 17.261,-38.882 c 27.386,-23.096 41.901,-56.479 41.862,-90.171 0,-9.555 -1.248,-19.133 -3.564,-28.547 4.835,-7.441 7.355,-16.072 7.292,-24.753 z"
-         fill="#dceac5" />
-      <path
-         style="fill:url(#radialGradient14391);stroke-width:14.2215"
-         id="path14365"
-         d="M 40.864,183.785 C 48.071,170.4 58.277,158.451 71.303,148.904 v 0 C 90.108,135.008 112.112,128.3 133.835,128.3 v 0 c 14.827,0 29.601,3.097 43.234,9.185 v 0 l -4.641,10.475 c -12.145,-5.397 -25.342,-8.174 -38.594,-8.174 v 0 c -19.391,0 -38.925,5.959 -55.766,18.368 v 0 c -11.61,8.533 -20.646,19.173 -27.124,31.075 v 0 0.023 z"
-         fill="url(#SVGID_1_)" />
-      <polygon
-         style="fill:url(#radialGradient14393);stroke-width:14.2215"
-         id="polygon14367"
-         points="113.329,135.761 98.45,153.911 90.139,131.916 "
-         fill="url(#SVGID_2_)" />
-      <path
-         style="fill:url(#radialGradient14395);stroke-width:14.2215"
-         id="path14369"
-         d="M 40.825,184.558 C 9.032,141.33 18.31,80.534 61.545,48.734 v 0 C 104.78,16.934 165.58,26.22 197.396,69.454 v 0 c 31.808,43.215 22.557,104.02 -20.701,135.843 v 0 C 133.459,237.066 72.613,227.808 40.825,184.558 Z m 10.272,-7.559 c 27.701,37.525 80.405,45.567 118,18.01 v 0 c 37.549,-27.674 45.544,-80.393 17.995,-117.989 v 0 C 159.433,39.515 106.706,31.465 69.095,59.022 v 0 C 31.601,86.704 23.579,139.411 51.097,176.999 Z"
-         fill="url(#SVGID_3_)" />
-      <path
-         style="fill:url(#radialGradient14397);stroke-width:14.2215"
-         id="path14371"
-         d="m 29.721,172.912 0.211,-5.749 c 1.416,-35.75 18.56,-70.651 49.658,-93.528 v 0 c 21.766,-15.978 47.124,-23.72 72.223,-23.72 v 0 c 9.329,0 18.657,1.084 27.76,3.214 v 0 l 5.562,1.294 -3.791,16.458 -11.185,-2.617 1.162,-5.097 c -6.436,-1.189 -12.972,-1.739 -19.508,-1.739 v 0 c -22.744,0 -45.688,6.981 -65.39,21.481 v 0 C 59.88,102.413 44.6,131.51 41.827,161.898 v 0 l 5.23,0.203 v 0.062 l -0.433,11.403 z"
-         fill="url(#SVGID_4_)" />
-      <path
-         style="fill:url(#radialGradient14399);stroke-width:14.2215"
-         id="path14373"
-         d="m 37.533,189.604 3.292,-12.315 c 34.144,9.203 71.993,3.338 102.674,-19.228 v 0 c 29.491,-21.699 46.175,-54.248 48.718,-88.107 v 0 l 12.722,0.944 c -2.753,37.412 -21.286,73.467 -53.874,97.413 v 0 C 117.119,193.277 75.25,199.767 37.533,189.604 Z m -0.015,0 c 0,0 0,0 0.016,0 v 0 0 z"
-         fill="url(#SVGID_5_)" />
-      <polygon
-         style="fill:url(#radialGradient14401);stroke-width:14.2215"
-         id="polygon14375"
-         points="77.25,59.938 53.924,62.625 63.253,41.09 "
-         fill="url(#SVGID_6_)" />
-      <polygon
-         style="fill:url(#radialGradient14403);stroke-width:14.2215"
-         id="polygon14377"
-         points="93.911,85.058 70.542,87.729 79.894,66.174 "
-         fill="url(#SVGID_7_)" />
-      <polygon
-         style="fill:url(#radialGradient14405);stroke-width:14.2215"
-         id="polygon14379"
-         points="173.45,214.836 182.966,193.371 159.582,195.906 "
-         fill="url(#SVGID_8_)" />
-      <polygon
-         style="fill:url(#radialGradient14407);stroke-width:14.2215"
-         id="polygon14381"
-         points="107.767,194.814 122.883,176.819 99.71,172.725 "
-         fill="url(#SVGID_9_)" />
-      <path
-         style="fill:url(#radialGradient14409);stroke-width:14.2215"
-         id="path14383"
-         d="m 65.511,169.051 c 8.112,11.037 5.76,26.574 -5.3,34.71 -11.025,8.104 -26.574,5.725 -34.702,-5.312 -8.1,-11.021 -5.752,-26.535 5.312,-34.687 11.045,-8.112 26.602,-5.732 34.69,5.289 z"
-         fill="url(#SVGID_10_)" />
-      <path
-         style="fill:url(#radialGradient14411);stroke-width:14.2215"
-         id="path14385"
-         d="m 215.203,58.987 c 8.128,11.041 5.687,26.57 -5.288,34.698 -11.061,8.112 -26.551,5.741 -34.694,-5.292 -8.104,-11.045 -5.748,-26.574 5.289,-34.698 11.059,-8.132 26.597,-5.768 34.693,5.292 z"
-         fill="url(#SVGID_11_)" />
-      <path
-         style="fill:url(#radialGradient14413);stroke-width:14.2215"
-         id="path14387"
-         d="m 187.03,127.049 c 8.119,11.037 5.764,26.59 -5.288,34.74 -11.045,8.081 -26.574,5.718 -34.702,-5.335 -8.12,-11.029 -5.748,-26.582 5.312,-34.702 11.036,-8.104 26.573,-5.74 34.678,5.297 z"
-         fill="url(#SVGID_12_)" />
+         d="M 208,100 V 0 H 100 V 100 H 36.4 L 0,200 h 100 v 200 h 113.4 c 21.02,0 39.8,-13.15 46.98,-32.9 l 21.86,-60.06 c 0,0 2.58,-7.04 10.06,-7.04 H 450.8 L 487.2,200 H 356.21 c -21.02,0 -39.8,13.15 -46.98,32.9 l -21.86,60.05 c 0,0 -2.57,7.05 -10.06,7.05 H 208 V 200 h 78.2 c 21.02,0 39.8,-13.15 46.98,-32.9 l 21.86,-60.06 c 0,0 2.58,-7.04 10.06,-7.04 H 543.6 L 580,0 H 429.01 c -21.02,0 -39.8,13.15 -46.98,32.9 l -21.86,60.05 c 0,0 -2.57,7.05 -10.06,7.05 h -142.1 z"
+         id="path15700-5"
+         style="stroke-width:34.1176" />
     </g>
     <flowRoot
        transform="matrix(0,-0.79968251,0.79661921,0,157.41806,639.36852)"

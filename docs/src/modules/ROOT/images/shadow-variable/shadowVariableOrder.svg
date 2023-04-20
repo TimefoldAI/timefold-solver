@@ -851,20 +851,10 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
         <dc:title></dc:title>
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1849,7 +1839,7 @@
              width="159.50002"
              id="rect12286" /></flowRegion><flowPara
            id="flowPara12288"
-           style="font-size:15px;line-height:1.25">OptaPlanner</flowPara></flowRoot>
+           style="font-size:15px;line-height:1.25">Timefold</flowPara></flowRoot>
       <rect
          y="772.86218"
          x="290.50003"

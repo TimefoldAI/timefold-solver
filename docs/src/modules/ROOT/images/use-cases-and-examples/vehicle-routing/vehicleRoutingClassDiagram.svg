@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="800"
    height="600"
    id="svg2"
    version="1.1"
-   inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    sodipodi:docname="vehicleRoutingClassDiagram.svg"
    inkscape:export-filename="vehicleRoutingClassDiagram.png"
    inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96">
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -244,8 +244,8 @@
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
      inkscape:zoom="1.315"
-     inkscape:cx="406.43905"
-     inkscape:cy="393.26536"
+     inkscape:cx="406.84411"
+     inkscape:cy="332.31939"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -262,7 +262,10 @@
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-global="true"
-     inkscape:document-rotation="0">
+     inkscape:document-rotation="0"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        empspacing="10"
        visible="true"
@@ -282,20 +285,9 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:title />
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -583,36 +575,6 @@
          id="flowPara3462">Shadow variables</flowPara><flowPara
          id="flowPara3434"
          style="font-style:normal;font-size:16px;-inkscape-font-specification:'Liberation Sans, Normal'" /><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3468">arrivalTime =    previousC.departureTime</flowPara><flowPara
-         id="flowPara3428"
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'">  + travelTime</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3436" /><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3460">departureTime =</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3438">  max(arrivalTime, readyTime)</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3440">  + serviceDuration</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3442" /><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara2415">vehicle =</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara2417">  inverse of Vehicle.customers</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara2419" /><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3458">previousCustomer =</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara3444">  customer at index - 1</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara2402" /><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara2404">nextCustomer =</flowPara><flowPara
-         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara2406">  customer at index + 1</flowPara><flowPara
          style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
          id="flowPara3452" /></flowRoot>
     <path
@@ -997,5 +959,121 @@
            width="31.643383"
            id="rect2533" /></flowRegion><flowPara
          id="flowPara2537"> 1</flowPara></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#5c3566;fill-opacity:1;stroke:none"
+       id="flowRoot423"
+       xml:space="preserve"
+       transform="translate(190,852.83571)"><flowRegion
+         id="flowRegion385"><rect
+           style="font-style:italic;font-size:16px;text-align:start;text-anchor:start;fill:#5c3566;stroke-width:1"
+           y="99.526466"
+           x="400"
+           height="398"
+           width="210"
+           id="rect383" /></flowRegion><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara413" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara415" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara417">nextCustomer =</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara419">  customer at index + 1</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara421" /></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#5c3566;fill-opacity:1;stroke:none"
+       id="flowRoot672"
+       xml:space="preserve"
+       transform="translate(190,792.83571)"><flowRegion
+         id="flowRegion638"><rect
+           style="font-style:italic;font-size:16px;text-align:start;text-anchor:start;fill:#5c3566;stroke-width:1"
+           y="99.526466"
+           x="400"
+           height="398"
+           width="210"
+           id="rect636" /></flowRegion><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara664">previousCustomer =</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara666">  customer at index - 1</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara668" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara670" /></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#5c3566;fill-opacity:1;stroke:none"
+       id="flowRoot803"
+       xml:space="preserve"
+       transform="translate(190,732.83571)"><flowRegion
+         id="flowRegion775"><rect
+           style="font-style:italic;font-size:16px;text-align:start;text-anchor:start;fill:#5c3566;stroke-width:1"
+           y="99.526466"
+           x="400"
+           height="398"
+           width="210"
+           id="rect773" /></flowRegion><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara791" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara793" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara795">vehicle =</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara797">  inverse of Vehicle.customers</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara799" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara801" /></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#5c3566;fill-opacity:1;stroke:none"
+       id="flowRoot873"
+       xml:space="preserve"
+       transform="translate(190,638.83571)"><flowRegion
+         id="flowRegion851"><rect
+           style="font-style:italic;font-size:16px;text-align:start;text-anchor:start;fill:#5c3566;stroke-width:1"
+           y="99.526466"
+           x="400"
+           height="398"
+           width="210"
+           id="rect849" /></flowRegion><flowPara
+         id="flowPara859"
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara861" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara863">departureTime =</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara865">  max(arrivalTime, readyTime)</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara867">  + serviceDuration</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara869" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara871" /></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#5c3566;fill-opacity:1;stroke:none"
+       id="flowRoot914"
+       xml:space="preserve"
+       transform="translate(190,556.83571)"><flowRegion
+         id="flowRegion900"><rect
+           style="font-style:italic;font-size:16px;text-align:start;text-anchor:start;fill:#5c3566;stroke-width:1"
+           y="99.526466"
+           x="400"
+           height="398"
+           width="210"
+           id="rect898" /></flowRegion><flowPara
+         style="font-size:20px"
+         id="flowPara902" /><flowPara
+         id="flowPara904"
+         style="font-style:normal;font-size:16px;-inkscape-font-specification:'Liberation Sans, Normal'" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara906">arrivalTime =    previousC.departureTime</flowPara><flowPara
+         id="flowPara908"
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'">  + travelTime</flowPara><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara910" /><flowPara
+         style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara912" /></flowRoot>
   </g>
 </svg>

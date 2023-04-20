@@ -2,23 +2,23 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="800"
    height="600"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    sodipodi:docname="scalabilityOfOptimizationAlgorithms.svg"
    inkscape:export-filename="scalabilityOfOptimizationAlgorithms.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -7318,11 +7318,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.3483333"
-     inkscape:cx="229.41903"
-     inkscape:cy="300"
+     inkscape:zoom="1.27"
+     inkscape:cx="379.13386"
+     inkscape:cy="237.79528"
      inkscape:document-units="px"
-     inkscape:current-layer="layer4"
+     inkscape:current-layer="layer1"
      showgrid="true"
      width="800px"
      borderlayer="true"
@@ -7341,7 +7341,10 @@
      inkscape:snap-intersection-paths="false"
      inkscape:snap-nodes="true"
      inkscape:snap-object-midpoints="true"
-     inkscape:snap-global="true">
+     inkscape:snap-global="true"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        empspacing="10"
        visible="true"
@@ -7361,20 +7364,9 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:title />
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -7413,7 +7405,8 @@
            height="44.273468"
            width="96.874573"
            id="rect4605" /></flowRegion><flowPara
-         id="flowPara4609">Metaheuristics</flowPara></flowRoot>    <flowRoot
+         id="flowPara4609">Metaheuristics</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4624"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#4e9a06;fill-opacity:1;stroke:none"
@@ -7425,7 +7418,8 @@
            x="-66.65625"
            y="395.11942"
            style="font-size:13.33333302px;text-align:start;text-anchor:start;fill:#4e9a06" /></flowRegion><flowPara
-         id="flowPara4630">Metaheuristics</flowPara></flowRoot>    <flowRoot
+         id="flowPara4630">Metaheuristics</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4669"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#4e9a06;fill-opacity:1;stroke:none"
@@ -7437,9 +7431,10 @@
            x="-66.65625"
            y="395.11942"
            style="font-size:13.33333302px;text-align:start;text-anchor:start;fill:#4e9a06" /></flowRegion><flowPara
-         id="flowPara4675">Metaheuristics</flowPara></flowRoot>    <flowRoot
-       transform="matrix(0.75,0,0,0.75,529.98437,179.87944)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.33333397px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+         id="flowPara4675">Metaheuristics</flowPara></flowRoot>
+    <flowRoot
+       transform="matrix(0.75,0,0,0.75,529.98437,277.87944)"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.3333px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot4962"
        xml:space="preserve"><flowRegion
          id="flowRegion4964"><rect
@@ -7461,9 +7456,10 @@
          id="flowPara4974"
          style="font-weight:bold;fill:#4e9a06">Metaheuristics deliver good quality in time.</flowPara><flowPara
          id="flowPara4976"
-         style="font-weight:normal;font-size:18.66666603px;fill:#4e9a06">Note: Metaheuristics include a CH to initialize.</flowPara><flowPara
+         style="font-weight:normal;font-size:18.6667px;fill:#4e9a06">Note: Metaheuristics include a CH to initialize.</flowPara><flowPara
          id="flowPara4978"
-         style="font-weight:bold;fill:#4e9a06" /></flowRoot>  </g>
+         style="font-weight:bold;fill:#4e9a06" /></flowRoot>
+  </g>
   <g
      inkscape:groupmode="layer"
      id="layer3"
@@ -7511,7 +7507,8 @@
            x="-66.65625"
            y="395.11942"
            style="font-size:13.33333302px;text-align:start;text-anchor:start;fill:#ce5c00" /></flowRegion><flowPara
-         id="flowPara4604">Construction Heuristics</flowPara></flowRoot>    <flowRoot
+         id="flowPara4604">Construction Heuristics</flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.74291861,-0.10281991,0.10281991,0.74291861,263.65924,-47.8576)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#fcaf3e;fill-opacity:1;stroke:none"
        id="flowRoot4606"
@@ -7523,7 +7520,8 @@
            height="38.639683"
            width="149.18846"
            id="rect4610" /></flowRegion><flowPara
-         id="flowPara4618">Limited selection CH</flowPara></flowRoot>    <flowRoot
+         id="flowPara4618">Limited selection CH</flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.73440554,0.15214633,-0.15214633,0.73440554,347.00328,176.0106)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
        id="flowRoot4641"
@@ -7535,7 +7533,8 @@
            height="39.444504"
            width="182.99127"
            id="rect4645" /></flowRegion><flowPara
-         id="flowPara4647">Construction Heuristics</flowPara></flowRoot>    <flowRoot
+         id="flowPara4647">Construction Heuristics</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4649"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#fcaf3e;fill-opacity:1;stroke:none"
@@ -7547,7 +7546,8 @@
            x="-66.65625"
            y="395.11942"
            style="font-size:13.33333302px;text-align:end;text-anchor:end;fill:#fcaf3e" /></flowRegion><flowPara
-         id="flowPara4655">Limited selection CH</flowPara></flowRoot>    <flowRoot
+         id="flowPara4655">Limited selection CH</flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.73997207,-0.12223476,0.12223476,0.73997207,617.17093,-68.25195)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
        id="flowRoot4677"
@@ -7559,11 +7559,12 @@
            height="39.444504"
            width="182.99127"
            id="rect4681" /></flowRegion><flowPara
-         id="flowPara4683">Construction Heuristics</flowPara></flowRoot>    <flowRoot
+         id="flowPara4683">Construction Heuristics</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4944"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.33333397px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
-       transform="matrix(0.75,0,0,0.75,529.98437,179.87944)"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.3333px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.75,0,0,0.75,529.98437,237.87944)"><flowRegion
          id="flowRegion4946"><rect
            id="rect4948"
            width="453.33331"
@@ -7576,8 +7577,9 @@
          style="fill:#204a87" /><flowPara
          style="fill:#204a87"
          id="flowPara4993" /><flowPara
-         style="font-weight:normal;font-size:21.33333397px;fill:#ce5c00"
-         id="flowPara4960">Construction Heuristics (including greedy algorithms) deliver poor quality in time.</flowPara></flowRoot>  </g>
+         style="font-weight:normal;font-size:21.3333px;fill:#ce5c00"
+         id="flowPara4960">Construction Heuristics (including greedy algorithms) deliver poor quality in time.</flowPara></flowRoot>
+  </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
@@ -7632,7 +7634,8 @@
            y="395.11942"
            style="font-size:13.33333302px;text-align:start;text-anchor:start;fill:#204a87" /></flowRegion><flowPara
          id="flowPara4583">Brute</flowPara><flowPara
-         id="flowPara4587">Force</flowPara></flowRoot>    <flowRoot
+         id="flowPara4587">Force</flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.75,0,0,0.75,212.97266,-162.26116)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#729fcf;fill-opacity:1;stroke:none"
        id="flowRoot4589"
@@ -7646,7 +7649,8 @@
            id="rect4593" /></flowRegion><flowPara
          id="flowPara4595">Branch</flowPara><flowPara
          id="flowPara4597">And</flowPara><flowPara
-         id="flowPara4599">Bound</flowPara></flowRoot>    <flowRoot
+         id="flowPara4599">Bound</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4632"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#204a87;fill-opacity:1;stroke:none"
@@ -7658,7 +7662,8 @@
            x="-66.65625"
            y="395.11942"
            style="font-size:13.33333302px;text-align:start;text-anchor:start;fill:#204a87" /></flowRegion><flowPara
-         id="flowPara4639">Exhaustive Search</flowPara></flowRoot>    <flowRoot
+         id="flowPara4639">Exhaustive Search</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4657"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#729fcf;fill-opacity:1;stroke:none"
@@ -7672,7 +7677,8 @@
            style="font-size:13.33333302px;text-align:start;text-anchor:start;fill:#729fcf" /></flowRegion><flowPara
          id="flowPara4663">Branch</flowPara><flowPara
          id="flowPara4665">And</flowPara><flowPara
-         id="flowPara4667">Bound</flowPara></flowRoot>    <flowRoot
+         id="flowPara4667">Bound</flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.74213663,-0.10831997,0.10831997,0.74213663,647.6926,-47.07605)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#204a87;fill-opacity:1;stroke:none"
        id="flowRoot4685"
@@ -7684,9 +7690,10 @@
            height="53.126598"
            width="75.144188"
            id="rect4689" /></flowRegion><flowPara
-         id="flowPara4693">Brute Force</flowPara></flowRoot>    <flowRoot
-       transform="matrix(0.75,0,0,0.75,529.98437,179.87944)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.33333397px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+         id="flowPara4693">Brute Force</flowPara></flowRoot>
+    <flowRoot
+       transform="matrix(0.75,0,0,0.75,529.98437,199.87944)"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.3333px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot4906"
        xml:space="preserve"><flowRegion
          id="flowRegion4908"><rect
@@ -7698,7 +7705,8 @@
            id="rect4910" /></flowRegion><flowPara
          id="flowPara4912" /><flowPara
          id="flowPara4922"
-         style="font-weight:normal;font-size:21.33333397px;fill:#204a87">Exhaustive Search delivers the optimal solution but takes forever.</flowPara></flowRoot>  </g>
+         style="font-weight:normal;font-size:21.3333px;fill:#204a87">Exhaustive Search delivers the optimal solution but takes forever.</flowPara></flowRoot>
+  </g>
   <g
      inkscape:label="Base"
      inkscape:groupmode="layer"
@@ -7717,7 +7725,8 @@
            x="50"
            y="220.0002"
            style="font-size:36px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara5893">Scalability of optimization algorithms</flowPara></flowRoot>    <flowRoot
+         id="flowPara5893">Scalability of optimization algorithms</flowPara></flowRoot>
+    <flowRoot
        transform="translate(-20,362.36182)"
        xml:space="preserve"
        id="flowRoot4302-6"
@@ -7729,7 +7738,8 @@
            x="50"
            y="150.00014"
            style="font-size:14px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara3157">When scaling out, metaheuristics deliver the best solution in reasonable time on realistic hardware.</flowPara></flowRoot>    <g
+         id="flowPara3157">When scaling out, metaheuristics deliver the best solution in reasonable time on realistic hardware.</flowPara></flowRoot>
+    <g
        id="g3709"
        transform="translate(0,19.999997)" />
     <flowRoot
@@ -7742,7 +7752,8 @@
            height="72.471909"
            x="16.011236"
            y="-53.932568" /></flowRegion><flowPara
-         id="flowPara4163" /></flowRoot>    <flowRoot
+         id="flowPara4163" /></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot6493"
        style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:40px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
@@ -7752,7 +7763,8 @@
            height="155.97484"
            x="299.37106"
            y="227.67296" /></flowRegion><flowPara
-         id="flowPara6499" /></flowRoot>    <path
+         id="flowPara6499" /></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 100,992.36218 280,0"
        id="path5897"
@@ -7766,7 +7778,7 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot5692"
-       style="font-size:18.66666603px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        transform="matrix(0.75,0,0,0.75,379.99219,741.03027)"><flowRegion
          id="flowRegion5694"><rect
            id="rect5696"
@@ -7777,8 +7789,9 @@
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
          id="flowPara6995"
          style="font-weight:bold"># of variables<flowSpan
-   style="font-size:10.66666667px;baseline-shift:super"
-   id="flowSpan4707">[1]</flowSpan></flowPara></flowRoot>    <flowRoot
+   style="font-size:10.6667px;baseline-shift:super"
+   id="flowSpan4707">[1]</flowSpan></flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.75,0,0,0.75,109.99256,719.81133)"
        style="font-size:18.66666603px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
        id="flowRoot5712"
@@ -7790,7 +7803,8 @@
            height="26.66667"
            width="79.999992"
            id="rect5716" /></flowRegion><flowPara
-         id="flowPara5718">10</flowPara></flowRoot>    <path
+         id="flowPara5718">10</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path5720"
        d="m 139.99951,992.36218 8.6e-4,9.99962"
@@ -7809,7 +7823,8 @@
            y="-91.097931"
            style="font-size:14px;font-weight:bold;-inkscape-font-specification:'Liberation Sans, Normal' Bold" /></flowRegion><flowPara
          id="flowPara11991">How good is the solution quality?</flowPara><flowPara
-         id="flowPara7496">(higher is better)</flowPara></flowRoot>    <path
+         id="flowPara7496">(higher is better)</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
        d="m 90,822.36218 10,-10 10,10"
        id="path5723"
@@ -7826,7 +7841,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara6579">100</flowPara></flowRoot>    <path
+         id="flowPara6579">100</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 180,992.36218 8.6e-4,9.99962"
        id="path6581"
@@ -7844,7 +7860,8 @@
            height="26.66667"
            width="79.999992"
            id="rect6587" /></flowRegion><flowPara
-         id="flowPara6589">1k</flowPara></flowRoot>    <path
+         id="flowPara6589">1k</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path6591"
        d="m 220.00003,992.36218 8.6e-4,9.99962"
@@ -7862,7 +7879,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara6599">10k</flowPara></flowRoot>    <path
+         id="flowPara6599">10k</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 260.00051,992.36218 8.6e-4,9.99962"
        id="path6601"
@@ -7880,7 +7898,8 @@
            height="26.66667"
            width="79.999992"
            id="rect6607" /></flowRegion><flowPara
-         id="flowPara6609">100k</flowPara></flowRoot>    <path
+         id="flowPara6609">100k</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path6611"
        d="m 300.001,992.36218 8.6e-4,9.99962"
@@ -7898,7 +7917,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara6619">1m</flowPara></flowRoot>    <path
+         id="flowPara6619">1m</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 340.00092,992.36218 8.6e-4,9.99962"
        id="path6621"
@@ -7917,7 +7937,8 @@
            width="106.66666"
            id="rect6627" /></flowRegion><flowPara
          style="font-weight:bold"
-         id="flowPara7238">Score</flowPara></flowRoot>    <path
+         id="flowPara7238">Score</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 90,852.36228 10,0"
        id="path6631"
@@ -7934,7 +7955,8 @@
            x="-66.65625"
            y="395.11942"
            style="font-size:18.66666603px;text-align:end;text-anchor:end" /></flowRegion><flowPara
-         id="flowPara6641">optimal</flowPara></flowRoot>    <path
+         id="flowPara6641">optimal</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path7076"
        d="m 370,732.36203 10,10 -10,10.00002"
@@ -7954,7 +7976,8 @@
          style="font-weight:bold;text-align:center;text-anchor:middle"
          id="flowPara7084"># of variables<flowSpan
    style="font-size:10.66666667px;baseline-shift:super"
-   id="flowSpan4709">[1]</flowSpan></flowPara></flowRoot>    <flowRoot
+   id="flowSpan4709">[1]</flowSpan></flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot7086"
        style="font-size:18.66666603px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
@@ -7966,7 +7989,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara7092">10</flowPara></flowRoot>    <path
+         id="flowPara7092">10</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 139.99951,742.36203 8.6e-4,9.99962"
@@ -7985,7 +8009,8 @@
            width="280"
            id="rect7100" /></flowRegion><flowPara
          id="flowPara7102">How much time is needed?</flowPara><flowPara
-         id="flowPara7494">(lower is better)</flowPara></flowRoot>    <path
+         id="flowPara7494">(lower is better)</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path7106"
        d="m 90,572.36203 10,-10 10,10"
@@ -8002,7 +8027,8 @@
            height="26.66667"
            width="79.999992"
            id="rect7112" /></flowRegion><flowPara
-         id="flowPara7114">100</flowPara></flowRoot>    <path
+         id="flowPara7114">100</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path7116"
@@ -8020,7 +8046,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara7124">1k</flowPara></flowRoot>    <path
+         id="flowPara7124">1k</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 220.00003,742.36203 8.6e-4,9.99962"
@@ -8038,7 +8065,8 @@
            height="26.66667"
            width="79.999992"
            id="rect7132" /></flowRegion><flowPara
-         id="flowPara7134">10k</flowPara></flowRoot>    <path
+         id="flowPara7134">10k</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path7136"
@@ -8056,7 +8084,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara7144">100k</flowPara></flowRoot>    <path
+         id="flowPara7144">100k</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 300.001,742.36203 8.6e-4,9.99962"
@@ -8074,7 +8103,8 @@
            height="26.66667"
            width="79.999992"
            id="rect7152" /></flowRegion><flowPara
-         id="flowPara7154">1m</flowPara></flowRoot>    <path
+         id="flowPara7154">1m</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path7156"
@@ -8093,7 +8123,8 @@
            y="315.11942"
            style="font-size:18.66666603px;text-align:end;text-anchor:end" /></flowRegion><flowPara
          id="flowPara7164"
-         style="font-weight:bold">Time</flowPara></flowRoot>    <path
+         style="font-weight:bold">Time</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path7166"
        d="m 90,642.3624 10,0"
@@ -8111,7 +8142,8 @@
            width="173.33333"
            id="rect7172" /></flowRegion><flowPara
          id="flowPara7174">available</flowPara><flowPara
-         id="flowPara7176">time</flowPara></flowRoot>    <path
+         id="flowPara7176">time</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path7074"
@@ -8149,7 +8181,8 @@
          id="flowPara7280"
          style="font-weight:bold;text-align:center;text-anchor:middle"># of variables<flowSpan
    style="font-size:10.66666667px;baseline-shift:super"
-   id="flowSpan4711">[1]</flowSpan></flowPara></flowRoot>    <flowRoot
+   id="flowSpan4711">[1]</flowSpan></flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.75,0,0,0.75,499.99256,469.81118)"
        style="font-size:18.66666603px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
        id="flowRoot7282"
@@ -8161,7 +8194,8 @@
            height="26.66667"
            width="79.999992"
            id="rect7286" /></flowRegion><flowPara
-         id="flowPara7288">10</flowPara></flowRoot>    <path
+         id="flowPara7288">10</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path7290"
        d="m 529.99951,742.36203 8.6e-4,9.99962"
@@ -8180,7 +8214,8 @@
            y="-91.097931"
            style="font-size:14px;font-weight:bold;-inkscape-font-specification:'Liberation Sans, Normal' Bold" /></flowRegion><flowPara
          id="flowPara7298">How much RAM memory is needed?</flowPara><flowPara
-         id="flowPara7498">(lower is better)</flowPara></flowRoot>    <path
+         id="flowPara7498">(lower is better)</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
        d="m 480,572.36203 10,-10 10,10"
        id="path7300"
@@ -8197,7 +8232,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara7308">100</flowPara></flowRoot>    <path
+         id="flowPara7308">100</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 570,742.36203 8.6e-4,9.99962"
        id="path7310"
@@ -8215,7 +8251,8 @@
            height="26.66667"
            width="79.999992"
            id="rect7316" /></flowRegion><flowPara
-         id="flowPara7318">1k</flowPara></flowRoot>    <path
+         id="flowPara7318">1k</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path7320"
        d="m 610.00003,742.36203 8.6e-4,9.99962"
@@ -8233,7 +8270,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara7328">10k</flowPara></flowRoot>    <path
+         id="flowPara7328">10k</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 650.00051,742.36203 8.6e-4,9.99962"
        id="path7330"
@@ -8251,7 +8289,8 @@
            height="26.66667"
            width="79.999992"
            id="rect7336" /></flowRegion><flowPara
-         id="flowPara7338">100k</flowPara></flowRoot>    <path
+         id="flowPara7338">100k</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path7340"
        d="m 690.001,742.36203 8.6e-4,9.99962"
@@ -8269,7 +8308,8 @@
            x="0.010413334"
            y="376.73401"
            style="font-size:18.66666603px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara7348">1m</flowPara></flowRoot>    <path
+         id="flowPara7348">1m</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 730.00092,742.36203 8.6e-4,9.99962"
        id="path7350"
@@ -8288,7 +8328,8 @@
            width="106.66666"
            id="rect7356" /></flowRegion><flowPara
          style="font-weight:bold"
-         id="flowPara7358">RAM</flowPara></flowRoot>    <path
+         id="flowPara7358">RAM</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 480,602.3624 10,0"
        id="path7360"
@@ -8306,7 +8347,8 @@
            y="395.11942"
            style="font-size:18.66666603px;text-align:end;text-anchor:end" /></flowRegion><flowPara
          id="flowPara7368">super-</flowPara><flowPara
-         id="flowPara7370">computer</flowPara></flowRoot>    <path
+         id="flowPara7370">computer</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 490,742.36203 280,0"
        id="path7376"
@@ -8336,7 +8378,8 @@
            width="173.33333"
            id="rect7506" /></flowRegion><flowPara
          id="flowPara7508">commodity</flowPara><flowPara
-         id="flowPara7510">computer</flowPara></flowRoot>    <flowRoot
+         id="flowPara7510">computer</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot7516"
        style="font-size:21.33333397px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
@@ -8349,9 +8392,10 @@
            y="226.82776"
            style="font-size:21.33333397px;text-align:start;text-anchor:start" /></flowRegion><flowPara
          style="font-size:21.33333397px;font-weight:normal;fill:#000000"
-         id="flowPara4713">Effects of scaling out:</flowPara></flowRoot>    <flowRoot
+         id="flowPara4713">Effects of scaling out:</flowPara></flowRoot>
+    <flowRoot
        transform="matrix(0.75,0,0,0.75,519.99219,790.43634)"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot4613"
        xml:space="preserve"><flowRegion
          id="flowRegion4615"><rect
@@ -8366,9 +8410,24 @@
          style="font-size:16px;fill:#000000"
          id="flowPara4638">and a large number of benchmarks on realistic use cases.</flowPara><flowPara
          style="font-size:16px;fill:#000000"
-         id="flowPara4701">Results may differ per use case and per solver configuration.</flowPara><flowPara
+         id="flowPara4705">Results may differ per use case and per solver configuration.</flowPara></flowRoot>
+    <flowRoot
+       transform="matrix(0.75,0,0,0.75,519.99219,857.23608)"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+       id="flowRoot2644"
+       xml:space="preserve"><flowRegion
+         id="flowRegion2632"><rect
+           style="font-size:16px;text-align:start;text-anchor:start"
+           y="215.90147"
+           x="-119.98959"
+           height="106.66666"
+           width="453.33334"
+           id="rect2630" /></flowRegion><flowPara
          style="font-size:16px;fill:#000000"
-         id="flowPara4697" /><flowPara
+         id="flowPara2638" /><flowPara
          style="font-size:16px;fill:#000000"
-         id="flowPara4705">[1] Vars with a large value range (binary vars scale much more)</flowPara></flowRoot>  </g>
+         id="flowPara2640" /><flowPara
+         style="font-size:16px;fill:#000000"
+         id="flowPara2642">[1] Vars with a large value range (binary vars scale much more)</flowPara></flowRoot>
+  </g>
 </svg>

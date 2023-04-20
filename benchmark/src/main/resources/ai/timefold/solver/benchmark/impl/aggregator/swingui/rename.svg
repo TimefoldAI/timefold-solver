@@ -526,11 +526,6 @@
         </dc:subject>
         <cc:license
            rdf:resource="http://creativecommons.org/licenses/publicdomain/" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>Garrett LeSage</dc:title>
-          </cc:Agent>
-        </dc:creator>
         <dc:source />
         <dc:contributor>
           <cc:Agent>

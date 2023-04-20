@@ -2365,20 +2365,9 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:title />
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -6112,7 +6101,7 @@
            y="-54.35762"
            style="font-size:16px;text-align:start;text-anchor:start;fill:#888a85;" /></flowRegion><flowPara
          id="flowPara4378"
-         style="font-size:16px;line-height:1.25;">OptaPlanner versus traditional algorithm with domain knowledge</flowPara></flowRoot>    <flowRoot
+         style="font-size:16px;line-height:1.25;">Timefold versus traditional algorithm with domain knowledge</flowPara></flowRoot>    <flowRoot
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#888a85;fill-opacity:1;stroke:none;font-size:10.66666667px;"
        id="flowRoot3773"
        xml:space="preserve"
@@ -6140,5 +6129,5 @@
            width="740"
            id="rect3761" /></flowRegion><flowPara
          id="flowPara3763"
-         style="font-size:13.33333333px;line-height:1.25;text-align:center;text-anchor:middle;fill:#555753;">Don't believe us? Run our open benchmarks yourself: https://www.optaplanner.org/code/benchmarks.html</flowPara></flowRoot>  </g>
+         style="font-size:13.33333333px;line-height:1.25;text-align:center;text-anchor:middle;fill:#555753;">Don't believe us? Run our open benchmarks yourself: https://timefold.ai/product/benchmark/[</flowPara></flowRoot>  </g>
 </svg>

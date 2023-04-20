@@ -536,20 +536,9 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:title />
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1038,7 +1027,7 @@
        d="m 600.46086,178.70072 h 102.1234"
        id="path309"
        inkscape:connector-curvature="0"
-       inkscape:export-filename="/var/home/lpetrovi/IdeaProjects/optaplanner/optaplanner-docs/src/modules/ROOT/images/constraint-streams/constraintStreamIfExists_0.png"
+       inkscape:export-filename="constraintStreamIfExists.png"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96" />
     <path

@@ -554,20 +554,9 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:title />
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>www.optaplanner.org</dc:title>
-          </cc:Agent>
-        </dc:rights>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://www.optaplanner.org/code/license.html" />
+           rdf:resource="https://timefold.ai/product/license/" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1276,7 +1265,7 @@
              y="67.402672"
              style="font-size:12px;text-align:start;text-anchor:start" /></flowRegion><flowPara
            style="font-size:12px;line-height:1.25;fill:#000000;fill-opacity:1"
-           id="flowPara4013">Source for optaplanner.org</flowPara><flowPara
+           id="flowPara4013">Source for timefold.ai</flowPara><flowPara
            style="font-size:12px;line-height:1.25;fill:#000000;fill-opacity:1"
            id="flowPara4015">JBake: AsciiDoc</flowPara><flowPara
            style="font-size:12px;line-height:1.25;fill:#000000;fill-opacity:1"
@@ -1322,14 +1311,14 @@
          id="flowPara4099"
          style="font-size:14px;line-height:1.25;fill:#000000;fill-opacity:1">POMs: <flowSpan
    style="fill:#4e9a06"
-   id="flowSpan4103">optaplanner-core</flowSpan><flowSpan
+   id="flowSpan4103">timefold-solver-core</flowSpan><flowSpan
    style="fill:#c4a000"
-   id="flowSpan4105"> optaplanner-benchmark</flowSpan><flowSpan
+   id="flowSpan4105"> timefold-solver-benchmark</flowSpan><flowSpan
    style="fill:#204a87"
-   id="flowSpan4107"> optaplanner-examples</flowSpan><flowSpan
+   id="flowSpan4107"> timefold-solver-examples</flowSpan><flowSpan
    style="fill:#5c3566"
    id="flowSpan4109"> </flowSpan><flowSpan
    style="fill:#8f5902"
-   id="flowSpan4111">optaplanner-docs</flowSpan></flowPara></flowRoot>
+   id="flowSpan4111">timefold-solver-docs</flowSpan></flowPara></flowRoot>
   </g>
 </svg>
