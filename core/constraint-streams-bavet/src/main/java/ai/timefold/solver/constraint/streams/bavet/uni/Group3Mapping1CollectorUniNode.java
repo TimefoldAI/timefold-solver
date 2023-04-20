@@ -1,0 +1,41 @@
+package ai.timefold.solver.constraint.streams.bavet.uni;
+
+import static ai.timefold.solver.constraint.streams.bavet.uni.Group3Mapping0CollectorUniNode.createGroupKey;
+
+import java.util.function.Function;
+
+import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.quad.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.quad.QuadTupleImpl;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.util.Triple;
+
+final class Group3Mapping1CollectorUniNode<OldA, A, B, C, D, ResultContainer_>
+        extends
+        AbstractGroupUniNode<OldA, QuadTuple<A, B, C, D>, QuadTupleImpl<A, B, C, D>, Triple<A, B, C>, ResultContainer_, D> {
+
+    private final int outputStoreSize;
+
+    public Group3Mapping1CollectorUniNode(Function<OldA, A> groupKeyMappingA, Function<OldA, B> groupKeyMappingB,
+            Function<OldA, C> groupKeyMappingC, int groupStoreIndex, int undoStoreIndex,
+            UniConstraintCollector<OldA, ResultContainer_, D> collector,
+            TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
+            EnvironmentMode environmentMode) {
+        super(groupStoreIndex, undoStoreIndex,
+                tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, groupKeyMappingC, tuple), collector,
+                nextNodesTupleLifecycle, environmentMode);
+        this.outputStoreSize = outputStoreSize;
+    }
+
+    @Override
+    protected QuadTupleImpl<A, B, C, D> createOutTuple(Triple<A, B, C> groupKey) {
+        return new QuadTupleImpl<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), null, outputStoreSize);
+    }
+
+    @Override
+    protected void updateOutTupleToResult(QuadTupleImpl<A, B, C, D> outTuple, D d) {
+        outTuple.factD = d;
+    }
+
+}

@@ -2,6 +2,6 @@
 0=java
 1=jakarta
 2=javax
-3=org
-4=com
-
+3=ai.timefold.solver
+4=org
+5=com

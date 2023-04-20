@@ -1,0 +1,43 @@
+package ai.timefold.solver.constraint.streams.bavet;
+
+import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+
+import org.junit.jupiter.api.Assumptions;
+
+public final class BavetConstraintStreamImplSupport
+        implements ConstraintStreamImplSupport {
+
+    private final boolean constraintMatchEnabled;
+
+    public BavetConstraintStreamImplSupport(boolean constraintMatchEnabled) {
+        this.constraintMatchEnabled = constraintMatchEnabled;
+    }
+
+    @Override
+    public void assumeBavet() {
+        // This is Bavet.
+    }
+
+    @Override
+    public void assumeDrools() {
+        Assumptions.assumeTrue(false, "This functionality is not supported in Bavet constraint streams.");
+    }
+
+    @Override
+    public boolean isConstreamMatchEnabled() {
+        return constraintMatchEnabled;
+    }
+
+    @Override
+    public <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(
+            SolutionDescriptor<Solution_> solutionDescriptorSupplier, ConstraintProvider constraintProvider) {
+        return (InnerScoreDirector<Solution_, Score_>) new BavetConstraintStreamScoreDirectorFactory<>(
+                solutionDescriptorSupplier, constraintProvider, EnvironmentMode.REPRODUCIBLE)
+                .buildScoreDirector(false, constraintMatchEnabled);
+    }
+}

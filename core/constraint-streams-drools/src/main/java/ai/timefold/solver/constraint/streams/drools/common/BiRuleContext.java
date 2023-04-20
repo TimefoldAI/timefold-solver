@@ -1,0 +1,73 @@
+package ai.timefold.solver.constraint.streams.drools.common;
+
+import static ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier.of;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToLongBiFunction;
+
+import ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier;
+
+import org.drools.model.DSL;
+import org.drools.model.Variable;
+import org.drools.model.view.ViewItem;
+
+final class BiRuleContext<A, B> extends AbstractRuleContext {
+
+    private final Variable<A> variableA;
+    private final Variable<B> variableB;
+
+    public BiRuleContext(Variable<A> variableA, Variable<B> variableB, ViewItem<?>... viewItems) {
+        super(viewItems);
+        this.variableA = Objects.requireNonNull(variableA);
+        this.variableB = Objects.requireNonNull(variableB);
+    }
+
+    public <Solution_> RuleBuilder<Solution_> newRuleBuilder(ToIntBiFunction<A, B> matchWeigher) {
+        ConsequenceBuilder<Solution_> consequenceBuilder =
+                (constraint, scoreImpacterGlobal) -> DSL.on(scoreImpacterGlobal, variableA, variableB)
+                        .execute((drools, scoreImpacter, a, b) -> {
+                            JustificationsSupplier justificationsSupplier =
+                                    scoreImpacter.getContext().isConstraintMatchEnabled()
+                                            ? of(constraint, constraint.getJustificationMapping(),
+                                                    constraint.getIndictedObjectsMapping(), a, b)
+                                            : null;
+                            runConsequence(constraint, drools, scoreImpacter, matchWeigher.applyAsInt(a, b),
+                                    justificationsSupplier);
+                        });
+        return assemble(consequenceBuilder);
+    }
+
+    public <Solution_> RuleBuilder<Solution_> newRuleBuilder(ToLongBiFunction<A, B> matchWeigher) {
+        ConsequenceBuilder<Solution_> consequenceBuilder =
+                (constraint, scoreImpacterGlobal) -> DSL.on(scoreImpacterGlobal, variableA, variableB)
+                        .execute((drools, scoreImpacter, a, b) -> {
+                            JustificationsSupplier justificationsSupplier =
+                                    scoreImpacter.getContext().isConstraintMatchEnabled()
+                                            ? of(constraint, constraint.getJustificationMapping(),
+                                                    constraint.getIndictedObjectsMapping(), a, b)
+                                            : null;
+                            runConsequence(constraint, drools, scoreImpacter, matchWeigher.applyAsLong(a, b),
+                                    justificationsSupplier);
+                        });
+        return assemble(consequenceBuilder);
+    }
+
+    public <Solution_> RuleBuilder<Solution_> newRuleBuilder(BiFunction<A, B, BigDecimal> matchWeigher) {
+        ConsequenceBuilder<Solution_> consequenceBuilder =
+                (constraint, scoreImpacterGlobal) -> DSL.on(scoreImpacterGlobal, variableA, variableB)
+                        .execute((drools, scoreImpacter, a, b) -> {
+                            JustificationsSupplier justificationsSupplier =
+                                    scoreImpacter.getContext().isConstraintMatchEnabled()
+                                            ? of(constraint, constraint.getJustificationMapping(),
+                                                    constraint.getIndictedObjectsMapping(), a, b)
+                                            : null;
+                            runConsequence(constraint, drools, scoreImpacter, matchWeigher.apply(a, b),
+                                    justificationsSupplier);
+                        });
+        return assemble(consequenceBuilder);
+    }
+
+}

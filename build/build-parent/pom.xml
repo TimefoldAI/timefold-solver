@@ -522,7 +522,7 @@
           <artifactId>impsort-maven-plugin</artifactId>
           <version>${version.impsort.plugin}</version>
           <configuration>
-            <groups>java.,jakarta.,javax.,org.,com.</groups>
+            <groups>java.,jakarta.,javax.,ai.timefold.solver.,org.,com.</groups>
             <staticGroups>*</staticGroups>
             <!-- keep in sync with the formatter-maven-plugin -->
             <skip>${formatter.skip}</skip>
