@@ -42,10 +42,10 @@ public class PlannerBenchmarkResult {
     // If it is an aggregation, many properties can stay null
 
     private Integer availableProcessors = null;
-    private LoggingLevel loggingLevelOptaPlannerCore = null;
+    private LoggingLevel loggingLevelTimefoldCore = null;
     private LoggingLevel loggingLevelDroolsCore = null;
     private Long maxMemory = null;
-    private String optaPlannerVersion = null;
+    private String timefoldSolverVersion = null;
     private String javaVersion = null;
     private String javaVM = null;
     private String operatingSystem = null;
@@ -104,8 +104,8 @@ public class PlannerBenchmarkResult {
         return availableProcessors;
     }
 
-    public LoggingLevel getLoggingLevelOptaPlannerCore() {
-        return loggingLevelOptaPlannerCore;
+    public LoggingLevel getLoggingLevelTimefoldCore() {
+        return loggingLevelTimefoldCore;
     }
 
     public LoggingLevel getLoggingLevelDroolsCore() {
@@ -128,8 +128,8 @@ public class PlannerBenchmarkResult {
         return operatingSystem;
     }
 
-    public String getOptaPlannerVersion() {
-        return optaPlannerVersion;
+    public String getTimefoldVersion() {
+        return timefoldSolverVersion;
     }
 
     public Integer getParallelBenchmarkCount() {
@@ -226,7 +226,7 @@ public class PlannerBenchmarkResult {
     public String findScoreLevelLabel(int scoreLevel) {
         String[] levelLabels = solverBenchmarkResultList.get(0).getScoreDefinition().getLevelLabels();
         if (scoreLevel >= levelLabels.length) {
-            // Occurs when mixing multiple examples in the same benchmark run, such as GeneralOptaPlannerBenchmarkApp
+            // Occurs when mixing multiple examples in the same benchmark run, such as GeneralTimefoldBenchmarkApp
             return "unknown-" + (scoreLevel - levelLabels.length);
         }
         return levelLabels[scoreLevel];
@@ -270,12 +270,12 @@ public class PlannerBenchmarkResult {
 
     public void initSystemProperties() {
         availableProcessors = Runtime.getRuntime().availableProcessors();
-        loggingLevelOptaPlannerCore = resolveLoggingLevel("org.optaplanner.core");
+        loggingLevelTimefoldCore = resolveLoggingLevel("ai.timefold.solver.core");
         loggingLevelDroolsCore = resolveLoggingLevel("org.drools.core");
         maxMemory = Runtime.getRuntime().maxMemory();
-        optaPlannerVersion = SolverFactory.class.getPackage().getImplementationVersion();
-        if (optaPlannerVersion == null) {
-            optaPlannerVersion = "Unjarred development snapshot";
+        timefoldSolverVersion = SolverFactory.class.getPackage().getImplementationVersion();
+        if (timefoldSolverVersion == null) {
+            timefoldSolverVersion = "Unjarred development snapshot";
         }
         javaVersion = "Java " + System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")";
         javaVM = "Java " + System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version")
@@ -451,10 +451,10 @@ public class PlannerBenchmarkResult {
                     newResult = new PlannerBenchmarkResult();
                     newResult.setAggregation(true);
                     newResult.availableProcessors = oldResult.availableProcessors;
-                    newResult.loggingLevelOptaPlannerCore = oldResult.loggingLevelOptaPlannerCore;
+                    newResult.loggingLevelTimefoldCore = oldResult.loggingLevelTimefoldCore;
                     newResult.loggingLevelDroolsCore = oldResult.loggingLevelDroolsCore;
                     newResult.maxMemory = oldResult.maxMemory;
-                    newResult.optaPlannerVersion = oldResult.optaPlannerVersion;
+                    newResult.timefoldSolverVersion = oldResult.timefoldSolverVersion;
                     newResult.javaVersion = oldResult.javaVersion;
                     newResult.javaVM = oldResult.javaVM;
                     newResult.operatingSystem = oldResult.operatingSystem;
@@ -469,14 +469,14 @@ public class PlannerBenchmarkResult {
                 } else {
                     newResult.availableProcessors = ConfigUtils.mergeProperty(
                             newResult.availableProcessors, oldResult.availableProcessors);
-                    newResult.loggingLevelOptaPlannerCore = ConfigUtils.mergeProperty(
-                            newResult.loggingLevelOptaPlannerCore, oldResult.loggingLevelOptaPlannerCore);
+                    newResult.loggingLevelTimefoldCore = ConfigUtils.mergeProperty(
+                            newResult.loggingLevelTimefoldCore, oldResult.loggingLevelTimefoldCore);
                     newResult.loggingLevelDroolsCore = ConfigUtils.mergeProperty(
                             newResult.loggingLevelDroolsCore, oldResult.loggingLevelDroolsCore);
                     newResult.maxMemory = ConfigUtils.mergeProperty(
                             newResult.maxMemory, oldResult.maxMemory);
-                    newResult.optaPlannerVersion = ConfigUtils.mergeProperty(
-                            newResult.optaPlannerVersion, oldResult.optaPlannerVersion);
+                    newResult.timefoldSolverVersion = ConfigUtils.mergeProperty(
+                            newResult.timefoldSolverVersion, oldResult.timefoldSolverVersion);
                     newResult.javaVersion = ConfigUtils.mergeProperty(
                             newResult.javaVersion, oldResult.javaVersion);
                     newResult.javaVM = ConfigUtils.mergeProperty(

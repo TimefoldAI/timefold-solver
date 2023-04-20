@@ -68,8 +68,8 @@ class PlannerBenchmarkConfigTest {
                 + "    <name>Entity Tabu Search</name>\n"
                 + "    <solver>\n"
                 // Intentionally wrong to simulate a typo.
-                + "      <solutionKlazz>org.optaplanner.core.impl.testdata.domain.TestdataSolution</solutionKlazz>\n"
-                + "      <entityClass>org.optaplanner.core.impl.testdata.domain.TestdataEntity</entityClass>\n"
+                + "      <solutionKlazz>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionKlazz>\n"
+                + "      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>\n"
                 + "    </solver>\n"
                 + "    <problemBenchmarks>\n"
                 + "      <solutionFileIOClass>" + TestdataSolutionFileIO.class.getCanonicalName() + "</solutionFileIOClass>\n"

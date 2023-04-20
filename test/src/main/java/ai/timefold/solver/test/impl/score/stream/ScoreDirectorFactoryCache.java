@@ -62,8 +62,8 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
                 .max(Comparator.comparingInt(ScoreDirectorFactoryService::getPriority)) // Picks CS-D if both available.
                 .orElseThrow(() -> new IllegalStateException(
                         "Constraint Streams implementation was not found on the classpath.\n"
-                                + "Maybe include org.optaplanner:optaplanner-constraint-streams-drools dependency "
-                                + "or org.optaplanner:optaplanner-constraint-streams-bavet in your project?\n"
+                                + "Maybe include ai.timefold.solver:timefold-solver-constraint-streams-drools dependency "
+                                + "or ai.timefold.solver:timefold-solver-constraint-streams-bavet in your project?\n"
                                 + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?"));
     }
 

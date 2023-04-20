@@ -1,5 +1,5 @@
 <#ftl output_format="HTML"> <#-- So that Freemarker escapes automatically. -->
-<#-- @ftlvariable name="benchmarkReport" type="org.optaplanner.benchmark.impl.report.BenchmarkReport" -->
+<#-- @ftlvariable name="benchmarkReport" type="ai.timefold.solver.benchmark.impl.report.BenchmarkReport" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -81,8 +81,8 @@
         <div class="span2">
             <div class="benchmark-report-nav">
                 <div style="margin-top: 10px;">
-                    <a href="https://www.optaplanner.org">
-                        <img src="website/img/optaPlannerLogo.png" alt="OptaPlanner"/>
+                    <a href="https://timefold.ai">
+                        <img src="website/img/timefold-logo.png" alt="Timefold"/>
                     </a>
                 </div>
                 <div style="margin-top: 10px; margin-bottom: 10px;">
@@ -776,8 +776,8 @@
                         <td>${benchmarkReport.plannerBenchmarkResult.environmentMode!"Differs"}</td>
                     </tr>
                     <tr>
-                        <th>Logging level org.optaplanner.core</th>
-                        <td>${benchmarkReport.plannerBenchmarkResult.loggingLevelOptaPlannerCore!"Differs"}</td>
+                        <th>Logging level ai.timefold.solver.core</th>
+                        <td>${benchmarkReport.plannerBenchmarkResult.loggingLevelTimefoldCore!"Differs"}</td>
                     </tr>
                     <tr>
                         <th>Logging level org.drools.core</th>
@@ -800,8 +800,8 @@
                         </#if>
                     </tr>
                     <tr>
-                        <th>OptaPlanner version</th>
-                        <td>${benchmarkReport.plannerBenchmarkResult.optaPlannerVersion!"Differs"}</td>
+                        <th>Timefold version</th>
+                        <td>${benchmarkReport.plannerBenchmarkResult.timefoldSolverVersion!"Differs"}</td>
                     </tr>
                     <tr>
                         <th>Java version</th>

@@ -70,7 +70,7 @@ public abstract class AbstractSubSingleStatisticTest<Point_ extends StatisticPoi
         JAXBContext context = JAXBContext.newInstance(subSingleStatistic.getClass());
 
         // Serialize the statistic to XML.
-        Path tempFile = Files.createTempFile("optaplanner-", ".xml");
+        Path tempFile = Files.createTempFile("timefold-solver-", ".xml");
         try (Writer writer = new FileWriter(tempFile.toFile())) {
             Marshaller marshaller = context.createMarshaller();
             marshaller.marshal(root, writer);

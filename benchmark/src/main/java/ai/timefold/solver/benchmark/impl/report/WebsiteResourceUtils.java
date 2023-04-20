@@ -7,7 +7,7 @@ import java.nio.file.Files;
 
 public class WebsiteResourceUtils {
 
-    private static final String RESOURCE_NAMESPACE = "/org/optaplanner/benchmark/impl/report/";
+    private static final String RESOURCE_NAMESPACE = "/ai/timefold/solver/benchmark/impl/report/";
 
     public static void copyResourcesTo(File benchmarkReportDirectory) {
         // Twitter Bootstrap
@@ -25,7 +25,7 @@ public class WebsiteResourceUtils {
         copyResource(benchmarkReportDirectory, "twitterbootstrap/js/prettify.js");
         // Website resources
         copyResource(benchmarkReportDirectory, "website/css/benchmarkReport.css");
-        copyResource(benchmarkReportDirectory, "website/img/optaPlannerLogo.png");
+        copyResource(benchmarkReportDirectory, "website/img/timefold-logo.png");
     }
 
     private static void copyResource(File benchmarkReportDirectory, String websiteResource) {

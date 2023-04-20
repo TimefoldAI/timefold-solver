@@ -89,7 +89,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         }
         Map<String, String> subSingleBenchmarkTagMap = new HashMap<>();
         String runId = UUID.randomUUID().toString();
-        subSingleBenchmarkTagMap.put("optaplanner.benchmark.run", runId);
+        subSingleBenchmarkTagMap.put("timefold.benchmark.run", runId);
         solverConfig = new SolverConfig(solverConfig);
         randomSeed = solverConfig.getRandomSeed();
         // Defensive copy of solverConfig for every SingleBenchmarkResult to reset Random, tabu lists, ...
@@ -100,7 +100,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         Metrics.addRegistry(statisticRegistry);
         solver.addPhaseLifecycleListener(statisticRegistry);
 
-        Tags runTag = Tags.of("optaplanner.benchmark.run", runId);
+        Tags runTag = Tags.of("timefold.benchmark.run", runId);
         for (SubSingleStatistic<Solution_, ?> subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap()
                 .values()) {
             subSingleStatistic.open(statisticRegistry, runTag, solver);

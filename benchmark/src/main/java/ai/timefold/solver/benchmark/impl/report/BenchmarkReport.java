@@ -326,9 +326,9 @@ public class BenchmarkReport {
                     + " This decreases performance."
                     + " Maybe set the environmentMode to " + EnvironmentMode.REPRODUCIBLE + ".");
         }
-        LoggingLevel loggingLevelOptaPlannerCore = plannerBenchmarkResult.getLoggingLevelOptaPlannerCore();
-        if (loggingLevelOptaPlannerCore == LoggingLevel.TRACE) {
-            warningList.add("The loggingLevel (" + loggingLevelOptaPlannerCore + ") of org.optaplanner.core is high."
+        LoggingLevel loggingLevelTimefoldCore = plannerBenchmarkResult.getLoggingLevelTimefoldCore();
+        if (loggingLevelTimefoldCore == LoggingLevel.TRACE) {
+            warningList.add("The loggingLevel (" + loggingLevelTimefoldCore + ") of ai.timefold.solver.core is high."
                     + " This decreases performance."
                     + " Maybe set the loggingLevel to " + LoggingLevel.DEBUG + " or lower.");
         }

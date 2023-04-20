@@ -7,7 +7,7 @@
             "comment": "We don't want to check transitive classes, since we already check them in their own module.",
             "regex": true,
             "include": [
-              "org\\.optaplanner\\.test\\.api.*"
+              "ai\\.timefold\\.solver\\.test\\.api.*"
             ]
           }
         }

@@ -14,7 +14,7 @@ public class TimefoldBenchmarkCli {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println("Usage: OptaPlannerBenchmarkCli benchmarkConfigFile benchmarkDirectory");
+            System.err.println("Usage: TimefoldBenchmarkCli benchmarkConfigFile benchmarkDirectory");
             System.exit(1);
         }
         File benchmarkConfigFile = new File(args[0]);

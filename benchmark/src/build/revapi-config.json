@@ -3,12 +3,12 @@
     "revapi": {
       "filter": {
         "elements": {
-          "comment": "We check only getters and setters of the config classes excluding those inherited from optaplanner-core.",
+          "comment": "We check only getters and setters of the config classes excluding those inherited from timefold-solver-core.",
           "exclude": [
-            "method .* org\\.optaplanner\\.benchmark\\.config.*::(?!(set|get)).*",
-            "parameter .* org\\.optaplanner\\.benchmark\\.config.*::(?!(set|get)).*",
-            "method .* org\\.optaplanner\\.core\\.config.*",
-            "parameter .* org\\.optaplanner\\.core\\.config.*"
+            "method .* ai\\.timefold\\.solver\\.benchmark\\.config.*::(?!(set|get)).*",
+            "parameter .* ai\\.timefold\\.solver\\.benchmark\\.config.*::(?!(set|get)).*",
+            "method .* ai\\.timefold\\.solver\\.core\\.config.*",
+            "parameter .* ai\\.timefold\\.solver\\.core\\.config.*"
           ]
         }
       },
@@ -18,8 +18,8 @@
             "comment": "We don't want to check transitive classes, since we already check them in their own module.",
             "regex": true,
             "include": [
-              "org\\.optaplanner\\.benchmark\\.api.*",
-              "org\\.optaplanner\\.benchmark\\.config.*"
+              "ai\\.timefold\\.solver\\.benchmark\\.api.*",
+              "ai\\.timefold\\.solver\\.benchmark\\.config.*"
             ]
           }
         }
@@ -33,15 +33,15 @@
         {
           "ignore": true,
           "code": "java.method.returnTypeTypeParametersChanged",
-          "old": "method java.lang.Class<org.optaplanner.persistence.common.api.domain.solution.SolutionFileIO<?>> org.optaplanner.benchmark.config.ProblemBenchmarksConfig::getSolutionFileIOClass()",
-          "new": "method java.lang.Class<? extends org.optaplanner.persistence.common.api.domain.solution.SolutionFileIO<?>> org.optaplanner.benchmark.config.ProblemBenchmarksConfig::getSolutionFileIOClass()",
+          "old": "method java.lang.Class<ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO<?>> ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig::getSolutionFileIOClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO<?>> ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig::getSolutionFileIOClass()",
           "justification": "Fix the type parameter."
         },
         {
           "ignore": true,
           "code": "java.method.parameterTypeParameterChanged",
-          "old": "parameter void org.optaplanner.benchmark.config.ProblemBenchmarksConfig::setSolutionFileIOClass(===java.lang.Class<org.optaplanner.persistence.common.api.domain.solution.SolutionFileIO<?>>===)",
-          "new": "parameter void org.optaplanner.benchmark.config.ProblemBenchmarksConfig::setSolutionFileIOClass(===java.lang.Class<? extends org.optaplanner.persistence.common.api.domain.solution.SolutionFileIO<?>>===)",
+          "old": "parameter void ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig::setSolutionFileIOClass(===java.lang.Class<ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO<?>>===)",
+          "new": "parameter void ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig::setSolutionFileIOClass(===java.lang.Class<? extends ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO<?>>===)",
           "parameterIndex": "0",
           "justification": "Fix the type parameter."
         }

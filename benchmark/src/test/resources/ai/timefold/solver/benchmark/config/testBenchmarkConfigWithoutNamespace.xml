@@ -29,10 +29,10 @@
   <solverBenchmark>
     <name>Entity Tabu Search</name>
     <solver>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.TestdataSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.TestdataEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <constructionHeuristic>
         <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
@@ -48,7 +48,7 @@
       </localSearch>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.benchmark.config.PlannerBenchmarkConfigTest$TestdataSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.benchmark.config.PlannerBenchmarkConfigTest$TestdataSolutionFileIO</solutionFileIOClass>
       <writeOutputSolutionEnabled>true</writeOutputSolutionEnabled>
       <inputSolutionFile>nonExistingDataset1.xml</inputSolutionFile>
       <inputSolutionFile>nonExistingDataset2.xml</inputSolutionFile>
@@ -59,10 +59,10 @@
   <solverBenchmark>
     <name>Late Acceptance</name>
     <solver>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.TestdataSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.TestdataEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <constructionHeuristic>
         <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
@@ -77,7 +77,7 @@
       </localSearch>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.benchmark.config.PlannerBenchmarkConfigTest$TestdataSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.benchmark.config.PlannerBenchmarkConfigTest$TestdataSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>nonExistingDataset4.xml</inputSolutionFile>
     </problemBenchmarks>
     <subSingleCount>2</subSingleCount>

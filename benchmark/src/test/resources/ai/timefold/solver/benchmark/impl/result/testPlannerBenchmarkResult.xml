@@ -3,10 +3,10 @@
   <name>2020-07-13_125809</name>
   <aggregation>false</aggregation>
   <availableProcessors>4</availableProcessors>
-  <loggingLevelOptaPlannerCore>DEBUG</loggingLevelOptaPlannerCore>
+  <loggingLevelTimefoldCore>DEBUG</loggingLevelTimefoldCore>
   <loggingLevelDroolsCore>WARN</loggingLevelDroolsCore>
   <maxMemory>5523898368</maxMemory>
-  <optaPlannerVersion>Unjarred development snapshot</optaPlannerVersion>
+  <timefoldSolverVersion>Unjarred development snapshot</timefoldSolverVersion>
   <javaVersion>Java 1.8.0_252 (Oracle Corporation)</javaVersion>
   <javaVM>Java OpenJDK 64-Bit Server VM 25.252-b09 (Oracle Corporation)</javaVM>
   <operatingSystem>Linux amd64 5.6.13-200.fc31.x86_64</operatingSystem>
@@ -16,10 +16,10 @@
     <name>First Fit</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -33,7 +33,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-37858soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-37858soft</score>
         <timeMillisSpent>276</timeMillisSpent>
         <scoreCalculationCount>1632</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -44,7 +44,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-49506soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-49506soft</score>
         <timeMillisSpent>60</timeMillisSpent>
         <scoreCalculationCount>5832</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -56,10 +56,10 @@
     <name>First Fit Decreasing</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -73,7 +73,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-22838soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-22838soft</score>
         <timeMillisSpent>251</timeMillisSpent>
         <scoreCalculationCount>1668</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -84,7 +84,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-30857soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-30857soft</score>
         <timeMillisSpent>61</timeMillisSpent>
         <scoreCalculationCount>5530</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -96,10 +96,10 @@
     <name>Tabu Search</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -131,7 +131,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21607soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21607soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>777269</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -142,7 +142,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25288soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25288soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>856937</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -154,10 +154,10 @@
     <name>Late Acceptance</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -189,7 +189,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21252soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21252soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>761968</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -200,7 +200,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25645soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25645soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>858383</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -212,10 +212,10 @@
     <name>Tabu Search Nearby</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -231,7 +231,7 @@
             <valueSelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector1"/>
-                <nearbyDistanceMeterClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </valueSelector>
@@ -241,7 +241,7 @@
             <secondaryEntitySelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector2"/>
-                <nearbyDistanceMeterClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </secondaryEntitySelector>
@@ -251,7 +251,7 @@
             <valueSelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector3"/>
-                <nearbyDistanceMeterClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </valueSelector>
@@ -269,7 +269,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21929soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21929soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>993153</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -280,7 +280,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25258soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25258soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>850727</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -292,10 +292,10 @@
     <name>Late Acceptance Nearby</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>org.optaplanner.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -311,7 +311,7 @@
             <valueSelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector1"/>
-                <nearbyDistanceMeterClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </valueSelector>
@@ -321,7 +321,7 @@
             <secondaryEntitySelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector2"/>
-                <nearbyDistanceMeterClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </secondaryEntitySelector>
@@ -331,7 +331,7 @@
             <valueSelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector3"/>
-                <nearbyDistanceMeterClass>org.optaplanner.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </valueSelector>
@@ -349,7 +349,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21148soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21148soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>873469</scoreCalculationCount>
       </subSingleBenchmarkResult>
@@ -360,7 +360,7 @@
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
-        <score class="org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-23083soft</score>
+        <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-23083soft</score>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>726321</scoreCalculationCount>
       </subSingleBenchmarkResult>
