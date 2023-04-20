@@ -3,7 +3,7 @@
 
 A _score_ represents the quality of a specific solution.
 The higher the better.
-OptaPlanner looks for the best solution, which is the solution with the highest score found in the available time.
+Timefold looks for the best solution, which is the solution with the highest score found in the available time.
 It might be the _optimal_ solution.
 
 Because this use case has hard and soft constraints,
@@ -46,7 +46,7 @@ public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTab
             }
         }
         int softScore = 0;
-        // Soft constraints are only implemented in the optaplanner-quickstarts code
+        // Soft constraints are only implemented in the timefold-quickstarts code
         return HardSoftScore.of(hardScore, softScore);
     }
 
@@ -59,18 +59,18 @@ all lessons are re-evaluated to calculate the new score.
 
 Instead, create a `src/main/java/org/acme/schooltimetabling/solver/TimeTableConstraintProvider.java` class
 to perform incremental score calculation.
-It uses OptaPlanner's ConstraintStream API which is inspired by Java Streams and SQL:
+It uses Timefold's ConstraintStream API which is inspired by Java Streams and SQL:
 
 [source,java]
 ----
 package org.acme.schooltimetabling.solver;
 
 import org.acme.schooltimetabling.domain.Lesson;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
-import org.optaplanner.core.api.score.stream.Constraint;
-import org.optaplanner.core.api.score.stream.ConstraintFactory;
-import org.optaplanner.core.api.score.stream.ConstraintProvider;
-import org.optaplanner.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 
 public class TimeTableConstraintProvider implements ConstraintProvider {
 
@@ -81,7 +81,7 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                 roomConflict(constraintFactory),
                 teacherConflict(constraintFactory),
                 studentGroupConflict(constraintFactory),
-                // Soft constraints are only implemented in the optaplanner-quickstarts code
+                // Soft constraints are only implemented in the timefold-quickstarts code
         };
     }
 

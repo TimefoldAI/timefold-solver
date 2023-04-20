@@ -19,7 +19,7 @@ The `Solver` aims to find the solution with the highest `Score` of all possible 
 The _best solution_ is the solution with the highest `Score` that `Solver` has encountered during solving,
 which might be the __optimal solution__.
 
-OptaPlanner cannot automatically know which solution is best for your business,
+Timefold cannot automatically know which solution is best for your business,
 so you need to tell it how to calculate the score of a given `@PlanningSolution` instance according to your business needs.
 If you forget or are unable to implement an important business constraint, the solution is probably useless:
 
@@ -30,7 +30,7 @@ image::score-calculation/optimalWithIncompleteConstraints.png[align="center"]
 === Formalize the business constraints
 
 To implement a verbal business constraint, it needs to be formalized as a score constraint.
-Luckily, defining constraints in OptaPlanner is very flexible through the following score techniques:
+Luckily, defining constraints in Timefold is very flexible through the following score techniques:
 
 * **Score signum (positive or negative)**: maximize or minimize a constraint type
 * **Score weight**: put a cost/profit on a constraint type
@@ -125,7 +125,7 @@ then a score is _feasible_ if no hard constraints are broken.
 
 [NOTE]
 ====
-By default, OptaPlanner will always assign all planning variables a planning value.
+By default, Timefold will always assign all planning variables a planning value.
 If there is no feasible solution, this means the best solution will be infeasible.
 To instead leave some of the planning entities unassigned, apply xref:repeated-planning/repeated-planning.adoc#overconstrainedPlanning[overconstrained planning].
 ====
@@ -154,7 +154,7 @@ while both are outranked by the constraints of physical reality.
 [NOTE]
 ====
 To model <<fairnessScoreConstraints,fairness or load balancing>>, there is no need to use lots of score levels
-(even though OptaPlanner can handle many score levels).
+(even though Timefold can handle many score levels).
 ====
 
 Most use cases use a `Score` with two or three weights,
@@ -179,17 +179,17 @@ Those are called pareto optimal.
 image::score-calculation/paretoOptimizationScoring.png[align="center"]
 
 Scores are considered equal far more often.
-It is left up to a human to choose the better out of a set of best solutions (with equal scores) found by OptaPlanner.
-In the example above, the user must choose between solution A (three apples and one orange) and solution B (one apple and six oranges). It is guaranteed that OptaPlanner has not found another solution which has more apples or more oranges or even a better combination of both (such as two apples and three oranges).
+It is left up to a human to choose the better out of a set of best solutions (with equal scores) found by Timefold.
+In the example above, the user must choose between solution A (three apples and one orange) and solution B (one apple and six oranges). It is guaranteed that Timefold has not found another solution which has more apples or more oranges or even a better combination of both (such as two apples and three oranges).
 
-Pareto scoring is currently not supported in OptaPlanner.
+Pareto scoring is currently not supported in Timefold.
 
 [NOTE]
 ====
 A pareto ``Score``'s `compareTo` method is not transitive because it does a pareto comparison.
 For example: having two apples is greater than one apple.
 One apple is equal to One orange.
-Yet, two apples are not greater than one orange (but actually equal). Pareto comparison violates the contract of the interface ``java.lang.Comparable``'s `compareTo` method, but Planners systems are __pareto comparison safe__, unless explicitly stated otherwise in this documentation.
+Yet, two apples are not greater than one orange (but actually equal). Pareto comparison violates the contract of the interface ``java.lang.Comparable``'s `compareTo` method, but Timefold's systems are __pareto comparison safe__, unless explicitly stated otherwise in this documentation.
 ====
 
 
@@ -215,12 +215,12 @@ public interface Score<...> extends Comparable<...> {
 
 The `Score` implementation to use depends on your use case.
 Your score might not efficiently fit in a single `long` value.
-OptaPlanner has several built-in `Score` implementations, but you can implement a custom `Score` too.
+Timefold has several built-in `Score` implementations, but you can implement a custom `Score` too.
 Most use cases tend to use the built-in ``HardSoftScore``.
 
 image::score-calculation/scoreClassDiagram.png[align="center"]
 
-All Score implementations also have an `initScore` (which is an ``int``).It is mostly intended for internal use in OptaPlanner: it is the negative number of uninitialized planning variables.
+All Score implementations also have an `initScore` (which is an ``int``).It is mostly intended for internal use in Timefold: it is the negative number of uninitialized planning variables.
 From a user's perspective this is ``0``, unless a Construction Heuristic is terminated before it could initialize all planning variables (in which case `Score.isSolutionInitialized()` returns ``false``).
 
 The `Score` implementation (for example ``HardSoftScore``) must be the same throughout a `Solver` runtime.
@@ -391,7 +391,6 @@ There are several ways to calculate the `Score` of a solution:
 * **<<easyJavaScoreCalculation,Easy Java score calculation>>**: Implement all constraints together in a single method in Java (or another JVM language). Does not scale.
 * **xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint streams score calculation]**: Implement each constraint as a separate Constraint Stream in Java (or another JVM language). Fast and scalable.
 * **<<incrementalJavaScoreCalculation,Incremental Java score calculation>>** (not recommended): Implement multiple low-level methods in Java (or another JVM language). Fast and scalable. Very difficult to implement and maintain.
-* **xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation] (Deprecated)**: Implement each constraint as a separate score rule in DRL. Scalable.
 
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
 All score calculation types are Object Oriented and can reuse existing Java code.
@@ -402,7 +401,7 @@ The score calculation must be read-only.
 It must not change the planning entities or the problem facts in any way.
 For example, it must not call a setter method on a planning entity in the score calculation.
 
-OptaPlanner does not recalculate the score of a solution if it can predict it (unless an xref:planner-configuration/planner-configuration.adoc#environmentMode[environmentMode assertion] is enabled).
+Timefold does not recalculate the score of a solution if it can predict it (unless an xref:planner-configuration/planner-configuration.adoc#environmentMode[environmentMode assertion] is enabled).
 For example, after a winning step is done, there is no need to calculate the score because that move was done and undone earlier.
 As a result, there is no guarantee that changes applied during score calculation actually happen.
 
@@ -474,7 +473,7 @@ Configure it in the solver configuration:
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>org.optaplanner.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+    <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
@@ -503,7 +502,7 @@ A way to implement your score calculation incrementally in Java.
 *** Currently the fastest if implemented correctly
 * Disadvantages:
 ** Hard to write
-*** A scalable implementation heavily uses maps, indexes, ... (things the Drools rule engine can do for you)
+*** A scalable implementation heavily uses maps, indexes, ... (things ConstraintStreams does for you)
 *** You have to learn, design, write and improve all these performance optimizations yourself
 ** Hard to read
 *** Regular score constraint changes can lead to a high maintenance cost
@@ -635,7 +634,7 @@ Configure it in the solver configuration:
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>org.optaplanner.examples.nqueens.optional.score.NQueensAdvancedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensAdvancedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
@@ -725,7 +724,7 @@ public class MachineReassignmentIncrementalScoreCalculator
 ----
 
 That `getConstraintMatchTotals()` code often duplicates some of the logic of the normal `IncrementalScoreCalculator` methods.
-Constraint Streams and Drools Score Calculation don't have this disadvantage, because they are constraint match aware automatically when needed,
+Constraint Streams doesn't have this disadvantage, because they are constraint match aware automatically when needed,
 without any extra domain-specific code.
 
 
@@ -750,7 +749,7 @@ Many of those have an `InitializingScoreTrend` that only goes down:
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 ----
@@ -760,7 +759,7 @@ Alternatively, you can also specify the trend for each score level separately:
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN/ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 ----
@@ -780,9 +779,9 @@ To verify the constraints against an independent implementation, configure a ``a
   <environmentMode>FAST_ASSERT</environmentMode>
   ...
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.nqueens.optional.score.NQueensConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensConstraintProvider</constraintProviderClass>
     <assertionScoreDirectorFactory>
-      <easyScoreCalculatorClass>org.optaplanner.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+      <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
     </assertionScoreDirectorFactory>
   </scoreDirectorFactory>
 ----
@@ -848,7 +847,7 @@ Similarly in employee rostering:
 image::score-calculation/incrementalScoreCalculationEmployeeRostering.png[align="center"]
 
 This is a huge performance and scalability gain.
-*xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] or xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation] give you this huge scalability gain without forcing you to write a complicated incremental score calculation algorithm.*
+*xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] gives you this huge scalability gain without forcing you to write a complicated incremental score calculation algorithm.*
 Just let the rule engine do the hard work.
 
 Notice that the speedup is relative to the size of your planning problem (your __n__), making incremental score calculation far more scalable.
@@ -1089,7 +1088,6 @@ These connect the constraint weight with the constraint implementation.
 
 * The `@ConstraintConfiguration` annotation has a `constraintPackage` property that defaults to the package of the constraint configuration class.
 Cases with xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint streams] normally don't need to specify it.
-Cases with xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation (Deprecated)] may need to override that because the DRLs often use a different package.
 
 * The `@ConstraintWeight` annotation has a `value` which is the constraint name (for example "Speaker conflict").
 It inherits the constraint package from the `@ConstraintConfiguration`,
@@ -1204,10 +1202,10 @@ Instead use the ConstraintMatch API below and do it properly.
 
 In the string above, there are two previously unexplained concepts.
 
-_Justifications_ are user-defined objects that implement the `org.optaplanner.core.api.score.stream.ConstraintJustification` interface,
+_Justifications_ are user-defined objects that implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` interface,
 which carry meaningful information about a constraint match, such as its package, name and score.
 
-On the other hand, _indicted objects_ are objects which were directly involved in causing a constraint to match. For example, if your constraints penalize each vehicle, then there will be one `org.optaplanner.core.api.score.constraint.Indictment` instance per vehicle, carrying the vehicle as an indicted object. Indictments are typically used for xref:indictmentHeatMap[heat map visualization].
+On the other hand, _indicted objects_ are objects which were directly involved in causing a constraint to match. For example, if your constraints penalize each vehicle, then there will be one `ai.timefold.solver.core.api.score.constraint.Indictment` instance per vehicle, carrying the vehicle as an indicted object. Indictments are typically used for xref:indictmentHeatMap[heat map visualization].
 
 [[usingScoreCalculationOutsideTheSolver]]
 === Using score calculation outside the `Solver`
@@ -1246,7 +1244,7 @@ List<ConstraintJustification> constraintJustificationlist = scoreExplanation.get
 
 
 In score DRL, justifications are always instances of
-`org.optaplanner.core.api.score.stream.DefaultConstraintJustification`,
+`ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification`,
 while in xref:constraint-streams/constraint-streams.adoc#constraintStreams[constraint streams], the return type xref:constraint-streams/constraint-streams.adoc#constraintStreamsCustomizingJustificationsAndIndictments[can be customised],
 so that it can be easily serialized and sent over the wire.
 Such custom justifications can be queried like so:
@@ -1284,7 +1282,7 @@ The sum of all the `ConstraintMatchTotal.getScore()` equals the overall score.
 
 [NOTE]
 ====
-xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint streams] and xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation] supports constraint matches automatically, but <<incrementalJavaScoreCalculation,incremental Java score calculation>> requires
+xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint streams] supports constraint matches automatically, but <<incrementalJavaScoreCalculation,incremental Java score calculation>> requires
 <<constraintMatchAwareIncrementalScoreCalculator,implementing an extra interface>>.
 ====
 
@@ -1317,7 +1315,7 @@ The sum of all the `Indictment.getScoreTotal()` differs from the overall score, 
 
 [NOTE]
 ====
-xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint streams] and xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation] supports constraint matches automatically, but <<incrementalJavaScoreCalculation,incremental Java score calculation>> requires
+xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint streams] supports constraint matches automatically, but <<incrementalJavaScoreCalculation,incremental Java score calculation>> requires
 <<constraintMatchAwareIncrementalScoreCalculator,implementing an extra interface>>.
 ====
 
@@ -1327,5 +1325,4 @@ xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint str
 
 It's recommended to write a unit test for each score constraint individually to check that it behaves correctly.
 Different score calculation types come with different tools for testing.
-For more, see xref:constraint-streams/constraint-streams.adoc#constraintStreamsTesting[testing Constraint Streams] or
-xref:drools-score-calculation/drools-score-calculation.adoc#testingDroolsConstraints[testing Drools constraints].
+For more, see xref:constraint-streams/constraint-streams.adoc#constraintStreamsTesting[testing Constraint Streams].

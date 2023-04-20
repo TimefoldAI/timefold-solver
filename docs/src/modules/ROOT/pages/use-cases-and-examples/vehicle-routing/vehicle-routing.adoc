@@ -185,9 +185,9 @@ It is even possible to render the actual road routes with GraphHopper or Google 
 
 image::use-cases-and-examples/vehicle-routing/vehicleRoutingGoogleMapsDirections.png[align="center"]
 
-Take special care that the road costs between two points use the same optimization criteria as the one used in OptaPlanner.
+Take special care that the road costs between two points use the same optimization criteria as the one used in Timefold.
 For example, GraphHopper etc will by default return the fastest route, not the shortest route.
-Don't use the km (or miles) distances of the fastest GPS routes to optimize the shortest trip in OptaPlanner: this leads to a suboptimal solution as shown below:
+Don't use the km (or miles) distances of the fastest GPS routes to optimize the shortest trip in Timefold: this leads to a suboptimal solution as shown below:
 
 image::use-cases-and-examples/vehicle-routing/roadDistanceTriangleInequality.png[align="center"]
 

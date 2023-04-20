@@ -8,7 +8,6 @@
 * xref:planner-configuration/planner-configuration.adoc[leveloffset=+1]
 * xref:score-calculation/score-calculation.adoc[leveloffset=+1]
 * xref:constraint-streams/constraint-streams.adoc[leveloffset=+1]
-* xref:drools-score-calculation/drools-score-calculation.adoc[leveloffset=+1]
 * xref:shadow-variable/shadow-variable.adoc[leveloffset=+1]
 * xref:optimization-algorithms/optimization-algorithms.adoc[leveloffset=+1]
 * xref:move-and-neighborhood-selection/move-and-neighborhood-selection.adoc[leveloffset=+1]

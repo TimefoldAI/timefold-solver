@@ -54,7 +54,7 @@ As shown above, Local Search solves the four queens problem by starting with the
 . _D0 to D2_
 . _A0 to A1_
 
-Turn on `debug` logging for the category `org.optaplanner` to show those steps in the log:
+Turn on `debug` logging for the category `ai.timefold.solver` to show those steps in the log:
 
 [source,options="nowrap"]
 ----
@@ -333,7 +333,7 @@ Advanced configuration:
 A Tabu Search acceptor should be combined with a high ``acceptedCountLimit``, such as ``1000``.
 ====
 
-OptaPlanner implements several tabu types:
+Timefold implements several tabu types:
 
 * _Planning entity tabu_ (recommended) makes the planning entities of recent steps tabu. For example, for N queens it makes the recently moved queens tabu. It's recommended to start with this tabu type.
 +
@@ -576,7 +576,7 @@ Great Deluge takes as starting water level best score from construction heuristi
     </forager>
   </localSearch>
 ----
-OptaPlanner implements two water level increment options:
+Timefold implements two water level increment options:
 
 If `greatDelugeWaterLevelIncrementScore` is set, the water level is increased by a constant value.
 

@@ -3,13 +3,13 @@
 #   2. running build/release/update_antora_yml.sh that copies the result of the previous step to src/antora.yml
 #
 # The goal is to have the antora.yml containing correct attributes available in the release branch before
-# the optaplanner-website is refreshed.
-name: optaplanner
-title: OptaPlanner User Guide 8.20.0-SNAPSHOT
+# the timefold-solver-website is refreshed.
+name: timefold
+title: Timefold User Guide 8.20.0-SNAPSHOT
 version: latest
 asciidoc:
   attributes:
-    optaplanner-version: 8.20.0-SNAPSHOT
+    timefold-solver-version: 8.20.0-SNAPSHOT
     java-version: 11
     maven-version: 3.8.1
     quarkus-version: 2.7.3.Final

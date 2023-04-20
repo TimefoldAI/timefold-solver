@@ -18,7 +18,7 @@ When the customers for a vehicle change, the arrival time for each customer is a
 For more information, see the xref:use-cases-and-examples/vehicle-routing/vehicle-routing.adoc#vehicleRoutingDomainModel[vehicle routing domain model].
 
 From a score calculation perspective, a shadow variable is like any other planning variable.
-From an optimization perspective, OptaPlanner effectively only optimizes the genuine variables (and mostly ignores the shadow variables): it just assures that when a genuine variable changes, any dependent shadow variables are changed accordingly.
+From an optimization perspective, Timefold effectively only optimizes the genuine variables (and mostly ignores the shadow variables): it just assures that when a genuine variable changes, any dependent shadow variables are changed accordingly.
 
 [IMPORTANT]
 ====
@@ -73,7 +73,7 @@ public class CloudComputer {
 ----
 
 <<shadowVariableIntroduction,Register this class as a planning entity>>,
-otherwise OptaPlanner won't detect it and the shadow variable won't update.
+otherwise Timefold won't detect it and the shadow variable won't update.
 The `sourceVariableName` property is the name of the genuine planning variable on the return type of the getter
 (so the name of the genuine planning variable on the _other_ side).
 
@@ -81,7 +81,7 @@ The `sourceVariableName` property is the name of the genuine planning variable o
 ====
 The shadow property, which is ``Collection`` (usually `List`, `Set` or `SortedSet`), can never be ``null``.
 If no genuine variable references that shadow entity, then it is an empty collection.
-Furthermore it must be a mutable `Collection` because once OptaPlanner starts initializing or changing genuine planning variables,
+Furthermore it must be a mutable `Collection` because once Timefold starts initializing or changing genuine planning variables,
 it will add and remove elements to the ``Collection``s of those shadow variables accordingly.
 ====
 
@@ -119,13 +119,13 @@ public class Standstill {
 ----
 
 <<shadowVariableIntroduction,Register this class as a planning entity>>,
-otherwise OptaPlanner won't detect it and the shadow variable won't update.
+otherwise Timefold won't detect it and the shadow variable won't update.
 
 [WARNING]
 ====
 The input planning problem of a `Solver` must not violate bi-directional relationships.
 If A points to B, then B must point to A.
-OptaPlanner will not violate that principle during planning, but the input must not violate it either.
+Timefold will not violate that principle during planning, but the input must not violate it either.
 ====
 
 
@@ -181,7 +181,7 @@ public class Vehicle {
 On the element side:
 
 - Annotate the class with `@PlanningEntity` to make it a shadow planning entity.
-- <<shadowVariableIntroduction,Register this class as a planning entity>>, otherwise OptaPlanner won't detect it and the shadow variable won't update.
+- <<shadowVariableIntroduction,Register this class as a planning entity>>, otherwise Timefold won't detect it and the shadow variable won't update.
 - Create a property with the genuine planning entity type.
 - Annotate it with `@InverseRelationShadowVariable` and set `sourceVariableName` to the name of the genuine planning list variable.
 
@@ -250,7 +250,7 @@ public class Customer {
 [[customVariableListener]]
 == Custom `VariableListener`
 
-To update a shadow variable, OptaPlanner uses a ``VariableListener``.
+To update a shadow variable, Timefold uses a ``VariableListener``.
 To define a custom shadow variable, write a custom ``VariableListener``:
 implement the interface and annotate it on the shadow variable that needs to change.
 
@@ -270,7 +270,7 @@ implement the interface and annotate it on the shadow variable that needs to cha
 ----
 
 <<shadowVariableIntroduction,Register this class as a planning entity>> if it isn't already.
-Otherwise OptaPlanner won't detect it and the shadow variable won't update.
+Otherwise Timefold won't detect it and the shadow variable won't update.
 
 The `sourceVariableName` is the (genuine or shadow) variable that triggers changes to the annotated shadow variable.
 If the source variable is declared on a different class than the annotated shadow variable's class, also specify the `sourceEntityClass` and make sure the shadow variable's class is <<shadowVariableIntroduction,registered as a planning entity>>.
@@ -400,15 +400,15 @@ image::shadow-variable/shadowVariableOrder.png[align="center"]
 In the example above, D could have also been ordered after E (or F) because there is no direct or indirect dependency between D and E (or F).
 ====
 
-OptaPlanner guarantees that:
+Timefold guarantees that:
 
 * The first ``VariableListener``'s `after*()` methods trigger _after_ the last genuine variable has changed. Therefore the genuine variables (A and B in the example above) are guaranteed to be in a consistent state across all its instances (with values A1, A2 and B1 in the example above) because the entire `Move` has been applied.
 * The second ``VariableListener``'s `after*()` methods trigger _after_ the last first shadow variable has changed. Therefore the first shadow variable (C in the example above) are guaranteed to be in a consistent state across all its instances (with values C1 and C2 in the example above). And of course the genuine variables too.
 * And so forth.
 
-OptaPlanner does not guarantee the order in which the `after*()` methods are called for the _same_``VariableListener`` with different parameters (such as A1 and A2 in the example above), although they are likely to be in the order in which they were affected.
+Timefold does not guarantee the order in which the `after*()` methods are called for the _same_``VariableListener`` with different parameters (such as A1 and A2 in the example above), although they are likely to be in the order in which they were affected.
 
-By default, OptaPlanner does not guarantee that the events are unique.
+By default, Timefold does not guarantee that the events are unique.
 For example, if a shadow variable on an entity is changed twice in the same move (for example by two different genuine variables), then that will cause the same event twice on the ``VariableListener``s that are listening to that original shadow variable.
 To avoid dealing with that complexity, overwrite the method `requiresUniqueEntityEvents()` to receive unique events at the cost of a small performance penalty:
 

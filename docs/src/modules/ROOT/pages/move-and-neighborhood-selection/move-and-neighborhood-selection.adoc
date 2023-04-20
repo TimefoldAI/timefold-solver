@@ -284,7 +284,7 @@ Advanced configuration:
 ----
     <pillarChangeMoveSelector>
       <subPillarType>SEQUENCE</subPillarType>
-      <subPillarSequenceComparatorClass>org.optaplanner.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
+      <subPillarSequenceComparatorClass>ai.timefold.solver.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
       ... <!-- Normal selector properties -->
       <pillarSelector>
         <entitySelector>
@@ -327,7 +327,7 @@ Advanced configuration:
 ----
     <pillarSwapMoveSelector>
       <subPillarType>SEQUENCE</subPillarType>
-      <subPillarSequenceComparatorClass>org.optaplanner.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
+      <subPillarSequenceComparatorClass>ai.timefold.solver.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
       ... <!-- Normal selector properties -->
       <pillarSelector>
         <entitySelector>
@@ -405,7 +405,7 @@ An advanced configuration looks like this:
     <pillar...MoveSelector>
       ...
       <subPillarType>SEQUENCE</subPillarType>
-      <subPillarSequenceComparatorClass>org.optaplanner.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
+      <subPillarSequenceComparatorClass>ai.timefold.solver.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
       <pillarSelector>
         ...
         <minimumSubPillarSize>1</minimumSubPillarSize>
@@ -815,7 +815,7 @@ To give each individual `Move` the same selection chance (as opposed to each ``M
     <unionMoveSelector>
       <changeMoveSelector/>
       <swapMoveSelector/>
-      <selectorProbabilityWeightFactoryClass>org.optaplanner.core.impl.heuristic.selector.common.decorator.FairSelectorProbabilityWeightFactory</selectorProbabilityWeightFactoryClass>
+      <selectorProbabilityWeightFactoryClass>ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FairSelectorProbabilityWeightFactory</selectorProbabilityWeightFactoryClass>
     </unionMoveSelector>
 ----
 
@@ -880,7 +880,7 @@ Advanced configuration:
 ----
       <entitySelector>
         ... <!-- Normal selector properties -->
-        <entityClass>org.optaplanner.examples.curriculumcourse.domain.Lecture</entityClass>
+        <entityClass>ai.timefold.solver.examples.curriculumcourse.domain.Lecture</entityClass>
       </entitySelector>
 ----
 
@@ -1174,7 +1174,7 @@ Configure the `filterClass` on every targeted `moveSelector` (potentially both i
 [source,xml,options="nowrap"]
 ----
     <swapMoveSelector>
-      <filterClass>org.optaplanner.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
+      <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
     </swapMoveSelector>
 ----
 
@@ -1202,7 +1202,7 @@ Configure the `filterClass` on every targeted `entitySelector` (potentially both
 ----
     <changeMoveSelector>
       <entitySelector>
-        <filterClass>org.optaplanner.examples.curriculumcourse.solver.move.LongLectureSelectionFilter</filterClass>
+        <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.LongLectureSelectionFilter</filterClass>
       </entitySelector>
     </changeMoveSelector>
 ----
@@ -1232,7 +1232,7 @@ Configure the `filterClass` on every targeted `valueSelector` (potentially both 
 ----
     <changeMoveSelector>
       <valueSelector>
-        <filterClass>org.optaplanner.examples.curriculumcourse.solver.move.LongPeriodSelectionFilter</filterClass>
+        <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.LongPeriodSelectionFilter</filterClass>
       </valueSelector>
     </changeMoveSelector>
 ----
@@ -1558,7 +1558,7 @@ and use <<mimicSelection,mimic selection>> to specify which destination, value, 
         <destinationSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="valueSelector1"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </destinationSelector>
@@ -1568,7 +1568,7 @@ and use <<mimicSelection,mimic selection>> to specify which destination, value, 
         <secondaryValueSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="valueSelector2"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </secondaryValueSelector>
@@ -1579,7 +1579,7 @@ and use <<mimicSelection,mimic selection>> to specify which destination, value, 
         <destinationSelector>
           <nearbySelection>
             <originSubListSelector mimicSelectorRef="subListSelector3"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </destinationSelector>
@@ -1590,7 +1590,7 @@ and use <<mimicSelection,mimic selection>> to specify which destination, value, 
         <secondarySubListSelector>
           <nearbySelection>
             <originSubListSelector mimicSelectorRef="subListSelector4"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </secondarySubListSelector>
@@ -1738,7 +1738,7 @@ public interface Move<Solution_> {
 ----
 
 To implement a custom move, it's recommended to extend `AbstractMove` instead implementing `Move` directly.
-OptaPlanner calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
+Timefold calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
 For example in cloud balancing, this move changes one process to another computer:
 
 [source,java,options="nowrap"]
@@ -1781,7 +1781,7 @@ it must not change any of the problem facts as that will cause score corruption.
 Use xref:repeated-planning/repeated-planning.adoc#realTimePlanning[real-time planning] to change problem facts while solving.
 ====
 
-OptaPlanner automatically filters out _non doable moves_ by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
+Timefold automatically filters out _non doable moves_ by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
 A _non doable move_ is:
 
 * A move that changes nothing on the current solution.
@@ -1825,7 +1825,7 @@ A solver phase might do and undo the same `Move` more than once.
 In fact, many solver phases will iteratively do and undo a number of moves to evaluate them,
 before selecting one of those and doing that move again (without undoing it the last time).
 
-Always implement the `toString()` method to keep OptaPlanner's logs readable.
+Always implement the `toString()` method to keep Timefold's logs readable.
 Keep it non-verbose and make it consistent with <<genericMoveSelectorsOverview,the generic moves>>:
 
 [source,java,options="nowrap"]
@@ -1993,7 +1993,7 @@ Simple configuration (which can be nested in a `unionMoveSelector` just like any
 [source,xml,options="nowrap"]
 ----
     <moveListFactory>
-      <moveListFactoryClass>org.optaplanner.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
+      <moveListFactoryClass>ai.timefold.solver.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
     </moveListFactory>
 ----
 
@@ -2003,7 +2003,7 @@ Advanced configuration:
 ----
     <moveListFactory>
       ... <!-- Normal moveSelector properties -->
-      <moveListFactoryClass>org.optaplanner.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
+      <moveListFactoryClass>ai.timefold.solver.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
       <moveListFactoryCustomProperties>
         ...<!-- Custom properties -->
       </moveListFactoryCustomProperties>

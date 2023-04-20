@@ -32,9 +32,9 @@ image::use-cases-and-examples/cloud-balancing/cloudBalanceUseCase.png[align="cen
 The simple algorithm used here is the _First Fit Decreasing_ algorithm, which assigns the bigger processes first and assigns the smaller processes to the remaining space.
 As you can see, it is not optimal, as it does not leave enough room to assign the yellow process ``D``.
 
-OptaPlanner does find the more optimal solution by using additional, smarter algorithms.
+Timefold does find the more optimal solution by using additional, smarter algorithms.
 It also scales: both in data (more processes, more computers) and constraints (more hardware requirements, other constraints).
-So let's see how OptaPlanner can be used in this scenario.
+So let's see how Timefold can be used in this scenario.
 
 Here's an executive summary of this example and xref:use-cases-and-examples/machine-reassignment/machine-reassignment.adoc#machineReassignment[an advanced implementation with more constraints]:
 
@@ -78,21 +78,21 @@ A separate object in the domain model must represent a full data set of problem,
 * ``Computer``: represents a computer with certain hardware and maintenance costs.
 +
 In this example, the sample instances for the `Computer` class are: `cpuPower`, `memory`, `networkBandwidth`, `cost`.
-* ``Process``: represents a process with a demand. Needs to be assigned to a `Computer` by OptaPlanner.
+* ``Process``: represents a process with a demand. Needs to be assigned to a `Computer` by Timefold.
 +
 Sample instances for ``Process`` are: `requiredCpuPower`, `requiredMemory`, and `requiredNetworkBandwidth`.
 * ``CloudBalance``: represents a problem. Contains every `Computer` and `Process` for a certain data set.
 +
-For an object representing the full data set and solution, a sample instance holding the _score_ must be present. OptaPlanner can calculate and compare the scores for different solutions; the solution with the highest score is the optimal solution. Therefore, the sample instance for `CloudBalance` is `score`.
+For an object representing the full data set and solution, a sample instance holding the _score_ must be present. Timefold can calculate and compare the scores for different solutions; the solution with the highest score is the optimal solution. Therefore, the sample instance for `CloudBalance` is `score`.
 
 . Determine which relationships (or fields) change during planning.
 
-* _Planning entity_: The class (or classes) that OptaPlanner can change during solving. In this example, it is the class ``Process``, because OptaPlanner can assign processes to computers.
-* _Problem fact_: A class representing input data that OptaPlanner cannot change.
+* _Planning entity_: The class (or classes) that Timefold can change during solving. In this example, it is the class ``Process``, because Timefold can assign processes to computers.
+* _Problem fact_: A class representing input data that Timefold cannot change.
 * _Planning variable_: The property (or properties) of a planning entity class that changes during solving. In this example, it is the property `computer` on the class ``Process``.
 * _Planning solution_: The class that represents a solution to the problem. This class must represent the full data set and contain all planning entities. In this example that is the class ``CloudBalance``.
 
-In the UML class diagram below, the OptaPlanner concepts are already annotated:
+In the UML class diagram below, the Timefold concepts are already annotated:
 
 image::use-cases-and-examples/cloud-balancing/cloudBalanceClassDiagram.png[align="center"]
 
@@ -127,11 +127,11 @@ public class CloudComputer ... {
 
 The `Process` class is particularly important. It is the class that is modified during solving.
 
-We need to tell OptaPlanner that it can change the property ``computer``. To do this:
+We need to tell Timefold that it can change the property ``computer``. To do this:
 . Annotate the class with `@PlanningEntity`.
 . Annotate the getter `getComputer()` with ``@PlanningVariable``.
 
-Of course, the property `computer` needs a setter too, so OptaPlanner can change it during solving.
+Of course, the property `computer` needs a setter too, so Timefold can change it during solving.
 
 .CloudProcess.java
 ====
@@ -167,7 +167,7 @@ public class CloudProcess ... {
 ----
 ====
 
-* OptaPlanner needs to know which values it can choose from to assign to the property ``computer``. Those values are retrieved from the method `CloudBalance.getComputerList()` on the planning solution, which returns a list of all computers in the current data set.
+* Timefold needs to know which values it can choose from to assign to the property ``computer``. Those values are retrieved from the method `CloudBalance.getComputerList()` on the planning solution, which returns a list of all computers in the current data set.
 
 * The ``@PlanningVariable`` automatically matches with the ``@ValueRangeProvider`` on `CloudBalance.getComputerList()`.
 
@@ -184,21 +184,21 @@ The `CloudBalance` class has a [path]_@PlanningSolution_ annotation.
 
 * It holds a list of all computers and a list of all processes.
 * It represents both the planning problem and (if it is initialized) the planning solution.
-* To save a solution, OptaPlanner initializes a new instance of the class.
+* To save a solution, Timefold initializes a new instance of the class.
 
 . The `processList` property holds a list of processes.
-OptaPlanner can change the processes, allocating them to different computers.
+Timefold can change the processes, allocating them to different computers.
 Therefore, a process is a planning entity and the list of processes is a collection of planning entities.
 We annotate the getter `getProcessList()` with ``@PlanningEntityCollectionProperty``.
 
 . The `computerList` property holds a list of computers.
-OptaPlanner cannot change the computers.
+Timefold cannot change the computers.
 Therefore, a computer is a problem fact.
 Especially for xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams],
-the property `computerList` needs to be annotated with a `@ProblemFactCollectionProperty` so that OptaPlanner can retrieve the list of computers (problem facts) and make it available to the rule engine.
+the property `computerList` needs to be annotated with a `@ProblemFactCollectionProperty` so that Timefold can retrieve the list of computers (problem facts) and make it available to the rule engine.
 
 . The `CloudBalance` class also has a `@PlanningScore` annotated property ``score``, which is the `Score` of that solution in its current state.
-OptaPlanner automatically updates it when it calculates a `Score` for a solution instance. Therefore, this property needs a setter.
+Timefold automatically updates it when it calculates a `Score` for a solution instance. Therefore, this property needs a setter.
 
 
 .CloudBalance.java
@@ -243,7 +243,7 @@ public class CloudBalance ... {
 == Run the cloud balancing Hello World
 
 . xref:planner-introduction/planner-introduction.adoc#runTheExamplesInAnIDE[Download and configure the examples in your preferred IDE.]
-. Create a run configuration with the following main class: `org.optaplanner.examples.cloudbalancing.app.CloudBalancingHelloWorld`
+. Create a run configuration with the following main class: `ai.timefold.solver.examples.cloudbalancing.app.CloudBalancingHelloWorld`
 +
 By default, the Cloud Balancing Hello World is configured to run for 120 seconds.
 
@@ -259,7 +259,7 @@ public class CloudBalancingHelloWorld {
     public static void main(String[] args) {
         // Build the Solver
         SolverFactory<CloudBalance> solverFactory = SolverFactory.createFromXmlResource(
-                "org/optaplanner/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
+                "ai/timefold/solver/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
         Solver<CloudBalance> solver = solverFactory.buildSolver();
 
         // Load a problem with 400 computers and 1200 processes
@@ -286,7 +286,7 @@ which can come from xref:planner-configuration/planner-configuration.adoc#solver
 [source,java,options="nowrap"]
 ----
         SolverFactory<CloudBalance> solverFactory = SolverFactory.createFromXmlResource(
-                "org/optaplanner/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
+                "ai/timefold/solver/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
         Solver<CloudBalance> solver = solverFactory.buildSolver();
 ----
 +
@@ -342,13 +342,13 @@ The file is named `cloudBalancingSolverConfig.xml`.
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <!-- Domain model configuration -->
-  <solutionClass>org.optaplanner.examples.cloudbalancing.domain.CloudBalance</solutionClass>
-  <entityClass>org.optaplanner.examples.cloudbalancing.domain.CloudProcess</entityClass>
+  <solutionClass>ai.timefold.solver.examples.cloudbalancing.domain.CloudBalance</solutionClass>
+  <entityClass>ai.timefold.solver.examples.cloudbalancing.domain.CloudProcess</entityClass>
 
   <!-- Score configuration -->
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
-    <!--<constraintProviderClass>org.optaplanner.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>-->
+    <easyScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
+    <!--<constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>-->
   </scoreDirectorFactory>
 
   <!-- Optimization algorithms configuration -->
@@ -361,32 +361,32 @@ The file is named `cloudBalancingSolverConfig.xml`.
 
 This solver configuration consists of three parts:
 
-. *Domain model configuration*: _What can OptaPlanner change?_
+. *Domain model configuration*: _What can Timefold change?_
 +
-We need to make OptaPlanner aware of our domain classes, annotated with `@PlanningEntity` and `@PlanningSolution` annotations:
+We need to make Timefold aware of our domain classes, annotated with `@PlanningEntity` and `@PlanningSolution` annotations:
 +
 [source,xml,options="nowrap"]
 ----
-  <solutionClass>org.optaplanner.examples.cloudbalancing.domain.CloudBalance</solutionClass>
-  <entityClass>org.optaplanner.examples.cloudbalancing.domain.CloudProcess</entityClass>
+  <solutionClass>ai.timefold.solver.examples.cloudbalancing.domain.CloudBalance</solutionClass>
+  <entityClass>ai.timefold.solver.examples.cloudbalancing.domain.CloudProcess</entityClass>
 ----
 
-. *Score configuration*: _How should OptaPlanner optimize the planning variables?
+. *Score configuration*: _How should Timefold optimize the planning variables?
 What is our goal?_
 +
 Since we have hard and soft constraints, we use a ``HardSoftScore``.
-But we need to tell OptaPlanner how to calculate the score, depending on our business requirements.
+But we need to tell Timefold how to calculate the score, depending on our business requirements.
 Further down, we will look into two alternatives to calculate the score, such as using an easy Java implementation, or Constraint Streams.
 +
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
-    <!--<constraintProviderClass>org.optaplanner.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>-->
+    <easyScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
+    <!--<constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>-->
   </scoreDirectorFactory>
 ----
 
-. *Optimization algorithms configuration*: _How should OptaPlanner optimize it?_
+. *Optimization algorithms configuration*: _How should Timefold optimize it?_
 +
 In this case, we use the default xref:optimization-algorithms/optimization-algorithms.adoc#optimizationAlgorithms[optimization algorithms] (because no explicit optimization algorithms are configured) for 30 seconds:
 +
@@ -397,7 +397,7 @@ In this case, we use the default xref:optimization-algorithms/optimization-algor
   </termination>
 ----
 +
-OptaPlanner should get a good result in seconds (and even in less than 15 milliseconds with
+Timefold should get a good result in seconds (and even in less than 15 milliseconds with
 xref:repeated-planning/repeated-planning.adoc#realTimePlanning[real-time planning]), but the more time it has, the better the results.
 Advanced use cases might use different xref:optimization-algorithms/optimization-algorithms.adoc#termination[termination criteria] than a hard time limit.
 +
@@ -407,12 +407,12 @@ Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarke
 [[cloudBalancingScoreConfiguration]]
 == Score configuration
 
-OptaPlanner searches for the solution with the highest ``Score``.
-This example uses a ``HardSoftScore``, which means OptaPlanner looks for the solution with no hard constraints broken (fulfill hardware requirements) and as little as possible soft constraints broken (minimize maintenance cost).
+Timefold searches for the solution with the highest ``Score``.
+This example uses a ``HardSoftScore``, which means Timefold looks for the solution with no hard constraints broken (fulfill hardware requirements) and as little as possible soft constraints broken (minimize maintenance cost).
 
 image::use-cases-and-examples/cloud-balancing/scoreComparisonCloudBalancing.png[align="center"]
 
-Of course, OptaPlanner needs to be told about these domain-specific score constraints.
+Of course, Timefold needs to be told about these domain-specific score constraints.
 There are several ways to implement such a score function:
 
 * <<cloudBalancingEasyJavaScoreConfiguration,Easy Java>>
@@ -428,7 +428,7 @@ One way to define a score function is to implement the interface `EasyScoreCalcu
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
+    <easyScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
@@ -492,7 +492,7 @@ public class CloudBalancingEasyScoreCalculator
 ====
 
 Even if we optimize the code above to use ``Map``s to iterate through the `processList` only once, _it is still slow_ because it does not do xref:score-calculation/score-calculation.adoc#incrementalScoreCalculation[incremental score calculation].
-To fix that, either use constraint streams, incremental Java score calculation or Drools score calculation.
+To fix that, either use constraint streams or incremental Java score calculation.
 
 
 [[cloudBalancingConstraintStreamsScoreConfiguration]]
@@ -504,7 +504,7 @@ To use it, implement the interface `ConstraintProvider` in Java.
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
 ----
 
@@ -575,7 +575,7 @@ Another way to define a score function is to implement the interface `Incrementa
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingIncrementalScoreCalculator</easyScoreCalculatorClass>
+    <easyScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingIncrementalScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 

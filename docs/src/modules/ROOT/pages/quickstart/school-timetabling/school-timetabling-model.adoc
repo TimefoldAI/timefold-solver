@@ -61,10 +61,10 @@ public class Timeslot {
 ----
 
 Because no `Timeslot` instances change during solving, a `Timeslot` is called a _problem fact_.
-Such classes do not require any OptaPlanner specific annotations.
+Such classes do not require any Timefold specific annotations.
 
 Notice the `toString()` method keeps the output short,
-so it is easier to read OptaPlanner's `DEBUG` or `TRACE` log, as shown later.
+so it is easier to read Timefold's `DEBUG` or `TRACE` log, as shown later.
 
 == Room
 
@@ -113,18 +113,18 @@ If a subject is taught multiple times per week by the same teacher to the same s
 there are multiple `Lesson` instances that are only distinguishable by `id`.
 For example, the 9th grade has six math lessons a week.
 
-During solving, OptaPlanner changes the `timeslot` and `room` fields of the `Lesson` class,
+During solving, Timefold changes the `timeslot` and `room` fields of the `Lesson` class,
 to assign each lesson to a time slot and a room.
-Because OptaPlanner changes these fields, `Lesson` is a _planning entity_:
+Because Timefold changes these fields, `Lesson` is a _planning entity_:
 
 image::quickstart/school-timetabling/schoolTimetablingClassDiagramAnnotated.png[]
 
 Most of the fields in the previous diagram contain input data, except for the orange fields:
 A lesson's `timeslot` and `room` fields are unassigned (`null`) in the input data
 and assigned (not `null`) in the output data.
-OptaPlanner changes these fields during solving.
+Timefold changes these fields during solving.
 Such fields are called planning variables.
-In order for OptaPlanner to recognize them,
+In order for Timefold to recognize them,
 both the `timeslot` and `room` fields require an `@PlanningVariable` annotation.
 Their containing class, `Lesson`, requires an `@PlanningEntity` annotation.
 
@@ -134,9 +134,9 @@ Create the `src/main/java/org/acme/schooltimetabling/domain/Lesson.java` class:
 ----
 package org.acme.schooltimetabling.domain;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.lookup.PlanningId;
-import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
 public class Lesson {
@@ -204,13 +204,13 @@ public class Lesson {
 ----
 
 The `Lesson` class has an `@PlanningEntity` annotation,
-so OptaPlanner knows that this class changes during solving
+so Timefold knows that this class changes during solving
 because it contains one or more planning variables.
 
 The `timeslot` field has an `@PlanningVariable` annotation,
-so OptaPlanner knows that it can change its value.
+so Timefold knows that it can change its value.
 In order to find potential `Timeslot` instances to assign to this field,
-OptaPlanner uses the variable type to connect to a xref:planner-configuration/planner-configuration.adoc#planningValueRangeProvider[value range provider]
+Timefold uses the variable type to connect to a xref:planner-configuration/planner-configuration.adoc#planningValueRangeProvider[value range provider]
 that provides a `List<Timeslot>` to pick from.
 
 The `room` field also has an `@PlanningVariable` annotation, for the same reasons.

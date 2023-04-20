@@ -166,7 +166,7 @@ The following constraint stream cardinalities are currently supported:
 [[constraintStreamsHigherCardinalities]]
 === Achieving higher cardinalities
 
-OptaPlanner currently does not support constraint stream cardinalities higher than 4.
+Timefold currently does not support constraint stream cardinalities higher than 4.
 However, with <<constraintStreamsMappingTuples,tuple mapping>> effectively infinite cardinality is possible:
 
 [source,java,options="nowrap"]
@@ -184,7 +184,7 @@ However, with <<constraintStreamsMappingTuples,tuple mapping>> effectively infin
 
 [NOTE]
 ====
-OptaPlanner does not provide any tuple implementations out of the box.
+Timefold does not provide any tuple implementations out of the box.
 It's recommended to use one of the freely available 3rd party implementations.
 Should a custom implementation be necessary, see <<constraintStreamsDesigningMappingFunction,guidelines for mapping functions>>.
 ====
@@ -236,7 +236,7 @@ As an unwanted consequence,
 `from()` behaves unexpectedly for xref:planner-configuration/planner-configuration.adoc#nullablePlanningVariable[nullable variables].
 These are considered initialized even when `null`,
 and therefore this legacy method could still return entities with `null` variables.
-`from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in a future major version of OptaPlanner.
+`from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in a future major version of Timefold.
 ====
 
 [[constraintStreamsPenaltiesRewards]]
@@ -289,8 +289,8 @@ affect score in the opposite direction.
 [[constraintStreamsCustomizingJustificationsAndIndictments]]
 ==== Customizing justifications and indictments
 
-One of important OptaPlanner features is its ability to xref:score-calculation/score-calculation.adoc#explainingTheScore[explain the score] of solutions it produced through the use of justifications and indictments.
-By default, each constraint is justified with `org.optaplanner.core.api.score.stream.DefaultConstraintJustification`, and the final tuple makes up the indicted objects.
+One of important Timefold features is its ability to xref:score-calculation/score-calculation.adoc#explainingTheScore[explain the score] of solutions it produced through the use of justifications and indictments.
+By default, each constraint is justified with `ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification`, and the final tuple makes up the indicted objects.
 For example, in the following constraint, the indicted objects will be of type `Vehicle` and an `Integer`:
 
 [source,java,options="nowrap"]
@@ -346,7 +346,7 @@ To present the constraint matches to the user or to send them over the wire wher
 You have complete control over the type, its name or methods exposed.
 If you choose to decorate it with the proper annotations,
 you will be able to send it over HTTP or store it in a database.
-The only limitation is that it must implement the `org.optaplanner.core.api.score.stream.ConstraintJustification` marker interface.
+The only limitation is that it must implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` marker interface.
 
 
 [[constraintStreamsFilter]]
@@ -400,8 +400,8 @@ The following functions are required for filtering constraint streams of differe
 |Cardinality|Filtering Predicate
 |1          |`java.util.function.Predicate<A>`
 |2          |`java.util.function.BiPredicate<A, B>`
-|3          |`org.optaplanner.core.api.function.TriPredicate<A, B, C>`
-|4          |`org.optaplanner.core.api.function.QuadPredicate<A, B, C, D>`
+|3          |`ai.timefold.solver.core.api.function.TriPredicate<A, B, C>`
+|4          |`ai.timefold.solver.core.api.function.QuadPredicate<A, B, C, D>`
 |===
 
 
@@ -425,7 +425,7 @@ For example:
 
 [source,java,options="nowrap"]
 ----
-    import static org.optaplanner.core.api.score.stream.Joiners.*;
+    import static ai.timefold.solver.core.api.score.stream.Joiners.*;
 
     ...
 
@@ -484,7 +484,7 @@ every computer whose processes consume more power than is available.
 
 [source,java,options="nowrap"]
 ----
-    import static org.optaplanner.core.api.score.stream.ConstraintCollectors.*;
+    import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.*;
 
     ...
 
@@ -506,7 +506,7 @@ In the previous example, `filter()` and all subsequent operations no longer have
 ====
 
 There are several collectors available out of the box. You can also provide your own collectors by implementing the
-`org.optaplanner.core.api.score.stream.uni.UniConstraintCollector` interface, or its `Bi...`, `Tri...` and `Quad...` counterparts.
+`ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector` interface, or its `Bi...`, `Tri...` and `Quad...` counterparts.
 
 
 [[collectorsOutOfTheBox]]
@@ -760,7 +760,7 @@ each of the sub collectors individually.
 
 [NOTE]
 ====
-OptaPlanner does not provide any `Pair`, `Triple` or `Quadruple` implementation out of the box.
+Timefold does not provide any `Pair`, `Triple` or `Quadruple` implementation out of the box.
 ====
 
 
@@ -921,7 +921,7 @@ See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> fo
 == Testing a constraint stream
 
 Constraint streams include the Constraint Verifier unit testing harness.
-To use it, first add a test scoped dependency to the `optaplanner-test` JAR.
+To use it, first add a test scoped dependency to the `timefold-solver-test` JAR.
 
 
 [[constraintStreamsTestingIsolatedConstraints]]
@@ -1061,7 +1061,7 @@ it is your responsibility to assign the correct values beforehand.
 [[constraintStreamsTestingQuarkus]]
 === Testing in Quarkus
 
-If you are using the `optaplanner-quarkus` extension, inject the `ConstraintVerifier` in your tests:
+If you are using the `timefold-solver-quarkus` extension, inject the `ConstraintVerifier` in your tests:
 
 [source,java,options="nowrap"]
 ----
@@ -1075,7 +1075,7 @@ public class MyConstraintProviderTest {
 [[constraintStreamsTestingSpringBoot]]
 === Testing in Spring Boot
 
-If you are using the `optaplanner-spring-boot-starter` module, autowire the `ConstraintVerifier` in your tests:
+If you are using the `timefold-solver-spring-boot-starter` module, autowire the `ConstraintVerifier` in your tests:
 
 [source,java,options="nowrap"]
 ----
@@ -1089,25 +1089,6 @@ public class MyConstraintProviderTest {
 [[constraintStreamsImplementations]]
 == Variant implementation types
 
-Constraint streams come in two flavors:
+Constraint streams comes in one flavor:
 
-* *CS Drools* (default): fast implementation that uses Drools underneath.
-
-* *Bavet*: even faster, more recent in-house implementation.
-To try it out set the `constraintStreamImplType` to `BAVET` in your solver config:
-+
-[source,xml,options="nowrap"]
-----
-    <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-      <scoreDirectorFactory>
-        <constraintProviderClass>org.acme.schooltimetabling.solver.TimeTableConstraintProvider</constraintProviderClass>
-        <!-- BAVET is experimental -->
-        <constraintStreamImplType>BAVET</constraintStreamImplType>
-      </scoreDirectorFactory>
-      ...
-    </solver>
-----
-
-Both of these variants implement the same `ConstraintProvider` API.
-No Java code changes are necessary to switch between the two.
+* `BAVET` (default): an incremental implementation that uses hash indexing techniques.

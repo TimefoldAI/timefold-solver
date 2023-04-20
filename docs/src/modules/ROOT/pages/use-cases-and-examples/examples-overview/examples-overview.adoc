@@ -1,7 +1,7 @@
 [[examplesOverview]]
 = Examples overview
 
-OptaPlanner has several examples.
+Timefold has several examples.
 In this manual we explain mainly using the _n_ queens example and cloud balancing example.
 So it is advisable to read at least those sections.
 
@@ -16,10 +16,10 @@ A _realistic contest_ is _an official, independent contest_:
 * that expects reproducible results within a specific time limit on specific hardware.
 * that has had serious participation from the academic and/or enterprise Operations Research community.
 
-Realistic contests provide an objective comparison of OptaPlanner with competitive software and academic research.
+Realistic contests provide an objective comparison of Timefold with competitive software and academic research.
 
 The source code of all these examples is available in the distribution zip under [path]_examples/sources_
-and also in git under [path]_optaplanner/optaplanner-examples_.
+and also in git under [path]_timefold/timefold-solver-examples_.
 
 .Examples overview
 [cols="1,1a,1a,1a,1a",options="header"]

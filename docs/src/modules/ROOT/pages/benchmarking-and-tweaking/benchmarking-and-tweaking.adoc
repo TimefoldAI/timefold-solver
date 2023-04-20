@@ -8,12 +8,12 @@
 [[findTheBestSolverConfiguration]]
 == Find the best solver configuration
 
-OptaPlanner supports several optimization algorithms, so you're probably wondering which is the best one?
+Timefold supports several optimization algorithms, so you're probably wondering which is the best one?
 Although some optimization algorithms generally perform better than others, it really depends on your problem domain.
 Most solver phases have parameters which can be tweaked.
 Those parameters can influence the results a lot, even though most solver phases work pretty well out-of-the-box.
 
-Luckily, OptaPlanner includes a benchmarker, which allows you to play out different solver phases with different settings
+Luckily, Timefold includes a benchmarker, which allows you to play out different solver phases with different settings
 against each other in development, so you can use the best configuration for your planning problem in production.
 
 image::benchmarking-and-tweaking/benchmarkOverview.png[align="center"]
@@ -24,22 +24,22 @@ image::benchmarking-and-tweaking/benchmarkOverview.png[align="center"]
 
 
 [[addADependencyOnBenchmarkJar]]
-=== Add a dependency on `optaplanner-benchmark`
+=== Add a dependency on `timefold-solver-benchmark`
 
-The benchmarker is in a separate artifact called ``optaplanner-benchmark``.
+The benchmarker is in a separate artifact called ``timefold-solver-benchmark``.
 
 If you use Maven, add a dependency in your `pom.xml` file:
 
 [source,xml,options="nowrap"]
 ----
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-benchmark</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-benchmark</artifactId>
     </dependency>
 ----
 
 This is similar for Gradle, Ivy and Buildr.
-The version must be exactly the same as the `optaplanner-core` version used (which is automatically the case if you import ``optaplanner-bom``).
+The version must be exactly the same as the `timefold-solver-core` version used (which is automatically the case if you import ``timefold-solver-bom``).
 
 If you use ANT, you've probably already copied the required jars from the download zip's [path]_binaries_
  directory.
@@ -53,7 +53,7 @@ load a few datasets and benchmark them. For example, with 3 datasets:
 [source,java,options="nowrap"]
 ----
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfigXmlResource(
-        "org/optaplanner/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
+        "ai/timefold/solver/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
 
 CloudBalance dataset1 = ...;
 CloudBalance dataset2 = ...;
@@ -80,7 +80,7 @@ Configure it with a benchmark configuration XML file, provided as a classpath re
 [source,java,options="nowrap"]
 ----
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlResource(
-        "org/optaplanner/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
+        "ai/timefold/solver/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
 PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
 benchmark.benchmarkAndShowReportInBrowser();
 ----
@@ -152,7 +152,7 @@ This way the generated files are not bloating your source control and they aren'
 For example in git, it should be added to ``.gitignore``. Usually that directory is called ``local``.
 ====
 
-If an `Exception` or `Error` occurs in a single benchmark, the entire Benchmarker does not fail-fast (unlike everything else in OptaPlanner).
+If an `Exception` or `Error` occurs in a single benchmark, the entire Benchmarker does not fail-fast (unlike everything else in Timefold).
 Instead, the Benchmarker continues to run all other benchmarks, write the benchmark report and then fail (if there is at least one failing single benchmark).
 The failing benchmarks are clearly marked as such in the benchmark report.
 
@@ -188,7 +188,7 @@ public interface SolutionFileIO<Solution_> {
 }
 ----
 
-The `SolutionFileIO` interface is in the `optaplanner-persistence-common` jar (which is a dependency of the `optaplanner-benchmark` jar).
+The `SolutionFileIO` interface is in the `timefold-persistence-common` jar (which is a dependency of the `timefold-solver-benchmark` jar).
 There are several ways to serialize a solution.
 
 
@@ -230,7 +230,7 @@ Then use it in the benchmark configuration like so:
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.nqueens.persistence.NQueensJsonSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensJsonSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/nqueens/unsolved/32queens.json</inputSolutionFile>
       ...
     </problemBenchmarks>
@@ -257,7 +257,7 @@ and use it in the benchmark configuration:
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/nqueens/unsolved/32queens.xml</inputSolutionFile>
       ...
     </problemBenchmarks>
@@ -277,7 +277,7 @@ Implement your own `SolutionFileIO` implementation and configure it with the `so
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
       <inputSolutionFile>data/machinereassignment/import/model_a1_1.txt</inputSolutionFile>
       ...
     </problemBenchmarks>
@@ -359,10 +359,10 @@ To quickly configure and run a benchmark for typical solver configs, use a `solv
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.nqueens.domain.NQueens</solutionClass>
-      <entityClass>org.optaplanner.examples.nqueens.domain.Queen</entityClass>
+      <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
+      <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -370,7 +370,7 @@ To quickly configure and run a benchmark for typical solver configs, use a `solv
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/nqueens/unsolved/32queens.json</inputSolutionFile>
       <inputSolutionFile>data/nqueens/unsolved/64queens.json</inputSolutionFile>
     </problemBenchmarks>
@@ -429,7 +429,7 @@ For example with Logback in ``logback.xml``:
     </discriminator>
     <sift>
       <appender name="fileAppender.${subSingleBenchmark.name}" class="...FileAppender">
-        <file>local/log/optaplannerBenchmark-${subSingleBenchmark.name}.log</file>
+        <file>local/log/timefoldBenchmark-${subSingleBenchmark.name}.log</file>
         ...
       </appender>
     </sift>
@@ -872,7 +872,7 @@ To see which constraints are matched in the best score (and how much) over time,
 image::benchmarking-and-tweaking/constraintMatchTotalBestScoreStatistic.png[align="center"]
 
 Requires the score calculation to support xref:score-calculation/score-calculation.adoc#explainingTheScore[constraint matches].
-xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] and xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation (Deprecated)] support constraint matches automatically,
+xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] supports constraint matches automatically,
 but xref:score-calculation/score-calculation.adoc#incrementalJavaScoreCalculation[incremental Java score calculation] requires more work.
 
 [WARNING]
@@ -971,7 +971,7 @@ Leave some processors unused for garbage collection and other processes.
 The following ``parallelBenchmarkCount``s are supported:
 
 * `1` (default): Run all benchmarks sequentially.
-* ``AUTO``: Let OptaPlanner decide how many benchmarks to run in parallel. This formula is based on experience. It's recommended to prefer this over the other parallel enabling options.
+* ``AUTO``: Let Timefold decide how many benchmarks to run in parallel. This formula is based on experience. It's recommended to prefer this over the other parallel enabling options.
 * Static number: The number of benchmarks to run in parallel.
 +
 [source,xml,options="nowrap"]
@@ -1125,7 +1125,7 @@ And build it with the class ``PlannerBenchmarkFactory``:
 [source,java,options="nowrap"]
 ----
         PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromFreemarkerXmlResource(
-                "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl");
+                "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl");
         PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
 ----
 
@@ -1154,7 +1154,7 @@ To display that UI, provide a benchmark config to the `BenchmarkAggregatorFrame`
 ----
     public static void main(String[] args) {
         BenchmarkAggregatorFrame.createAndDisplayFromXmlResource(
-                "org/optaplanner/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
+                "ai/timefold/solver/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
     }
 ----
 
@@ -1168,7 +1168,7 @@ In the GUI, select the interesting benchmarks and click the button to generate t
 
 [NOTE]
 ====
-All the input reports which are being merged should have been generated with the same OptaPlanner version (excluding hotfix differences) as the ``BenchmarkAggregator``.
-Using reports from different OptaPlanner major or minor versions are not guaranteed to succeed and deliver correct information,
+All the input reports which are being merged should have been generated with the same Timefold version (excluding hotfix differences) as the ``BenchmarkAggregator``.
+Using reports from different Timefold major or minor versions are not guaranteed to succeed and deliver correct information,
 because the benchmark report data structure often changes.
 ====

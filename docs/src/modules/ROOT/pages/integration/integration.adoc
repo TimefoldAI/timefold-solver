@@ -8,12 +8,12 @@
 [[integrationOverview]]
 == Overview
 
-OptaPlanner's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
+Timefold's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
 For example:
 
 * To read a planning problem from the database (and store the best solution in it), annotate the domain POJOs with JPA annotations.
 * To read a planning problem from an XML file (and store the best solution in it), annotate the domain POJOs with JAXB annotations.
-* To expose the Solver as a REST Service that reads the planning problem and responds with the best solution, annotate the domain POJOs with JAXB or Jackson annotations and hook the `Solver` in Camel or RESTEasy.
+* To expose the Solver as a REST Service that reads the planning problem and responds with the best solution, annotate the domain POJOs with JAXB or Jackson annotations and hook the `Solver` in RESTEasy.
 
 image::integration/integrationOverview.png[align="center"]
 
@@ -30,12 +30,12 @@ to store them in a database by calling `EntityManager.persist()`.
 
 [NOTE]
 ====
-Do not confuse JPA's `@Entity` annotation with OptaPlanner's `@PlanningEntity` annotation.
+Do not confuse JPA's `@Entity` annotation with Timefold's `@PlanningEntity` annotation.
 They can appear both on the same class:
 
 [source,java,options="nowrap"]
 ----
-@PlanningEntity // OptaPlanner annotation
+@PlanningEntity // Timefold annotation
 @Entity // JPA annotation
 public class Talk {...}
 ----
@@ -44,7 +44,7 @@ public class Talk {...}
 [[jpaAndHibernatePersistingAScore]]
 ==== JPA and Hibernate: persisting a `Score`
 
-The `optaplanner-persistence-jpa` jar provides a JPA score converter for every built-in score type.
+The `timefold-solver-jpa` jar provides a JPA score converter for every built-in score type.
 
 [source,java,options="nowrap"]
 ----
@@ -74,7 +74,7 @@ Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
 
 [source,java,options="nowrap"]
 ----
-@PlanningSolution // OptaPlanner annotation
+@PlanningSolution // Timefold annotation
 @Entity // JPA annotation
 public class Conference {
 
@@ -87,7 +87,7 @@ public class Conference {
 
 [source,java,options="nowrap"]
 ----
-@DeepPlanningClone // OptaPlanner annotation: Force the default planning cloner to planning clone this class too
+@DeepPlanningClone // Timefold annotation: Force the default planning cloner to planning clone this class too
 @Entity // JPA annotation
 public class Room {
 
@@ -105,7 +105,7 @@ Neglecting to do this can lead to persisting duplicate solutions, JPA exceptions
 
 Enrich domain POJOs (solution, entities and problem facts) with JAXB annotations to serialize them to/from XML or JSON.
 
-Add a dependency to the `optaplanner-persistence-jaxb` jar to take advantage of these extra integration features:
+Add a dependency to the `timefold-solver-jaxb` jar to take advantage of these extra integration features:
 
 [[jaxbMarshallingAScore]]
 ==== JAXB: marshalling a `Score`
@@ -171,12 +171,12 @@ The `hardLevelsSize` and `softLevelsSize` implied, when reading a bendable score
 
 Enrich domain POJOs (solution, entities and problem facts) with Jackson annotations to serialize them to/from JSON.
 
-Add a dependency to the `optaplanner-persistence-jackson` jar and register `OptaPlannerJacksonModule`:
+Add a dependency to the `timefold-solver-jackson` jar and register `TimefoldJacksonModule`:
 
 [source,java,options="nowrap"]
 ----
 ObjectMapper objectMapper = new ObjectMapper();
-objectMapper.registerModule(OptaPlannerJacksonModule.createModule());
+objectMapper.registerModule(TimefoldJacksonModule.createModule());
 ----
 
 
@@ -184,7 +184,7 @@ objectMapper.registerModule(OptaPlannerJacksonModule.createModule());
 ==== Jackson: marshalling a `Score`
 
 When a `Score` is marshalled to/from JSON by the default Jackson configuration, it fails.
-The `OptaPlannerJacksonModule` fixes that, by using `HardSoftScoreJacksonSerializer`,
+The `TimefoldJacksonModule` fixes that, by using `HardSoftScoreJacksonSerializer`,
 `HardSoftScoreJacksonDeserializer`, etc.
 
 [source,java,options="nowrap"]
@@ -269,11 +269,11 @@ For example, this generates:
 
 Enrich domain POJOs (solution, entities and problem facts) with JSON-B annotations to serialize them to/from JSON.
 
-Add a dependency to the `optaplanner-persistence-jsonb` jar and use `OptaPlannerJsonbConfig` to create a `Jsonb` instance:
+Add a dependency to the `timefold-solver-jsonb` jar and use `TimefoldJsonbConfig` to create a `Jsonb` instance:
 
 [source,java,options="nowrap"]
 ----
-JsonbConfig config = OptaPlannerJsonbConfig.createConfig();
+JsonbConfig config = TimefoldJsonbConfig.createConfig();
 Jsonb jsonb = JsonbBuilder.create(config);
 ----
 
@@ -282,7 +282,7 @@ Jsonb jsonb = JsonbBuilder.create(config);
 ==== JSON-B: marshalling a `Score`
 
 When a `Score` is marshalled to/from JSON by the default JSON-B configuration, it fails.
-The `OptaPlannerJsonbConfig` fixes that, by using adapters including `BendableScoreJsonbAdapter`, `HardSoftScoreJsonbAdapter`, etc.
+The `TimefoldJsonbConfig` fixes that, by using adapters including `BendableScoreJsonbAdapter`, `HardSoftScoreJsonbAdapter`, etc.
 
 [source,java,options="nowrap"]
 ----
@@ -327,14 +327,9 @@ This generates:
 [[integrationWithQuarkus]]
 == Quarkus
 
-To use OptaPlanner with Quarkus, read the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusJavaQuickStart[Quarkus Java quick start].
+To use Timefold with Quarkus, read the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusJavaQuickStart[Quarkus Java quick start].
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
-the _OptaPlanner AI constraint solver_ extension before generating your application.
-
-[WARNING]
-====
-xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation] is incompatible with the `quarkus:dev` mode and deprecated.
-====
+the _Timefold AI constraint solver_ extension before generating your application.
 
 Following properties are supported in the Quarkus `application.properties`:
 
@@ -344,33 +339,13 @@ include::config-properties.adoc[]
 [[integrationWithSpringBoot]]
 == Spring Boot
 
-To use OptaPlanner on Spring Boot, add the `optaplanner-spring-boot-starter` dependency
+To use Timefold on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
 and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[Spring Boot Java quick start].
-
-[WARNING]
-====
-xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation] is currently incompatible with the dependency `spring-boot-devtools`:
-none of the DRL rules will fire, due to ClassLoader issues.
-Also, Drools score calculation is deprecated.
-====
 
 These properties are supported in Spring's `application.properties`:
 
 :property_prefix:
 include::config-properties.adoc[]
-
-
-[[integrationWithSoaAndEsb]]
-== SOA and ESB
-
-
-[[integrationWithCamel]]
-=== Camel and Karaf
-
-http://camel.apache.org/[Camel] is an enterprise integration framework which includes support for OptaPlanner (starting from Camel 2.13). It can expose a use case as a REST service, a SOAP service, a JMS service, ...
-
-http://camel.apache.org/optaplanner.html[Read the documentation for the camel-optaplanner component.]
-That component works in Karaf too.
 
 
 [[integrationWithOtherEnvironments]]
@@ -380,71 +355,42 @@ That component works in Karaf too.
 [[integrationWithJPMS]]
 === Java platform module system (Jigsaw)
 
-When using OptaPlanner from code on the modulepath (Java 9 and higher),
+When using Timefold from code on the modulepath (Java 9 and higher),
 _open_ your packages that contain your domain objects, constraints and solver configuration
 _to all modules_ in your `module-info.java` file:
 
 [source,java,options="nowrap"]
 ----
-module org.optaplanner.cloudbalancing {
-    requires org.optaplanner.core;
+module ai.timefold.solver.cloudbalancing {
+    requires ai.timefold.solver.core;
     ...
 
-    opens org.optaplanner.examples.cloudbalancing; // Solver configuration
-    opens org.optaplanner.examples.cloudbalancing.domain; // Domain classes
-    opens org.optaplanner.examples.cloudbalancing.score; // Constraints
-    ...
-}
-----
-
-Otherwise OptaPlanner can't reach those classes or files, even if they are exported.
-
-[[integrationWithOSGi]]
-=== OSGi
-
-Integration with OSGi is not supported.
-
-[[integrationWithAndroid]]
-=== Android
-
-Android is not a complete JVM (because some JDK libraries are missing),
-but OptaPlanner works on Android with xref:score-calculation/score-calculation.adoc#easyJavaScoreCalculation[easy Java] or xref:score-calculation/score-calculation.adoc#incrementalJavaScoreCalculation[incremental Java] score calculation.
-The Drools rule engine does not work on Android yet,
-so xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] and xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation (Deprecated)] doesn't work on Android and its dependencies need to be excluded.
-
-*Workaround to use OptaPlanner on Android:*
-
-. Add a dependency to the `build.gradle` file in your Android project to exclude OptaPlanner's `optaplanner-constraint-streams-drools` and `optaplanner-constraint-drl` modules:
-+
-[source,gradle]
-----
-dependencies {
-    ...
-    implementation('org.optaplanner:optaplanner-core:...') {
-        exclude group: 'org.optaplanner', module: 'optaplanner-constraint-streams-drools'
-        exclude group: 'org.optaplanner', module: 'optaplanner-constraint-drl'
-    }
+    opens ai.timefold.solver.examples.cloudbalancing; // Solver configuration
+    opens ai.timefold.solver.examples.cloudbalancing.domain; // Domain classes
+    opens ai.timefold.solver.examples.cloudbalancing.score; // Constraints
     ...
 }
 ----
+
+Otherwise Timefold can't reach those classes or files, even if they are exported.
 
 
 [[integrationWithHumanPlanners]]
 == Integration with human planners (politics)
 
-A good OptaPlanner implementation beats any good human planner for non-trivial datasets.
+A good Timefold implementation beats any good human planner for non-trivial datasets.
 Many human planners fail to accept this, often because they feel threatened by an automated system.
 
-But despite that, both can benefit if the human planner becomes the supervisor of OptaPlanner:
+But despite that, both can benefit if the human planner becomes the supervisor of Timefold:
 
 * *The human planner defines, validates and tweaks the score function.*
 ** The human planner tweaks the constraint weights of the xref:score-calculation/score-calculation.adoc#constraintConfiguration[constraint configuration] in a UI, as the business priorities change over time.
 ** When the business changes, the score function often needs to change too.
 The human planner can notify the developers to add, change or remove score constraints.
-* *The human planner is always in control of OptaPlanner.*
+* *The human planner is always in control of Timefold.*
 ** As shown in the course scheduling example, the human planner can pin down one or more planning variables to a specific planning value.
-Because they are xref:repeated-planning/repeated-planning.adoc#pinnedPlanningEntities[pinned], OptaPlanner does not change them: it optimizes the planning around the enforcements made by the human.
-If the human planner pins down all planning variables, he/she sidelines OptaPlanner completely.
+Because they are xref:repeated-planning/repeated-planning.adoc#pinnedPlanningEntities[pinned], Timefold does not change them: it optimizes the planning around the enforcements made by the human.
+If the human planner pins down all planning variables, he/she sidelines Timefold completely.
 ** In a prototype implementation, the human planner occasionally uses pinning to intervene, but as the implementation matures, this should become obsolete.
 The feature should be kept available as a reassurance for the humans, and in the event that the business changes dramatically before the score constraints are adjusted accordingly.
 
@@ -455,17 +401,17 @@ image::integration/keepTheUserInControl.png[align="center"]
 [[sizingHardwareAndSoftware]]
 == Sizing hardware and software
 
-Before sizing a OptaPlanner service, first understand the typical behaviour of a `Solver.solve()` call:
+Before sizing a Timefold service, first understand the typical behaviour of a `Solver.solve()` call:
 
 image::integration/sizingHardware.png[align="center"]
 
-Understand these guidelines to decide the hardware for a OptaPlanner service:
+Understand these guidelines to decide the hardware for a Timefold service:
 
 * **RAM memory**: Provision plenty, but no need to provide more.
-** The problem dataset, loaded before OptaPlanner is called, often consumes the most memory. It depends on the problem scale.
+** The problem dataset, loaded before Timefold is called, often consumes the most memory. It depends on the problem scale.
 *** For example, in the Machine Reassignment example some datasets use over 1GB in memory. But in most examples, they use just a few MB.
-*** If this is a problem, review the domain class structure: remove classes or fields that OptaPlanner doesn't need during solving.
-*** OptaPlanner usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:planner-configuration/planner-configuration.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
+*** If this is a problem, review the domain class structure: remove classes or fields that Timefold doesn't need during solving.
+*** Timefold usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:planner-configuration/planner-configuration.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
 ** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.
 ** The maximum size of the JVM heap space can be in three states:
 *** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
@@ -489,23 +435,22 @@ Understand these guidelines to decide the hardware for a OptaPlanner service:
 *** Distribute the Solver runs across the day (or night). This is especially an opportunity in SaaS that's used across the globe, due to timezones: UK and India can use the same CPU core when scheduling at night.
 ** The SolverManager will take care of the orchestration, especially in those underfunded environments in which solvers (and partitions) are forced to share CPU cores or wait in line.
 * **I/O (network, disk, ...)**: Not used during solving.
-** OptaPlanner is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
+** Timefold is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
 *** A web server can handle 24 active servlets threads with eight cores without performance loss, because most servlets threads are blocking on I/O.
 *** However, 24 active solver threads with eight cores will cause each solver's xref:score-calculation/score-calculation.adoc#scoreCalculationSpeed[score calculation speed] to be three times slower, causing a big performance loss.
 ** Note that calling any I/O during solving, for example a remote service in your score calculation, causes a huge performance loss because it's called thousands of times per second, so it should complete in microseconds. So no good implementation does that.
 
 Keep these guidelines in mind when selecting and configuring the software.
-See https://www.optaplanner.org/blog/archive.html[our blog archive] for the details of our experiments, which use our diverse set of examples.
+See https://timefold.ai/blog/[our blog archive] for the details of our experiments, which use our diverse set of examples.
 Your mileage may vary.
 
 * Operating System
 ** No experimentally proven advice yet (but prefer Linux anyway).
 * JDK
-** Version: Our benchmarks have consistently shown improvements in performance when comparing new JDK releases with their predecessors. It is therefore recommended using the latest available JDK. If you're interested in the performance comparisons of OptaPlanner running of different JDK releases, you can find them in the form of blog posts in https://www.optaplanner.org/blog/archive.html[our blog archive].
-** Garbage Collector: ParallelGC can be potentially between 5% and 35% faster than G1GC (the default). Unlike web servers, OptaPlanner needs a GC focused on throughput, not latency. Use `-XX:+UseParallelGC` to turn on ParallelGC.
+** Version: Our benchmarks have consistently shown improvements in performance when comparing new JDK releases with their predecessors. It is therefore recommended using the latest available JDK. If you're interested in the performance comparisons of Timefold running of different JDK releases, you can find them in the form of blog posts in https://timefold.ai/blog/[our blog archive].
+** Garbage Collector: ParallelGC can be potentially between 5% and 35% faster than G1GC (the default). Unlike web servers, Timefold needs a GC focused on throughput, not latency. Use `-XX:+UseParallelGC` to turn on ParallelGC.
 * Logging can have a severe impact on performance.
-** Debug logging `org.drools` can reduce performance by a factor of 7.
-** Debug logging `org.optaplanner` can be between 0% and 15% slower than info logging. Trace logging can be between 5% and 70% slower than info logging.
+** Debug logging `ai.timefold.solver` can be between 0% and 15% slower than info logging. Trace logging can be between 5% and 70% slower than info logging.
 ** Synchronous logging to a file has an additional significant impact for debug and trace logging (but not for info logging).
 * Avoid a cloud environment in which you share your CPU core(s) with other virtual machines or containers. Performance (and therefore solution quality) can be unreliable when the available CPU power varies greatly.
 

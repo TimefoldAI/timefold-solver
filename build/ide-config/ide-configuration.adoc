@@ -5,10 +5,10 @@ Before you start contributing, please follow the instructions below to set up a 
 == Eclipse Setup
 
 Open the _Preferences_ window, and then navigate to _Java -> Code Style -> Formatter_.
-Click _Import_ and then select the `build/optaplanner-ide-config/src/main/resources/eclipse-format.xml` file in the `ide-configuration` directory.
+Click _Import_ and then select the `build/timefold-solver-ide-config/src/main/resources/eclipse-format.xml` file in the `ide-configuration` directory.
 
 Next navigate to _Java -> Code Style -> Organize Imports_.
-Click Import and select the `build/optaplanner-ide-config/src/main/resources/eclipse.importorder` file.
+Click Import and select the `build/timefold-solver-ide-config/src/main/resources/eclipse.importorder` file.
 
 == IDEA Setup
 
@@ -17,7 +17,7 @@ Open the _Preferences_ window (or _Settings_ depending on your edition), navigat
 Restart your IDE, open the _Preferences_ (or _Settings_) window again and navigate to _Other Settings -> Eclipse Code Formatter_.
 
 Select _Use the Eclipse Code Formatter_, then change the _Eclipse Java Formatter Config File_ to point to the `eclipse-format.xml`
-file in the `build/optaplanner-ide-config/src/main/resources/` directory.
+file in the `build/timefold-solver-ide-config/src/main/resources/` directory.
 Make sure the _Optimize Imports_ box is ticked, and select the `eclipse.importorder` file as the import order config file.
 
 == VS Code setup
@@ -26,7 +26,7 @@ Make sure the _Optimize Imports_ box is ticked, and select the `eclipse.importor
 +
 [source,shell]
 ----
-cd optaplanner
+cd timefold
 mkdir .vscode
 touch .vscode/settings.json
 ----
@@ -35,7 +35,7 @@ touch .vscode/settings.json
 [source,json]
 ----
 {
-    "java.format.settings.url": "build/optaplanner-ide-config/src/main/resources/eclipse-format.xml",
+    "java.format.settings.url": "build/timefold-solver-ide-config/src/main/resources/eclipse-format.xml",
     "java.completion.importOrder": [
         "java",
         "javax",

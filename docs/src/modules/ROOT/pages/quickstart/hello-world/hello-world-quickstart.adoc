@@ -7,7 +7,7 @@
 include::../../_attributes.adoc[]
 
 This guide walks you through the process of creating a simple Java application
-with https://www.optaplanner.org/[OptaPlanner]'s constraint solving Artificial Intelligence (AI).
+with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
 == What you will build
 
@@ -49,7 +49,7 @@ Mathematically speaking, school timetabling is an _NP-hard_ problem.
 This means it is difficult to scale.
 Simply brute force iterating through all possible combinations takes millions of years
 for a non-trivial dataset, even on a supercomputer.
-Fortunately, AI constraint solvers such as OptaPlanner have advanced algorithms
+Fortunately, AI constraint solvers such as Timefold have advanced algorithms
 that deliver a near-optimal solution in a reasonable amount of time.
 
 == Solution source code
@@ -83,9 +83,9 @@ To complete this guide, you need:
 
 Create a Maven or Gradle build file and add these dependencies:
 
-* `optaplanner-core` (compile scope) to solve the school timetable problem.
-* `optaplanner-test` (test scope) to JUnit test the school timetabling constraints.
-* A xref:planner-configuration/planner-configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what OptaPlanner is doing.
+* `timefold-solver-core` (compile scope) to solve the school timetable problem.
+* `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
+* A xref:planner-configuration/planner-configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold is doing.
 
 If you choose Maven, your `pom.xml` file has the following content:
 
@@ -97,7 +97,7 @@ If you choose Maven, your `pom.xml` file has the following content:
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.acme</groupId>
-  <artifactId>optaplanner-hello-world-school-timetabling-quickstart</artifactId>
+  <artifactId>timefold-solver-hello-world-school-timetabling-quickstart</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
@@ -108,9 +108,9 @@ If you choose Maven, your `pom.xml` file has the following content:
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.optaplanner</groupId>
-        <artifactId>optaplanner-bom</artifactId>
-        <version>{optaplanner-version}</version>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-bom</artifactId>
+        <version>{timefold-solver-version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -124,8 +124,8 @@ If you choose Maven, your `pom.xml` file has the following content:
 
   <dependencies>
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-core</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core</artifactId>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -135,8 +135,8 @@ If you choose Maven, your `pom.xml` file has the following content:
 
     <!-- Testing -->
     <dependency>
-      <groupId>org.optaplanner</groupId>
-      <artifactId>optaplanner-test</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -165,7 +165,7 @@ plugins {
     id "application"
 }
 
-def optaplannerVersion = "{optaplanner-version}"
+def timefoldSolverVersion = "{timefold-solver-version}"
 def logbackVersion = "1.2.9"
 
 group = "org.acme"
@@ -176,9 +176,9 @@ repositories {
 }
 
 dependencies {
-    implementation platform("org.optaplanner:optaplanner-bom:${optaplannerVersion}")
-    implementation "org.optaplanner:optaplanner-core"
-    testImplementation "org.optaplanner:optaplanner-test"
+    implementation platform("ai.timefold.solver:timefold-solver-bom:${timefoldSolverVersion}")
+    implementation "ai.timefold.solver:timefold-solver-core"
+    testImplementation "ai.timefold.solver:timefold-solver-test"
 
     runtimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
 }
@@ -248,9 +248,9 @@ import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.TimeTable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.acme.schooltimetabling.solver.TimeTableConstraintProvider;
-import org.optaplanner.core.api.solver.Solver;
-import org.optaplanner.core.api.solver.SolverFactory;
-import org.optaplanner.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -419,7 +419,7 @@ After five seconds, the `main()` method loads the problem, solves it, and prints
 The `solve()` method doesn't return instantly.
 It runs for five seconds before returning the best solution.
 
-OptaPlanner returns _the best solution_ found in the available termination time.
+Timefold returns _the best solution_ found in the available termination time.
 Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesPlannerFindTheOptimalSolution[the nature of NP-hard problems],
 the best solution might not be optimal, especially for larger datasets.
 Increase the termination time to potentially find a better solution.
@@ -446,7 +446,7 @@ Create the `src/main/resource/logback.xml` file:
     </encoder>
   </appender>
 
-  <logger name="org.optaplanner" level="info"/>
+  <logger name="ai.timefold.solver" level="info"/>
 
   <root level="info">
     <appender-ref ref="consoleAppender" />
@@ -478,7 +478,7 @@ INFO  |            | 9th grade  | 10th grade |            |
 Verify the console output. Does it conform to all hard constraints?
 What happens if you comment out the `roomConflict` constraint in `TimeTableConstraintProvider`?
 
-The `info` log shows what OptaPlanner did in those five seconds:
+The `info` log shows what Timefold did in those five seconds:
 
 [source,options="nowrap"]
 ----
@@ -512,7 +512,7 @@ import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.TimeTable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
-import org.optaplanner.test.api.score.stream.ConstraintVerifier;
+import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 class TimeTableConstraintProviderTest {
 
@@ -558,12 +558,12 @@ after solving for the same amount of time, to assess the performance impact:
 ... Solving ended: ..., score calculation speed (29455/sec), ...
 ----
 
-To understand how OptaPlanner is solving your problem internally,
+To understand how Timefold is solving your problem internally,
 change the logging in the `logback.xml` file:
 
 [source,xml]
 ----
-  <logger name="org.optaplanner" level="debug"/>
+  <logger name="ai.timefold.solver" level="debug"/>
 ----
 
 Use `debug` logging to show every _step_:
@@ -686,7 +686,7 @@ After building the project, you can find an archive with a runnable application 
 == Summary
 
 Congratulations!
-You have just developed a Java application with https://www.optaplanner.org/[OptaPlanner]!
+You have just developed a Java application with https://timefold.ai[Timefold]!
 
 If you ran into any issues,
 take a look at {hello-world-java-quickstart-url}[the quickstart source code].

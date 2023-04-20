@@ -1,5 +1,5 @@
 [[plannerConfiguration]]
-= OptaPlanner configuration
+= Timefold configuration
 :doctype: book
 :sectnums:
 :icons: font
@@ -8,7 +8,7 @@
 [[plannerConfigurationOverview]]
 == Overview
 
-Solving a planning problem with OptaPlanner consists of the following steps:
+Solving a planning problem with Timefold consists of the following steps:
 
 . *Model your planning problem* as a class annotated with the ``@PlanningSolution`` annotation, for example the ``NQueens`` class.
 . *Configure a ``Solver``*, for example a First Fit and Tabu Search solver for any `NQueens` instance.
@@ -31,12 +31,12 @@ Configure the `SolverFactory` with a solver configuration XML file, provided as 
 [source,java,options="nowrap"]
 ----
        SolverFactory<NQueens> solverFactory = SolverFactory.createFromXmlResource(
-               "org/optaplanner/examples/nqueens/solver/nqueensSolverConfig.xml");
+               "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
        Solver<NQueens> solver = solverFactory.buildSolver();
 ----
 
 In a typical project (following the Maven directory structure),
-that solverConfig XML file would be located at ``$PROJECT_DIR/src/main/resources/org/optaplanner/examples/nqueens/solver/nqueensSolverConfig.xml``.
+that solverConfig XML file would be located at ``$PROJECT_DIR/src/main/resources/ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml``.
 Alternatively, a `SolverFactory` can be created from a ``File`` with ``SolverFactory.createFromXmlFile()``.
 However, for portability reasons, a classpath resource is recommended.
 
@@ -50,12 +50,12 @@ A solver configuration XML file looks like this:
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <!-- Define the model -->
-  <solutionClass>org.optaplanner.examples.nqueens.domain.NQueens</solutionClass>
-  <entityClass>org.optaplanner.examples.nqueens.domain.Queen</entityClass>
+  <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
+  <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
 
   <!-- Define the score function -->
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
 
   <!-- Configure the optimization algorithms (optional) -->
@@ -79,7 +79,7 @@ Notice the three parts in it:
 
 These various parts of a configuration are explained further in this manual.
 
-*OptaPlanner makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
+*Timefold makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
 
 
 [[solverConfigurationByJavaAPI]]
@@ -92,7 +92,7 @@ For example, to change the running time based on system property, before buildin
 [source,java,options="nowrap"]
 ----
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(
-                "org/optaplanner/examples/nqueens/solver/nqueensSolverConfig.xml");
+                "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
         solverConfig.withTerminationConfig(new TerminationConfig()
                         .withMinutesSpentLimit(userInput));
 
@@ -101,9 +101,9 @@ For example, to change the running time based on system property, before buildin
 ----
 
 Every element in the solver configuration XML is available as a `$$*$$Config` class
-or a property on a `$$*$$Config` class in the package namespace ``org.optaplanner.core.config``.
+or a property on a `$$*$$Config` class in the package namespace ``ai.timefold.solver.core.config``.
 These `$$*$$Config` classes are the Java representation of the XML format.
-They build the runtime components (of the package namespace ``org.optaplanner.core.impl``)
+They build the runtime components (of the package namespace ``ai.timefold.solver.core.impl``)
 and assemble them into an efficient ``Solver``.
 
 [NOTE]
@@ -118,7 +118,7 @@ and copy it with the copy constructor for each user request:
 
     public void init() {
         template = SolverConfig.createFromXmlResource(
-                "org/optaplanner/examples/nqueens/solver/nqueensSolverConfig.xml");
+                "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
         template.setTerminationConfig(new TerminationConfig());
     }
 
@@ -136,7 +136,7 @@ and copy it with the copy constructor for each user request:
 [[annotationAlternatives]]
 === Annotation alternatives
 
-OptaPlanner needs to be told which classes in your domain model are planning entities, which properties are planning variables, etc.
+Timefold needs to be told which classes in your domain model are planning entities, which properties are planning variables, etc.
 There are several ways to deliver this information:
 
 * Add class annotations and JavaBean property annotations on the domain model (recommended).
@@ -152,8 +152,8 @@ This manual focuses on the first manner, but every feature supports all three ma
 [[domainAccess]]
 === Domain access
 
-OptaPlanner by default accesses your domain using reflection, which
-will always work, but is slow compared to direct access. Alternatively, you can configure OptaPlanner to access your domain
+Timefold by default accesses your domain using reflection, which
+will always work, but is slow compared to direct access. Alternatively, you can configure Timefold to access your domain
 using Gizmo, which will generate bytecode that directly access the
 fields/methods of your domain without reflection. However, it comes with some restrictions:
 
@@ -162,7 +162,7 @@ fields/methods of your domain without reflection. However, it comes with some re
   public getters.
 * io.quarkus.gizmo:gizmo must be on the classpath.
 
-These restrictions do not apply when using OptaPlanner with Quarkus,
+These restrictions do not apply when using Timefold with Quarkus,
 where Gizmo is the default domain access type.
 
 To use Gizmo outside of Quarkus, set the `domainAccessType` in the
@@ -242,7 +242,7 @@ In xref:repeated-planning/repeated-planning.adoc#realTimePlanning[real-time plan
 
 To create a good domain model, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
 
-*In OptaPlanner, all problem facts and planning entities are plain old JavaBeans (POJOs).* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
+*In Timefold, all problem facts and planning entities are plain old JavaBeans (POJOs).* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
 
 [[problemFact]]
 === Problem fact
@@ -289,13 +289,13 @@ public class Course {
 }
 ----
 
-A problem fact class does _not_ require any OptaPlanner specific code.
+A problem fact class does _not_ require any Timefold specific code.
 For example, you can reuse your domain classes, which might have JPA annotations.
 
 [NOTE]
 ====
 Generally, better designed domain classes lead to simpler and more efficient score constraints.
-Therefore, when dealing with a messy (denormalized) legacy system, it can sometimes be worthwhile to convert the messy domain model into a OptaPlanner specific model first.
+Therefore, when dealing with a messy (denormalized) legacy system, it can sometimes be worthwhile to convert the messy domain model into a Timefold specific model first.
 For example: if your domain model has two `Teacher` instances for the same teacher that teaches at two different departments, it is harder to write a correct score constraint that constrains a teacher's spare time on the original model than on an adjusted model.
 
 Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached problem fact_>> to enrich the domain model for planning only.
@@ -362,7 +362,7 @@ The solver configuration needs to declare each planning entity class:
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
-  <entityClass>org.optaplanner.examples.nqueens.domain.Queen</entityClass>
+  <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
   ...
 </solver>
 ----
@@ -487,7 +487,7 @@ public class Queen {
 
 The optional `valueRangeProviderRefs` property defines what are the possible planning values for this planning variable.
 It references one or more ``@ValueRangeProvider`` ``id``'s.
-If none are provided, OptaPlanner will attempt to auto-detect matching ``@ValueRangeProvider``s.
+If none are provided, Timefold will attempt to auto-detect matching ``@ValueRangeProvider``s.
 
 [NOTE]
 ====
@@ -538,7 +538,7 @@ Constraint Streams filter out planning entities with a `null` planning variable 
 Use xref:constraint-streams/constraint-streams.adoc#constraintStreamsForEach[forEachIncludingNullVars()] to avoid such unwanted behaviour.
 ====
 
-OptaPlanner will automatically add the value `null` to the value range.
+Timefold will automatically add the value `null` to the value range.
 There is no need to add `null` in a collection provided by a ``ValueRangeProvider``.
 
 [NOTE]
@@ -745,7 +745,7 @@ Another way is to explicitly reference the value range provider.
 
 We already described the first approach.
 By not providing any `valueRangeProviderRefs` on the `@PlanningVariable` annotation,
-OptaPlanner will go over every ``@ValueRangeProvider``-annotated method or field which does not have an ``id`` property set,
+Timefold will go over every ``@ValueRangeProvider``-annotated method or field which does not have an ``id`` property set,
 and will match planning variables with value ranges where their types match.
 
 In the following example,
@@ -879,7 +879,7 @@ Furthermore, an `incrementUnit` can be specified, for example if you have to buy
 
 [NOTE]
 ====
-Return `CountableValueRange` instead of `ValueRange` whenever possible (so OptaPlanner knows that it's countable).
+Return `CountableValueRange` instead of `ValueRange` whenever possible (so Timefold knows that it's countable).
 ====
 
 The `ValueRangeFactory` has creation methods for several value class types:
@@ -1165,7 +1165,7 @@ The solver configuration needs to declare the planning solution class:
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
-  <solutionClass>org.optaplanner.examples.nqueens.domain.NQueens</solutionClass>
+  <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
   ...
 </solver>
 ----
@@ -1173,7 +1173,7 @@ The solver configuration needs to declare the planning solution class:
 [[planningEntitiesOfASolution]]
 ==== Planning entities of a solution (`@PlanningEntityCollectionProperty`)
 
-OptaPlanner needs to extract the entity instances from the solution instance.
+Timefold needs to extract the entity instances from the solution instance.
 It gets those collection(s) by calling every getter (or field) that is annotated with ``@PlanningEntityCollectionProperty``:
 
 [source,java,options="nowrap"]
@@ -1264,10 +1264,10 @@ This annotation can also be <<autoDiscoverSolutionProperties,auto discovered>> i
 [[problemFacts]]
 ==== Problem facts of a solution (`@ProblemFactCollectionProperty`)
 
-For xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] and xref:drools-score-calculation/drools-score-calculation.adoc#droolsScoreCalculation[Drools score calculation (Deprecated)],
-OptaPlanner needs to extract the problem fact instances from the solution instance.
+For xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams],
+Timefold needs to extract the problem fact instances from the solution instance.
 It gets those collection(s) by calling every method (or field) that is annotated with ``@ProblemFactCollectionProperty``.
-All objects returned by those methods are available to use by Constraint Streams or Drools rules.
+All objects returned by those methods are available to use by Constraint Streams.
 For example in `NQueens` all `Column` and `Row` instances are problem facts.
 
 [source,java,options="nowrap"]
@@ -1354,7 +1354,7 @@ Where a score constraint needs to check that no two exams with a topic that shar
 ==== Auto discover solution properties
 
 Instead of configuring each property (or field) annotation explicitly,
-some can also be deduced automatically by OptaPlanner.
+some can also be deduced automatically by Timefold.
 For example, on the cloud balancing example:
 
 [source,java,options="nowrap"]
@@ -1701,7 +1701,7 @@ It is recommended to write a test case that does a short run of your planning pr
 ==== `REPRODUCIBLE` (default)
 
 The reproducible mode is the default mode because it is recommended during development.
-In this mode, two runs in the same OptaPlanner version will execute the same code in the same order.
+In this mode, two runs in the same Timefold version will execute the same code in the same order.
 **Those two runs will have the same result at every step**, except if the note below applies.
 This enables you to reproduce bugs consistently.
 It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
@@ -1740,7 +1740,7 @@ The best way to illuminate the black box that is a ``Solver``, is to play with t
 +
 [NOTE]
 ====
-**If an error happens, OptaPlanner normally fails fast**: it throws a subclass of `RuntimeException` with a detailed message to the calling code.
+**If an error happens, Timefold normally fails fast**: it throws a subclass of `RuntimeException` with a detailed message to the calling code.
 It does not log it as an error itself to avoid duplicate log messages.
 Except if the calling code explicitly catches and eats that ``RuntimeException``, a ``Thread``'s default `ExceptionHandler` will log it as an error anyway.
 Meanwhile, the code is disrupted from doing further harm or obfuscating the error.
@@ -1797,13 +1797,13 @@ If you are not using any logging framework yet, use Logback by adding this Maven
     </dependency>
 ----
 
-Configure the logging level on the `org.optaplanner` package in your `logback.xml` file:
+Configure the logging level on the `ai.timefold.solver` package in your `logback.xml` file:
 
 [source,xml,options="nowrap"]
 ----
 <configuration>
 
-  <logger name="org.optaplanner" level="debug"/>
+  <logger name="ai.timefold.solver" level="debug"/>
 
   ...
 
@@ -1830,13 +1830,13 @@ If instead, you are still using Log4j 1.x (and you do not want to switch to its 
     </dependency>
 ----
 
-And configure the logging level on the package `org.optaplanner` in your `log4j.xml` file:
+And configure the logging level on the package `ai.timefold.solver` in your `log4j.xml` file:
 
 [source,xml,options="nowrap"]
 ----
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-  <category name="org.optaplanner">
+  <category name="ai.timefold.solver">
     <priority value="debug" />
   </category>
 
@@ -1869,7 +1869,7 @@ For example in Logback, use a `SiftingAppender` in ``logback.xml``:
     </discriminator>
     <sift>
       <appender name="fileAppender.${tenant.name}" class="...FileAppender">
-        <file>local/log/optaplanner-${tenant.name}.log</file>
+        <file>local/log/timefold-solver-${tenant.name}.log</file>
         ...
       </appender>
     </sift>
@@ -1880,10 +1880,10 @@ For example in Logback, use a `SiftingAppender` in ``logback.xml``:
 [[monitoring]]
 === Monitoring the solver
 
-OptaPlanner exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver. OptaPlanner automatically connects to configured registries when it is used in Quarkus or Spring Boot. If you use OptaPlanner with plain Java, you must add the metrics registry to the global registry.
+Timefold exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver. Timefold automatically connects to configured registries when it is used in Quarkus or Spring Boot. If you use Timefold with plain Java, you must add the metrics registry to the global registry.
 
 .Prerequisites
-* You have a plain Java OptaPlanner project.
+* You have a plain Java Timefold project.
 * You have configured a Micrometer registry. For information about configuring Micrometer registries, see the https://micrometer.io[Micrometer] web site.
 
 .Procedure
@@ -1918,23 +1918,23 @@ try {
 Metrics.addRegistry(prometheusRegistry);
 ----
 
-. Open your monitoring system to view the metrics for your OptaPlanner project. The following metrics are exposed:
+. Open your monitoring system to view the metrics for your Timefold project. The following metrics are exposed:
 +
 [NOTE]
 ====
 The names and format of the metrics vary depending on the registry.
 ====
 +
-* `optaplanner.solver.errors.total`: the total number of errors that occurred while solving since the start
+* `timefold.solver.errors.total`: the total number of errors that occurred while solving since the start
 of the measuring.
-* `optaplanner.solver.solve.duration.active-count`: the number of solvers currently solving.
-* `optaplanner.solver.solve.duration.seconds-max`: run time of the
+* `timefold.solver.solve.duration.active-count`: the number of solvers currently solving.
+* `timefold.solver.solve.duration.seconds-max`: run time of the
 longest-running currently active solver.
-* `optaplanner.solver.solve.duration.seconds-duration-sum`: the sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
+* `timefold.solver.solve.duration.seconds-duration-sum`: the sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
 
 ==== Additional metrics
 
-For more detailed monitoring, OptaPlanner can be configured to monitor additional metrics at a performance cost.
+For more detailed monitoring, Timefold can be configured to monitor additional metrics at a performance cost.
 
 [source,xml,options="nowrap"]
 ----
@@ -1951,29 +1951,29 @@ For more detailed monitoring, OptaPlanner can be configured to monitor additiona
 
 The following metrics are available:
 
-- `SOLVE_DURATION` (default, Micrometer meter id: "optaplanner.solver.solve.duration"): Measure the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
+- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"): Measure the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
 
-- `ERROR_COUNT` (default, Micrometer meter id: "optaplanner.solver.errors"): Measures the number of errors that occur while solving.
+- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"): Measures the number of errors that occur while solving.
 
-- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "optaplanner.solver.score.calculation.count"): Measures the number of score calculations OptaPlanner performed.
+- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"): Measures the number of score calculations Timefold performed.
 
-- `BEST_SCORE` (Micrometer meter id: "optaplanner.solver.best.score.*"): Measures the score of the best solution OptaPlanner found so far. There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `optaplanner.solver.best.score.hard.score` and `optaplanner.solver.best.score.soft.score` meters.
+- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"): Measures the score of the best solution Timefold found so far. There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
 
-- `STEP_SCORE` (Micrometer meter id: "optaplanner.solver.step.score.*"): Measures the score of each step OptaPlanner takes. There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `optaplanner.solver.step.score.hard.score` and `optaplanner.solver.step.score.soft.score` meters.
+- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"): Measures the score of each step Timefold takes. There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
 
-- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "optaplanner.solver.best.solution.mutation"): Measures the number of changed planning variables between consecutive best solutions.
+- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"): Measures the number of changed planning variables between consecutive best solutions.
 
-- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "optaplanner.solver.step.move.count"): Measures the number of moves evaluated in a step.
+- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"): Measures the number of moves evaluated in a step.
 
 - `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"): Measures the amount of memory used across the JVM. This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
 
-- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "optaplanner.solver.constraint.match.best.score.*"): Measures the score impact of each constraint on the best solution OptaPlanner found so far. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `optaplanner.solver.constraint.match.best.score.hard.score` and `optaplanner.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"): Measures the score impact of each constraint on the best solution Timefold found so far. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
 
-- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "optaplanner.solver.constraint.match.step.score.*"): Measures the score impact of each constraint on the current step. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `optaplanner.solver.constraint.match.step.score.hard.score` and `optaplanner.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"): Measures the score impact of each constraint on the current step. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
 
-- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "optaplanner.solver.move.type.best.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `optaplanner.solver.move.type.best.score.diff.hard.score` and `optaplanner.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
 
-- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "optaplanner.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `optaplanner.solver.move.type.step.score.diff.hard.score` and `optaplanner.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
 
 [[randomNumberGenerator]]
 === Random number generator

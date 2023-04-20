@@ -1,12 +1,28 @@
 [[releaseNotes]]
 = Release Notes
 
-This chapter lists new and noteworthy updates in OptaPlanner releases. OptaPlanner follows a 3-week release cycle.
-Bug fixes and minor improvements are generally not announced, which is why some of the minor releases are not mentioned here.
+== Upgrade to the latest version
 
-For a step-by-step migration guide, see our https://www.optaplanner.org/download/upgradeRecipe/upgradeRecipe8.html[upgrade recipe].
-We even provide a https://www.optaplanner.org/download/upgradeRecipe/upgradeRecipe8.html#automatic-upgrade[migration tool] to make many of these changes automatically.
+Quickly upgrade your source code to the latest and greatest version of Timefold,
+run this command:
 
-For release notes on OptaPlanner 7.x and older, please visit https://www.optaplanner.org/download/releaseNotes/[Release Notes on optaplanner.org].
+Maven:
 
-include::release-notes-8.adoc[]
+[source,shell,subs=attributes+]
+----
+$ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
+  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{project-version} \
+  -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+----
+
+Gradle:
+
+[source,shell,subs=attributes+]
+----
+$ curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle
+$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun
+$ rm upgrade-timefold.gradle
+----
+
+It automatically replaces deprecated methods with better alternatives.
+Run your tests and commit the changes.

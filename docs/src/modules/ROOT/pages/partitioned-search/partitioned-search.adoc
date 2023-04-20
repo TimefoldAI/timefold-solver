@@ -39,7 +39,7 @@ Simplest configuration:
 [source,xml,options="nowrap"]
 ----
   <partitionedSearch>
-    <solutionPartitionerClass>org.optaplanner.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
   </partitionedSearch>
 ----
 
@@ -52,7 +52,7 @@ Advanced configuration:
 ----
   <partitionedSearch>
     ...
-    <solutionPartitionerClass>org.optaplanner.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
     <runnablePartThreadLimit>4</runnablePartThreadLimit>
 
     <constructionHeuristic>...</constructionHeuristic>
@@ -106,7 +106,7 @@ To use a custom `SolutionPartitioner`, configure one on the Partitioned Search p
 [source,xml,options="nowrap"]
 ----
   <partitionedSearch>
-    <solutionPartitionerClass>org.optaplanner.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
   </partitionedSearch>
 ----
 
@@ -217,7 +217,7 @@ add the `solutionPartitionerCustomProperties` element and use xref:planner-confi
 
 When running a multithreaded solver, such as Partitioned Search, CPU power can quickly become a scarce resource,
 which can cause other processes or threads to hang or freeze.
-However, OptaPlanner has a system to prevent CPU starving of
+However, Timefold has a system to prevent CPU starving of
 other processes (such as an SSH connection in production or your IDE in development)
 or other threads (such as the servlet threads that handle REST requests).
 
@@ -232,7 +232,7 @@ this will probably hang the system.
 
 The `runnablePartThreadLimit` parameter specifies how many part threads are runnable at the same time.
 The other part threads will temporarily block and therefore will not consume any CPU power.
-*This parameter basically specifies how many CPU cores are donated to OptaPlanner.*
+*This parameter basically specifies how many CPU cores are donated to Timefold.*
 All part threads share the CPU cores in a round-robin manner
 to consume (more or less) the same number of CPU cycles:
 
@@ -240,9 +240,9 @@ image::partitioned-search/partitionedSearchThreading.png[align="center"]
 
 The following `runnablePartThreadLimit` options are supported:
 
-* `UNLIMITED`: Allow OptaPlanner to occupy all CPU cores, do not avoid hogging.
+* `UNLIMITED`: Allow Timefold to occupy all CPU cores, do not avoid hogging.
 Useful if a no hogging CPU policy is configured on the OS level.
-* `AUTO` (default): Let OptaPlanner decide how many CPU cores to occupy. This formula is based on experience.
+* `AUTO` (default): Let Timefold decide how many CPU cores to occupy. This formula is based on experience.
 It does not hog all CPU cores on a multi-core machine.
 * Static number: The number of CPU cores to consume. For example:
 +
@@ -255,5 +255,5 @@ It does not hog all CPU cores on a multi-core machine.
 ====
 If the `runnablePartThreadLimit` is equal to or higher than the number of available processors,
 the host is likely to hang or freeze,
-unless there is an OS specific policy in place to avoid OptaPlanner from hogging all the CPU processors.
+unless there is an OS specific policy in place to avoid Timefold from hogging all the CPU processors.
 ====

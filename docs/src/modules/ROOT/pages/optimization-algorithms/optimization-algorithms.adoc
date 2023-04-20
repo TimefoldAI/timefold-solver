@@ -45,7 +45,7 @@ usually perform best for real-world problems given real-world time limitations.
 
 
 [[doesPlannerFindTheOptimalSolution]]
-== Does OptaPlanner find the optimal solution?
+== Does Timefold find the optimal solution?
 
 The business wants the optimal solution, but they also have other requirements:
 
@@ -55,7 +55,7 @@ The business wants the optimal solution, but they also have other requirements:
 * Reliability: Every data set must have at least a decent result (better than a human planner).
 
 Given these requirements, and despite the promises of some salesmen, it is usually impossible for anyone or anything to find the optimal solution.
-Therefore, OptaPlanner focuses on finding the best solution in available time.
+Therefore, Timefold focuses on finding the best solution in available time.
 In xref:use-cases-and-examples/examples-overview/examples-overview.adoc#examplesOverview["realistic, independent competitions"], it often comes out as the best _reusable_ software.
 
 The nature of NP-complete problems make scaling a prime concern.
@@ -73,11 +73,11 @@ Do not assess quality on small data sets (unless production encounters only such
 [[architectureOverview]]
 == Architecture overview
 
-OptaPlanner is the first framework to combine optimization algorithms (metaheuristics, ...)
-with score calculation by a rule engine (such as Drools).
+Timefold is the first framework to combine optimization algorithms (metaheuristics, ...)
+with score calculation by a score calculation engine.
 This combination is very efficient, because:
 
-* A rule engine, such as Drools, is *great for calculating the score* of a solution of a planning problem.
+* A score calculation engine, is *great for calculating the score* of a solution of a planning problem.
 It makes it easy and scalable to add additional soft or hard constraints.
 It does xref:score-calculation/score-calculation.adoc#incrementalScoreCalculation[incremental score calculation (deltas)] without any extra code.
 However it tends to be not suitable to actually find new solutions.
@@ -91,7 +91,7 @@ image::optimization-algorithms/architectureOverview.png[align="center"]
 [[optimizationAlgorithmsOverview]]
 == Optimization algorithms overview
 
-OptaPlanner supports three _families_ of optimization algorithms: Exhaustive Search, Construction Heuristics and Metaheuristics.
+Timefold supports three _families_ of optimization algorithms: Exhaustive Search, Construction Heuristics and Metaheuristics.
 In practice, Metaheuristics (in combination with Construction Heuristics to initialize) are the recommended choice:
 
 image::optimization-algorithms/scalabilityOfOptimizationAlgorithms.png[align="center"]
@@ -167,7 +167,7 @@ Other experiments can also be run. For example, the following multiple algorithm
 == Power tweaking or default parameter values
 
 Many optimization algorithms have parameters that affect results and scalability.
-OptaPlanner applies __configuration by exception__, so all optimization algorithms have default parameter values.
+Timefold applies __configuration by exception__, so all optimization algorithms have default parameter values.
 This is very similar to the Garbage Collection parameters in a JVM: most users have no need to tweak them, but power users often do.
 
 The default parameter values are sufficient for many cases (and especially for prototypes), but if development time allows, it may be beneficial to power tweak them with the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[benchmarker] for better results and scalability on a specific use case.
@@ -220,7 +220,7 @@ Usually, a `Solver` will first run a construction heuristic and then run one or 
 
 image::optimization-algorithms/generalPhaseSequence.png[align="center"]
 
-If no phases are configured, OptaPlanner will default to a Construction Heuristic phase followed by a Local Search phase.
+If no phases are configured, Timefold will default to a Construction Heuristic phase followed by a Local Search phase.
 
 Some phases (especially construction heuristics) will terminate automatically.
 Other phases (especially metaheuristics) will only terminate if the `Phase` is configured to terminate:
@@ -285,8 +285,6 @@ This is especially common during xref:repeated-planning/repeated-planning.adoc#r
 ====
 
 For synchronous termination, configure a `Termination` on a `Solver` or a `Phase` when it needs to stop.
-The built-in implementations of these should be sufficient,
-but xref:local-search/local-search.adoc#customTerminationSelectorOrAcceptor[custom terminations] are supported too.
 Every `Termination` can calculate a _time gradient_ (needed for some optimization algorithms),
 which is a ratio between the time already spent solving and the estimated entire solving time of the `Solver` or `Phase`.
 
@@ -770,7 +768,7 @@ Configure the `CustomPhaseCommand` in the solver configuration:
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
   <customPhase>
-    <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+    <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
   </customPhase>
   ... <!-- Other phases -->
 </solver>
@@ -838,7 +836,7 @@ There are several ways of doing multithreaded solving:
 * *Partitioned Search*: Split 1 dataset in multiple parts and solve them independently.
 ** Configure a xref:partitioned-search/partitioned-search.adoc#partitionedSearch[Partitioned Search].
 * *Multithreaded incremental solving*: solve 1 dataset with multiple threads without sacrificing xref:score-calculation/score-calculation.adoc#incrementalScoreCalculation[incremental score calculation].
-** Donate a portion of your CPU cores to OptaPlanner to scale up the score calculation speed and get the same results in fraction of the time.
+** Donate a portion of your CPU cores to Timefold to scale up the score calculation speed and get the same results in fraction of the time.
 ** Configure <<multithreadedIncrementalSolving,multithreaded incremental solving>>.
 
 image::optimization-algorithms/multiThreadingStrategies.png[align="center"]
@@ -853,8 +851,8 @@ and slow down the xref:score-calculation/score-calculation.adoc#scoreCalculation
 === `@PlanningId`
 
 For some functionality (such as multithreaded solving and real-time planning),
-OptaPlanner needs to map problem facts and planning entities to an ID.
-OptaPlanner uses that ID to _rebase_ a move from one thread's solution state to another's.
+Timefold needs to map problem facts and planning entities to an ID.
+Timefold uses that ID to _rebase_ a move from one thread's solution state to another's.
 
 To enable such functionality, specify the `@PlanningId` annotation on the identification field or getter method,
 for example on the database ID:
@@ -951,7 +949,7 @@ and the solver thread uses most of another CPU core.
 The following ``moveThreadCount``s are supported:
 
 * `NONE` (default): Don't run any move threads. Use the single threaded code.
-* ``AUTO``: Let OptaPlanner decide how many move threads to run in parallel.
+* ``AUTO``: Let Timefold decide how many move threads to run in parallel.
 On machines or containers with little or no CPUs, this falls back to the single threaded code.
 * Static number: The number of move threads to run in parallel.
 +
