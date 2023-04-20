@@ -166,7 +166,7 @@
         <artifactId>jaxb2-maven-plugin</artifactId>
         <configuration>
           <sources>
-            <source>${project.build.sourceDirectory}/org/optaplanner/benchmark/config</source>
+            <source>${project.build.sourceDirectory}/ai/timefold/solver/benchmark/config</source>
           </sources>
         </configuration>
       </plugin>
@@ -182,7 +182,7 @@
             </goals>
             <configuration>
               <!-- Merge the first two XSD files to a standalone benchmark XSD file containing XML types from both of them. -->
-              <mainClass>org.optaplanner.benchmark.impl.xsd.XsdAggregator</mainClass>
+              <mainClass>ai.timefold.solver.benchmark.impl.xsd.XsdAggregator</mainClass>
               <arguments>
                 <argument>${project.build.outputDirectory}/${schema.filename.solver}</argument>
                 <argument>${project.build.outputDirectory}/${schema.filename.benchmark}</argument>

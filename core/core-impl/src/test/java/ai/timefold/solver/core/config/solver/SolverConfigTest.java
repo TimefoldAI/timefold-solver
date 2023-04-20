@@ -95,7 +95,7 @@ class SolverConfigTest {
     @Test
     void whiteCharsInClassName() {
         String solutionClassName = "org.optaplanner.core.impl.testdata.domain.TestdataSolution";
-        String xmlFragment = String.format("<solver xmlns=\"https://www.optaplanner.org/xsd/solver\">%n"
+        String xmlFragment = String.format("<solver xmlns=\"https://timefold.ai/xsd/solver\">%n"
                 + "  <solutionClass>  %s  %n" // Intentionally included white chars around the class name.
                 + "  </solutionClass>%n"
                 + "</solver>", solutionClassName);
@@ -105,7 +105,7 @@ class SolverConfigTest {
 
     @Test
     void readAndValidateInvalidSolverConfig_failsIndicatingTheIssue() {
-        String solverConfigXml = "<solver xmlns=\"https://www.optaplanner.org/xsd/solver\">\n"
+        String solverConfigXml = "<solver xmlns=\"https://timefold.ai/xsd/solver\">\n"
                 + "  <constructionHeuristic>\n"
                 + "      <changeMoveSelector>\n"
                 + "        <valueSelector>\n"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plannerBenchmark xmlns="https://www.optaplanner.org/xsd/benchmark">
+<plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark">
   <benchmarkDirectory>data</benchmarkDirectory>
   <parallelBenchmarkCount>AUTO</parallelBenchmarkCount>
   <warmUpSecondsSpentLimit>0</warmUpSecondsSpentLimit>

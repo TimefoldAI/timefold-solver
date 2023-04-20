@@ -11,8 +11,8 @@ release artifacts.
 available via a link on the optaplanner-website
 * https://docs.optaplanner.org/latestFinal/optaplanner-docs/html_single/index.html[Documentation]
 available via a link on the optaplanner-website
-* XML Schema Definition files for both the https://www.optaplanner.org/xsd/solver/[Solver]
-and the https://www.optaplanner.org/xsd/benchmark/[Benchmark] available on the optaplanner-website
+* XML Schema Definition files for both the https://timefold.ai/xsd/solver/[Solver]
+and the https://timefold.ai/xsd/benchmark/[Benchmark] available on the optaplanner-website
 
 === OptaPlanner Quickstarts
 

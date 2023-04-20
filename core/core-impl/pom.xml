@@ -127,7 +127,7 @@
         <artifactId>jaxb2-maven-plugin</artifactId>
         <configuration>
           <sources>
-            <source>${project.build.sourceDirectory}/org/optaplanner/core/config/solver</source>
+            <source>${project.build.sourceDirectory}/ai/timefold/solver/core/config/solver</source>
           </sources>
         </configuration>
       </plugin>

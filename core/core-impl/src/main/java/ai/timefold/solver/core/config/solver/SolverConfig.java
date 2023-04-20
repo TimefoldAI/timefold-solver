@@ -74,7 +74,7 @@ import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     public static final String XML_ELEMENT_NAME = "solver";
-    public static final String XML_NAMESPACE = "https://www.optaplanner.org/xsd/solver";
+    public static final String XML_NAMESPACE = "https://timefold.ai/xsd/solver";
     public static final String XML_TYPE_NAME = "solverConfig";
 
     /**

@@ -29,8 +29,8 @@ class JaxbCustomPropertiesAdapterTest {
     void readCustomProperties() throws JAXBException {
         String xmlFragment = "<testBean>"
                 + "  <customProperties>"
-                + "    <property xmlns=\"https://www.optaplanner.org/xsd/solver\" name=\"firstKey\" value=\"firstValue\"/>"
-                + "    <property xmlns=\"https://www.optaplanner.org/xsd/solver\" name=\"secondKey\" value=\"secondValue\"/>"
+                + "    <property xmlns=\"https://timefold.ai/xsd/solver\" name=\"firstKey\" value=\"firstValue\"/>"
+                + "    <property xmlns=\"https://timefold.ai/xsd/solver\" name=\"secondKey\" value=\"secondValue\"/>"
                 + "  </customProperties>"
                 + "</testBean>";
         Reader stringReader = new StringReader(xmlFragment);

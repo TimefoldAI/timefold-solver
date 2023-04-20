@@ -61,7 +61,7 @@ class PlannerBenchmarkConfigTest {
     @Test
     void readAndValidateInvalidBenchmarkConfig_failsIndicatingTheIssue() {
         PlannerBenchmarkConfigIO xmlIO = new PlannerBenchmarkConfigIO();
-        String benchmarkConfigXml = "<plannerBenchmark xmlns=\"https://www.optaplanner.org/xsd/benchmark\">\n"
+        String benchmarkConfigXml = "<plannerBenchmark xmlns=\"https://timefold.ai/xsd/benchmark\">\n"
                 + "  <benchmarkDirectory>data</benchmarkDirectory>\n"
                 + "  <parallelBenchmarkCount>AUTO</parallelBenchmarkCount>\n"
                 + "  <solverBenchmark>\n"

@@ -554,11 +554,11 @@
             <outputDirectory>${project.build.outputDirectory}</outputDirectory>
             <transformSchemas>
               <transformSchema>
-                <uri>https://www.optaplanner.org/xsd/solver</uri>
+                <uri>https://timefold.ai/xsd/solver</uri>
                 <toFile>solver.xsd</toFile>
               </transformSchema>
               <transformSchema>
-                <uri>https://www.optaplanner.org/xsd/benchmark</uri>
+                <uri>https://timefold.ai/xsd/benchmark</uri>
                 <toFile>${schema.filename.benchmark}</toFile>
               </transformSchema>
             </transformSchemas>

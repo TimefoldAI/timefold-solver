@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://www.optaplanner.org/xsd/solver" elementFormDefault="qualified" targetNamespace="https://www.optaplanner.org/xsd/solver" version="1.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://timefold.ai/xsd/solver" elementFormDefault="qualified" targetNamespace="https://timefold.ai/xsd/solver" version="1.0">
     
   <xs:element name="solver" type="tns:solverConfig"/>
     
