@@ -19,13 +19,13 @@
 
   <name>Timefold Solver BOM (Bill Of Materials)</name>
   <description>
-    Import this BOM in your dependencyManagement if you want to depend on multiple OptaPlanner artifacts.
+    Import this BOM in your dependencyManagement if you want to depend on multiple Timefold artifacts.
   </description>
 
   <dependencyManagement>
     <dependencies>
       <!--
-        IMPORTANT: Only declare modules of groupId org.optaplanner.
+        IMPORTANT: Only declare modules of groupId ai.timefold.solver.
         Do not declare external dependencies, this is not a platform bom.
         Do not declare <scope> or <optional>.
         Always declare the sources jar and the test-jar too.

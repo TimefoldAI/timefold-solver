@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-jackson</artifactId>
   <name>Timefold Solver Quarkus Jackson - Runtime</name>
-  <description>Activate Jackson bindings for OptaPlanner's Score classes</description>
+  <description>Activate Jackson bindings for Timefold's Score classes</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jackson</java.module.name>

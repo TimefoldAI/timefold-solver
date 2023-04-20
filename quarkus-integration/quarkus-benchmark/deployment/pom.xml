@@ -10,7 +10,7 @@
 
   <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
   <name>Timefold Solver Quarkus Benchmark - Deployment</name>
-  <description>Quarkus deployment module for optaplanner-quarkus-benchmark.</description>
+  <description>Quarkus deployment module for timefold-solver-quarkus-benchmark.</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.benchmark.deployment</java.module.name>

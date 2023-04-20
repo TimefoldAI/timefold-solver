@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-jsonb</artifactId>
   <name>Timefold Solver Quarkus JSON-B - Runtime</name>
-  <description>Activate JSON-B bindings for OptaPlanner's Score classes</description>
+  <description>Activate JSON-B bindings for Timefold's Score classes</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jsonb</java.module.name>

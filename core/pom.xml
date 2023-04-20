@@ -14,7 +14,7 @@
 
   <name>Timefold Solver core parent</name>
   <description>
-    OptaPlanner solves planning problems.
+    Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 

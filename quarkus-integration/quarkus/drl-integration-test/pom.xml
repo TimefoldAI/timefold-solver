@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-drl-integration-test</artifactId>
   <name>Timefold Solver Quarkus - Drools Integration tests</name>
-  <description>Quarkus integration tests for OptaPlanner using Drools constraints</description>
+  <description>Quarkus integration tests for Timefold using Drools constraints</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus</java.module.name>

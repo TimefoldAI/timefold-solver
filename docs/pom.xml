@@ -16,7 +16,7 @@
 
   <name>Timefold Solver documentation</name>
   <description>
-    OptaPlanner solves planning problems.
+    Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
@@ -46,7 +46,7 @@
             </resource>
           </resources>
           <attributes>
-            <optaplanner-version>${project.version}</optaplanner-version>
+            <timefold-solver-version>${project.version}</timefold-solver-version>
             <java-version>${maven.compiler.release}</java-version>
             <maven-version>${maven.min.version}</maven-version>
             <quarkus-version>${version.io.quarkus}</quarkus-version>
@@ -84,7 +84,7 @@
               <sourceDocumentName>${source.document.name}</sourceDocumentName>
               <backend>pdf</backend>
               <outputDirectory>${docs.target.dir}/pdf</outputDirectory>
-              <outputFile>optaplanner-docs.pdf</outputFile>
+              <outputFile>timefold-solver-docs.pdf</outputFile>
               <attributes>
                 <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
                 <source-highlighter>coderay</source-highlighter><!-- highlightjs does not work in PDF -->

@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-benchmark-integration-test</artifactId>
   <name>Timefold Solver Quarkus Benchmark - Integration tests</name>
-  <description>Quarkus integration tests for OptaPlanner</description>
+  <description>Quarkus integration tests for Timefold</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.benchmark</java.module.name>

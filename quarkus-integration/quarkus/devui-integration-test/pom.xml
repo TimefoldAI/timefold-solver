@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-devui-integration-test</artifactId>
   <name>Timefold Solver Quarkus - Dev UI Integration tests</name>
-  <description>Quarkus Dev UI integration tests for OptaPlanner</description>
+  <description>Quarkus Dev UI integration tests for Timefold</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus</java.module.name>

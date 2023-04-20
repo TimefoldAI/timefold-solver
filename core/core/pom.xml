@@ -13,11 +13,11 @@
 
   <name>Timefold Solver core</name>
   <description>
-    OptaPlanner solves planning problems.
+    Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    Aggregate dependency to bring in optaplanner-core and all the score directors.
+    Aggregate dependency to bring in timefold-solver-core and all the score directors.
   </description>
   <url>https://timefold.ai</url>
 

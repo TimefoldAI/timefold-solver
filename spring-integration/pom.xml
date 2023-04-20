@@ -15,7 +15,7 @@
 
   <name>Timefold Solver Spring integration</name>
   <description>
-    OptaPlanner solves planning problems.
+    Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
@@ -28,7 +28,7 @@
     <module>spring-boot-starter</module>
   </modules>
 
-  <!-- TODO: Move to optaplanner-build-parent once https://github.com/quarkusio/quarkus-platform-bom-generator/issues/64 is solved.  -->
+  <!-- TODO: Move to timefold-solver-build-parent once https://github.com/quarkusio/quarkus-platform-bom-generator/issues/64 is solved.  -->
   <dependencyManagement>
     <dependencies>
       <dependency>

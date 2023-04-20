@@ -14,7 +14,7 @@
 
   <name>Timefold Solver test</name>
   <description>
-    OptaPlanner solves planning problems.
+    Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <scope>compile</scope><!-- Intentional, because optaplanner-test is intended to be used a test scoped dependency. -->
+      <scope>compile</scope><!-- Intentional, because timefold-solver-test is intended to be used a test scoped dependency. -->
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>

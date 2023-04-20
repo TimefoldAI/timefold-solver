@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-jackson-deployment</artifactId>
   <name>Timefold Solver Quarkus Jackson - Deployment</name>
-  <description>Quarkus deployment module for optaplanner-quarkus-jackson.</description>
+  <description>Quarkus deployment module for timefold-solver-quarkus-jackson.</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jackson.deployment</java.module.name>

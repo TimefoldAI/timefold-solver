@@ -17,11 +17,11 @@
 
   <name>Timefold Solver multiproject parent</name>
   <description>
-    OptaPlanner solves planning problems.
+    Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    This module is just the multiproject parent. The planning engine itself is in optaplanner-core.
+    This module is just the multiproject parent. The planning engine itself is in timefold-solver-core.
   </description>
   <url>https://timefold.ai</url>
   <inceptionYear>2006</inceptionYear>
@@ -56,33 +56,21 @@
   </distributionManagement>
 
   <scm>
-    <connection>scm:git:git@github.com:kiegroup/optaplanner.git</connection>
-    <developerConnection>scm:git:git@github.com:kiegroup/optaplanner.git</developerConnection>
-    <url>https://github.com/kiegroup/optaplanner</url>
+    <connection>scm:git:git@github.com:TimefoldAI/timefold-solver.git</connection>
+    <developerConnection>scm:git:git@github.com:TimefoldAI/timefold-solver.git</developerConnection>
+    <url>https://github.com/TimefoldAI/timefold-solver</url>
   </scm>
   <issueManagement>
-    <system>jira</system>
-    <url>https://issues.redhat.com/browse/PLANNER</url>
+    <system>GitHub</system>
+    <url>https://github.com/TimefoldAI/solver/issues/</url>
   </issueManagement>
   <developers>
     <developer>
-      <name>All developers are listed on the team website</name>
-      <url>https://www.optaplanner.org/community/team.html</url>
+      <name>Timefold Community</name>
+      <organization>Timefold</organization>
+      <organizationUrl>https://timefold.ai</organizationUrl>
     </developer>
   </developers>
-  <contributors>
-    <contributor>
-      <name>All contributors are listed on the team website</name>
-      <url>https://www.optaplanner.org/community/team.html</url>
-    </contributor>
-  </contributors>
-  <mailingLists>
-    <mailingList>
-      <name>setup</name>
-      <subscribe>https://groups.google.com/forum/#!forum/optaplanner-dev</subscribe>
-      <unsubscribe>https://groups.google.com/forum/#!forum/optaplanner-dev</unsubscribe>
-    </mailingList>
-  </mailingLists>
 
   <modules>
     <module>build/bom</module>
@@ -114,9 +102,9 @@
     </profile>
     <profile>
       <!--
-        Migration to OptaPlanner 9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
-        OptaPlanner 8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.
-        Both OptaPlanner 8 and 9 are functionally equal and will be released simultaneously.
+        Migration to Timefold 9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
+        Timefold 8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.
+        Both Timefold 8 and 9 are functionally equal and will be released simultaneously.
       -->
       <id>8-to-9-migration</id>
       <activation>

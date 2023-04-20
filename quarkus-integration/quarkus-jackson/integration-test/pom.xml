@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-jackson-integration-test</artifactId>
   <name>Timefold Solver Quarkus Jackson - Integration tests</name>
-  <description>Quarkus integration tests for OptaPlanner with Jackson</description>
+  <description>Quarkus integration tests for Timefold with Jackson</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jackson.integrationtest</java.module.name>

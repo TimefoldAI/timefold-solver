@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
   <name>Timefold Solver Quarkus JSON-B - Integration tests</name>
-  <description>Quarkus integration tests for OptaPlanner with JSON-B</description>
+  <description>Quarkus integration tests for Timefold with JSON-B</description>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jsonb.integrationtest</java.module.name>

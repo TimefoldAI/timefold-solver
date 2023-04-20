@@ -20,7 +20,7 @@
       <directory>pdf/</directory>
       <outputDirectory>pdf</outputDirectory>
       <includes>
-        <include>optaplanner-docs.pdf</include>
+        <include>timefold-solver-docs.pdf</include>
       </includes>
       <useDefaultExcludes>false</useDefaultExcludes>
     </fileSet>
