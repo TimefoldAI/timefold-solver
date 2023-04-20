@@ -7,12 +7,12 @@
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
   <!-- Domain model configuration -->
-  <solutionClass>org.optaplanner.examples.tennis.domain.TennisSolution</solutionClass>
-  <entityClass>org.optaplanner.examples.tennis.domain.TeamAssignment</entityClass>
+  <solutionClass>ai.timefold.solver.examples.tennis.domain.TennisSolution</solutionClass>
+  <entityClass>ai.timefold.solver.examples.tennis.domain.TeamAssignment</entityClass>
 
   <!-- Score configuration -->
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.tennis.score.TennisConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.tennis.score.TennisConstraintProvider</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 

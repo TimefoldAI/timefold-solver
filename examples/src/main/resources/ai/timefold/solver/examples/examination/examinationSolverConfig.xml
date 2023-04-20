@@ -6,13 +6,13 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.examination.domain.Examination</solutionClass>
-  <entityClass>org.optaplanner.examples.examination.domain.Exam</entityClass>
-  <entityClass>org.optaplanner.examples.examination.domain.LeadingExam</entityClass>
-  <entityClass>org.optaplanner.examples.examination.domain.FollowingExam</entityClass>
+  <solutionClass>ai.timefold.solver.examples.examination.domain.Examination</solutionClass>
+  <entityClass>ai.timefold.solver.examples.examination.domain.Exam</entityClass>
+  <entityClass>ai.timefold.solver.examples.examination.domain.LeadingExam</entityClass>
+  <entityClass>ai.timefold.solver.examples.examination.domain.FollowingExam</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.examination.score.ExaminationConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.examination.score.ExaminationConstraintProvider</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
@@ -22,7 +22,7 @@
   <constructionHeuristic>
     <queuedEntityPlacer>
       <entitySelector id="placerEntitySelector">
-        <entityClass>org.optaplanner.examples.examination.domain.Exam</entityClass>
+        <entityClass>ai.timefold.solver.examples.examination.domain.Exam</entityClass>
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
         <sorterManner>DECREASING_DIFFICULTY</sorterManner>
@@ -31,7 +31,7 @@
         <changeMoveSelector>
           <entitySelector mimicSelectorRef="placerEntitySelector"/>
           <valueSelector variableName="period">
-            <downcastEntityClass>org.optaplanner.examples.examination.domain.LeadingExam</downcastEntityClass>
+            <downcastEntityClass>ai.timefold.solver.examples.examination.domain.LeadingExam</downcastEntityClass>
             <cacheType>PHASE</cacheType>
             <!--<selectionOrder>SORTED</selectionOrder>-->
             <!--<sorterManner>INCREASING_STRENGTH</sorterManner>-->
@@ -53,20 +53,20 @@
       <cartesianProductMoveSelector>
         <changeMoveSelector>
           <entitySelector id="cartesianProductEntitySelector">
-            <entityClass>org.optaplanner.examples.examination.domain.Exam</entityClass>
+            <entityClass>ai.timefold.solver.examples.examination.domain.Exam</entityClass>
           </entitySelector>
           <valueSelector variableName="room"/>
         </changeMoveSelector>
         <changeMoveSelector>
           <entitySelector mimicSelectorRef="cartesianProductEntitySelector"/>
           <valueSelector variableName="period">
-            <downcastEntityClass>org.optaplanner.examples.examination.domain.LeadingExam</downcastEntityClass>
+            <downcastEntityClass>ai.timefold.solver.examples.examination.domain.LeadingExam</downcastEntityClass>
           </valueSelector>
         </changeMoveSelector>
       </cartesianProductMoveSelector>
       <swapMoveSelector>
         <entitySelector>
-          <entityClass>org.optaplanner.examples.examination.domain.LeadingExam</entityClass>
+          <entityClass>ai.timefold.solver.examples.examination.domain.LeadingExam</entityClass>
         </entitySelector>
       </swapMoveSelector>
     </unionMoveSelector>

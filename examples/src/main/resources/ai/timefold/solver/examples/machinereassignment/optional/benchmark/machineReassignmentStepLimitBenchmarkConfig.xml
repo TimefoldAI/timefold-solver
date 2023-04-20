@@ -7,15 +7,15 @@
   <inheritedSolverBenchmark>
     <solver>
       <!--<environmentMode>FAST_ASSERT</environmentMode>-->
-      <solutionClass>org.optaplanner.examples.machinereassignment.domain.MachineReassignment</solutionClass>
-      <entityClass>org.optaplanner.examples.machinereassignment.domain.MrProcessAssignment</entityClass>
+      <solutionClass>ai.timefold.solver.examples.machinereassignment.domain.MachineReassignment</solutionClass>
+      <entityClass>ai.timefold.solver.examples.machinereassignment.domain.MrProcessAssignment</entityClass>
 
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.machinereassignment.score.MachineReassignmentConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.machinereassignment.score.MachineReassignmentConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
       <inputSolutionFile>data/machinereassignment/import/model_a1_4.txt</inputSolutionFile>
     </problemBenchmarks>
   </inheritedSolverBenchmark>
@@ -23,7 +23,7 @@
   <solverBenchmark>
     <solver>
       <customPhase>
-        <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+        <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
       </customPhase>
       <localSearch>
         <termination>

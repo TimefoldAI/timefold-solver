@@ -6,11 +6,11 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.conferencescheduling.domain.ConferenceSolution</solutionClass>
-  <entityClass>org.optaplanner.examples.conferencescheduling.domain.Talk</entityClass>
+  <solutionClass>ai.timefold.solver.examples.conferencescheduling.domain.ConferenceSolution</solutionClass>
+  <entityClass>ai.timefold.solver.examples.conferencescheduling.domain.Talk</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.conferencescheduling.score.ConferenceSchedulingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.conferencescheduling.score.ConferenceSchedulingConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
 
   <!--<termination>-->

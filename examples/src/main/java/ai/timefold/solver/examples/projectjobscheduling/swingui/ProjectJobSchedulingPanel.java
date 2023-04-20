@@ -24,7 +24,7 @@ import org.jfree.data.xy.YIntervalSeriesCollection;
 public class ProjectJobSchedulingPanel extends SolutionPanel<Schedule> {
 
     public static final String LOGO_PATH =
-            "/org/optaplanner/examples/projectjobscheduling/swingui/projectJobSchedulingLogo.png";
+            "/ai/timefold/solver/examples/projectjobscheduling/swingui/projectJobSchedulingLogo.png";
 
     public ProjectJobSchedulingPanel() {
         setLayout(new BorderLayout());

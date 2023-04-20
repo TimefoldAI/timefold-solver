@@ -6,12 +6,12 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.flightcrewscheduling.domain.FlightCrewSolution</solutionClass>
-  <entityClass>org.optaplanner.examples.flightcrewscheduling.domain.FlightAssignment</entityClass>
-  <entityClass>org.optaplanner.examples.flightcrewscheduling.domain.Employee</entityClass>
+  <solutionClass>ai.timefold.solver.examples.flightcrewscheduling.domain.FlightCrewSolution</solutionClass>
+  <entityClass>ai.timefold.solver.examples.flightcrewscheduling.domain.FlightAssignment</entityClass>
+  <entityClass>ai.timefold.solver.examples.flightcrewscheduling.domain.Employee</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.flightcrewscheduling.score.FlightCrewSchedulingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.flightcrewscheduling.score.FlightCrewSchedulingConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
 
   <!--<termination>-->

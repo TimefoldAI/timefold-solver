@@ -6,11 +6,11 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.pas.domain.PatientAdmissionSchedule</solutionClass>
-  <entityClass>org.optaplanner.examples.pas.domain.BedDesignation</entityClass>
+  <solutionClass>ai.timefold.solver.examples.pas.domain.PatientAdmissionSchedule</solutionClass>
+  <entityClass>ai.timefold.solver.examples.pas.domain.BedDesignation</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.pas.score.PatientAdmissionScheduleConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.examples.pas.score.PatientAdmissionScheduleConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
 
   <termination>
@@ -25,7 +25,7 @@
       <!--<swapMoveSelector/>-->
       <!--<pillarSwapMoveSelector/>-->
       <moveListFactory>
-        <moveListFactoryClass>org.optaplanner.examples.pas.solver.move.factory.BedDesignationPillarPartSwapMoveFactory</moveListFactoryClass>
+        <moveListFactoryClass>ai.timefold.solver.examples.pas.solver.move.factory.BedDesignationPillarPartSwapMoveFactory</moveListFactoryClass>
       </moveListFactory>
     </unionMoveSelector>
     <acceptor>

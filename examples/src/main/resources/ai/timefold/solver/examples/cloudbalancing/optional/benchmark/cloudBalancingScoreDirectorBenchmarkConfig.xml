@@ -6,8 +6,8 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.cloudbalancing.domain.CloudBalance</solutionClass>
-      <entityClass>org.optaplanner.examples.cloudbalancing.domain.CloudProcess</entityClass>
+      <solutionClass>ai.timefold.solver.examples.cloudbalancing.domain.CloudBalance</solutionClass>
+      <entityClass>ai.timefold.solver.examples.cloudbalancing.domain.CloudProcess</entityClass>
       <scoreDirectorFactory>
         <initializingScoreTrend>ONLY_DOWN/ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
@@ -16,7 +16,7 @@
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.cloudbalancing.persistence.CloudBalanceSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.cloudbalancing.persistence.CloudBalanceSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/cloudbalancing/unsolved/100computers-300processes.json</inputSolutionFile>
       <inputSolutionFile>data/cloudbalancing/unsolved/200computers-600processes.json</inputSolutionFile>
       <inputSolutionFile>data/cloudbalancing/unsolved/400computers-1200processes.json</inputSolutionFile>
@@ -28,7 +28,7 @@
     <name>Easy java (basic)</name>
     <solver>
       <scoreDirectorFactory>
-        <easyScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
+        <easyScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingEasyScoreCalculator</easyScoreCalculatorClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>
@@ -36,7 +36,7 @@
     <name>Easy java (advanced)</name>
     <solver>
       <scoreDirectorFactory>
-        <easyScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingMapBasedEasyScoreCalculator</easyScoreCalculatorClass>
+        <easyScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingMapBasedEasyScoreCalculator</easyScoreCalculatorClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>
@@ -44,7 +44,7 @@
     <name>Incremental java</name>
     <solver>
       <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>org.optaplanner.examples.cloudbalancing.optional.score.CloudBalancingIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>ai.timefold.solver.examples.cloudbalancing.optional.score.CloudBalancingIncrementalScoreCalculator</incrementalScoreCalculatorClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>
@@ -52,7 +52,7 @@
     <name>ConstraintStreams</name>
     <solver>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>

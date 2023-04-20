@@ -20,7 +20,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class ConferenceSchedulingPanel extends SolutionPanel<ConferenceSolution> {
 
     public static final String LOGO_PATH =
-            "/org/optaplanner/examples/conferencescheduling/swingui/conferenceSchedulingLogo.png";
+            "/ai/timefold/solver/examples/conferencescheduling/swingui/conferenceSchedulingLogo.png";
 
     public ConferenceSchedulingPanel() {
         JButton publishButton = new JButton("Publish");

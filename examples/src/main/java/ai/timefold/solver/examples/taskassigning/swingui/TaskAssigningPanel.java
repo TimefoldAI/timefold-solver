@@ -29,7 +29,7 @@ import ai.timefold.solver.examples.taskassigning.domain.TaskType;
 
 public class TaskAssigningPanel extends SolutionPanel<TaskAssigningSolution> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/taskassigning/swingui/taskAssigningLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/taskassigning/swingui/taskAssigningLogo.png";
 
     private final TaskOverviewPanel taskOverviewPanel;
 

@@ -6,10 +6,10 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.nqueens.domain.NQueens</solutionClass>
-      <entityClass>org.optaplanner.examples.nqueens.domain.Queen</entityClass>
+      <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
+      <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
       <termination>
@@ -19,7 +19,7 @@
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
       <writeOutputSolutionEnabled>true</writeOutputSolutionEnabled>
       <inputSolutionFile>data/nqueens/unsolved/32queens.json</inputSolutionFile>
       <inputSolutionFile>data/nqueens/unsolved/64queens.json</inputSolutionFile>

@@ -1,5 +1,5 @@
 NAME: belgium-road-km-n100
-COMMENT: Generated for OptaPlanner Examples with GraphHopper by Geoffrey De Smet.
+COMMENT: Generated for Timefold Examples with GraphHopper by Geoffrey De Smet.
 TYPE: TSP
 DIMENSION: 100
 EDGE_WEIGHT_TYPE: EXPLICIT

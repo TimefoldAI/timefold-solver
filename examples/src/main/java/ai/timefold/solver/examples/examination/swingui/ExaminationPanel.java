@@ -39,7 +39,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class ExaminationPanel extends SolutionPanel<Examination> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/examination/swingui/examinationLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/examination/swingui/examinationLogo.png";
 
     private final TimeTablePanel<Room, Period> roomsPanel;
 
@@ -67,7 +67,7 @@ public class ExaminationPanel extends SolutionPanel<Examination> {
                 if (solutionBusiness.isSolving()) {
                     JOptionPane.showMessageDialog(ExaminationPanel.this.getTopLevelAncestor(),
                             "The GUI does not support this action yet during solving.\n"
-                                    + "OptaPlanner itself does support it.\n"
+                                    + "Timefold itself does support it.\n"
                                     + "\nTerminate solving first and try again.",
                             "Unsupported in GUI", JOptionPane.ERROR_MESSAGE);
                     return;

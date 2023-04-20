@@ -5,7 +5,7 @@
 
   <inheritedSolverBenchmark>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.curriculumcourse.persistence.CurriculumCourseSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.curriculumcourse.persistence.CurriculumCourseSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/curriculumcourse/unsolved/comp01.json</inputSolutionFile>
       <inputSolutionFile>data/curriculumcourse/unsolved/comp02.json</inputSolutionFile>
       <inputSolutionFile>data/curriculumcourse/unsolved/comp03.json</inputSolutionFile>
@@ -23,10 +23,10 @@
     </problemBenchmarks>
 
     <solver>
-      <solutionClass>org.optaplanner.examples.curriculumcourse.domain.CourseSchedule</solutionClass>
-      <entityClass>org.optaplanner.examples.curriculumcourse.domain.Lecture</entityClass>
+      <solutionClass>ai.timefold.solver.examples.curriculumcourse.domain.CourseSchedule</solutionClass>
+      <entityClass>ai.timefold.solver.examples.curriculumcourse.domain.Lecture</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.curriculumcourse.score.CurriculumCourseConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.curriculumcourse.score.CurriculumCourseConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
           <minutesSpentLimit>5</minutesSpentLimit>
@@ -46,7 +46,7 @@
             <unionMoveSelector>
               <changeMoveSelector/>
               <swapMoveSelector>
-                <filterClass>org.optaplanner.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
+                <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
               </swapMoveSelector>
             </unionMoveSelector>
             <acceptor>
@@ -69,7 +69,7 @@
             <unionMoveSelector>
               <changeMoveSelector/>
               <swapMoveSelector>
-                <filterClass>org.optaplanner.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
+                <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
               </swapMoveSelector>
             </unionMoveSelector>
             <acceptor>
@@ -92,7 +92,7 @@
             <unionMoveSelector>
               <changeMoveSelector/>
               <swapMoveSelector>
-                <filterClass>org.optaplanner.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
+                <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
               </swapMoveSelector>
             </unionMoveSelector>
             <acceptor>

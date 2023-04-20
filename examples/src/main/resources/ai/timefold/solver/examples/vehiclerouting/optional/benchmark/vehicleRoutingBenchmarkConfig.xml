@@ -7,13 +7,13 @@
   <inheritedSolverBenchmark>
     <solver>
       <!--<environmentMode>FAST_ASSERT</environmentMode>-->
-      <solutionClass>org.optaplanner.examples.vehiclerouting.domain.VehicleRoutingSolution</solutionClass>
-      <entityClass>org.optaplanner.examples.vehiclerouting.domain.Vehicle</entityClass>
-      <entityClass>org.optaplanner.examples.vehiclerouting.domain.Customer</entityClass>
-      <entityClass>org.optaplanner.examples.vehiclerouting.domain.timewindowed.TimeWindowedCustomer</entityClass>
+      <solutionClass>ai.timefold.solver.examples.vehiclerouting.domain.VehicleRoutingSolution</solutionClass>
+      <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.Vehicle</entityClass>
+      <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.Customer</entityClass>
+      <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.timewindowed.TimeWindowedCustomer</entityClass>
 
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.vehiclerouting.score.VehicleRoutingConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.vehiclerouting.score.VehicleRoutingConstraintProvider</constraintProviderClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
 
@@ -22,7 +22,7 @@
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.vehiclerouting.persistence.VehicleRoutingFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.vehiclerouting.persistence.VehicleRoutingFileIO</solutionFileIOClass>
       <!-- Belgium datasets -->
       <inputSolutionFile>data/vehiclerouting/import/belgium/basic/air/belgium-n50-k10.vrp</inputSolutionFile>
       <inputSolutionFile>data/vehiclerouting/import/belgium/basic/air/belgium-n100-k10.vrp</inputSolutionFile>
@@ -204,7 +204,7 @@
             <destinationSelector>
               <nearbySelection>
                 <originValueSelector mimicSelectorRef="valueSelector1"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
@@ -215,7 +215,7 @@
             <secondaryValueSelector>
               <nearbySelection>
                 <originValueSelector mimicSelectorRef="valueSelector2"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
@@ -226,7 +226,7 @@
           <!--  <valueSelector>-->
           <!--    <nearbySelection>-->
           <!--      <originEntitySelector mimicSelectorRef="entitySelector3"/>-->
-          <!--      <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>-->
+          <!--      <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>-->
           <!--      <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>-->
           <!--    </nearbySelection>-->
           <!--  </valueSelector>-->
@@ -255,7 +255,7 @@
             <destinationSelector>
               <nearbySelection>
                 <originValueSelector mimicSelectorRef="valueSelector1"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
@@ -266,7 +266,7 @@
             <secondaryValueSelector>
               <nearbySelection>
                 <originValueSelector mimicSelectorRef="valueSelector2"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
@@ -277,7 +277,7 @@
           <!--  <valueSelector>-->
           <!--    <nearbySelection>-->
           <!--      <originEntitySelector mimicSelectorRef="entitySelector3"/>-->
-          <!--      <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>-->
+          <!--      <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>-->
           <!--      <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>-->
           <!--    </nearbySelection>-->
           <!--  </valueSelector>-->

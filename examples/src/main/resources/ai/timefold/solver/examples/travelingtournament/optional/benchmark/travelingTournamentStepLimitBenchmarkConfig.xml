@@ -6,17 +6,17 @@
 
   <inheritedSolverBenchmark>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.travelingtournament.persistence.TravelingTournamentSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.travelingtournament.persistence.TravelingTournamentSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/travelingtournament/unsolved/1-nl14.json</inputSolutionFile>
     </problemBenchmarks>
   </inheritedSolverBenchmark>
 
   <solverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.travelingtournament.domain.TravelingTournament</solutionClass>
-      <entityClass>org.optaplanner.examples.travelingtournament.domain.Match</entityClass>
+      <solutionClass>ai.timefold.solver.examples.travelingtournament.domain.TravelingTournament</solutionClass>
+      <entityClass>ai.timefold.solver.examples.travelingtournament.domain.Match</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.travelingtournament.score.TravelingTournamentConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.travelingtournament.score.TravelingTournamentConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <stepCountLimit>100</stepCountLimit>
@@ -26,12 +26,12 @@
           <swapMoveSelector>
             <cacheType>PHASE</cacheType>
             <selectionOrder>SHUFFLED</selectionOrder>
-            <filterClass>org.optaplanner.examples.travelingtournament.solver.move.factory.InverseMatchSwapMoveFilter</filterClass>
+            <filterClass>ai.timefold.solver.examples.travelingtournament.solver.move.factory.InverseMatchSwapMoveFilter</filterClass>
           </swapMoveSelector>
           <moveListFactory>
             <cacheType>STEP</cacheType>
             <selectionOrder>SHUFFLED</selectionOrder>
-            <moveListFactoryClass>org.optaplanner.examples.travelingtournament.solver.move.factory.MatchChainRotationsMoveFactory</moveListFactoryClass>
+            <moveListFactoryClass>ai.timefold.solver.examples.travelingtournament.solver.move.factory.MatchChainRotationsMoveFactory</moveListFactoryClass>
           </moveListFactory>
         </unionMoveSelector>
         <acceptor>

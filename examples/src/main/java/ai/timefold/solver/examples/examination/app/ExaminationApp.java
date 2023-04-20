@@ -20,7 +20,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
  */
 public class ExaminationApp extends CommonApp<Examination> {
 
-    public static final String SOLVER_CONFIG = "org/optaplanner/examples/examination/examinationSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "ai/timefold/solver/examples/examination/examinationSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "examination";
 

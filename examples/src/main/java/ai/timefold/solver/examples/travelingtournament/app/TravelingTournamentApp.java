@@ -19,7 +19,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class TravelingTournamentApp extends CommonApp<TravelingTournament> {
 
     public static final String SOLVER_CONFIG =
-            "org/optaplanner/examples/travelingtournament/travelingTournamentSolverConfig.xml";
+            "ai/timefold/solver/examples/travelingtournament/travelingTournamentSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "travelingtournament";
 

@@ -11,15 +11,15 @@ public class CloudBalancingBenchmarkApp extends CommonBenchmarkApp {
     public CloudBalancingBenchmarkApp() {
         super(
                 new ArgOption("default",
-                        "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfig.xml"),
+                        "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfig.xml"),
                 new ArgOption("stepLimit",
-                        "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingStepLimitBenchmarkConfig.xml"),
+                        "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingStepLimitBenchmarkConfig.xml"),
                 new ArgOption("scoreDirector",
-                        "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingScoreDirectorBenchmarkConfig.xml"),
+                        "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingScoreDirectorBenchmarkConfig.xml"),
                 new ArgOption("template",
-                        "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl",
+                        "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl",
                         true),
                 new ArgOption("partitioned",
-                        "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingPartitionedSearchBenchmarkConfig.xml"));
+                        "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingPartitionedSearchBenchmarkConfig.xml"));
     }
 }

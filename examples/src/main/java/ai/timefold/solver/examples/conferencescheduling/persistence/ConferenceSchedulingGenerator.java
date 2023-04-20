@@ -82,7 +82,7 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
             "WildFly",
             "Spring",
             "Drools",
-            "OptaPlanner",
+            "Timefold",
             "jBPM",
             "Camel",
             "Jackson",

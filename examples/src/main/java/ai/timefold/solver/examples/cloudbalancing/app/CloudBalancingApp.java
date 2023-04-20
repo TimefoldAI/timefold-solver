@@ -11,7 +11,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
  */
 public class CloudBalancingApp extends CommonApp<CloudBalance> {
 
-    public static final String SOLVER_CONFIG = "org/optaplanner/examples/cloudbalancing/cloudBalancingSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "ai/timefold/solver/examples/cloudbalancing/cloudBalancingSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "cloudbalancing";
 

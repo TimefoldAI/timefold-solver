@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.examples.common.domain.AbstractPersistable;
 
-@ConstraintConfiguration(constraintPackage = "org.optaplanner.examples.conferencescheduling.score")
+@ConstraintConfiguration(constraintPackage = "ai.timefold.solver.examples.conferencescheduling.score")
 public class ConferenceConstraintConfiguration extends AbstractPersistable {
 
     public static final String ROOM_UNAVAILABLE_TIMESLOT = "Room unavailable timeslot";

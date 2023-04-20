@@ -9,7 +9,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class MeetingSchedulingApp extends CommonApp<MeetingSchedule> {
 
     public static final String SOLVER_CONFIG =
-            "org/optaplanner/examples/meetingscheduling/meetingSchedulingSolverConfig.xml";
+            "ai/timefold/solver/examples/meetingscheduling/meetingSchedulingSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "meetingscheduling";
 

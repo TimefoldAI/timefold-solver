@@ -13,7 +13,7 @@ public class NQueensHelloWorld {
     public static void main(String[] args) {
         // Build the Solver
         SolverFactory<NQueens> solverFactory = SolverFactory.createFromXmlResource(
-                "org/optaplanner/examples/nqueens/nqueensSolverConfig.xml");
+                "ai/timefold/solver/examples/nqueens/nqueensSolverConfig.xml");
         Solver<NQueens> solver = solverFactory.buildSolver();
 
         // Load a problem with 8 queens

@@ -11,9 +11,9 @@ public class VehicleRoutingBenchmarkApp extends CommonBenchmarkApp {
     public VehicleRoutingBenchmarkApp() {
         super(
                 new ArgOption("default",
-                        "org/optaplanner/examples/vehiclerouting/optional/benchmark/vehicleRoutingBenchmarkConfig.xml"),
+                        "ai/timefold/solver/examples/vehiclerouting/optional/benchmark/vehicleRoutingBenchmarkConfig.xml"),
                 new ArgOption("scoreDirector",
-                        "org/optaplanner/examples/vehiclerouting/optional/benchmark/vehicleRoutingScoreDirectorBenchmarkConfig.xml"));
+                        "ai/timefold/solver/examples/vehiclerouting/optional/benchmark/vehicleRoutingScoreDirectorBenchmarkConfig.xml"));
     }
 
 }

@@ -28,7 +28,7 @@ class VehicleRoutingSolutionFileIOTest {
     @BeforeEach
     void generateTempSolutionFile() throws IOException {
         VehicleRoutingSolution solution = generateSolution();
-        solutionFile = Files.createTempFile("optaplanner-", ".json").toFile();
+        solutionFile = Files.createTempFile("timefold-solver-", ".json").toFile();
         VehicleRoutingSolutionFileIO solutionFileIO = new VehicleRoutingSolutionFileIO();
         solutionFileIO.write(solution, solutionFile);
     }

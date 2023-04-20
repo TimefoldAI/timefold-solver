@@ -17,7 +17,7 @@ import ai.timefold.solver.examples.tsp.domain.location.Location;
 
 public class TspPanel extends SolutionPanel<TspSolution> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/tsp/swingui/tspLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/tsp/swingui/tspLogo.png";
 
     private TspWorldPanel tspWorldPanel;
     private TspListPanel tspListPanel;

@@ -6,17 +6,17 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.pas.domain.PatientAdmissionSchedule</solutionClass>
-      <entityClass>org.optaplanner.examples.pas.domain.BedDesignation</entityClass>
+      <solutionClass>ai.timefold.solver.examples.pas.domain.PatientAdmissionSchedule</solutionClass>
+      <entityClass>ai.timefold.solver.examples.pas.domain.BedDesignation</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.pas.score.PatientAdmissionScheduleConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.pas.score.PatientAdmissionScheduleConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <secondsSpentLimit>300</secondsSpentLimit>
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.pas.persistence.PatientAdmissionScheduleSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.pas.persistence.PatientAdmissionScheduleSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/pas/unsolved/testdata01.json</inputSolutionFile>
       <inputSolutionFile>data/pas/unsolved/testdata02.json</inputSolutionFile>
       <inputSolutionFile>data/pas/unsolved/testdata03.json</inputSolutionFile>

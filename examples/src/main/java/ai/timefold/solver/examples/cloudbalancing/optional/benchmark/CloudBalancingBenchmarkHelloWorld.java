@@ -31,7 +31,7 @@ public class CloudBalancingBenchmarkHelloWorld {
     public static void runBasicBenchmark() {
         // Build the PlannerBenchmark
         PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfigXmlResource(
-                "org/optaplanner/examples/cloudbalancing/cloudBalancingSolverConfig.xml");
+                "ai/timefold/solver/examples/cloudbalancing/cloudBalancingSolverConfig.xml");
 
         CloudBalancingGenerator generator = new CloudBalancingGenerator();
         PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(
@@ -48,7 +48,7 @@ public class CloudBalancingBenchmarkHelloWorld {
     public static void runAdvancedBenchmark(boolean aggregator) {
         // Build the PlannerBenchmark
         PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlResource(
-                "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfig.xml");
+                "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfig.xml");
 
         PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
         // Benchmark the problem and show it
@@ -57,7 +57,7 @@ public class CloudBalancingBenchmarkHelloWorld {
         // Show aggregator to aggregate multiple reports
         if (aggregator) {
             BenchmarkAggregatorFrame.createAndDisplayFromXmlResource(
-                    "org/optaplanner/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfig.xml");
+                    "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfig.xml");
         }
     }
 

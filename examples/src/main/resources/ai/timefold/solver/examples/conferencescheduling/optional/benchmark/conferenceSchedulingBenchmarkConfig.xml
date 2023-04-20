@@ -5,17 +5,17 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.conferencescheduling.domain.ConferenceSolution</solutionClass>
-      <entityClass>org.optaplanner.examples.conferencescheduling.domain.Talk</entityClass>
+      <solutionClass>ai.timefold.solver.examples.conferencescheduling.domain.ConferenceSolution</solutionClass>
+      <entityClass>ai.timefold.solver.examples.conferencescheduling.domain.Talk</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.curriculumcourse.score.CurriculumCourseConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.curriculumcourse.score.CurriculumCourseConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <minutesSpentLimit>15</minutesSpentLimit>
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.conferencescheduling.persistence.ConferenceSchedulingXlsxFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.conferencescheduling.persistence.ConferenceSchedulingXlsxFileIO</solutionFileIOClass>
       <inputSolutionFile>data/conferencescheduling/unsolved/18talks-6timeslots-5rooms.xlsx</inputSolutionFile>
       <inputSolutionFile>data/conferencescheduling/unsolved/36talks-12timeslots-5rooms.xlsx</inputSolutionFile>
       <inputSolutionFile>data/conferencescheduling/unsolved/72talks-12timeslots-10rooms.xlsx</inputSolutionFile>

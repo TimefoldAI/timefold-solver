@@ -38,7 +38,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class CurriculumCoursePanel extends SolutionPanel<CourseSchedule> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/curriculumcourse/swingui/curriculumCourseLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/curriculumcourse/swingui/curriculumCourseLogo.png";
 
     private final TimeTablePanel<Room, Period> roomsPanel;
     private final TimeTablePanel<Teacher, Period> teachersPanel;

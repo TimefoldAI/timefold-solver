@@ -21,7 +21,7 @@ import ai.timefold.solver.examples.machinereassignment.domain.MrResource;
 
 public class MachineReassignmentPanel extends SolutionPanel<MachineReassignment> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/machinereassignment/swingui/machineReassignmentLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/machinereassignment/swingui/machineReassignmentLogo.png";
 
     private JPanel machineListPanel;
 

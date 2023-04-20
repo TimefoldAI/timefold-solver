@@ -15,7 +15,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 public class PatientAdmissionScheduleApp extends CommonApp<PatientAdmissionSchedule> {
 
-    public static final String SOLVER_CONFIG = "org/optaplanner/examples/pas/patientAdmissionScheduleSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "ai/timefold/solver/examples/pas/patientAdmissionScheduleSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "pas";
 

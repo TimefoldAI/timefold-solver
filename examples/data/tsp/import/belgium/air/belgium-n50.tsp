@@ -1,5 +1,5 @@
 NAME: belgium-n50
-COMMENT: Generated for OptaPlanner Examples by Geoffrey De Smet.
+COMMENT: Generated for Timefold Examples by Geoffrey De Smet.
 TYPE: TSP
 DIMENSION: 50
 EDGE_WEIGHT_TYPE: EUC_2D

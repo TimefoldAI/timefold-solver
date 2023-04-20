@@ -111,7 +111,7 @@ public final class ConferenceCFPImportAction implements CommonApp.ExtraAction<Co
             } catch (ExecutionException e) {
                 JOptionPane.showMessageDialog(solutionPanel,
                         "CFP import failed.\nThe next dialog will explain the cause.\n\n"
-                                + "Fix it in ConferenceSchedulingCfpDevoxxImporter.java in the optaplanner repository.");
+                                + "Fix it in ConferenceSchedulingCfpDevoxxImporter.java in the timefold repository.");
                 throw new IllegalStateException("Importing failed.", e.getCause());
             }
             solutionBusiness.setSolution(cfpProblem);

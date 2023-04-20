@@ -6,7 +6,7 @@
 
   <inheritedSolverBenchmark>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
       <!--<inputSolutionFile>data/machinereassignment/import/model_a1_1.txt</inputSolutionFile>-->
       <!--<inputSolutionFile>data/machinereassignment/import/model_a1_2.txt</inputSolutionFile>-->
       <!--<inputSolutionFile>data/machinereassignment/import/model_a1_3.txt</inputSolutionFile>-->
@@ -32,11 +32,11 @@
 
     <solver>
       <!--<environmentMode>FAST_ASSERT</environmentMode>-->
-      <solutionClass>org.optaplanner.examples.machinereassignment.domain.MachineReassignment</solutionClass>
-      <entityClass>org.optaplanner.examples.machinereassignment.domain.MrProcessAssignment</entityClass>
+      <solutionClass>ai.timefold.solver.examples.machinereassignment.domain.MachineReassignment</solutionClass>
+      <entityClass>ai.timefold.solver.examples.machinereassignment.domain.MrProcessAssignment</entityClass>
 
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.machinereassignment.score.MachineReassignmentConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.machinereassignment.score.MachineReassignmentConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <minutesSpentLimit>5</minutesSpentLimit>
@@ -48,7 +48,7 @@
     <name>original</name>
     <solver>
       <customPhase>
-        <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+        <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
       </customPhase>
     </solver>
   </solverBenchmark>
@@ -58,7 +58,7 @@
     <name>entityTabu${entityTabuSize}-mas${acceptedCountLimit}</name>
     <solver>
       <customPhase>
-        <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+        <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
       </customPhase>
       <localSearch>
         <unionMoveSelector>
@@ -81,7 +81,7 @@
         <name>simulatedAnnealing${simulatedAnnealingStartingTemperature}soft</name>
         <solver>
             <customPhase>
-                <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+                <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
             </customPhase>
             <localSearch>
                 <unionMoveSelector>
@@ -103,7 +103,7 @@
     <name>lateAcceptance${lateAcceptanceSize}</name>
     <solver>
       <customPhase>
-        <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+        <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
       </customPhase>
       <localSearch>
         <unionMoveSelector>

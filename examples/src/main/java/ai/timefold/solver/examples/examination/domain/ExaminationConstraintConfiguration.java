@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * <p>
  * Each {@link Examination} has only 1 instance of this class.
  */
-@ConstraintConfiguration(constraintPackage = "org.optaplanner.examples.examination.score")
+@ConstraintConfiguration(constraintPackage = "ai.timefold.solver.examples.examination.score")
 public class ExaminationConstraintConfiguration extends AbstractPersistable {
     // Hard constraints
     private int conflictingExamsInSamePeriodPenalty = 1;

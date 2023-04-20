@@ -11,9 +11,9 @@ public class ExaminationBenchmarkApp extends CommonBenchmarkApp {
     public ExaminationBenchmarkApp() {
         super(
                 new ArgOption("default",
-                        "org/optaplanner/examples/examination/optional/benchmark/examinationBenchmarkConfig.xml"),
+                        "ai/timefold/solver/examples/examination/optional/benchmark/examinationBenchmarkConfig.xml"),
                 new ArgOption("stepLimit",
-                        "org/optaplanner/examples/examination/optional/benchmark/examinationStepLimitBenchmarkConfig.xml"));
+                        "ai/timefold/solver/examples/examination/optional/benchmark/examinationStepLimitBenchmarkConfig.xml"));
     }
 
 }

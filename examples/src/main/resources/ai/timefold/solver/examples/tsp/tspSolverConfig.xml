@@ -6,13 +6,13 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.tsp.domain.TspSolution</solutionClass>
-  <entityClass>org.optaplanner.examples.tsp.domain.Visit</entityClass>
+  <solutionClass>ai.timefold.solver.examples.tsp.domain.TspSolution</solutionClass>
+  <entityClass>ai.timefold.solver.examples.tsp.domain.Visit</entityClass>
 
   <scoreDirectorFactory>
-    <!--<easyScoreCalculatorClass>org.optaplanner.examples.tsp.optional.score.TspEasyScoreCalculator</easyScoreCalculatorClass>-->
-    <constraintProviderClass>org.optaplanner.examples.tsp.score.TspConstraintProvider</constraintProviderClass>
-    <!--<incrementalScoreCalculatorClass>org.optaplanner.examples.tsp.optional.score.TspIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
+    <!--<easyScoreCalculatorClass>ai.timefold.solver.examples.tsp.optional.score.TspEasyScoreCalculator</easyScoreCalculatorClass>-->
+    <constraintProviderClass>ai.timefold.solver.examples.tsp.score.TspConstraintProvider</constraintProviderClass>
+    <!--<incrementalScoreCalculatorClass>ai.timefold.solver.examples.tsp.optional.score.TspIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
@@ -33,7 +33,7 @@
         <valueSelector>
           <nearbySelection>
             <originEntitySelector mimicSelectorRef="entitySelector1"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </valueSelector>
@@ -43,7 +43,7 @@
         <secondaryEntitySelector>
           <nearbySelection>
             <originEntitySelector mimicSelectorRef="entitySelector2"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </secondaryEntitySelector>
@@ -53,7 +53,7 @@
         <valueSelector>
           <nearbySelection>
             <originEntitySelector mimicSelectorRef="entitySelector3"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </valueSelector>

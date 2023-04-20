@@ -6,14 +6,14 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.machinereassignment.domain.MachineReassignment</solutionClass>
-  <entityClass>org.optaplanner.examples.machinereassignment.domain.MrProcessAssignment</entityClass>
+  <solutionClass>ai.timefold.solver.examples.machinereassignment.domain.MachineReassignment</solutionClass>
+  <entityClass>ai.timefold.solver.examples.machinereassignment.domain.MrProcessAssignment</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>org.optaplanner.examples.machinereassignment.score.MachineReassignmentConstraintProvider</constraintProviderClass>
-    <!--<incrementalScoreCalculatorClass>org.optaplanner.examples.machinereassignment.optional.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
+    <constraintProviderClass>ai.timefold.solver.examples.machinereassignment.score.MachineReassignmentConstraintProvider</constraintProviderClass>
+    <!--<incrementalScoreCalculatorClass>ai.timefold.solver.examples.machinereassignment.optional.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
     <!--<assertionScoreDirectorFactory>-->
-      <!--<incrementalScoreCalculatorClass>org.optaplanner.examples.machinereassignment.optional.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
+      <!--<incrementalScoreCalculatorClass>ai.timefold.solver.examples.machinereassignment.optional.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
     <!--</assertionScoreDirectorFactory>-->
   </scoreDirectorFactory>
   <termination>
@@ -24,7 +24,7 @@
     <!--<constructionHeuristicType>FIRST_FIT</constructionHeuristicType>-->
   <!--</constructionHeuristic>-->
   <customPhase>
-    <customPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+    <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
   </customPhase>
   <localSearch>
     <unionMoveSelector>

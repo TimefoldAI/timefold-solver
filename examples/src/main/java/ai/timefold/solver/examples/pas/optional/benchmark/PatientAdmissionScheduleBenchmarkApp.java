@@ -11,7 +11,7 @@ public class PatientAdmissionScheduleBenchmarkApp extends CommonBenchmarkApp {
     public PatientAdmissionScheduleBenchmarkApp() {
         super(
                 new ArgOption("default",
-                        "org/optaplanner/examples/pas/optional/benchmark/patientAdmissionScheduleBenchmarkConfig.xml"));
+                        "ai/timefold/solver/examples/pas/optional/benchmark/patientAdmissionScheduleBenchmarkConfig.xml"));
     }
 
 }

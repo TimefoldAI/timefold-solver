@@ -45,7 +45,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class PatientAdmissionSchedulePanel extends SolutionPanel<PatientAdmissionSchedule> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/pas/swingui/pasLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/pas/swingui/pasLogo.png";
 
     private final ImageIcon anyGenderIcon;
     private final ImageIcon maleIcon;

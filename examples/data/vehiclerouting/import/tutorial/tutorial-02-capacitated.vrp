@@ -1,5 +1,5 @@
 NAME : tutorial-02-capacitated
-COMMENT : Geoffrey De Smet - OptaPlanner VRP demo 03
+COMMENT : Geoffrey De Smet - Timefold VRP demo 03
 TYPE : CVRP
 DIMENSION : 8
 EDGE_WEIGHT_TYPE : EUC_2D 

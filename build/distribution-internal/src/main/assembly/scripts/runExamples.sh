@@ -4,8 +4,8 @@
 cd "$(dirname $0)" || exit
 
 # Most examples run (potentially slower) with max heap of 128 MB (so -Xmx128m), but 1 example's dataset requires 2 GB
-jvmOptions="-Xms256m -Xmx2g -Dorg.optaplanner.examples.dataDir=examples/sources/data/"
-mainClass=org.optaplanner.examples.app.OptaPlannerExamplesApp
+jvmOptions="-Xms256m -Xmx2g -Dai.timefold.solver.examples.dataDir=examples/sources/data/"
+mainClass=ai.timefold.solver.examples.app.TimefoldExamplesApp
 mainClasspath="examples/binaries/*"
 
 echo "Usage: ./runExamples.sh"

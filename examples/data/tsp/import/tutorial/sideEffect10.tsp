@@ -1,5 +1,5 @@
 NAME : Side effect 10
-COMMENT : Generated for OptaPlanner. Demonstrates a side effect on the optimal solution in TSP.
+COMMENT : Generated for Timefold. Demonstrates a side effect on the optimal solution in TSP.
 TYPE : TSP
 DIMENSION : 10
 EDGE_WEIGHT_TYPE : EUC_2D

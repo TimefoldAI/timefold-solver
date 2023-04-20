@@ -17,7 +17,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 public class TspApp extends CommonApp<TspSolution> {
 
-    public static final String SOLVER_CONFIG = "org/optaplanner/examples/tsp/tspSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "ai/timefold/solver/examples/tsp/tspSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "tsp";
 

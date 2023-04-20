@@ -31,7 +31,7 @@ import ai.timefold.solver.examples.nurserostering.domain.ShiftDate;
 
 public class NurseRosteringPanel extends SolutionPanel<NurseRoster> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/nurserostering/swingui/nurseRosteringLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/nurserostering/swingui/nurseRosteringLogo.png";
 
     private final ImageIcon employeeIcon;
     private final ImageIcon deleteEmployeeIcon;
@@ -158,7 +158,7 @@ public class NurseRosteringPanel extends SolutionPanel<NurseRoster> {
         logger.info("Advancing planningWindowStart.");
         if (solutionBusiness.isSolving()) {
             JOptionPane.showMessageDialog(this.getTopLevelAncestor(),
-                    "The GUI does not support this action yet during solving.\nOptaPlanner itself does support it.\n"
+                    "The GUI does not support this action yet during solving.\nTimefold itself does support it.\n"
                             + "\nTerminate solving first and try again.",
                     "Unsupported in GUI", JOptionPane.INFORMATION_MESSAGE);
             return;

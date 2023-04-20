@@ -28,7 +28,7 @@ public class MachineReassignmentIncrementalScoreCalculator
         implements ConstraintMatchAwareIncrementalScoreCalculator<MachineReassignment, HardSoftLongScore>,
         IncrementalScoreCalculator<MachineReassignment, HardSoftLongScore> {
 
-    protected static final String CONSTRAINT_PACKAGE = "org.optaplanner.examples.machinereassignment.solver";
+    protected static final String CONSTRAINT_PACKAGE = "ai.timefold.solver.examples.machinereassignment.solver";
 
     private MachineReassignment machineReassignment;
     private MrGlobalPenaltyInfo globalPenaltyInfo;

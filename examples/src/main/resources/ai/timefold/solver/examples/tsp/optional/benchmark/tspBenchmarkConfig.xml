@@ -6,11 +6,11 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.tsp.domain.TspSolution</solutionClass>
-      <entityClass>org.optaplanner.examples.tsp.domain.Visit</entityClass>
+      <solutionClass>ai.timefold.solver.examples.tsp.domain.TspSolution</solutionClass>
+      <entityClass>ai.timefold.solver.examples.tsp.domain.Visit</entityClass>
 
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.tsp.score.TspConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.tsp.score.TspConstraintProvider</constraintProviderClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
       </scoreDirectorFactory>
 
@@ -19,7 +19,7 @@
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.tsp.persistence.TspFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.tsp.persistence.TspFileIO</solutionFileIOClass>
       <inputSolutionFile>data/tsp/import/other/air/europe40.tsp</inputSolutionFile>
       <inputSolutionFile>data/tsp/import/cook/air/dj38.tsp</inputSolutionFile>
       <inputSolutionFile>data/tsp/import/cook/air/lu980.tsp</inputSolutionFile>
@@ -84,7 +84,7 @@
             <valueSelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector1"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </valueSelector>
@@ -94,7 +94,7 @@
             <secondaryEntitySelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector2"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </secondaryEntitySelector>
@@ -104,7 +104,7 @@
             <valueSelector>
               <nearbySelection>
                 <originEntitySelector mimicSelectorRef="entitySelector3"/>
-                <nearbyDistanceMeterClass>org.optaplanner.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
+                <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
                 <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
               </nearbySelection>
             </valueSelector>

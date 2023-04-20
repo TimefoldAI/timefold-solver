@@ -6,15 +6,15 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>org.optaplanner.examples.vehiclerouting.domain.VehicleRoutingSolution</solutionClass>
-  <entityClass>org.optaplanner.examples.vehiclerouting.domain.Vehicle</entityClass>
-  <entityClass>org.optaplanner.examples.vehiclerouting.domain.Customer</entityClass>
-  <entityClass>org.optaplanner.examples.vehiclerouting.domain.timewindowed.TimeWindowedCustomer</entityClass>
+  <solutionClass>ai.timefold.solver.examples.vehiclerouting.domain.VehicleRoutingSolution</solutionClass>
+  <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.Vehicle</entityClass>
+  <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.Customer</entityClass>
+  <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.timewindowed.TimeWindowedCustomer</entityClass>
 
   <scoreDirectorFactory>
-    <!--<easyScoreCalculatorClass>org.optaplanner.examples.vehiclerouting.optional.score.VehicleRoutingEasyScoreCalculator</easyScoreCalculatorClass>-->
-    <constraintProviderClass>org.optaplanner.examples.vehiclerouting.score.VehicleRoutingConstraintProvider</constraintProviderClass>
-    <!--<incrementalScoreCalculatorClass>org.optaplanner.examples.vehiclerouting.optional.score.VehicleRoutingIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
+    <!--<easyScoreCalculatorClass>ai.timefold.solver.examples.vehiclerouting.optional.score.VehicleRoutingEasyScoreCalculator</easyScoreCalculatorClass>-->
+    <constraintProviderClass>ai.timefold.solver.examples.vehiclerouting.score.VehicleRoutingConstraintProvider</constraintProviderClass>
+    <!--<incrementalScoreCalculatorClass>ai.timefold.solver.examples.vehiclerouting.optional.score.VehicleRoutingIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
@@ -30,7 +30,7 @@
         <destinationSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="1"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -41,7 +41,7 @@
         <secondaryValueSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="2"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -53,7 +53,7 @@
         <destinationSelector>
           <nearbySelection>
             <originSubListSelector mimicSelectorRef="3"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -65,7 +65,7 @@
         <secondarySubListSelector>
           <nearbySelection>
             <originSubListSelector mimicSelectorRef="4"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -76,7 +76,7 @@
         <valueSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="5"/>
-            <nearbyDistanceMeterClass>org.optaplanner.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>

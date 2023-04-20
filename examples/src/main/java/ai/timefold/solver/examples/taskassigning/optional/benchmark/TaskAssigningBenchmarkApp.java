@@ -11,9 +11,9 @@ public class TaskAssigningBenchmarkApp extends CommonBenchmarkApp {
     public TaskAssigningBenchmarkApp() {
         super(
                 new ArgOption("default",
-                        "org/optaplanner/examples/taskassigning/optional/benchmark/taskAssigningBenchmarkConfig.xml"),
+                        "ai/timefold/solver/examples/taskassigning/optional/benchmark/taskAssigningBenchmarkConfig.xml"),
                 new ArgOption("scoreDirector",
-                        "org/optaplanner/examples/taskassigning/optional/benchmark/taskAssigningScoreDirectorBenchmarkConfig.xml"));
+                        "ai/timefold/solver/examples/taskassigning/optional/benchmark/taskAssigningScoreDirectorBenchmarkConfig.xml"));
     }
 
 }

@@ -51,25 +51,25 @@ public class TimefoldExamplesApp extends JFrame {
      */
     public static void main(String[] args) {
         CommonApp.prepareSwingEnvironment();
-        TimefoldExamplesApp optaPlannerExamplesApp = new TimefoldExamplesApp();
-        optaPlannerExamplesApp.pack();
-        optaPlannerExamplesApp.setLocationRelativeTo(null);
-        optaPlannerExamplesApp.setVisible(true);
+        TimefoldExamplesApp timefoldExamplesApp = new TimefoldExamplesApp();
+        timefoldExamplesApp.pack();
+        timefoldExamplesApp.setLocationRelativeTo(null);
+        timefoldExamplesApp.setVisible(true);
     }
 
-    private static String determineOptaPlannerExamplesVersion() {
-        String optaPlannerExamplesVersion = TimefoldExamplesApp.class.getPackage().getImplementationVersion();
-        if (optaPlannerExamplesVersion == null) {
-            optaPlannerExamplesVersion = "";
+    private static String determineTimefoldExamplesVersion() {
+        String timefoldExamplesVersion = TimefoldExamplesApp.class.getPackage().getImplementationVersion();
+        if (timefoldExamplesVersion == null) {
+            timefoldExamplesVersion = "";
         }
-        return optaPlannerExamplesVersion;
+        return timefoldExamplesVersion;
     }
 
     private JTextArea descriptionTextArea;
 
     public TimefoldExamplesApp() {
-        super("OptaPlanner examples " + determineOptaPlannerExamplesVersion());
-        setIconImage(SolverAndPersistenceFrame.OPTAPLANNER_ICON.getImage());
+        super("Timefold examples " + determineTimefoldExamplesVersion());
+        setIconImage(SolverAndPersistenceFrame.TIMEFOLD_ICON.getImage());
         setContentPane(createContentPane());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -160,10 +160,10 @@ public class TimefoldExamplesApp extends JFrame {
     private JPanel createExtraPanel() {
         JPanel extraPanel = new JPanel(new GridLayout(0, 1, 5, 5));
         extraPanel.add(new JPanel());
-        Action homepageAction = new OpenBrowserAction("www.optaplanner.org", "https://www.optaplanner.org");
+        Action homepageAction = new OpenBrowserAction("timefold.ai", "https://timefold.ai");
         extraPanel.add(new JButton(homepageAction));
         Action documentationAction = new OpenBrowserAction("Documentation",
-                "https://www.optaplanner.org/learn/documentation.html");
+                "https://timefold.ai/docs/");
         extraPanel.add(new JButton(documentationAction));
         return extraPanel;
     }

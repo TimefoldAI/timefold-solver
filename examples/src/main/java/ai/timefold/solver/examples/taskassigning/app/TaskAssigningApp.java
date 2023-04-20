@@ -9,7 +9,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class TaskAssigningApp extends CommonApp<TaskAssigningSolution> {
 
     public static final String SOLVER_CONFIG =
-            "org/optaplanner/examples/taskassigning/taskAssigningSolverConfig.xml";
+            "ai/timefold/solver/examples/taskassigning/taskAssigningSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "taskassigning";
 

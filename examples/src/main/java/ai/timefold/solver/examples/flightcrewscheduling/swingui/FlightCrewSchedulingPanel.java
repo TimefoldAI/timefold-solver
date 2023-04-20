@@ -18,7 +18,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class FlightCrewSchedulingPanel extends SolutionPanel<FlightCrewSolution> {
 
     public static final String LOGO_PATH =
-            "/org/optaplanner/examples/flightcrewscheduling/swingui/flightCrewSchedulingLogo.png";
+            "/ai/timefold/solver/examples/flightcrewscheduling/swingui/flightCrewSchedulingLogo.png";
 
     private FlightCrewSchedulingWorldPanel flightCrewSchedulingWorldPanel;
 

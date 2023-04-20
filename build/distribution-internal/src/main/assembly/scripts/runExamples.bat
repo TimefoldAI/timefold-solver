@@ -2,8 +2,8 @@
 setLocal enableExtensions enableDelayedExpansion
 
 rem Most examples run (potentially slower) with max heap of 128 MB (so -Xmx128m), but 1 example's dataset requires 2 GB
-set "jvmOptions=-Xms256m -Xmx2g -Dorg.optaplanner.examples.dataDir=examples/sources/data/"
-set "mainClass=org.optaplanner.examples.app.OptaPlannerExamplesApp"
+set "jvmOptions=-Xms256m -Xmx2g -Dai.timefold.solver.examples.dataDir=examples/sources/data/"
+set "mainClass=ai.timefold.solver.examples.app.TimefoldExamplesApp"
 set "mainClasspath=examples/binaries/*"
 
 echo Usage: runExamples.bat

@@ -14,7 +14,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class ProjectJobSchedulingApp extends CommonApp<Schedule> {
 
     public static final String SOLVER_CONFIG =
-            "org/optaplanner/examples/projectjobscheduling/projectJobSchedulingSolverConfig.xml";
+            "ai/timefold/solver/examples/projectjobscheduling/projectJobSchedulingSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "projectjobscheduling";
 

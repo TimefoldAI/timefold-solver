@@ -31,7 +31,7 @@ public class VehicleRoutingSolutionPainter {
     private static final int TIME_WINDOW_DIAMETER = 26;
     private static final NumberFormat NUMBER_FORMAT = new DecimalFormat("#,##0.00");
 
-    private static final String IMAGE_PATH_PREFIX = "/org/optaplanner/examples/vehiclerouting/swingui/";
+    private static final String IMAGE_PATH_PREFIX = "/ai/timefold/solver/examples/vehiclerouting/swingui/";
 
     private ImageIcon depotImageIcon;
     private ImageIcon[] vehicleImageIcons;

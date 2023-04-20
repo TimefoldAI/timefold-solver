@@ -16,7 +16,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 public class CurriculumCourseApp extends CommonApp<CourseSchedule> {
 
     public static final String SOLVER_CONFIG =
-            "org/optaplanner/examples/curriculumcourse/curriculumCourseSolverConfig.xml";
+            "ai/timefold/solver/examples/curriculumcourse/curriculumCourseSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "curriculumcourse";
 

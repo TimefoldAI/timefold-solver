@@ -1,5 +1,5 @@
 NAME : americanRoadTrip-road-km-n50
-COMMENT : Based on Staedter's list and Randy Olson's blog. Generated for OptaPlanner Examples with Google Maps by Geoffrey De Smet.
+COMMENT : Based on Staedter's list and Randy Olson's blog. Generated for Timefold Examples with Google Maps by Geoffrey De Smet.
 TYPE : TSP
 DIMENSION : 50
 EDGE_WEIGHT_TYPE: EXPLICIT

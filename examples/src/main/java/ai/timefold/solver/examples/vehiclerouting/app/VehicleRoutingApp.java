@@ -13,7 +13,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 public class VehicleRoutingApp extends CommonApp<VehicleRoutingSolution> {
 
-    public static final String SOLVER_CONFIG = "org/optaplanner/examples/vehiclerouting/vehicleRoutingSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "ai/timefold/solver/examples/vehiclerouting/vehicleRoutingSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "vehiclerouting";
 

@@ -6,10 +6,10 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.vehiclerouting.domain.VehicleRoutingSolution</solutionClass>
-      <entityClass>org.optaplanner.examples.vehiclerouting.domain.Vehicle</entityClass>
-      <entityClass>org.optaplanner.examples.vehiclerouting.domain.Customer</entityClass>
-      <entityClass>org.optaplanner.examples.vehiclerouting.domain.timewindowed.TimeWindowedCustomer</entityClass>
+      <solutionClass>ai.timefold.solver.examples.vehiclerouting.domain.VehicleRoutingSolution</solutionClass>
+      <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.Vehicle</entityClass>
+      <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.Customer</entityClass>
+      <entityClass>ai.timefold.solver.examples.vehiclerouting.domain.timewindowed.TimeWindowedCustomer</entityClass>
 
       <scoreDirectorFactory>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -19,7 +19,7 @@
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.vehiclerouting.persistence.VehicleRoutingFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.vehiclerouting.persistence.VehicleRoutingFileIO</solutionFileIOClass>
       <!-- Belgium datasets -->
       <inputSolutionFile>data/vehiclerouting/import/belgium/basic/air/belgium-n50-k10.vrp</inputSolutionFile>
       <inputSolutionFile>data/vehiclerouting/import/belgium/basic/air/belgium-n100-k10.vrp</inputSolutionFile>
@@ -33,7 +33,7 @@
     <name>Easy java</name>
     <solver>
       <scoreDirectorFactory>
-        <easyScoreCalculatorClass>org.optaplanner.examples.vehiclerouting.optional.score.VehicleRoutingEasyScoreCalculator</easyScoreCalculatorClass>
+        <easyScoreCalculatorClass>ai.timefold.solver.examples.vehiclerouting.optional.score.VehicleRoutingEasyScoreCalculator</easyScoreCalculatorClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>
@@ -42,7 +42,7 @@
   <!--  <name>Incremental java</name>-->
   <!--  <solver>-->
   <!--    <scoreDirectorFactory>-->
-  <!--      <incrementalScoreCalculatorClass>org.optaplanner.examples.vehiclerouting.optional.score.VehicleRoutingIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
+  <!--      <incrementalScoreCalculatorClass>ai.timefold.solver.examples.vehiclerouting.optional.score.VehicleRoutingIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
   <!--    </scoreDirectorFactory>-->
   <!--  </solver>-->
   <!--</solverBenchmark>-->
@@ -50,7 +50,7 @@
     <name>ConstraintStreams</name>
     <solver>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.vehiclerouting.score.VehicleRoutingConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.vehiclerouting.score.VehicleRoutingConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>

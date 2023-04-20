@@ -26,8 +26,8 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class NQueensPanel extends SolutionPanel<NQueens> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/nqueens/swingui/nqueensLogo.png";
-    private static final String QUEEN_IMAGE_PATH = "/org/optaplanner/examples/nqueens/swingui/queenImage.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/nqueens/swingui/nqueensLogo.png";
+    private static final String QUEEN_IMAGE_PATH = "/ai/timefold/solver/examples/nqueens/swingui/queenImage.png";
 
     private ImageIcon queenImageIcon;
 

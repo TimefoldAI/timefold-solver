@@ -5,7 +5,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.examples.common.domain.AbstractPersistable;
 
-@ConstraintConfiguration(constraintPackage = "org.optaplanner.examples.meetingscheduling.score")
+@ConstraintConfiguration(constraintPackage = "ai.timefold.solver.examples.meetingscheduling.score")
 public class MeetingConstraintConfiguration extends AbstractPersistable {
 
     public static final String ROOM_CONFLICT = "Room conflict";

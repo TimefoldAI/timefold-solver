@@ -55,8 +55,8 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 public final class SolverAndPersistenceFrame<Solution_>
         extends JFrame {
 
-    public static final ImageIcon OPTAPLANNER_ICON = new ImageIcon(
-            SolverAndPersistenceFrame.class.getResource("optaPlannerIcon.png"));
+    public static final ImageIcon TIMEFOLD_ICON = new ImageIcon(
+            SolverAndPersistenceFrame.class.getResource("timefold-logomark.png"));
 
     private final SolutionBusiness<Solution_, ?> solutionBusiness;
     private final ImageIcon indictmentHeatMapTrueIcon;
@@ -87,10 +87,10 @@ public final class SolverAndPersistenceFrame<Solution_>
 
     public SolverAndPersistenceFrame(SolutionBusiness<Solution_, ?> solutionBusiness,
             SolutionPanel<Solution_> solutionPanel, CommonApp.ExtraAction<Solution_>[] extraActions) {
-        super(solutionBusiness.getAppName() + " OptaPlanner example");
+        super(solutionBusiness.getAppName() + " Timefold example");
         this.solutionBusiness = solutionBusiness;
         this.solutionPanel = solutionPanel;
-        setIconImage(OPTAPLANNER_ICON.getImage());
+        setIconImage(TIMEFOLD_ICON.getImage());
         solutionPanel.setSolutionBusiness(solutionBusiness);
         solutionPanel.setSolverAndPersistenceFrame(this);
         this.extraActions = Arrays.stream(extraActions)

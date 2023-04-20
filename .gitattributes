@@ -30,5 +30,5 @@
 # GitHub syntax highlighting
 ############################
 
-# To prevent GitHub to presume those optaplanner-examples/data files are Objective-C++ code.
+# To prevent GitHub to presume those timefold-solver-examples/data files are Objective-C++ code.
 *.mm linguist-language=Text

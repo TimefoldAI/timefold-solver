@@ -6,9 +6,9 @@
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>org.optaplanner.examples.taskassigning.domain.TaskAssigningSolution</solutionClass>
-      <entityClass>org.optaplanner.examples.taskassigning.domain.Employee</entityClass>
-      <entityClass>org.optaplanner.examples.taskassigning.domain.Task</entityClass>
+      <solutionClass>ai.timefold.solver.examples.taskassigning.domain.TaskAssigningSolution</solutionClass>
+      <entityClass>ai.timefold.solver.examples.taskassigning.domain.Employee</entityClass>
+      <entityClass>ai.timefold.solver.examples.taskassigning.domain.Task</entityClass>
       <termination>
         <minutesSpentLimit>5</minutesSpentLimit>
       </termination>
@@ -16,7 +16,7 @@
       <localSearch/>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.taskassigning.persistence.TaskAssigningSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.taskassigning.persistence.TaskAssigningSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/taskassigning/unsolved/24tasks-8employees.xml</inputSolutionFile>
       <inputSolutionFile>data/taskassigning/unsolved/50tasks-5employees.xml</inputSolutionFile>
       <inputSolutionFile>data/taskassigning/unsolved/100tasks-5employees.xml</inputSolutionFile>
@@ -28,7 +28,7 @@
     <name>ConstraintStreams (Drools)</name>
     <solver>
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.taskassigning.score.TaskAssigningConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.taskassigning.score.TaskAssigningConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
     </solver>
   </solverBenchmark>

@@ -40,7 +40,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class TennisPanel extends SolutionPanel<TennisSolution> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/tennis/swingui/tennisLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/tennis/swingui/tennisLogo.png";
 
     private final TimeTablePanel<Day, Team> datesPanel;
     private final TimeTablePanel<Team, Team> confrontationsPanel;

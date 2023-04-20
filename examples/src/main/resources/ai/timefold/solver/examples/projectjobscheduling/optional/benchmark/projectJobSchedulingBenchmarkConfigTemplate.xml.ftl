@@ -5,7 +5,7 @@
 
   <inheritedSolverBenchmark>
     <problemBenchmarks>
-      <solutionFileIOClass>org.optaplanner.examples.projectjobscheduling.persistence.ProjectJobSchedulingSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.examples.projectjobscheduling.persistence.ProjectJobSchedulingSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>data/projectjobscheduling/unsolved/A-1.json</inputSolutionFile>
       <inputSolutionFile>data/projectjobscheduling/unsolved/A-2.json</inputSolutionFile>
       <inputSolutionFile>data/projectjobscheduling/unsolved/A-3.json</inputSolutionFile>
@@ -29,11 +29,11 @@
     </problemBenchmarks>
 
     <solver>
-      <solutionClass>org.optaplanner.examples.projectjobscheduling.domain.Schedule</solutionClass>
-      <entityClass>org.optaplanner.examples.projectjobscheduling.domain.Allocation</entityClass>
+      <solutionClass>ai.timefold.solver.examples.projectjobscheduling.domain.Schedule</solutionClass>
+      <entityClass>ai.timefold.solver.examples.projectjobscheduling.domain.Allocation</entityClass>
 
       <scoreDirectorFactory>
-        <constraintProviderClass>org.optaplanner.examples.projectjobscheduling.score.ProjectJobSchedulingConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.examples.projectjobscheduling.score.ProjectJobSchedulingConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <minutesSpentLimit>5</minutesSpentLimit>

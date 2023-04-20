@@ -11,7 +11,7 @@ public class ConferenceSchedulingBenchmarkApp extends CommonBenchmarkApp {
     public ConferenceSchedulingBenchmarkApp() {
         super(
                 new ArgOption("default",
-                        "org/optaplanner/examples/conferencescheduling/optional/benchmark/conferenceSchedulingBenchmarkConfig.xml"));
+                        "ai/timefold/solver/examples/conferencescheduling/optional/benchmark/conferenceSchedulingBenchmarkConfig.xml"));
     }
 
 }

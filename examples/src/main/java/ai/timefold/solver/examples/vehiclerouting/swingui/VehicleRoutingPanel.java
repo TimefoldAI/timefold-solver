@@ -17,7 +17,7 @@ import ai.timefold.solver.examples.vehiclerouting.domain.timewindowed.TimeWindow
 
 public class VehicleRoutingPanel extends SolutionPanel<VehicleRoutingSolution> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/vehiclerouting/swingui/vehicleRoutingLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/vehiclerouting/swingui/vehicleRoutingLogo.png";
 
     private final VehicleRoutingWorldPanel vehicleRoutingWorldPanel;
     private final Random demandRandom = new Random(37);

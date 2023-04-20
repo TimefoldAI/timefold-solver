@@ -76,7 +76,7 @@ public abstract class OpenDataFilesTest<Solution_> extends LoggingTest {
         // Write the solution to a temp file and read it back.
         Solution_ roundTripSolution = null;
         try {
-            File tmpFile = File.createTempFile("optaplanner-solution", ".tmp");
+            File tmpFile = File.createTempFile("timefold-solver-solution", ".tmp");
             solutionFileIO.write(originalSolution, tmpFile);
             logger.info("Written: {}", tmpFile);
             roundTripSolution = solutionFileIO.read(tmpFile);

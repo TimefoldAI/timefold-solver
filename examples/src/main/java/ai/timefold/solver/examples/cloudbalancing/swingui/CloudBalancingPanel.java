@@ -34,7 +34,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class CloudBalancingPanel extends SolutionPanel<CloudBalance> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/cloudbalancing/swingui/cloudBalancingLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/cloudbalancing/swingui/cloudBalancingLogo.png";
 
     private final TangoColorFactory processColorFactory;
     private final ImageIcon cloudComputerIcon;

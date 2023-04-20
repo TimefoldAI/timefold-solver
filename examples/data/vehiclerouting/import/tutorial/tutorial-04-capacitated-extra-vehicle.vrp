@@ -1,5 +1,5 @@
 NAME : tutorial-04-capacitated-extra-vehicle
-COMMENT : Geoffrey De Smet - OptaPlanner VRP demo 04
+COMMENT : Geoffrey De Smet - Timefold VRP demo 04
 TYPE : CVRP
 DIMENSION : 8
 EDGE_WEIGHT_TYPE : EUC_2D 

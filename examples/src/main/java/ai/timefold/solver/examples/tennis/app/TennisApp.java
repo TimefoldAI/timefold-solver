@@ -8,7 +8,7 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 public class TennisApp extends CommonApp<TennisSolution> {
 
-    public static final String SOLVER_CONFIG = "org/optaplanner/examples/tennis/tennisSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "ai/timefold/solver/examples/tennis/tennisSolverConfig.xml";
 
     public static final String DATA_DIR_NAME = "tennis";
 

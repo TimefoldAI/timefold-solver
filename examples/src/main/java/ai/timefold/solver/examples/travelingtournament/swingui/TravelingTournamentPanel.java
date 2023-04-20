@@ -32,7 +32,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class TravelingTournamentPanel extends SolutionPanel<TravelingTournament> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/travelingtournament/swingui/travelingTournamentLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/travelingtournament/swingui/travelingTournamentLogo.png";
 
     private ImageIcon awayMatchIcon;
 

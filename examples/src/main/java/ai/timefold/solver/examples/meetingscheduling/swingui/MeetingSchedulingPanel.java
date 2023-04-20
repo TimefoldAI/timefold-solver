@@ -44,7 +44,7 @@ import ai.timefold.solver.swing.impl.TangoColorFactory;
 
 public class MeetingSchedulingPanel extends SolutionPanel<MeetingSchedule> {
 
-    public static final String LOGO_PATH = "/org/optaplanner/examples/meetingscheduling/swingui/meetingSchedulingLogo.png";
+    public static final String LOGO_PATH = "/ai/timefold/solver/examples/meetingscheduling/swingui/meetingSchedulingLogo.png";
 
     private final TimeTablePanel<TimeGrain, Room> roomsPanel;
     private final TimeTablePanel<TimeGrain, Pair<Person, Boolean>> personsPanel;
