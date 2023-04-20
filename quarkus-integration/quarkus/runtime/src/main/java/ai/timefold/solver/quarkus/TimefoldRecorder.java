@@ -22,9 +22,9 @@ public class TimefoldRecorder {
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {
-            TimefoldRuntimeConfig optaPlannerRuntimeConfig =
+            TimefoldRuntimeConfig timefoldRuntimeConfig =
                     Arc.container().instance(TimefoldRuntimeConfig.class).get();
-            updateSolverConfigWithRuntimeProperties(solverConfig, optaPlannerRuntimeConfig);
+            updateSolverConfigWithRuntimeProperties(solverConfig, timefoldRuntimeConfig);
             Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
             Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
             generatedGizmoMemberAccessorMap
@@ -40,30 +40,30 @@ public class TimefoldRecorder {
 
     public Supplier<SolverManagerConfig> solverManagerConfig(final SolverManagerConfig solverManagerConfig) {
         return () -> {
-            TimefoldRuntimeConfig optaPlannerRuntimeConfig =
+            TimefoldRuntimeConfig timefoldRuntimeConfig =
                     Arc.container().instance(TimefoldRuntimeConfig.class).get();
-            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, optaPlannerRuntimeConfig);
+            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, timefoldRuntimeConfig);
             return solverManagerConfig;
         };
     }
 
     private void updateSolverConfigWithRuntimeProperties(SolverConfig solverConfig,
-            TimefoldRuntimeConfig optaPlannerRunTimeConfig) {
+            TimefoldRuntimeConfig timefoldRunTimeConfig) {
         TerminationConfig terminationConfig = solverConfig.getTerminationConfig();
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
             solverConfig.setTerminationConfig(terminationConfig);
         }
-        optaPlannerRunTimeConfig.solver.termination.spentLimit.ifPresent(terminationConfig::setSpentLimit);
-        optaPlannerRunTimeConfig.solver.termination.unimprovedSpentLimit
+        timefoldRunTimeConfig.solver.termination.spentLimit.ifPresent(terminationConfig::setSpentLimit);
+        timefoldRunTimeConfig.solver.termination.unimprovedSpentLimit
                 .ifPresent(terminationConfig::setUnimprovedSpentLimit);
-        optaPlannerRunTimeConfig.solver.termination.bestScoreLimit.ifPresent(terminationConfig::setBestScoreLimit);
-        optaPlannerRunTimeConfig.solver.moveThreadCount.ifPresent(solverConfig::setMoveThreadCount);
+        timefoldRunTimeConfig.solver.termination.bestScoreLimit.ifPresent(terminationConfig::setBestScoreLimit);
+        timefoldRunTimeConfig.solver.moveThreadCount.ifPresent(solverConfig::setMoveThreadCount);
     }
 
     private void updateSolverManagerConfigWithRuntimeProperties(SolverManagerConfig solverManagerConfig,
-            TimefoldRuntimeConfig optaPlannerRunTimeConfig) {
-        optaPlannerRunTimeConfig.solverManager.parallelSolverCount.ifPresent(solverManagerConfig::setParallelSolverCount);
+            TimefoldRuntimeConfig timefoldRunTimeConfig) {
+        timefoldRunTimeConfig.solverManager.parallelSolverCount.ifPresent(solverManagerConfig::setParallelSolverCount);
     }
 
 }

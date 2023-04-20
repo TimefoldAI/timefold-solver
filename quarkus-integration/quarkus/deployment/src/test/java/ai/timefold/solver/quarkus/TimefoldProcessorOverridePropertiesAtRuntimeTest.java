@@ -45,28 +45,28 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
     static final QuarkusProdModeTest config = new QuarkusProdModeTest()
             .setForcedDependencies(List.of(new AppArtifact("io.quarkus", "quarkus-resteasy", QUARKUS_VERSION)))
             // We want to check if these are overridden at runtime
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0")
-            .overrideConfigKey("quarkus.optaplanner.solver.move-thread-count", "4")
-            .overrideConfigKey("quarkus.optaplanner.solver-manager.parallel-solver-count", "1")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "4")
+            .overrideConfigKey("quarkus.timefold.solver-manager.parallel-solver-count", "1")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class,
-                            OptaPlannerTestResource.class))
+                            TimefoldTestResource.class))
             .setRuntimeProperties(getRuntimeProperties())
             .setRun(true);
 
     private static Map<String, String> getRuntimeProperties() {
         Map<String, String> out = new HashMap<>();
-        out.put("quarkus.optaplanner.solver.termination.best-score-limit", "7");
-        out.put("quarkus.optaplanner.solver.move-thread-count", "3");
-        out.put("quarkus.optaplanner.solver-manager.parallel-solver-count", "10");
+        out.put("quarkus.timefold.solver.termination.best-score-limit", "7");
+        out.put("quarkus.timefold.solver.move-thread-count", "3");
+        out.put("quarkus.timefold.solver-manager.parallel-solver-count", "10");
         return out;
     }
 
     // Can't use injection, so we need a resource to fetch the properties
-    @Path("/optaplanner/test")
-    public static class OptaPlannerTestResource {
+    @Path("/timefold/test")
+    public static class TimefoldTestResource {
         @Inject
         SolverConfig solverConfig;
 
@@ -101,7 +101,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
                 .contentType(MediaType.TEXT_PLAIN)
                 .accept(MediaType.TEXT_PLAIN)
                 .when()
-                .get("/optaplanner/test/solver-config")
+                .get("/timefold/test/solver-config")
                 .asInputStream());
         assertEquals("7", solverConfigProperties.get("termination.bestScoreLimit"));
         assertEquals("3", solverConfigProperties.get("moveThreadCount"));
@@ -114,7 +114,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
                 .contentType(MediaType.TEXT_PLAIN)
                 .accept(MediaType.TEXT_PLAIN)
                 .when()
-                .get("/optaplanner/test/solver-manager-config")
+                .get("/timefold/test/solver-manager-config")
                 .asInputStream());
         assertEquals("10", solverManagerProperties.get("parallelSolverCount"));
     }

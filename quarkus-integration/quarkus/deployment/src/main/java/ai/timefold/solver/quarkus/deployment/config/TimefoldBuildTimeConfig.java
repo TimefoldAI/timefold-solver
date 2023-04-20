@@ -11,14 +11,14 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
 /**
- * During build time, this is translated into OptaPlanner's Config classes.
+ * During build time, this is translated into Timefold's Config classes.
  */
-@ConfigRoot(name = "optaplanner")
+@ConfigRoot(name = "timefold")
 public class TimefoldBuildTimeConfig {
 
     public static final String DEFAULT_SOLVER_CONFIG_URL = "solverConfig.xml";
     public static final String DEFAULT_CONSTRAINTS_DRL_URL = "constraints.drl";
-    public static final String CONSTRAINTS_DRL_PROPERTY = "quarkus.optaplanner.score-drl";
+    public static final String CONSTRAINTS_DRL_PROPERTY = "quarkus.timefold.score-drl";
 
     /**
      * A classpath resource to read the solver configuration XML.
@@ -38,7 +38,7 @@ public class TimefoldBuildTimeConfig {
     public Optional<String> scoreDrl;
 
     /**
-     * Configuration properties that overwrite OptaPlanner's {@link SolverConfig}.
+     * Configuration properties that overwrite Timefold's {@link SolverConfig}.
      */
     @ConfigItem
     public SolverBuildTimeConfig solver;

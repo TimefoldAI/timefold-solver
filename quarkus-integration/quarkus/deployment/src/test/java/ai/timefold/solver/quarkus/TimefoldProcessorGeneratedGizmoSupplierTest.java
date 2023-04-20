@@ -44,7 +44,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.test.flat-class-path", "true")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addAsResource("org/optaplanner/quarkus/gizmoSupplierTestSolverConfig.xml",
+                    .addAsResource("ai/timefold/solver/quarkus/gizmoSupplierTestSolverConfig.xml",
                             "solverConfig.xml")
                     .addClasses(
                             TestdataSolution.class,

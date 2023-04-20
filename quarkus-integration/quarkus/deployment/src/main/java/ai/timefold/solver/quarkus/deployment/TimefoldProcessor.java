@@ -85,11 +85,11 @@ class TimefoldProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldProcessor.class.getName());
 
-    TimefoldBuildTimeConfig optaPlannerBuildTimeConfig;
+    TimefoldBuildTimeConfig timefoldBuildTimeConfig;
 
     @BuildStep
     FeatureBuildItem feature() {
-        return new FeatureBuildItem("optaplanner");
+        return new FeatureBuildItem("timefold");
     }
 
     @BuildStep
@@ -115,7 +115,7 @@ class TimefoldProcessor {
 
     @BuildStep
     HotDeploymentWatchedFileBuildItem watchSolverConfigXml() {
-        String solverConfigXML = optaPlannerBuildTimeConfig.solverConfigXml
+        String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml
                 .orElse(TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL);
         return new HotDeploymentWatchedFileBuildItem(solverConfigXML);
     }
@@ -123,7 +123,7 @@ class TimefoldProcessor {
     @BuildStep
     HotDeploymentWatchedFileBuildItem watchConstraintsDrl() {
         String constraintsDrl =
-                optaPlannerBuildTimeConfig.scoreDrl.orElse(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL);
+                timefoldBuildTimeConfig.scoreDrl.orElse(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL);
         return new HotDeploymentWatchedFileBuildItem(constraintsDrl);
     }
 
@@ -190,7 +190,7 @@ class TimefoldProcessor {
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
                 && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
-            log.warn("Skipping OptaPlanner extension because there are no @" + PlanningSolution.class.getSimpleName()
+            log.warn("Skipping Timefold extension because there are no @" + PlanningSolution.class.getSimpleName()
                     + " or @" + PlanningEntity.class.getSimpleName() + " annotated classes."
                     + "\nIf your domain classes are located in a dependency of this project, maybe try generating"
                     + " the Jandex index by using the jandex-maven-plugin in that dependency, or by adding"
@@ -201,13 +201,13 @@ class TimefoldProcessor {
         }
 
         // Quarkus extensions must always use getContextClassLoader()
-        // Internally, OptaPlanner defaults the ClassLoader to getContextClassLoader() too
+        // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         SolverConfig solverConfig;
-        if (optaPlannerBuildTimeConfig.solverConfigXml.isPresent()) {
-            String solverConfigXML = optaPlannerBuildTimeConfig.solverConfigXml.get();
+        if (timefoldBuildTimeConfig.solverConfigXml.isPresent()) {
+            String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml.get();
             if (classLoader.getResource(solverConfigXML) == null) {
-                throw new ConfigurationException("Invalid quarkus.optaplanner.solverConfigXML property ("
+                throw new ConfigurationException("Invalid quarkus.timefold.solverConfigXML property ("
                         + solverConfigXML + "): that classpath resource does not exist.");
             }
             solverConfig = SolverConfig.createFromXmlResource(solverConfigXML);
@@ -227,14 +227,14 @@ class TimefoldProcessor {
             Type jandexType = Type.create(DotName.createSimple(solverConfig.getSolutionClass().getName()), Type.Kind.CLASS);
             reflectiveHierarchyClass.produce(new ReflectiveHierarchyBuildItem.Builder()
                     .type(jandexType)
-                    // Ignore only the packages from optaplanner-core
+                    // Ignore only the packages from timefold-solver-core
                     // (Can cause a hard to diagnose issue when creating a test/example
-                    // in the package "org.optaplanner").
+                    // in the package "ai.timefold.solver").
                     .ignoreTypePredicate(
                             dotName -> ReflectiveHierarchyBuildItem.DefaultIgnoreTypePredicate.INSTANCE.test(dotName)
-                                    || dotName.toString().startsWith("org.optaplanner.api")
-                                    || dotName.toString().startsWith("org.optaplanner.config")
-                                    || dotName.toString().startsWith("org.optaplanner.impl"))
+                                    || dotName.toString().startsWith("ai.timefold.solver.api")
+                                    || dotName.toString().startsWith("ai.timefold.solver.config")
+                                    || dotName.toString().startsWith("ai.timefold.solver.impl"))
                     .build());
         }
 
@@ -325,7 +325,7 @@ class TimefoldProcessor {
                                 planningSolutionClassResultHandle, planningEntityClassesResultHandle);
                         ResultHandle constraintVerifierResultHandle = methodCreator.newInstance(
                                 MethodDescriptor.ofConstructor(
-                                        "org.optaplanner.test.impl.score.stream.DefaultConstraintVerifier",
+                                        "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier",
                                         ConstraintProvider.class, SolutionDescriptor.class),
                                 constraintProviderResultHandle, solutionDescriptorResultHandle);
 
@@ -369,10 +369,10 @@ class TimefoldProcessor {
             solverConfig.setEntityClassList(findEntityClassList(indexView));
         }
         applyScoreDirectorFactoryProperties(indexView, solverConfig);
-        optaPlannerBuildTimeConfig.solver.environmentMode.ifPresent(solverConfig::setEnvironmentMode);
-        optaPlannerBuildTimeConfig.solver.daemon.ifPresent(solverConfig::setDaemon);
-        optaPlannerBuildTimeConfig.solver.domainAccessType.ifPresent(solverConfig::setDomainAccessType);
-        optaPlannerBuildTimeConfig.solver.constraintStreamImplType.ifPresent(solverConfig::withConstraintStreamImplType);
+        timefoldBuildTimeConfig.solver.environmentMode.ifPresent(solverConfig::setEnvironmentMode);
+        timefoldBuildTimeConfig.solver.daemon.ifPresent(solverConfig::setDaemon);
+        timefoldBuildTimeConfig.solver.domainAccessType.ifPresent(solverConfig::setDomainAccessType);
+        timefoldBuildTimeConfig.solver.constraintStreamImplType.ifPresent(solverConfig::withConstraintStreamImplType);
 
         if (solverConfig.getDomainAccessType() == null) {
             solverConfig.setDomainAccessType(DomainAccessType.GIZMO);
@@ -417,13 +417,13 @@ class TimefoldProcessor {
     }
 
     private void assertNoMemberAnnotationWithoutClassAnnotation(IndexView indexView) {
-        Collection<AnnotationInstance> optaplannerFieldAnnotations = new HashSet<>();
+        Collection<AnnotationInstance> timefoldFieldAnnotations = new HashSet<>();
 
         for (DotName annotationName : DotNames.PLANNING_ENTITY_FIELD_ANNOTATIONS) {
-            optaplannerFieldAnnotations.addAll(indexView.getAnnotations(annotationName));
+            timefoldFieldAnnotations.addAll(indexView.getAnnotations(annotationName));
         }
 
-        for (AnnotationInstance annotationInstance : optaplannerFieldAnnotations) {
+        for (AnnotationInstance annotationInstance : timefoldFieldAnnotations) {
             AnnotationTarget annotationTarget = annotationInstance.target();
             ClassInfo declaringClass;
             String prefix;
@@ -529,15 +529,15 @@ class TimefoldProcessor {
     }
 
     protected Optional<String> constraintsDrl() {
-        if (optaPlannerBuildTimeConfig.scoreDrl.isPresent()) {
-            String constraintsDrl = optaPlannerBuildTimeConfig.scoreDrl.get();
+        if (timefoldBuildTimeConfig.scoreDrl.isPresent()) {
+            String constraintsDrl = timefoldBuildTimeConfig.scoreDrl.get();
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             if (classLoader.getResource(constraintsDrl) == null) {
                 throw new IllegalStateException("Invalid " + TimefoldBuildTimeConfig.CONSTRAINTS_DRL_PROPERTY
                         + " property (" + constraintsDrl + "): that classpath resource does not exist.");
             }
         }
-        return optaPlannerBuildTimeConfig.scoreDrl;
+        return timefoldBuildTimeConfig.scoreDrl;
     }
 
     protected Optional<String> defaultConstraintsDrl() {
@@ -661,7 +661,7 @@ class TimefoldProcessor {
                     }
                 }
             }
-            // Using REFLECTION domain access type so OptaPlanner doesn't try to generate GIZMO code
+            // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
             SolutionDescriptor solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
                     solverConfig.getSolutionClass(), null, null, solverConfig.getEntityClassList());
             gizmoSolutionClonerClassNameSet

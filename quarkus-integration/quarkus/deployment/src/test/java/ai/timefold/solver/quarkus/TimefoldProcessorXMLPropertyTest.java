@@ -25,11 +25,11 @@ class TimefoldProcessorXMLPropertyTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver-config-xml", "org/optaplanner/quarkus/customSolverConfig.xml")
+            .overrideConfigKey("quarkus.timefold.solver-config-xml", "ai/timefold/solver/quarkus/customSolverConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class)
-                    .addAsResource("org/optaplanner/quarkus/customSolverConfig.xml"));
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverConfig.xml"));
 
     @Inject
     SolverConfig solverConfig;

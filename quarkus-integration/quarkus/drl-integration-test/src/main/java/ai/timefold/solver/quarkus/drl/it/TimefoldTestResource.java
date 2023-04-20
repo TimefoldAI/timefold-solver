@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.drl.it.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.drl.it.domain.TestdataQuarkusSolution;
 
-@Path("/optaplanner/test")
+@Path("/timefold/test")
 public class TimefoldTestResource {
 
     @Inject

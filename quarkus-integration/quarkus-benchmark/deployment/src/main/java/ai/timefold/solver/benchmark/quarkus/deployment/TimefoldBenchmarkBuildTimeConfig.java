@@ -6,9 +6,9 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
 /**
- * During build time, this is translated into OptaPlanner's Config classes.
+ * During build time, this is translated into Timefold's Config classes.
  */
-@ConfigRoot(name = "optaplanner.benchmark")
+@ConfigRoot(name = "timefold.benchmark")
 public class TimefoldBenchmarkBuildTimeConfig {
 
     public static final String DEFAULT_SOLVER_BENCHMARK_CONFIG_URL = "solverBenchmarkConfig.xml";

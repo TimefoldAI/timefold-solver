@@ -1,8 +1,8 @@
 ---
-name: "OptaPlanner Jackson"
+name: "Timefold Jackson"
 metadata:
   keywords:
-    - "optaplanner"
+    - "timefold"
     - "jackson"
     - "json"
   categories:

@@ -12,7 +12,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 
 /**
- * Test various OptaPlanner benchmarking operations running in Quarkus
+ * Test various Timefold benchmarking operations running in Quarkus
  */
 
 @QuarkusTest
@@ -24,7 +24,7 @@ class TimefoldBenchmarkTestResourceTest {
         String benchmarkResultDirectory = RestAssured.given()
                 .header("Content-Type", "text/plain;charset=UTF-8")
                 .when()
-                .post("/optaplanner/test/benchmark")
+                .post("/timefold/test/benchmark")
                 .body().asString();
         Assertions.assertNotNull(benchmarkResultDirectory);
         Path benchmarkResultDirectoryPath = Path.of(benchmarkResultDirectory);

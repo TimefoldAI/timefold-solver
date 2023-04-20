@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.jackson.it.domain.ITestdataPlanningSolution;
 
-@Path("/optaplanner/test")
+@Path("/timefold/test")
 public class TimefoldTestResource {
 
     @Inject

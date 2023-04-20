@@ -9,7 +9,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 
 /**
- * Test various OptaPlanner operations running in Quarkus
+ * Test various Timefold operations running in Quarkus
  */
 
 @QuarkusTest
@@ -21,7 +21,7 @@ class TimefoldTestResourceTest {
         RestAssured.given()
                 .header("Content-Type", "application/json")
                 .when()
-                .post("/optaplanner/test/solver-factory")
+                .post("/timefold/test/solver-factory")
                 .then()
                 .body(is(
                         "0hard/6soft"));

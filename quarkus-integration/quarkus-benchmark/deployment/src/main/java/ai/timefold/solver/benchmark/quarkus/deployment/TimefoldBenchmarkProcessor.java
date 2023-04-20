@@ -25,16 +25,16 @@ class TimefoldBenchmarkProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldBenchmarkProcessor.class.getName());
 
-    TimefoldBenchmarkBuildTimeConfig optaPlannerBenchmarkBuildTimeConfig;
+    TimefoldBenchmarkBuildTimeConfig timefoldBenchmarkBuildTimeConfig;
 
     @BuildStep
     FeatureBuildItem feature() {
-        return new FeatureBuildItem("optaplanner-benchmark");
+        return new FeatureBuildItem("timefold-solver-benchmark");
     }
 
     @BuildStep
     HotDeploymentWatchedFileBuildItem watchSolverBenchmarkConfigXml() {
-        String solverBenchmarkConfigXML = optaPlannerBenchmarkBuildTimeConfig.solverBenchmarkConfigXml
+        String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml
                 .orElse(TimefoldBenchmarkBuildTimeConfig.DEFAULT_SOLVER_BENCHMARK_CONFIG_URL);
         return new HotDeploymentWatchedFileBuildItem(solverBenchmarkConfigXML);
     }
@@ -47,16 +47,16 @@ class TimefoldBenchmarkProcessor {
             SolverConfigBuildItem solverConfigBuildItem,
             TimefoldBenchmarkRecorder recorder) {
         if (solverConfigBuildItem.getSolverConfig() == null) {
-            log.warn("Skipping OptaPlanner Benchmark extension because the OptaPlanner extension was skipped.");
+            log.warn("Skipping Timefold Benchmark extension because the Timefold extension was skipped.");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBenchmarkBeanProvider.class));
             return;
         }
         PlannerBenchmarkConfig benchmarkConfig;
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (optaPlannerBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.isPresent()) {
-            String solverBenchmarkConfigXML = optaPlannerBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.get();
+        if (timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.isPresent()) {
+            String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.get();
             if (classLoader.getResource(solverBenchmarkConfigXML) == null) {
-                throw new ConfigurationException("Invalid quarkus.optaplanner.benchmark.solver-benchmark-config-xml property ("
+                throw new ConfigurationException("Invalid quarkus.timefold.benchmark.solver-benchmark-config-xml property ("
                         + solverBenchmarkConfigXML + "): that classpath resource does not exist.");
             }
             benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource(solverBenchmarkConfigXML);

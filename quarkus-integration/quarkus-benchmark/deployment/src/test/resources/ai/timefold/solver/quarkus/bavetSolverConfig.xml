@@ -1,7 +1,7 @@
 <solver>
   <scoreDirectorFactory>
     <constraintStreamImplType>BAVET</constraintStreamImplType>
-    <constraintProviderClass>org.optaplanner.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
   <termination>
     <scoreCalculationCountLimit>50</scoreCalculationCountLimit>

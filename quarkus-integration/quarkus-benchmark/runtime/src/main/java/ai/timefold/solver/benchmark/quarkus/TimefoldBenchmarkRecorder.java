@@ -25,11 +25,11 @@ import io.quarkus.runtime.annotations.Recorder;
 public class TimefoldBenchmarkRecorder {
     public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig) {
         return () -> {
-            TimefoldBenchmarkRuntimeConfig optaPlannerRuntimeConfig =
+            TimefoldBenchmarkRuntimeConfig timefoldRuntimeConfig =
                     Arc.container().instance(TimefoldBenchmarkRuntimeConfig.class).get();
             SolverConfig solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
-            return updateBenchmarkConfigWithRuntimeProperties(benchmarkConfig, optaPlannerRuntimeConfig, solverConfig);
+            return updateBenchmarkConfigWithRuntimeProperties(benchmarkConfig, timefoldRuntimeConfig, solverConfig);
         };
     }
 
@@ -74,9 +74,9 @@ public class TimefoldBenchmarkRecorder {
             List<String> unconfiguredTerminationSolverBenchmarkList = new ArrayList<>();
             if (solverBenchmarkConfigList == null) {
                 throw new IllegalStateException("At least one of the properties " +
-                        "quarkus.optaplanner.benchmark.solver.termination.spent-limit, " +
-                        "quarkus.optaplanner.benchmark.solver.termination.best-score-limit, " +
-                        "quarkus.optaplanner.benchmark.solver.termination.unimproved-spent-limit " +
+                        "quarkus.timefold.benchmark.solver.termination.spent-limit, " +
+                        "quarkus.timefold.benchmark.solver.termination.best-score-limit, " +
+                        "quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit " +
                         "is required if termination is not configured in the " +
                         "inherited solver benchmark config and solverBenchmarkBluePrint is used.");
             }
@@ -130,9 +130,9 @@ public class TimefoldBenchmarkRecorder {
                                 .collect(Collectors.joining(", ", "[", "]"))
                         + ". " +
                         "At least one of the properties " +
-                        "quarkus.optaplanner.benchmark.solver.termination.spent-limit, " +
-                        "quarkus.optaplanner.benchmark.solver.termination.best-score-limit, " +
-                        "quarkus.optaplanner.benchmark.solver.termination.unimproved-spent-limit " +
+                        "quarkus.timefold.benchmark.solver.termination.spent-limit, " +
+                        "quarkus.timefold.benchmark.solver.termination.best-score-limit, " +
+                        "quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit " +
                         "is required if termination is not configured in a solver benchmark and the " +
                         "inherited solver benchmark config.");
             }

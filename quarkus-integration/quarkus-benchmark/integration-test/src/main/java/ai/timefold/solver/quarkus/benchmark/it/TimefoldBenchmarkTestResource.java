@@ -13,7 +13,7 @@ import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.quarkus.benchmark.it.domain.TestdataStringLengthShadowEntity;
 import ai.timefold.solver.quarkus.benchmark.it.domain.TestdataStringLengthShadowSolution;
 
-@Path("/optaplanner/test")
+@Path("/timefold/test")
 public class TimefoldBenchmarkTestResource {
 
     @Inject

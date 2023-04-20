@@ -25,7 +25,7 @@ class TimefoldProcessorSolverPropertiesBavetTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.constraint-stream-impl-type", "BAVET")
+            .overrideConfigKey("quarkus.timefold.solver.constraint-stream-impl-type", "BAVET")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class));

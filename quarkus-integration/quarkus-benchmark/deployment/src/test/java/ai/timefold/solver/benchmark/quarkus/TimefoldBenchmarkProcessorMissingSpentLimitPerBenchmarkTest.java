@@ -21,7 +21,7 @@ class TimefoldBenchmarkProcessorMissingSpentLimitPerBenchmarkTest {
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.test.flat-class-path", "true")
-            .overrideConfigKey("quarkus.optaplanner.benchmark.solver-benchmark-config-xml",
+            .overrideConfigKey("quarkus.timefold.benchmark.solver-benchmark-config-xml",
                     "solverBenchmarkConfigSpentLimitPerBenchmarkNoTermination.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
@@ -39,9 +39,9 @@ class TimefoldBenchmarkProcessorMissingSpentLimitPerBenchmarkTest {
                 "The following " + SolverBenchmarkConfig.class.getSimpleName() + " do not " +
                         "have termination configured: [First Fit and Local Search without Termination]. " +
                         "At least one of the properties " +
-                        "quarkus.optaplanner.benchmark.solver.termination.spent-limit, " +
-                        "quarkus.optaplanner.benchmark.solver.termination.best-score-limit, " +
-                        "quarkus.optaplanner.benchmark.solver.termination.unimproved-spent-limit " +
+                        "quarkus.timefold.benchmark.solver.termination.spent-limit, " +
+                        "quarkus.timefold.benchmark.solver.termination.best-score-limit, " +
+                        "quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit " +
                         "is required if termination is not configured in a solver benchmark and the " +
                         "inherited solver benchmark config.",
                 exception.getMessage());

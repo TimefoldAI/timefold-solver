@@ -8,7 +8,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 /**
- * During build time, this is translated into OptaPlanner's {@link SolverManagerConfig}.
+ * During build time, this is translated into Timefold's {@link SolverManagerConfig}.
  */
 @ConfigGroup
 public class SolverManagerRuntimeConfig {

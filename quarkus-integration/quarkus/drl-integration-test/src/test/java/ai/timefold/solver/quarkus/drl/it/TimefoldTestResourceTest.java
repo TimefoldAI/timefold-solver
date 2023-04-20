@@ -12,7 +12,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 
 /**
- * Test various OptaPlanner operations running in Quarkus
+ * Test various Timefold operations running in Quarkus
  */
 
 @Disabled("PLANNER-2914")
@@ -26,7 +26,7 @@ class TimefoldTestResourceTest {
         result.load(new StringReader(RestAssured.given()
                 .header("Content-Type", "application/json")
                 .when()
-                .post("/optaplanner/test/solver-factory")
+                .post("/timefold/test/solver-factory")
                 .then()
                 .extract().body().asString()));
         Assertions.assertEquals("0", result.get("score"));

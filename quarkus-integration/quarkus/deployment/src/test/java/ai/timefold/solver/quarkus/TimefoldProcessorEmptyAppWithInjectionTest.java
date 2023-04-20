@@ -18,7 +18,7 @@ class TimefoldProcessorEmptyAppWithInjectionTest {
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses())
-            .overrideConfigKey("quarkus.arc.unremovable-types", "org.optaplanner.core.api.solver.SolverManager");
+            .overrideConfigKey("quarkus.arc.unremovable-types", "ai.timefold.solver.core.api.solver.SolverManager");
 
     @Test
     void emptyAppInjectingSolverManagerCrashes() {

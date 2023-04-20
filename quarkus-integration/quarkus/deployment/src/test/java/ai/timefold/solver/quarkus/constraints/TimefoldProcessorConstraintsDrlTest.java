@@ -30,7 +30,7 @@ class TimefoldProcessorConstraintsDrlTest {
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class)
-                    .addAsResource("org/optaplanner/quarkus/constraints/defaultConstraints.drl", CONSTRAINTS_DRL))
+                    .addAsResource("ai/timefold/solver/quarkus/constraints/defaultConstraints.drl", CONSTRAINTS_DRL))
             .overrideConfigKey(TimefoldBuildTimeConfig.CONSTRAINTS_DRL_PROPERTY, CONSTRAINTS_DRL);
 
     @Inject

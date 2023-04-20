@@ -21,10 +21,10 @@ class TimefoldProcessorTest {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withScoreDrls("config_constraints.drl");
         SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldProcessor optaPlannerProcessor = mockOptaPlannerProcessor();
-        when(optaPlannerProcessor.constraintsDrl()).thenReturn(Optional.of("some.drl"));
+        TimefoldProcessor timefoldProcessor = mockTimefoldProcessor();
+        when(timefoldProcessor.constraintsDrl()).thenReturn(Optional.of("some.drl"));
 
-        optaPlannerProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig);
+        timefoldProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig);
         assertThat(scoreDirectorFactoryConfig.getScoreDrlList()).containsExactly("some.drl");
     }
 
@@ -33,12 +33,12 @@ class TimefoldProcessorTest {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withScoreDrls("config_constraints.drl");
         SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldProcessor optaPlannerProcessor = mockOptaPlannerProcessor();
-        when(optaPlannerProcessor.constraintsDrl()).thenReturn(Optional.empty());
-        when(optaPlannerProcessor.defaultConstraintsDrl())
+        TimefoldProcessor timefoldProcessor = mockTimefoldProcessor();
+        when(timefoldProcessor.constraintsDrl()).thenReturn(Optional.empty());
+        when(timefoldProcessor.defaultConstraintsDrl())
                 .thenReturn(Optional.of(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL));
 
-        optaPlannerProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig);
+        timefoldProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig);
         assertThat(scoreDirectorFactoryConfig.getScoreDrlList())
                 .containsExactly("config_constraints.drl");
     }
@@ -47,12 +47,12 @@ class TimefoldProcessorTest {
     void defaultScoreDrl_applies_if_solverConfig_does_not_define_scoreDrl() {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldProcessor optaPlannerProcessor = mockOptaPlannerProcessor();
-        when(optaPlannerProcessor.constraintsDrl()).thenReturn(Optional.empty());
-        when(optaPlannerProcessor.defaultConstraintsDrl())
+        TimefoldProcessor timefoldProcessor = mockTimefoldProcessor();
+        when(timefoldProcessor.constraintsDrl()).thenReturn(Optional.empty());
+        when(timefoldProcessor.defaultConstraintsDrl())
                 .thenReturn(Optional.of(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL));
 
-        optaPlannerProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig);
+        timefoldProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig);
         assertThat(scoreDirectorFactoryConfig.getScoreDrlList())
                 .containsExactly(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL);
     }
@@ -62,12 +62,12 @@ class TimefoldProcessorTest {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setKieBaseConfigurationProperties(Collections.emptyMap());
         SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldProcessor optaPlannerProcessor = mockOptaPlannerProcessor();
-        when(optaPlannerProcessor.constraintsDrl()).thenReturn(Optional.empty());
-        when(optaPlannerProcessor.defaultConstraintsDrl())
+        TimefoldProcessor timefoldProcessor = mockTimefoldProcessor();
+        when(timefoldProcessor.constraintsDrl()).thenReturn(Optional.empty());
+        when(timefoldProcessor.defaultConstraintsDrl())
                 .thenReturn(Optional.of(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL));
 
-        assertThatCode(() -> optaPlannerProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig))
+        assertThatCode(() -> timefoldProcessor.applyScoreDirectorFactoryProperties(mock(IndexView.class), solverConfig))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(
                         "Using kieBaseConfigurationProperties ("
@@ -77,9 +77,9 @@ class TimefoldProcessorTest {
                 .containsExactly(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL);
     }
 
-    private TimefoldProcessor mockOptaPlannerProcessor() {
-        TimefoldProcessor optaPlannerProcessor = mock(TimefoldProcessor.class);
-        doCallRealMethod().when(optaPlannerProcessor).applyScoreDirectorFactoryProperties(any(), any());
-        return optaPlannerProcessor;
+    private TimefoldProcessor mockTimefoldProcessor() {
+        TimefoldProcessor timefoldProcessor = mock(TimefoldProcessor.class);
+        doCallRealMethod().when(timefoldProcessor).applyScoreDirectorFactoryProperties(any(), any());
+        return timefoldProcessor;
     }
 }

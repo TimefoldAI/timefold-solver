@@ -23,14 +23,14 @@ public class TimefoldDevUITest {
     @RegisterExtension
     static final QuarkusDevModeTest config = new QuarkusDevModeTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, "org.optaplanner.quarkus.it.devui"));
+                    .addPackages(true, "ai.timefold.solver.quarkus.it.devui"));
 
     // Use the Quarkus 3 context root by default as the Quarkus platform does not pass the system property.
-    static final String OPTAPLANNER_DEV_UI_BASE_URL =
-            System.getProperty("dev.iu.root", "/q/dev-v1") + "/org.optaplanner.optaplanner-quarkus/";
+    static final String TIMEFOLD_DEV_UI_BASE_URL =
+            System.getProperty("dev.iu.root", "/q/dev-v1") + "/ai.timefold.solver.timefold-solver-quarkus/";
 
     public static String getPage(String pageName) {
-        return OPTAPLANNER_DEV_UI_BASE_URL + pageName;
+        return TIMEFOLD_DEV_UI_BASE_URL + pageName;
     }
 
     @Test
@@ -42,16 +42,16 @@ public class TimefoldDevUITest {
                 .asPrettyString();
         XmlParser xmlParser = new XmlParser();
         Node node = xmlParser.parseText(body);
-        String solverConfig = Objects.requireNonNull(findById("optaplanner-solver-config", node)).text();
+        String solverConfig = Objects.requireNonNull(findById("timefold-solver-config", node)).text();
         assertThat(solverConfig).isEqualToIgnoringWhitespace(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                         + "<!--Properties that can be set at runtime are not included-->\n"
                         + "<solver>\n"
-                        + "  <solutionClass>org.optaplanner.quarkus.it.devui.domain.TestdataStringLengthShadowSolution</solutionClass>\n"
-                        + "  <entityClass>org.optaplanner.quarkus.it.devui.domain.TestdataStringLengthShadowEntity</entityClass>\n"
+                        + "  <solutionClass>ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution</solutionClass>\n"
+                        + "  <entityClass>ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity</entityClass>\n"
                         + "  <domainAccessType>GIZMO</domainAccessType>\n"
                         + "  <scoreDirectorFactory>\n"
-                        + "    <constraintProviderClass>org.optaplanner.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider</constraintProviderClass>\n"
+                        + "    <constraintProviderClass>ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider</constraintProviderClass>\n"
                         + "  </scoreDirectorFactory>\n"
                         + "</solver>");
     }
@@ -65,10 +65,10 @@ public class TimefoldDevUITest {
                 .asPrettyString();
         XmlParser xmlParser = new XmlParser();
         Node node = xmlParser.parseText(body);
-        String model = Objects.requireNonNull(findById("optaplanner-model", node)).toString();
+        String model = Objects.requireNonNull(findById("timefold-solver-model", node)).toString();
         assertThat(model)
-                .contains("value=[Solution: org.optaplanner.quarkus.it.devui.domain.TestdataStringLengthShadowSolution]");
-        assertThat(model).contains("value=[Entity: org.optaplanner.quarkus.it.devui.domain.TestdataStringLengthShadowEntity]");
+                .contains("value=[Solution: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution]");
+        assertThat(model).contains("value=[Entity: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity]");
         assertThat(model).contains(
                 "value=[Genuine Variables]]]]]], tbody[attributes={}; value=[tr[attributes={}; value=[td[attributes={colspan=1, rowspan=1}; value=[value]]");
         assertThat(model).contains(
@@ -84,9 +84,9 @@ public class TimefoldDevUITest {
                 .asPrettyString();
         XmlParser xmlParser = new XmlParser();
         Node node = xmlParser.parseText(body);
-        String constraints = Objects.requireNonNull(findById("optaplanner-constraints", node)).text();
-        assertThat(constraints).contains("org.optaplanner.quarkus.it.devui.domain/Don't assign 2 entities the same value");
-        assertThat(constraints).contains("org.optaplanner.quarkus.it.devui.domain/Maximize value length");
+        String constraints = Objects.requireNonNull(findById("timefold-solver-constraints", node)).text();
+        assertThat(constraints).contains("ai.timefold.solver.quarkus.it.devui.domain/Don't assign 2 entities the same value");
+        assertThat(constraints).contains("ai.timefold.solver.quarkus.it.devui.domain/Maximize value length");
     }
 
     private Node findById(String id, Node node) {

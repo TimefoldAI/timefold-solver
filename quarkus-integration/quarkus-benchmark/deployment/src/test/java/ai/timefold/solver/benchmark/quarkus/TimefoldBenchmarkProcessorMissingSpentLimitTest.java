@@ -30,7 +30,7 @@ class TimefoldBenchmarkProcessorMissingSpentLimitTest {
             new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(new PlannerBenchmarkConfig()).get();
         });
         Assertions.assertEquals(
-                "At least one of the properties quarkus.optaplanner.benchmark.solver.termination.spent-limit, quarkus.optaplanner.benchmark.solver.termination.best-score-limit, quarkus.optaplanner.benchmark.solver.termination.unimproved-spent-limit is required if termination is not configured in the inherited solver benchmark config and solverBenchmarkBluePrint is used.",
+                "At least one of the properties quarkus.timefold.benchmark.solver.termination.spent-limit, quarkus.timefold.benchmark.solver.termination.best-score-limit, quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit is required if termination is not configured in the inherited solver benchmark config and solverBenchmarkBluePrint is used.",
                 exception.getMessage());
     }
 

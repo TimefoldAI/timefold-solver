@@ -27,7 +27,7 @@ class TimefoldConstraintVerifierDroolsStreamImplTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class)
-                    .addAsResource("org/optaplanner/quarkus/verifier/droolsSolverConfig.xml", "solverConfig.xml"));
+                    .addAsResource("ai/timefold/solver/quarkus/verifier/droolsSolverConfig.xml", "solverConfig.xml"));
 
     @Inject
     ConstraintVerifier<TestdataQuarkusConstraintProvider, TestdataQuarkusSolution> constraintVerifier;

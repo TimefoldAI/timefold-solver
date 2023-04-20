@@ -3,7 +3,7 @@
                   xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
     <inheritedSolverBenchmark>
         <solver>
-            <entityClass>org.optaplanner.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusEntity</entityClass>
+            <entityClass>ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusEntity</entityClass>
             <termination>
                 <millisecondsSpentLimit>5</millisecondsSpentLimit>
             </termination>
@@ -24,7 +24,7 @@
         <name>Does Not Inherit Solution Class</name>
         <solver>
             <!-- Using a Constraint Provider class since if there was two planning solution class, autocomplete cannot be used -->
-            <solutionClass>org.optaplanner.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</solutionClass>
+            <solutionClass>ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</solutionClass>
             <constructionHeuristic>
                 <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
             </constructionHeuristic>

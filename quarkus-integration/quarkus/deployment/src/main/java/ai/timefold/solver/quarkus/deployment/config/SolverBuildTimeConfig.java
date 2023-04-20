@@ -12,7 +12,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 /**
- * During build time, this is translated into OptaPlanner's {@link SolverConfig}
+ * During build time, this is translated into Timefold's {@link SolverConfig}
  * (except for termination properties which are translated at bootstrap time).
  *
  * See also {@link SolverRuntimeConfig}

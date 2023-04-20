@@ -28,13 +28,13 @@ class TimefoldProcessorSolverPropertiesTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.optaplanner.solver.daemon", "true")
-            .overrideConfigKey("quarkus.optaplanner.solver.move-thread-count", "2")
-            .overrideConfigKey("quarkus.optaplanner.solver.domain-access-type", "REFLECTION")
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.spent-limit", "4h")
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.unimproved-spent-limit", "5h")
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
+            .overrideConfigKey("quarkus.timefold.solver.daemon", "true")
+            .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "2")
+            .overrideConfigKey("quarkus.timefold.solver.domain-access-type", "REFLECTION")
+            .overrideConfigKey("quarkus.timefold.solver.termination.spent-limit", "4h")
+            .overrideConfigKey("quarkus.timefold.solver.termination.unimproved-spent-limit", "5h")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class));

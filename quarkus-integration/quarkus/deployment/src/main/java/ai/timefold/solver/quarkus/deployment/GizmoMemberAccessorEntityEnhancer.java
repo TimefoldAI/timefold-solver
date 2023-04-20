@@ -80,11 +80,11 @@ final class GizmoMemberAccessorEntityEnhancer {
     private final Set<MethodInfo> visitedMethods = new HashSet<>();
 
     private static String getVirtualGetterName(boolean isField, String name) {
-        return "$get$optaplanner$__" + ((isField) ? "field$__" : "method$__") + name;
+        return "$get$timefold$__" + ((isField) ? "field$__" : "method$__") + name;
     }
 
     private static String getVirtualSetterName(boolean isField, String name) {
-        return "$set$optaplanner$__" + ((isField) ? "field$__" : "method$__") + name;
+        return "$set$timefold$__" + ((isField) ? "field$__" : "method$__") + name;
     }
 
     /**
@@ -115,7 +115,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         if (!visitedFields.contains(fieldInfo)) {
             transformers.produce(new BytecodeTransformerBuildItem(classInfo.getName(),
-                    (className, classVisitor) -> new OptaPlannerFieldEnhancingClassVisitor(classInfo, classVisitor,
+                    (className, classVisitor) -> new TimefoldFieldEnhancingClassVisitor(classInfo, classVisitor,
                             fieldInfo)));
             visitedFields.add(fieldInfo);
         }
@@ -126,7 +126,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             return;
         }
         transformers.produce(new BytecodeTransformerBuildItem(finalField.getDeclaringClass().getName(),
-                (className, classVisitor) -> new OptaPlannerFinalFieldEnhancingClassVisitor(classVisitor, finalField)));
+                (className, classVisitor) -> new TimefoldFinalFieldEnhancingClassVisitor(classVisitor, finalField)));
         visitedFinalFields.add(finalField);
     }
 
@@ -196,7 +196,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         if (!visitedMethods.contains(methodInfo)) {
             transformers.produce(new BytecodeTransformerBuildItem(classInfo.name().toString(),
-                    (className, classVisitor) -> new OptaPlannerMethodEnhancingClassVisitor(classInfo, classVisitor, methodInfo,
+                    (className, classVisitor) -> new TimefoldMethodEnhancingClassVisitor(classInfo, classVisitor, methodInfo,
                             name, setterDescriptor)));
             visitedMethods.add(methodInfo);
         }
@@ -301,12 +301,12 @@ final class GizmoMemberAccessorEntityEnhancer {
             Constructor<?> constructor = clazz.getDeclaredConstructor();
             if (!Modifier.isPublic(constructor.getModifiers()) && !visitedClasses.contains(clazz)) {
                 transformers.produce(new BytecodeTransformerBuildItem(clazz.getName(),
-                        (className, classVisitor) -> new OptaPlannerConstructorEnhancingClassVisitor(classVisitor)));
+                        (className, classVisitor) -> new TimefoldConstructorEnhancingClassVisitor(classVisitor)));
                 visitedClasses.add(clazz);
             }
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(
-                    "Class (" + clazz.getName() + ") must have a no-args constructor so it can be constructed by OptaPlanner.");
+                    "Class (" + clazz.getName() + ") must have a no-args constructor so it can be constructed by Timefold.");
         }
     }
 
@@ -416,10 +416,10 @@ final class GizmoMemberAccessorEntityEnhancer {
         return generatedClassName;
     }
 
-    private static class OptaPlannerFinalFieldEnhancingClassVisitor extends ClassVisitor {
+    private static class TimefoldFinalFieldEnhancingClassVisitor extends ClassVisitor {
         final Field finalField;
 
-        public OptaPlannerFinalFieldEnhancingClassVisitor(ClassVisitor outputClassVisitor, Field finalField) {
+        public TimefoldFinalFieldEnhancingClassVisitor(ClassVisitor outputClassVisitor, Field finalField) {
             super(Gizmo.ASM_API_VERSION, outputClassVisitor);
             this.finalField = finalField;
         }
@@ -435,8 +435,8 @@ final class GizmoMemberAccessorEntityEnhancer {
         }
     }
 
-    private static class OptaPlannerConstructorEnhancingClassVisitor extends ClassVisitor {
-        public OptaPlannerConstructorEnhancingClassVisitor(ClassVisitor outputClassVisitor) {
+    private static class TimefoldConstructorEnhancingClassVisitor extends ClassVisitor {
+        public TimefoldConstructorEnhancingClassVisitor(ClassVisitor outputClassVisitor) {
             super(Gizmo.ASM_API_VERSION, outputClassVisitor);
         }
 
@@ -460,12 +460,12 @@ final class GizmoMemberAccessorEntityEnhancer {
         }
     }
 
-    private static class OptaPlannerFieldEnhancingClassVisitor extends ClassVisitor {
+    private static class TimefoldFieldEnhancingClassVisitor extends ClassVisitor {
         private final Field fieldInfo;
         private final Class<?> clazz;
         private final String fieldTypeDescriptor;
 
-        public OptaPlannerFieldEnhancingClassVisitor(Class<?> classInfo, ClassVisitor outputClassVisitor,
+        public TimefoldFieldEnhancingClassVisitor(Class<?> classInfo, ClassVisitor outputClassVisitor,
                 Field fieldInfo) {
             super(Gizmo.ASM_API_VERSION, outputClassVisitor);
             this.fieldInfo = fieldInfo;
@@ -504,14 +504,14 @@ final class GizmoMemberAccessorEntityEnhancer {
         }
     }
 
-    private static class OptaPlannerMethodEnhancingClassVisitor extends ClassVisitor {
+    private static class TimefoldMethodEnhancingClassVisitor extends ClassVisitor {
         private final MethodInfo methodInfo;
         private final Class<?> clazz;
         private final String returnTypeDescriptor;
         private final MethodDescriptor setter;
         private final String name;
 
-        public OptaPlannerMethodEnhancingClassVisitor(ClassInfo classInfo, ClassVisitor outputClassVisitor,
+        public TimefoldMethodEnhancingClassVisitor(ClassInfo classInfo, ClassVisitor outputClassVisitor,
                 MethodInfo methodInfo, String name, Optional<MethodDescriptor> maybeSetter) {
             super(Gizmo.ASM_API_VERSION, outputClassVisitor);
             this.methodInfo = methodInfo;

@@ -25,7 +25,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import io.quarkus.arc.DefaultBean;
 
 /**
- * Throws an exception if an application tries to inject beans and the OptaPlanner Quarkus extension is skipped
+ * Throws an exception if an application tries to inject beans and the Timefold Quarkus extension is skipped
  * due to missing domain classes.
  */
 public class UnavailableTimefoldBeanProvider {

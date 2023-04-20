@@ -3,14 +3,14 @@
 {#title}Model{/title}
 
 {#body}
-<div class="card h-100 shadow" id="optaplanner-model">
-    <div class="card-header bg-primary text-light">Solution: {info:solverConfigProperties.optaPlannerModelProperties.solutionClass}</div>
+<div class="card h-100 shadow" id="timefold-solver-model">
+    <div class="card-header bg-primary text-light">Solution: {info:solverConfigProperties.timefoldModelProperties.solutionClass}</div>
     <div class="card-body">
-    {#for entityClass in info:solverConfigProperties.optaPlannerModelProperties.entityClassList}
+    {#for entityClass in info:solverConfigProperties.timefoldModelProperties.entityClassList}
         <div class="card h-100 shadow">
         <div class="card-header">Entity: {entityClass}</div>
         <div class="card-body">
-            {#if !info:solverConfigProperties.optaPlannerModelProperties.entityClassToGenuineVariableListMap.get(entityClass).isEmpty()}
+            {#if !info:solverConfigProperties.timefoldModelProperties.entityClassToGenuineVariableListMap.get(entityClass).isEmpty()}
             <table class="table table-striped">
                 <thead class="thead-dark">
                     <tr>
@@ -18,13 +18,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                {#for genuineVariable in info:solverConfigProperties.optaPlannerModelProperties.entityClassToGenuineVariableListMap.get(entityClass)}
+                {#for genuineVariable in info:solverConfigProperties.timefoldModelProperties.entityClassToGenuineVariableListMap.get(entityClass)}
                     <tr><td>{genuineVariable}</td></tr>
                 {/for}
                 </tbody>
             </table>
             {/if}
-            {#if !info:solverConfigProperties.optaPlannerModelProperties.entityClassToShadowVariableListMap.get(entityClass).isEmpty()}
+            {#if !info:solverConfigProperties.timefoldModelProperties.entityClassToShadowVariableListMap.get(entityClass).isEmpty()}
             <table class="table table-striped">
                 <thead class="thead-dark">
                 <tr>
@@ -32,7 +32,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {#for shadowVariable in info:solverConfigProperties.optaPlannerModelProperties.entityClassToShadowVariableListMap.get(entityClass)}
+                {#for shadowVariable in info:solverConfigProperties.timefoldModelProperties.entityClassToShadowVariableListMap.get(entityClass)}
                     <tr><td>{shadowVariable}</td></tr>
                 {/for}
                 </tbody>

@@ -9,7 +9,7 @@ import ai.timefold.solver.jsonb.api.TimefoldJsonbConfig;
 import io.quarkus.jsonb.JsonbConfigCustomizer;
 
 /**
- * OptaPlanner doesn't use JSON-B, but it does have optional JSON-B support for {@link Score}, etc.
+ * Timefold doesn't use JSON-B, but it does have optional JSON-B support for {@link Score}, etc.
  */
 @Singleton
 public class TimefoldJsonbConfigCustomizer implements JsonbConfigCustomizer {

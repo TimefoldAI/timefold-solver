@@ -7,17 +7,17 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
-@ConfigRoot(name = "optaplanner", phase = ConfigPhase.RUN_TIME)
+@ConfigRoot(name = "timefold", phase = ConfigPhase.RUN_TIME)
 public class TimefoldRuntimeConfig {
     /**
-     * During run time, this is translated into OptaPlanner's {@link SolverConfig}
+     * During run time, this is translated into Timefold's {@link SolverConfig}
      * runtime properties.
      */
     @ConfigItem
     public SolverRuntimeConfig solver;
 
     /**
-     * Configuration properties that overwrite OptaPlanner's {@link SolverManagerConfig}.
+     * Configuration properties that overwrite Timefold's {@link SolverManagerConfig}.
      */
     @ConfigItem
     public SolverManagerRuntimeConfig solverManager;

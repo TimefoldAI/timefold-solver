@@ -26,9 +26,9 @@ class TimefoldProcessorInterfaceEntityTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, "org.optaplanner.quarkus.testdata.interfaceentity"));
+                    .addPackages(true, "ai.timefold.solver.quarkus.testdata.interfaceentity"));
 
     @Inject
     SolverFactory<TestdataInterfaceEntitySolution> solverFactory;

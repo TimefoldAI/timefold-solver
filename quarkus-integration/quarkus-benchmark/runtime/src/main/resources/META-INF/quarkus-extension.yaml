@@ -1,13 +1,13 @@
 ---
-name: "OptaPlanner benchmark"
+name: "Timefold benchmark"
 metadata:
   keywords:
-    - "optaplanner"
+    - "timefold"
     - "benchmark"
     - "performance"
     - "scaling"
     - "tweaking"
-  guide: "https://quarkus.io/guides/optaplanner"
+#  guide: "https://quarkus.io/guides/timefold"
   categories:
     - "business-automation"
   status: "stable"

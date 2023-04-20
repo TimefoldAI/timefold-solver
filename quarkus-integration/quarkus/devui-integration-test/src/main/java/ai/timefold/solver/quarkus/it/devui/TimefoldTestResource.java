@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution;
 
-@Path("/optaplanner/test")
+@Path("/timefold/test")
 public class TimefoldTestResource {
 
     @Inject

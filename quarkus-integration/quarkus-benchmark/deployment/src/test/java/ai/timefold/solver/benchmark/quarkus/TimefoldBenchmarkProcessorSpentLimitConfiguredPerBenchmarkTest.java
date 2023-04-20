@@ -23,7 +23,7 @@ class TimefoldBenchmarkProcessorSpentLimitConfiguredPerBenchmarkTest {
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.test.flat-class-path", "true")
-            .overrideConfigKey("quarkus.optaplanner.benchmark.solver-benchmark-config-xml",
+            .overrideConfigKey("quarkus.timefold.benchmark.solver-benchmark-config-xml",
                     "solverBenchmarkConfigSpentLimitPerBenchmark.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,

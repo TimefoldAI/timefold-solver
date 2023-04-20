@@ -9,7 +9,7 @@ import com.oracle.svm.core.annotate.Substitute;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 import com.oracle.svm.core.annotate.TargetClass;
 
-@TargetClass(className = "org.optaplanner.core.config.util.ConfigUtils")
+@TargetClass(className = "ai.timefold.solver.core.config.util.ConfigUtils")
 public final class Substitute_ConfigUtils {
 
     @Substitute

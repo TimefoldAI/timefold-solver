@@ -22,7 +22,7 @@ class TimefoldProcessorOnlyMultiConstructorTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(PrivateNoArgsConstructorConstraintProvider.class,
                             PrivateNoArgsConstructorSolution.class,
@@ -31,7 +31,7 @@ class TimefoldProcessorOnlyMultiConstructorTest {
             .assertException(throwable -> {
                 Assertions.assertEquals(
                         "Class (" + OnlyMultiArgsConstructorEntity.class.getName()
-                                + ") must have a no-args constructor so it can be constructed by OptaPlanner.",
+                                + ") must have a no-args constructor so it can be constructed by Timefold.",
                         throwable.getMessage());
             });
 

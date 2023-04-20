@@ -24,7 +24,7 @@ class TimefoldBenchmarkProcessorInheritedSolverBenchmarkTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.benchmark.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.benchmark.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusOtherEntity.class,
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class)

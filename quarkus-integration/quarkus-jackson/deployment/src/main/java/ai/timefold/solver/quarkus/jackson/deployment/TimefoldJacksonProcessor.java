@@ -11,11 +11,11 @@ class TimefoldJacksonProcessor {
 
     @BuildStep
     FeatureBuildItem feature() {
-        return new FeatureBuildItem("optaplanner-jackson");
+        return new FeatureBuildItem("timefold-solver-jackson");
     }
 
     @BuildStep
-    void registerOptaPlannerJacksonModule(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+    void registerTimefoldJacksonModule(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldObjectMapperCustomizer.class));
     }
 

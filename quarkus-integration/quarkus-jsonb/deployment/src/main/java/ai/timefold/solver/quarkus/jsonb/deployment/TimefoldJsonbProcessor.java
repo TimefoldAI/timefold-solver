@@ -11,11 +11,11 @@ class TimefoldJsonbProcessor {
 
     @BuildStep
     FeatureBuildItem feature() {
-        return new FeatureBuildItem("optaplanner-jsonb");
+        return new FeatureBuildItem("timefold-solver-jsonb");
     }
 
     @BuildStep
-    void registerOptaPlannerJsonbConfig(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
+    void registerTimefoldJsonbConfig(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldJsonbConfigCustomizer.class));
     }
 

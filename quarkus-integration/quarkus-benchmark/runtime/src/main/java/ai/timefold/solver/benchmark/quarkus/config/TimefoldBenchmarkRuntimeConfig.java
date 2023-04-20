@@ -6,7 +6,7 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
-@ConfigRoot(name = "optaplanner.benchmark", phase = ConfigPhase.RUN_TIME)
+@ConfigRoot(name = "timefold.benchmark", phase = ConfigPhase.RUN_TIME)
 public class TimefoldBenchmarkRuntimeConfig {
     public static final String DEFAULT_BENCHMARK_RESULT_DIRECTORY = "target/benchmarks";
 

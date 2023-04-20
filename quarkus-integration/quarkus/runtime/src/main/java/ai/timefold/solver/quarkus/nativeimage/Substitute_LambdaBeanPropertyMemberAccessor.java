@@ -15,7 +15,7 @@ import com.oracle.svm.core.annotate.TargetClass;
  * the provided getter/setter methods. This is not supported in GraalVM, so we need to use Method reflection
  * (i.e. {@link Method#invoke(Object, Object...)}) instead.
  */
-@TargetClass(className = "org.optaplanner.core.impl.domain.common.accessor.LambdaBeanPropertyMemberAccessor")
+@TargetClass(className = "ai.timefold.solver.core.impl.domain.common.accessor.LambdaBeanPropertyMemberAccessor")
 public final class Substitute_LambdaBeanPropertyMemberAccessor {
 
     @Alias

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Disabled;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 /**
- * Test various OptaPlanner operations running in native mode
+ * Test various Timefold operations running in native mode
  */
 @QuarkusIntegrationTest
 @Disabled("Constraints DRL is not supported in native mode.")

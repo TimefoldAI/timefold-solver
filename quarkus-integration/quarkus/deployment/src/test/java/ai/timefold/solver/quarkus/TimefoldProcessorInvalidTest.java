@@ -26,7 +26,7 @@ class TimefoldProcessorInvalidTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataInvalidInverseRelationSolution.class,
                             TestdataInvalidInverseRelationEntity.class,
@@ -35,10 +35,10 @@ class TimefoldProcessorInvalidTest {
             .assertException(exception -> {
                 assertEquals(IllegalStateException.class, exception.getClass());
                 assertEquals("The field (entityList) with a @InverseRelationShadowVariable annotation is" +
-                        " in a class (org.optaplanner.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue)"
+                        " in a class (ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue)"
                         +
                         " that does not have a @PlanningEntity annotation.\n" +
-                        "Maybe add a @PlanningEntity annotation on the class (org.optaplanner.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue).",
+                        "Maybe add a @PlanningEntity annotation on the class (ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue).",
                         exception.getMessage());
             });
 

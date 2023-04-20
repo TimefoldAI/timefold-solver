@@ -9,7 +9,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 /**
- * During run time, this overrides some of OptaPlanner's {@link SolverConfig}
+ * During run time, this overrides some of Timefold's {@link SolverConfig}
  * properties.
  */
 @ConfigGroup
@@ -24,7 +24,7 @@ public class SolverRuntimeConfig {
     public Optional<String> moveThreadCount;
 
     /**
-     * Configuration properties that overwrite OptaPlanner's {@link TerminationConfig}.
+     * Configuration properties that overwrite Timefold's {@link TerminationConfig}.
      */
     @ConfigItem
     public TerminationRuntimeConfig termination;

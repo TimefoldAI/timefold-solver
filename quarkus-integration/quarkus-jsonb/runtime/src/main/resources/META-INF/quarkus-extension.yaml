@@ -1,8 +1,8 @@
 ---
-name: "OptaPlanner JSON-B"
+name: "Timefold JSON-B"
 metadata:
   keywords:
-    - "optaplanner"
+    - "timefold"
     - "jsonb"
     - "json-b"
     - "json"

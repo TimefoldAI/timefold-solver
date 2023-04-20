@@ -23,9 +23,9 @@ class TimefoldProcessorPlanningIdTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackage("org.optaplanner.quarkus.testdata.superclass.domain") // Cannot reference a non-public class.
+                    .addPackage("ai.timefold.solver.quarkus.testdata.superclass.domain") // Cannot reference a non-public class.
                     .addClasses(DummyConstraintProvider.class));
 
     @Inject

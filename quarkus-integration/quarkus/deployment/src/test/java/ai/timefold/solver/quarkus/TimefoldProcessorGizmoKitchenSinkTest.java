@@ -35,7 +35,7 @@ class TimefoldProcessorGizmoKitchenSinkTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.optaplanner.solver.termination.best-score-limit", "0hard/0soft")
+            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0hard/0soft")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestDataKitchenSinkEntity.class,
                             TestDataKitchenSinkSolution.class,
