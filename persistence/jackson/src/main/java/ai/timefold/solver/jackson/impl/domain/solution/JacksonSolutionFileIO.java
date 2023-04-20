@@ -25,7 +25,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public JacksonSolutionFileIO(Class<Solution_> clazz, ObjectMapper mapper) {
         this.clazz = clazz;
         this.mapper = mapper;
-        // Loads OptaPlannerJacksonModule via ServiceLoader, as well as any other Jackson modules on the classpath.
+        // Loads TimefoldJacksonModule via ServiceLoader, as well as any other Jackson modules on the classpath.
         mapper.findAndRegisterModules();
     }
 

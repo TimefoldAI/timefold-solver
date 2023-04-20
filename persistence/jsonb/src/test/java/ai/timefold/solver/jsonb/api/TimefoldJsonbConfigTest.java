@@ -18,22 +18,22 @@ class TimefoldJsonbConfigTest extends AbstractJsonbJsonAdapterTest {
         JsonbConfig config = TimefoldJsonbConfig.createConfig();
         Jsonb jsonb = JsonbBuilder.create(config);
 
-        TestOptaPlannerJsonbConfigWrapper input = new TestOptaPlannerJsonbConfigWrapper();
+        TestTimefoldJsonbConfigWrapper input = new TestTimefoldJsonbConfigWrapper();
         input.setBendableScore(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
         input.setHardSoftScore(HardSoftScore.of(-1, -20));
-        TestOptaPlannerJsonbConfigWrapper output = serializeAndDeserialize(jsonb, input);
+        TestTimefoldJsonbConfigWrapper output = serializeAndDeserialize(jsonb, input);
         assertThat(output.getBendableScore()).isEqualTo(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
         assertThat(output.getHardSoftScore()).isEqualTo(HardSoftScore.of(-1, -20));
     }
 
-    public static class TestOptaPlannerJsonbConfigWrapper {
+    public static class TestTimefoldJsonbConfigWrapper {
 
         private BendableScore bendableScore;
         private HardSoftScore hardSoftScore;
 
         // Empty constructor required by JSON-B
         @SuppressWarnings("unused")
-        public TestOptaPlannerJsonbConfigWrapper() {
+        public TestTimefoldJsonbConfigWrapper() {
         }
 
         public BendableScore getBendableScore() {

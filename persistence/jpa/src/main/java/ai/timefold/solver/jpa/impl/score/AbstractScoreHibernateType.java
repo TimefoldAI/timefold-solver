@@ -27,10 +27,10 @@ import org.hibernate.usertype.CompositeUserType;
  *
  * @deprecated This class has been deprecated as the Hibernate 6 does not provide full backward compatibility
  *             for the {@link CompositeUserType}.
- *             The class will remain available in the OptaPlanner 8 releases to provide
- *             integration with Hibernate 5 but will be removed in OptaPlanner 9.
+ *             The class will remain available in the Timefold 8 releases to provide
+ *             integration with Hibernate 5 but will be removed in Timefold 9.
  *             To integrate the {@link ai.timefold.solver.core.api.domain.solution.PlanningScore} with Hibernate 6,
- *             either use the score converters in the <code>org.optaplanner.persistence.jpa.api.score.buildin</code>
+ *             either use the score converters in the <code>ai.timefold.solver.jpa.api.score.buildin</code>
  *             package or implement the {@link CompositeUserType} yourself.
  */
 @Deprecated(forRemoval = true)

@@ -36,7 +36,7 @@ public abstract class AbstractScoreJacksonSerializer<Score_ extends Score<Score_
         if (Score.class.equals(propertyType.getRawClass())) {
             // If the property type is Score (not HardSoftScore for example),
             // delegate to PolymorphicScoreJacksonSerializer instead to write the score type too
-            // This presumes that OptaPlannerJacksonModule is registered
+            // This presumes that TimefoldJacksonModule is registered
             return provider.findValueSerializer(propertyType);
         }
         return this;

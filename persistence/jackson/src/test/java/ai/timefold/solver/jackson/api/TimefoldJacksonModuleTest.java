@@ -24,11 +24,11 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         objectMapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
         objectMapper.registerModule(TimefoldJacksonModule.createModule());
 
-        TestOptaPlannerJacksonModuleWrapper input = new TestOptaPlannerJacksonModuleWrapper();
+        TestTimefoldJacksonModuleWrapper input = new TestTimefoldJacksonModuleWrapper();
         input.setBendableScore(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
         input.setHardSoftScore(HardSoftScore.of(-1, -20));
         input.setPolymorphicScore(HardSoftScore.of(-20, -300));
-        TestOptaPlannerJacksonModuleWrapper output = serializeAndDeserialize(objectMapper, input);
+        TestTimefoldJacksonModuleWrapper output = serializeAndDeserialize(objectMapper, input);
         assertThat(output.getBendableScore()).isEqualTo(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
         assertThat(output.getHardSoftScore()).isEqualTo(HardSoftScore.of(-1, -20));
         assertThat(output.getPolymorphicScore()).isEqualTo(HardSoftScore.of(-20, -300));
@@ -41,14 +41,14 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                 .isEqualTo(BendableScore.of(new int[] { -1, -20 }, new int[] { -300, -4000, -50000 }));
     }
 
-    public static class TestOptaPlannerJacksonModuleWrapper {
+    public static class TestTimefoldJacksonModuleWrapper {
 
         private BendableScore bendableScore;
         private HardSoftScore hardSoftScore;
         private Score polymorphicScore;
 
         @SuppressWarnings("unused")
-        private TestOptaPlannerJacksonModuleWrapper() {
+        private TestTimefoldJacksonModuleWrapper() {
         }
 
         public BendableScore getBendableScore() {

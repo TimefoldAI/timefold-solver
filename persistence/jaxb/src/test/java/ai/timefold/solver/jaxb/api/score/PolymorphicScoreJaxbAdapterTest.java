@@ -29,7 +29,7 @@ class PolymorphicScoreJaxbAdapterTest {
     @Test
     void unmarshall() {
         String xmlString = "<dummy>"
-                + "<score class=\"org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore\">-1hard/-10soft</score>"
+                + "<score class=\"ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore\">-1hard/-10soft</score>"
                 + "</dummy>";
 
         GenericJaxbIO<DummyRootElement> xmlIO = new GenericJaxbIO<>(DummyRootElement.class);

@@ -64,11 +64,11 @@ public class TimefoldJacksonModule extends SimpleModule {
 
     /**
      * @deprecated Have the module loaded automatically via {@link JacksonSolutionFileIO} or use {@link #createModule()}.
-     *             This constructor will be hidden in a future major version of OptaPlanner.
+     *             This constructor will be hidden in a future major version of Timefold.
      */
     @Deprecated(forRemoval = true)
     public TimefoldJacksonModule() {
-        super("OptaPlanner");
+        super("Timefold");
         // For non-subtype Score fields/properties, we also need to record the score type
         addSerializer(Score.class, new PolymorphicScoreJacksonSerializer());
         addDeserializer(Score.class, new PolymorphicScoreJacksonDeserializer());
