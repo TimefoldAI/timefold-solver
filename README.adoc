@@ -24,7 +24,7 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 // {sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
 // {sonarBadge}&metric=coverage["Coverage", {sonarLink}]
 
-== Get started with Timefold
+== Get started with Timefold Solver
 
 * https://timefold.ai/docs[Read a Getting Started guide.]
 * https://github.com/TimefoldAI/timefold-quickstarts[Clone the Quickstarts repository.]
@@ -35,7 +35,7 @@ Build and run from source:
 
 ----
 $ mvn clean install -Dquickly
-$ cd timefold-solver-examples
+$ cd examples
 $ mvn exec:java
 ----
 
@@ -73,9 +73,9 @@ mvn clean install
 ----
 For information about how to set up code style checks, see https://github.com/TimefoldAI/timefold-solver/blob/main/build/timefold-solver-ide-config/ide-configuration.adoc[IDE Setup Instructions].
 
-=== Build the Timefold project
+=== Build the Timefold Solver project
 
-Use one of the following ways to build your Timefold project:
+Use one of the following ways to build this project:
 
 * :rocket: *build-fast*: `mvn clean install -Dquickly` skips any checks and code analysis (~1 min)
 
