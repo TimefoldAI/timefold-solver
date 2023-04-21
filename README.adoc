@@ -44,9 +44,9 @@ and configure a _Run/Debug configuration_ like this:
 
 * Type: Application
 * Main class: `ai.timefold.solver.examples.app.TimefoldExamplesApp`
-* VM options: `-Xmx2G -server` (memory only needed when using the big datasets in the examples)
+* VM options: `-Xmx2G` (memory only needed when using the big datasets in the examples)
 * Program arguments: (none)
-* Working directory: `$MODULE_DIR$` (must resolve to timefold-solver-examples directory)
+* Working directory: `$MODULE_DIR$` (must resolve to `examples` directory)
 * Use classpath of module: `timefold-solver-examples`
 
 == Contribute
@@ -71,7 +71,7 @@ Your code is automatically formatted according to the _Import and Code Style_ co
 ----
 mvn clean install
 ----
-For information about how to set up code style checks, see https://github.com/TimefoldAI/timefold-solver/blob/main/build/timefold-solver-ide-config/ide-configuration.adoc[IDE Setup Instructions].
+For information about how to set up code style checks, see https://github.com/TimefoldAI/timefold-solver/blob/main/build/ide-config/ide-configuration.adoc[IDE Setup Instructions].
 
 === Build the Timefold Solver project
 
