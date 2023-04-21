@@ -1,28 +1,44 @@
-= IDE Setup Instructions
+= IDE code style setup
 
-Before you start contributing, please follow the instructions below to set up a code style for an IDE of your choice.
+Every Maven build formats the source code with the standard code style.
+This avoids merge conflicts and code style discussions.
 
-== Eclipse Setup
+Configure it in your favorite IDE too:
 
-Open the _Preferences_ window, and then navigate to _Java -> Code Style -> Formatter_.
-Click _Import_ and then select the `build/timefold-solver-ide-config/src/main/resources/eclipse-format.xml` file in the `ide-configuration` directory.
+== IDEA setup
 
-Next navigate to _Java -> Code Style -> Organize Imports_.
-Click Import and select the `build/timefold-solver-ide-config/src/main/resources/eclipse.importorder` file.
+. Open the _Settings_ window (or _Preferences_ depending on your edition) and navigate to _Plugins_.
 
-== IDEA Setup
+. Install the https://plugins.jetbrains.com/plugin/6546-eclipse-code-formatter[Eclipse Code Formatter Plugin] from the IntelliJ Marketplace.
 
-Open the _Preferences_ window (or _Settings_ depending on your edition), navigate to Plugins and install the https://plugins.jetbrains.com/plugin/6546-eclipse-code-formatter[Eclipse Code Formatter Plugin] from the Marketplace.
+. Restart your IDE.
 
-Restart your IDE, open the _Preferences_ (or _Settings_) window again and navigate to _Other Settings -> Eclipse Code Formatter_.
+. Open the _Settings_ window again and navigate to _Other Settings -> Eclipse Code Formatter_.
 
-Select _Use the Eclipse Code Formatter_, then change the _Eclipse Java Formatter Config File_ to point to the `eclipse-format.xml`
-file in the `build/timefold-solver-ide-config/src/main/resources/` directory.
-Make sure the _Optimize Imports_ box is ticked, and select the `eclipse.importorder` file as the import order config file.
+. Select _Use the Eclipse Code Formatter_
+
+. Change the _Eclipse Java Formatter Config File_ to point to the `eclipse-format.xml`
+file in the `build/ide-config/src/main/resources/` directory.
+
+. Make sure the _Optimize Imports_ box is ticked
+
+. select the `eclipse.importorder` file as the import order config file.
+
+== Eclipse setup
+
+. Open the _Preferences_ window, and then navigate to _Java -> Code Style -> Formatter_.
+
+. Click _Import_ and then select the `build/ide-config/src/main/resources/eclipse-format.xml` file in the `ide-configuration` directory.
+
+. Navigate to _Java -> Code Style -> Organize Imports_.
+
+. Click Import and select the `build/ide-config/src/main/resources/eclipse.importorder` file.
 
 == VS Code setup
-. Open the _Extensions_ window (Ctrl+Shift+X) and search for _Language Support for Java(TM) by Red Hat_ and install it.
-. Create settings file for your workspace
+
+. Open the _Extensions_ window (Ctrl+Shift+X) and search for _Language Support for Java(TM)_ and install it.
+
+. Create a settings file for your workspace
 +
 [source,shell]
 ----
@@ -30,19 +46,20 @@ cd timefold
 mkdir .vscode
 touch .vscode/settings.json
 ----
-. Put in settings.json the following content:
+
+. Put in the `settings.json` file the following content:
 +
 [source,json]
 ----
 {
-    "java.format.settings.url": "build/timefold-solver-ide-config/src/main/resources/eclipse-format.xml",
+    "java.format.settings.url": "build/ide-config/src/main/resources/eclipse-format.xml",
     "java.completion.importOrder": [
         "java",
+        "jakarta",
         "javax",
+        "ai.timefold",
         "org",
         "com"
     ]
 }
 ----
-
-
