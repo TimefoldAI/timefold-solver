@@ -25,7 +25,6 @@
 
   <modules>
     <module>common</module>
-    <module>xstream</module>
     <module>jaxb</module>
     <module>jackson</module>
     <module>jpa</module>

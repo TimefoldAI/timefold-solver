@@ -25,7 +25,6 @@
     <!-- Normal dependency versions -->
     <version.ch.qos.logback>1.4.6</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.20.0</version.org.apache.logging.log4j>
-    <version.com.thoughtworks.xstream>1.4.20</version.com.thoughtworks.xstream>
     <version.io.quarkus>3.0.0.Final</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.commons.text>1.10.0</version.org.apache.commons.text>
@@ -130,11 +129,6 @@
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-to-slf4j</artifactId>
         <version>${version.org.apache.logging.log4j}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.thoughtworks.xstream</groupId>
-        <artifactId>xstream</artifactId>
-        <version>${version.com.thoughtworks.xstream}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -272,9 +266,6 @@
                 <rules>
                   <banDuplicateClasses>
                     <ignoreClasses>
-                      <!-- Duplicated by XStream's transitive deps, with very little chance to get properly fixed -->
-                      <ignoreClass>org.xmlpull.v1.XmlPullParserException</ignoreClass>
-                      <ignoreClass>org.xmlpull.v1.XmlPullParser</ignoreClass>
                       <!-- Bundled by both com.sun:tools and com.sun.xml.bind:jaxb-xjc. No easy way to exclude one of them. -->
                       <ignoreClass>org.relaxng.datatype.*</ignoreClass>
                       <!-- Duplicated in xml-apis:xml-apis:jar:1.4.01 and xerces:xercesImpl:jar:2.11.0.SP4. The class is identical

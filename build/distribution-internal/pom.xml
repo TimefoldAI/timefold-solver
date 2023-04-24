@@ -74,10 +74,6 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-xstream</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-jaxb</artifactId>
     </dependency>
     <dependency>
