@@ -82,9 +82,8 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
 
     private static ConstraintStreamImplType resolveConstraintStreamType() {
         String csImplProperty = System.getProperty(TestSystemProperties.CONSTRAINT_STREAM_IMPL_TYPE,
-                ConstraintStreamImplType.DROOLS.name()).trim().toUpperCase();
-        return csImplProperty.equals(ConstraintStreamImplType.DROOLS.name()) ? ConstraintStreamImplType.DROOLS
-                : ConstraintStreamImplType.BAVET;
+                ConstraintStreamImplType.BAVET.name());
+        return ConstraintStreamImplType.valueOf(csImplProperty);
     }
 
     private Solution_ buildAndSolve(SolverConfig solverConfig, EnvironmentMode environmentMode,

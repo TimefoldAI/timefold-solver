@@ -1,15 +1,11 @@
 package ai.timefold.solver.core.config.score.director;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -30,9 +26,6 @@ import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
         "incrementalScoreCalculatorClass",
         "incrementalScoreCalculatorCustomProperties",
         "scoreDrlList",
-        "scoreDrlFileList",
-        "droolsAlphaNetworkCompilationEnabled",
-        "kieBaseConfigurationProperties",
         "initializingScoreTrend",
         "assertionScoreDirectorFactory"
 })
@@ -57,17 +50,6 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     @Deprecated(forRemoval = true)
     @XmlElement(name = "scoreDrl")
     protected List<String> scoreDrlList = null;
-    @Deprecated(forRemoval = true)
-    @XmlElement(name = "scoreDrlFile")
-    protected List<File> scoreDrlFileList = null;
-    @XmlTransient
-    protected Supplier gizmoKieBaseSupplier = null;
-
-    @Deprecated(forRemoval = true)
-    protected Boolean droolsAlphaNetworkCompilationEnabled = null;
-    @Deprecated(forRemoval = true)
-    @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected Map<String, String> kieBaseConfigurationProperties = null;
 
     // TODO: this should be rather an enum?
     protected String initializingScoreTrend = null;
@@ -157,82 +139,6 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         this.scoreDrlList = scoreDrlList;
     }
 
-    /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
-     */
-    @Deprecated(forRemoval = true)
-    public List<File> getScoreDrlFileList() {
-        return scoreDrlFileList;
-    }
-
-    /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
-     */
-    @Deprecated(forRemoval = true)
-    public void setScoreDrlFileList(List<File> scoreDrlFileList) {
-        this.scoreDrlFileList = scoreDrlFileList;
-    }
-
-    /**
-     * @return sometimes null
-     * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
-     */
-    @Deprecated(forRemoval = true)
-    public Boolean getDroolsAlphaNetworkCompilationEnabled() {
-        return droolsAlphaNetworkCompilationEnabled;
-    }
-
-    /**
-     * For internal use only, get the generated Gizmo KieBaseSupplier.
-     */
-    public Supplier getGizmoKieBaseSupplier() {
-        return gizmoKieBaseSupplier;
-    }
-
-    /**
-     * For internal use only, set the generated Gizmo KieBaseSupplier.
-     */
-    public void setGizmoKieBaseSupplier(Supplier gizmoKieBaseSupplier) {
-        this.gizmoKieBaseSupplier = gizmoKieBaseSupplier;
-    }
-
-    /**
-     * @param droolsAlphaNetworkCompilationEnabled sometimes null
-     * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
-     */
-    @Deprecated(forRemoval = true)
-    public void setDroolsAlphaNetworkCompilationEnabled(Boolean droolsAlphaNetworkCompilationEnabled) {
-        this.droolsAlphaNetworkCompilationEnabled = droolsAlphaNetworkCompilationEnabled;
-    }
-
-    /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
-     */
-    @Deprecated(forRemoval = true)
-    public Map<String, String> getKieBaseConfigurationProperties() {
-        return kieBaseConfigurationProperties;
-    }
-
-    /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
-     */
-    @Deprecated(forRemoval = true)
-    public void setKieBaseConfigurationProperties(Map<String, String> kieBaseConfigurationProperties) {
-        this.kieBaseConfigurationProperties = kieBaseConfigurationProperties;
-    }
-
     public String getInitializingScoreTrend() {
         return initializingScoreTrend;
     }
@@ -317,44 +223,6 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         return this;
     }
 
-    /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
-     */
-    @Deprecated(forRemoval = true)
-    public ScoreDirectorFactoryConfig withScoreDrlFileList(List<File> scoreDrlFileList) {
-        this.scoreDrlFileList = scoreDrlFileList;
-        return this;
-    }
-
-    /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
-     */
-    @Deprecated(forRemoval = true)
-    public ScoreDirectorFactoryConfig withScoreDrlFiles(File... scoreDrlFiles) {
-        this.scoreDrlFileList = Arrays.asList(scoreDrlFiles);
-        return this;
-    }
-
-    /**
-     * For internal use only, set the generated Gizmo KieBaseSupplier.
-     */
-    public ScoreDirectorFactoryConfig withGizmoKieBaseSupplier(Supplier kieBaseSupplier) {
-        setGizmoKieBaseSupplier(kieBaseSupplier);
-        return this;
-    }
-
-    public ScoreDirectorFactoryConfig withDroolsAlphaNetworkCompilationEnabled(
-            boolean droolsAlphaNetworkCompilationEnabled) {
-        this.droolsAlphaNetworkCompilationEnabled = droolsAlphaNetworkCompilationEnabled;
-        return this;
-    }
-
     public ScoreDirectorFactoryConfig withInitializingScoreTrend(String initializingScoreTrend) {
         this.initializingScoreTrend = initializingScoreTrend;
         return this;
@@ -384,14 +252,6 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
                 incrementalScoreCalculatorCustomProperties, inheritedConfig.getIncrementalScoreCalculatorCustomProperties());
         scoreDrlList = ConfigUtils.inheritMergeableListProperty(
                 scoreDrlList, inheritedConfig.getScoreDrlList());
-        scoreDrlFileList = ConfigUtils.inheritMergeableListProperty(
-                scoreDrlFileList, inheritedConfig.getScoreDrlFileList());
-        gizmoKieBaseSupplier = ConfigUtils.inheritOverwritableProperty(gizmoKieBaseSupplier,
-                inheritedConfig.getGizmoKieBaseSupplier());
-        droolsAlphaNetworkCompilationEnabled = ConfigUtils.inheritOverwritableProperty(
-                droolsAlphaNetworkCompilationEnabled, inheritedConfig.getDroolsAlphaNetworkCompilationEnabled());
-        kieBaseConfigurationProperties = ConfigUtils.inheritMergeableMapProperty(
-                kieBaseConfigurationProperties, inheritedConfig.getKieBaseConfigurationProperties());
         initializingScoreTrend = ConfigUtils.inheritOverwritableProperty(
                 initializingScoreTrend, inheritedConfig.getInitializingScoreTrend());
         assertionScoreDirectorFactory = ConfigUtils.inheritOverwritableProperty(
@@ -411,30 +271,6 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         classVisitor.accept(incrementalScoreCalculatorClass);
         if (assertionScoreDirectorFactory != null) {
             assertionScoreDirectorFactory.visitReferencedClasses(classVisitor);
-        }
-    }
-
-    private boolean isUsingDrools() {
-        if (scoreDrlList != null || scoreDrlFileList != null) { // We know we're in DRL.
-            return true;
-        } else if (constraintProviderClass == null) { // We know we're neither in DRL nor in CS.
-            return false;
-        }
-        return (constraintStreamImplType == ConstraintStreamImplType.DROOLS);
-    }
-
-    // TODO: Replace all usages of this message with {@link getDroolsAlphaNetworkCompilationEnabled()} when
-    //       https://github.com/quarkusio/quarkus/issues/26889 is fixed.
-    @Deprecated(forRemoval = true)
-    public boolean isDroolsAlphaNetworkCompilationEnabled() {
-        if (!isUsingDrools()) {
-            return false;
-        }
-        boolean ancEnabledValue = Objects.requireNonNullElse(droolsAlphaNetworkCompilationEnabled, true);
-        if (ancEnabledValue) { // ANC does not work in native images.
-            return !ConfigUtils.isNativeImage();
-        } else {
-            return false;
         }
     }
 

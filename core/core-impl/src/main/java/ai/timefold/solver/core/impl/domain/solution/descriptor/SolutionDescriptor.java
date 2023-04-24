@@ -215,7 +215,7 @@ public class SolutionDescriptor<Solution_> {
                     + PlanningEntityProperty.class.getSimpleName() + " annotation.");
         }
         // Do not check if problemFactCollectionMemberAccessorMap and problemFactMemberAccessorMap are empty
-        // because they are only required for scoreDRL and ConstraintStreams.
+        // because they are only required for ConstraintStreams.
         if (scoreDescriptor == null) {
             throw new IllegalStateException("The solutionClass (" + solutionClass
                     + ") must have 1 member with a @" + PlanningScore.class.getSimpleName() + " annotation.\n"
@@ -224,19 +224,6 @@ public class SolutionDescriptor<Solution_> {
         if (constraintConfigurationMemberAccessor != null) {
             // The scoreDescriptor is definitely initialized at this point.
             constraintConfigurationDescriptor.processAnnotations(descriptorPolicy, scoreDescriptor.getScoreDefinition());
-        }
-    }
-
-    /**
-     * Only called if Drools score calculation is used.
-     */
-    public void assertProblemFactsExist() {
-        if (problemFactCollectionMemberAccessorMap.isEmpty() && problemFactMemberAccessorMap.isEmpty()) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") must have at least 1 member with a "
-                    + ProblemFactCollectionProperty.class.getSimpleName() + " annotation or a "
-                    + ProblemFactProperty.class.getSimpleName() + " annotation"
-                    + " when used with Drools score calculation.");
         }
     }
 

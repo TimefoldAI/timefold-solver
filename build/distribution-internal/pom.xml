@@ -62,10 +62,6 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-constraint-drl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-benchmark</artifactId>
     </dependency>
     <dependency>

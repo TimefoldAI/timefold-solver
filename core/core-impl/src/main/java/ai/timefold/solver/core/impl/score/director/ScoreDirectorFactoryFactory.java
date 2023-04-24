@@ -1,13 +1,9 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.BAVET;
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.DROOLS;
 import static ai.timefold.solver.core.impl.score.director.ScoreDirectorType.CONSTRAINT_STREAMS;
-import static ai.timefold.solver.core.impl.score.director.ScoreDirectorType.DRL;
 import static ai.timefold.solver.core.impl.score.director.ScoreDirectorType.EASY;
 import static ai.timefold.solver.core.impl.score.director.ScoreDirectorType.INCREMENTAL;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -15,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -71,45 +66,9 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                 ServiceLoader.load(ScoreDirectorFactoryService.class);
         Map<ScoreDirectorType, Supplier<AbstractScoreDirectorFactory<Solution_, Score_>>> scoreDirectorFactorySupplierMap =
                 new EnumMap<>(ScoreDirectorType.class);
-        boolean isBavet = false;
         for (ScoreDirectorFactoryService<Solution_, Score_> service : scoreDirectorFactoryServiceLoader) {
             Supplier<AbstractScoreDirectorFactory<Solution_, Score_>> factory =
                     service.buildScoreDirectorFactory(classLoader, solutionDescriptor, config, environmentMode);
-            if (service.getSupportedScoreDirectorType() == CONSTRAINT_STREAMS) {
-                /*
-                 * CS-D will be available if on the classpath and user did not request BAVET.
-                 * CS-B will be available if on the classpath and user did not request DROOLS.
-                 * The following logic deals with the decision of which CS impl to pick if both available.
-                 */
-                switch (service.getPriority()) {
-                    case Integer.MAX_VALUE:
-                        if (config.getConstraintStreamImplType() == BAVET) {
-                            // Drools should be skipped.
-                            continue;
-                        } else {
-                            // Drools will be registered as the CS impl.
-                            isBavet = false;
-                        }
-                        break;
-                    case Integer.MIN_VALUE:
-                        if (scoreDirectorFactorySupplierMap.containsKey(CONSTRAINT_STREAMS)) {
-                            /*
-                             * We already have a CS service registered, and it is of a higher priority.
-                             * This means Drools was loaded first, but Bavet is available too.
-                             * Such situation can only happen if the user did not specify an impl type.
-                             * Therefore, we skip Bavet as Drools is the default and already registered.
-                             */
-                            continue;
-                        } else {
-                            // Bavet will be registered as the CS impl.
-                            isBavet = true;
-                        }
-                        break;
-                    default:
-                        throw new IllegalStateException(
-                                "Impossible state: Unknown service priority (" + service.getPriority() + ")");
-                }
-            }
             if (factory != null) {
                 scoreDirectorFactorySupplierMap.put(service.getSupportedScoreDirectorType(), factory);
             }
@@ -121,52 +80,31 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                 scoreDirectorFactorySupplierMap.get(CONSTRAINT_STREAMS);
         Supplier<AbstractScoreDirectorFactory<Solution_, Score_>> incrementalScoreDirectorFactorySupplier =
                 scoreDirectorFactorySupplierMap.get(INCREMENTAL);
-        Supplier<AbstractScoreDirectorFactory<Solution_, Score_>> drlScoreDirectorFactorySupplier =
-                scoreDirectorFactorySupplierMap.get(DRL);
 
+        if (!ConfigUtils.isEmptyCollection(config.getScoreDrlList())) {
+            throw new IllegalStateException("DRL constraints requested via scoreDrlList (" + config.getScoreDrlList()
+                    + "), but this is no longer supported in Timefold Solver 0.9+.\n"
+                    + "Maybe upgrade from scoreDRL to ConstraintStreams using this recipe: https://www.optaplanner.org/download/upgradeRecipe/drl-to-constraint-streams-migration.html\n"
+                    + "Maybe use Timefold Solver 0.8 instead if you can't upgrade to ConstraintStreams now.");
+        }
         // Every non-null supplier means that ServiceLoader successfully loaded and configured a score director factory.
         assertOnlyOneScoreDirectorFactory(easyScoreDirectorFactorySupplier,
-                constraintStreamScoreDirectorFactorySupplier, incrementalScoreDirectorFactorySupplier,
-                drlScoreDirectorFactorySupplier);
+                constraintStreamScoreDirectorFactorySupplier, incrementalScoreDirectorFactorySupplier);
 
         if (easyScoreDirectorFactorySupplier != null) {
-            validateNoDroolsAlphaNetworkCompilation();
-            validateNoGizmoKieBaseSupplier();
             return easyScoreDirectorFactorySupplier.get();
         } else if (incrementalScoreDirectorFactorySupplier != null) {
-            validateNoDroolsAlphaNetworkCompilation();
-            validateNoGizmoKieBaseSupplier();
             return incrementalScoreDirectorFactorySupplier.get();
         }
-
         if (constraintStreamScoreDirectorFactorySupplier != null) {
-            if (isBavet) {
-                validateNoDroolsAlphaNetworkCompilation();
-                validateNoGizmoKieBaseSupplier();
-            }
             return constraintStreamScoreDirectorFactorySupplier.get();
         } else if (config.getConstraintProviderClass() != null) {
-            String expectedModule = config.getConstraintStreamImplType() == BAVET
-                    ? "timefold-solver-constraint-streams-bavet"
-                    : "timefold-solver-constraint-streams-drools";
             throw new IllegalStateException("Constraint Streams requested via constraintProviderClass (" +
                     config.getConstraintProviderClass() + ") but the supporting classes were not found on the classpath.\n"
-                    + "Maybe include ai.timefold.solver:" + expectedModule + " dependency in your project?\n"
+                    + "Maybe include ai.timefold.solver:timefold-solver-constraint-streams-bavet dependency in your project?\n"
                     + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
         }
 
-        if (drlScoreDirectorFactorySupplier != null) {
-            return drlScoreDirectorFactorySupplier.get();
-        } else {
-            if (!ConfigUtils.isEmptyCollection(config.getScoreDrlList())
-                    || !ConfigUtils.isEmptyCollection(config.getScoreDrlFileList())) {
-                throw new IllegalStateException("DRL constraints requested via scoreDrlList (" + config.getScoreDrlList()
-                        + ") or scoreDrlFileList (" + config.getScoreDrlFileList() + "), "
-                        + "but the supporting classes were not found on the classpath.\n"
-                        + "Maybe include ai.timefold.solver:timefold-solver-constraint-drl dependency in your project?\n"
-                        + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
-            }
-        }
         throw new IllegalArgumentException("The scoreDirectorFactory lacks configuration for "
                 + "either constraintProviderClass, easyScoreCalculatorClass or incrementalScoreCalculatorClass.");
     }
@@ -174,10 +112,9 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
     private void assertOnlyOneScoreDirectorFactory(
             Supplier<? extends ScoreDirectorFactory<Solution_>> easyScoreDirectorFactorySupplier,
             Supplier<? extends ScoreDirectorFactory<Solution_>> constraintStreamScoreDirectorFactorySupplier,
-            Supplier<? extends ScoreDirectorFactory<Solution_>> incrementalScoreDirectorFactorySupplier,
-            Supplier<? extends ScoreDirectorFactory<Solution_>> droolsScoreDirectorFactorySupplier) {
+            Supplier<? extends ScoreDirectorFactory<Solution_>> incrementalScoreDirectorFactorySupplier) {
         if (Stream.of(easyScoreDirectorFactorySupplier, constraintStreamScoreDirectorFactorySupplier,
-                incrementalScoreDirectorFactorySupplier, droolsScoreDirectorFactorySupplier)
+                incrementalScoreDirectorFactorySupplier)
                 .filter(Objects::nonNull).count() > 1) {
             List<String> scoreDirectorFactoryPropertyList = new ArrayList<>(4);
             if (easyScoreDirectorFactorySupplier != null) {
@@ -192,38 +129,8 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                 scoreDirectorFactoryPropertyList.add(
                         "an incrementalScoreCalculatorClass (" + config.getIncrementalScoreCalculatorClass().getName() + ")");
             }
-            if (droolsScoreDirectorFactorySupplier != null) {
-                String abbreviatedScoreDrlList = ConfigUtils.abbreviate(config.getScoreDrlList());
-                String abbreviatedScoreDrlFileList = config.getScoreDrlFileList() == null ? ""
-                        : ConfigUtils.abbreviate(config.getScoreDrlFileList()
-                                .stream()
-                                .map(File::getName)
-                                .collect(Collectors.toList()));
-                scoreDirectorFactoryPropertyList
-                        .add("a scoreDrlList (" + abbreviatedScoreDrlList + ") or a scoreDrlFileList ("
-                                + abbreviatedScoreDrlFileList + ")");
-            }
             throw new IllegalArgumentException("The scoreDirectorFactory cannot have "
                     + String.join(" and ", scoreDirectorFactoryPropertyList) + " together.");
-        }
-    }
-
-    private void validateNoDroolsAlphaNetworkCompilation() {
-        if (config.getDroolsAlphaNetworkCompilationEnabled() != null) {
-            throw new IllegalStateException("If there is no scoreDrl (" + config.getScoreDrlList()
-                    + "), scoreDrlFile (" + config.getScoreDrlFileList() + ") or constraintProviderClass ("
-                    + config.getConstraintProviderClass() + ") with " + DROOLS + " impl type ("
-                    + config.getConstraintStreamImplType() + "), there can be no droolsAlphaNetworkCompilationEnabled ("
-                    + config.getDroolsAlphaNetworkCompilationEnabled() + ") either.");
-        }
-    }
-
-    private void validateNoGizmoKieBaseSupplier() {
-        if (config.getGizmoKieBaseSupplier() != null) {
-            throw new IllegalStateException("If there is no constraintProviderClass ("
-                    + config.getConstraintProviderClass() + ") with " + DROOLS + " impl type ("
-                    + config.getConstraintStreamImplType() + "), there can be no gizmoKieBaseSupplier ("
-                    + config.getGizmoKieBaseSupplier() + ") either.");
         }
     }
 

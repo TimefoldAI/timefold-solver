@@ -7,11 +7,9 @@ import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -121,13 +119,6 @@ class TimefoldProcessor {
     }
 
     @BuildStep
-    HotDeploymentWatchedFileBuildItem watchConstraintsDrl() {
-        String constraintsDrl =
-                timefoldBuildTimeConfig.scoreDrl.orElse(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL);
-        return new HotDeploymentWatchedFileBuildItem(constraintsDrl);
-    }
-
-    @BuildStep
     IndexDependencyBuildItem indexDependencyBuildItem() {
         // Add @PlanningEntity and other annotations in the Jandex index for Gizmo
         return new IndexDependencyBuildItem("ai.timefold.solver", "timefold-solver-core-impl");
@@ -177,7 +168,7 @@ class TimefoldProcessor {
     @BuildStep
     @Record(STATIC_INIT)
     SolverConfigBuildItem recordAndRegisterBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
-            DetermineIfNativeBuildItem determineIfNative, CombinedIndexBuildItem combinedIndex,
+            CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
@@ -220,7 +211,6 @@ class TimefoldProcessor {
 
         applySolverProperties(indexView, solverConfig);
         assertNoMemberAnnotationWithoutClassAnnotation(indexView);
-        assertDrlDisabledInNative(solverConfig, determineIfNative);
 
         if (solverConfig.getSolutionClass() != null) {
             // Need to register even when using GIZMO so annotations are preserved
@@ -236,18 +226,6 @@ class TimefoldProcessor {
                                     || dotName.toString().startsWith("ai.timefold.solver.config")
                                     || dotName.toString().startsWith("ai.timefold.solver.impl"))
                     .build());
-        }
-
-        if (determineIfNative.isNative()) {
-            // DroolsAlphaNetworkCompilationEnabled is a three-state boolean (null, true, false); if it not
-            // null, ScoreDirectorFactoryFactory will throw an error if Drools isn't use (i.e. BAVET or Easy/Incremental)
-            if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null && solverConfig
-                    .getScoreDirectorFactoryConfig().getConstraintStreamImplType() != ConstraintStreamImplType.BAVET) {
-                disableANC(solverConfig);
-            } else if (solverConfig.getScoreDirectorFactoryConfig().getScoreDrlList() != null
-                    || solverConfig.getScoreDirectorFactoryConfig().getScoreDrlFileList() == null) {
-                disableANC(solverConfig);
-            }
         }
 
         Set<Class<?>> reflectiveClassSet = new LinkedHashSet<>();
@@ -280,14 +258,6 @@ class TimefoldProcessor {
         return new SolverConfigBuildItem(solverConfig);
     }
 
-    private void disableANC(SolverConfig solverConfig) {
-        if (solverConfig.getScoreDirectorFactoryConfig().getDroolsAlphaNetworkCompilationEnabled() != null
-                && solverConfig.getScoreDirectorFactoryConfig().getDroolsAlphaNetworkCompilationEnabled()) {
-            log.warn("Disabling Drools Alpha Network Compiler since this is a native build.");
-        }
-        solverConfig.getScoreDirectorFactoryConfig().setDroolsAlphaNetworkCompilationEnabled(false);
-    }
-
     private void generateConstraintVerifier(SolverConfig solverConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer) {
         String constraintVerifierClassName = DotNames.CONSTRAINT_VERIFIER.toString();
@@ -299,8 +269,6 @@ class TimefoldProcessor {
             // TODO Don't duplicate defaults by using ConstraintVerifier.create(solverConfig) instead
             final ConstraintStreamImplType constraintStreamImplType =
                     solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType();
-            Boolean droolsAlphaNetworkCompilationEnabled =
-                    solverConfig.getScoreDirectorFactoryConfig().isDroolsAlphaNetworkCompilationEnabled();
             syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
                     .scope(Singleton.class)
                     .creator(methodCreator -> {
@@ -339,15 +307,6 @@ class TimefoldProcessor {
                                     methodCreator.load(constraintStreamImplType));
                         }
 
-                        if (droolsAlphaNetworkCompilationEnabled != null) { // Use the default if not specified.
-                            constraintVerifierResultHandle = methodCreator.invokeInterfaceMethod(
-                                    MethodDescriptor.ofMethod(constraintVerifierClassName,
-                                            "withDroolsAlphaNetworkCompilationEnabled",
-                                            constraintVerifierClassName,
-                                            boolean.class),
-                                    constraintVerifierResultHandle,
-                                    methodCreator.load(droolsAlphaNetworkCompilationEnabled));
-                        }
                         methodCreator.returnValue(constraintVerifierResultHandle);
                     })
                     .addType(ParameterizedType.create(DotNames.CONSTRAINT_VERIFIER,
@@ -456,17 +415,6 @@ class TimefoldProcessor {
         }
     }
 
-    private void assertDrlDisabledInNative(SolverConfig solverConfig, DetermineIfNativeBuildItem determineIfNative) {
-        if (!determineIfNative.isNative()) {
-            return;
-        }
-        if (solverConfig.getScoreDirectorFactoryConfig().getScoreDrlList() == null) {
-            return;
-        }
-        throw new IllegalStateException("Score DRL is not supported during native build.\n" +
-                "Consider switching to Constraint Streams.");
-    }
-
     private void registerClassesFromAnnotations(IndexView indexView, Set<Class<?>> reflectiveClassSet) {
         for (DotNames.BeanDefiningAnnotations beanDefiningAnnotation : DotNames.BeanDefiningAnnotations.values()) {
             for (AnnotationInstance annotationInstance : indexView
@@ -492,29 +440,9 @@ class TimefoldProcessor {
     }
 
     protected void applyScoreDirectorFactoryProperties(IndexView indexView, SolverConfig solverConfig) {
-        Optional<String> constraintsDrlFromProperty = constraintsDrl();
-        Optional<String> defaultConstraintsDrl = defaultConstraintsDrl();
-        Optional<String> effectiveConstraintsDrl = constraintsDrlFromProperty.or(() -> defaultConstraintsDrl);
         if (solverConfig.getScoreDirectorFactoryConfig() == null) {
-            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig =
-                    defaultScoreDirectoryFactoryConfig(indexView, effectiveConstraintsDrl);
+            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = defaultScoreDirectoryFactoryConfig(indexView);
             solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
-        } else {
-            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
-            if (constraintsDrlFromProperty.isPresent()) {
-                scoreDirectorFactoryConfig.setScoreDrlList(Collections.singletonList(constraintsDrlFromProperty.get()));
-            } else {
-                if (scoreDirectorFactoryConfig.getScoreDrlList() == null) {
-                    defaultConstraintsDrl.ifPresent(resolvedConstraintsDrl -> scoreDirectorFactoryConfig
-                            .setScoreDrlList(Collections.singletonList(resolvedConstraintsDrl)));
-                }
-            }
-        }
-
-        if (solverConfig.getScoreDirectorFactoryConfig().getKieBaseConfigurationProperties() != null) {
-            throw new IllegalStateException("Using kieBaseConfigurationProperties ("
-                    + solverConfig.getScoreDirectorFactoryConfig().getKieBaseConfigurationProperties()
-                    + ") in Quarkus, which is unsupported.");
         }
     }
 
@@ -528,26 +456,7 @@ class TimefoldProcessor {
         }
     }
 
-    protected Optional<String> constraintsDrl() {
-        if (timefoldBuildTimeConfig.scoreDrl.isPresent()) {
-            String constraintsDrl = timefoldBuildTimeConfig.scoreDrl.get();
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            if (classLoader.getResource(constraintsDrl) == null) {
-                throw new IllegalStateException("Invalid " + TimefoldBuildTimeConfig.CONSTRAINTS_DRL_PROPERTY
-                        + " property (" + constraintsDrl + "): that classpath resource does not exist.");
-            }
-        }
-        return timefoldBuildTimeConfig.scoreDrl;
-    }
-
-    protected Optional<String> defaultConstraintsDrl() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        return classLoader.getResource(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL) != null
-                ? Optional.of(TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL)
-                : Optional.empty();
-    }
-
-    private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(IndexView indexView, Optional<String> constrainsDrl) {
+    private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(IndexView indexView) {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(
                 findImplementingClass(DotNames.EASY_SCORE_CALCULATOR, indexView));
@@ -555,17 +464,13 @@ class TimefoldProcessor {
                 findImplementingClass(DotNames.CONSTRAINT_PROVIDER, indexView));
         scoreDirectorFactoryConfig.setIncrementalScoreCalculatorClass(
                 findImplementingClass(DotNames.INCREMENTAL_SCORE_CALCULATOR, indexView));
-        constrainsDrl.ifPresent(value -> scoreDirectorFactoryConfig.setScoreDrlList(Collections.singletonList(value)));
         if (scoreDirectorFactoryConfig.getEasyScoreCalculatorClass() == null
                 && scoreDirectorFactoryConfig.getConstraintProviderClass() == null
-                && scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() == null
-                && scoreDirectorFactoryConfig.getScoreDrlList() == null) {
+                && scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() == null) {
             throw new IllegalStateException("No classes found that implement "
                     + EasyScoreCalculator.class.getSimpleName() + ", "
                     + ConstraintProvider.class.getSimpleName() + " or "
-                    + IncrementalScoreCalculator.class.getSimpleName() + ".\n"
-                    + "Neither was a property " + TimefoldBuildTimeConfig.CONSTRAINTS_DRL_PROPERTY + " defined, nor a "
-                    + TimefoldBuildTimeConfig.DEFAULT_CONSTRAINTS_DRL_URL + " resource found.\n");
+                    + IncrementalScoreCalculator.class.getSimpleName() + ".");
         }
         return scoreDirectorFactoryConfig;
     }

@@ -780,10 +780,6 @@
                         <td>${benchmarkReport.plannerBenchmarkResult.loggingLevelTimefoldCore!"Differs"}</td>
                     </tr>
                     <tr>
-                        <th>Logging level org.drools.core</th>
-                        <td>${benchmarkReport.plannerBenchmarkResult.loggingLevelDroolsCore!"Differs"}</td>
-                    </tr>
-                    <tr>
                         <th>Solver ranking class</th>
                         <td>
                             <span data-toggle="tooltip" title="${benchmarkReport.solverRankingClassFullName!"Unknown"}">

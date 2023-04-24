@@ -187,7 +187,6 @@ public class MeetingSchedulingConstraintProvider implements ConstraintProvider {
                 .asConstraint("Overlapping meetings");
     }
 
-    // TODO: Unspecified bug marked in DRL
     protected Constraint assignLargerRoomsFirst(ConstraintFactory constraintFactory) {
         return constraintFactory.forEachIncludingNullVars(MeetingAssignment.class)
                 .filter(meetingAssignment -> meetingAssignment.getRoom() != null)

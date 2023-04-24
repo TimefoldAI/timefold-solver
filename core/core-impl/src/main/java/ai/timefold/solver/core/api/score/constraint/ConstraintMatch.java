@@ -73,13 +73,11 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <p>
      * This method has a different meaning based on which score director the constraint comes from.
      * <ul>
-     * <li>For Score DRL, it returns every object that Drools considers to be part of the match.
-     * This is largely undefined.</li>
-     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * <li>For constraint streams, it returns a list of facts from the matching tuple for backwards compatibility
      * (eg. [A, B] for a bi stream),
      * unless a custom justification mapping was provided, in which case it throws an exception,
      * pointing users towards {@link #getJustification()}.</li>
+     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
      * @deprecated Prefer {@link #getJustification()} or {@link #getIndictedObjectList()}.
@@ -101,13 +99,10 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <p>
      * This method has a different meaning based on which score director the constraint comes from.
      * <ul>
-     * <li>For Score DRL, it returns {@link DefaultConstraintJustification} of all objects
-     * that Drools considers to be part of the match.
-     * This is largely undefined.</li>
-     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * <li>For constraint streams, it returns {@link DefaultConstraintJustification} from the matching tuple
      * (eg. [A, B] for a bi stream), unless a custom justification mapping was provided,
      * in which case it returns the return value of that function.</li>
+     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
      * @return never null
@@ -121,13 +116,10 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <p>
      * This method has a different meaning based on which score director the constraint comes from.
      * <ul>
-     * <li>For Score DRL, it returns {@link DefaultConstraintJustification} of all objects
-     * that Drools considers to be part of the match.
-     * This is largely undefined.</li>
-     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * <li>For constraint streams, it returns the facts from the matching tuple
      * (eg. [A, B] for a bi stream), unless a custom indictment mapping was provided,
      * in which case it returns the return value of that function.</li>
+     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
      * @return never null, may be empty

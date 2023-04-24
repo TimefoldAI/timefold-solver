@@ -29,7 +29,6 @@
     <module>core-impl</module>
     <module>constraint-streams-common</module>
     <module>constraint-streams-bavet</module>
-    <module>constraint-drl</module>
   </modules>
 
 </project>

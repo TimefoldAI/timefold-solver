@@ -11,8 +11,6 @@
         <easyScoreCalculatorClass>ai.timefold.solver.quarkus.TimefoldProcessorGeneratedGizmoSupplierTest$DummyEasyScoreCalculator</easyScoreCalculatorClass>
         <constraintProviderClass>ai.timefold.solver.quarkus.TimefoldProcessorGeneratedGizmoSupplierTest$DummyConstraintProvider</constraintProviderClass>
         <incrementalScoreCalculatorClass>ai.timefold.solver.quarkus.TimefoldProcessorGeneratedGizmoSupplierTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
-        <scoreDrl>ai/timefold/solver/config/firstNonExistingConstraints.drl</scoreDrl>
-        <scoreDrl>ai/timefold/solver/config/secondNonExistingConstraints.drl</scoreDrl>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
     </scoreDirectorFactory>
     <constructionHeuristic>

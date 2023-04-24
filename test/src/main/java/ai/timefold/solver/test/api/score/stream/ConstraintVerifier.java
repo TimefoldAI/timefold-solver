@@ -71,10 +71,6 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
             constraintVerifier.withConstraintStreamImplType(
                     scoreDirectorFactoryConfig.getConstraintStreamImplType());
         }
-        if (scoreDirectorFactoryConfig.getDroolsAlphaNetworkCompilationEnabled() != null) {
-            constraintVerifier.withDroolsAlphaNetworkCompilationEnabled(
-                    scoreDirectorFactoryConfig.getDroolsAlphaNetworkCompilationEnabled());
-        }
         return constraintVerifier;
     }
 
@@ -87,18 +83,6 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
      */
     ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
             ConstraintStreamImplType constraintStreamImplType);
-
-    /**
-     * Applies only to {@link ConstraintStreamImplType#DROOLS}.
-     * Do not enable when running in a native image.
-     *
-     * @param droolsAlphaNetworkCompilationEnabled true to enable the alpha network compiler
-     * @return this
-     * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
-     */
-    @Deprecated(forRemoval = true)
-    ConstraintVerifier<ConstraintProvider_, Solution_> withDroolsAlphaNetworkCompilationEnabled(
-            boolean droolsAlphaNetworkCompilationEnabled);
 
     /**
      * Creates a constraint verifier for a given {@link Constraint} of the {@link ConstraintProvider}.

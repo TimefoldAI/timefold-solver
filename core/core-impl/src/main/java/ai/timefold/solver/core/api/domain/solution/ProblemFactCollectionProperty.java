@@ -18,10 +18,9 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
  * A problem fact must not change during solving (except through a {@link ProblemChange} event).
  * <p>
  * The constraints in a {@link ConstraintProvider} rely on problem facts for {@link ConstraintFactory#forEach(Class)}.
- * Alternatively, scoreDRL relies on problem facts too.
  * <p>
  * Do not annotate {@link PlanningEntity planning entities} as problem facts:
- * they are automatically available as facts for {@link ConstraintFactory#forEach(Class)} or DRL.
+ * they are automatically available as facts for {@link ConstraintFactory#forEach(Class)}.
  *
  * @see ProblemFactProperty
  */

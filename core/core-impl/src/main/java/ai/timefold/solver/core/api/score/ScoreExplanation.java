@@ -82,9 +82,6 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * With {@link ConstraintMatchAwareIncrementalScoreCalculator},
      * every {@link ConstraintMatch} will be associated with the justification class that the user created it with.
      * </li>
-     * <li>
-     * With score DRL, every {@link ConstraintMatch} will be associated with {@link DefaultConstraintJustification}.
-     * </li>
      * </ul>
      *
      * @return never null, all constraint matches

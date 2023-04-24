@@ -51,7 +51,7 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
                         "constraintProviderClass", config.getConstraintProviderClass());
                 ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                         config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
-                return buildScoreDirectorFactory(solutionDescriptor, constraintProvider, environmentMode, false);
+                return buildScoreDirectorFactory(solutionDescriptor, constraintProvider, environmentMode);
             };
         } else {
             if (config.getConstraintProviderCustomProperties() != null) {
@@ -71,11 +71,7 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
     @Override
     public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(
             SolutionDescriptor<Solution_> solutionDescriptor, ConstraintProvider constraintProvider,
-            EnvironmentMode environmentMode, boolean droolsAlphaNetworkCompilationEnabled) {
-        if (droolsAlphaNetworkCompilationEnabled) {
-            throw new IllegalStateException("With Constraint Streams " + ConstraintStreamImplType.BAVET +
-                    ", there can be no droolsAlphaNetworkCompilationEnabled (" + droolsAlphaNetworkCompilationEnabled + ").");
-        }
+            EnvironmentMode environmentMode) {
         return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode);
     }
 

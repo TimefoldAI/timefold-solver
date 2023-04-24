@@ -43,7 +43,6 @@ public class PlannerBenchmarkResult {
 
     private Integer availableProcessors = null;
     private LoggingLevel loggingLevelTimefoldCore = null;
-    private LoggingLevel loggingLevelDroolsCore = null;
     private Long maxMemory = null;
     private String timefoldSolverVersion = null;
     private String javaVersion = null;
@@ -106,10 +105,6 @@ public class PlannerBenchmarkResult {
 
     public LoggingLevel getLoggingLevelTimefoldCore() {
         return loggingLevelTimefoldCore;
-    }
-
-    public LoggingLevel getLoggingLevelDroolsCore() {
-        return loggingLevelDroolsCore;
     }
 
     public Long getMaxMemory() {
@@ -271,7 +266,6 @@ public class PlannerBenchmarkResult {
     public void initSystemProperties() {
         availableProcessors = Runtime.getRuntime().availableProcessors();
         loggingLevelTimefoldCore = resolveLoggingLevel("ai.timefold.solver.core");
-        loggingLevelDroolsCore = resolveLoggingLevel("org.drools.core");
         maxMemory = Runtime.getRuntime().maxMemory();
         timefoldSolverVersion = SolverFactory.class.getPackage().getImplementationVersion();
         if (timefoldSolverVersion == null) {
@@ -452,7 +446,6 @@ public class PlannerBenchmarkResult {
                     newResult.setAggregation(true);
                     newResult.availableProcessors = oldResult.availableProcessors;
                     newResult.loggingLevelTimefoldCore = oldResult.loggingLevelTimefoldCore;
-                    newResult.loggingLevelDroolsCore = oldResult.loggingLevelDroolsCore;
                     newResult.maxMemory = oldResult.maxMemory;
                     newResult.timefoldSolverVersion = oldResult.timefoldSolverVersion;
                     newResult.javaVersion = oldResult.javaVersion;
@@ -471,8 +464,6 @@ public class PlannerBenchmarkResult {
                             newResult.availableProcessors, oldResult.availableProcessors);
                     newResult.loggingLevelTimefoldCore = ConfigUtils.mergeProperty(
                             newResult.loggingLevelTimefoldCore, oldResult.loggingLevelTimefoldCore);
-                    newResult.loggingLevelDroolsCore = ConfigUtils.mergeProperty(
-                            newResult.loggingLevelDroolsCore, oldResult.loggingLevelDroolsCore);
                     newResult.maxMemory = ConfigUtils.mergeProperty(
                             newResult.maxMemory, oldResult.maxMemory);
                     newResult.timefoldSolverVersion = ConfigUtils.mergeProperty(

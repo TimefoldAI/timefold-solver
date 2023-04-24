@@ -1,7 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -160,12 +159,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
                     }
 
                     @Override
-                    public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
-                            withDroolsAlphaNetworkCompilationEnabled(boolean droolsAlphaNetworkCompilationEnabled) {
-                        throw new UnsupportedOperationException(noConstraintProviderErrorMsg);
-                    }
-
-                    @Override
                     public SingleConstraintVerification<SolutionClass_>
                             verifyThat(BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
                         throw new UnsupportedOperationException(noConstraintProviderErrorMsg);
@@ -256,62 +249,25 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     }
 
     protected void applyScoreDirectorFactoryProperties(SolverConfig solverConfig) {
-        String constraintsDrlFromProperty = constraintsDrl();
-        String defaultConstraintsDrl = defaultConstraintsDrl();
-        String effectiveConstraintsDrl =
-                constraintsDrlFromProperty != null ? constraintsDrlFromProperty : defaultConstraintsDrl;
         if (solverConfig.getScoreDirectorFactoryConfig() == null) {
-            solverConfig.setScoreDirectorFactoryConfig(defaultScoreDirectoryFactoryConfig(effectiveConstraintsDrl));
-        } else {
-            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
-            if (constraintsDrlFromProperty != null) {
-                scoreDirectorFactoryConfig.setScoreDrlList(Collections.singletonList(constraintsDrlFromProperty));
-            } else {
-                if (scoreDirectorFactoryConfig.getScoreDrlList() == null && defaultConstraintsDrl != null) {
-                    scoreDirectorFactoryConfig.setScoreDrlList(Collections.singletonList(defaultConstraintsDrl));
-                }
-            }
+            solverConfig.setScoreDirectorFactoryConfig(defaultScoreDirectoryFactoryConfig());
         }
     }
 
-    protected String constraintsDrl() {
-        String constraintsDrl = timefoldProperties.getScoreDrl();
-
-        if (constraintsDrl != null) {
-            if (beanClassLoader.getResource(constraintsDrl) == null) {
-                throw new IllegalStateException("Invalid " + TimefoldProperties.SCORE_DRL_PROPERTY
-                        + " property (" + constraintsDrl + "): that classpath resource does not exist.");
-            }
-        }
-        return constraintsDrl;
-    }
-
-    protected String defaultConstraintsDrl() {
-        return beanClassLoader.getResource(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL) != null
-                ? TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL
-                : null;
-    }
-
-    private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(String constraintsDrl) {
+    private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig() {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(findImplementingClass(EasyScoreCalculator.class));
         scoreDirectorFactoryConfig.setConstraintProviderClass(findImplementingClass(ConstraintProvider.class));
         scoreDirectorFactoryConfig
                 .setIncrementalScoreCalculatorClass(findImplementingClass(IncrementalScoreCalculator.class));
-        if (constraintsDrl != null) {
-            scoreDirectorFactoryConfig.setScoreDrlList(Collections.singletonList(constraintsDrl));
-        }
 
         if (scoreDirectorFactoryConfig.getEasyScoreCalculatorClass() == null
                 && scoreDirectorFactoryConfig.getConstraintProviderClass() == null
-                && scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() == null
-                && scoreDirectorFactoryConfig.getScoreDrlList() == null) {
+                && scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() == null) {
             throw new IllegalStateException("No classes found that implement "
                     + EasyScoreCalculator.class.getSimpleName() + ", "
                     + ConstraintProvider.class.getSimpleName() + " or "
                     + IncrementalScoreCalculator.class.getSimpleName() + ".\n"
-                    + "Neither was a property " + TimefoldProperties.SCORE_DRL_PROPERTY + " defined, nor a "
-                    + TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL + " resource found.\n"
                     + "Maybe your " + ConstraintProvider.class.getSimpleName() + " class "
                     + " is not in a subpackage of your @" + SpringBootApplication.class.getSimpleName()
                     + " annotated class's package.\n"

@@ -1242,10 +1242,7 @@ List<ConstraintJustification> constraintJustificationlist = scoreExplanation.get
 ...
 ----
 
-
-In score DRL, justifications are always instances of
-`ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification`,
-while in xref:constraint-streams/constraint-streams.adoc#constraintStreams[constraint streams], the return type xref:constraint-streams/constraint-streams.adoc#constraintStreamsCustomizingJustificationsAndIndictments[can be customised],
+In xref:constraint-streams/constraint-streams.adoc#constraintStreams[constraint streams], the return type xref:constraint-streams/constraint-streams.adoc#constraintStreamsCustomizingJustificationsAndIndictments[can be customised],
 so that it can be easily serialized and sent over the wire.
 Such custom justifications can be queried like so:
 

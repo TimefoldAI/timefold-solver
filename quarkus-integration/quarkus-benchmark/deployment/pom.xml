@@ -68,12 +68,6 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- Required to test Quarkus with constraints DRL. -->
-    <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-wiring-dynamic</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>

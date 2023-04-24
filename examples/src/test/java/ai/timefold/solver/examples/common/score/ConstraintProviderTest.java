@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 /**
  * Tests using {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier} should use this annotation
  * instead of @{@link org.junit.jupiter.api.Test}.
- * This brings several benefits, such as parallel execution and testing on both Bavet and Drools.
+ * This brings several benefits, such as parallel execution and testing.
  *
  * <p>
  * Each such test expects exactly one argument of type {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier}.

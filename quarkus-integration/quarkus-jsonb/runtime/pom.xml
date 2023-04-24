@@ -25,13 +25,6 @@
     <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-jsonb</artifactId>
-      <exclusions>
-        <!-- Excluded due to incompatibility with the native image compilation. -->
-        <exclusion>
-          <groupId>org.drools</groupId>
-          <artifactId>drools-wiring-dynamic</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>jakarta.inject</groupId>

@@ -20,7 +20,7 @@ public interface ScoreDirectorFactoryService<Solution_, Score_ extends Score<Sco
 
     /**
      * If multiple services are available for the same config, the one with the higher priority is picked.
-     * Used by the CS services to ensure Drools is picked if both Drools and Bavet are available.
+     * Currently unused.
      *
      * @return
      */

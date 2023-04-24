@@ -29,20 +29,6 @@
     <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-core</artifactId>
-      <exclusions>
-        <exclusion>
-          <!--
-            Dynamic is not compatible with GraalVM native compilation.
-            Replaced with org.drools:drools-wiring-static.
-          -->
-          <groupId>org.drools</groupId>
-          <artifactId>drools-wiring-dynamic</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-wiring-static</artifactId>
     </dependency>
     <dependency>
       <groupId>org.graalvm.sdk</groupId>

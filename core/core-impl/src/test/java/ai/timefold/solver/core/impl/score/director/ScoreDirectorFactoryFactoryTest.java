@@ -68,8 +68,7 @@ class ScoreDirectorFactoryFactoryTest {
         ScoreDirectorFactoryConfig config = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withEasyScoreCalculatorClass(TestCustomPropertiesEasyScoreCalculator.class)
-                .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class)
-                .withScoreDrls("ai/timefold/solver/solver/score/dummySimpleScoreDroolsConstraints.drl");
+                .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class);
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> buildTestdataScoreDirectoryFactory(config))
                 .withMessageContaining("scoreDirectorFactory")
                 .withMessageContaining("together");

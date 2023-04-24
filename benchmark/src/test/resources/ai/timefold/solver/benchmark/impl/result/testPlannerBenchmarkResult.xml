@@ -4,7 +4,6 @@
   <aggregation>false</aggregation>
   <availableProcessors>4</availableProcessors>
   <loggingLevelTimefoldCore>DEBUG</loggingLevelTimefoldCore>
-  <loggingLevelDroolsCore>WARN</loggingLevelDroolsCore>
   <maxMemory>5523898368</maxMemory>
   <timefoldSolverVersion>Unjarred development snapshot</timefoldSolverVersion>
   <javaVersion>Java 1.8.0_252 (Oracle Corporation)</javaVersion>

@@ -38,14 +38,6 @@ public abstract class AbstractConstraintStreamTest {
 
     protected final ConstraintStreamImplSupport implSupport;
 
-    protected final void assumeBavet() {
-        implSupport.assumeBavet();
-    }
-
-    protected void assumeDrools() {
-        implSupport.assumeDrools();
-    }
-
     protected AbstractConstraintStreamTest(ConstraintStreamImplSupport implSupport) {
         this.implSupport = Objects.requireNonNull(implSupport);
     }

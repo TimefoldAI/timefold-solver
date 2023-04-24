@@ -1,8 +1,5 @@
 package ai.timefold.solver.test.impl.score.stream;
 
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.BAVET;
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.DROOLS;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +15,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
@@ -62,8 +58,8 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
                 .max(Comparator.comparingInt(ScoreDirectorFactoryService::getPriority)) // Picks CS-D if both available.
                 .orElseThrow(() -> new IllegalStateException(
                         "Constraint Streams implementation was not found on the classpath.\n"
-                                + "Maybe include ai.timefold.solver:timefold-solver-constraint-streams-drools dependency "
-                                + "or ai.timefold.solver:timefold-solver-constraint-streams-bavet in your project?\n"
+                                + "Maybe include the ai.timefold.solver:timefold-solver-constraint-streams-bavet dependency "
+                                + "in your project?\n"
                                 + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?"));
     }
 
@@ -116,22 +112,11 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
                 k -> createScoreDirectorFactory(getScoreDirectorFactoryService(), constraintProvider, environmentMode));
     }
 
-    private boolean determineDroolsAlphaNetworkCompilationEnabled(
-            AbstractConstraintStreamScoreDirectorFactoryService<Solution_, Score_> scoreDirectorFactoryService) {
-        return parent.getDroolsAlphaNetworkCompilationEnabled() &&
-                determineConstraintStreamImplType(scoreDirectorFactoryService) == DROOLS;
-    }
-
-    private ConstraintStreamImplType determineConstraintStreamImplType(
-            AbstractConstraintStreamScoreDirectorFactoryService<Solution_, Score_> scoreDirectorFactoryService) {
-        return scoreDirectorFactoryService.supportsImplType(BAVET) ? BAVET : DROOLS;
-    }
-
     private AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> createScoreDirectorFactory(
             AbstractConstraintStreamScoreDirectorFactoryService<Solution_, Score_> scoreDirectorFactoryService,
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
         return scoreDirectorFactoryService.buildScoreDirectorFactory(solutionDescriptor, constraintProvider,
-                environmentMode, determineDroolsAlphaNetworkCompilationEnabled(scoreDirectorFactoryService));
+                environmentMode);
     }
 
 }

@@ -29,7 +29,8 @@ import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
  * <p>
  * Each planning solution is recommended to have 1 {@link ConstraintConfigurationProvider} property too.
  * <p>
- * Each planning solution used with Drools score calculation must have at least 1 {@link ProblemFactCollectionProperty}
+ * Each planning solution used with ConstraintStream score calculation must have at least 1
+ * {@link ProblemFactCollectionProperty}
  * or {@link ProblemFactProperty} property.
  * <p>
  * The class should have a public no-arg constructor, so it can be cloned

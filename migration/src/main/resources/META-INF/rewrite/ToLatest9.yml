@@ -1,4 +1,4 @@
-# TODO remove this
+# TODO refactor this https://github.com/TimefoldAI/timefold-solver/issues/5
 type: specs.openrewrite.org/v1beta/recipe
 name: ai.timefold.solver.migration.ToLatest9
 displayName: Upgrade to the latest Timefold 9

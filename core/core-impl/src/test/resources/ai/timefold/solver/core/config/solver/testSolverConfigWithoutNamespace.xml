@@ -9,8 +9,6 @@
     <easyScoreCalculatorClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyEasyScoreCalculator</easyScoreCalculatorClass>
     <constraintProviderClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyConstraintProvider</constraintProviderClass>
     <incrementalScoreCalculatorClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
-    <scoreDrl>ai/timefold/solver/config/firstNonExistingConstraints.drl</scoreDrl>
-    <scoreDrl>ai/timefold/solver/config/secondNonExistingConstraints.drl</scoreDrl>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
   <constructionHeuristic>

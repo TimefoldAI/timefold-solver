@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <scope>compile</scope><!-- Intentional, because timefold-solver-test is intended to be used a test scoped dependency. -->
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>

@@ -217,9 +217,8 @@ public class ValueSelectorFactory<Solution_>
         ValueRangeDescriptor<Solution_> valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
         // TODO minimumCacheType SOLVER is only a problem if the valueRange includes entities or custom weird cloning
         if (minimumCacheType == SelectionCacheType.SOLVER) {
-            // TODO Solver cached entities are not compatible with DroolsScoreCalculator and IncrementalScoreDirector
-            // because between phases the entities get cloned and the KieSession/Maps contains those clones afterwards
-            // https://issues.redhat.com/browse/PLANNER-54
+            // TODO Solver cached entities are not compatible with ConstraintStreams and IncrementalScoreDirector
+            // because between phases the entities get cloned
             throw new IllegalArgumentException("The minimumCacheType (" + minimumCacheType
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }

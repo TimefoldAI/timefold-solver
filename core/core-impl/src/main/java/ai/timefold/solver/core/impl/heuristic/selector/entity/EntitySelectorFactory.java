@@ -162,9 +162,8 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     private EntitySelector<Solution_> buildBaseEntitySelector(EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         if (minimumCacheType == SelectionCacheType.SOLVER) {
-            // TODO Solver cached entities are not compatible with DroolsScoreCalculator and IncrementalScoreDirector
-            // because between phases the entities get cloned and the KieSession/Maps contains those clones afterwards
-            // https://issues.redhat.com/browse/PLANNER-54
+            // TODO Solver cached entities are not compatible with ConstraintStreams and IncrementalScoreDirector
+            // because between phases the entities get cloned
             throw new IllegalArgumentException("The minimumCacheType (" + minimumCacheType
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }

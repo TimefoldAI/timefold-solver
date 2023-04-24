@@ -65,7 +65,7 @@ public final class MemberAccessorFactory {
                     boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
                     ReflectionHelper.assertGetterMethod(method, annotationClass);
                     if (Modifier.isPublic(method.getModifiers())
-                            // HACK The lambda approach doesn't support classes from another classloader (such as loaded by KieContainer) in JDK 8
+                            // HACK The lambda approach doesn't support classes from another classloader in JDK 8
                             // TODO In JDK 9 use MethodHandles.privateLookupIn(Class, MethodHandles.lookup())
                             && method.getDeclaringClass().getClassLoader().equals(MemberAccessor.class.getClassLoader())) {
                         memberAccessor = new LambdaBeanPropertyMemberAccessor(method, getterOnly);

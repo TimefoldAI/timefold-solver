@@ -391,7 +391,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                                 contractLine -> ((ShiftType3DaysPattern) contractLine.getPattern()).getDayIndex0ShiftType(),
                                 ShiftAssignment::getShiftType),
                         Joiners.equal(PatternContractLine::getContract, ShiftAssignment::getContract))
-                // Join and not if exist for consistency with DRL
+                // Join and not if exist for consistency with DRL (which is removed)
                 .join(ShiftAssignment.class,
                         Joiners.equal((contractLine, shift) -> shift.getEmployee(), ShiftAssignment::getEmployee),
                         Joiners.equal((contractLine, shift) -> shift.getShiftDateDayIndex() + 1,

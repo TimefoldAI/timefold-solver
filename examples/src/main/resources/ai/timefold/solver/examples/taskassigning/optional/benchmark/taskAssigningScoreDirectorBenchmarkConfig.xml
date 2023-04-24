@@ -25,7 +25,7 @@
   </inheritedSolverBenchmark>
 
   <solverBenchmark>
-    <name>ConstraintStreams (Drools)</name>
+    <name>ConstraintStreams</name>
     <solver>
       <scoreDirectorFactory>
         <constraintProviderClass>ai.timefold.solver.examples.taskassigning.score.TaskAssigningConstraintProvider</constraintProviderClass>

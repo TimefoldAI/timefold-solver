@@ -211,7 +211,6 @@ public class TimefoldBenchmarkRecorder {
         return scoreDirectorFactoryConfig.getEasyScoreCalculatorClass() != null ||
                 scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() != null ||
                 scoreDirectorFactoryConfig.getScoreDrlList() != null ||
-                scoreDirectorFactoryConfig.getScoreDrlFileList() != null ||
                 scoreDirectorFactoryConfig.getConstraintProviderClass() != null;
     }
 }

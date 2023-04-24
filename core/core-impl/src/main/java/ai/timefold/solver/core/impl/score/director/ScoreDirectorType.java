@@ -4,7 +4,6 @@ public enum ScoreDirectorType {
 
     EASY,
     CONSTRAINT_STREAMS,
-    INCREMENTAL,
-    DRL
+    INCREMENTAL
 
 }

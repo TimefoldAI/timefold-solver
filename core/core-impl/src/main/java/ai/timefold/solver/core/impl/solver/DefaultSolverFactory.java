@@ -68,7 +68,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     public DefaultSolverFactory(SolverConfig solverConfig) {
         this.solverConfig = Objects.requireNonNull(solverConfig, "The solverConfig (" + solverConfig + ") cannot be null.");
         this.solutionDescriptor = buildSolutionDescriptor();
-        // Caching score director factory as it potentially does expensive things (eg. Drools KieBase compilation).
+        // Caching score director factory as it potentially does expensive things.
         this.scoreDirectorFactory = buildScoreDirectorFactory();
     }
 

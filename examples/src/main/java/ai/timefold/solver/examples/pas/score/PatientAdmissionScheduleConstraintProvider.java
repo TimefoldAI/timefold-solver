@@ -23,12 +23,11 @@ import ai.timefold.solver.examples.pas.domain.RoomSpecialism;
 
 /*
  * This is constraints for Hospital Bed Planning
- * They are based on patientAdmissionScheduleConstraints.drl
+ * They are based on patientAdmissionScheduleConstraints.drl (which is removed)
  * Planning Entity: BedDesignation
  * Planning Variable: Bed(nullable) - would not be prefiltered on uninitialized solutions
  * Bed is nullable so in case you need to access it members check that planning value bed is not null
  */
-
 public class PatientAdmissionScheduleConstraintProvider implements ConstraintProvider {
 
     @Override

@@ -15,8 +15,8 @@ import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 
 /**
- * This extension helps implement parameterized {@link ConstraintStream} tests. It provides 4 invocation contexts
- * representing the cartesian product of {true, false} ⨯ {DROOLS, BAVET} for a test matrix with
+ * This extension helps implement parameterized {@link ConstraintStream} tests. It provides invocation contexts
+ * representing the cartesian product of {true, false} ⨯ {BAVET} for a test matrix with
  * {@code constraintMatchEnabled} and {@link ConstraintStreamImplType} axes.
  * <p>
  * Each invocation context includes two additional extensions being {@link ParameterResolver parameter resolvers} that

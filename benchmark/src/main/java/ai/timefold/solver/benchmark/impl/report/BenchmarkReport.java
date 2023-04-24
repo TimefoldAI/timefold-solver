@@ -332,12 +332,6 @@ public class BenchmarkReport {
                     + " This decreases performance."
                     + " Maybe set the loggingLevel to " + LoggingLevel.DEBUG + " or lower.");
         }
-        LoggingLevel loggingLevelDroolsCore = plannerBenchmarkResult.getLoggingLevelDroolsCore();
-        if (loggingLevelDroolsCore == LoggingLevel.TRACE || loggingLevelDroolsCore == LoggingLevel.DEBUG) {
-            warningList.add("The loggingLevel (" + loggingLevelDroolsCore + ") of org.drools.core is high."
-                    + " This decreases performance."
-                    + " Maybe set the loggingLevel to " + LoggingLevel.INFO + " or lower.");
-        }
     }
 
     private void writeBestScoreSummaryChart() {

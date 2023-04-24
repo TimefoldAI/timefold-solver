@@ -16,9 +16,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 
 /**
  * Represents a {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier} with pre-set values
- * for {@link #getConstraintStreamImplType()} and {@link #getDroolsAlphaNetworkCompilationEnabled()}.
- * A new instance of this class will be created should either of these change.
- *
+ * for {@link #getConstraintStreamImplType()}.
+ * A new instance of this class will be created should this change.
  * <p>
  * This class still needs to be thread-safe,
  * as it handles {@link java.util.ServiceLoader} and score director factories.
@@ -44,24 +43,17 @@ final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintP
     private final ThreadLocal<ScoreDirectorFactoryCache<ConstraintProvider_, Solution_, Score_>> scoreDirectorFactoryContainerThreadLocal;
 
     private final ConstraintStreamImplType constraintStreamImplType;
-    private final boolean droolsAlphaNetworkCompilationEnabled;
 
     public ConfiguredConstraintVerifier(ConstraintProvider_ constraintProvider,
-            SolutionDescriptor<Solution_> solutionDescriptor, ConstraintStreamImplType constraintStreamImplType,
-            boolean droolsAlphaNetworkCompilationEnabled) {
+            SolutionDescriptor<Solution_> solutionDescriptor, ConstraintStreamImplType constraintStreamImplType) {
         this.constraintProvider = constraintProvider;
         this.scoreDirectorFactoryContainerThreadLocal =
                 ThreadLocal.withInitial(() -> new ScoreDirectorFactoryCache<>(this, solutionDescriptor));
         this.constraintStreamImplType = constraintStreamImplType;
-        this.droolsAlphaNetworkCompilationEnabled = droolsAlphaNetworkCompilationEnabled;
     }
 
     public ConstraintStreamImplType getConstraintStreamImplType() {
         return constraintStreamImplType;
-    }
-
-    public boolean getDroolsAlphaNetworkCompilationEnabled() {
-        return droolsAlphaNetworkCompilationEnabled;
     }
 
     public DefaultSingleConstraintVerification<Solution_, Score_> verifyThat(

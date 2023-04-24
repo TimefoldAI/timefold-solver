@@ -2603,12 +2603,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void zeroConstraintWeightDisabled() {
-        assumeBavet();
-        /*
-         * This may never be possible for Drools. If implemented, please remember that some rules may be shared by
-         * different scoring streams, and therefore the rules can only be disabled when all the relevant scoring streams
-         * have their weights set to zero.
-         */
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
         TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
@@ -2653,7 +2647,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void nodeSharing() {
-        assumeBavet();
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
         TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
                 solution.getFirstValue());

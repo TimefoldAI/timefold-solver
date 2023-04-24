@@ -15,7 +15,7 @@ public abstract class AbstractConstraintStreamScoreDirectorFactoryService<Soluti
 
     public abstract AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(
             SolutionDescriptor<Solution_> solutionDescriptor, ConstraintProvider constraintProvider,
-            EnvironmentMode environmentMode, boolean droolsAlphaNetworkCompilationEnabled);
+            EnvironmentMode environmentMode);
 
     public abstract ConstraintFactory buildConstraintFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             EnvironmentMode environmentMode);

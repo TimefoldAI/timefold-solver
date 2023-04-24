@@ -2,11 +2,9 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -22,7 +20,6 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -66,7 +63,6 @@ class TimefoldAutoConfigurationTest {
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
     private final FilteredClassLoader testFilteredClassLoader;
     private final FilteredClassLoader noGizmoFilteredClassLoader;
-    private final FilteredClassLoader defaultConstraintsDrlFilteredClassLoader;
 
     public TimefoldAutoConfigurationTest() {
         contextRunner = new ApplicationContextRunner()
@@ -91,19 +87,12 @@ class TimefoldAutoConfigurationTest {
         allDefaultsFilteredClassLoader =
                 new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
                         FilteredClassLoader.ClassPathResourceFilter
-                                .of(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)),
-                        FilteredClassLoader.ClassPathResourceFilter
-                                .of(new ClassPathResource(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL)));
+                                .of(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
         testFilteredClassLoader =
-                new FilteredClassLoader(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL),
-                        new ClassPathResource(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL));
-        defaultConstraintsDrlFilteredClassLoader =
-                new FilteredClassLoader(new ClassPathResource(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL));
+                new FilteredClassLoader(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL));
         noGizmoFilteredClassLoader = new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("io.quarkus.gizmo"),
                 FilteredClassLoader.ClassPathResourceFilter.of(
-                        new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)),
-                FilteredClassLoader.ClassPathResourceFilter.of(
-                        new ClassPathResource(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL)));
+                        new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
     }
 
     @Test
@@ -129,7 +118,6 @@ class TimefoldAutoConfigurationTest {
     @Test
     void solverConfigXml_default() {
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
@@ -149,7 +137,6 @@ class TimefoldAutoConfigurationTest {
     @Test
     void solverConfigXml_property() {
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues(
                         "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/customSpringBootSolverConfig.xml")
                 .run(context -> {
@@ -171,7 +158,6 @@ class TimefoldAutoConfigurationTest {
     @Test
     void solverProperties() {
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.environment-mode=FULL_ASSERT")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
@@ -186,7 +172,6 @@ class TimefoldAutoConfigurationTest {
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.daemon=true")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
@@ -194,7 +179,6 @@ class TimefoldAutoConfigurationTest {
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.move-thread-count=2")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
@@ -206,7 +190,6 @@ class TimefoldAutoConfigurationTest {
     @Test
     void solverPropertiesBavet() {
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.constraint-stream-impl-type=BAVET")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
@@ -219,7 +202,6 @@ class TimefoldAutoConfigurationTest {
     @Test
     void terminationProperties() {
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.termination.spent-limit=4h")
                 .run(context -> {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
@@ -227,7 +209,6 @@ class TimefoldAutoConfigurationTest {
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.termination.unimproved-spent-limit=5h")
                 .run(context -> {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
@@ -235,7 +216,6 @@ class TimefoldAutoConfigurationTest {
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .withPropertyValues("timefold.solver.termination.best-score-limit=6")
                 .run(context -> {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
@@ -247,7 +227,6 @@ class TimefoldAutoConfigurationTest {
     @Test
     void singletonSolverFactory() {
         contextRunner
-                .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
                 .run(context -> {
                     SolverFactory<TestdataSpringSolution> solverFactory = context.getBean(SolverFactory.class);
                     assertThat(solverFactory).isNotNull();
@@ -381,20 +360,6 @@ class TimefoldAutoConfigurationTest {
     }
 
     @Test
-    void constraintVerifierOnDrl() {
-        String constraintsUrl = "ai/timefold/solver/spring/boot/autoconfigure/customConstraints.drl";
-        noConstraintsContextRunner
-                .withPropertyValues(TimefoldProperties.SCORE_DRL_PROPERTY + "=" + constraintsUrl)
-                .withClassLoader(testFilteredClassLoader)
-                .run(context -> {
-                    assertThatCode(() -> {
-                        context.getBean(ConstraintVerifier.class).verifyThat();
-                    })
-                            .hasMessage("Cannot provision a ConstraintVerifier because there is no ConstraintProvider class.");
-                });
-    }
-
-    @Test
     void chained_solverConfigXml_none() {
         chainedContextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
@@ -413,85 +378,6 @@ class TimefoldAutoConfigurationTest {
                     assertThat(solverFactory).isNotNull();
                     assertThat(solverFactory.buildSolver()).isNotNull();
                 });
-    }
-
-    @Test
-    void constraintsDrlProperty() {
-        String constraintsUrl = "ai/timefold/solver/spring/boot/autoconfigure/customConstraints.drl";
-        noConstraintsContextRunner
-                .withPropertyValues(TimefoldProperties.SCORE_DRL_PROPERTY + "=" + constraintsUrl)
-                .run(context -> {
-                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig).isNotNull();
-                    assertThat(solverConfig.getScoreDirectorFactoryConfig().getScoreDrlList())
-                            .containsExactly(constraintsUrl);
-                });
-    }
-
-    @Test
-    void constraintsDrlDefault() {
-        noConstraintsContextRunner
-                .run(context -> {
-                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig).isNotNull();
-                    assertThat(solverConfig.getScoreDirectorFactoryConfig().getScoreDrlList())
-                            .containsExactly("constraints.drl");
-                });
-    }
-
-    @Test
-    void constraintsDrlProperty_conflictWithConstraintProvider() {
-        String constraintsUrl = "ai/timefold/solver/spring/boot/autoconfigure/customConstraints.drl";
-        contextRunner
-                .withPropertyValues(TimefoldProperties.SCORE_DRL_PROPERTY + "=" + constraintsUrl)
-                .run(context -> {
-                    assertThatExceptionOfType(IllegalStateException.class)
-                            .isThrownBy(() -> context.getBean(SolverConfig.class))
-                            .withStackTraceContaining("The scoreDirectorFactory cannot have a constraintProviderClass ("
-                                    + TestdataSpringConstraintProvider.class.getName() + ") and a scoreDrlList ("
-                                    + constraintsUrl + ")");
-                });
-    }
-
-    @Test
-    void customScoreDrl_overrides_solverConfig() {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
-                .withScoreDrls("config_constraints.drl");
-        SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldAutoConfiguration autoConfiguration = mockAutoConfiguration();
-        when(autoConfiguration.constraintsDrl()).thenReturn("some.drl");
-
-        autoConfiguration.applyScoreDirectorFactoryProperties(solverConfig);
-        assertThat(scoreDirectorFactoryConfig.getScoreDrlList()).containsExactly("some.drl");
-    }
-
-    @Test
-    void defaultScoreDrl_does_not_override_solverConfig() {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
-                .withScoreDrls("config_constraints.drl");
-        SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldAutoConfiguration autoConfiguration = mockAutoConfiguration();
-        when(autoConfiguration.constraintsDrl()).thenReturn(null);
-        when(autoConfiguration.defaultConstraintsDrl())
-                .thenReturn(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL);
-
-        autoConfiguration.applyScoreDirectorFactoryProperties(solverConfig);
-        assertThat(scoreDirectorFactoryConfig.getScoreDrlList())
-                .containsExactly("config_constraints.drl");
-    }
-
-    @Test
-    void defaultScoreDrl_applies_if_solverConfig_does_not_define_scoreDrl() {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
-        SolverConfig solverConfig = new SolverConfig().withScoreDirectorFactory(scoreDirectorFactoryConfig);
-        TimefoldAutoConfiguration autoConfiguration = mockAutoConfiguration();
-        when(autoConfiguration.constraintsDrl()).thenReturn(null);
-        when(autoConfiguration.defaultConstraintsDrl())
-                .thenReturn(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL);
-
-        autoConfiguration.applyScoreDirectorFactoryProperties(solverConfig);
-        assertThat(scoreDirectorFactoryConfig.getScoreDrlList())
-                .containsExactly(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL);
     }
 
     @Test

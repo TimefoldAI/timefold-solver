@@ -19,10 +19,6 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <!-- SNAPSHOT and KIE dependency versions -->
-    <version.org.drools>8.37.0.Final</version.org.drools>
-
-    <!-- Normal dependency versions -->
     <version.ch.qos.logback>1.4.6</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.20.0</version.org.apache.logging.log4j>
     <version.io.quarkus>3.0.0.Final</version.io.quarkus>
@@ -41,9 +37,6 @@
     <!-- ************************************************************************ -->
     <!-- Plugins -->
     <!-- ************************************************************************ -->
-
-    <!-- Plugin version properties -->
-
     <version.asciidoctor.plugin>2.2.3</version.asciidoctor.plugin>
     <version.assembly.plugin>3.4.2</version.assembly.plugin>
     <!-- jboss suffixed version from jboss-parent which cannot be downloaded due to SNAPSHOT only policy for plugins from JBoss -->
@@ -103,14 +96,6 @@
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-bom</artifactId>
         <version>${version.io.quarkus}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <!-- SNAPSHOT and KIE dependencies -->
-      <dependency>
-        <groupId>org.drools</groupId>
-        <artifactId>drools-bom</artifactId>
-        <version>${version.org.drools}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -732,7 +717,7 @@
       <properties>
         <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.organization>kiegroup</sonar.organization>
+        <sonar.organization>timefold</sonar.organization>
         <sonar.java.source>${maven.compiler.release}</sonar.java.source>
       </properties>
       <build>

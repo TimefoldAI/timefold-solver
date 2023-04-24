@@ -117,7 +117,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision);
 
     /**
-     * Some score directors (such as the Drools-based) keep a set of changes
+     * Some score directors keep a set of changes
      * that they only apply when {@link #calculateScore()} is called.
      * Until that happens, this set accumulates and could possibly act as a memory leak.
      *
