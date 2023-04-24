@@ -70,6 +70,7 @@
     <dependency>
       <groupId>org.openrewrite</groupId>
       <artifactId>rewrite-xml</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.openrewrite</groupId>
