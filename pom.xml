@@ -105,7 +105,7 @@
 <!--                      </artifactOverride>-->
 <!--                      <artifactOverride>-->
 <!--                        <groupId>ai.timefold.solver</groupId>-->
-<!--                        <artifactId>timefold-spring-boot-starter</artifactId>-->
+<!--                        <artifactId>timefold-solver-spring-boot-starter</artifactId>-->
 <!--                        <sourceJar>false</sourceJar>-->
 <!--                        <javadocJar>false</javadocJar>-->
 <!--                      </artifactOverride>-->
