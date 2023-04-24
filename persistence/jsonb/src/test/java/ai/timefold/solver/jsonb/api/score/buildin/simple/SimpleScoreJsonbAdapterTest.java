@@ -1,6 +1,6 @@
 package ai.timefold.solver.jsonb.api.score.buildin.simple;
 
-import javax.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.jsonb.api.score.AbstractScoreJsonbAdapterTest;

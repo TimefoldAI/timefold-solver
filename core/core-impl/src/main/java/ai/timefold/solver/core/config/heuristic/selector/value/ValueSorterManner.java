@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.heuristic.selector.value;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 

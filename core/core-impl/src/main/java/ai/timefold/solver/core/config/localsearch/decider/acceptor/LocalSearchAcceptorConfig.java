@@ -3,8 +3,8 @@ package ai.timefold.solver.core.config.localsearch.decider.acceptor;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;

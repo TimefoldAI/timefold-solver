@@ -3,7 +3,7 @@ package ai.timefold.solver.benchmark.config.blueprint;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;

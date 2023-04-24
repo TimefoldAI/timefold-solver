@@ -2,7 +2,7 @@ package ai.timefold.solver.jsonb.api.score.buildin.hardsoftbigdecimal;
 
 import java.math.BigDecimal;
 
-import javax.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
 import ai.timefold.solver.jsonb.api.score.AbstractScoreJsonbAdapterTest;

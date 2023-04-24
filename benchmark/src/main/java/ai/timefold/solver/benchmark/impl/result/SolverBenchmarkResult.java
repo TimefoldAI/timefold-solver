@@ -7,8 +7,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.impl.measurement.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;

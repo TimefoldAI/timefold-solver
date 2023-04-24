@@ -2,7 +2,7 @@ package ai.timefold.solver.benchmark.impl.loader;
 
 import java.io.File;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;

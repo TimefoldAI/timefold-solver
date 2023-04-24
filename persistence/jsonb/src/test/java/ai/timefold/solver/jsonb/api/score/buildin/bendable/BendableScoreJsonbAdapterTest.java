@@ -1,6 +1,6 @@
 package ai.timefold.solver.jsonb.api.score.buildin.bendable;
 
-import javax.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
 
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.jsonb.api.score.AbstractScoreJsonbAdapterTest;

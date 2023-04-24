@@ -3,9 +3,9 @@ package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;

@@ -3,7 +3,7 @@ package ai.timefold.solver.quarkus;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.testdata.gizmo.PrivateNoArgsConstructorConstraintProvider;

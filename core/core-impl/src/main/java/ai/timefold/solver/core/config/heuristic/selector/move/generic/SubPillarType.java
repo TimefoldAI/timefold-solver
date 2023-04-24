@@ -2,7 +2,7 @@ package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 
 import java.util.Comparator;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 @XmlEnum
 public enum SubPillarType {

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.solver.random;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 /**
  * Defines the pseudo random number generator.

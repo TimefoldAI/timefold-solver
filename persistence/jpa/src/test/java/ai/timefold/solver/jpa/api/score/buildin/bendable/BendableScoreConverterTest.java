@@ -1,7 +1,7 @@
 package ai.timefold.solver.jpa.api.score.buildin.bendable;
 
-import javax.persistence.Convert;
-import javax.persistence.Entity;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
 
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.jpa.impl.AbstractScoreJpaTest;

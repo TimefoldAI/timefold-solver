@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.localsearch.decider.forager;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.FinalistPodium;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.HighestScoreFinalistPodium;

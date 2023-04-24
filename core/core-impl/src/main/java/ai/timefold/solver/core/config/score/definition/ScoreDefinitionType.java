@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.score.definition;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 @XmlEnum
 public enum ScoreDefinitionType {

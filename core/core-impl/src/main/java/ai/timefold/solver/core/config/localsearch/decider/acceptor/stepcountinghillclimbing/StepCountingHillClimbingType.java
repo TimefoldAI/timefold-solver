@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.constructionheuristic.placer;
 
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 
 import ai.timefold.solver.core.config.AbstractConfig;
 

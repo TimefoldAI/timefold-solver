@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration,ai.timefold.solver.spring.boot.autoconfigure.TimefoldBenchmarkAutoConfiguration

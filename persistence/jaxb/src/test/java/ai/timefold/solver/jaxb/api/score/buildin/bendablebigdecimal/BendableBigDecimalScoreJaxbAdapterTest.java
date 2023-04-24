@@ -2,8 +2,8 @@ package ai.timefold.solver.jaxb.api.score.buildin.bendablebigdecimal;
 
 import java.math.BigDecimal;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.jaxb.api.score.AbstractScoreJaxbAdapterTest;

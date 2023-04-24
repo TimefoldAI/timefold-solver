@@ -2,7 +2,7 @@ package ai.timefold.solver.benchmark.config.blueprint;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
 

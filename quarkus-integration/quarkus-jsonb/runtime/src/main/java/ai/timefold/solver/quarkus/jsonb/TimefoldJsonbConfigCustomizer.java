@@ -1,7 +1,7 @@
 package ai.timefold.solver.quarkus.jsonb;
 
-import javax.inject.Singleton;
-import javax.json.bind.JsonbConfig;
+import jakarta.inject.Singleton;
+import jakarta.json.bind.JsonbConfig;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.jsonb.api.TimefoldJsonbConfig;

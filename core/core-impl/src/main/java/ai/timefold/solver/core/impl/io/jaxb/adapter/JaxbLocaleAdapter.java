@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.io.jaxb.adapter;
 
 import java.util.Locale;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 public class JaxbLocaleAdapter extends XmlAdapter<String, Locale> {
 

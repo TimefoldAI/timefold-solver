@@ -1,6 +1,6 @@
 package ai.timefold.solver.benchmark.config.ranking;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.benchmark.impl.ranking.TotalRankSolverRankingWeightFactory;
 import ai.timefold.solver.benchmark.impl.ranking.TotalScoreSolverRankingComparator;

@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;

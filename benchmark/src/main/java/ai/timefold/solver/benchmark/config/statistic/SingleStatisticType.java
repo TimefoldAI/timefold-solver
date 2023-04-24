@@ -1,6 +1,6 @@
 package ai.timefold.solver.benchmark.config.statistic;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.benchmark.impl.report.ReportHelper;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;

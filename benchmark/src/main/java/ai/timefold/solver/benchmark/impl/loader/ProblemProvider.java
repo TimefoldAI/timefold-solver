@@ -1,6 +1,6 @@
 package ai.timefold.solver.benchmark.impl.loader;
 
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;

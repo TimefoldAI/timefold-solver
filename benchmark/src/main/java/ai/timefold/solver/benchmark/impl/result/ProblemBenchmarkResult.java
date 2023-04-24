@@ -14,10 +14,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
+import jakarta.xml.bind.annotation.XmlIDREF;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;

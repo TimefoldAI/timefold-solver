@@ -1,8 +1,8 @@
 package ai.timefold.solver.quarkus.bean;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreManager;

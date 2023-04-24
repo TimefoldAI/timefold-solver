@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.quarkus.testdata.interfaceentity.domain.TestdataInterfaceEntity;

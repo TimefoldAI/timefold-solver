@@ -1,7 +1,7 @@
 package ai.timefold.solver.jaxb.api.score.buildin.hardmediumsoftlong;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.jaxb.api.score.AbstractScoreJaxbAdapterTest;

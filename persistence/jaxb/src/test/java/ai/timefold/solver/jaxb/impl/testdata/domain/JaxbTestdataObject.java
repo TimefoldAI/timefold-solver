@@ -1,6 +1,6 @@
 package ai.timefold.solver.jaxb.impl.testdata.domain;
 
-import javax.xml.bind.annotation.XmlID;
+import jakarta.xml.bind.annotation.XmlID;
 
 import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
 

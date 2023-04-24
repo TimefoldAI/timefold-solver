@@ -1,6 +1,6 @@
 package ai.timefold.solver.jsonb.api.score;
 
-import javax.json.bind.adapter.JsonbAdapter;
+import jakarta.json.bind.adapter.JsonbAdapter;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.jsonb.api.TimefoldJsonbConfig;

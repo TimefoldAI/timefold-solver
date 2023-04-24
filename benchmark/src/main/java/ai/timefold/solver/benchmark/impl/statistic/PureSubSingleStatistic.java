@@ -3,7 +3,7 @@ package ai.timefold.solver.benchmark.impl.statistic;
 import java.io.File;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;

@@ -2,7 +2,7 @@ package ai.timefold.solver.core.config.localsearch.decider.forager;
 
 import java.util.function.Consumer;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;

@@ -2,7 +2,7 @@ package ai.timefold.solver.core.config.exhaustivesearch;
 
 import java.util.Comparator;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.comparator.BreadthFirstNodeComparator;

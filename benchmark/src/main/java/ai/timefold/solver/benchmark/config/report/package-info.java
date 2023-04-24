@@ -4,7 +4,7 @@
         elementFormDefault = XmlNsForm.QUALIFIED)
 package ai.timefold.solver.benchmark.config.report;
 
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;

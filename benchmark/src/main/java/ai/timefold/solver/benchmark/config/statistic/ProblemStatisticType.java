@@ -2,7 +2,7 @@ package ai.timefold.solver.benchmark.config.statistic;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;

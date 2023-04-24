@@ -1,6 +1,6 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.optaplanner.openrewrite.Quarkus3
+name: ai.timefold.solver.openrewrite.Quarkus3
 displayName: Migrate project to Quarkus 3
 description: Update Quarkus version and migrate to Jakarta
 tags:
@@ -28,7 +28,7 @@ recipeList:
       groupId: org.hibernate
       artifactId: hibernate-core
   - io.quarkus.openrewrite.Quarkus3
-  - org.optaplanner.migration.jakarta.JakartaJsonMigrationRecipe
+  - ai.timefold.solver.migration.jakarta.JakartaJsonMigrationRecipe
   - org.openrewrite.maven.ChangePropertyValue:
       key: version.org.springframework
       newValue: 6.0.3

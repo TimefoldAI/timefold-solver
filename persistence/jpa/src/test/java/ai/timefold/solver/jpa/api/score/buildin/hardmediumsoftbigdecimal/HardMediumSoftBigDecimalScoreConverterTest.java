@@ -2,8 +2,8 @@ package ai.timefold.solver.jpa.api.score.buildin.hardmediumsoftbigdecimal;
 
 import java.math.BigDecimal;
 
-import javax.persistence.Convert;
-import javax.persistence.Entity;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
 import ai.timefold.solver.jpa.impl.AbstractScoreJpaTest;

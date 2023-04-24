@@ -2,7 +2,7 @@ package ai.timefold.solver.quarkus.nativeimage;
 
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.CDI;
 
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 

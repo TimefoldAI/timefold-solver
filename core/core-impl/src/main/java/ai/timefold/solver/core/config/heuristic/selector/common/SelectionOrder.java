@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.heuristic.selector.common;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 

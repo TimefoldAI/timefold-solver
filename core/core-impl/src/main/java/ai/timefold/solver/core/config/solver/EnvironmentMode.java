@@ -2,7 +2,7 @@ package ai.timefold.solver.core.config.solver;
 
 import java.util.Random;
 
-import javax.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.heuristic.move.Move;

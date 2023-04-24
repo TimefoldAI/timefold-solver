@@ -3,7 +3,7 @@ package ai.timefold.solver.core.config.solver;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;

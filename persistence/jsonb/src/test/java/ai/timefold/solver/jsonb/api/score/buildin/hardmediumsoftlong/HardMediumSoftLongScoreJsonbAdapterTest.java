@@ -1,6 +1,6 @@
 package ai.timefold.solver.jsonb.api.score.buildin.hardmediumsoftlong;
 
-import javax.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.jsonb.api.score.AbstractScoreJsonbAdapterTest;
