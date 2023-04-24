@@ -152,7 +152,7 @@ def timefoldSolverVersion = "{timefold-solver-version}"
 
 group = "org.acme"
 version = "1.0-SNAPSHOT"
-sourceCompatibility = "11"
+sourceCompatibility = "17"
 
 repositories {
     mavenCentral()
