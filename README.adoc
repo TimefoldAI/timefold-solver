@@ -11,8 +11,8 @@ _Planning optimization made easy._ +
 https://timefold.ai[timefold.ai]
 
 image:https://img.shields.io/maven-central/v/ai.timefold.solver/timefold-solver-bom?logo=apache-maven&style=for-the-badge["Maven artifact", link="https://ossindex.sonatype.org/component/pkg:maven/ai.timefold.solver/timefold-solver-bom"]
-image:https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache["Livense", link="https://www.apache.org/licenses/LICENSE-2.0"]
-image:https://img.shields.io/badge/Java-11+-brightgreen.svg?style=for-the-badge["JVM support", link="https://github.com/TimefoldAI/timefold-solver/actions/workflows/pull_request.yml"]
+image:https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache["License", link="https://www.apache.org/licenses/LICENSE-2.0"]
+image:https://img.shields.io/badge/Java-17+-brightgreen.svg?style=for-the-badge["JVM support", link="https://sdkman.io"]
 image:https://img.shields.io/github/commit-activity/m/TimefoldAI/timefold-solver?label=commits&style=for-the-badge["Commit Activity", link="https://github.com/TimefoldAI/timefold-solver/pulse"]
 
 image:https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=stackoverflow&style=for-the-badge["Stackoverflow", link="https://stackoverflow.com/questions/tagged/timefold"]
@@ -31,17 +31,36 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 
 == Build from source
 
-Build and run from source:
+. Install JDK 17+ and Maven 3+, for example with https://sdkman.io[Sdkman]:
++
+----
+$ sdk install java
+$ sdk install maven
+----
 
+. Git clone this repository:
++
+----
+$ git clone https://github.com/TimefoldAI/timefold-solver.git
+$ cd timefold-solver
+----
+
+. Build it from source:
++
 ----
 $ mvn clean install -Dquickly
+----
+
+. Run the examples:
++
+----
 $ cd examples
 $ mvn exec:java
 ----
 
-To develop with IntelliJ IDEA, Eclipse or VSCode, open the root `pom.xml` as a new project
+. To develop with IntelliJ IDEA, Eclipse or VSCode, open the root `pom.xml` as a new project
 and configure a _Run/Debug configuration_ like this:
-
++
 * Type: Application
 * Main class: `ai.timefold.solver.examples.app.TimefoldExamplesApp`
 * VM options: `-Xmx2G` (memory only needed when using the big datasets in the examples)
@@ -51,7 +70,7 @@ and configure a _Run/Debug configuration_ like this:
 
 == Contribute
 
-This is an open source project, and you are more than welcome to contribute! :heart:
+This is an open source project, and you are more than welcome to contribute!
 
 * Found an issue? https://github.com/TimefoldAI/timefold-solver/issues[Submit an issue.]
 * Want to fix an issue or contribute an improvement? https://github.com/TimefoldAI/timefold-solver/discussions[Talk to us about your ideas] or just start coding:
