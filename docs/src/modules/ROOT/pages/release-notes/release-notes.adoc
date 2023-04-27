@@ -11,7 +11,7 @@ Maven:
 [source,shell,subs=attributes+]
 ----
 $ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
-  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{project-version} \
+  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} \
   -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
 ----
 
