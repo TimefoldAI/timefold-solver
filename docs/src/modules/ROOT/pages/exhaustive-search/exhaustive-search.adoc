@@ -159,16 +159,16 @@ The `nodeExplorationType` options are:
 The `entitySorterManner` options are:
 
 * ``DECREASING_DIFFICULTY``: Initialize the more difficult planning entities first. This usually increases pruning (and therefore improves scalability).
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
-* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
+Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
-* ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength. Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
-* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
-* ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength. Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
-* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
+* ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength. Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
+* ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength. Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 

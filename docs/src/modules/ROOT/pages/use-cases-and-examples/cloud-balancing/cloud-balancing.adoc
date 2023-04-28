@@ -173,7 +173,7 @@ public class CloudProcess ... {
 
 [NOTE]
 ====
-Instead of getter annotations, it is also possible to use xref:planner-configuration/planner-configuration.adoc#annotationAlternatives[field annotations].
+Instead of getter annotations, it is also possible to use xref:configuration/configuration.adoc#annotationAlternatives[field annotations].
 ====
 
 
@@ -242,7 +242,7 @@ public class CloudBalance ... {
 [[cloudBalancingMainMethod]]
 == Run the cloud balancing Hello World
 
-. xref:planner-introduction/planner-introduction.adoc#runTheExamplesInAnIDE[Download and configure the examples in your preferred IDE.]
+. xref:introduction/introduction.adoc#runTheExamplesInAnIDE[Download and configure the examples in your preferred IDE.]
 . Create a run configuration with the following main class: `ai.timefold.solver.examples.cloudbalancing.app.CloudBalancingHelloWorld`
 +
 By default, the Cloud Balancing Hello World is configured to run for 120 seconds.
@@ -281,7 +281,7 @@ public class CloudBalancingHelloWorld {
 The code example does the following:
 
 . Build the `Solver` based on a solver configuration
-which can come from xref:planner-configuration/planner-configuration.adoc#solverConfigurationByXML[an XML file] as classpath resource:
+which can come from xref:configuration/configuration.adoc#solverConfigurationByXML[an XML file] as classpath resource:
 +
 [source,java,options="nowrap"]
 ----
@@ -290,7 +290,7 @@ which can come from xref:planner-configuration/planner-configuration.adoc#solver
         Solver<CloudBalance> solver = solverFactory.buildSolver();
 ----
 +
-Or to avoid XML, build it through xref:planner-configuration/planner-configuration.adoc#solverConfigurationByJavaAPI[the programmatic API] instead:
+Or to avoid XML, build it through xref:configuration/configuration.adoc#solverConfigurationByJavaAPI[the programmatic API] instead:
 +
 [source,java,options="nowrap"]
 ----

@@ -44,7 +44,7 @@ Planning competitions (such as the International Timetabling Competition) show t
 usually perform best for real-world problems given real-world time limitations.
 
 
-[[doesPlannerFindTheOptimalSolution]]
+[[doesTimefoldFindTheOptimalSolution]]
 == Does Timefold find the optimal solution?
 
 The business wants the optimal solution, but they also have other requirements:
@@ -141,7 +141,7 @@ However, this basic procedure provides a good starting configuration that will p
 . Start with a quick configuration that involves little or no configuration and optimization code:
  See xref:construction-heuristics/construction-heuristics.adoc#firstFit[First Fit].
 
-. Next, implement xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty] comparison and turn it into xref:construction-heuristics/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing].
+. Next, implement xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty] comparison and turn it into xref:construction-heuristics/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing].
 
 . Next, add Late Acceptance behind it:
 .. First Fit Decreasing.
@@ -262,7 +262,7 @@ These form four nested scopes:
 
 image::optimization-algorithms/scopeOverview.png[align="center"]
 
-Configure xref:planner-configuration/planner-configuration.adoc#logging[logging] to display the log messages of each scope.
+Configure xref:configuration/configuration.adoc#logging[logging] to display the log messages of each scope.
 
 
 [[termination]]
@@ -604,7 +604,7 @@ This is useful for benchmarking.
   </termination>
 ----
 
-Switching xref:planner-configuration/planner-configuration.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+Switching xref:configuration/configuration.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 
 [[combiningMultipleTerminations]]
@@ -792,7 +792,7 @@ The built-in solver phases do not have this issue.
 
 To configure values of a `CustomPhaseCommand` dynamically in the solver configuration
 (so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `customProperties` element and use xref:planner-configuration/planner-configuration.adoc#customPropertiesConfiguration[custom properties]:
+add the `customProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -843,7 +843,7 @@ image::optimization-algorithms/multiThreadingStrategies.png[align="center"]
 
 [NOTE]
 ====
-A xref:planner-configuration/planner-configuration.adoc#logging[logging level] of `debug` or `trace` might cause congestion multithreaded solving
+A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` might cause congestion multithreaded solving
 and slow down the xref:score-calculation/score-calculation.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 

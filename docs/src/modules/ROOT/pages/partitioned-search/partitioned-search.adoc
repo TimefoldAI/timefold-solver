@@ -67,7 +67,7 @@ plug in a xref:optimization-algorithms/optimization-algorithms.adoc#customThread
 
 [IMPORTANT]
 ====
-A xref:planner-configuration/planner-configuration.adoc#logging[logging level] of `debug` or `trace` causes congestion in multithreaded Partitioned Search
+A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` causes congestion in multithreaded Partitioned Search
 and slows down the xref:score-calculation/score-calculation.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
@@ -198,7 +198,7 @@ public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance
 
 To configure values of a `SolutionPartitioner` dynamically in the solver configuration
 (so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `solutionPartitionerCustomProperties` element and use xref:planner-configuration/planner-configuration.adoc#customPropertiesConfiguration[custom properties]:
+add the `solutionPartitionerCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----

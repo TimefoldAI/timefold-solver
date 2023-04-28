@@ -69,7 +69,7 @@ To avoid this limitation, https://docs.jboss.org/hibernate/orm/current/userguide
 ==== JPA and Hibernate: planning cloning
 
 In JPA and Hibernate, there is usually a `@ManyToOne` relationship from most problem fact classes to the planning solution class.
-Therefore, the problem fact classes reference the planning solution class, which implies that when the solution is xref:planner-configuration/planner-configuration.adoc#cloningASolution[planning cloned], they need to be cloned too.
+Therefore, the problem fact classes reference the planning solution class, which implies that when the solution is xref:configuration/configuration.adoc#cloningASolution[planning cloned], they need to be cloned too.
 Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
 
 [source,java,options="nowrap"]
@@ -411,7 +411,7 @@ Understand these guidelines to decide the hardware for a Timefold service:
 ** The problem dataset, loaded before Timefold is called, often consumes the most memory. It depends on the problem scale.
 *** For example, in the Machine Reassignment example some datasets use over 1GB in memory. But in most examples, they use just a few MB.
 *** If this is a problem, review the domain class structure: remove classes or fields that Timefold doesn't need during solving.
-*** Timefold usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:planner-configuration/planner-configuration.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
+*** Timefold usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:configuration/configuration.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
 ** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.
 ** The maximum size of the JVM heap space can be in three states:
 *** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).

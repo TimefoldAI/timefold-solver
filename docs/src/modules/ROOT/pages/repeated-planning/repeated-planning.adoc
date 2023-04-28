@@ -74,7 +74,7 @@ This is called overconstrained planning.
 By default, Timefold assigns all planning entities, overloads the planning values, and therefore breaks hard constraints.
 There are two ways to avoid this:
 
-* Use xref:planner-configuration/planner-configuration.adoc#nullablePlanningVariable[nullable] planning variables, so that some entities are unassigned.
+* Use xref:configuration/configuration.adoc#nullablePlanningVariable[nullable] planning variables, so that some entities are unassigned.
 * Add virtual values to catch the unassigned entities.
 
 
@@ -88,7 +88,7 @@ image::repeated-planning/overconstrainedPlanning.png[align="center"]
 To implement this:
 
 . Add a score level (usually a medium level between the hard and soft level) by switching xref:score-calculation/score-calculation.adoc#scoreType[`Score` type].
-. Make the planning variable xref:planner-configuration/planner-configuration.adoc#nullablePlanningVariable[nullable].
+. Make the planning variable xref:configuration/configuration.adoc#nullablePlanningVariable[nullable].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
 
 
@@ -387,7 +387,7 @@ public interface ProblemChange<Solution_> {
 The `ScoreDirector` must be updated with any change on the problem facts of planning entities in a `ProblemChange`.
 ====
 
-To write a `ProblemChange` correctly, it is important to understand the behavior of xref:planner-configuration/planner-configuration.adoc#cloningASolution[a planning clone].
+To write a `ProblemChange` correctly, it is important to understand the behavior of xref:configuration/configuration.adoc#cloningASolution[a planning clone].
 
 A planning clone of a solution must fulfill these requirements:
 
@@ -429,7 +429,7 @@ Consider the following example of a `ProblemChange` implementation in the cloud 
 
 . Any change in a `ProblemChange` must be done on the `@PlanningSolution` instance of ``scoreDirector.getWorkingSolution()``.
 
-. The `workingSolution` is xref:planner-configuration/planner-configuration.adoc#cloningASolution[a planning clone] of the ``BestSolutionChangedEvent``'s ``bestSolution``.
+. The `workingSolution` is xref:configuration/configuration.adoc#cloningASolution[a planning clone] of the ``BestSolutionChangedEvent``'s ``bestSolution``.
 * The `workingSolution` in the `Solver` is never the same solution instance as in the rest of your application: it is a planning clone.
 * A planning clone also clones the planning entities and planning entity collections.
 +
@@ -463,7 +463,7 @@ This is a _warm start_ because its initial solution is the adjusted best solutio
 
 . Each solver phase runs again.
 +
-This implies the construction heuristic runs again, but because little or no planning variables are uninitialized (unless you have a xref:planner-configuration/planner-configuration.adoc#nullablePlanningVariable[nullable planning variable]), it finishes much quicker than in a cold start.
+This implies the construction heuristic runs again, but because little or no planning variables are uninitialized (unless you have a xref:configuration/configuration.adoc#nullablePlanningVariable[nullable planning variable]), it finishes much quicker than in a cold start.
 
 . Each configured `Termination` resets (both in solver and phase configuration), but a previous call to `terminateEarly()` is not undone.
 +
