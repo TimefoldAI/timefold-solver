@@ -6,7 +6,7 @@
 # the timefold-solver-website is refreshed.
 name: timefold-solver
 title: Timefold Solver Documentation ${project.version}
-version: latest
+version: 0.8.x
 asciidoc:
   attributes:
     timefold-solver-version: ${project.version}
