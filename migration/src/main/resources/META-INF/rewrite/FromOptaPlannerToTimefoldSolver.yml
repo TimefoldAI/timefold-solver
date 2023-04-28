@@ -1,5 +1,5 @@
 type: specs.openrewrite.org/v1beta/recipe
-name: ai.timefold.solver.migration.FromOptaPlannerToTimefold
+name: ai.timefold.solver.migration.FromOptaPlannerToTimefoldSolver
 displayName: Migrate from OptaPlanner to Timefold
 description: 'Replaces your method/field calls, GAVs, etc. To replace deprecated methods too, use the recipe ToLatest'
 recipeList:

@@ -3,7 +3,7 @@ name: ai.timefold.solver.migration.ToLatest
 displayName: Upgrade to the latest Timefold
 description: 'Replace all your calls to deleted/deprecated types and methods of Timefold with their proper alternatives.'
 recipeList:
-  - ai.timefold.solver.migration.FromOptaPlannerToTimefold
+  - ai.timefold.solver.migration.FromOptaPlannerToTimefoldSolver
   - org.openrewrite.properties.ChangePropertyKey:
       oldPropertyKey: timefold.solver.solve-length
       newPropertyKey: timefold.solver.solve.duration
