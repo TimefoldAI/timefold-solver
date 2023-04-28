@@ -119,7 +119,7 @@ Timefold is _open source_ software, released under http://www.apache.org/license
 This license is very liberal and allows reuse for commercial purposes.
 Read http://www.apache.org/foundation/licence-FAQ.html#WhatDoesItMEAN[the layman's explanation].
 
-Timefold is 100% pure Java^TM^ and runs on Java 11 or higher.
+Timefold is 100% pure Java^TM^ and runs on Java {java-version} or higher.
 It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^ technologies.
 Timefold is available in <<useWithMavenGradleEtc,the Maven Central Repository>>.
 
