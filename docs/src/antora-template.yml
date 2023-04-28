@@ -4,8 +4,8 @@
 #
 # The goal is to have the antora.yml containing correct attributes available in the release branch before
 # the timefold-solver-website is refreshed.
-name: timefold
-title: Timefold User Guide ${project.version}
+name: timefold-solver
+title: Timefold Solver Documentation ${project.version}
 version: latest
 asciidoc:
   attributes:
