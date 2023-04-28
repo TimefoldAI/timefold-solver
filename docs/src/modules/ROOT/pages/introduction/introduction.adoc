@@ -212,7 +212,7 @@ To run the examples in IntelliJ IDEA, VSCode or Eclipse:
 [[useWithMavenGradleEtc]]
 === Use Timefold with Maven, Gradle, or ANT
 
-The Timefold jars are available in http://search.maven.org/#search|ga|1|ai.timefold.solver[the central maven repository].
+The Timefold jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
 
 If you use Maven, add a dependency to `timefold-solver-core` in your `pom.xml`:
 
