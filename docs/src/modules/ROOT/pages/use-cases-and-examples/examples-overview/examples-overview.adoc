@@ -133,7 +133,7 @@ and also in git under [path]_timefold/timefold-solver-examples_.
 * http://gent.cs.kuleuven.be/mista2013challenge/[MISTA 2013]
 |* xref:score-calculation/score-calculation.adoc#bendableScore[Bendable score]
 * Custom xref:shadow-variable/shadow-variable.adoc#customVariableListener[VariableListener]
-* xref:planner-configuration/planner-configuration.adoc#valueRangeFactory[ValueRangeFactory]
+* xref:configuration/configuration.adoc#valueRangeFactory[ValueRangeFactory]
 
 |xref:use-cases-and-examples/bed-allocation/bed-allocation.adoc#bedAllocation[Hospital bed planning]
 |* 1 entity class

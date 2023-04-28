@@ -1,4 +1,4 @@
-[[plannerIntroduction]]
+[[introduction]]
 = Timefold introduction
 // Redirect to this page from .../docs/timefold/latest.
 :page-aliases: ../index.adoc
@@ -24,12 +24,12 @@ https://timefold.ai[Timefold] is a lightweight, embeddable constraint satisfacti
 * **Sport scheduling**: planning games and training schedules for football leagues, baseball leagues, ...
 * **Financial optimization**: investment portfolio optimization, risk spreading, ...
 
-image::planner-introduction/useCaseOverview.png[align="center"]
+image::introduction/useCaseOverview.png[align="center"]
 
 [[whatIsAPlanningProblem]]
 == What is a planning problem?
 
-image::planner-introduction/whatIsAPlanningProblem.png[align="center"]
+image::introduction/whatIsAPlanningProblem.png[align="center"]
 
 A planning problem has an optimal goal, based on limited resources and under specific constraints. Optimal goals can be any number of things, such as:
 
@@ -125,7 +125,7 @@ Timefold is available in <<useWithMavenGradleEtc,the Maven Central Repository>>.
 
 Timefold works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
 
-image::planner-introduction/compatibility.png[align="center"]
+image::introduction/compatibility.png[align="center"]
 
 [[governance]]
 == Governance
@@ -187,12 +187,12 @@ $ cd examples
 $ runExamples.bat
 ----
 
-image::planner-introduction/distributionZip.png[align="center"]
+image::introduction/distributionZip.png[align="center"]
 
 The Examples GUI application will open.
 Pick an example to try it out:
 
-image::planner-introduction/plannerExamplesAppScreenshot.png[align="center"]
+image::introduction/examplesAppScreenshot.png[align="center"]
 
 [NOTE]
 ====

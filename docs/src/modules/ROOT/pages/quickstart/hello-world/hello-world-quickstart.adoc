@@ -85,7 +85,7 @@ Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
 * `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
-* A xref:planner-configuration/planner-configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold is doing.
+* A xref:configuration/configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold is doing.
 
 If you choose Maven, your `pom.xml` file has the following content:
 
@@ -420,7 +420,7 @@ The `solve()` method doesn't return instantly.
 It runs for five seconds before returning the best solution.
 
 Timefold returns _the best solution_ found in the available termination time.
-Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesPlannerFindTheOptimalSolution[the nature of NP-hard problems],
+Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[the nature of NP-hard problems],
 the best solution might not be optimal, especially for larger datasets.
 Increase the termination time to potentially find a better solution.
 

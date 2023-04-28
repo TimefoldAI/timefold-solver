@@ -415,7 +415,7 @@ To write those solutions in the ``benchmarkDirectory``, enable ``writeOutputSolu
 [[benchmarkLogging]]
 === Benchmark logging
 
-Benchmark logging is configured like xref:planner-configuration/planner-configuration.adoc#logging[solver logging].
+Benchmark logging is configured like xref:configuration/configuration.adoc#logging[solver logging].
 
 To separate the log messages of each single benchmark run into a separate file, use the http://logback.qos.ch/manual/mdc.html[MDC] with key `subSingleBenchmark.name` in a sifting appender.
 For example with Logback in ``logback.xml``:
@@ -1044,7 +1044,7 @@ The `subSingleCount` defaults to `1` (so no statistical benchmarking).
 
 [NOTE]
 ====
-If `subSingleCount` is higher than ``1``, the benchmarker will automatically use a _different_ xref:planner-configuration/planner-configuration.adoc#randomNumberGenerator[`Random` seed] for every sub single run, without losing reproducibility (for each sub single index) in xref:planner-configuration/planner-configuration.adoc#environmentMode[EnvironmentMode] ``REPRODUCIBLE`` and lower.
+If `subSingleCount` is higher than ``1``, the benchmarker will automatically use a _different_ xref:configuration/configuration.adoc#randomNumberGenerator[`Random` seed] for every sub single run, without losing reproducibility (for each sub single index) in xref:configuration/configuration.adoc#environmentMode[EnvironmentMode] ``REPRODUCIBLE`` and lower.
 ====
 
 

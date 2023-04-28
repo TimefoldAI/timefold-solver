@@ -72,7 +72,7 @@ So it sorts the planning entities on decreasing difficulty.
 
 image::construction-heuristics/firstFitDecreasingNQueens04.png[align="center"]
 
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
 
 [NOTE]
 ====
@@ -119,7 +119,7 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Like First Fit, but uses the weaker planning values first, because the strong planning values are more likely to be able to accommodate later planning entities.
 So it sorts the planning values on increasing strength.
 
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -166,8 +166,8 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Combines First Fit Decreasing and Weakest Fit.
 So it sorts the planning entities on decreasing difficulty and the planning values on increasing strength.
 
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison]
-and xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison]
+and xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -215,7 +215,7 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Like First Fit, but uses the strong planning values first, because the strong planning values are more likely to have a lower soft cost to use.
 So it sorts the planning values on decreasing strength.
 
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -262,8 +262,8 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Combines First Fit Decreasing and Strongest Fit.
 So it sorts the planning entities on decreasing difficulty and the planning values on decreasing strength.
 
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison]
-and xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison]
+and xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -345,18 +345,18 @@ The `entitySorterManner` options are:
 
 * ``DECREASING_DIFFICULTY``: Initialize the more difficult planning entities first.
 This usually increases pruning (and therefore improves scalability).
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
-* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:planner-configuration/planner-configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
+Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
 * ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength.
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
-* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
+Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
 * ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength.
-Requires the model to support xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison].
-* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:planner-configuration/planner-configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
+Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 Advanced configuration with <<weakestFitDecreasing,Weakest Fit Decreasing>> for a single entity class with one variable:

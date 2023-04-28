@@ -30,7 +30,7 @@ See xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedIncre
 
 {property_prefix}timefold.solver.domain-access-type::
 How Timefold should access the domain model.
-See xref:planner-configuration/planner-configuration.adoc#domainAccess[the domain access section] for more details.
+See xref:configuration/configuration.adoc#domainAccess[the domain access section] for more details.
 ifeval::["{property_prefix}" == "quarkus."]
 Defaults to `GIZMO`.
 The other possible value is `REFLECTION`.

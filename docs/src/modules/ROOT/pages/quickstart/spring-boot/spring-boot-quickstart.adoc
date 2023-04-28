@@ -248,7 +248,7 @@ timefold.solver.termination.spent-limit=5s
 ----
 
 Timefold returns _the best solution_ found in the available termination time.
-Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesPlannerFindTheOptimalSolution[the nature of NP-hard problems],
+Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[the nature of NP-hard problems],
 the best solution might not be optimal, especially for larger datasets.
 Increase the termination time to potentially find a better solution.
 

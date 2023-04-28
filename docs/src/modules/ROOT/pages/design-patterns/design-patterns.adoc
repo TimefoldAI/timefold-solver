@@ -70,9 +70,9 @@ image::design-patterns/entityVariableAndValueExamples.png[align="center"]
 
 [NOTE]
 ====
-Course scheduling is different because it uses two xref:planner-configuration/planner-configuration.adoc#planningVariable[planning variables].
-Vehicle routing is different because it uses a xref:planner-configuration/planner-configuration.adoc#planningListVariable[planning list variable].
-Traveling salesman is different because it uses a xref:planner-configuration/planner-configuration.adoc#chainedPlanningVariable[chained planning variable].
+Course scheduling is different because it uses two xref:configuration/configuration.adoc#planningVariable[planning variables].
+Vehicle routing is different because it uses a xref:configuration/configuration.adoc#planningListVariable[planning list variable].
+Traveling salesman is different because it uses a xref:configuration/configuration.adoc#chainedPlanningVariable[chained planning variable].
 ====
 
 [[assigningTimeToPlanningEntities]]
@@ -181,14 +181,14 @@ The focus in this pattern is on deciding the order of a set of elements instead 
 However, the time coordinate of each element can be deduced from its position in the sequence.
 If the elements’ position on time axis affects the score, use a xref:shadow-variable/shadow-variable.adoc#shadowVariable[shadow variable] to calculate the time.
 
-This pattern is implemented using either the xref:planner-configuration/planner-configuration.adoc#chainedPlanningVariable[chained planning variable] or the xref:planner-configuration/planner-configuration.adoc#planningListVariable[planning list variable].
+This pattern is implemented using either the xref:configuration/configuration.adoc#chainedPlanningVariable[chained planning variable] or the xref:configuration/configuration.adoc#planningListVariable[planning list variable].
 The two modeling approaches are equivalent because they both allow Timefold to order elements in sequences of variable lengths.
 The planning list variable is easier to use than the chained planning variable, but it does not yet support all the advanced planning techniques.
 
 [[chainedThroughTimePatternChainedVariable]]
 ==== Chained through time pattern using chained planning variable
 
-Using the xref:planner-configuration/planner-configuration.adoc#chainedPlanningVariable[chained planning variable], planning entities are arranged in a recursive data structure, forming a chain, that ends with an anchor.
+Using the xref:configuration/configuration.adoc#chainedPlanningVariable[chained planning variable], planning entities are arranged in a recursive data structure, forming a chain, that ends with an anchor.
 
 The anchor determines the starting time of its first planning entity.
 The second entity's starting time is calculated based on the starting time and duration of the first entity.
@@ -203,7 +203,7 @@ Consequently, using this model in the exam scheduling example to allow two or mo
 [[chainedThroughTimePatternListVariable]]
 ==== Chained through time pattern using planning list variable
 
-Timefold distributes planning values into planning entities’ xref:planner-configuration/planner-configuration.adoc#planningListVariable[planning list variable].
+Timefold distributes planning values into planning entities’ xref:configuration/configuration.adoc#planningListVariable[planning list variable].
 
 The planning entity determines the starting time of the first element in its planning list variable.
 The second element's starting time is calculated based on the starting time and duration of the first element.

@@ -210,7 +210,7 @@ because it contains one or more planning variables.
 The `timeslot` field has an `@PlanningVariable` annotation,
 so Timefold knows that it can change its value.
 In order to find potential `Timeslot` instances to assign to this field,
-Timefold uses the variable type to connect to a xref:planner-configuration/planner-configuration.adoc#planningValueRangeProvider[value range provider]
+Timefold uses the variable type to connect to a xref:configuration/configuration.adoc#planningValueRangeProvider[value range provider]
 that provides a `List<Timeslot>` to pick from.
 
 The `room` field also has an `@PlanningVariable` annotation, for the same reasons.

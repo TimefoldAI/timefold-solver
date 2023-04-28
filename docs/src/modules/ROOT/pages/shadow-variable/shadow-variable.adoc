@@ -8,7 +8,7 @@
 [[shadowVariableIntroduction]]
 == Introduction
 
-A shadow variable is a planning variable whose correct value can be deduced from the state of the xref:planner-configuration/planner-configuration.adoc#planningVariable[genuine planning variables].
+A shadow variable is a planning variable whose correct value can be deduced from the state of the xref:configuration/configuration.adoc#planningVariable[genuine planning variables].
 Even though such a variable violates the principle of normalization by definition, in some use cases it can be very practical to use a shadow variable, especially to express the constraints more naturally.
 For example in vehicle routing with time windows: the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle (and the known travel times between two locations).
 
@@ -132,7 +132,7 @@ Timefold will not violate that principle during planning, but the input must not
 [[anchorShadowVariable]]
 == Anchor shadow variable
 
-An anchor shadow variable is the anchor of xref:planner-configuration/planner-configuration.adoc#chainedPlanningVariable[a chained variable].
+An anchor shadow variable is the anchor of xref:configuration/configuration.adoc#chainedPlanningVariable[a chained variable].
 
 Annotate the anchor property as a `@AnchorShadowVariable` annotation:
 
@@ -155,7 +155,7 @@ The `sourceVariableName` property is the name of the chained variable on the sam
 [[listVariableShadowVariables]]
 == List variable shadow variables
 
-When the planning entity uses a xref:planner-configuration/planner-configuration.adoc#planningListVariable[list variable], its elements can use a number of built-in shadow variables.
+When the planning entity uses a xref:configuration/configuration.adoc#planningListVariable[list variable], its elements can use a number of built-in shadow variables.
 
 === Inverse relation shadow variable
 
@@ -373,7 +373,7 @@ Use `@PiggybackShadowVariable` on each shadow variable updated by that variable 
 === Shadow variable cloning
 
 A shadow variable's value (just like a genuine variable's value)
-isn't xref:planner-configuration/planner-configuration.adoc#cloningASolution[planning cloned] by the default solution cloner,
+isn't xref:configuration/configuration.adoc#cloningASolution[planning cloned] by the default solution cloner,
 unless it can easily prove that it must be planning cloned (for example the property type is a planning entity class).
 Specifically shadow variables of type `List`, `Set`, `Collection` or `Map` usually need to be planning cloned
 to avoid corrupting the best solution when the working solution changes.
