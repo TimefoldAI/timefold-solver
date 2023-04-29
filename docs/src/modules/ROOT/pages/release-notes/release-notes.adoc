@@ -20,7 +20,7 @@ Gradle:
 [source,shell,subs=attributes+]
 ----
 $ curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle
-$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun
+$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version}
 $ rm upgrade-timefold.gradle
 ----
 
