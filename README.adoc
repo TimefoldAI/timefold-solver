@@ -104,10 +104,12 @@ Use one of the following ways to build this project:
 
 * :mechanical_arm: *build-all*: `mvn clean install -Dfull` runs all checks and creates documentation and distribution files (~20 min)
 
-== Notice
+== Legal notice
 
-Timefold Solver is a fork of OptaPlanner (Apache-2.0 license).
-It's a derivative work of OptaPlanner (as of 20 April 2023),
-which includes copyrights of Red Hat Inc. and affiliates,
-entirely licensed under the Apache-2.0 license (a permissive license).
+Timefold Solver was forked on 20 April 2023 from OptaPlanner,
+which was entirely Apache-2.0 licensed (a permissive license).
+
+Timefold Solver is a derivative work of OptaPlanner,
+which includes copyrights of the original creator, Red Hat Inc., affiliates and contributors,
+that were all entirely licensed under the Apache-2.0 license.
 Every source file has been modified.
