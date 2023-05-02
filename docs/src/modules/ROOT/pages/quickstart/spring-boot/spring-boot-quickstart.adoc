@@ -57,7 +57,7 @@ and run it (see its README file).
 To complete this guide, you need:
 
 * https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
-* https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 4+
+* https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 7+
 * An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], VSCode or Eclipse
 
 == The build file and the dependencies
