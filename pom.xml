@@ -65,11 +65,12 @@
     <module>build/build-parent</module>
     <module>core</module>
     <module>persistence</module>
-    <module>benchmark</module>
-    <module>test</module>
+    <module>benchmark</module><!-- TODO move to tools/benchmark -->
+    <module>test</module><!-- TODO move to core/test -->
     <module>spring-integration</module>
     <module>quarkus-integration</module>
-    <module>migration</module>
+    <module>tools</module>
+    <module>migration</module><!-- TODO move to tools/migration -->
     <module>examples</module>
   </modules>
 
@@ -111,6 +112,12 @@
                       <artifactOverride>
                         <groupId>ai.timefold.solver</groupId>
                         <artifactId>timefold-solver-ide-config</artifactId>
+                        <sourceJar>true</sourceJar>
+                        <javadocJar>false</javadocJar>
+                      </artifactOverride>
+                      <artifactOverride>
+                        <groupId>ai.timefold.solver</groupId>
+                        <artifactId>timefold-solver-webui</artifactId>
                         <sourceJar>true</sourceJar>
                         <javadocJar>false</javadocJar>
                       </artifactOverride>
