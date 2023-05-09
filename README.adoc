@@ -106,7 +106,7 @@ Use one of the following ways to build this project:
 
 == Legal notice
 
-Timefold Solver was forked on 20 April 2023 from OptaPlanner,
+Timefold Solver was https://timefold.ai/blog/2023/optaplanner-fork/[forked] on 20 April 2023 from OptaPlanner,
 which was entirely Apache-2.0 licensed (a permissive license).
 
 Timefold Solver is a derivative work of OptaPlanner,
