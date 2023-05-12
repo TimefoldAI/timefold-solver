@@ -166,7 +166,7 @@ plugins {
 }
 
 def timefoldSolverVersion = "{timefold-solver-version}"
-def logbackVersion = "1.2.9"
+def logbackVersion = "1.4.7"
 
 group = "org.acme"
 version = "1.0-SNAPSHOT"
