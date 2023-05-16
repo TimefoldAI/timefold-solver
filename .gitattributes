@@ -22,10 +22,22 @@
 *.mp3 binary
 *.ogg binary
 
+# Video files
+*.mp4 binary
+*.mov binary
+*.wmv binary
+*.avi binary
+*.flv binary
+*.mkv binary
+*.webm binary
+
 # Other binary files
 *.pdf binary
 *.xls binary
 *.xlsx binary
+*.odp binary
+*.zip binary
+*.jar binary
 
 # GitHub syntax highlighting
 ############################
