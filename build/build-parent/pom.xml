@@ -60,6 +60,11 @@
     <version.surefire.plugin>3.1.0</version.surefire.plugin>
     <version.versions.plugin>2.15.0</version.versions.plugin>
 
+    <version.org.webjars.webjars-locator>0.46</version.org.webjars.webjars-locator>
+    <version.org.webjars.bootstrap>5.2.3</version.org.webjars.bootstrap>
+    <version.org.webjars.jquery>3.6.4</version.org.webjars.jquery>
+    <version.org.webjars.font-awesome>6.4.0</version.org.webjars.font-awesome>
+
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.2</maven.min.version>
     <maven.compiler.release>17</maven.compiler.release>
@@ -152,6 +157,30 @@
         <artifactId>jcl-over-slf4j</artifactId>
         <version>${version.org.slf4j}</version>
       </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>webjars-locator</artifactId>
+        <version>${version.org.webjars.webjars-locator}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>bootstrap</artifactId>
+        <version>${version.org.webjars.bootstrap}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>font-awesome</artifactId>
+        <version>${version.org.webjars.font-awesome}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>jquery</artifactId>
+        <version>${version.org.webjars.jquery}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <!-- Webjars -->
     </dependencies>
   </dependencyManagement>
 

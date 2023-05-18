@@ -2,8 +2,8 @@ package ai.timefold.solver.benchmark.impl.ranking;
 
 import java.util.List;
 
-import ai.timefold.solver.benchmark.impl.measurement.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
+import ai.timefold.solver.benchmark.impl.result.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
 import ai.timefold.solver.core.api.score.Score;

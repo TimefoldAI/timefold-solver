@@ -41,6 +41,8 @@ import javax.xml.validation.Validator;
 
 import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -50,6 +52,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 public final class GenericJaxbIO<T> implements JaxbIO<T> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericJaxbIO.class);
     private static final int DEFAULT_INDENTATION = 2;
 
     private static final String ERR_MSG_WRITE = "Failed to marshall a root element class (%s) to XML.";
@@ -266,16 +270,22 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
 
     @Override
     public void write(T root, Writer writer) {
+        write(root, writer, null);
+    }
+
+    private void write(T root, Writer writer, StreamSource xslt) {
         DOMResult domResult = marshall(Objects.requireNonNull(root));
-        formatXml(new DOMSource(domResult.getNode()), null, Objects.requireNonNull(writer));
+        Writer nonNullWriter = Objects.requireNonNull(writer);
+        formatXml(domResult, xslt, nonNullWriter);
     }
 
     public void writeWithoutNamespaces(T root, Writer writer) {
-        DOMResult domResult = marshall(Objects.requireNonNull(root));
-        Writer nonNullWriter = Objects.requireNonNull(writer);
         try (InputStream xsltInputStream = getClass().getResourceAsStream("removeNamespaces.xslt")) {
-            formatXml(new DOMSource(domResult.getNode()), new StreamSource(xsltInputStream), nonNullWriter);
-        } catch (IOException e) {
+            if (xsltInputStream == null) {
+                throw new IllegalStateException("Impossible state: Failed to load XSLT stylesheet to remove namespaces.");
+            }
+            write(root, writer, new StreamSource(xsltInputStream));
+        } catch (Exception e) {
             throw new TimefoldXmlSerializationException(String.format(ERR_MSG_WRITE, rootClass.getName()), e);
         }
     }
@@ -291,7 +301,7 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         return domResult;
     }
 
-    private void formatXml(Source source, Source transformationTemplate, Writer writer) {
+    private void formatXml(DOMResult domResult, Source transformationTemplate, Writer writer) {
         /*
          * The code is not vulnerable to XXE-based attacks as it does not process any external XML nor XSL input.
          * Should the transformerFactory be used for such purposes, it has to be appropriately secured:
@@ -302,10 +312,9 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         try {
             Transformer transformer = transformationTemplate == null ? transformerFactory.newTransformer()
                     : transformerFactory.newTransformer(transformationTemplate);
-            // See https://stackoverflow.com/questions/46708498/jaxb-marshaller-indentation.
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", String.valueOf(indentation));
-            transformer.transform(source, new StreamResult(writer));
+            transformer.transform(new DOMSource(domResult.getNode()), new StreamResult(writer));
         } catch (TransformerException transformerException) {
             String errorMessage = String.format("Failed to format XML for a root element class (%s).", rootClass.getName());
             throw new TimefoldXmlSerializationException(errorMessage, transformerException);

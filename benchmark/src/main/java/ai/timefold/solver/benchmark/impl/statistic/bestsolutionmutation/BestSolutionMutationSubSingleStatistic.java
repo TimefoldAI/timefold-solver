@@ -16,7 +16,7 @@ import io.micrometer.core.instrument.Tags;
 public class BestSolutionMutationSubSingleStatistic<Solution_>
         extends ProblemBasedSubSingleStatistic<Solution_, BestSolutionMutationStatisticPoint> {
 
-    BestSolutionMutationSubSingleStatistic() {
+    private BestSolutionMutationSubSingleStatistic() {
         // For JAXB.
     }
 

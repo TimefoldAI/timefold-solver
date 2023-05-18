@@ -14,7 +14,6 @@ import jakarta.xml.bind.annotation.XmlID;
 import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
-import ai.timefold.solver.benchmark.impl.measurement.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.ranking.ScoreSubSingleBenchmarkRankingComparator;
 import ai.timefold.solver.benchmark.impl.ranking.SubSingleBenchmarkRankBasedComparator;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
@@ -53,8 +52,6 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     private SubSingleBenchmarkResult median = null;
     private SubSingleBenchmarkResult best = null;
     private SubSingleBenchmarkResult worst = null;
-    private Integer uninitializedSolutionCount = null;
-    private Integer infeasibleScoreCount = null;
     // Not a Score because
     // - the squaring would cause overflow for relatively small int and long scores.
     // - standard deviation should not be rounded to integer numbers
@@ -129,6 +126,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         this.usedMemoryAfterInputSolution = usedMemoryAfterInputSolution;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Integer getFailureCount() {
         return failureCount;
     }
@@ -153,6 +151,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         this.scoreCalculationCount = scoreCalculationCount;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getScoreExplanationSummary() {
         return scoreExplanationSummary;
     }
@@ -211,18 +210,6 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         return worst;
     }
 
-    public double[] getStandardDeviationDoubles() {
-        return standardDeviationDoubles;
-    }
-
-    public Integer getInfeasibleScoreCount() {
-        return infeasibleScoreCount;
-    }
-
-    public Integer getUninitializedSolutionCount() {
-        return uninitializedSolutionCount;
-    }
-
     public Score<?> getTotalScore() {
         return totalScore;
     }
@@ -231,6 +218,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     // Smart getters
     // ************************************************************************
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(getName());
     }
@@ -241,10 +229,6 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     @Override
     public String getName() {
         return problemBenchmarkResult.getName() + "_" + solverBenchmarkResult.getName();
-    }
-
-    public File getBenchmarkReportDirectory() {
-        return problemBenchmarkResult.getBenchmarkReportDirectory();
     }
 
     @Override
@@ -274,6 +258,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         return scoreCalculationCount * 1000L / timeMillisSpent;
     }
 
+    @SuppressWarnings("unused") // Used By FreeMarker.
     public boolean isWinner() {
         return ranking != null && ranking.intValue() == 0;
     }
@@ -286,6 +271,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         return subSingleBenchmarkResultList.size() - failureCount;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getStandardDeviationString() {
         return StatisticUtils.getStandardDeviationString(standardDeviationDoubles);
     }
@@ -347,8 +333,6 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         failureCount = 0;
         boolean firstNonFailure = true;
         totalScore = null;
-        uninitializedSolutionCount = 0;
-        infeasibleScoreCount = 0;
         List<SubSingleBenchmarkResult> successResultList = new ArrayList<>(subSingleBenchmarkResultList);
         // Do not rank a SubSingleBenchmarkResult that has a failure
         for (Iterator<SubSingleBenchmarkResult> it = successResultList.iterator(); it.hasNext();) {
@@ -357,11 +341,6 @@ public class SingleBenchmarkResult implements BenchmarkResult {
                 failureCount++;
                 it.remove();
             } else {
-                if (!subSingleBenchmarkResult.isInitialized()) {
-                    uninitializedSolutionCount++;
-                } else if (!subSingleBenchmarkResult.isScoreFeasible()) {
-                    infeasibleScoreCount++;
-                }
                 if (firstNonFailure) {
                     totalScore = subSingleBenchmarkResult.getAverageScore();
                     firstNonFailure = false;

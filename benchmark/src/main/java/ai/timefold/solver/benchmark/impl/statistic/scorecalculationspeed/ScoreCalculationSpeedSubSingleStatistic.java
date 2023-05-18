@@ -20,7 +20,7 @@ public class ScoreCalculationSpeedSubSingleStatistic<Solution_>
 
     private long timeMillisThresholdInterval;
 
-    ScoreCalculationSpeedSubSingleStatistic() {
+    private ScoreCalculationSpeedSubSingleStatistic() {
         // For JAXB.
     }
 

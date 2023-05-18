@@ -1,63 +1,31 @@
 package ai.timefold.solver.benchmark.impl.statistic.subsingle.constraintmatchtotalbestscore;
 
-import java.io.File;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
+import ai.timefold.solver.benchmark.impl.report.LineChart;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.benchmark.impl.statistic.common.MillisecondsSpentNumberFormat;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYStepRenderer;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
 import io.micrometer.core.instrument.Tags;
 
 public class ConstraintMatchTotalBestScoreSubSingleStatistic<Solution_>
-        extends PureSubSingleStatistic<Solution_, ConstraintMatchTotalBestScoreStatisticPoint> {
+        extends PureSubSingleStatistic<Solution_, ConstraintMatchTotalBestScoreStatisticPoint, LineChart<Long, Double>> {
 
-    @XmlTransient
-    protected List<File> graphFileList = null;
-
-    ConstraintMatchTotalBestScoreSubSingleStatistic() {
+    private ConstraintMatchTotalBestScoreSubSingleStatistic() {
         // For JAXB.
     }
 
     public ConstraintMatchTotalBestScoreSubSingleStatistic(SubSingleBenchmarkResult subSingleBenchmarkResult) {
         super(subSingleBenchmarkResult, SingleStatisticType.CONSTRAINT_MATCH_TOTAL_BEST_SCORE);
     }
-
-    /**
-     * @return never null
-     */
-    @Override
-    public List<File> getGraphFileList() {
-        return graphFileList;
-    }
-
-    // ************************************************************************
-    // Lifecycle methods
-    // ************************************************************************
 
     @Override
     public void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
@@ -72,10 +40,6 @@ public class ConstraintMatchTotalBestScoreSubSingleStatistic<Solution_>
                                 constraintSummary.getCount(),
                                 constraintSummary.getScore()))));
     }
-
-    // ************************************************************************
-    // CSV methods
-    // ************************************************************************
 
     @Override
     protected String getCsvHeader() {
@@ -92,78 +56,45 @@ public class ConstraintMatchTotalBestScoreSubSingleStatistic<Solution_>
                 Integer.parseInt(csvLine.get(3)), scoreDefinition.parseScore(csvLine.get(4)));
     }
 
-    // ************************************************************************
-    // Write methods
-    // ************************************************************************
-
     @Override
-    public void writeGraphFiles(BenchmarkReport benchmarkReport) {
-        List<Map<String, XYSeries>> constraintIdToWeightSeriesMapList = new ArrayList<>(
-                BenchmarkReport.CHARTED_SCORE_LEVEL_SIZE);
+    protected List<LineChart<Long, Double>> generateCharts(BenchmarkReport benchmarkReport) {
+        List<LineChart.Builder<Long, Double>> builderList = new ArrayList<>(BenchmarkReport.CHARTED_SCORE_LEVEL_SIZE);
         for (ConstraintMatchTotalBestScoreStatisticPoint point : getPointList()) {
             long timeMillisSpent = point.getTimeMillisSpent();
             double[] levelValues = point.getScoreTotal().toLevelDoubles();
             for (int i = 0; i < levelValues.length && i < BenchmarkReport.CHARTED_SCORE_LEVEL_SIZE; i++) {
-                if (i >= constraintIdToWeightSeriesMapList.size()) {
-                    constraintIdToWeightSeriesMapList.add(new LinkedHashMap<>());
+                if (i >= builderList.size()) {
+                    builderList.add(new LineChart.Builder<>());
                 }
-                Map<String, XYSeries> constraintIdToWeightSeriesMap = constraintIdToWeightSeriesMapList.get(i);
-                XYSeries weightSeries = constraintIdToWeightSeriesMap.computeIfAbsent(point.getConstraintId(),
-                        k -> new XYSeries(point.getConstraintName() + " weight"));
+                LineChart.Builder<Long, Double> builder = builderList.get(i);
+                String seriesLabel = point.getConstraintName() + " weight";
                 // Only add changes
-                if (levelValues[i] != ((weightSeries.getItemCount() == 0) ? 0.0
-                        : weightSeries.getY(weightSeries.getItemCount() - 1).doubleValue())) {
-                    weightSeries.add(timeMillisSpent, levelValues[i]);
+                double lastValue = (builder.count(seriesLabel) == 0) ? 0.0 : builder.getLastValue(seriesLabel);
+                if (levelValues[i] != lastValue) {
+                    builder.add(seriesLabel, timeMillisSpent, levelValues[i]);
                 }
             }
         }
         long timeMillisSpent = subSingleBenchmarkResult.getTimeMillisSpent();
-        for (Map<String, XYSeries> constraintIdToWeightSeriesMap : constraintIdToWeightSeriesMapList) {
-            for (Iterator<Map.Entry<String, XYSeries>> it = constraintIdToWeightSeriesMap.entrySet().iterator(); it
-                    .hasNext();) {
-                XYSeries weightSeries = it.next().getValue();
-                if (weightSeries.getItemCount() == 0) {
-                    // Only show the constraint type on the score levels that it affects
-                    it.remove();
-                } else {
-                    // Draw a horizontal line from the last new best step to how long the solver actually ran
-                    weightSeries.add(timeMillisSpent, weightSeries.getY(weightSeries.getItemCount() - 1).doubleValue());
-                }
+        for (LineChart.Builder<Long, Double> builder : builderList) {
+            for (String key : builder.keys()) {
+                // Draw a horizontal line from the last new best step to how long the solver actually ran
+                builder.add(key, timeMillisSpent, builder.getLastValue(key));
             }
         }
-        graphFileList = new ArrayList<>(constraintIdToWeightSeriesMapList.size());
-        for (int scoreLevelIndex = 0; scoreLevelIndex < constraintIdToWeightSeriesMapList.size(); scoreLevelIndex++) {
-            XYPlot plot = createPlot(benchmarkReport, scoreLevelIndex);
-            // No direct ascending lines between 2 points, but a stepping line instead
-            XYItemRenderer renderer = new XYStepRenderer();
-            plot.setRenderer(renderer);
-            XYSeriesCollection seriesCollection = new XYSeriesCollection();
-            for (XYSeries series : constraintIdToWeightSeriesMapList.get(scoreLevelIndex).values()) {
-                seriesCollection.addSeries(series);
-            }
-            plot.setDataset(seriesCollection);
+        List<LineChart<Long, Double>> chartList = new ArrayList<>(builderList.size());
+        for (int scoreLevelIndex = 0; scoreLevelIndex < builderList.size(); scoreLevelIndex++) {
             String scoreLevelLabel = subSingleBenchmarkResult.getSingleBenchmarkResult().getProblemBenchmarkResult()
                     .findScoreLevelLabel(scoreLevelIndex);
-            JFreeChart chart = new JFreeChart(subSingleBenchmarkResult.getName()
-                    + " constraint match total best " + scoreLevelLabel + " diff statistic",
-                    JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-            graphFileList.add(writeChartToImageFile(chart,
-                    "ConstraintMatchTotalBestScoreStatisticLevel" + scoreLevelIndex));
+            LineChart.Builder<Long, Double> builder = builderList.get(scoreLevelIndex);
+            LineChart<Long, Double> chart =
+                    builder.build("constraintMatchTotalBestScoreSubSingleStatisticChart" + scoreLevelIndex,
+                            subSingleBenchmarkResult.getName() + " constraint match total best " + scoreLevelLabel
+                                    + " diff statistic",
+                            "Time spent", "Constraint match total " + scoreLevelLabel, true, true, false);
+            chartList.add(chart);
         }
-    }
-
-    private XYPlot createPlot(BenchmarkReport benchmarkReport, int scoreLevelIndex) {
-        Locale locale = benchmarkReport.getLocale();
-        NumberAxis xAxis = new NumberAxis("Time spent");
-        xAxis.setNumberFormatOverride(new MillisecondsSpentNumberFormat(locale));
-        String scoreLevelLabel = subSingleBenchmarkResult.getSingleBenchmarkResult().getProblemBenchmarkResult()
-                .findScoreLevelLabel(scoreLevelIndex);
-        NumberAxis yAxis = new NumberAxis("Constraint match total " + scoreLevelLabel);
-        yAxis.setNumberFormatOverride(NumberFormat.getInstance(locale));
-        yAxis.setAutoRangeIncludesZero(false);
-        XYPlot plot = new XYPlot(null, xAxis, yAxis, null);
-        plot.setOrientation(PlotOrientation.VERTICAL);
-        return plot;
+        return chartList;
     }
 
 }

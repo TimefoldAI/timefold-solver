@@ -10,7 +10,6 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 
-import ai.timefold.solver.benchmark.impl.measurement.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.benchmark.impl.report.ReportHelper;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticUtils;
@@ -150,10 +149,12 @@ public class SolverBenchmarkResult {
         return totalWinningScoreDifference;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public ScoreDifferencePercentage getAverageWorstScoreDifferencePercentage() {
         return averageWorstScoreDifferencePercentage;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getAverageScoreCalculationSpeed() {
         return averageScoreCalculationSpeed;
     }
@@ -162,6 +163,7 @@ public class SolverBenchmarkResult {
         return averageTimeMillisSpent;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Double getAverageWorstScoreCalculationSpeedDifferencePercentage() {
         return averageWorstScoreCalculationSpeedDifferencePercentage;
     }
@@ -178,6 +180,7 @@ public class SolverBenchmarkResult {
     // Smart getters
     // ************************************************************************
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(name);
     }
@@ -193,6 +196,7 @@ public class SolverBenchmarkResult {
         return getSingleBenchmarkResultList().size() - getFailureCount();
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public boolean hasAnySuccess() {
         return getSuccessCount() > 0;
     }
@@ -201,10 +205,12 @@ public class SolverBenchmarkResult {
         return failureCount > 0;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public boolean hasAnyUninitializedSolution() {
         return uninitializedSolutionCount > 0;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public boolean hasAnyInfeasibleScore() {
         return infeasibleScoreCount > 0;
     }
@@ -213,6 +219,7 @@ public class SolverBenchmarkResult {
         return ranking != null && ranking.intValue() == 0;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Score getAverageWinningScoreDifference() {
         if (totalWinningScoreDifference == null) {
             return null;
@@ -220,18 +227,11 @@ public class SolverBenchmarkResult {
         return totalWinningScoreDifference.divide(getSuccessCount());
     }
 
-    public List<Score> getScoreList() {
-        List<Score> scoreList = new ArrayList<>(singleBenchmarkResultList.size());
-        for (SingleBenchmarkResult singleBenchmarkResult : singleBenchmarkResultList) {
-            scoreList.add(singleBenchmarkResult.getAverageScore());
-        }
-        return scoreList;
-    }
-
     /**
      * @param problemBenchmarkResult never null
      * @return sometimes null
      */
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public SingleBenchmarkResult findSingleBenchmark(ProblemBenchmarkResult problemBenchmarkResult) {
         for (SingleBenchmarkResult singleBenchmarkResult : singleBenchmarkResultList) {
             if (problemBenchmarkResult.equals(singleBenchmarkResult.getProblemBenchmarkResult())) {
@@ -241,6 +241,7 @@ public class SolverBenchmarkResult {
         return null;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getSolverConfigAsString() {
         GenericJaxbIO<SolverConfig> xmlIO = new GenericJaxbIO<>(SolverConfig.class);
         StringWriter stringWriter = new StringWriter();
@@ -252,6 +253,7 @@ public class SolverBenchmarkResult {
         return solverConfig.determineEnvironmentMode();
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getStandardDeviationString() {
         return StatisticUtils.getStandardDeviationString(standardDeviationDoubles);
     }

@@ -16,7 +16,7 @@ import io.micrometer.core.instrument.Tags;
 public class MoveCountPerStepSubSingleStatistic<Solution_>
         extends ProblemBasedSubSingleStatistic<Solution_, MoveCountPerStepStatisticPoint> {
 
-    MoveCountPerStepSubSingleStatistic() {
+    private MoveCountPerStepSubSingleStatistic() {
         // For JAXB.
     }
 
