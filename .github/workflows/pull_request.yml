@@ -23,5 +23,5 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Full build with Maven
+      - name: Build and test timefold-solver
         run: mvn -B -Dfull verify

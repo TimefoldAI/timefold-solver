@@ -17,8 +17,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v3
         with:
+          path: 'timefold-solver'
+          repository: 'TimefoldAI/timefold-solver'
+          fetch-depth: 0
+
+      - name: Checkout timefold-quickstarts
+        uses: actions/checkout@v3
+        with:
+          path: 'timefold-quickstarts'
+          repository: 'TimefoldAI/timefold-quickstarts'
+          ref: development
           fetch-depth: 0
 
       - uses: actions/setup-java@v3
@@ -27,19 +38,35 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set release version
+      - name: Set release version timefold-solver
+        working-directory: ./timefold-solver
         run: mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
 
-      - name: Commit and push release version
+      - name: Commit and push release version timefold-solver
         uses: actions-js/push@v1.4
         with:
+          directory: ./timefold-solver
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
           message: Set release version ${{ github.event.inputs.version }}
 
-      - name: Build stage release
+      - name: Build release timefold-solver
+        working-directory: ./timefold-solver
         run: mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
-      - name: Run JReleaser
+      - name: Update antora.yml timefold-solver
+        working-directory: ./timefold-solver
+        run: |
+          cp docs/target/antora-template.yml docs/src/antora.yml
+
+      - name: Commit and push update antora.yml timefold-solver
+        uses: actions-js/push@v1.4
+        with:
+          directory: ./timefold-solver
+          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          message: Update antora.yml for release ${{ github.event.inputs.version }}
+
+      - name: Run JReleaser timefold-solver
+        working-directory: ./timefold-solver
         run: mvn --no-transfer-progress --batch-mode -Dfull -pl . jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
@@ -49,21 +76,23 @@ jobs:
           JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME }}
           JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD }}
 
-      - name: JReleaser release output
+      - name: JReleaser release output timefold-solver
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: jreleaser-release
           path: |
-            target/jreleaser/trace.log
-            target/jreleaser/output.properties
+            timefold-solver/target/jreleaser/trace.log
+            timefold-solver/target/jreleaser/output.properties
 
-      - name: Set snapshot version
+      - name: Set snapshot version timefold-solver
+        working-directory: ./timefold-solver
         run: mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
 
-      - name: Commit and push tag snapshot version
+      - name: Commit and push tag snapshot version timefold-solver
         uses: actions-js/push@v1.4
         with:
+          directory: ./timefold-solver
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
           message: Set next SNAPSHOT version ${{ github.event.inputs.nextVersion }}-SNAPSHOT
           tags: true
