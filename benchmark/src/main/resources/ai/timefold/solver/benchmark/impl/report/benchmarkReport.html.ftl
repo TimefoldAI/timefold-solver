@@ -766,7 +766,7 @@
                     <tr>
                         <th>Benchmark time spent</th>
                         <#if benchmarkReport.plannerBenchmarkResult.benchmarkTimeMillisSpent??>
-                            <td>${benchmarkReport.plannerBenchmarkResult.benchmarkTimeMillisSpent?string.@msDuration}</td>[
+                            <td>${benchmarkReport.plannerBenchmarkResult.benchmarkTimeMillisSpent?string.@msDuration}</td>
                         <#else>
                             <td>Differs</td>
                         </#if>
