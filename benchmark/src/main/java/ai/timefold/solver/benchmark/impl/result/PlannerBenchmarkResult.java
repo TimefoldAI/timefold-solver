@@ -123,7 +123,7 @@ public class PlannerBenchmarkResult {
         return operatingSystem;
     }
 
-    public String getTimefoldVersion() {
+    public String getTimefoldSolverVersion() {
         return timefoldSolverVersion;
     }
 
