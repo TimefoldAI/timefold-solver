@@ -121,7 +121,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     public void phaseEnded(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         // Only update the best solution if the CH made any change.
-        if (!phaseScope.getStartingScore().isSolutionInitialized()) {
+        if (!phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
             solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
         }
         entityPlacer.phaseEnded(phaseScope);

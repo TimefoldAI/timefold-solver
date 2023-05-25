@@ -7,15 +7,15 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 public class TestdataEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
     @Override
-    public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+    public SimpleScore calculateScore(TestdataSolution solution) {
         int score = 0;
-        for (TestdataEntity left : testdataSolution.getEntityList()) {
+        for (TestdataEntity left : solution.getEntityList()) {
             TestdataValue value = left.getValue();
             if (value == null) {
                 continue;
             }
-            for (TestdataEntity right : testdataSolution.getEntityList()) {
-                if (Objects.equals(right.getValue(), value)) {
+            for (TestdataEntity right : solution.getEntityList()) {
+                if (left != right && Objects.equals(right.getValue(), value)) {
                     score -= 1;
                 }
             }
