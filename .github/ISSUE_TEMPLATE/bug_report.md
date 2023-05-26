@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: 'Bug: '
-labels: 'bug', 'needs triage'
+labels: bug, needs triage
 assignees: ''
 
 ---
@@ -38,5 +38,3 @@ Alternatively, provide clear and concise steps to reproduce the behavior:
 ## Additional information
 
 Provide any and all other information which might be relevant to the issue.
-
-
