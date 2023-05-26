@@ -1,15 +1,6 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: 'Bug: '
-labels: bug, needs triage
-assignees: ''
-
----
-
 name: Bug Report
 description: Report a bug in Timefold Solver
-labels: kind/bug
+labels: bug
 body:
   - type: textarea
     id: description
