@@ -43,7 +43,7 @@ class DefaultLocalSearchPhaseTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v1)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         TestdataEntity solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -74,7 +74,7 @@ class DefaultLocalSearchPhaseTest {
                 new TestdataPinnedEntity("e2", v2, true, false),
                 new TestdataPinnedEntity("e3", null, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         TestdataPinnedEntity solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -101,7 +101,7 @@ class DefaultLocalSearchPhaseTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }
@@ -124,7 +124,7 @@ class DefaultLocalSearchPhaseTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v1)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         TestdataEntity solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -156,7 +156,7 @@ class DefaultLocalSearchPhaseTest {
                 new TestdataPinnedEntity("e2", v2, true, false),
                 new TestdataPinnedEntity("e3", null, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         TestdataPinnedEntity solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -184,7 +184,7 @@ class DefaultLocalSearchPhaseTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }

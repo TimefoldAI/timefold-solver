@@ -5,14 +5,14 @@
 # The goal is to have the antora.yml containing correct attributes available in the release branch before
 # the timefold-solver-website is refreshed.
 name: timefold-solver
-title: Timefold Solver 0.9.38
+title: Timefold Solver 0.9.39
 version: latest
 asciidoc:
   attributes:
-    timefold-solver-version: 0.9.38
+    timefold-solver-version: 0.9.39
     java-version: 17
     maven-version: 3.8.1
-    quarkus-version: 3.0.0.Final
+    quarkus-version: 3.0.3.Final
     spring-boot-version: 3.0.6
 nav:
   - modules/ROOT/nav.adoc

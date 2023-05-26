@@ -32,7 +32,7 @@ class NoChangePhaseTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v1)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
         TestdataEntity solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);

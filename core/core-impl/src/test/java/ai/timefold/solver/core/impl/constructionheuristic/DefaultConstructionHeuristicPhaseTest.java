@@ -11,6 +11,9 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
+import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
@@ -21,8 +24,8 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @Test
     void solveWithInitializedEntities() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverConfig.setPhaseConfigList(Collections.singletonList(new ConstructionHeuristicPhaseConfig()));
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
 
         TestdataSolution solution = new TestdataSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");
@@ -50,8 +53,8 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @Test
     void solveWithInitializedSolution() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverConfig.setPhaseConfigList(Collections.singletonList(new ConstructionHeuristicPhaseConfig()));
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
 
         TestdataSolution inputProblem = new TestdataSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");
@@ -63,15 +66,15 @@ class DefaultConstructionHeuristicPhaseTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v3)));
 
-        TestdataSolution solution = PlannerTestUtils.solve(solverConfig, inputProblem);
+        TestdataSolution solution = PlannerTestUtils.solve(solverConfig, inputProblem, false);
         assertThat(inputProblem).isSameAs(solution);
     }
 
     @Test
     void solveWithPinnedEntities() {
         SolverConfig solverConfig =
-                PlannerTestUtils.buildSolverConfig(TestdataPinnedSolution.class, TestdataPinnedEntity.class);
-        solverConfig.setPhaseConfigList(Collections.singletonList(new ConstructionHeuristicPhaseConfig()));
+                PlannerTestUtils.buildSolverConfig(TestdataPinnedSolution.class, TestdataPinnedEntity.class)
+                        .withPhases(new ConstructionHeuristicPhaseConfig());
 
         TestdataPinnedSolution solution = new TestdataPinnedSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");
@@ -98,9 +101,41 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @Test
+    void solveWithNullableEntities() {
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataNullableSolution.class)
+                .withEntityClasses(TestdataNullableEntity.class)
+                .withEasyScoreCalculatorClass(TestdataNullableEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        TestdataNullableSolution solution = new TestdataNullableSolution("s1");
+        TestdataValue v1 = new TestdataValue("v1");
+        TestdataValue v2 = new TestdataValue("v2");
+        solution.setValueList(Arrays.asList(v1, v2));
+        solution.setEntityList(Arrays.asList(
+                new TestdataNullableEntity("e1", null),
+                new TestdataNullableEntity("e2", null),
+                new TestdataNullableEntity("e3", null)));
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        TestdataNullableEntity solvedE1 = solution.getEntityList().get(0);
+        assertCode("e1", solvedE1);
+        assertThat(solvedE1.getValue()).isEqualTo(v1);
+        TestdataNullableEntity solvedE2 = solution.getEntityList().get(1);
+        assertCode("e2", solvedE2);
+        assertThat(solvedE2.getValue()).isEqualTo(v2);
+        TestdataNullableEntity solvedE3 = solution.getEntityList().get(2);
+        assertCode("e3", solvedE3);
+        assertThat(solvedE3.getValue()).isEqualTo(null);
+        assertThat(solution.getScore().initScore()).isEqualTo(0);
+        assertThat(solution.getScore().score()).isEqualTo(-1);
+    }
+
+    @Test
     void solveWithEmptyEntityList() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverConfig.setPhaseConfigList(Collections.singletonList(new ConstructionHeuristicPhaseConfig()));
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
 
         TestdataSolution solution = new TestdataSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");
@@ -109,7 +144,7 @@ class DefaultConstructionHeuristicPhaseTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }

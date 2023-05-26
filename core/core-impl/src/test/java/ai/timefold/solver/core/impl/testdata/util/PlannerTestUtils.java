@@ -1,31 +1,29 @@
 package ai.timefold.solver.core.impl.testdata.util;
 
 import static java.util.Arrays.stream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.phase.PhaseConfig;
-import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -62,25 +60,27 @@ public class PlannerTestUtils {
 
     public static <Solution_> SolverConfig buildSolverConfig(Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
-        SolverConfig solverConfig = new SolverConfig();
-        solverConfig.setSolutionClass(solutionClass);
-        solverConfig.setEntityClassList(Arrays.asList(entityClasses));
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
-        scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
-        solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
-        List<PhaseConfig> phaseConfigList = new ArrayList<>(2);
-        phaseConfigList.add(new ConstructionHeuristicPhaseConfig());
-        LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
-        localSearchPhaseConfig
-                .setTerminationConfig(new TerminationConfig().withStepCountLimit(TERMINATION_STEP_COUNT_LIMIT));
-        phaseConfigList.add(localSearchPhaseConfig);
-        solverConfig.setPhaseConfigList(phaseConfigList);
-        return solverConfig;
+        return new SolverConfig()
+                .withSolutionClass(solutionClass)
+                .withEntityClasses(entityClasses)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(
+                                new TerminationConfig().withStepCountLimit(TERMINATION_STEP_COUNT_LIMIT)));
     }
 
     public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem) {
+        return solve(solverConfig, problem, true);
+    }
+
+    public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem, boolean bestSolutionEventExists) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
-        return solverFactory.buildSolver().solve(problem);
+        Solver<Solution_> solver = solverFactory.buildSolver();
+        AtomicReference<Solution_> eventBestSolutionRef = new AtomicReference<>();
+        solver.addEventListener(event -> eventBestSolutionRef.set(event.getNewBestSolution()));
+        Solution_ finalBestSolution = solver.solve(problem);
+        assertEquals(bestSolutionEventExists ? finalBestSolution : null, eventBestSolutionRef.get());
+        return finalBestSolution;
     }
 
     // ************************************************************************

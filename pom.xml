@@ -13,7 +13,7 @@
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.9.39-SNAPSHOT</version>
+  <version>0.9.40-SNAPSHOT</version>
 
   <name>Timefold Solver multiproject parent</name>
   <description>
@@ -39,7 +39,7 @@
          the default GroupId:ArtifactId to map both main branch and 7.x branches to the same SonarCloud project.
          As the sonar.moduleKey inherits the value of sonar.projectKey by default, we have to override it too. -->
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
-    <version.rewrite.plugin>4.45.0</version.rewrite.plugin>
+    <version.rewrite.plugin>4.46.0</version.rewrite.plugin>
   </properties>
 
   <scm>

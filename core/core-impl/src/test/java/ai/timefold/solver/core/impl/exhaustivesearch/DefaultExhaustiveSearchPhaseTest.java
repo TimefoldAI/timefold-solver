@@ -175,7 +175,7 @@ class DefaultExhaustiveSearchPhaseTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }

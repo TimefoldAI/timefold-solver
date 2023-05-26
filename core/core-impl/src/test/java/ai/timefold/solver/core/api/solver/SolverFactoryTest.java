@@ -9,13 +9,12 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
@@ -158,10 +157,13 @@ class SolverFactoryTest {
     @Test
     void localSearchAfterUnterminatedLocalSearch() {
         // Create a solver config that has two local searches, the second one unreachable.
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        List<PhaseConfig> phaseConfigList = solverConfig.getPhaseConfigList();
-        phaseConfigList.get(1).setTerminationConfig(new TerminationConfig());
-        phaseConfigList.add(new LocalSearchPhaseConfig());
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig(),
+                        new LocalSearchPhaseConfig());
 
         DefaultSolverFactory<TestdataSolution> solverFactory =
                 (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
