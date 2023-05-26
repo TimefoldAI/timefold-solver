@@ -1,7 +1,7 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: 'Bug: '
+about: Create a report to help us improve.
+title: ''
 labels: bug, needs triage
 assignees: ''
 
@@ -10,22 +10,16 @@ assignees: ''
 **Describe the bug**
 Describe the issue you are experiencing here.
 Tell us what you were trying to do and what happened.
-Provide a clear and concise description of what the problem is.
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+Describe clearly and concisely what you expected to happen.
 
 **Actual behavior**
-A clear and concise description of what actually happened.
+Describe clearly and concisely what actually happened.
 
 **To Reproduce**
-Link to a small reproducer (preferably a Maven project if the issue is not Gradle-specific) or attach an archive containing the reproducer to the issue.
-Alternatively, provide clear and concise steps to reproduce the behavior:
-
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Link to a small reproducer or attach an archive containing the reproducer to the issue.
+Alternatively, provide clear and concise steps to reproduce the behavior.
 
 ## Environment
 
