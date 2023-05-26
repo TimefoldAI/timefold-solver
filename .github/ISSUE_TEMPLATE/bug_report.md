@@ -1,38 +1,42 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
+title: 'Bug: '
+labels: 'bug', 'needs triage'
 assignees: ''
 
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+Describe the issue you are experiencing here.
+Tell us what you were trying to do and what happened.
+Provide a clear and concise description of what the problem is.
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Actual behavior**
+A clear and concise description of what actually happened.
 
 **To Reproduce**
-Steps to reproduce the behavior:
+Link to a small reproducer (preferably a Maven project if the issue is not Gradle-specific) or attach an archive containing the reproducer to the issue.
+Alternatively, provide clear and concise steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Environment
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Timefold Solver Version or Git ref**: 
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**Output of `java -version`:**
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Output of `uname -a` or `ver`:**
 
-**Additional context**
-Add any other context about the problem here.
+## Additional information
+
+Provide any and all other information which might be relevant to the issue.
+
+
