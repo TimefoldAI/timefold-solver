@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: '05:00'
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    commit-message:
+      prefix: "build: "
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: '06:00'
+    open-pull-requests-limit: 0
+    target-branch: "0.8.x"
+    commit-message:
+      prefix: "build: "
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
