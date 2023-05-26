@@ -53,6 +53,10 @@ body:
       value: |
         ## Environment
   - type: input
+    id: timefold_solver_version
+    attributes:
+    label:  Timefold Solver version of Git ref
+  - type: input
     id: uname
     attributes:
       label: Output of `uname -a` or `ver`
@@ -60,15 +64,11 @@ body:
     id: java_version
     attributes:
       label:  Output of `java -version`
-  - type: input
-    id: timefold_solver_version
-    attributes:
-      label:  Timefold Solver version of Git ref
   - type: textarea
     id: additional_info
     attributes:
       label: Additional information
       description: >
         If you have any additional information for us, use the field below.
-        Please note, you can attach screenshots or screen recordings here, by
+        You can attach screenshots or screen recordings here, by
         dragging and dropping files in the field below.
