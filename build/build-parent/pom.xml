@@ -21,7 +21,7 @@
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.4.7</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.20.0</version.org.apache.logging.log4j>
-    <version.io.quarkus>3.0.3.Final</version.io.quarkus>
+    <version.io.quarkus>3.1.0.Final</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.commons.text>1.10.0</version.org.apache.commons.text>
     <version.org.apache.poi>5.2.3</version.org.apache.poi>
@@ -29,10 +29,10 @@
     <version.org.freemarker>2.3.32</version.org.freemarker>
     <version.org.jdom2>2.0.6.1</version.org.jdom2>
     <version.org.jfree.jfreechart>1.5.4</version.org.jfree.jfreechart>
-    <version.org.openrewrite.recipe>1.19.3</version.org.openrewrite.recipe>
+    <version.org.openrewrite.recipe>1.19.4</version.org.openrewrite.recipe>
     <version.org.slf4j>2.0.6</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
-    <version.org.springframework>6.0.8</version.org.springframework>
-    <version.org.springframework.boot>3.0.6</version.org.springframework.boot>
+    <version.org.springframework>6.0.9</version.org.springframework>
+    <version.org.springframework.boot>3.1.0</version.org.springframework.boot>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -42,7 +42,7 @@
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
     <version.dependency.plugin>3.5.0</version.dependency.plugin>
     <version.formatter.plugin>2.22.0</version.formatter.plugin>
-    <version.impsort.plugin>1.8.0</version.impsort.plugin>
+    <version.impsort.plugin>1.9.0</version.impsort.plugin>
     <version.jacoco.plugin>0.8.10</version.jacoco.plugin>
     <!--
       Do not upgrade unless prepared to deal with JPMS issues.
@@ -50,7 +50,7 @@
     -->
     <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
-    <version.pitest.plugin>1.12.0</version.pitest.plugin>
+    <version.pitest.plugin>1.14.1</version.pitest.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sniffer.plugin>1.23</version.sniffer.plugin>
     <version.surefire.plugin>3.0.0-M8</version.surefire.plugin>
