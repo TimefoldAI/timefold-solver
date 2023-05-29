@@ -136,7 +136,8 @@ public class HeuristicConfigPolicy<Solution_> {
         EntityMimicRecorder<Solution_> put = entityMimicRecorderMap.put(id, mimicRecordingEntitySelector);
         if (put != null) {
             throw new IllegalStateException("Multiple " + EntityMimicRecorder.class.getSimpleName() + "s (usually "
-                    + EntitySelector.class.getSimpleName() + "s) have the same id (" + id + ").");
+                    + EntitySelector.class.getSimpleName() + "s) have the same id (" + id + ").\n" +
+                    "Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?");
         }
     }
 
@@ -148,7 +149,8 @@ public class HeuristicConfigPolicy<Solution_> {
         SubListMimicRecorder<Solution_> put = subListMimicRecorderMap.put(id, mimicRecordingSubListSelector);
         if (put != null) {
             throw new IllegalStateException("Multiple " + SubListMimicRecorder.class.getSimpleName() + "s (usually "
-                    + SubListSelector.class.getSimpleName() + "s) have the same id (" + id + ").");
+                    + SubListSelector.class.getSimpleName() + "s) have the same id (" + id + ").\n" +
+                    "Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?");
         }
     }
 
@@ -160,7 +162,8 @@ public class HeuristicConfigPolicy<Solution_> {
         ValueMimicRecorder<Solution_> put = valueMimicRecorderMap.put(id, mimicRecordingValueSelector);
         if (put != null) {
             throw new IllegalStateException("Multiple " + ValueMimicRecorder.class.getSimpleName() + "s (usually "
-                    + ValueSelector.class.getSimpleName() + "s) have the same id (" + id + ").");
+                    + ValueSelector.class.getSimpleName() + "s) have the same id (" + id + ").\n" +
+                    "Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?");
         }
     }
 

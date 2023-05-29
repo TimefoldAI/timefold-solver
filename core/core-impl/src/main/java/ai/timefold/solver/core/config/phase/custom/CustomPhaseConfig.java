@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.config.phase.custom;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
@@ -79,11 +81,22 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     }
 
     public CustomPhaseConfig withCustomPhaseCommandList(List<CustomPhaseCommand> customPhaseCommandList) {
+        boolean hasNullCommand = Objects.requireNonNullElse(customPhaseCommandList, Collections.emptyList())
+                .stream().anyMatch(Objects::isNull);
+        if (hasNullCommand) {
+            throw new IllegalArgumentException(
+                    "Custom phase commands (" + customPhaseCommandList + ") must not contain a null element.");
+        }
         this.customPhaseCommandList = customPhaseCommandList;
         return this;
     }
 
     public <Solution_> CustomPhaseConfig withCustomPhaseCommands(CustomPhaseCommand<Solution_>... customPhaseCommands) {
+        boolean hasNullCommand = Arrays.stream(customPhaseCommands).anyMatch(Objects::isNull);
+        if (hasNullCommand) {
+            throw new IllegalArgumentException(
+                    "Custom phase commands (" + Arrays.toString(customPhaseCommands) + ") must not contain a null element.");
+        }
         this.customPhaseCommandList = Arrays.asList(customPhaseCommands);
         return this;
     }

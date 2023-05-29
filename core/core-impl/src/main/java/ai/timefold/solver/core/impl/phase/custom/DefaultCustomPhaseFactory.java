@@ -31,6 +31,11 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         List<CustomPhaseCommand<Solution_>> customPhaseCommandList_ = new ArrayList<>(getCustomPhaseCommandListSize());
         if (phaseConfig.getCustomPhaseCommandClassList() != null) {
             for (Class<? extends CustomPhaseCommand> customPhaseCommandClass : phaseConfig.getCustomPhaseCommandClassList()) {
+                if (customPhaseCommandClass == null) {
+                    throw new IllegalArgumentException("The customPhaseCommandClass (" + customPhaseCommandClass
+                            + ") cannot be null in the customPhase (" + phaseConfig + ").\n" +
+                            "Maybe there was a typo in the class name provided in the solver config XML?");
+                }
                 customPhaseCommandList_.add(createCustomPhaseCommand(customPhaseCommandClass));
             }
         }
