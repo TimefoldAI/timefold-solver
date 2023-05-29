@@ -2,13 +2,12 @@
 <plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
   <benchmarkDirectory>local/data/general</benchmarkDirectory>
-  <parallelBenchmarkCount>8</parallelBenchmarkCount>
   <!--<warmUpMinutesSpentLimit>10</warmUpMinutesSpentLimit>-->
 
   <inheritedSolverBenchmark>
     <solver>
       <termination>
-        <minutesSpentLimit>1</minutesSpentLimit>
+        <minutesSpentLimit>5</minutesSpentLimit>
       </termination>
     </solver>
     <!--<subSingleCount>8</subSingleCount>-->
