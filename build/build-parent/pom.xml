@@ -41,18 +41,22 @@
     <version.assembly.plugin>3.5.0</version.assembly.plugin>
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
     <version.dependency.plugin>3.6.0</version.dependency.plugin>
+    <version.enforcer.plugin>3.3.0</version.enforcer.plugin>
     <version.formatter.plugin>2.22.0</version.formatter.plugin>
     <version.impsort.plugin>1.9.0</version.impsort.plugin>
     <version.jacoco.plugin>0.8.10</version.jacoco.plugin>
+    <version.jar.plugin>3.3.0</version.jar.plugin>
     <!--
       Do not upgrade unless prepared to deal with JPMS issues.
       If upgrading, ensure build still passes with the full profile (-Dfull).
     -->
     <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
+    <version.resources.plugin>3.3.1</version.resources.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sniffer.plugin>1.23</version.sniffer.plugin>
     <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
+    <version.source.plugin>3.3.0</version.source.plugin>
     <version.surefire.plugin>3.1.0</version.surefire.plugin>
     <version.versions.plugin>2.15.0</version.versions.plugin>
 
@@ -160,13 +164,12 @@
           <version>${version.io.quarkus}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>${version.dependency.plugin}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${version.enforcer.plugin}</version>
           <dependencies>
             <dependency>
               <groupId>org.ow2.asm</groupId>
@@ -324,16 +327,16 @@
         </plugin>
 
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
+          <version>${version.resources.plugin}</version>
           <configuration>
             <encoding>UTF-8</encoding>
           </configuration>
         </plugin>
         <!-- Packaging -->
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
+          <version>${version.jar.plugin}</version>
           <executions>
             <execution>
               <id>default-jar</id>
@@ -374,8 +377,8 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
+          <version>${version.source.plugin}</version>
           <configuration>
             <excludes>
               <!-- The JAXB nor XSD artifacts should not appear in the sources JAR either (see the maven-jar-plugin). -->
@@ -403,7 +406,6 @@
           <version>${version.versions.plugin}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>${version.javadoc.plugin}</version>
           <configuration>
@@ -413,7 +415,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${version.compiler.plugin}</version>
           <configuration>
@@ -553,7 +554,6 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${version.assembly.plugin}</version>
         </plugin>
@@ -577,19 +577,17 @@
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
       </plugin>
       <!-- Do not move to full profile. Otherwise upstream dependency changes can break our build without CI catching it. -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
+        <version>${version.dependency.plugin}</version>
         <executions>
           <execution>
             <id>analyze-only</id>
@@ -615,7 +613,6 @@
         <pluginManagement>
           <plugins>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
                 <!-- Append jacoco.agent.argLine property populated by JaCoCo's prepare-agent goal. -->
@@ -660,7 +657,6 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
               <execution>

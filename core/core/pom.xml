@@ -39,7 +39,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
           <skip>true</skip> <!-- This is an empty JAR to drag in dependencies; dep checks make no sense here. -->
