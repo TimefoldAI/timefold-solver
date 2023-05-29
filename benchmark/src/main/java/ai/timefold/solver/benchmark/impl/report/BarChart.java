@@ -53,8 +53,7 @@ public record BarChart<Y extends Number & Comparable<Y>>(String id, String title
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public BigDecimal yStepSize() {
-        List<Y> values = getYValues();
-        return LineChart.stepSize(values, timeOnY);
+        return LineChart.stepSize(yMin(), yMax());
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.

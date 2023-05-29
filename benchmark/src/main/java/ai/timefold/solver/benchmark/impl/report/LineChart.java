@@ -77,13 +77,12 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public BigDecimal xStepSize() {
-        return stepSize(keys, timeOnX);
+        return stepSize(xMin(), xMax());
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public BigDecimal yStepSize() {
-        List<Y> values = getYValues();
-        return stepSize(values, timeOnY);
+        return stepSize(yMin(), yMax());
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -121,47 +120,18 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
         return belowThresholdCount >= (0.6 * valueSet.size());
     }
 
-    static <N extends Number & Comparable<N>> BigDecimal stepSize(List<N> seriesList, boolean isTime) {
+    static BigDecimal stepSize(double min, double max) {
         // Prevents ticks of ugly values.
         // For example, if the diff is 123_456_789, the step size will be 1_000_000.
-        // In practice, this prescribes the amount of ticks to be around 100.
-        if (seriesList.isEmpty()) {
-            return BigDecimal.ONE;
-        }
-        double min = isTime ? 0.0
-                : seriesList.stream()
-                        .mapToDouble(Number::doubleValue)
-                        .min()
-                        .orElse(0.0);
-        double max = seriesList.stream()
-                .mapToDouble(Number::doubleValue)
-                .max()
-                .orElse(0.0);
-        double diff = Math.abs(max - min);
+        double diff = Math.abs(Math.min(0, min) - Math.max(0, max));
         if (diff == 0) {
             return BigDecimal.ONE;
-        } else if (diff > 1000) {
-            int digits = 0;
-            long num = (long) diff;
-            while (num != 0) {
-                num /= 10;
-                ++digits;
-            }
-            return BigDecimal.TEN.pow(digits - 2);
-        } else if (diff > 100) {
-            return BigDecimal.TEN;
-        } else if (diff > 10) {
-            return BigDecimal.ONE;
-        } else if (diff > 1) {
-            return new BigDecimal("0.1");
-        } else if (diff > 0.1) {
+        } else if (diff == 1) {
             return new BigDecimal("0.01");
-        } else if (diff > 0.01) {
-            return new BigDecimal("0.001");
-        } else if (diff > 0.001) {
-            return new BigDecimal("0.0001");
         } else {
-            return new BigDecimal("0.00001");
+            double nearestPowerOfTen = Math.pow(10, Math.round(Math.log10(diff)));
+            return BigDecimal.valueOf(nearestPowerOfTen)
+                    .divide(BigDecimal.valueOf(100));
         }
     }
 
