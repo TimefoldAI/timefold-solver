@@ -786,6 +786,18 @@
       </activation>
       <build>
         <plugins>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${version.source.plugin}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
           <plugin> <!-- Make sure the build fails-fast on Javadoc issues. -->
             <artifactId>maven-javadoc-plugin</artifactId>
             <executions>
