@@ -1,7 +1,6 @@
 # TODO release XSD to timefold.ai/xsd/
 # TODO reset timefold-quickstarts stable branch
 # TODO adjust website pom.yml release date and version
-# TODO update version in https://timefold.ai/product/upgrade/upgrade-timefold.gradle
 # TODO tag github issues with version
 name: Release
 on:
