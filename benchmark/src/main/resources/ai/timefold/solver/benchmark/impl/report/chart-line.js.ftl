@@ -13,7 +13,9 @@
 </#if>
 <#assign timeOnX = chart.timeOnX()>
 <#assign timeOnY = chart.timeOnY()>
-new Chart(document.getElementById('chart_${chart.id()}'), {
+<#assign chartId = "chart_" + chart.id()>
+
+var ${chartId} = new Chart(document.getElementById('${chartId}'), {
     type: 'line',
     data: {
         labels: [
@@ -41,8 +43,7 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
     options: {
         animation: false,
         responsive: true,
-        aspectRatio: 16/9,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         spanGaps: true,
         plugins: {
             title: {
@@ -83,11 +84,6 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
                         }
                     </#if>
                 },
-                <#if timeOnX>
-                    min: 0,
-                <#else>
-                    grace: '5%',
-                </#if>
                 type: '<#if xAxisLogarithmic>logarithmic<#else>linear</#if>',
                 display: true
             },
@@ -107,11 +103,6 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
                         }
                     </#if>
                 },
-                <#if timeOnY>
-                    min: 0,
-                <#else>
-                    grace: '5%',
-                </#if>
                 type: '<#if yAxisLogarithmic>logarithmic<#else>linear</#if>',
                 display: true
             }
@@ -119,4 +110,11 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
         <#include "shared-watermark.js.ftl" />
     },
     <#include "shared-background.js.ftl" />
+});
+
+window.addEventListener('beforeprint', () => {
+  ${chartId}.resize(1280, 720);
+});
+window.addEventListener('afterprint', () => {
+  ${chartId}.resize();
 });

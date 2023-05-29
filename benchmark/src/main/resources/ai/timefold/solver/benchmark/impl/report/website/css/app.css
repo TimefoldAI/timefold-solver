@@ -4,8 +4,11 @@
     background-color: var(--bs-light) !important;
 }
 
+/* Otherwise charts aren't properly responsive. */
 .chart-container {
     position: relative;
+    width:60vw;
+    height:60vh;
 }
 
 section {

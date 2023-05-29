@@ -7,7 +7,9 @@
     <#assign yAxisLabel>${chart.yLabel()}</#assign>
 </#if>
 <#assign timeOnY = chart.timeOnY()>
-new Chart(document.getElementById('chart_${chart.id()}'), {
+<#assign chartId = "chart_" + chart.id()>
+
+var ${chartId} = new Chart(document.getElementById('${chartId}'), {
     type: 'bar',
     data: {
         labels: [
@@ -32,8 +34,7 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
     options: {
         animation: false,
         responsive: true,
-        aspectRatio: 16/9,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         resizeDelay: 100,
         spanGaps: true,
         plugins: {
@@ -72,11 +73,6 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
                         }
                     </#if>
                 },
-                <#if timeOnY>
-                    min: 0,
-                <#else>
-                    grace: '5%',
-                </#if>
                 type: '<#if yAxisLogarithmic>logarithmic<#else>linear</#if>',
                 display: true
             }
@@ -84,4 +80,11 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
         <#include "shared-watermark.js.ftl" />
     },
     <#include "shared-background.js.ftl" />
+});
+
+window.addEventListener('beforeprint', () => {
+  ${chartId}.resize(1280, 720);
+});
+window.addEventListener('afterprint', () => {
+  ${chartId}.resize();
 });

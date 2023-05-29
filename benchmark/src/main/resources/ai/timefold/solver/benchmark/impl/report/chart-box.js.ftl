@@ -1,7 +1,9 @@
 <#ftl output_format="JavaScript"> <#-- So that Freemarker escapes automatically. -->
 <#assign xAxisLabel>${chart.xLabel()}</#assign>
 <#assign yAxisLabel>${chart.yLabel()}</#assign>
-new Chart(document.getElementById('chart_${chart.id()}'), {
+<#assign chartId = "chart_" + chart.id()>
+
+var ${chartId} = new Chart(document.getElementById('${chartId}'), {
     type: 'boxplot',
     data: {
         labels: [
@@ -44,8 +46,7 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
     options: {
         animation: false,
         responsive: true,
-        aspectRatio: 16/9,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
             title: {
                 display: true,
@@ -54,7 +55,6 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
         },
         scales: {
             x: {
-                grace: '5%',
                 display: true
             },
             y: {
@@ -62,11 +62,17 @@ new Chart(document.getElementById('chart_${chart.id()}'), {
                     display: true,
                     text: '${yAxisLabel}'
                 },
-                grace: '5%',
                 display: true
             }
         },
         <#include "shared-watermark.js.ftl" />
     },
     <#include "shared-background.js.ftl" />
+});
+
+window.addEventListener('beforeprint', () => {
+  ${chartId}.resize(1280, 720);
+});
+window.addEventListener('afterprint', () => {
+  ${chartId}.resize();
 });
