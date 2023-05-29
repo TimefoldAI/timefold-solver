@@ -30,6 +30,7 @@ jobs:
         uses: actions-js/push@v1.4
         with:
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          branch: 0.8.x
           message: Set release version ${{ github.event.inputs.version }}
 
       - name: Build stage release
@@ -43,6 +44,7 @@ jobs:
         uses: actions-js/push@v1.4
         with:
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          branch: 0.8.x
           message: Update antora.yml for release ${{ github.event.inputs.version }}
 
       - name: Run JReleaser
@@ -71,5 +73,6 @@ jobs:
         uses: actions-js/push@v1.4
         with:
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          branch: 0.8.x
           message: Set next SNAPSHOT version ${{ github.event.inputs.nextVersion }}-SNAPSHOT
           tags: true
