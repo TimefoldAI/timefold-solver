@@ -78,7 +78,7 @@
       <plugin>
         <groupId>org.jreleaser</groupId>
         <artifactId>jreleaser-maven-plugin</artifactId>
-        <version>1.5.1</version>
+        <version>1.6.0</version>
         <inherited>false</inherited>
         <configuration>
           <jreleaser>
@@ -95,6 +95,26 @@
                     <closeRepository>true</closeRepository>
                     <releaseRepository>false</releaseRepository>
                     <stagingRepositories>target/staging-deploy</stagingRepositories>
+                    <artifactOverrides>
+                      <artifactOverride>
+                        <groupId>ai.timefold.solver</groupId>
+                        <artifactId>timefold-solver-core</artifactId>
+                        <sourceJar>false</sourceJar>
+                        <javadocJar>false</javadocJar>
+                      </artifactOverride>
+                      <artifactOverride>
+                        <groupId>ai.timefold.solver</groupId>
+                        <artifactId>timefold-solver-spring-boot-starter</artifactId>
+                        <sourceJar>false</sourceJar>
+                        <javadocJar>false</javadocJar>
+                      </artifactOverride>
+                      <artifactOverride>
+                        <groupId>ai.timefold.solver</groupId>
+                        <artifactId>timefold-solver-ide-config</artifactId>
+                        <sourceJar>true</sourceJar>
+                        <javadocJar>false</javadocJar>
+                      </artifactOverride>
+                    </artifactOverrides>
                   </maven-central>
                 </nexus2>
               </maven>
