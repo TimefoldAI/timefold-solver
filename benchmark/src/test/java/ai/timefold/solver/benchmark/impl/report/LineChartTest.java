@@ -23,11 +23,12 @@ class LineChartTest {
             1234,           10
             12345,          100
             98765,          1000
+            42179797364,    1000000000
             """)
-    void stepSize(double difference, double expectedStepSize) {
-        BigDecimal actualStepSize = LineChart.stepSize(0, difference).stripTrailingZeros();
+    void stepSize(BigDecimal difference, BigDecimal expectedStepSize) {
+        BigDecimal actualStepSize = LineChart.stepSize(BigDecimal.ZERO, difference).stripTrailingZeros();
         Assertions.assertThat(actualStepSize)
-                .isEqualTo(BigDecimal.valueOf(expectedStepSize).stripTrailingZeros());
+                .isEqualTo(expectedStepSize.stripTrailingZeros());
     }
 
 }

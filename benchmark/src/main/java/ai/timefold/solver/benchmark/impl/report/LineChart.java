@@ -39,27 +39,42 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public long xMin() {
+    public BigDecimal xMin() {
         return min(keys);
     }
 
-    static <Number_ extends Number & Comparable<Number_>> long min(List<Number_> values) {
-        return Math.min(0, (long) Math.floor(Collections.min(values).doubleValue())); // Always include zero if not included already.
+    static <Number_ extends Number & Comparable<Number_>> BigDecimal min(List<Number_> values) {
+        if (values.size() == 0) {
+            return BigDecimal.ZERO;
+        }
+        double min = Collections.min(values).doubleValue();
+        if (min > 0) { // Always start with zero.
+            return BigDecimal.ZERO;
+        } else {
+            return BigDecimal.valueOf(min);
+        }
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public long xMax() {
+    public BigDecimal xMax() {
         return max(keys);
     }
 
-    static <Number_ extends Number & Comparable<Number_>> long max(List<Number_> values) {
-        return Math.max(0, (long) Math.ceil(Collections.max(values).doubleValue())); // Always include zero if not included already.
+    static <Number_ extends Number & Comparable<Number_>> BigDecimal max(List<Number_> values) {
+        if (values.size() == 0) {
+            return BigDecimal.ZERO;
+        }
+        double max = Collections.max(values).doubleValue();
+        if (max < 0) { // Always start with zero.
+            return BigDecimal.ZERO;
+        } else {
+            return BigDecimal.valueOf(max);
+        }
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public long yMin() {
-        List<Y> values = getYValues();
-        return min(values);
+    public BigDecimal yMin() {
+        return min(getYValues());
     }
 
     private List<Y> getYValues() {
@@ -70,9 +85,8 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public long yMax() {
-        List<Y> values = getYValues();
-        return max(values);
+    public BigDecimal yMax() {
+        return max(getYValues());
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -98,8 +112,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
         if (timeOnY) { // Logarithmic time doesn't make sense.
             return false;
         }
-        List<Y> values = getYValues();
-        return useLogarithmicProblemScale(values);
+        return useLogarithmicProblemScale(getYValues());
     }
 
     static <N extends Number & Comparable<N>> boolean useLogarithmicProblemScale(List<N> seriesList) {
@@ -120,10 +133,10 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
         return belowThresholdCount >= (0.6 * valueSet.size());
     }
 
-    static BigDecimal stepSize(double min, double max) {
+    static BigDecimal stepSize(BigDecimal min, BigDecimal max) {
         // Prevents ticks of ugly values.
         // For example, if the diff is 123_456_789, the step size will be 1_000_000.
-        double diff = Math.abs(Math.min(0, min) - Math.max(0, max));
+        double diff = max.subtract(min).abs().doubleValue();
         if (diff == 0) {
             return BigDecimal.ONE;
         } else if (diff == 1) {

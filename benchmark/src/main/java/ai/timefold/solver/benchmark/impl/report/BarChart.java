@@ -33,9 +33,8 @@ public record BarChart<Y extends Number & Comparable<Y>>(String id, String title
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public long yMin() {
-        List<Y> values = getYValues();
-        return LineChart.min(values);
+    public BigDecimal yMin() {
+        return LineChart.min(getYValues());
     }
 
     private List<Y> getYValues() {
@@ -46,9 +45,8 @@ public record BarChart<Y extends Number & Comparable<Y>>(String id, String title
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public long yMax() {
-        List<Y> values = getYValues();
-        return LineChart.min(values);
+    public BigDecimal yMax() {
+        return LineChart.max(getYValues());
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -61,8 +59,7 @@ public record BarChart<Y extends Number & Comparable<Y>>(String id, String title
         if (timeOnY) { // Logarithmic time doesn't make sense.
             return false;
         }
-        List<Y> values = getYValues();
-        return LineChart.useLogarithmicProblemScale(values);
+        return LineChart.useLogarithmicProblemScale(getYValues());
     }
 
     @Override
