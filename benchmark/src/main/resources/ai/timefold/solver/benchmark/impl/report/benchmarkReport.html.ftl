@@ -11,9 +11,9 @@
 
     <link href="website/css/app.css" rel="stylesheet"/>
     <link href="website/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="website/webjars/font-awesome/css/all.min.css" rel="stylesheet" />
     <link href="website/webjars/timefold/css/timefold-webui.css" rel="stylesheet" />
     <link href="website/css/prettify.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" /> <#-- Too large for a webjar. -->
 
     <script src="https://buttons.github.io/buttons.js"></script>
     <script src="website/js/app.js"></script> <#-- Contains functions called by chart.js; must go first. -->

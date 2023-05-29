@@ -63,7 +63,6 @@
     <version.org.webjars.webjars-locator>0.46</version.org.webjars.webjars-locator>
     <version.org.webjars.bootstrap>5.2.3</version.org.webjars.bootstrap>
     <version.org.webjars.jquery>3.6.4</version.org.webjars.jquery>
-    <version.org.webjars.font-awesome>6.4.0</version.org.webjars.font-awesome>
 
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.2</maven.min.version>
@@ -166,12 +165,6 @@
         <groupId>org.webjars</groupId>
         <artifactId>bootstrap</artifactId>
         <version>${version.org.webjars.bootstrap}</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>font-awesome</artifactId>
-        <version>${version.org.webjars.font-awesome}</version>
         <scope>runtime</scope>
       </dependency>
       <dependency>
