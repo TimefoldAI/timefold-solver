@@ -39,6 +39,16 @@ jobs:
       - name: Build stage release
         run: mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
+      - name: Update antora.yml timefold-solver
+        run: |
+          cp docs/target/antora-template.yml docs/src/antora.yml
+
+      - name: Commit and push update antora.yml timefold-solver
+        uses: actions-js/push@v1.4
+        with:
+          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          message: Update antora.yml for release ${{ github.event.inputs.version }}
+
       - name: Run JReleaser
         run: mvn --no-transfer-progress --batch-mode -Dfull -pl . jreleaser:full-release
         env:
