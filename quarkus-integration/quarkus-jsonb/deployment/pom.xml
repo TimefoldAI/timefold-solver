@@ -28,6 +28,10 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-builder</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jsonb-deployment</artifactId>
       <scope>runtime</scope>
     </dependency>

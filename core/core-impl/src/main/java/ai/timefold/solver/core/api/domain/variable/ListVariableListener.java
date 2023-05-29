@@ -19,7 +19,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * ({@link #resetWorkingSolution(ScoreDirector)}, {@link #close()}).
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <Entity_> @{@link PlanningEntity} on which the source variable is declared
+ * @param <Entity_> {@link PlanningEntity} on which the source variable is declared
  * @param <Element_> the type of elements of the source list variable
  */
 public interface ListVariableListener<Solution_, Entity_, Element_> extends AbstractVariableListener<Solution_, Entity_> {
@@ -40,6 +40,7 @@ public interface ListVariableListener<Solution_, Entity_, Element_> extends Abst
      * {@code toIndex} (exclusive) will change.
      * Be aware that the {@link #afterListVariableChanged} call after the change is done often has a different
      * {@code fromIndex} and {@code toIndex} because the number of elements in the list variable can change.
+     *
      * <p>
      * The list variable change includes:
      * <ul>
@@ -47,8 +48,11 @@ public interface ListVariableListener<Solution_, Entity_, Element_> extends Abst
      * <li>Removing one or more elements from the list variable.</li>
      * <li>Adding one or more elements to the list variable.</li>
      * <li>Any mix of the above.</li>
-     * The range has the following properties:
      * </ul>
+     *
+     * <p>
+     * The range has the following properties:
+     * <ol>
      * <li>{@code fromIndex} is greater than or equal to 0; {@code toIndex} is less than or equal to the list variable
      * size.</li>
      * <li>{@code toIndex} is greater than or equal to {@code fromIndex}.</li>
@@ -75,8 +79,11 @@ public interface ListVariableListener<Solution_, Entity_, Element_> extends Abst
      * <li>Removing one or more elements from the list variable.</li>
      * <li>Adding one or more elements to the list variable.</li>
      * <li>Any mix of the above.</li>
-     * The range has the following properties:
      * </ul>
+     *
+     * <p>
+     * The range has the following properties:
+     * <ol>
      * <li>{@code fromIndex} is greater than or equal to 0; {@code toIndex} is less than or equal to the list variable
      * size.</li>
      * <li>{@code toIndex} is greater than or equal to {@code fromIndex}.</li>

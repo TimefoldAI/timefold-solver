@@ -31,7 +31,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 /**
- * @implNote This class is thread-safe.
+ * This class is thread-safe.
  */
 public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCloner<Solution_> {
 
