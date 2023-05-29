@@ -59,8 +59,6 @@
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.2</maven.min.version>
     <maven.compiler.release>17</maven.compiler.release>
-    <!-- A workaround for https://youtrack.jetbrains.com/issue/IDEA-276403. -->
-    <maven.compiler.target>17</maven.compiler.target>
     <!-- This property needs to be defined in all modules that use the packaging 'jar'.
          It is used by different plugins to make sure the module/bundle names are consistent. -->
     <java.module.name/>
@@ -417,7 +415,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>${version.compiler.plugin}</version>
           <configuration>
+            <release>${maven.compiler.release}</release>
+            <source>${maven.compiler.release}</source>
+            <target>${maven.compiler.release}</target>
+            <encoding>${project.build.sourceEncoding}</encoding>
             <compilerArgs>
               <!-- Visit https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html
                    to learn more about javac warnings -->
