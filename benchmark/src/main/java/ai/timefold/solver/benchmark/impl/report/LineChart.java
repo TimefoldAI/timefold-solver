@@ -39,16 +39,50 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
+    public long xMin() {
+        return min(keys);
+    }
+
+    static <Number_ extends Number & Comparable<Number_>> long min(List<Number_> values) {
+        return Math.min(0, (long) Math.floor(Collections.min(values).doubleValue())); // Always include zero if not included already.
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public long xMax() {
+        return max(keys);
+    }
+
+    static <Number_ extends Number & Comparable<Number_>> long max(List<Number_> values) {
+        return Math.max(0, (long) Math.ceil(Collections.max(values).doubleValue())); // Always include zero if not included already.
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public long yMin() {
+        List<Y> values = getYValues();
+        return min(values);
+    }
+
+    private List<Y> getYValues() {
+        return datasets.stream()
+                .flatMap(d -> d.data().stream())
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public long yMax() {
+        List<Y> values = getYValues();
+        return max(values);
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public BigDecimal xStepSize() {
         return stepSize(keys, timeOnX);
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public BigDecimal yStepSize() {
-        List<Y> values = datasets.stream()
-                .flatMap(d -> d.data().stream())
-                .filter(Objects::nonNull)
-                .toList();
+        List<Y> values = getYValues();
         return stepSize(values, timeOnY);
     }
 
@@ -65,10 +99,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
         if (timeOnY) { // Logarithmic time doesn't make sense.
             return false;
         }
-        List<Y> values = datasets.stream()
-                .flatMap(d -> d.data().stream())
-                .filter(Objects::nonNull)
-                .toList();
+        List<Y> values = getYValues();
         return useLogarithmicProblemScale(values);
     }
 

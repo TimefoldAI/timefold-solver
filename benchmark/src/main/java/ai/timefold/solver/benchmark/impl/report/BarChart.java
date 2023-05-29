@@ -33,11 +33,27 @@ public record BarChart<Y extends Number & Comparable<Y>>(String id, String title
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public BigDecimal yStepSize() {
-        List<Y> values = datasets.stream()
+    public long yMin() {
+        List<Y> values = getYValues();
+        return LineChart.min(values);
+    }
+
+    private List<Y> getYValues() {
+        return datasets.stream()
                 .flatMap(d -> d.data().stream())
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public long yMax() {
+        List<Y> values = getYValues();
+        return LineChart.min(values);
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public BigDecimal yStepSize() {
+        List<Y> values = getYValues();
         return LineChart.stepSize(values, timeOnY);
     }
 
@@ -46,10 +62,7 @@ public record BarChart<Y extends Number & Comparable<Y>>(String id, String title
         if (timeOnY) { // Logarithmic time doesn't make sense.
             return false;
         }
-        List<Y> values = datasets.stream()
-                .flatMap(d -> d.data().stream())
-                .filter(Objects::nonNull)
-                .toList();
+        List<Y> values = getYValues();
         return LineChart.useLogarithmicProblemScale(values);
     }
 

@@ -84,6 +84,8 @@ var ${chartId} = new Chart(document.getElementById('${chartId}'), {
                         }
                     </#if>
                 },
+                suggestedMin: ${chart.xMin()?cn},
+                suggestedMax: ${chart.xMax()?cn},
                 type: '<#if xAxisLogarithmic>logarithmic<#else>linear</#if>',
                 display: true
             },
@@ -103,6 +105,8 @@ var ${chartId} = new Chart(document.getElementById('${chartId}'), {
                         }
                     </#if>
                 },
+                suggestedMin: ${chart.yMin()?cn},
+                suggestedMax: ${chart.yMax()?cn},
                 type: '<#if yAxisLogarithmic>logarithmic<#else>linear</#if>',
                 display: true
             }
