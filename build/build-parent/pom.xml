@@ -37,7 +37,7 @@
     <!-- ************************************************************************ -->
     <!-- Plugins -->
     <!-- ************************************************************************ -->
-    <version.asciidoctor.plugin>2.2.3</version.asciidoctor.plugin>
+    <version.asciidoctor.plugin>2.2.4</version.asciidoctor.plugin>
     <version.assembly.plugin>3.5.0</version.assembly.plugin>
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
     <version.dependency.plugin>3.5.0</version.dependency.plugin>
