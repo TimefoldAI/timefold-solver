@@ -7,7 +7,7 @@
 /* Otherwise charts aren't properly responsive. */
 .chart-container {
     position: relative;
-    width:60vw;
+    width:70vw;
     height:60vh;
 }
 
