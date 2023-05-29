@@ -15,7 +15,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * {@link ai.timefold.solver.core.api.domain.variable.VariableListener both internal and custom variable listeners} are
  * never notified about them, resulting to inconsistencies in the {@link PlanningSolution working solution}.
  * Should be used only from a {@link ProblemChange} implementation.
- *
  * To see an example implementation, please refer to the {@link ProblemChange} Javadoc.
  */
 public interface ProblemChangeDirector {
@@ -117,8 +116,9 @@ public interface ProblemChangeDirector {
     /**
      * Calls variable listeners on the external changes submitted so far.
      *
-     * @apiNote This happens automatically after the entire {@link ProblemChange} has been processed,
-     *          but this method allows the user to specifically request it in the middle of the {@link ProblemChange}.
+     * <p>
+     * This happens automatically after the entire {@link ProblemChange} has been processed,
+     * but this method allows the user to specifically request it in the middle of the {@link ProblemChange}.
      */
     void updateShadowVariables();
 

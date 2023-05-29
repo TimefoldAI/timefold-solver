@@ -8,10 +8,12 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 /**
  * A notification represents some kind of change of a planning variable. When a score director is notified about a change,
  * one notification is created for each {@link Notifiable} registered for the subject of the change.
- * <p/>
+ *
+ * <p>
  * Each implementation is tailored to a specific {@link AbstractVariableListener} and triggers on the listener
  * the pair of "before/after" methods corresponding to the type of change it represents.
- * <p/>
+ *
+ * <p>
  * For example, if there is a shadow variable sourced on the {@code Process.computer} genuine planning variable,
  * then there is a notifiable {@code F} registered for the {@code Process.computer} planning variable, and it holds a basic
  * variable listener {@code L}.

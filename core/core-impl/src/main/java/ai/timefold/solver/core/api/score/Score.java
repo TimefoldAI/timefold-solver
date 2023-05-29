@@ -11,16 +11,16 @@ import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 /**
  * A Score is result of the score function (AKA fitness function) on a single possible solution.
  *
- * @implSpec
- *           <ul>
- *           <li>Implementations must be immutable,
- *           preferably a Java record or even a primitive record,
- *           if the target JDK permits that.</li>
- *           <li>Implementations must override {@link #initScore()},
- *           or else an endless loop occurs.</li>
- *           <li>Implementations are allowed to optionally implement Pareto comparison
- *           and therefore slightly violate the transitive requirement of {@link Comparable#compareTo(Object)}.</li>
- *           </ul>
+ * <ul>
+ * <li>Implementations must be immutable,
+ * preferably a Java record or even a primitive record,
+ * if the target JDK permits that.</li>
+ * <li>Implementations must override {@link #initScore()},
+ * or else an endless loop occurs.</li>
+ * <li>Implementations are allowed to optionally implement Pareto comparison
+ * and therefore slightly violate the transitive requirement of {@link Comparable#compareTo(Object)}.</li>
+ * </ul>
+ *
  * @param <Score_> the actual score type to allow addition, subtraction and other arithmetic
  * @see HardSoftScore
  */

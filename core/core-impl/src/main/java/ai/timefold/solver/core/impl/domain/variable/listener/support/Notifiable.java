@@ -6,7 +6,8 @@ import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
  * A notifiable’s purpose is to execute variable listener methods. This interface is the most
  * generalized form of a notifiable. It covers variable listener methods that are executed immediately
  * ({@link AbstractVariableListener#resetWorkingSolution} and {@link AbstractVariableListener#close}.
- * </p>
+ *
+ * <p>
  * Specialized notifiables use {@link Notification}s to record planing variable changes and defer triggering of "after" methods
  * so that dependent variable listeners can be executed in the correct order.
  */

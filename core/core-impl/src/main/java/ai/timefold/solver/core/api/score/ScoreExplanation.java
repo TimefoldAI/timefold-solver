@@ -47,10 +47,12 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * <p>
      * In case of an {@link Score#isFeasible() infeasible} solution, this can help diagnose the cause of that.
      *
-     * @apiNote Do not parse the return value, its format may change without warning.
-     *          Instead, to provide this information in a UI or a service,
-     *          use {@link ScoreExplanation#getConstraintMatchTotalMap()} and {@link ScoreExplanation#getIndictmentMap()}
-     *          and convert those into a domain-specific API.
+     * <p>
+     * Do not parse the return value, its format may change without warning.
+     * Instead, to provide this information in a UI or a service,
+     * use {@link ScoreExplanation#getConstraintMatchTotalMap()} and {@link ScoreExplanation#getIndictmentMap()}
+     * and convert those into a domain-specific API.
+     *
      * @return never null
      */
     String getSummary();

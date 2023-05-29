@@ -677,7 +677,7 @@ public final class ConstraintCollectors {
      * Returns a collector that finds a minimum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -701,7 +701,7 @@ public final class ConstraintCollectors {
      * Returns a collector that finds a minimum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -792,7 +792,7 @@ public final class ConstraintCollectors {
      * Returns a collector that finds a maximum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -816,7 +816,7 @@ public final class ConstraintCollectors {
      * Returns a collector that finds a maximum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.

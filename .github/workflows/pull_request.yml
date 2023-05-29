@@ -34,3 +34,20 @@ jobs:
 
       - name: Build and test timefold-solver
         run: mvn -B -Dfull verify
+  native:
+    concurrency:
+      group: pull_request-${{ github.event_name }}-${{ github.head_ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and test timefold-solver in Native mode
+        run: mvn -B -Dnative verify

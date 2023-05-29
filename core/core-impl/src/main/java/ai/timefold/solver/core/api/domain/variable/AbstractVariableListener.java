@@ -16,7 +16,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * @see ListVariableListener
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <Entity_> @{@link PlanningEntity} on which the source variable is declared
+ * @param <Entity_> {@link PlanningEntity} on which the source variable is declared
  */
 public interface AbstractVariableListener<Solution_, Entity_> extends Closeable {
 

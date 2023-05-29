@@ -23,6 +23,7 @@
 
   <properties>
     <java.module.name>ai.timefold.solver.jpa</java.module.name>
+    <enforcer.failOnDuplicatedClasses>false</enforcer.failOnDuplicatedClasses> <!-- Quarkus. -->
   </properties>
 
   <dependencies>

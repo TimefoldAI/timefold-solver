@@ -77,18 +77,21 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
      * Similar to a thread pool size, but instead of limiting the number of {@link Thread}s,
      * it limits the number of {@link java.lang.Thread.State#RUNNABLE runnable} {@link Thread}s to avoid consuming all
      * CPU resources (which would starve UI, Servlets and REST threads).
-     * <p/>
+     *
+     * <p>
      * The number of {@link Thread}s is always equal to the number of partitions returned by
      * {@link SolutionPartitioner#splitWorkingSolution(ScoreDirector, Integer)},
      * because otherwise some partitions would never run (especially with {@link Solver#terminateEarly() asynchronous
      * termination}).
      * If this limit (or {@link Runtime#availableProcessors()}) is lower than the number of partitions,
      * this results in a slower score calculation speed per partition {@link Solver}.
-     * <p/>
+     *
+     * <p>
      * Defaults to {@value #ACTIVE_THREAD_COUNT_AUTO} which consumes the majority
      * but not all of the CPU cores on multi-core machines, to prevent a livelock that hangs other processes
      * (such as your IDE, REST servlets threads or SSH connections) on the machine.
-     * <p/>
+     *
+     * <p>
      * Use {@value #ACTIVE_THREAD_COUNT_UNLIMITED} to give it all CPU cores.
      * This is useful if you're handling the CPU consumption on an OS level.
      *
