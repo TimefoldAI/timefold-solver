@@ -1,5 +1,5 @@
 # TODO adjust website pom.yml release date and version
-name: Release 0.8.x
+name: Release
 on:
   workflow_dispatch:
     inputs:
