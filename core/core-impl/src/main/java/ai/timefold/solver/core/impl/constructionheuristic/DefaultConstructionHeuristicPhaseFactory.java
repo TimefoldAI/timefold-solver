@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.constructionheuristic;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ThreadFactory;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
@@ -24,7 +23,6 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
-import ai.timefold.solver.core.impl.constructionheuristic.decider.MultiThreadedConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForagerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
@@ -38,7 +36,7 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+import ai.timefold.solver.enterprise.multithreaded.MultiThreadedFactory;
 
 public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         extends AbstractPhaseFactory<Solution_, ConstructionHeuristicPhaseConfig> {
@@ -181,26 +179,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (moveThreadCount == null) {
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
-            Integer moveThreadBufferSize = configPolicy.getMoveThreadBufferSize();
-            if (moveThreadBufferSize == null) {
-                // TODO Verify this is a good default by more meticulous benchmarking on multiple machines and JDK's
-                // If it's too low, move threads will need to wait on the buffer, which hurts performance
-                // If it's too high, more moves are selected that aren't foraged
-                moveThreadBufferSize = 10;
-            }
-            ThreadFactory threadFactory = configPolicy.buildThreadFactory(ChildThreadType.MOVE_THREAD);
-            int selectedMoveBufferSize = moveThreadCount * moveThreadBufferSize;
-            MultiThreadedConstructionHeuristicDecider<Solution_> multiThreadedDecider =
-                    new MultiThreadedConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager,
-                            threadFactory, moveThreadCount, selectedMoveBufferSize);
-            if (environmentMode.isNonIntrusiveFullAsserted()) {
-                multiThreadedDecider.setAssertStepScoreFromScratch(true);
-            }
-            if (environmentMode.isIntrusiveFastAsserted()) {
-                multiThreadedDecider.setAssertExpectedStepScore(true);
-                multiThreadedDecider.setAssertShadowVariablesAreNotStaleAfterStep(true);
-            }
-            decider = multiThreadedDecider;
+            decider = MultiThreadedFactory.buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);

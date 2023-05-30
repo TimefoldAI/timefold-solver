@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.phase.Phase;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see Phase
  * @see AbstractPhase
- * @see DefaultPartitionedSearchPhase
  */
 public interface PartitionedSearchPhase<Solution_> extends Phase<Solution_> {
 
