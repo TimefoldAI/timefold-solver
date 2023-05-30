@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -130,7 +131,8 @@ public class BenchmarkAggregatorFrame extends JFrame {
         this.benchmarkAggregator = benchmarkAggregator;
         benchmarkResultIO = new BenchmarkResultIO();
         plannerBenchmarkResultList = Collections.emptyList();
-        millisecondsSpentNumberFormat = new MillisecondsSpentNumberFormat();
+        Locale locale = benchmarkAggregator.getBenchmarkReportConfig().determineLocale();
+        millisecondsSpentNumberFormat = new MillisecondsSpentNumberFormat(locale);
     }
 
     public void init() {

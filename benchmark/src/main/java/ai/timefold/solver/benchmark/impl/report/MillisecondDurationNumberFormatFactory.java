@@ -18,12 +18,16 @@ public final class MillisecondDurationNumberFormatFactory extends TemplateNumber
     @Override
     public TemplateNumberFormat get(String params, Locale locale, Environment environment) throws TemplateValueFormatException {
         TemplateFormatUtil.checkHasNoParameters(params);
-        return MillisecondDurationNumberFormat.INSTANCE;
+        return new MillisecondDurationNumberFormat(locale);
     }
 
     static final class MillisecondDurationNumberFormat extends TemplateNumberFormat {
 
-        static final MillisecondDurationNumberFormat INSTANCE = new MillisecondDurationNumberFormat();
+        private final Locale locale;
+
+        public MillisecondDurationNumberFormat(Locale locale) {
+            this.locale = locale;
+        }
 
         @Override
         public String formatToPlainText(TemplateNumberModel templateNumberModel) throws TemplateModelException {
@@ -32,7 +36,7 @@ public final class MillisecondDurationNumberFormatFactory extends TemplateNumber
                 return "None.";
             }
             long millis = n.longValue();
-            return formatMillis(millis);
+            return formatMillis(locale, millis);
         }
 
         @Override
@@ -46,7 +50,7 @@ public final class MillisecondDurationNumberFormatFactory extends TemplateNumber
         }
     }
 
-    public static String formatMillis(long millis) {
+    public static String formatMillis(Locale locale, long millis) {
         if (millis == 0L) {
             return "0 ms.";
         }
@@ -56,25 +60,25 @@ public final class MillisecondDurationNumberFormatFactory extends TemplateNumber
         long minutesPart = duration.toMinutesPart();
         double seconds = duration.toSecondsPart() + (duration.toMillisPart() / 1000.0d);
         if (daysPart > 0) {
-            return String.format("%02d:%02d:%02d:%06.3f s. (%,d ms.)",
+            return String.format(locale, "%02d:%02d:%02d:%06.3f s. (%,d ms.)",
                     daysPart,
                     hoursPart,
                     minutesPart,
                     seconds,
                     millis);
         } else if (hoursPart > 0) {
-            return String.format("%02d:%02d:%06.3f s. (%,d ms.)",
+            return String.format(locale, "%02d:%02d:%06.3f s. (%,d ms.)",
                     hoursPart,
                     minutesPart,
                     seconds,
                     millis);
         } else if (minutesPart > 0) {
-            return String.format("%02d:%06.3f s. (%,d ms.)",
+            return String.format(locale, "%02d:%06.3f s. (%,d ms.)",
                     minutesPart,
                     seconds,
                     millis);
         } else {
-            return String.format("%.3f s. (%,d ms.)",
+            return String.format(locale, "%.3f s. (%,d ms.)",
                     seconds,
                     millis);
         }
