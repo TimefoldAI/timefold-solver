@@ -5,6 +5,7 @@ import java.util.concurrent.ThreadFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
+import ai.timefold.solver.core.impl.enterprise.MultithreadedSolvingEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
@@ -13,9 +14,10 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class MultiThreadedFactory {
+public final class MultiThreadedFactory implements MultithreadedSolvingEnterpriseService {
 
-    public static <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(int moveThreadCount,
+    @Override
+    public <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(int moveThreadCount,
             Termination<Solution_> termination, ConstructionHeuristicForager<Solution_> forager,
             EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy) {
         Integer moveThreadBufferSize = configPolicy.getMoveThreadBufferSize();
@@ -40,10 +42,10 @@ public final class MultiThreadedFactory {
         return multiThreadedDecider;
     }
 
-    public static <Solution_> LocalSearchDecider<Solution_> buildLocalSearch(int moveThreadCount,
-            Termination<Solution_> termination, MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor,
-            LocalSearchForager<Solution_> forager, EnvironmentMode environmentMode,
-            HeuristicConfigPolicy<Solution_> configPolicy) {
+    @Override
+    public <Solution_> LocalSearchDecider<Solution_> buildLocalSearch(int moveThreadCount, Termination<Solution_> termination,
+            MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager,
+            EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy) {
         Integer moveThreadBufferSize = configPolicy.getMoveThreadBufferSize();
         if (moveThreadBufferSize == null) {
             // TODO Verify this is a good default by more meticulous benchmarking on multiple machines and JDK's

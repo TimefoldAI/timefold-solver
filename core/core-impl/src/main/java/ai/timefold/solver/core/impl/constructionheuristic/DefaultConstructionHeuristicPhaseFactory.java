@@ -32,11 +32,11 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPla
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacerFactory;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.enterprise.MultithreadedSolvingEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-import ai.timefold.solver.enterprise.multithreaded.MultiThreadedFactory;
 
 public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         extends AbstractPhaseFactory<Solution_, ConstructionHeuristicPhaseConfig> {
@@ -179,7 +179,9 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (moveThreadCount == null) {
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
-            decider = MultiThreadedFactory.buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
+            MultithreadedSolvingEnterpriseService service = MultithreadedSolvingEnterpriseService.load(moveThreadCount);
+            decider = service.buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode,
+                    configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);

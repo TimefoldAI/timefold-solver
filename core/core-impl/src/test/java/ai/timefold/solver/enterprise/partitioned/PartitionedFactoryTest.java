@@ -11,8 +11,8 @@ import ai.timefold.solver.core.impl.partitionedsearch.DefaultPartitionedSearchPh
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-
 import ai.timefold.solver.enterprise.partitioned.testdata.TestdataSolutionPartitioner;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

@@ -32,9 +32,9 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-
 import ai.timefold.solver.enterprise.partitioned.testdata.TestdataFaultyEntity;
 import ai.timefold.solver.enterprise.partitioned.testdata.TestdataSolutionPartitioner;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
