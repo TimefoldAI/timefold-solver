@@ -22,10 +22,10 @@ public interface MultithreadedSolvingEnterpriseService {
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
                     "Multi-threaded solving requested with moveThreadCount (" + moveThreadCount
-                            + ") but Timefold Solver Enterprise not found on classpath.\n" +
-                            "Either ddd the ai.timefold.solver:timefold-solver-enterprise dependency, " +
+                            + ") but Timefold Enterprise not found on classpath.\n" +
+                            "Either add the ai.timefold.solver:timefold-solver-enterprise dependency, " +
                             "or remove moveThreadCount from solver configuration.\n" +
-                            "Note: Timefold Solver Enterprise is a commercial product.");
+                            "Note: Timefold Enterprise is a commercial product.");
         }
         return iterator.next();
     }

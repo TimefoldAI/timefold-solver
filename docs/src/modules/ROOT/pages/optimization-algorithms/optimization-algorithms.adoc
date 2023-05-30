@@ -825,6 +825,13 @@ To avoid those, configure a `NoChangePhase`:
 [[multithreadedSolving]]
 == Multithreaded solving
 
+[NOTE]
+====
+Multithreaded solving is a commercial feature of Timefold Enterprise.
+It is not open source, and it is free for development use only.
+https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
+====
+
 There are several ways of doing multithreaded solving:
 
 * *Multitenancy*: solve different datasets in parallel
