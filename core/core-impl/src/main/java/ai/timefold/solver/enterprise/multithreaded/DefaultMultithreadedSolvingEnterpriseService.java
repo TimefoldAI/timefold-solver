@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-final class MultiThreadedFactory implements MultithreadedSolvingEnterpriseService {
+public final class DefaultMultithreadedSolvingEnterpriseService implements MultithreadedSolvingEnterpriseService {
 
     @Override
     public <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(int moveThreadCount,

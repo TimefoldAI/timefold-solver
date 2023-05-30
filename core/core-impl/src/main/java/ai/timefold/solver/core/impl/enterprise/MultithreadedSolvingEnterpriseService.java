@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.enterprise;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
+
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
@@ -9,9 +12,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-
-import java.util.Iterator;
-import java.util.ServiceLoader;
 
 public interface MultithreadedSolvingEnterpriseService {
 

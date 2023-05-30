@@ -24,9 +24,9 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class PartitionedFactory implements PartitionedSearchEnterpriseService {
+public final class DefaultPartitionedSearchEnterpriseService implements PartitionedSearchEnterpriseService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PartitionedFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPartitionedSearchEnterpriseService.class);
 
     @Override
     public <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class PartitionedFactoryTest {
+class DefaultPartitionedSearchEnterpriseServiceTest {
 
     @ParameterizedTest
     @CsvSource({
@@ -25,14 +25,16 @@ class PartitionedFactoryTest {
             "4, 2"
     })
     void resolvedActiveThreadCountAuto(int availableCpuCount, int expectedResolvedCpuCount) {
-        assertThat(PartitionedFactory.resolveActiveThreadCount(PartitionedSearchPhaseConfig.ACTIVE_THREAD_COUNT_AUTO,
+        assertThat(DefaultPartitionedSearchEnterpriseService.resolveActiveThreadCount(
+                PartitionedSearchPhaseConfig.ACTIVE_THREAD_COUNT_AUTO,
                 availableCpuCount))
                 .isEqualTo(expectedResolvedCpuCount);
     }
 
     @Test
     void resolveActiveThreadCountUnlimited() {
-        assertThat(PartitionedFactory.resolveActiveThreadCount(PartitionedSearchPhaseConfig.ACTIVE_THREAD_COUNT_UNLIMITED))
+        assertThat(DefaultPartitionedSearchEnterpriseService
+                .resolveActiveThreadCount(PartitionedSearchPhaseConfig.ACTIVE_THREAD_COUNT_UNLIMITED))
                 .isNull();
     }
 
