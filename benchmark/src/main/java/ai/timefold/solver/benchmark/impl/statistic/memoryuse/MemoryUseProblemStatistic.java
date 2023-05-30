@@ -1,33 +1,24 @@
 package ai.timefold.solver.benchmark.impl.statistic.memoryuse;
 
-import java.awt.BasicStroke;
-import java.io.File;
-import java.text.NumberFormat;
+import static java.util.Collections.singletonList;
+
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
+import ai.timefold.solver.benchmark.impl.report.LineChart;
 import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.SubSingleStatistic;
-import ai.timefold.solver.benchmark.impl.statistic.common.MillisecondsSpentNumberFormat;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+public class MemoryUseProblemStatistic extends ProblemStatistic<LineChart<Long, Long>> {
 
-public class MemoryUseProblemStatistic extends ProblemStatistic {
-
-    protected File graphFile = null;
+    private MemoryUseProblemStatistic() {
+        // For JAXB.
+    }
 
     public MemoryUseProblemStatistic(ProblemBenchmarkResult problemBenchmarkResult) {
         super(problemBenchmarkResult, ProblemStatisticType.MEMORY_USE);
@@ -38,70 +29,35 @@ public class MemoryUseProblemStatistic extends ProblemStatistic {
         return new MemoryUseSubSingleStatistic(subSingleBenchmarkResult);
     }
 
-    /**
-     * @return never null
-     */
     @Override
-    public List<File> getGraphFileList() {
-        return Collections.singletonList(graphFile);
+    public List<String> getWarningList() {
+        if (problemBenchmarkResult.getPlannerBenchmarkResult().hasMultipleParallelBenchmarks()) {
+            return Collections.singletonList("This memory use statistic shows the sum of the memory of all benchmarks "
+                    + "that ran in parallel, due to parallelBenchmarkCount ("
+                    + problemBenchmarkResult.getPlannerBenchmarkResult().getParallelBenchmarkCount() + ").");
+        } else {
+            return Collections.emptyList();
+        }
     }
 
-    // ************************************************************************
-    // Write methods
-    // ************************************************************************
-
     @Override
-    public void writeGraphFiles(BenchmarkReport benchmarkReport) {
-        Locale locale = benchmarkReport.getLocale();
-        NumberAxis xAxis = new NumberAxis("Time spent");
-        xAxis.setNumberFormatOverride(new MillisecondsSpentNumberFormat(locale));
-        NumberAxis yAxis = new NumberAxis("Memory (bytes)");
-        yAxis.setNumberFormatOverride(NumberFormat.getInstance(locale));
-        XYPlot plot = new XYPlot(null, xAxis, yAxis, null);
-        plot.setOrientation(PlotOrientation.VERTICAL);
-        int seriesIndex = 0;
+    protected List<LineChart<Long, Long>> generateCharts(BenchmarkReport benchmarkReport) {
+        LineChart.Builder<Long, Long> builder = new LineChart.Builder<>();
         for (SingleBenchmarkResult singleBenchmarkResult : problemBenchmarkResult.getSingleBenchmarkResultList()) {
-            XYSeries usedSeries = new XYSeries(
-                    singleBenchmarkResult.getSolverBenchmarkResult().getNameWithFavoriteSuffix() + " used");
-            // TODO enable max memory, but in the same color as used memory, but with a dotted line instead
-            //            XYSeries maxSeries = new XYSeries(
-            //                    singleBenchmarkResult.getSolverBenchmarkResult().getNameWithFavoriteSuffix() + " max");
-            XYItemRenderer renderer = new XYLineAndShapeRenderer();
+            String solverLabel = singleBenchmarkResult.getSolverBenchmarkResult().getNameWithFavoriteSuffix();
+            if (singleBenchmarkResult.getSolverBenchmarkResult().isFavorite()) {
+                builder.markFavorite(solverLabel);
+            }
             if (singleBenchmarkResult.hasAllSuccess()) {
-                MemoryUseSubSingleStatistic subSingleStatistic = (MemoryUseSubSingleStatistic) singleBenchmarkResult
-                        .getSubSingleStatistic(problemStatisticType);
+                var subSingleStatistic = singleBenchmarkResult.getSubSingleStatistic(problemStatisticType);
                 List<MemoryUseStatisticPoint> points = subSingleStatistic.getPointList();
                 for (MemoryUseStatisticPoint point : points) {
                     long timeMillisSpent = point.getTimeMillisSpent();
-                    usedSeries.add(timeMillisSpent, point.getUsedMemory());
-                    //                    maxSeries.add(timeMillisSpent, memoryUseMeasurement.getMaxMemory());
+                    builder.add(solverLabel, timeMillisSpent, point.getUsedMemory() / 1024 / 1024);
                 }
             }
-            XYSeriesCollection seriesCollection = new XYSeriesCollection();
-            seriesCollection.addSeries(usedSeries);
-            //            seriesCollection.addSeries(maxSeries);
-            plot.setDataset(seriesIndex, seriesCollection);
-
-            if (singleBenchmarkResult.getSolverBenchmarkResult().isFavorite()) {
-                // Make the favorite more obvious
-                renderer.setSeriesStroke(0, new BasicStroke(2.0f));
-                //                renderer.setSeriesStroke(1, new BasicStroke(2.0f));
-            }
-            plot.setRenderer(seriesIndex, renderer);
-            seriesIndex++;
         }
-        JFreeChart chart = new JFreeChart(problemBenchmarkResult.getName() + " memory use statistic",
-                JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-        graphFile = writeChartToImageFile(chart, problemBenchmarkResult.getName() + "MemoryUseStatistic");
+        return singletonList(builder.build("memoryUseProblemStatisticChart",
+                problemBenchmarkResult.getName() + " memory use statistic", "Time spent", "Memory (MiB)", false, true, false));
     }
-
-    @Override
-    protected void fillWarningList() {
-        if (problemBenchmarkResult.getPlannerBenchmarkResult().hasMultipleParallelBenchmarks()) {
-            warningList.add("This memory use statistic shows the sum of the memory of all benchmarks "
-                    + "that ran in parallel, due to parallelBenchmarkCount ("
-                    + problemBenchmarkResult.getPlannerBenchmarkResult().getParallelBenchmarkCount() + ").");
-        }
-    }
-
 }

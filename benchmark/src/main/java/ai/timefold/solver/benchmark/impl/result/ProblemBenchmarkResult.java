@@ -24,7 +24,6 @@ import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
 import ai.timefold.solver.benchmark.impl.loader.InstanceProblemProvider;
 import ai.timefold.solver.benchmark.impl.loader.ProblemProvider;
-import ai.timefold.solver.benchmark.impl.measurement.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.ranking.TotalScoreSingleBenchmarkRankingComparator;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.benchmark.impl.report.ReportHelper;
@@ -163,10 +162,12 @@ public class ProblemBenchmarkResult<Solution_> {
         return entityCount;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getVariableCount() {
         return variableCount;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getMaximumValueCount() {
         return maximumValueCount;
     }
@@ -175,6 +176,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return problemScale;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getInputSolutionLoadingTimeMillisSpent() {
         return inputSolutionLoadingTimeMillisSpent;
     }
@@ -195,10 +197,12 @@ public class ProblemBenchmarkResult<Solution_> {
         return winningSingleBenchmarkResult;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public SingleBenchmarkResult getWorstSingleBenchmarkResult() {
         return worstSingleBenchmarkResult;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getWorstScoreCalculationSpeed() {
         return worstScoreCalculationSpeed;
     }
@@ -207,6 +211,7 @@ public class ProblemBenchmarkResult<Solution_> {
     // Smart getters
     // ************************************************************************
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(name);
     }
@@ -234,6 +239,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return singleBenchmarkResultList.size() - failureCount > 0;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public boolean hasAnyStatistic() {
         if (problemStatisticList.size() > 0) {
             return true;
@@ -255,6 +261,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return false;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Collection<SingleStatisticType> extractSingleStatisticTypeList() {
         Set<SingleStatisticType> singleStatisticTypeSet = new LinkedHashSet<>();
         for (SingleBenchmarkResult singleBenchmarkResult : singleBenchmarkResultList) {
@@ -266,6 +273,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return singleStatisticTypeSet;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public List<PureSubSingleStatistic> extractPureSubSingleStatisticList(SingleStatisticType singleStatisticType) {
         List<PureSubSingleStatistic> pureSubSingleStatisticList = new ArrayList<>(
                 singleBenchmarkResultList.size());
@@ -332,9 +340,6 @@ public class ProblemBenchmarkResult<Solution_> {
         }
         determineTotalsAndAveragesAndRanking();
         determineWinningScoreDifference();
-        for (ProblemStatistic problemStatistic : problemStatisticList) {
-            problemStatistic.accumulateResults(benchmarkReport);
-        }
     }
 
     private void determineTotalsAndAveragesAndRanking() {

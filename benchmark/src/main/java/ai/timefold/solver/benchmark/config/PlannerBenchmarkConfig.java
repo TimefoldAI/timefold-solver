@@ -26,6 +26,7 @@ import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.blueprint.SolverBenchmarkBluePrintConfig;
 import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
 import ai.timefold.solver.benchmark.impl.io.PlannerBenchmarkConfigIO;
+import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 
@@ -435,20 +436,15 @@ public class PlannerBenchmarkConfig {
      */
     public static PlannerBenchmarkConfig createFromFreemarkerXmlReader(Reader templateReader, Object model,
             ClassLoader classLoader) {
-        Configuration freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_32);
-        freemarkerConfiguration.setDefaultEncoding("UTF-8");
+        Configuration freemarkerConfiguration = BenchmarkReport.createFreeMarkerConfiguration();
         freemarkerConfiguration.setNumberFormat("computer");
         freemarkerConfiguration.setDateFormat("yyyy-mm-dd");
         freemarkerConfiguration.setDateTimeFormat("yyyy-mm-dd HH:mm:ss.SSS z");
         freemarkerConfiguration.setTimeFormat("HH:mm:ss.SSS");
-        Template template;
-        try {
-            template = new Template("benchmarkTemplate.ftl", templateReader, freemarkerConfiguration, "UTF-8");
-        } catch (IOException e) {
-            throw new IllegalStateException("Can not read the Freemarker template from templateReader.", e);
-        }
         String xmlContent;
         try (StringWriter xmlContentWriter = new StringWriter()) {
+            Template template = new Template("benchmarkTemplate.ftl", templateReader, freemarkerConfiguration,
+                    freemarkerConfiguration.getDefaultEncoding());
             template.process(model, xmlContentWriter);
             xmlContent = xmlContentWriter.toString();
         } catch (TemplateException | IOException e) {

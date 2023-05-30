@@ -1,7 +1,7 @@
 package ai.timefold.solver.benchmark.impl.statistic;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -11,19 +11,17 @@ import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
+import ai.timefold.solver.benchmark.impl.report.Chart;
 import ai.timefold.solver.benchmark.impl.report.ReportHelper;
 import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.bestscore.BestScoreProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.bestsolutionmutation.BestSolutionMutationProblemStatistic;
-import ai.timefold.solver.benchmark.impl.statistic.common.GraphSupport;
 import ai.timefold.solver.benchmark.impl.statistic.memoryuse.MemoryUseProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPerStepProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
-
-import org.jfree.chart.JFreeChart;
 
 /**
  * 1 statistic of {@link ProblemBenchmarkResult}.
@@ -37,21 +35,22 @@ import org.jfree.chart.JFreeChart;
         MoveCountPerStepProblemStatistic.class,
         MemoryUseProblemStatistic.class
 })
-public abstract class ProblemStatistic {
+public abstract class ProblemStatistic<Chart_ extends Chart> implements ChartProvider<Chart_> {
 
     @XmlTransient // Bi-directional relationship restored through BenchmarkResultIO
     protected ProblemBenchmarkResult<Object> problemBenchmarkResult;
 
-    protected final ProblemStatisticType problemStatisticType;
+    @XmlTransient
+    protected List<Chart_> chartList;
+
+    protected ProblemStatisticType problemStatisticType;
 
     // ************************************************************************
     // Report accumulates
     // ************************************************************************
 
-    protected List<String> warningList = null;
-
-    public ProblemStatistic() {
-        problemStatisticType = null;
+    protected ProblemStatistic() {
+        // For JAXB.
     }
 
     protected ProblemStatistic(ProblemBenchmarkResult problemBenchmarkResult, ProblemStatisticType problemStatisticType) {
@@ -71,14 +70,12 @@ public abstract class ProblemStatistic {
         return problemStatisticType;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(problemBenchmarkResult.getName() + "_" + problemStatisticType.name());
     }
 
-    public List<String> getWarningList() {
-        return warningList;
-    }
-
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public List<SubSingleStatistic> getSubSingleStatisticList() {
         List<SingleBenchmarkResult> singleBenchmarkResultList = problemBenchmarkResult.getSingleBenchmarkResultList();
         List<SubSingleStatistic> subSingleStatisticList = new ArrayList<>(singleBenchmarkResultList.size());
@@ -99,36 +96,22 @@ public abstract class ProblemStatistic {
     // Write methods
     // ************************************************************************
 
-    public void accumulateResults(BenchmarkReport benchmarkReport) {
-        warningList = new ArrayList<>();
-        fillWarningList();
+    @Override
+    public final void createChartList(BenchmarkReport benchmarkReport) {
+        this.chartList = generateCharts(benchmarkReport);
     }
 
-    public abstract void writeGraphFiles(BenchmarkReport benchmarkReport);
+    protected abstract List<Chart_> generateCharts(BenchmarkReport benchmarkReport);
 
-    protected void fillWarningList() {
+    @Override
+    public final List<Chart_> getChartList() {
+        return chartList;
     }
 
-    protected File writeChartToImageFile(JFreeChart chart, String fileNameBase) {
-        File chartFile = new File(problemBenchmarkResult.getProblemReportDirectory(), fileNameBase + ".png");
-        GraphSupport.writeChartToImageFile(chart, chartFile);
-        return chartFile;
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public List<String> getWarningList() {
+        return Collections.emptyList();
     }
-
-    public File getGraphFile() {
-        List<File> graphFileList = getGraphFileList();
-        if (graphFileList == null || graphFileList.isEmpty()) {
-            return null;
-        } else if (graphFileList.size() > 1) {
-            throw new IllegalStateException("Cannot get graph file for the ProblemStatistic (" + this
-                    + ") because it has more than 1 graph file. See method getGraphList() and "
-                    + ProblemStatisticType.class.getSimpleName() + ".hasScoreLevels()");
-        } else {
-            return graphFileList.get(0);
-        }
-    }
-
-    public abstract List<File> getGraphFileList();
 
     @Override
     public String toString() {

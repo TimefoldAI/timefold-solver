@@ -16,7 +16,7 @@ import io.micrometer.core.instrument.Tags;
 public class StepScoreSubSingleStatistic<Solution_>
         extends ProblemBasedSubSingleStatistic<Solution_, StepScoreStatisticPoint> {
 
-    StepScoreSubSingleStatistic() {
+    private StepScoreSubSingleStatistic() {
         // For JAXB.
     }
 

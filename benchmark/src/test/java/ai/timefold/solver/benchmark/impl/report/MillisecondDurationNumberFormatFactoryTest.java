@@ -20,7 +20,8 @@ import freemarker.template.TemplateNumberModel;
 class MillisecondDurationNumberFormatFactoryTest {
 
     private static final Locale DEFAULT_LOCALE = Locale.getDefault();
-    private static final TemplateNumberFormat NUMBER_FORMAT = MillisecondDurationNumberFormat.INSTANCE;
+    private static final TemplateNumberFormat NUMBER_FORMAT =
+            new MillisecondDurationNumberFormat(Locale.forLanguageTag("en_US"));
 
     private final TemplateNumberModel templateNumberModel = mock(TemplateNumberModel.class);
 

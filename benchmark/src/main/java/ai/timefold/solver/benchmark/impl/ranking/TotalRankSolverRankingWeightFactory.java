@@ -55,10 +55,10 @@ public class TotalRankSolverRankingWeightFactory implements SolverRankingWeightF
         private final Comparator<SolverBenchmarkResult> totalScoreSolverRankingComparator =
                 new TotalScoreSolverRankingComparator();
 
-        private SolverBenchmarkResult solverBenchmarkResult;
-        private int betterCount;
-        private int equalCount;
-        private int lowerCount;
+        private final SolverBenchmarkResult solverBenchmarkResult;
+        private final int betterCount;
+        private final int equalCount;
+        private final int lowerCount;
 
         public SolverBenchmarkResult getSolverBenchmarkResult() {
             return solverBenchmarkResult;

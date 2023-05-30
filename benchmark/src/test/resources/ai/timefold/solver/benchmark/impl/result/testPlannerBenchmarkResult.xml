@@ -3,7 +3,7 @@
   <name>2020-07-13_125809</name>
   <aggregation>false</aggregation>
   <availableProcessors>4</availableProcessors>
-  <loggingLevelTimefoldCore>DEBUG</loggingLevelTimefoldCore>
+  <loggingLevelTimefoldSolverCore>DEBUG</loggingLevelTimefoldSolverCore>
   <maxMemory>5523898368</maxMemory>
   <timefoldSolverVersion>Unjarred development snapshot</timefoldSolverVersion>
   <javaVersion>Java 1.8.0_252 (Oracle Corporation)</javaVersion>

@@ -44,10 +44,6 @@ public class BenchmarkAggregator {
     // Aggregate methods
     // ************************************************************************
 
-    public File aggregate(List<SingleBenchmarkResult> singleBenchmarkResultList) {
-        return aggregate(singleBenchmarkResultList, null);
-    }
-
     public File aggregate(List<SingleBenchmarkResult> singleBenchmarkResultList,
             Map<SolverBenchmarkResult, String> solverBenchmarkResultNameMap) {
         if (benchmarkDirectory == null) {

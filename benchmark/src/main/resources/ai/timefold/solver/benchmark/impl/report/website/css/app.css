@@ -1,0 +1,42 @@
+.prettyprint {
+    border: 1px;
+    border-color: var(--bs-gray-300) !important;
+    background-color: var(--bs-light) !important;
+}
+
+/* Otherwise charts aren't properly responsive. */
+.chart-container {
+    position: relative;
+    width:70vw;
+    height:60vh;
+}
+
+section {
+    margin-top: 1rem;
+    scroll-margin-top: calc(1rem + var(--ts-navbar-height));
+}
+
+/* Bootstrap 5 tweak: do not underline links unless hovered over */
+a:not(.btn):not(.nav-link) {
+    text-decoration: none;
+}
+a:not(.btn):not(.nav-link):hover {
+    /* this rule is too specific, need to use !important in tf-tinybox, tf-references__pill */
+    text-decoration: underline;
+}
+a.link-underlined {
+    text-decoration: underline !important;
+}
+
+img {
+    /* No images wider than screen. Also mobile friendly. */
+    max-width: 100%;
+}
+
+.fa {
+    color: var(--ts-violet-1-rgb);
+}
+
+.fa:hover {
+    color: var(--ts-violet-2-rgb);
+}

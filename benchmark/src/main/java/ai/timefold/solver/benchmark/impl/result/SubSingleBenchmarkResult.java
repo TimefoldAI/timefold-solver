@@ -207,6 +207,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         return score.isFeasible();
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getScoreCalculationSpeed() {
         long timeMillisSpent = this.timeMillisSpent;
         if (timeMillisSpent == 0L) {
@@ -216,6 +217,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         return scoreCalculationCount * 1000L / timeMillisSpent;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public boolean isWinner() {
         return ranking != null && ranking.intValue() == 0;
     }
