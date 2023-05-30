@@ -27,10 +27,6 @@ public class FileProblemProvider<Solution_> implements ProblemProvider<Solution_
         return solutionFileIO;
     }
 
-    public File getProblemFile() {
-        return problemFile;
-    }
-
     @Override
     public String getProblemName() {
         String name = problemFile.getName();

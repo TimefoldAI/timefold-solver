@@ -1,20 +1,18 @@
 package ai.timefold.solver.benchmark.impl.statistic;
 
-import java.io.File;
 import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
+import ai.timefold.solver.benchmark.impl.report.Chart;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
-import ai.timefold.solver.benchmark.impl.statistic.common.GraphSupport;
 import ai.timefold.solver.benchmark.impl.statistic.subsingle.constraintmatchtotalbestscore.ConstraintMatchTotalBestScoreSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.subsingle.constraintmatchtotalstepscore.ConstraintMatchTotalStepScoreSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.subsingle.pickedmovetypebestscore.PickedMoveTypeBestScoreDiffSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.subsingle.pickedmovetypestepscore.PickedMoveTypeStepScoreDiffSubSingleStatistic;
-
-import org.jfree.chart.JFreeChart;
 
 /**
  * 1 statistic of {@link SubSingleBenchmarkResult}.
@@ -25,10 +23,14 @@ import org.jfree.chart.JFreeChart;
         PickedMoveTypeBestScoreDiffSubSingleStatistic.class,
         PickedMoveTypeStepScoreDiffSubSingleStatistic.class
 })
-public abstract class PureSubSingleStatistic<Solution_, StatisticPoint_ extends StatisticPoint>
-        extends SubSingleStatistic<Solution_, StatisticPoint_> {
+public abstract class PureSubSingleStatistic<Solution_, StatisticPoint_ extends StatisticPoint, Chart_ extends Chart>
+        extends SubSingleStatistic<Solution_, StatisticPoint_>
+        implements ChartProvider<Chart_> {
 
     protected SingleStatisticType singleStatisticType;
+
+    @XmlTransient
+    protected List<Chart_> chartList;
 
     protected PureSubSingleStatistic() {
         // For JAXB.
@@ -45,32 +47,17 @@ public abstract class PureSubSingleStatistic<Solution_, StatisticPoint_ extends 
         return singleStatisticType;
     }
 
-    // ************************************************************************
-    // Write methods
-    // ************************************************************************
-
-    public abstract void writeGraphFiles(BenchmarkReport benchmarkReport);
-
-    protected File writeChartToImageFile(JFreeChart chart, String fileNameBase) {
-        File chartFile = new File(subSingleBenchmarkResult.getResultDirectory(), fileNameBase + ".png");
-        GraphSupport.writeChartToImageFile(chart, chartFile);
-        return chartFile;
+    @Override
+    public final void createChartList(BenchmarkReport benchmarkReport) {
+        this.chartList = generateCharts(benchmarkReport);
     }
 
-    public File getGraphFile() {
-        List<File> graphFileList = getGraphFileList();
-        if (graphFileList == null || graphFileList.isEmpty()) {
-            return null;
-        } else if (graphFileList.size() > 1) {
-            throw new IllegalStateException("Cannot get graph file for the PureSubSingleStatistic (" + this
-                    + ") because it has more than 1 graph file. See method getGraphList() and "
-                    + SingleStatisticType.class.getSimpleName() + ".hasScoreLevels()");
-        } else {
-            return graphFileList.get(0);
-        }
-    }
+    protected abstract List<Chart_> generateCharts(BenchmarkReport benchmarkReport);
 
-    public abstract List<File> getGraphFileList();
+    @Override
+    public final List<Chart_> getChartList() {
+        return chartList;
+    }
 
     @Override
     public String toString() {

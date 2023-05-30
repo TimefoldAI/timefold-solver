@@ -2,7 +2,6 @@ package ai.timefold.solver.benchmark.impl.statistic.subsingle.pickedmovetypebest
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
@@ -24,18 +23,22 @@ public final class PickedMoveTypeBestScoreSubSingleStatisticTest
 
     @Override
     protected List<PickedMoveTypeBestScoreDiffStatisticPoint> getInputPoints() {
-        return Collections.singletonList(new PickedMoveTypeBestScoreDiffStatisticPoint(Long.MAX_VALUE, "SomeMoveType",
-                SimpleScore.of(Integer.MAX_VALUE)));
+        return Collections
+                .singletonList(new PickedMoveTypeBestScoreDiffStatisticPoint(Long.MAX_VALUE, "SwapMove(A.class, B.class)",
+                        SimpleScore.of(Integer.MAX_VALUE)));
     }
 
     @Override
     protected void runTest(SoftAssertions assertions, List<PickedMoveTypeBestScoreDiffStatisticPoint> outputPoints) {
         assertions.assertThat(outputPoints)
-                .hasSize(1)
-                .first()
-                .matches(s -> Objects.equals(s.getMoveType(), "SomeMoveType"), "Move types do not match.")
-                .matches(s -> s.getBestScoreDiff().equals(SimpleScore.of(Integer.MAX_VALUE)), "Best score diffs do not match.")
-                .matches(s -> s.getTimeMillisSpent() == Long.MAX_VALUE, "Millis do not match.");
+                .hasSize(1);
+        PickedMoveTypeBestScoreDiffStatisticPoint point = outputPoints.get(0);
+        assertions.assertThat(point.getMoveType())
+                .isEqualTo("SwapMove(A.class, B.class)");
+        assertions.assertThat(point.getBestScoreDiff())
+                .isEqualTo(SimpleScore.of(Integer.MAX_VALUE));
+        assertions.assertThat(point.getTimeMillisSpent())
+                .isEqualTo(Long.MAX_VALUE);
     }
 
 }

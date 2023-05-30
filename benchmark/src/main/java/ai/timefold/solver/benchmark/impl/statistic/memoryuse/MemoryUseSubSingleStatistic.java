@@ -19,7 +19,7 @@ public class MemoryUseSubSingleStatistic<Solution_>
 
     private long timeMillisThresholdInterval;
 
-    MemoryUseSubSingleStatistic() {
+    private MemoryUseSubSingleStatistic() {
         // For JAXB.
     }
 

@@ -42,7 +42,7 @@ public class PlannerBenchmarkResult {
     // If it is an aggregation, many properties can stay null
 
     private Integer availableProcessors = null;
-    private LoggingLevel loggingLevelTimefoldCore = null;
+    private LoggingLevel loggingLevelTimefoldSolverCore = null;
     private Long maxMemory = null;
     private String timefoldSolverVersion = null;
     private String javaVersion = null;
@@ -103,8 +103,8 @@ public class PlannerBenchmarkResult {
         return availableProcessors;
     }
 
-    public LoggingLevel getLoggingLevelTimefoldCore() {
-        return loggingLevelTimefoldCore;
+    public LoggingLevel getLoggingLevelTimefoldSolverCore() {
+        return loggingLevelTimefoldSolverCore;
     }
 
     public Long getMaxMemory() {
@@ -123,6 +123,7 @@ public class PlannerBenchmarkResult {
         return operatingSystem;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getTimefoldSolverVersion() {
         return timefoldSolverVersion;
     }
@@ -207,6 +208,7 @@ public class PlannerBenchmarkResult {
         return failureCount > 0;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public int getMaximumSubSingleCount() {
         int maximumSubSingleCount = 0;
         for (ProblemBenchmarkResult problemBenchmarkResult : unifiedProblemBenchmarkResultList) {
@@ -227,6 +229,7 @@ public class PlannerBenchmarkResult {
         return levelLabels[scoreLevel];
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getStartingTimestampAsMediumString() {
         return startingTimestamp == null ? null
                 : startingTimestamp.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
@@ -265,7 +268,7 @@ public class PlannerBenchmarkResult {
 
     public void initSystemProperties() {
         availableProcessors = Runtime.getRuntime().availableProcessors();
-        loggingLevelTimefoldCore = resolveLoggingLevel("ai.timefold.solver.core");
+        loggingLevelTimefoldSolverCore = resolveLoggingLevel("ai.timefold.solver.core");
         maxMemory = Runtime.getRuntime().maxMemory();
         timefoldSolverVersion = SolverFactory.class.getPackage().getImplementationVersion();
         if (timefoldSolverVersion == null) {
@@ -445,7 +448,7 @@ public class PlannerBenchmarkResult {
                     newResult = new PlannerBenchmarkResult();
                     newResult.setAggregation(true);
                     newResult.availableProcessors = oldResult.availableProcessors;
-                    newResult.loggingLevelTimefoldCore = oldResult.loggingLevelTimefoldCore;
+                    newResult.loggingLevelTimefoldSolverCore = oldResult.loggingLevelTimefoldSolverCore;
                     newResult.maxMemory = oldResult.maxMemory;
                     newResult.timefoldSolverVersion = oldResult.timefoldSolverVersion;
                     newResult.javaVersion = oldResult.javaVersion;
@@ -462,8 +465,8 @@ public class PlannerBenchmarkResult {
                 } else {
                     newResult.availableProcessors = ConfigUtils.mergeProperty(
                             newResult.availableProcessors, oldResult.availableProcessors);
-                    newResult.loggingLevelTimefoldCore = ConfigUtils.mergeProperty(
-                            newResult.loggingLevelTimefoldCore, oldResult.loggingLevelTimefoldCore);
+                    newResult.loggingLevelTimefoldSolverCore = ConfigUtils.mergeProperty(
+                            newResult.loggingLevelTimefoldSolverCore, oldResult.loggingLevelTimefoldSolverCore);
                     newResult.maxMemory = ConfigUtils.mergeProperty(
                             newResult.maxMemory, oldResult.maxMemory);
                     newResult.timefoldSolverVersion = ConfigUtils.mergeProperty(

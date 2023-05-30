@@ -1,4 +1,4 @@
-package ai.timefold.solver.benchmark.impl.measurement;
+package ai.timefold.solver.benchmark.impl.result;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -27,60 +27,60 @@ class ScoreDifferencePercentageTest {
         SimpleScore score2 = SimpleScore.of(-100);
         ScoreDifferencePercentage scoreDifferencePercentage = ScoreDifferencePercentage
                 .calculateScoreDifferencePercentage(score1, score2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(0.0, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(0.0, offset(tolerance));
 
         score1 = SimpleScore.of(100);
         score2 = SimpleScore.of(100);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(score1, score2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(0.0, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(0.0, offset(tolerance));
 
         score1 = SimpleScore.of(-100);
         score2 = SimpleScore.of(-10);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(score1, score2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(0.9, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(0.9, offset(tolerance));
 
         score1 = SimpleScore.of(100);
         score2 = SimpleScore.of(10);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(score1, score2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(-0.9, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(-0.9, offset(tolerance));
 
         score1 = SimpleScore.of(-100);
         score2 = SimpleScore.of(-1);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(score1, score2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(0.99, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(0.99, offset(tolerance));
 
         score1 = SimpleScore.of(100);
         score2 = SimpleScore.of(1);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(score1, score2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(-0.99, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(-0.99, offset(tolerance));
 
         HardSoftScore hardSoftScore1 = HardSoftScore.of(-100, -1);
         HardSoftScore hardSoftScore2 = HardSoftScore.of(-100, -1);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(hardSoftScore1,
                 hardSoftScore2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(0.0, offset(tolerance));
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[1]).isEqualTo(0.0, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(0.0, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[1]).isEqualTo(0.0, offset(tolerance));
 
         hardSoftScore1 = HardSoftScore.of(-100, -100);
         hardSoftScore2 = HardSoftScore.of(-1, -10);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(hardSoftScore1,
                 hardSoftScore2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(0.99, offset(tolerance));
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[1]).isEqualTo(0.9, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(0.99, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[1]).isEqualTo(0.9, offset(tolerance));
 
         hardSoftScore1 = HardSoftScore.of(100, 100);
         hardSoftScore2 = HardSoftScore.of(1, 10);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(hardSoftScore1,
                 hardSoftScore2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(-0.99, offset(tolerance));
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[1]).isEqualTo(-0.9, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(-0.99, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[1]).isEqualTo(-0.9, offset(tolerance));
 
         hardSoftScore1 = HardSoftScore.of(100, -100);
         hardSoftScore2 = HardSoftScore.of(-100, 200);
         scoreDifferencePercentage = ScoreDifferencePercentage.calculateScoreDifferencePercentage(hardSoftScore1,
                 hardSoftScore2);
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[0]).isEqualTo(-2, offset(tolerance));
-        assertThat(scoreDifferencePercentage.getPercentageLevels()[1]).isEqualTo(3, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[0]).isEqualTo(-2, offset(tolerance));
+        assertThat(scoreDifferencePercentage.percentageLevels()[1]).isEqualTo(3, offset(tolerance));
     }
 
     @Test
@@ -96,7 +96,8 @@ class ScoreDifferencePercentageTest {
         ScoreDifferencePercentage scoreDifferencePercentage2 = ScoreDifferencePercentage
                 .calculateScoreDifferencePercentage(hardSoftScore1, hardSoftScore2);
 
-        double[] levels = scoreDifferencePercentage.add(scoreDifferencePercentage2).getPercentageLevels();
+        ScoreDifferencePercentage scoreDifferencePercentage1 = scoreDifferencePercentage.add(scoreDifferencePercentage2);
+        double[] levels = scoreDifferencePercentage1.percentageLevels();
         assertThat(levels[0]).isEqualTo(-2.0, offset(tolerance));
         assertThat(levels[1]).isEqualTo(-18.0, offset(tolerance));
     }
@@ -114,7 +115,8 @@ class ScoreDifferencePercentageTest {
         ScoreDifferencePercentage scoreDifferencePercentage2 = ScoreDifferencePercentage
                 .calculateScoreDifferencePercentage(hardSoftScore1, hardSoftScore2);
 
-        double[] levels = scoreDifferencePercentage.subtract(scoreDifferencePercentage2).getPercentageLevels();
+        ScoreDifferencePercentage scoreDifferencePercentage1 = scoreDifferencePercentage.subtract(scoreDifferencePercentage2);
+        double[] levels = scoreDifferencePercentage1.percentageLevels();
         assertThat(levels[0]).isEqualTo(0.0, offset(tolerance));
         assertThat(levels[1]).isEqualTo(0.0, offset(tolerance));
     }
@@ -127,11 +129,13 @@ class ScoreDifferencePercentageTest {
         ScoreDifferencePercentage scoreDifferencePercentage = ScoreDifferencePercentage
                 .calculateScoreDifferencePercentage(hardSoftScore1, hardSoftScore2);
 
-        double[] levels = scoreDifferencePercentage.multiply(3.14).getPercentageLevels();
+        ScoreDifferencePercentage scoreDifferencePercentage2 = scoreDifferencePercentage.multiply(3.14);
+        double[] levels = scoreDifferencePercentage2.percentageLevels();
         assertThat(levels[0]).isEqualTo(-3.14, offset(tolerance));
         assertThat(levels[1]).isEqualTo(-28.26, offset(tolerance));
 
-        levels = scoreDifferencePercentage.multiply(-1).getPercentageLevels();
+        ScoreDifferencePercentage scoreDifferencePercentage1 = scoreDifferencePercentage.multiply(-1);
+        levels = scoreDifferencePercentage1.percentageLevels();
         assertThat(levels[0]).isEqualTo(1, offset(tolerance));
         assertThat(levels[1]).isEqualTo(9.0, offset(tolerance));
     }
@@ -144,11 +148,13 @@ class ScoreDifferencePercentageTest {
         ScoreDifferencePercentage scoreDifferencePercentage = ScoreDifferencePercentage
                 .calculateScoreDifferencePercentage(hardSoftScore1, hardSoftScore2);
 
-        double[] levels = scoreDifferencePercentage.multiply(0.5).getPercentageLevels();
+        ScoreDifferencePercentage scoreDifferencePercentage2 = scoreDifferencePercentage.multiply(0.5);
+        double[] levels = scoreDifferencePercentage2.percentageLevels();
         assertThat(levels[0]).isEqualTo(-0.5, offset(tolerance));
         assertThat(levels[1]).isEqualTo(-4.5, offset(tolerance));
 
-        levels = scoreDifferencePercentage.multiply(-1).getPercentageLevels();
+        ScoreDifferencePercentage scoreDifferencePercentage1 = scoreDifferencePercentage.multiply(-1);
+        levels = scoreDifferencePercentage1.percentageLevels();
         assertThat(levels[0]).isEqualTo(1, offset(tolerance));
         assertThat(levels[1]).isEqualTo(9.0, offset(tolerance));
     }

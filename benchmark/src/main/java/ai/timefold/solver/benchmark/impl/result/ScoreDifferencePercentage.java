@@ -1,4 +1,4 @@
-package ai.timefold.solver.benchmark.impl.measurement;
+package ai.timefold.solver.benchmark.impl.result;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import ai.timefold.solver.core.api.score.Score;
 
-public class ScoreDifferencePercentage {
+public record ScoreDifferencePercentage(double[] percentageLevels) {
 
     public static <Score_ extends Score<Score_>> ScoreDifferencePercentage calculateScoreDifferencePercentage(
             Score_ baseScore, Score_ valueScore) {
@@ -40,24 +40,14 @@ public class ScoreDifferencePercentage {
         }
     }
 
-    private final double[] percentageLevels;
-
-    public ScoreDifferencePercentage(double[] percentageLevels) {
-        this.percentageLevels = percentageLevels;
-    }
-
-    public double[] getPercentageLevels() {
-        return percentageLevels;
-    }
-
     // ************************************************************************
     // Worker methods
     // ************************************************************************
 
     public ScoreDifferencePercentage add(ScoreDifferencePercentage addend) {
-        if (percentageLevels.length != addend.getPercentageLevels().length) {
+        if (percentageLevels.length != addend.percentageLevels().length) {
             throw new IllegalStateException("The addend (" + addend + ")'s levelsLength (" +
-                    addend.getPercentageLevels().length + ") is different from the base (" +
+                    addend.percentageLevels().length + ") is different from the base (" +
                     this + ")'s levelsLength (" + percentageLevels.length + ").");
         }
         double[] newPercentageLevels = new double[percentageLevels.length];
@@ -68,9 +58,9 @@ public class ScoreDifferencePercentage {
     }
 
     public ScoreDifferencePercentage subtract(ScoreDifferencePercentage subtrahend) {
-        if (percentageLevels.length != subtrahend.getPercentageLevels().length) {
+        if (percentageLevels.length != subtrahend.percentageLevels().length) {
             throw new IllegalStateException("The subtrahend (" + subtrahend + ")'s levelsLength (" +
-                    subtrahend.getPercentageLevels().length + ") is different from the base (" +
+                    subtrahend.percentageLevels().length + ") is different from the base (" +
                     this + ")'s levelsLength (" + percentageLevels.length + ").");
         }
         double[] newPercentageLevels = new double[percentageLevels.length];

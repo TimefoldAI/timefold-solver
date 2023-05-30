@@ -72,6 +72,7 @@ public abstract class SubSingleStatistic<Solution_, StatisticPoint_ extends Stat
     /**
      * @return never null, the relative path from {@link PlannerBenchmarkResult#getBenchmarkReportDirectory()}.
      */
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getRelativeCsvFilePath() {
         SingleBenchmarkResult singleBenchmarkResult = subSingleBenchmarkResult.getSingleBenchmarkResult();
         return singleBenchmarkResult.getProblemBenchmarkResult().getProblemReportDirectoryName() + "/"
@@ -195,6 +196,7 @@ public abstract class SubSingleStatistic<Solution_, StatisticPoint_ extends Stat
     // Report accumulates
     // ************************************************************************
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(subSingleBenchmarkResult.getName() + "_" + getStatisticType().name());
     }

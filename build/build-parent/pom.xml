@@ -33,6 +33,9 @@
     <version.org.slf4j>2.0.6</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
     <version.org.springframework>6.0.9</version.org.springframework>
     <version.org.springframework.boot>3.1.0</version.org.springframework.boot>
+    <version.org.webjars.webjars-locator>0.46</version.org.webjars.webjars-locator>
+    <version.org.webjars.bootstrap>5.2.3</version.org.webjars.bootstrap>
+    <version.org.webjars.jquery>3.6.4</version.org.webjars.jquery>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -151,6 +154,25 @@
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
         <version>${version.org.slf4j}</version>
+      </dependency>
+
+      <!-- Webjars -->
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>webjars-locator</artifactId>
+        <version>${version.org.webjars.webjars-locator}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>bootstrap</artifactId>
+        <version>${version.org.webjars.bootstrap}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>jquery</artifactId>
+        <version>${version.org.webjars.jquery}</version>
+        <scope>runtime</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

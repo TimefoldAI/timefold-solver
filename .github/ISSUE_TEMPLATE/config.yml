@@ -1,11 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Feature request or enhancement
-    url: https://github.com/TimefoldAI/timefold-solver/discussions/new?category=ideas
-    about: I have a proposal for a new Timefold Solver feature or enhancement.
   - name: Question
     url: https://stackoverflow.com/questions/ask?tags=timefold
-    about: I have a question about how to use Timefold Solver.
+    about: Ask a question about how to use Timefold Solver.
   - name: Discussions
     url: https://github.com/TimefoldAI/timefold-solver/discussions/new?category=general
     about: Open Community discussions related to Timefold Solver.

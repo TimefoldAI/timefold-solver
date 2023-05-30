@@ -25,7 +25,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
-// TODO move to timefold-solver-swingwb, the Swing version of timefold-solver-wb (which doesn't exist yet either)
 public class SwingUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     private static final Semaphore windowCountSemaphore = new Semaphore(5);
