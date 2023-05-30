@@ -179,9 +179,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (moveThreadCount == null) {
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
-            MultithreadedSolvingEnterpriseService service = MultithreadedSolvingEnterpriseService.load(moveThreadCount);
-            decider = service.buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode,
-                    configPolicy);
+            decider = MultithreadedSolvingEnterpriseService.load(moveThreadCount)
+                    .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);

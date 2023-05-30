@@ -79,9 +79,9 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         if (moveThreadCount == null) {
             decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
         } else {
-            MultithreadedSolvingEnterpriseService service = MultithreadedSolvingEnterpriseService.load(moveThreadCount);
-            decider = service.buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
-                    configPolicy);
+            decider = MultithreadedSolvingEnterpriseService.load(moveThreadCount)
+                    .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
+                            configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);

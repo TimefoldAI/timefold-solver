@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseCo
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.enterprise.PartitionedSearchEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
@@ -23,11 +24,12 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PartitionedFactory {
+final class PartitionedFactory implements PartitionedSearchEnterpriseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PartitionedFactory.class);
 
-    public static <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,
+    @Override
+    public <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,
             PartitionedSearchPhaseConfig phaseConfig, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
             Termination<Solution_> solverTermination,
             BiFunction<HeuristicConfigPolicy<Solution_>, Termination<Solution_>, Termination<Solution_>> phaseTerminationFunction) {
