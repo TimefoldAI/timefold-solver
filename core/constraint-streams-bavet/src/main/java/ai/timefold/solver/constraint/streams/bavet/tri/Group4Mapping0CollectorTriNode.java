@@ -1,15 +1,15 @@
 package ai.timefold.solver.constraint.streams.bavet.tri;
 
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.quad.QuadTuple;
-import ai.timefold.solver.constraint.streams.bavet.quad.QuadTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 final class Group4Mapping0CollectorTriNode<OldA, OldB, OldC, A, B, C, D>
         extends
-        AbstractGroupTriNode<OldA, OldB, OldC, QuadTuple<A, B, C, D>, QuadTupleImpl<A, B, C, D>, Quadruple<A, B, C, D>, Void, Void> {
+        AbstractGroupTriNode<OldA, OldB, OldC, QuadTuple<A, B, C, D>, Quadruple<A, B, C, D>, Void, Void> {
 
     private final int outputStoreSize;
 
@@ -30,9 +30,9 @@ final class Group4Mapping0CollectorTriNode<OldA, OldB, OldC, A, B, C, D>
             TriFunction<OldA, OldB, OldC, C> groupKeyMappingC,
             TriFunction<OldA, OldB, OldC, D> groupKeyMappingD,
             TriTuple<OldA, OldB, OldC> tuple) {
-        OldA oldA = tuple.getFactA();
-        OldB oldB = tuple.getFactB();
-        OldC oldC = tuple.getFactC();
+        OldA oldA = tuple.factA;
+        OldB oldB = tuple.factB;
+        OldC oldC = tuple.factC;
         A a = groupKeyMappingA.apply(oldA, oldB, oldC);
         B b = groupKeyMappingB.apply(oldA, oldB, oldC);
         C c = groupKeyMappingC.apply(oldA, oldB, oldC);
@@ -41,12 +41,12 @@ final class Group4Mapping0CollectorTriNode<OldA, OldB, OldC, A, B, C, D>
     }
 
     @Override
-    protected QuadTupleImpl<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTupleImpl<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), groupKey.getD(), outputStoreSize);
+    protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
+        return new QuadTuple<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), groupKey.getD(), outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(QuadTupleImpl<A, B, C, D> outTuple, Void unused) {
+    protected void updateOutTupleToResult(QuadTuple<A, B, C, D> outTuple, Void unused) {
         throw new IllegalStateException("Impossible state: collector is null.");
     }
 

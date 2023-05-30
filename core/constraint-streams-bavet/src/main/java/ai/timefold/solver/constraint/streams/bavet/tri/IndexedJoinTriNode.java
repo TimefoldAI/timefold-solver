@@ -3,16 +3,17 @@ package ai.timefold.solver.constraint.streams.bavet.tri;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import ai.timefold.solver.constraint.streams.bavet.bi.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIndexedJoinNode;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexProperties;
 import ai.timefold.solver.constraint.streams.bavet.common.index.Indexer;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.function.TriPredicate;
 
 final class IndexedJoinTriNode<A, B, C>
-        extends AbstractIndexedJoinNode<BiTuple<A, B>, C, TriTuple<A, B, C>, TriTupleImpl<A, B, C>> {
+        extends AbstractIndexedJoinNode<BiTuple<A, B>, C, TriTuple<A, B, C>> {
 
     private final BiFunction<A, B, IndexProperties> mappingAB;
     private final TriPredicate<A, B, C> filtering;
@@ -39,28 +40,28 @@ final class IndexedJoinTriNode<A, B, C>
 
     @Override
     protected IndexProperties createIndexPropertiesLeft(BiTuple<A, B> leftTuple) {
-        return mappingAB.apply(leftTuple.getFactA(), leftTuple.getFactB());
+        return mappingAB.apply(leftTuple.factA, leftTuple.factB);
     }
 
     @Override
-    protected TriTupleImpl<A, B, C> createOutTuple(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return new TriTupleImpl<>(leftTuple.getFactA(), leftTuple.getFactB(), rightTuple.getFactA(), outputStoreSize);
+    protected TriTuple<A, B, C> createOutTuple(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
+        return new TriTuple<>(leftTuple.factA, leftTuple.factB, rightTuple.factA, outputStoreSize);
     }
 
     @Override
-    protected void setOutTupleLeftFacts(TriTupleImpl<A, B, C> outTuple, BiTuple<A, B> leftTuple) {
-        outTuple.factA = leftTuple.getFactA();
-        outTuple.factB = leftTuple.getFactB();
+    protected void setOutTupleLeftFacts(TriTuple<A, B, C> outTuple, BiTuple<A, B> leftTuple) {
+        outTuple.factA = leftTuple.factA;
+        outTuple.factB = leftTuple.factB;
     }
 
     @Override
-    protected void setOutTupleRightFact(TriTupleImpl<A, B, C> outTuple, UniTuple<C> rightTuple) {
-        outTuple.factC = rightTuple.getFactA();
+    protected void setOutTupleRightFact(TriTuple<A, B, C> outTuple, UniTuple<C> rightTuple) {
+        outTuple.factC = rightTuple.factA;
     }
 
     @Override
     protected boolean testFiltering(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), leftTuple.getFactB(), rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, leftTuple.factB, rightTuple.factA);
     }
 
 }

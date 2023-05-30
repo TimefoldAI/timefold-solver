@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Queue;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetTupleState;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
 public final class ForEachUniNode<A> extends AbstractNode {
 
@@ -18,8 +19,8 @@ public final class ForEachUniNode<A> extends AbstractNode {
     private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final int outputStoreSize;
 
-    private final Map<A, UniTupleImpl<A>> tupleMap = new IdentityHashMap<>(1000);
-    private final Queue<UniTupleImpl<A>> dirtyTupleQueue;
+    private final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
+    private final Queue<UniTuple<A>> dirtyTupleQueue;
 
     public ForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         this.forEachClass = forEachClass;
@@ -29,8 +30,8 @@ public final class ForEachUniNode<A> extends AbstractNode {
     }
 
     public void insert(A a) {
-        UniTupleImpl<A> tuple = new UniTupleImpl<>(a, outputStoreSize);
-        UniTupleImpl<A> old = tupleMap.put(a, tuple);
+        UniTuple<A> tuple = new UniTuple<>(a, outputStoreSize);
+        UniTuple<A> old = tupleMap.put(a, tuple);
         if (old != null) {
             throw new IllegalStateException("The fact (" + a + ") was already inserted, so it cannot insert again.");
         }
@@ -38,54 +39,54 @@ public final class ForEachUniNode<A> extends AbstractNode {
     }
 
     public void update(A a) {
-        UniTupleImpl<A> tuple = tupleMap.get(a);
+        UniTuple<A> tuple = tupleMap.get(a);
         if (tuple == null) {
             throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot update.");
         }
         if (tuple.state.isDirty()) {
-            if (tuple.state == BavetTupleState.DYING || tuple.state == BavetTupleState.ABORTING) {
+            if (tuple.state == TupleState.DYING || tuple.state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (" + a + ") was retracted, so it cannot update.");
             }
         } else {
-            tuple.state = BavetTupleState.UPDATING;
+            tuple.state = TupleState.UPDATING;
             dirtyTupleQueue.add(tuple);
         }
     }
 
     public void retract(A a) {
-        UniTupleImpl<A> tuple = tupleMap.remove(a);
+        UniTuple<A> tuple = tupleMap.remove(a);
         if (tuple == null) {
             throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot retract.");
         }
         if (tuple.state.isDirty()) {
-            if (tuple.state == BavetTupleState.DYING || tuple.state == BavetTupleState.ABORTING) {
+            if (tuple.state == TupleState.DYING || tuple.state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (" + a + ") was already retracted, so it cannot retract.");
             }
-            tuple.state = BavetTupleState.ABORTING;
+            tuple.state = TupleState.ABORTING;
         } else {
-            tuple.state = BavetTupleState.DYING;
+            tuple.state = TupleState.DYING;
             dirtyTupleQueue.add(tuple);
         }
     }
 
     @Override
     public void calculateScore() {
-        for (UniTupleImpl<A> tuple : dirtyTupleQueue) {
+        for (UniTuple<A> tuple : dirtyTupleQueue) {
             switch (tuple.state) {
                 case CREATING:
                     nextNodesTupleLifecycle.insert(tuple);
-                    tuple.state = BavetTupleState.OK;
+                    tuple.state = TupleState.OK;
                     break;
                 case UPDATING:
                     nextNodesTupleLifecycle.update(tuple);
-                    tuple.state = BavetTupleState.OK;
+                    tuple.state = TupleState.OK;
                     break;
                 case DYING:
                     nextNodesTupleLifecycle.retract(tuple);
-                    tuple.state = BavetTupleState.DEAD;
+                    tuple.state = TupleState.DEAD;
                     break;
                 case ABORTING:
-                    tuple.state = BavetTupleState.DEAD;
+                    tuple.state = TupleState.DEAD;
                     break;
                 case OK:
                 case DEAD:

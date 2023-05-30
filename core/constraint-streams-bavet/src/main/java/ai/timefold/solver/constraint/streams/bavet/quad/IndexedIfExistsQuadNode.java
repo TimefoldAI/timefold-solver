@@ -4,10 +4,11 @@ import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.constraint.streams.bavet.common.ExistsCounter;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexProperties;
 import ai.timefold.solver.constraint.streams.bavet.common.index.Indexer;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.function.PentaPredicate;
 import ai.timefold.solver.core.api.function.QuadFunction;
 
@@ -47,13 +48,13 @@ final class IndexedIfExistsQuadNode<A, B, C, D, E> extends AbstractIndexedIfExis
 
     @Override
     protected IndexProperties createIndexProperties(QuadTuple<A, B, C, D> leftTuple) {
-        return mappingABCD.apply(leftTuple.getFactA(), leftTuple.getFactB(), leftTuple.getFactC(), leftTuple.getFactD());
+        return mappingABCD.apply(leftTuple.factA, leftTuple.factB, leftTuple.factC, leftTuple.factD);
     }
 
     @Override
     protected boolean testFiltering(QuadTuple<A, B, C, D> leftTuple, UniTuple<E> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), leftTuple.getFactB(), leftTuple.getFactC(), leftTuple.getFactD(),
-                rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, leftTuple.factB, leftTuple.factC, leftTuple.factD,
+                rightTuple.factA);
     }
 
 }

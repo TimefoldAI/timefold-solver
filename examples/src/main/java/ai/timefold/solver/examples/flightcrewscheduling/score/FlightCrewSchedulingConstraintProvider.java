@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
 import static ai.timefold.solver.core.api.score.stream.Joiners.overlapping;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -47,8 +48,11 @@ public class FlightCrewSchedulingConstraintProvider implements ConstraintProvide
 
     private Constraint transferBetweenTwoFlights(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Employee.class)
-                .filter(employee -> employee.countInvalidConnections() > 0)
-                .penalizeLong(HardSoftLongScore.ofHard(1), Employee::countInvalidConnections)
+                .expand(Employee::countInvalidConnections)
+                .filter((employee, invalidConnections) -> invalidConnections > 0)
+                .penalizeLong(HardSoftLongScore.ofHard(1),
+                        (employee, invalidConnections) -> invalidConnections)
+                .indictWith((employee, invalidConnections) -> Collections.singleton(employee))
                 .asConstraint("Transfer between two flights");
     }
 

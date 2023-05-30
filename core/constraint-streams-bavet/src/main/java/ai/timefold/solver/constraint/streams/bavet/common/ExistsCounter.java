@@ -1,11 +1,14 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import static ai.timefold.solver.constraint.streams.bavet.common.BavetTupleState.DEAD;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DEAD;
 
-public final class ExistsCounter<Tuple_ extends Tuple> {
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
+
+public final class ExistsCounter<Tuple_ extends AbstractTuple> {
 
     final Tuple_ leftTuple;
-    BavetTupleState state = DEAD;
+    TupleState state = DEAD;
     int countRight = 0;
 
     ExistsCounter(Tuple_ leftTuple) {

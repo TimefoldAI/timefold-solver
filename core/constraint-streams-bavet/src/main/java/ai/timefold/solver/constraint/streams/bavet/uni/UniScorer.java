@@ -3,6 +3,7 @@ package ai.timefold.solver.constraint.streams.bavet.uni;
 import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractScorer;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.api.score.Score;
 
@@ -19,7 +20,7 @@ final class UniScorer<A> extends AbstractScorer<UniTuple<A>> {
     @Override
     protected UndoScoreImpacter impact(UniTuple<A> tuple) {
         try {
-            return scoreImpacter.apply(tuple.getFactA());
+            return scoreImpacter.apply(tuple.factA);
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

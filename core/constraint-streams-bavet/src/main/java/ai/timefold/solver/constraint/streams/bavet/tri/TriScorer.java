@@ -1,6 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.tri;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractScorer;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
@@ -18,7 +19,7 @@ final class TriScorer<A, B, C> extends AbstractScorer<TriTuple<A, B, C>> {
     @Override
     protected UndoScoreImpacter impact(TriTuple<A, B, C> tuple) {
         try {
-            return scoreImpacter.apply(tuple.getFactA(), tuple.getFactB(), tuple.getFactC());
+            return scoreImpacter.apply(tuple.factA, tuple.factB, tuple.factC);
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

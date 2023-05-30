@@ -4,12 +4,13 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIndexedJoinNode;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexProperties;
 import ai.timefold.solver.constraint.streams.bavet.common.index.Indexer;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTuple<A>, B, BiTuple<A, B>, BiTupleImpl<A, B>> {
+final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTuple<A>, B, BiTuple<A, B>> {
 
     private final Function<A, IndexProperties> mappingA;
     private final BiPredicate<A, B> filtering;
@@ -36,27 +37,27 @@ final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTuple<A>,
 
     @Override
     protected IndexProperties createIndexPropertiesLeft(UniTuple<A> leftTuple) {
-        return mappingA.apply(leftTuple.getFactA());
+        return mappingA.apply(leftTuple.factA);
     }
 
     @Override
-    protected BiTupleImpl<A, B> createOutTuple(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return new BiTupleImpl<>(leftTuple.getFactA(), rightTuple.getFactA(), outputStoreSize);
+    protected BiTuple<A, B> createOutTuple(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
+        return new BiTuple<>(leftTuple.factA, rightTuple.factA, outputStoreSize);
     }
 
     @Override
-    protected void setOutTupleLeftFacts(BiTupleImpl<A, B> outTuple, UniTuple<A> leftTuple) {
-        outTuple.factA = leftTuple.getFactA();
+    protected void setOutTupleLeftFacts(BiTuple<A, B> outTuple, UniTuple<A> leftTuple) {
+        outTuple.factA = leftTuple.factA;
     }
 
     @Override
-    protected void setOutTupleRightFact(BiTupleImpl<A, B> outTuple, UniTuple<B> rightTuple) {
-        outTuple.factB = rightTuple.getFactA();
+    protected void setOutTupleRightFact(BiTuple<A, B> outTuple, UniTuple<B> rightTuple) {
+        outTuple.factB = rightTuple.factA;
     }
 
     @Override
     protected boolean testFiltering(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, rightTuple.factA);
     }
 
 }

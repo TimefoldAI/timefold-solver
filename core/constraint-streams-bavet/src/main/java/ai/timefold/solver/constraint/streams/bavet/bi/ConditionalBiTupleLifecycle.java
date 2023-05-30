@@ -2,8 +2,9 @@ package ai.timefold.solver.constraint.streams.bavet.bi;
 
 import java.util.function.BiPredicate;
 
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractConditionalTupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractConditionalTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
 final class ConditionalBiTupleLifecycle<A, B> extends AbstractConditionalTupleLifecycle<BiTuple<A, B>> {
     private final BiPredicate<A, B> predicate;
@@ -15,7 +16,7 @@ final class ConditionalBiTupleLifecycle<A, B> extends AbstractConditionalTupleLi
 
     @Override
     protected boolean test(BiTuple<A, B> tuple) {
-        return predicate.test(tuple.getFactA(), tuple.getFactB());
+        return predicate.test(tuple.factA, tuple.factB);
     }
 
 }

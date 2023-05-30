@@ -2,7 +2,11 @@ package ai.timefold.solver.constraint.streams.bavet.common;
 
 import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleList;
 import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
 /**
  * There is a strong likelihood that any change made to this class
@@ -11,7 +15,7 @@ import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
  * @param <LeftTuple_>
  * @param <Right_>
  */
-public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Right_>
+public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractTuple, Right_>
         extends AbstractIfExistsNode<LeftTuple_, Right_>
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
