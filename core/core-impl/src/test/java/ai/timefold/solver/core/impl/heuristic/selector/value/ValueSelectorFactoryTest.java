@@ -14,8 +14,6 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
-import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -24,7 +22,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
@@ -261,21 +258,6 @@ class ValueSelectorFactoryTest {
                 () -> ValueSelectorFactory.create(valueSelectorConfig)
                         .buildMimicReplaying(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("has another property");
-    }
-
-    @Test
-    void failFast_ifNearbyDoesNotHaveOriginEntityOrValueSelector() {
-        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
-                .withNearbySelectionConfig(new NearbySelectionConfig()
-                        .withOriginSubListSelectorConfig(new SubListSelectorConfig().withMimicSelectorRef("x"))
-                        .withNearbyDistanceMeterClass(mock(NearbyDistanceMeter.class).getClass()));
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> ValueSelectorFactory.<TestdataListSolution> create(valueSelectorConfig)
-                        .buildValueSelector(buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor()),
-                                TestdataListEntity.buildEntityDescriptor(),
-                                SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM))
-                .withMessageContaining("requires an originEntitySelector or an originValueSelector");
     }
 
     static Stream<Arguments> applyListValueFiltering() {

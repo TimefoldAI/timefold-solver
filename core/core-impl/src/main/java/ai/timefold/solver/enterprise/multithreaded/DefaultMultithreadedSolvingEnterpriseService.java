@@ -2,10 +2,10 @@ package ai.timefold.solver.enterprise.multithreaded;
 
 import java.util.concurrent.ThreadFactory;
 
+import ai.timefold.solver.core.MultithreadedSolvingEnterpriseService;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
-import ai.timefold.solver.core.impl.enterprise.MultithreadedSolvingEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;

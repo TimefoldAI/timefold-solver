@@ -10,14 +10,11 @@ import java.util.Comparator;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
@@ -199,19 +196,6 @@ class EntitySelectorFactoryTest {
                 () -> EntitySelectorFactory.create(entitySelectorConfig)
                         .buildMimicReplaying(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("has another property");
-    }
-
-    @Test
-    void failFast_ifNearbyDoesNotHaveOriginEntitySelector() {
-        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
-                .withNearbySelectionConfig(new NearbySelectionConfig()
-                        .withOriginValueSelectorConfig(new ValueSelectorConfig().withMimicSelectorRef("x"))
-                        .withNearbyDistanceMeterClass(NearbyDistanceMeter.class));
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig).buildEntitySelector(
-                        buildHeuristicConfigPolicy(), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM))
-                .withMessageContaining("requires an originEntitySelector");
     }
 
     public static class DummySelectionProbabilityWeightFactory

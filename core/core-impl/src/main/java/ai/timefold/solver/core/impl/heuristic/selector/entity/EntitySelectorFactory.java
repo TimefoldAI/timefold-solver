@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.NearbySelectionEnterpriseService;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -22,9 +23,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandom;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandomFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
@@ -34,7 +32,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingE
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.EntityMimicRecorder;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.nearby.NearEntityNearbyEntitySelector;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 
 public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<Solution_, EntitySelectorConfig> {
@@ -178,22 +175,9 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             NearbySelectionConfig nearbySelectionConfig, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, EntitySelector<Solution_> entitySelector) {
-        boolean randomSelection = resolvedSelectionOrder.toRandomSelectionBoolean();
-        if (nearbySelectionConfig.getOriginEntitySelectorConfig() == null) {
-            throw new IllegalArgumentException("The entitySelector (" + config
-                    + ")'s nearbySelectionConfig (" + nearbySelectionConfig + ") requires an originEntitySelector.");
-        }
-        EntitySelectorFactory<Solution_> entitySelectorFactory =
-                EntitySelectorFactory.create(nearbySelectionConfig.getOriginEntitySelectorConfig());
-        EntitySelector<Solution_> originEntitySelector =
-                entitySelectorFactory.buildEntitySelector(configPolicy, minimumCacheType, resolvedSelectionOrder);
-        NearbyDistanceMeter nearbyDistanceMeter =
-                configPolicy.getClassInstanceCache().newInstance(nearbySelectionConfig, "nearbyDistanceMeterClass",
-                        nearbySelectionConfig.getNearbyDistanceMeterClass());
-        // TODO Check nearbyDistanceMeterClass.getGenericInterfaces() to confirm generic type S is an entityClass
-        NearbyRandom nearbyRandom = NearbyRandomFactory.create(nearbySelectionConfig).buildNearbyRandom(randomSelection);
-        return new NearEntityNearbyEntitySelector<>(entitySelector, originEntitySelector, nearbyDistanceMeter,
-                nearbyRandom, randomSelection);
+        return NearbySelectionEnterpriseService.load()
+                .applyNearbySelection(config, configPolicy, nearbySelectionConfig, minimumCacheType,
+                        resolvedSelectionOrder, entitySelector);
     }
 
     private EntitySelector<Solution_> applyFiltering(EntitySelector<Solution_> entitySelector,

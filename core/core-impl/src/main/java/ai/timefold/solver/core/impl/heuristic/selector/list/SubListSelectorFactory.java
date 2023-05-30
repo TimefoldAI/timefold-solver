@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
-import java.util.Optional;
 
+import ai.timefold.solver.core.NearbySelectionEnterpriseService;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -14,18 +14,13 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandom;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandomFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicRecordingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicReplayingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.SubListMimicRecorder;
-import ai.timefold.solver.core.impl.heuristic.selector.list.nearby.NearSubListNearbySubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
-import ai.timefold.solver.core.impl.util.Pair;
 
 public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigFactory<Solution_, SubListSelectorConfig> {
 
@@ -105,73 +100,15 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         return subListSelector;
     }
 
-    private SubListSelector<Solution_> applyNearbySelection(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType,
-            SelectionOrder resolvedSelectionOrder,
+    private SubListSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
+            SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder,
             RandomSubListSelector<Solution_> subListSelector) {
         NearbySelectionConfig nearbySelectionConfig = config.getNearbySelectionConfig();
         if (nearbySelectionConfig == null) {
             return subListSelector;
         }
-
-        randomDistributionNearbyLimitation(nearbySelectionConfig).ifPresent(configPropertyNameAndValue -> {
-            if (config.getMinimumSubListSize() != null && config.getMinimumSubListSize() > 1) {
-                throw new IllegalArgumentException("Using minimumSubListSize (" + config.getMinimumSubListSize()
-                        + ") is not allowed because the nearby selection distribution uses a "
-                        + configPropertyNameAndValue.getKey() + " (" + configPropertyNameAndValue.getValue()
-                        + ") which may limit the ability to select all nearby values."
-                        + " As a consequence, it may be impossible to select a subList with the required minimumSubListSize."
-                        + " Therefore, this combination is prohibited.");
-            }
-        });
-
-        nearbySelectionConfig.validateNearby(minimumCacheType, resolvedSelectionOrder);
-
-        boolean randomSelection = resolvedSelectionOrder.toRandomSelectionBoolean();
-
-        NearbyDistanceMeter<?, ?> nearbyDistanceMeter =
-                configPolicy.getClassInstanceCache().newInstance(nearbySelectionConfig,
-                        "nearbyDistanceMeterClass", nearbySelectionConfig.getNearbyDistanceMeterClass());
-        // TODO Check nearbyDistanceMeterClass.getGenericInterfaces() to confirm generic type S is an entityClass
-        NearbyRandom nearbyRandom = NearbyRandomFactory.create(nearbySelectionConfig).buildNearbyRandom(randomSelection);
-
-        if (nearbySelectionConfig.getOriginSubListSelectorConfig() == null) {
-            throw new IllegalArgumentException("The subListSelector (" + config
-                    + ")'s nearbySelectionConfig (" + nearbySelectionConfig
-                    + ") requires an originSubListSelector.");
-        }
-        SubListSelector<Solution_> replayingOriginSubListSelector = SubListSelectorFactory
-                .<Solution_> create(nearbySelectionConfig.getOriginSubListSelectorConfig())
-                // Entity selector not needed for replaying selector.
-                .buildSubListSelector(configPolicy, null, minimumCacheType, resolvedSelectionOrder);
-        return new NearSubListNearbySubListSelector<>(
-                subListSelector,
-                replayingOriginSubListSelector,
-                nearbyDistanceMeter,
-                nearbyRandom);
-    }
-
-    private static Optional<Pair<String, Object>>
-            randomDistributionNearbyLimitation(NearbySelectionConfig nearbySelectionConfig) {
-        if (nearbySelectionConfig.getBlockDistributionSizeRatio() != null
-                && nearbySelectionConfig.getBlockDistributionSizeRatio() < 1) {
-            return Optional.of(
-                    Pair.of("blockDistributionSizeRatio", nearbySelectionConfig.getBlockDistributionSizeRatio()));
-        }
-        if (nearbySelectionConfig.getBlockDistributionSizeMaximum() != null) {
-            return Optional.of(
-                    Pair.of("blockDistributionSizeMaximum", nearbySelectionConfig.getBlockDistributionSizeMaximum()));
-        }
-        if (nearbySelectionConfig.getLinearDistributionSizeMaximum() != null) {
-            return Optional.of(
-                    Pair.of("linearDistributionSizeMaximum", nearbySelectionConfig.getLinearDistributionSizeMaximum()));
-        }
-        if (nearbySelectionConfig.getParabolicDistributionSizeMaximum() != null) {
-            return Optional.of(
-                    Pair.of("parabolicDistributionSizeMaximum", nearbySelectionConfig.getParabolicDistributionSizeMaximum()));
-        }
-        return Optional.empty();
+        return NearbySelectionEnterpriseService.load()
+                .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 
     private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(
