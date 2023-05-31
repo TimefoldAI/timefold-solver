@@ -80,6 +80,18 @@ recipeList:
       oldValue: "https://www.optaplanner.org/xsd/benchmark https://www.optaplanner.org/xsd/benchmark/benchmark.xsd"
       newValue: "https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd"
       fileMatcher: "**/*.xml"
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: "logger"
+      attributeName: "name"
+      oldValue: "org.optaplanner"
+      newValue: "ai.timefold.solver"
+      fileMatcher: "**/logback.xml"
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: "logger"
+      attributeName: "name"
+      oldValue: "org.optaplanner"
+      newValue: "ai.timefold.solver"
+      fileMatcher: "**/logback-test.xml"
 
   # Maven and Gradle
   - ai.timefold.solver.migration.fork.TimefoldChangeDependencies
