@@ -6,12 +6,14 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 
 /**
  * A tuple is an <i>out tuple</i> in exactly one node and an <i>in tuple</i> in one or more nodes.
- * <p/>
+ *
+ * <p>
  * A tuple must not implement equals()/hashCode() to fact equality,
  * because some stream operations ({@link UniConstraintStream#map(Function)}, ...)
  * might create 2 different tuple instances to contain the same facts
  * and because a tuple's origin may replace a tuple's fact.
- * <p/>
+ *
+ * <p>
  * A tuple is modifiable.
  * However, only the origin node of a tuple (the node where the tuple is the out tuple) may modify it.
  */
