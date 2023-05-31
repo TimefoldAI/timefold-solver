@@ -36,7 +36,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
     /**
      * Whether the stream guarantees that no two tuples it produces will ever have the same set of facts.
      * Streams which can prove that they either do or do not produce unique tuples should override this method.
-     * 
+     *
      * @return delegates to {@link #getParent()} if not null, otherwise false
      */
     public boolean guaranteesDistinct() {
