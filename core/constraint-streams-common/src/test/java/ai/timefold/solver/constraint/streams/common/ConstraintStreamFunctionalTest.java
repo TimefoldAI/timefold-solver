@@ -99,18 +99,36 @@ public interface ConstraintStreamFunctionalTest {
     void groupBy_4Mapping0Collector();
 
     // ************************************************************************
-    // Map/flatten/distinct
+    // Map/expand/flatten/distinct
     // ************************************************************************
 
     void distinct();
 
-    void mapWithDuplicates();
+    void mapToUniWithDuplicates();
 
-    void mapWithoutDuplicates();
+    void mapToUniWithoutDuplicates();
 
-    void mapAndDistinctWithDuplicates();
+    void mapToUniAndDistinctWithDuplicates();
 
-    void mapAndDistinctWithoutDuplicates();
+    void mapToUniAndDistinctWithoutDuplicates();
+
+    void mapToBi();
+
+    void mapToTri();
+
+    void mapToQuad();
+
+    default void expandToBi() {
+        // Only Uni can be expanded to Bi, so don't force it.
+    }
+
+    default void expandToTri() {
+        // Only Uni and Bi can be expanded to Tri, so don't force it.
+    }
+
+    default void expandToQuad() {
+        // Quad can't be expanded, so don't force it.
+    }
 
     void flattenLastWithDuplicates();
 

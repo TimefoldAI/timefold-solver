@@ -1348,7 +1348,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapWithDuplicates() {
+    public void mapToUniWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
@@ -1378,7 +1378,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapWithoutDuplicates() {
+    public void mapToUniWithoutDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 3, 3);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
@@ -1409,7 +1409,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapAndDistinctWithDuplicates() {
+    public void mapToUniAndDistinctWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
@@ -1438,7 +1438,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapAndDistinctWithoutDuplicates() {
+    public void mapToUniAndDistinctWithoutDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 3, 3);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
@@ -1458,6 +1458,142 @@ public abstract class AbstractTriConstraintStreamTest
                 assertMatch(asSet(group1, group2)),
                 assertMatch(asSet(group1, group3)),
                 assertMatch(asSet(group2, group3)));
+
+        TestdataLavishEntity entity = solution.getFirstEntity();
+
+        // Incremental
+        scoreDirector.beforeEntityRemoved(entity);
+        solution.getEntityList().remove(entity);
+        scoreDirector.afterEntityRemoved(entity);
+        assertScore(scoreDirector);
+    }
+
+    @Override
+    @TestTemplate
+    public void mapToBi() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 3, 3);
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class, Joiners.filtering((a, b, c) -> a != c && b != c))
+                        .map((a, b, c) -> a.getEntityGroup(),
+                                (a, b, c) -> b.getEntityGroup())
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
+        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        TestdataLavishEntityGroup group3 = solution.getEntityGroupList().get(2);
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(group1, group2),
+                assertMatch(group1, group3),
+                assertMatch(group2, group3));
+
+        TestdataLavishEntity entity = solution.getFirstEntity();
+
+        // Incremental
+        scoreDirector.beforeEntityRemoved(entity);
+        solution.getEntityList().remove(entity);
+        scoreDirector.afterEntityRemoved(entity);
+        assertScore(scoreDirector);
+    }
+
+    @Override
+    @TestTemplate
+    public void mapToTri() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 3, 3);
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class, Joiners.filtering((a, b, c) -> a != c && b != c))
+                        .map((a, b, c) -> a.getEntityGroup(),
+                                (a, b, c) -> b.getEntityGroup(),
+                                (a, b, c) -> c.getEntityGroup())
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
+        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        TestdataLavishEntityGroup group3 = solution.getEntityGroupList().get(2);
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(group1, group2, group3),
+                assertMatch(group1, group3, group2),
+                assertMatch(group2, group3, group1));
+
+        TestdataLavishEntity entity = solution.getFirstEntity();
+
+        // Incremental
+        scoreDirector.beforeEntityRemoved(entity);
+        solution.getEntityList().remove(entity);
+        scoreDirector.afterEntityRemoved(entity);
+        assertScore(scoreDirector);
+    }
+
+    @Override
+    @TestTemplate
+    public void mapToQuad() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 3, 3);
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class, Joiners.filtering((a, b, c) -> a != c && b != c))
+                        .map((a, b, c) -> a.getEntityGroup(),
+                                (a, b, c) -> b.getEntityGroup(),
+                                (a, b, c) -> c.getEntityGroup(),
+                                (a, b, c) -> a.getLongProperty() + b.getLongProperty() + c.getLongProperty())
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
+        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        TestdataLavishEntityGroup group3 = solution.getEntityGroupList().get(2);
+        long sum = solution.getEntityList().stream()
+                .mapToLong(TestdataLavishEntity::getLongProperty)
+                .sum();
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(group1, group2, group3, sum),
+                assertMatch(group1, group3, group2, sum),
+                assertMatch(group2, group3, group1, sum));
+
+        TestdataLavishEntity entity = solution.getFirstEntity();
+
+        // Incremental
+        scoreDirector.beforeEntityRemoved(entity);
+        solution.getEntityList().remove(entity);
+        scoreDirector.afterEntityRemoved(entity);
+        assertScore(scoreDirector);
+    }
+
+    @Override
+    @TestTemplate
+    public void expandToQuad() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 3, 3);
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class, Joiners.filtering((a, b, c) -> a != c && b != c))
+                        .expand((a, b, c) -> a.getLongProperty() + b.getLongProperty() + c.getLongProperty())
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
+        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
+        long sum = solution.getEntityList().stream()
+                .mapToLong(TestdataLavishEntity::getLongProperty)
+                .sum();
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2, entity3, sum),
+                assertMatch(entity1, entity3, entity2, sum),
+                assertMatch(entity2, entity3, entity1, sum));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
 

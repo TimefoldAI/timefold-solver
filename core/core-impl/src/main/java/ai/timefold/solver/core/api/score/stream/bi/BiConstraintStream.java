@@ -1061,7 +1061,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     /**
      * Adds a fact to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
-     * 
+     *
      * <p>
      * Use with caution,
      * as the benefits of caching computation may be outweighed by increased memory allocation rates
