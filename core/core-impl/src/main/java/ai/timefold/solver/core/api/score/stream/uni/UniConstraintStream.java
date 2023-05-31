@@ -1368,7 +1368,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * No two input tuples should map to the same output tuple,
      * or to tuples that are {@link Object#equals(Object) equal}.
      * Not following this recommendation creates a constraint stream with duplicate tuples,
-     * and may force you to use {@link #distinct()} later, which comes with a performance cost.</li>
+     * and may force you to use {@link #distinct()} later, which comes at a performance cost.</li>
      * <li>Immutable data carriers.
      * The objects returned by the mapping function should be identified by their contents and nothing else.
      * If two of them have contents which {@link Object#equals(Object) equal},
@@ -1388,6 +1388,10 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 20)]},
      * calling {@code map(Person::getAge)} on such stream will produce a stream of {@link Integer}s
      * {@code [20, 25, 30, 30, 20]}.
+     *
+     * <p>
+     * Use with caution,
+     * as the increased memory allocation rates coming from tuple creation may negatively affect performance.
      *
      * @param mapping never null, function to convert the original tuple into the new tuple
      * @param <ResultA_> the type of the only fact in the resulting {@link UniConstraintStream}'s tuple
@@ -1485,6 +1489,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Adds a fact to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
      *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
+     * If more than one fact is to be added,
+     * prefer {@link #expand(Function, Function)} or {@link #expand(Function, Function, Function)}.
+     *
      * @param mapping function to produce the new fact from the original tuple
      * @return never null
      * @param <ResultB_> type of the final fact of the new tuple
@@ -1494,6 +1505,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     /**
      * Adds two facts to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
+     *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
+     * If more than two facts are to be added,
+     * prefer {@link #expand(Function, Function, Function)}.
      *
      * @param mappingB function to produce the new second fact from the original tuple
      * @param mappingC function to produce the new third fact from the original tuple
@@ -1507,6 +1525,11 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     /**
      * Adds three facts to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
+     *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
      *
      * @param mappingB function to produce the new second fact from the original tuple
      * @param mappingC function to produce the new third fact from the original tuple

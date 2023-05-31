@@ -1056,6 +1056,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Adds a fact to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
      *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
+     *
      * @param mapping function to produce the new fact from the original tuple
      * @return never null
      * @param <ResultD_> type of the final fact of the new tuple

@@ -1061,6 +1061,13 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     /**
      * Adds a fact to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
+     * 
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
+     * If more than two facts are to be added,
+     * prefer {@link #expand(BiFunction, BiFunction)}.
      *
      * @param mapping function to produce the new fact from the original tuple
      * @return never null
@@ -1071,6 +1078,11 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     /**
      * Adds two facts to the end of the tuple, increasing the cardinality of the stream.
      * Useful for storing results of expensive computations on the original tuple.
+     *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
      *
      * @param mappingC function to produce the new third fact from the original tuple
      * @param mappingD function to produce the new final fact from the original tuple
