@@ -96,6 +96,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
     /**
      * Returns the stream which first produced the tuple that this stream operates on.
      * If a stream does not have a single parent nor is it a source, it is expected to override this method.
+     *
      * @return this if {@link TupleSource}, otherwise parent's tuple source.
      */
     public BavetAbstractConstraintStream<Solution_> getTupleSource() {
