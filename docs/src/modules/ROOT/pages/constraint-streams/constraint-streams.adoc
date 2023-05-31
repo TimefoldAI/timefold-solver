@@ -824,7 +824,7 @@ the stream.
 === Mapping tuples
 
 Mapping enables you to transform each tuple in a constraint stream by applying a mapping function to it.
-The result of such mapping is `UniConstraintStream` of the mapped tuples.
+The result of such mapping is another constraint stream of the mapped tuples.
 
 [source,java,options="nowrap"]
 ----
@@ -841,6 +841,18 @@ In the example above, the mapping function produces duplicate tuples if two diff
 That is, such `CloudComputer` appears in the resulting constraint stream twice.
 See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
+
+Mapping can be used to transform streams of all cardinalities.
+The following example maps a pair of `CloudProcess` instances to a pair of `CloudComputer` instances running them:
+
+[source,java,options="nowrap"]
+----
+    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEachUniquePair(CloudProcess.class)      // BiConstraintStream<CloudProcess, CloudProcess>
+                .map(CloudProcess::getComputer, CloudProcess::getComputer)  // BiConstraintStream<CloudComputer, CloudComputer>
+                ...
+    }
+----
 
 [[constraintStreamsDesigningMappingFunction]]
 ==== Designing the mapping function
@@ -886,6 +898,54 @@ There is a performance cost to `distinct()`.
 For optimal performance, don't use constraint stream operations that produce duplicate tuples, to avoid the need to call `distinct()`.
 ====
 
+[[constraintStreamsExpandingTuples]]
+=== Expanding tuples
+
+Tuple expansion is a special case of <<constraintStreamsMappingTuples,tuple mapping>>
+which only increases stream cardinality and can not introduce duplicate tuples.
+It enables you to add extra facts to each tuple in a constraint stream by applying a mapping function to it.
+This is useful in situations where an expensive computations needs to be cached for use later in the stream.
+
+In the following example,
+the method `Talk.prevailingSpeakerUndesiredTimeslotTagCount()` internally iterates over collections to find overlapping tags
+and returns the number of such tags.
+It is expensive and it is called for each `Talk` in the stream,
+possibly being called many thousands of times per second.
+Importantly, it is first called to filter out talks that have zero overlap,
+and then again to penalize overlap on talks which suffer from it.
+
+[source,java,options="nowrap"]
+----
+    Constraint speakerUndesiredTimeslotTags(ConstraintFactory factory) {
+        return factory.forEach(Talk.class)
+                .filter(talk -> talk.prevailingSpeakerUndesiredTimeslotTagCount() > 0)
+                .penalizeConfigurable(talk -> talk.prevailingSpeakerUndesiredTimeslotTagCount() * talk.getDurationInMinutes())
+                .asConstraint(SPEAKER_UNDESIRED_TIMESLOT_TAGS);
+    }
+----
+
+We can improve this by using tuple expansion to cache the result of the expensive computation,
+possibly significantly reducing the number of times it is called.
+
+[source,java,options="nowrap"]
+----
+    Constraint speakerUndesiredTimeslotTags(ConstraintFactory factory) {
+        return factory.forEach(Talk.class)
+                .expand(Talk::prevailingSpeakerUndesiredTimeslotTagCount)
+                .filter((talk, undesiredTagCount) -> undesiredTagCount > 0)
+                .penalizeConfigurable((talk, undesiredTagCount) -> undesiredTagCount * talk.getDurationInMinutes())
+                .asConstraint(SPEAKER_UNDESIRED_TIMESLOT_TAGS);
+    }
+----
+
+Once the tuple for a `Talk` has been created and passed through the filter,
+the expensive computation will not be reevaluated again unless the `Talk` itself changes.
+
+[NOTE]
+====
+There is a performance cost to `expand()`.
+Always check your solver's score calculation speed to see if the cost is offset by the gains.
+====
 
 [[constraintStreamsFlattening]]
 === Flattening
