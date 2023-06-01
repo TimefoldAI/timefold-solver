@@ -34,7 +34,7 @@
     <version.org.springframework>6.0.9</version.org.springframework>
     <version.org.springframework.boot>3.1.0</version.org.springframework.boot>
     <version.org.webjars.webjars-locator>0.46</version.org.webjars.webjars-locator>
-    <version.org.webjars.bootstrap>5.2.3</version.org.webjars.bootstrap>
+    <version.org.webjars.bootstrap>5.3.0</version.org.webjars.bootstrap>
     <version.org.webjars.jquery>3.6.4</version.org.webjars.jquery>
 
     <!-- ************************************************************************ -->
