@@ -11,7 +11,7 @@
 
     <artifactId>timefold-solver-constraint-streams</artifactId>
 
-    <name>Timefold Solver constraints: Constraint streams</name>
+    <name>Timefold Solver core: Constraint streams</name>
     <description>
         Timefold solves planning problems.
         This lightweight, embeddable planning engine implements powerful and scalable algorithms
