@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.testutil;
 import java.util.Objects;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandom;
+import ai.timefold.solver.enterprise.nearby.common.NearbyRandom;
 
 /**
  * Simply returns next integer produced by the given "working" random, which is expected to be a {@link TestRandom} under

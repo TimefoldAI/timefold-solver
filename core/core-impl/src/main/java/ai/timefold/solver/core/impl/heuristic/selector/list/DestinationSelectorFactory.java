@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.NearbySelectionEnterpriseService;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -10,13 +11,8 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandom;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandomFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.list.nearby.NearSubListNearbyDestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.nearby.NearValueNearbyDestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
@@ -93,52 +89,14 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         return (EntityIndependentValueSelector<Solution_>) valueSelector;
     }
 
-    private DestinationSelector<Solution_> applyNearbySelection(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType,
-            SelectionOrder resolvedSelectionOrder,
+    private DestinationSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
+            SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder,
             ElementDestinationSelector<Solution_> destinationSelector) {
         NearbySelectionConfig nearbySelectionConfig = config.getNearbySelectionConfig();
         if (nearbySelectionConfig == null) {
             return destinationSelector;
         }
-
-        nearbySelectionConfig.validateNearby(minimumCacheType, resolvedSelectionOrder);
-
-        boolean randomSelection = resolvedSelectionOrder.toRandomSelectionBoolean();
-
-        NearbyDistanceMeter<?, ?> nearbyDistanceMeter =
-                configPolicy.getClassInstanceCache().newInstance(nearbySelectionConfig,
-                        "nearbyDistanceMeterClass", nearbySelectionConfig.getNearbyDistanceMeterClass());
-        // TODO Check nearbyDistanceMeterClass.getGenericInterfaces() to confirm generic type S is an entityClass
-        NearbyRandom nearbyRandom = NearbyRandomFactory.create(nearbySelectionConfig).buildNearbyRandom(randomSelection);
-
-        if (nearbySelectionConfig.getOriginValueSelectorConfig() != null) {
-            ValueSelector<Solution_> originValueSelector = ValueSelectorFactory
-                    .<Solution_> create(nearbySelectionConfig.getOriginValueSelectorConfig())
-                    .buildValueSelector(configPolicy, destinationSelector.getEntityDescriptor(), minimumCacheType,
-                            resolvedSelectionOrder);
-            return new NearValueNearbyDestinationSelector<>(
-                    destinationSelector,
-                    ((EntityIndependentValueSelector<Solution_>) originValueSelector),
-                    nearbyDistanceMeter,
-                    nearbyRandom,
-                    randomSelection);
-        } else if (nearbySelectionConfig.getOriginSubListSelectorConfig() != null) {
-            SubListSelector<Solution_> subListSelector = SubListSelectorFactory
-                    .<Solution_> create(nearbySelectionConfig.getOriginSubListSelectorConfig())
-                    // Entity selector not needed for replaying selector.
-                    .buildSubListSelector(configPolicy, null, minimumCacheType, resolvedSelectionOrder);
-            return new NearSubListNearbyDestinationSelector<>(
-                    destinationSelector,
-                    subListSelector,
-                    nearbyDistanceMeter,
-                    nearbyRandom,
-                    randomSelection);
-        } else {
-            throw new IllegalArgumentException("The destinationSelector (" + config
-                    + ")'s nearbySelectionConfig (" + nearbySelectionConfig
-                    + ") requires an originSubListSelector or an originValueSelector.");
-        }
+        return NearbySelectionEnterpriseService.load()
+                .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, destinationSelector);
     }
 }

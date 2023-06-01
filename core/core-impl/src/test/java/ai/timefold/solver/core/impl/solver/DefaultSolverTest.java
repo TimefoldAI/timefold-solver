@@ -31,7 +31,6 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
@@ -43,9 +42,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.custom.NoChangeCustomPhaseCommand;
@@ -71,7 +68,6 @@ import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEnt
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
@@ -869,32 +865,4 @@ class DefaultSolverTest {
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
     }
 
-    @Test
-    @Timeout(10)
-    void stopMultiThreadedSolving_whenThereIsNoMoveAvailable() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverConfig.setMoveThreadCount("1"); // Enable the multi-threaded solving.
-        LocalSearchPhaseConfig localSearchPhaseConfig = (LocalSearchPhaseConfig) solverConfig.getPhaseConfigList().get(1);
-
-        MoveListFactoryConfig moveListFactoryConfig = new MoveListFactoryConfig();
-        moveListFactoryConfig.setMoveListFactoryClass(TestMoveListFactory.class);
-        localSearchPhaseConfig.setMoveSelectorConfig(moveListFactoryConfig);
-
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
-
-        TestdataSolution solution = solver.solve(TestdataSolution.generateSolution());
-        PlannerAssert.assertSolutionInitialized(solution);
-    }
-
-    public static class TestMoveListFactory implements MoveListFactory<TestdataSolution> {
-
-        public TestMoveListFactory() {
-        }
-
-        @Override
-        public List<? extends Move<TestdataSolution>> createMoveList(TestdataSolution solution) {
-            return List.of();
-        }
-    }
 }

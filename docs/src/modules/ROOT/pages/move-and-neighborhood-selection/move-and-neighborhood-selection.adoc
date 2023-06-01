@@ -1507,6 +1507,13 @@ Mimic selection is useful to create <<cartesianProductMoveSelector,a composite m
 [[nearbySelection]]
 === Nearby selection
 
+[NOTE]
+====
+Nearby selection is a commercial feature of Timefold Enterprise.
+It is not open source, and it is free for development use only.
+https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
+====
+
 In some use cases (such as TSP and VRP, but also in non-chained variable cases), changing entities to nearby values or swapping nearby entities can *heavily increase scalability* and improve solution quality.
 
 image::move-and-neighborhood-selection/nearbySelectionMotivation.png[align="center"]

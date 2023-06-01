@@ -6,7 +6,6 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
-import ai.timefold.solver.core.impl.partitionedsearch.PartitionSolver;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -22,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Common code between {@link DefaultSolver} and child solvers (such as {@link PartitionSolver}).
+ * Common code between {@link DefaultSolver} and child solvers.
  * <p>
  * Do not create a new child {@link Solver} to implement a new heuristic or metaheuristic,
  * just use a new {@link Phase} for that.

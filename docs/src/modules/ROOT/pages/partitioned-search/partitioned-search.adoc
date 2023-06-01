@@ -4,6 +4,12 @@
 :sectnums:
 :icons: font
 
+[NOTE]
+====
+Partitioned search is a commercial feature of Timefold Enterprise.
+It is not open source, and it is free for development use only.
+https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
+====
 
 [[partitionedSearchAlgorithm]]
 == Algorithm description
