@@ -55,6 +55,7 @@ public class TestdataLavishSolution extends TestdataObject {
             TestdataLavishEntityGroup entityGroup = entityGroupList.get(i % entityGroupListSize);
             TestdataLavishValue value = valueList.get(i % valueListSize);
             TestdataLavishEntity entity = new TestdataLavishEntity("Generated Entity " + i, entityGroup, value);
+            entity.setLongProperty(Math.round(Math.random() * 1_000_000L));
             entityList.add(entity);
         }
         solution.setEntityList(entityList);

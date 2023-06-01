@@ -2,15 +2,14 @@ package ai.timefold.solver.constraint.streams.bavet.quad;
 
 import static ai.timefold.solver.constraint.streams.bavet.quad.Group1Mapping0CollectorQuadNode.createGroupKey;
 
-import ai.timefold.solver.constraint.streams.bavet.bi.BiTuple;
-import ai.timefold.solver.constraint.streams.bavet.bi.BiTupleImpl;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
 final class Group1Mapping1CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, ResultContainer_>
-        extends AbstractGroupQuadNode<OldA, OldB, OldC, OldD, BiTuple<A, B>, BiTupleImpl<A, B>, A, ResultContainer_, B> {
+        extends AbstractGroupQuadNode<OldA, OldB, OldC, OldD, BiTuple<A, B>, A, ResultContainer_, B> {
 
     private final int outputStoreSize;
 
@@ -23,12 +22,12 @@ final class Group1Mapping1CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, Result
     }
 
     @Override
-    protected BiTupleImpl<A, B> createOutTuple(A a) {
-        return new BiTupleImpl<>(a, null, outputStoreSize);
+    protected BiTuple<A, B> createOutTuple(A a) {
+        return new BiTuple<>(a, null, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(BiTupleImpl<A, B> outTuple, B b) {
+    protected void updateOutTupleToResult(BiTuple<A, B> outTuple, B b) {
         outTuple.factB = b;
     }
 

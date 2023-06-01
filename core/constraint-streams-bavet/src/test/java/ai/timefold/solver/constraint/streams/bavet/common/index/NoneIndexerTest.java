@@ -5,8 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +65,7 @@ class NoneIndexerTest extends AbstractIndexerTest {
     }
 
     private static UniTuple<String> newTuple(String factA) {
-        return new UniTupleImpl<>(factA, 0);
+        return new UniTuple<>(factA, 0);
     }
 
 }

@@ -8,14 +8,18 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.function.Function;
 
-public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, EffectiveItem_, FlattenedItem_>
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
+
+public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple, EffectiveItem_, FlattenedItem_>
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
     private final int flattenLastStoreIndex;
     private final Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction;
     /**
-     * Calls for example {@link AbstractScorer#insert(Tuple)}, and/or ...
+     * Calls for example {@link AbstractScorer#insert(AbstractTuple)}, and/or ...
      */
     private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
     private final Queue<OutTuple_> dirtyTupleQueue = new ArrayDeque<>(1000);
@@ -89,7 +93,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
                 outTupleIterator.remove();
                 removeTuple(outTuple);
             } else {
-                outTuple.setState(BavetTupleState.UPDATING);
+                outTuple.setState(TupleState.UPDATING);
                 dirtyTupleQueue.add(outTuple);
             }
         }
@@ -118,11 +122,11 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
     private void removeTuple(OutTuple_ outTuple) {
         switch (outTuple.getState()) {
             case CREATING:
-                outTuple.setState(BavetTupleState.ABORTING);
+                outTuple.setState(TupleState.ABORTING);
                 break;
             case UPDATING:
             case OK:
-                outTuple.setState(BavetTupleState.DYING);
+                outTuple.setState(TupleState.DYING);
                 break;
             default:
                 throw new IllegalStateException("Impossible state: The tuple (" + outTuple +
@@ -137,18 +141,18 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
             switch (outTuple.getState()) {
                 case CREATING:
                     nextNodesTupleLifecycle.insert(outTuple);
-                    outTuple.setState(BavetTupleState.OK);
+                    outTuple.setState(TupleState.OK);
                     break;
                 case UPDATING:
                     nextNodesTupleLifecycle.update(outTuple);
-                    outTuple.setState(BavetTupleState.OK);
+                    outTuple.setState(TupleState.OK);
                     break;
                 case DYING:
                     nextNodesTupleLifecycle.retract(outTuple);
-                    outTuple.setState(BavetTupleState.DEAD);
+                    outTuple.setState(TupleState.DEAD);
                     break;
                 case ABORTING:
-                    outTuple.setState(BavetTupleState.DEAD);
+                    outTuple.setState(TupleState.DEAD);
                     break;
                 default:
                     throw new IllegalStateException("Impossible state: The tuple (" + outTuple + ") in node (" +

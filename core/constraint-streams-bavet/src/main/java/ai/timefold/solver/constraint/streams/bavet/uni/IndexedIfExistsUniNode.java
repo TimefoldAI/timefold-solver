@@ -5,9 +5,10 @@ import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.constraint.streams.bavet.common.ExistsCounter;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexProperties;
 import ai.timefold.solver.constraint.streams.bavet.common.index.Indexer;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
 final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<UniTuple<A>, B> {
 
@@ -45,12 +46,12 @@ final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<Uni
 
     @Override
     protected IndexProperties createIndexProperties(UniTuple<A> leftTuple) {
-        return mappingA.apply(leftTuple.getFactA());
+        return mappingA.apply(leftTuple.factA);
     }
 
     @Override
     protected boolean testFiltering(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, rightTuple.factA);
     }
 
 }

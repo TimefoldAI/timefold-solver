@@ -1,6 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.tri;
 
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -8,7 +9,7 @@ import ai.timefold.solver.core.impl.util.Triple;
 
 final class Group0Mapping3CollectorTriNode<OldA, OldB, OldC, A, B, C, ResultContainerA_, ResultContainerB_, ResultContainerC_>
         extends
-        AbstractGroupTriNode<OldA, OldB, OldC, TriTuple<A, B, C>, TriTupleImpl<A, B, C>, Void, Object, Triple<A, B, C>> {
+        AbstractGroupTriNode<OldA, OldB, OldC, TriTuple<A, B, C>, Void, Object, Triple<A, B, C>> {
 
     private final int outputStoreSize;
 
@@ -32,12 +33,12 @@ final class Group0Mapping3CollectorTriNode<OldA, OldB, OldC, A, B, C, ResultCont
     }
 
     @Override
-    protected TriTupleImpl<A, B, C> createOutTuple(Void groupKey) {
-        return new TriTupleImpl<>(null, null, null, outputStoreSize);
+    protected TriTuple<A, B, C> createOutTuple(Void groupKey) {
+        return new TriTuple<>(null, null, null, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(TriTupleImpl<A, B, C> outTuple, Triple<A, B, C> result) {
+    protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
         outTuple.factA = result.getA();
         outTuple.factB = result.getB();
         outTuple.factC = result.getC();

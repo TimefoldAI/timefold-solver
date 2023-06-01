@@ -56,8 +56,6 @@ public class Employee extends AbstractPersistable {
     }
 
     public long countInvalidConnections() {
-        // TODO Cache this to improve example performance.
-        // Especially useful for Constraint Streams, by which this is called multiple times per Employee.
         long count = 0L;
         FlightAssignment previousAssignment = null;
         for (FlightAssignment assignment : flightAssignmentSet) {

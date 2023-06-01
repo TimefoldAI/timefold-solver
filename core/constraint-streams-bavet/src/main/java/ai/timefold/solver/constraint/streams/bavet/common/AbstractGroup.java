@@ -2,7 +2,9 @@ package ai.timefold.solver.constraint.streams.bavet.common;
 
 import java.util.Objects;
 
-abstract class AbstractGroup<OutTuple_ extends Tuple, ResultContainer_> {
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+
+abstract class AbstractGroup<OutTuple_ extends AbstractTuple, ResultContainer_> {
 
     public final Object groupKey;
     public final OutTuple_ outTuple;

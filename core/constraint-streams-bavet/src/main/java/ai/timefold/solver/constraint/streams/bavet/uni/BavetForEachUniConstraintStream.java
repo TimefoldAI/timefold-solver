@@ -5,11 +5,15 @@ import java.util.Set;
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.TupleSource;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
 import ai.timefold.solver.core.api.score.Score;
 
-public final class BavetForEachUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A> {
+public final class BavetForEachUniConstraintStream<Solution_, A>
+        extends BavetAbstractUniConstraintStream<Solution_, A>
+        implements TupleSource {
 
     private final Class<A> forEachClass;
 

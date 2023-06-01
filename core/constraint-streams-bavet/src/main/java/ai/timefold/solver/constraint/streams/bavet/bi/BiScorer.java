@@ -3,6 +3,7 @@ package ai.timefold.solver.constraint.streams.bavet.bi;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractScorer;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.api.score.Score;
 
@@ -19,7 +20,7 @@ final class BiScorer<A, B> extends AbstractScorer<BiTuple<A, B>> {
     @Override
     protected UndoScoreImpacter impact(BiTuple<A, B> tuple) {
         try {
-            return scoreImpacter.apply(tuple.getFactA(), tuple.getFactB());
+            return scoreImpacter.apply(tuple.factA, tuple.factB);
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

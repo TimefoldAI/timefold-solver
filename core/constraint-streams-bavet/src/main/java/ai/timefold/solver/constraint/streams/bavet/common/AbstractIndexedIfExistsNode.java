@@ -6,7 +6,11 @@ import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleList;
 import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexProperties;
 import ai.timefold.solver.constraint.streams.bavet.common.index.Indexer;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
 /**
  * There is a strong likelihood that any change to this class, which is not related to indexing,
@@ -15,7 +19,7 @@ import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
  * @param <LeftTuple_>
  * @param <Right_>
  */
-public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Right_>
+public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTuple, Right_>
         extends AbstractIfExistsNode<LeftTuple_, Right_>
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
@@ -142,7 +146,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = mappingRight.apply(rightTuple.getFactA());
+        IndexProperties indexProperties = mappingRight.apply(rightTuple.factA);
         rightTuple.setStore(inputStoreIndexRightProperties, indexProperties);
 
         TupleListEntry<UniTuple<Right_>> rightEntry = indexerRight.put(indexProperties, rightTuple);
@@ -164,7 +168,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             insertRight(rightTuple);
             return;
         }
-        IndexProperties newIndexProperties = mappingRight.apply(rightTuple.getFactA());
+        IndexProperties newIndexProperties = mappingRight.apply(rightTuple.factA);
 
         if (oldIndexProperties.equals(newIndexProperties)) {
             // No need for re-indexing because the index properties didn't change

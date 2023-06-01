@@ -3,14 +3,12 @@ package ai.timefold.solver.constraint.streams.bavet.uni;
 import static ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier.of;
 
 import java.math.BigDecimal;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraint;
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetScoringConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier;
@@ -18,11 +16,10 @@ import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacter;
 import ai.timefold.solver.core.api.score.Score;
 
-public final class BavetScoringUniConstraintStream<Solution_, A>
+final class BavetScoringUniConstraintStream<Solution_, A>
         extends BavetAbstractUniConstraintStream<Solution_, A>
         implements BavetScoringConstraintStream<Solution_> {
 
-    private final BavetAbstractUniConstraintStream<Solution_, A> parent;
     private final boolean noMatchWeigher;
     private final ToIntFunction<A> intMatchWeigher;
     private final ToLongFunction<A> longMatchWeigher;
@@ -60,8 +57,7 @@ public final class BavetScoringUniConstraintStream<Solution_, A>
             BavetAbstractUniConstraintStream<Solution_, A> parent,
             boolean noMatchWeigher, ToIntFunction<A> intMatchWeigher, ToLongFunction<A> longMatchWeigher,
             Function<A, BigDecimal> bigDecimalMatchWeigher) {
-        super(constraintFactory, parent.getRetrievalSemantics());
-        this.parent = parent;
+        super(constraintFactory, parent);
         this.noMatchWeigher = noMatchWeigher;
         this.intMatchWeigher = intMatchWeigher;
         this.longMatchWeigher = longMatchWeigher;
@@ -73,32 +69,13 @@ public final class BavetScoringUniConstraintStream<Solution_, A>
         this.constraint = constraint;
     }
 
-    @Override
-    public boolean guaranteesDistinct() {
-        return parent.guaranteesDistinct();
-    }
-
     // ************************************************************************
     // Node creation
     // ************************************************************************
 
     @Override
-    public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
-        parent.collectActiveConstraintStreams(constraintStreamSet);
-        constraintStreamSet.add(this);
-    }
-
-    @Override
-    public BavetAbstractConstraintStream<Solution_> getTupleSource() {
-        return parent.getTupleSource();
-    }
-
-    @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        if (!childStreamList.isEmpty()) {
-            throw new IllegalStateException("Impossible state: the stream (" + this
-                    + ") has an non-empty childStreamList (" + childStreamList + ") but it's an endpoint.");
-        }
+        assertEmptyChildStreamList();
         Score_ constraintWeight = buildHelper.getConstraintWeight(constraint);
         WeightedScoreImpacter<Score_, ?> weightedScoreImpacter =
                 buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint, constraintWeight);

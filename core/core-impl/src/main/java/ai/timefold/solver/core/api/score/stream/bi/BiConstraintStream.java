@@ -968,6 +968,49 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     <ResultA_> UniConstraintStream<ResultA_> map(BiFunction<A, B, ResultA_> mapping);
 
     /**
+     * As defined by {@link #map(BiFunction)}, only resulting in {@link BiConstraintStream}.
+     *
+     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param <ResultA_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
+     * @param <ResultB_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
+     * @return never null
+     */
+    <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(BiFunction<A, B, ResultA_> mappingA,
+            BiFunction<A, B, ResultB_> mappingB);
+
+    /**
+     * As defined by {@link #map(BiFunction)}, only resulting in {@link TriConstraintStream}.
+     *
+     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
+     * @param <ResultA_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
+     * @param <ResultB_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
+     * @param <ResultC_> the type of the third fact in the resulting {@link TriConstraintStream}'s tuple
+     * @return never null
+     */
+    <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(BiFunction<A, B, ResultA_> mappingA,
+            BiFunction<A, B, ResultB_> mappingB, BiFunction<A, B, ResultC_> mappingC);
+
+    /**
+     * As defined by {@link #map(BiFunction)}, only resulting in {@link QuadConstraintStream}.
+     *
+     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
+     * @param mappingD never null, function to convert the original tuple into the fourth fact of a new tuple
+     * @param <ResultA_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @param <ResultB_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @param <ResultC_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @param <ResultD_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @return never null
+     */
+    <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            BiFunction<A, B, ResultA_> mappingA, BiFunction<A, B, ResultB_> mappingB, BiFunction<A, B, ResultC_> mappingC,
+            BiFunction<A, B, ResultD_> mappingD);
+
+    /**
      * Takes each tuple and applies a mapping on the last fact, which turns it into {@link Iterable}.
      * Returns a constraint stream consisting of tuples of the first fact
      * and the contents of the {@link Iterable} one after another.
@@ -1010,6 +1053,45 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     BiConstraintStream<A, B> distinct();
+
+    // ************************************************************************
+    // Other operations
+    // ************************************************************************
+
+    /**
+     * Adds a fact to the end of the tuple, increasing the cardinality of the stream.
+     * Useful for storing results of expensive computations on the original tuple.
+     *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
+     * If more than two facts are to be added,
+     * prefer {@link #expand(BiFunction, BiFunction)}.
+     *
+     * @param mapping function to produce the new fact from the original tuple
+     * @return never null
+     * @param <ResultC_> type of the final fact of the new tuple
+     */
+    <ResultC_> TriConstraintStream<A, B, ResultC_> expand(BiFunction<A, B, ResultC_> mapping);
+
+    /**
+     * Adds two facts to the end of the tuple, increasing the cardinality of the stream.
+     * Useful for storing results of expensive computations on the original tuple.
+     *
+     * <p>
+     * Use with caution,
+     * as the benefits of caching computation may be outweighed by increased memory allocation rates
+     * coming from tuple creation.
+     *
+     * @param mappingC function to produce the new third fact from the original tuple
+     * @param mappingD function to produce the new final fact from the original tuple
+     * @return never null
+     * @param <ResultC_> type of the third fact of the new tuple
+     * @param <ResultD_> type of the final fact of the new tuple
+     */
+    <ResultC_, ResultD_> QuadConstraintStream<A, B, ResultC_, ResultD_> expand(BiFunction<A, B, ResultC_> mappingC,
+            BiFunction<A, B, ResultD_> mappingD);
 
     // ************************************************************************
     // Penalize/reward

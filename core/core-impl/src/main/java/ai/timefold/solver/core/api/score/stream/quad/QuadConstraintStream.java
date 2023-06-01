@@ -767,6 +767,50 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
     <ResultA_> UniConstraintStream<ResultA_> map(QuadFunction<A, B, C, D, ResultA_> mapping);
 
     /**
+     * As defined by {@link #map(QuadFunction)}, only resulting in {@link BiConstraintStream}.
+     *
+     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param <ResultA_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
+     * @param <ResultB_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
+     * @return never null
+     */
+    <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(QuadFunction<A, B, C, D, ResultA_> mappingA,
+            QuadFunction<A, B, C, D, ResultB_> mappingB);
+
+    /**
+     * As defined by {@link #map(QuadFunction)}, only resulting in {@link TriConstraintStream}.
+     *
+     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
+     * @param <ResultA_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
+     * @param <ResultB_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
+     * @param <ResultC_> the type of the third fact in the resulting {@link TriConstraintStream}'s tuple
+     * @return never null
+     */
+    <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
+            QuadFunction<A, B, C, D, ResultA_> mappingA, QuadFunction<A, B, C, D, ResultB_> mappingB,
+            QuadFunction<A, B, C, D, ResultC_> mappingC);
+
+    /**
+     * As defined by {@link #map(QuadFunction)}, only resulting in {@link QuadConstraintStream}.
+     *
+     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
+     * @param mappingD never null, function to convert the original tuple into the fourth fact of a new tuple
+     * @param <ResultA_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @param <ResultB_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @param <ResultC_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @param <ResultD_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
+     * @return never null
+     */
+    <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            QuadFunction<A, B, C, D, ResultA_> mappingA, QuadFunction<A, B, C, D, ResultB_> mappingB,
+            QuadFunction<A, B, C, D, ResultC_> mappingC, QuadFunction<A, B, C, D, ResultD_> mappingD);
+
+    /**
      * As defined by {@link BiConstraintStream#flattenLast(Function)}.
      *
      * @param <ResultD_> the type of the last fact in the resulting tuples.

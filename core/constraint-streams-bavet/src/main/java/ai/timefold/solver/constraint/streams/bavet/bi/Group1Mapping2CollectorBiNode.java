@@ -4,15 +4,14 @@ import static ai.timefold.solver.constraint.streams.bavet.bi.Group1Mapping0Colle
 
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTuple;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.util.Pair;
 
 final class Group1Mapping2CollectorBiNode<OldA, OldB, A, B, C, ResultContainerB_, ResultContainerC_>
-        extends AbstractGroupBiNode<OldA, OldB, TriTuple<A, B, C>, TriTupleImpl<A, B, C>, A, Object, Pair<B, C>> {
+        extends AbstractGroupBiNode<OldA, OldB, TriTuple<A, B, C>, A, Object, Pair<B, C>> {
 
     private final int outputStoreSize;
 
@@ -27,12 +26,12 @@ final class Group1Mapping2CollectorBiNode<OldA, OldB, A, B, C, ResultContainerB_
     }
 
     @Override
-    protected TriTupleImpl<A, B, C> createOutTuple(A a) {
-        return new TriTupleImpl<>(a, null, null, outputStoreSize);
+    protected TriTuple<A, B, C> createOutTuple(A a) {
+        return new TriTuple<>(a, null, null, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(TriTupleImpl<A, B, C> outTuple, Pair<B, C> result) {
+    protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Pair<B, C> result) {
         outTuple.factB = result.getKey();
         outTuple.factC = result.getValue();
     }

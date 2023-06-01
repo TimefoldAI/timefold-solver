@@ -1,13 +1,13 @@
 package ai.timefold.solver.constraint.streams.bavet.tri;
 
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
 final class Group1Mapping0CollectorTriNode<OldA, OldB, OldC, A>
-        extends AbstractGroupTriNode<OldA, OldB, OldC, UniTuple<A>, UniTupleImpl<A>, A, Void, Void> {
+        extends AbstractGroupTriNode<OldA, OldB, OldC, UniTuple<A>, A, Void, Void> {
 
     private final int outputStoreSize;
 
@@ -19,16 +19,16 @@ final class Group1Mapping0CollectorTriNode<OldA, OldB, OldC, A>
 
     static <A, OldA, OldB, OldC> A createGroupKey(TriFunction<OldA, OldB, OldC, A> groupKeyMapping,
             TriTuple<OldA, OldB, OldC> tuple) {
-        return groupKeyMapping.apply(tuple.getFactA(), tuple.getFactB(), tuple.getFactC());
+        return groupKeyMapping.apply(tuple.factA, tuple.factB, tuple.factC);
     }
 
     @Override
-    protected UniTupleImpl<A> createOutTuple(A a) {
-        return new UniTupleImpl<>(a, outputStoreSize);
+    protected UniTuple<A> createOutTuple(A a) {
+        return new UniTuple<>(a, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(UniTupleImpl<A> aUniTuple, Void unused) {
+    protected void updateOutTupleToResult(UniTuple<A> aUniTuple, Void unused) {
         throw new IllegalStateException("Impossible state: collector is null.");
     }
 
