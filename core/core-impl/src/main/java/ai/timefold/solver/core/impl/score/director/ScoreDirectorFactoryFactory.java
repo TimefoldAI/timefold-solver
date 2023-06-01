@@ -101,7 +101,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
         } else if (config.getConstraintProviderClass() != null) {
             throw new IllegalStateException("Constraint Streams requested via constraintProviderClass (" +
                     config.getConstraintProviderClass() + ") but the supporting classes were not found on the classpath.\n"
-                    + "Maybe include ai.timefold.solver:timefold-solver-constraint-streams-bavet dependency in your project?\n"
+                    + "Maybe include ai.timefold.solver:timefold-solver-constraint-streams dependency in your project?\n"
                     + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
         }
 

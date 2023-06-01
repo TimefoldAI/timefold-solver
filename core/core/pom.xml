@@ -32,7 +32,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-constraint-streams-bavet</artifactId>
+      <artifactId>timefold-solver-constraint-streams</artifactId>
     </dependency>
   </dependencies>
 

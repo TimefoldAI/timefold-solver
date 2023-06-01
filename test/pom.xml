@@ -35,7 +35,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-constraint-streams-common</artifactId>
+      <artifactId>timefold-solver-constraint-streams</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
