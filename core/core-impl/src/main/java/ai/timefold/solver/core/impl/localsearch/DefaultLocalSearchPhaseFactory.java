@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.localsearch;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.MultithreadedSolvingEnterpriseService;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
@@ -28,7 +28,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.composite.UnionMoveSelectorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
-import ai.timefold.solver.core.impl.localsearch.decider.MultiThreadedLocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
@@ -36,7 +35,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFactory<Solution_, LocalSearchPhaseConfig> {
 
@@ -81,26 +79,9 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         if (moveThreadCount == null) {
             decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
         } else {
-            Integer moveThreadBufferSize = configPolicy.getMoveThreadBufferSize();
-            if (moveThreadBufferSize == null) {
-                // TODO Verify this is a good default by more meticulous benchmarking on multiple machines and JDK's
-                // If it's too low, move threads will need to wait on the buffer, which hurts performance
-                // If it's too high, more moves are selected that aren't foraged
-                moveThreadBufferSize = 10;
-            }
-            ThreadFactory threadFactory = configPolicy.buildThreadFactory(ChildThreadType.MOVE_THREAD);
-            int selectedMoveBufferSize = moveThreadCount * moveThreadBufferSize;
-            MultiThreadedLocalSearchDecider<Solution_> multiThreadedDecider = new MultiThreadedLocalSearchDecider<>(
-                    configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager,
-                    threadFactory, moveThreadCount, selectedMoveBufferSize);
-            if (environmentMode.isNonIntrusiveFullAsserted()) {
-                multiThreadedDecider.setAssertStepScoreFromScratch(true);
-            }
-            if (environmentMode.isIntrusiveFastAsserted()) {
-                multiThreadedDecider.setAssertExpectedStepScore(true);
-                multiThreadedDecider.setAssertShadowVariablesAreNotStaleAfterStep(true);
-            }
-            decider = multiThreadedDecider;
+            decider = MultithreadedSolvingEnterpriseService.load(moveThreadCount)
+                    .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
+                            configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);

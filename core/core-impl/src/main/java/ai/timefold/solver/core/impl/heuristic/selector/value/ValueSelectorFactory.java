@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import ai.timefold.solver.core.NearbySelectionEnterpriseService;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -24,11 +24,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandom;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyRandomFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
@@ -44,8 +40,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.Unassigne
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRecorder;
-import ai.timefold.solver.core.impl.heuristic.selector.value.nearby.NearEntityNearbyValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.nearby.NearValueNearbyValueSelector;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 
 public class ValueSelectorFactory<Solution_>
@@ -454,45 +448,9 @@ public class ValueSelectorFactory<Solution_>
     private ValueSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ValueSelector<Solution_> valueSelector) {
-        NearbySelectionConfig nearbySelectionConfig = config.getNearbySelectionConfig();
-        boolean randomSelection = resolvedSelectionOrder.toRandomSelectionBoolean();
-        NearbyDistanceMeter<?, ?> nearbyDistanceMeter = configPolicy.getClassInstanceCache().newInstance(nearbySelectionConfig,
-                "nearbyDistanceMeterClass", nearbySelectionConfig.getNearbyDistanceMeterClass());
-        // TODO Check nearbyDistanceMeterClass.getGenericInterfaces() to confirm generic type S is an entityClass
-        NearbyRandom nearbyRandom = NearbyRandomFactory.create(nearbySelectionConfig).buildNearbyRandom(randomSelection);
-        if (nearbySelectionConfig.getOriginEntitySelectorConfig() != null) {
-            EntitySelector<Solution_> originEntitySelector = EntitySelectorFactory
-                    .<Solution_> create(nearbySelectionConfig.getOriginEntitySelectorConfig())
-                    .buildEntitySelector(configPolicy, minimumCacheType, resolvedSelectionOrder);
-            return new NearEntityNearbyValueSelector<>(valueSelector, originEntitySelector, nearbyDistanceMeter,
-                    nearbyRandom, randomSelection);
-        } else if (nearbySelectionConfig.getOriginValueSelectorConfig() != null) {
-            ValueSelector<Solution_> originValueSelector = ValueSelectorFactory
-                    .<Solution_> create(nearbySelectionConfig.getOriginValueSelectorConfig())
-                    .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, resolvedSelectionOrder);
-            if (!(valueSelector instanceof EntityIndependentValueSelector)) {
-                throw new IllegalArgumentException(
-                        "The valueSelectorConfig (" + config
-                                + ") needs to be based on an "
-                                + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                                + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-            }
-            if (!(originValueSelector instanceof EntityIndependentValueSelector)) {
-                throw new IllegalArgumentException(
-                        "The originValueSelectorConfig (" + nearbySelectionConfig.getOriginValueSelectorConfig()
-                                + ") needs to be based on an "
-                                + EntityIndependentValueSelector.class.getSimpleName() + " (" + originValueSelector + ")."
-                                + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-            }
-            return new NearValueNearbyValueSelector<>(
-                    (EntityIndependentValueSelector<Solution_>) valueSelector,
-                    (EntityIndependentValueSelector<Solution_>) originValueSelector,
-                    nearbyDistanceMeter, nearbyRandom, randomSelection);
-        } else {
-            throw new IllegalArgumentException("The valueSelector (" + config
-                    + ")'s nearbySelectionConfig (" + nearbySelectionConfig
-                    + ") requires an originEntitySelector or an originValueSelector.");
-        }
+        return NearbySelectionEnterpriseService.load()
+                .applyNearbySelection(config, configPolicy, entityDescriptor, minimumCacheType, resolvedSelectionOrder,
+                        valueSelector);
     }
 
     private ValueSelector<Solution_> applyMimicRecording(HeuristicConfigPolicy<Solution_> configPolicy,
