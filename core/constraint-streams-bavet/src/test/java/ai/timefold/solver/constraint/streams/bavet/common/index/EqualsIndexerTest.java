@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.constraint.streams.common.bi.DefaultBiJoiner;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 
@@ -62,7 +61,7 @@ class EqualsIndexerTest extends AbstractIndexerTest {
     }
 
     private static UniTuple<String> newTuple(String factA) {
-        return new UniTupleImpl<>(factA, 0);
+        return new UniTuple<>(factA, 0);
     }
 
 }

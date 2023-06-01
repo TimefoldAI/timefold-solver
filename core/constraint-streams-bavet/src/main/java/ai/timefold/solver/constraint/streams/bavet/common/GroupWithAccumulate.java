@@ -1,6 +1,8 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-final class GroupWithAccumulate<OutTuple_ extends Tuple, ResultContainer_>
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+
+final class GroupWithAccumulate<OutTuple_ extends AbstractTuple, ResultContainer_>
         extends AbstractGroup<OutTuple_, ResultContainer_> {
 
     private final ResultContainer_ resultContainer;

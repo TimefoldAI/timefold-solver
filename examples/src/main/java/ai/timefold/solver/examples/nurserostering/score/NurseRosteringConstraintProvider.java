@@ -6,6 +6,7 @@ import static ai.timefold.solver.examples.nurserostering.optional.score.Employee
 import static ai.timefold.solver.examples.nurserostering.optional.score.EmployeeConsecutiveAssignmentStart.isWeekendAndNotFirstDayOfWeekend;
 
 import java.time.DayOfWeek;
+import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -87,9 +88,12 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .groupBy((line, shift) -> shift.getEmployee(),
                         (line, shift) -> line,
                         ConstraintCollectors.countBi())
-                .filter((employee, contract, shiftCount) -> contract.isViolated(shiftCount))
-                .penalize(HardSoftScore.ONE_SOFT,
+                .map((employee, contract, shiftCount) -> employee,
+                        (employee, contract, shiftCount) -> contract,
                         (employee, contract, shiftCount) -> contract.getViolationAmount(shiftCount))
+                .filter((employee, contract, violationAmount) -> violationAmount != 0)
+                .penalize(HardSoftScore.ONE_SOFT, (employee, contract, violationAmount) -> violationAmount)
+                .indictWith((employee, contract, violationAmount) -> Arrays.asList(employee, contract))
                 .asConstraint("Minimum and maximum number of assignments");
     }
 
@@ -101,9 +105,10 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(MinMaxContractLine::getContract, Employee::getContract))
                 .ifNotExists(ShiftAssignment.class,
                         Joiners.equal((contractLine, employee) -> employee, ShiftAssignment::getEmployee))
-                .filter((contract, employee) -> contract.isViolated(0))
-                .penalize(HardSoftScore.ONE_SOFT,
-                        (contract, employee) -> contract.getViolationAmount(0))
+                .expand((contract, employee) -> contract.getViolationAmount(0))
+                .filter((contract, employee, violationAmount) -> violationAmount != 0)
+                .penalize(HardSoftScore.ONE_SOFT, (contract, employee, violationAmount) -> violationAmount)
+                .indictWith((contract, employee, violationAmount) -> Arrays.asList(employee, contract))
                 .asConstraint("Minimum and maximum number of assignments (no assignments)");
     }
 
@@ -120,9 +125,12 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
-                .filter((employee, contract, shiftList) -> contract.isViolated(shiftList.getLength()))
-                .penalize(HardSoftScore.ONE_SOFT,
+                .map((employee, contract, shiftList) -> employee,
+                        (employee, contract, shiftList) -> contract,
                         (employee, contract, shiftList) -> contract.getViolationAmount(shiftList.getLength()))
+                .filter((contract, employee, violationAmount) -> violationAmount != 0)
+                .penalize(HardSoftScore.ONE_SOFT, (contract, employee, violationAmount) -> violationAmount)
+                .indictWith((contract, employee, violationAmount) -> Arrays.asList(employee, contract))
                 .asConstraint("consecutiveWorkingDays");
     }
 
@@ -140,44 +148,32 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                                 ShiftDate::getDayIndex))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
                 .join(NurseRosterParametrization.class)
-                .filter((employee, contract, shiftSequence, nrp) -> {
-                    if (!shiftSequence.isFirst() && contract.isViolated(shiftSequence.getPreviousBreak().getLength() - 1)) {
-                        return true;
-                    }
-                    if (shiftSequence.isFirst()) {
-                        int length = shiftSequence.getFirstItem().getDayIndex() - nrp.getFirstShiftDateDayIndex();
-                        if (length > 0 && contract.isViolated(length)) {
-                            return true;
-                        }
-                    }
-                    if (shiftSequence.isLast()) {
-                        int length = nrp.getLastShiftDateDayIndex() - shiftSequence.getLastItem().getDayIndex();
-                        if (length > 0 && contract.isViolated(length)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                .penalize(HardSoftScore.ONE_SOFT,
+                .map((employee, contract, shiftSequence, nrp) -> employee,
+                        (employee, contract, shiftSequence, nrp) -> contract,
                         (employee, contract, shiftSequence, nrp) -> {
+                            // Use NurseRosterParametrization to compute and cache violations.
                             int total = 0;
-                            if (!shiftSequence.isFirst()) {
+                            if (!shiftSequence.isFirst()
+                                    && contract.isViolated(shiftSequence.getPreviousBreak().getLength() - 1)) {
                                 total += contract.getViolationAmount(shiftSequence.getPreviousBreak().getLength() - 1);
                             }
                             if (shiftSequence.isFirst()) {
                                 int length = shiftSequence.getFirstItem().getDayIndex() - nrp.getFirstShiftDateDayIndex();
-                                if (length > 0) {
+                                if (length > 0 && contract.isViolated(length)) {
                                     total += contract.getViolationAmount(length);
                                 }
                             }
                             if (shiftSequence.isLast()) {
                                 int length = nrp.getLastShiftDateDayIndex() - shiftSequence.getLastItem().getDayIndex();
-                                if (length > 0) {
+                                if (length > 0 && contract.isViolated(length)) {
                                     total += contract.getViolationAmount(length);
                                 }
                             }
                             return total;
                         })
+                .filter((employee, contract, violationAmount) -> violationAmount != 0)
+                .penalize(HardSoftScore.ONE_SOFT, (employee, contract, violationAmount) -> violationAmount)
+                .indictWith((employee, contract, violationAmount) -> Arrays.asList(employee, contract))
                 .asConstraint("consecutiveFreeDays");
     }
 
@@ -196,6 +192,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .penalize(HardSoftScore.ONE_SOFT,
                         (contract, employee, nrp) -> contract
                                 .getViolationAmount(nrp.getLastShiftDateDayIndex() - nrp.getFirstShiftDateDayIndex() + 1))
+                .indictWith((contract, employee, nrp) -> Arrays.asList(employee, contract))
                 .asConstraint("maximumConsecutiveFreeDays (no shifts)");
     }
 
@@ -213,9 +210,12 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 shiftDate -> shiftDate.getWeekendSundayIndex() / 7))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
-                .filter((employee, contract, shiftList) -> contract.isViolated(shiftList.getLength()))
-                .penalize(HardSoftScore.ONE_SOFT,
+                .map((employee, contract, shiftList) -> employee,
+                        (employee, contract, shiftList) -> contract,
                         (employee, contract, shiftList) -> contract.getViolationAmount(shiftList.getLength()))
+                .filter((employee, contract, violationAmount) -> violationAmount != 0)
+                .penalize(HardSoftScore.ONE_SOFT, (employee, contract, violationAmount) -> violationAmount)
+                .indictWith((employee, contract, violationAmount) -> Arrays.asList(employee, contract))
                 .asConstraint("consecutiveWorkingWeekends");
     }
 
@@ -236,6 +236,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .penalize(HardSoftScore.ONE_SOFT,
                         (employee, contract, shiftList) -> getDistanceToFirstDayOfWeekend(employee, shiftList.getFirstItem())
                                 * contract.getWeight())
+                .indictWith((employee, contract, shiftList) -> Arrays.asList(employee, contract))
                 .asConstraint("startOnNotFirstDayOfWeekend");
     }
 
@@ -256,6 +257,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .penalize(HardSoftScore.ONE_SOFT,
                         (employee, contract, shiftList) -> getDistanceToLastDayOfWeekend(employee, shiftList.getLastItem())
                                 * contract.getWeight())
+                .indictWith((employee, contract, shiftList) -> Arrays.asList(employee, contract))
                 .asConstraint("endOnNotLastDayOfWeekend");
     }
 
@@ -278,6 +280,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .filter((contract, employee, type, count) -> count < employee.getWeekendLength())
                 .penalize(HardSoftScore.ONE_SOFT,
                         (contract, employee, type, count) -> (employee.getWeekendLength() - count) * contract.getWeight())
+                .indictWith((contract, employee, type, count) -> Arrays.asList(employee, contract))
                 .asConstraint("identicalShiftTypesDuringWeekend");
     }
 

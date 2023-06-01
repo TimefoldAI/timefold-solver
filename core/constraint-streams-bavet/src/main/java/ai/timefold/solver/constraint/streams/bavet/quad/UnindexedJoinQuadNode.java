@@ -1,13 +1,14 @@
 package ai.timefold.solver.constraint.streams.bavet.quad;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractUnindexedJoinNode;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTuple;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 
 final class UnindexedJoinQuadNode<A, B, C, D>
-        extends AbstractUnindexedJoinNode<TriTuple<A, B, C>, D, QuadTuple<A, B, C, D>, QuadTupleImpl<A, B, C, D>> {
+        extends AbstractUnindexedJoinNode<TriTuple<A, B, C>, D, QuadTuple<A, B, C, D>> {
 
     private final QuadPredicate<A, B, C, D> filtering;
     private final int outputStoreSize;
@@ -27,26 +28,26 @@ final class UnindexedJoinQuadNode<A, B, C, D>
     }
 
     @Override
-    protected QuadTupleImpl<A, B, C, D> createOutTuple(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
-        return new QuadTupleImpl<>(leftTuple.getFactA(), leftTuple.getFactB(), leftTuple.getFactC(), rightTuple.getFactA(),
+    protected QuadTuple<A, B, C, D> createOutTuple(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
+        return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, rightTuple.factA,
                 outputStoreSize);
     }
 
     @Override
-    protected void setOutTupleLeftFacts(QuadTupleImpl<A, B, C, D> outTuple, TriTuple<A, B, C> leftTuple) {
-        outTuple.factA = leftTuple.getFactA();
-        outTuple.factB = leftTuple.getFactB();
-        outTuple.factC = leftTuple.getFactC();
+    protected void setOutTupleLeftFacts(QuadTuple<A, B, C, D> outTuple, TriTuple<A, B, C> leftTuple) {
+        outTuple.factA = leftTuple.factA;
+        outTuple.factB = leftTuple.factB;
+        outTuple.factC = leftTuple.factC;
     }
 
     @Override
-    protected void setOutTupleRightFact(QuadTupleImpl<A, B, C, D> outTuple, UniTuple<D> rightTuple) {
-        outTuple.factD = rightTuple.getFactA();
+    protected void setOutTupleRightFact(QuadTuple<A, B, C, D> outTuple, UniTuple<D> rightTuple) {
+        outTuple.factD = rightTuple.factA;
     }
 
     @Override
     protected boolean testFiltering(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), leftTuple.getFactB(), leftTuple.getFactC(), rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, leftTuple.factB, leftTuple.factC, rightTuple.factA);
     }
 
 }

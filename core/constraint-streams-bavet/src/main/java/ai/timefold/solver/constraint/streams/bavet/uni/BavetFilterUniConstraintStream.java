@@ -1,48 +1,29 @@
 package ai.timefold.solver.constraint.streams.bavet.uni;
 
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.score.Score;
 
-public final class BavetFilterUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A> {
+final class BavetFilterUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A> {
 
-    private final BavetAbstractUniConstraintStream<Solution_, A> parent;
     private final Predicate<A> predicate;
 
     public BavetFilterUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractUniConstraintStream<Solution_, A> parent, Predicate<A> predicate) {
-        super(constraintFactory, parent.getRetrievalSemantics());
-        this.parent = parent;
+        super(constraintFactory, parent);
         this.predicate = predicate;
         if (predicate == null) {
             throw new IllegalArgumentException("The predicate (null) cannot be null.");
         }
     }
 
-    @Override
-    public boolean guaranteesDistinct() {
-        return parent.guaranteesDistinct();
-    }
-
     // ************************************************************************
     // Node creation
     // ************************************************************************
-
-    @Override
-    public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
-        parent.collectActiveConstraintStreams(constraintStreamSet);
-        constraintStreamSet.add(this);
-    }
-
-    @Override
-    public BavetAbstractConstraintStream<Solution_> getTupleSource() {
-        return parent.getTupleSource();
-    }
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {

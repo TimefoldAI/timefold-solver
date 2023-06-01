@@ -1,8 +1,9 @@
 package ai.timefold.solver.constraint.streams.bavet.bi;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractUnindexedIfExistsNode;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.function.TriPredicate;
 
 final class UnindexedIfExistsBiNode<A, B, C> extends AbstractUnindexedIfExistsNode<BiTuple<A, B>, C> {
@@ -32,7 +33,7 @@ final class UnindexedIfExistsBiNode<A, B, C> extends AbstractUnindexedIfExistsNo
 
     @Override
     protected boolean testFiltering(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), leftTuple.getFactB(), rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, leftTuple.factB, rightTuple.factA);
     }
 
 }

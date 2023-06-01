@@ -4,16 +4,15 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.index.JoinerUtils;
-import ai.timefold.solver.constraint.streams.bavet.tri.BavetJoinBridgeTriConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTuple;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetJoinBridgeUniConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.quad.DefaultQuadJoiner;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.Score;
@@ -22,15 +21,15 @@ public final class BavetJoinQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         implements BavetJoinConstraintStream<Solution_> {
 
-    private final BavetJoinBridgeTriConstraintStream<Solution_, A, B, C> leftParent;
-    private final BavetJoinBridgeUniConstraintStream<Solution_, D> rightParent;
+    private final BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent;
+    private final BavetForeBridgeUniConstraintStream<Solution_, D> rightParent;
 
     private final DefaultQuadJoiner<A, B, C, D> joiner;
     private final QuadPredicate<A, B, C, D> filtering;
 
     public BavetJoinQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetJoinBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
-            BavetJoinBridgeUniConstraintStream<Solution_, D> rightParent,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
+            BavetForeBridgeUniConstraintStream<Solution_, D> rightParent,
             DefaultQuadJoiner<A, B, C, D> joiner, QuadPredicate<A, B, C, D> filtering) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
@@ -60,26 +59,25 @@ public final class BavetJoinQuadConstraintStream<Solution_, A, B, C, D>
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<QuadTuple<A, B, C, D>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory indexerFactory = new IndexerFactory(joiner);
-        AbstractJoinNode<TriTuple<A, B, C>, D, QuadTuple<A, B, C, D>, QuadTupleImpl<A, B, C, D>> node =
-                indexerFactory.hasJoiners()
-                        ? new IndexedJoinQuadNode<>(
-                                JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
-                                buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                                downstream, filtering, outputStoreSize + 2,
-                                outputStoreSize, outputStoreSize + 1,
-                                indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
-                        : new UnindexedJoinQuadNode<>(
-                                buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                                downstream, filtering, outputStoreSize + 2,
-                                outputStoreSize, outputStoreSize + 1);
+        var node = indexerFactory.hasJoiners()
+                ? new IndexedJoinQuadNode<>(
+                        JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
+                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
+                        downstream, filtering, outputStoreSize + 2,
+                        outputStoreSize, outputStoreSize + 1,
+                        indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
+                : new UnindexedJoinQuadNode<>(
+                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
+                        downstream, filtering, outputStoreSize + 2,
+                        outputStoreSize, outputStoreSize + 1);
         buildHelper.addNode(node, leftParent, rightParent);
     }
 

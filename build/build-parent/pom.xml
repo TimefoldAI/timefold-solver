@@ -30,7 +30,7 @@
     <version.org.jdom2>2.0.6.1</version.org.jdom2>
     <version.org.jfree.jfreechart>1.5.4</version.org.jfree.jfreechart>
     <version.org.openrewrite.recipe>1.19.4</version.org.openrewrite.recipe>
-    <version.org.slf4j>2.0.6</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
+    <version.org.slf4j>2.0.7</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
     <version.org.springframework>6.0.9</version.org.springframework>
     <version.org.springframework.boot>3.1.0</version.org.springframework.boot>
     <version.org.webjars.webjars-locator>0.46</version.org.webjars.webjars-locator>
@@ -41,7 +41,7 @@
     <!-- Plugins -->
     <!-- ************************************************************************ -->
     <version.asciidoctor.plugin>2.2.4</version.asciidoctor.plugin>
-    <version.assembly.plugin>3.5.0</version.assembly.plugin>
+    <version.assembly.plugin>3.6.0</version.assembly.plugin>
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
     <version.dependency.plugin>3.6.0</version.dependency.plugin>
     <version.enforcer.plugin>3.3.0</version.enforcer.plugin>
@@ -206,7 +206,7 @@
             <dependency>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>extra-enforcer-rules</artifactId>
-              <version>1.0</version>
+              <version>1.6.2</version>
             </dependency>
           </dependencies>
           <executions>

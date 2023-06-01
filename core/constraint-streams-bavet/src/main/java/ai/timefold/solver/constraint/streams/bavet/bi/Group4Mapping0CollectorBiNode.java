@@ -2,15 +2,15 @@ package ai.timefold.solver.constraint.streams.bavet.bi;
 
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.quad.QuadTuple;
-import ai.timefold.solver.constraint.streams.bavet.quad.QuadTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 final class Group4Mapping0CollectorBiNode<OldA, OldB, A, B, C, D>
         extends
-        AbstractGroupBiNode<OldA, OldB, QuadTuple<A, B, C, D>, QuadTupleImpl<A, B, C, D>, Quadruple<A, B, C, D>, Void, Void> {
+        AbstractGroupBiNode<OldA, OldB, QuadTuple<A, B, C, D>, Quadruple<A, B, C, D>, Void, Void> {
 
     private final int outputStoreSize;
 
@@ -28,8 +28,8 @@ final class Group4Mapping0CollectorBiNode<OldA, OldB, A, B, C, D>
             BiFunction<OldA, OldB, A> groupKeyMappingA, BiFunction<OldA, OldB, B> groupKeyMappingB,
             BiFunction<OldA, OldB, C> groupKeyMappingC, BiFunction<OldA, OldB, D> groupKeyMappingD,
             BiTuple<OldA, OldB> tuple) {
-        OldA oldA = tuple.getFactA();
-        OldB oldB = tuple.getFactB();
+        OldA oldA = tuple.factA;
+        OldB oldB = tuple.factB;
         A a = groupKeyMappingA.apply(oldA, oldB);
         B b = groupKeyMappingB.apply(oldA, oldB);
         C c = groupKeyMappingC.apply(oldA, oldB);
@@ -38,12 +38,12 @@ final class Group4Mapping0CollectorBiNode<OldA, OldB, A, B, C, D>
     }
 
     @Override
-    protected QuadTupleImpl<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTupleImpl<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), groupKey.getD(), outputStoreSize);
+    protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
+        return new QuadTuple<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), groupKey.getD(), outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(QuadTupleImpl<A, B, C, D> outTuple, Void unused) {
+    protected void updateOutTupleToResult(QuadTuple<A, B, C, D> outTuple, Void unused) {
         throw new IllegalStateException("Impossible state: collector is null.");
     }
 

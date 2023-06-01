@@ -1,10 +1,12 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 
-public abstract class AbstractScorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_> {
+public abstract class AbstractScorer<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
 
     private final String constraintId;
     private final Score<?> constraintWeight;
