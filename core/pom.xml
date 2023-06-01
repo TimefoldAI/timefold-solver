@@ -27,8 +27,7 @@
   <modules>
     <module>core</module>
     <module>core-impl</module>
-    <module>constraint-streams-common</module>
-    <module>constraint-streams-bavet</module>
+    <module>constraint-streams</module>
   </modules>
 
 </project>

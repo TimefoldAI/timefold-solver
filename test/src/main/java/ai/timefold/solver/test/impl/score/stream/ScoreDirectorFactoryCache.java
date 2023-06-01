@@ -1,6 +1,5 @@
 package ai.timefold.solver.test.impl.score.stream;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,16 +48,14 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
     }
 
     private AbstractConstraintStreamScoreDirectorFactoryService<Solution_, Score_> getScoreDirectorFactoryService() {
-        var constraintStreamImplType = parent.getConstraintStreamImplType();
         return serviceLoader.stream()
                 .map(ServiceLoader.Provider::get)
                 .filter(s -> s.getSupportedScoreDirectorType() == ScoreDirectorType.CONSTRAINT_STREAMS)
                 .map(s -> (AbstractConstraintStreamScoreDirectorFactoryService<Solution_, Score_>) s)
-                .filter(s -> constraintStreamImplType == null || s.supportsImplType(constraintStreamImplType))
-                .max(Comparator.comparingInt(ScoreDirectorFactoryService::getPriority)) // Picks CS-D if both available.
+                .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
                         "Constraint Streams implementation was not found on the classpath.\n"
-                                + "Maybe include the ai.timefold.solver:timefold-solver-constraint-streams-bavet dependency "
+                                + "Maybe include the ai.timefold.solver:timefold-solver-constraint-streams dependency "
                                 + "in your project?\n"
                                 + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?"));
     }

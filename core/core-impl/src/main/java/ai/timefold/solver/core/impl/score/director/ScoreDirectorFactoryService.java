@@ -19,16 +19,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 public interface ScoreDirectorFactoryService<Solution_, Score_ extends Score<Score_>> {
 
     /**
-     * If multiple services are available for the same config, the one with the higher priority is picked.
-     * Currently unused.
-     *
-     * @return
-     */
-    default int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
      *
      * @return never null, the score director type that is implemented by the factory
      */
