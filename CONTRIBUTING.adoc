@@ -5,7 +5,7 @@ This is an open source project, and you are more than welcome to contribute!
 * Found an issue? https://github.com/TimefoldAI/timefold-solver/issues[Submit an issue.]
 * Want to fix an issue or contribute an improvement? https://github.com/TimefoldAI/timefold-solver/discussions[Talk to us about your ideas] or just start coding:
 
-. https://github.com/TimefoldAI/timefold-solver[Fork it.]
+. https://github.com/TimefoldAI/timefold-solver/fork[Fork it.]
 . Create a feature branch: `git checkout -b feature`
 . Commit your changes with a comment: `git commit -m "feat: add shiny new feature"`
 (See xref:commit-messages[Commit messages] for details.)
