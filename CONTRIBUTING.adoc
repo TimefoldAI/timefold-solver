@@ -10,7 +10,7 @@ This is an open source project, and you are more than welcome to contribute!
 . Commit your changes with a comment: `git commit -m "feat: add shiny new feature"`
 (See xref:commit-messages[Commit messages] for details.)
 . Push to the branch to GitHub: `git push origin feature`
-. https://github.com/TimefoldAI/timefold-solver[Create a new Pull Request.]
+. https://github.com/TimefoldAI/timefold-solver/compare[Create a new Pull Request.]
 
 The CI checks against your PR to ensure that it doesn't introduce errors.
 If the CI identifies a potential problem, our friendly PR maintainers will help you resolve it.
