@@ -672,9 +672,9 @@
       <id>sonarcloud-analysis</id>
       <properties>
         <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.organization>timefold</sonar.organization>
         <sonar.java.source>${maven.compiler.release}</sonar.java.source>
+        <!-- Go to target/classes to avoid SonarCloud complaining about generated Java source code. -->
+        <sonar.java.binaries>${project.build.outputDirectory}</sonar.java.binaries>
       </properties>
       <build>
         <plugins>
@@ -763,23 +763,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>sonarcloud-analysis-pull-request</id>
-      <activation>
-        <property>
-          <name>env.ghprbPullId</name>
-        </property>
-      </activation>
-      <properties>
-        <sonar.pullrequest.provider>GitHub</sonar.pullrequest.provider>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.pullrequest.branch>${env.ghprbSourceBranch}</sonar.pullrequest.branch>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.pullrequest.key>${env.ghprbPullId}</sonar.pullrequest.key>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.pullrequest.base>${env.ghprbTargetBranch}</sonar.pullrequest.base>
-      </properties>
     </profile>
 
     <profile>
