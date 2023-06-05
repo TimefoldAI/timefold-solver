@@ -8,7 +8,7 @@ updates:
     open-pull-requests-limit: 10
     target-branch: "main"
     commit-message:
-      prefix: "build: "
+      prefix: "deps: "
   - package-ecosystem: maven
     directory: "/"
     schedule:
@@ -17,7 +17,7 @@ updates:
     open-pull-requests-limit: 0
     target-branch: "0.8.x"
     commit-message:
-      prefix: "build: "
+      prefix: "deps: "
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

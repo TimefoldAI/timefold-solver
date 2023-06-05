@@ -58,51 +58,12 @@ $ cd examples
 $ mvn exec:java
 ----
 
-. To develop with IntelliJ IDEA, Eclipse or VSCode, open the root `pom.xml` as a new project
-and configure a _Run/Debug configuration_ like this:
-+
-* Type: Application
-* Main class: `ai.timefold.solver.examples.app.TimefoldExamplesApp`
-* VM options: `-Xmx2G` (memory only needed when using the big datasets in the examples)
-* Program arguments: (none)
-* Working directory: `$MODULE_DIR$` (must resolve to `examples` directory)
-* Use classpath of module: `timefold-solver-examples`
 
 == Contribute
 
 This is an open source project, and you are more than welcome to contribute!
+For more, see link:CONTRIBUTING.adoc[Contributing].
 
-* Found an issue? https://github.com/TimefoldAI/timefold-solver/issues[Submit an issue.]
-* Want to fix an issue or contribute an improvement? https://github.com/TimefoldAI/timefold-solver/discussions[Talk to us about your ideas] or just start coding:
-
-. https://github.com/TimefoldAI/timefold-solver[Fork it.]
-. Create a feature branch: `git checkout -b feature`
-. Commit your changes with a comment: `git commit -m "Add some feature"`
-. Push to the branch to GitHub: `git push origin feature`
-. https://github.com/TimefoldAI/timefold-solver[Create a new Pull Request.]
-
-The CI checks against your PR to ensure that it doesn't introduce errors.
-If the CI identifies a potential problem, our friendly PR maintainers will help you resolve it.
-
-=== Code style
-
-Your code is automatically formatted according to the _Import and Code Style_ conventions during every Maven build. CI checks enforce those conventions too, so be sure to build your project with maven before creating your PR:
-----
-mvn clean install
-----
-For information about how to set up code style checks, see https://github.com/TimefoldAI/timefold-solver/blob/main/build/ide-config/ide-configuration.adoc[IDE Setup Instructions].
-
-=== Build the Timefold Solver project
-
-Use one of the following ways to build this project:
-
-* :rocket: *build-fast*: `mvn clean install -Dquickly` skips any checks and code analysis (~1 min)
-
-* :hammer: *build-normally*: `mvn clean install` runs tests, checks code style, skips documentation (~17 min)
-
-* :receipt: *build-doc*: `mvn clean install` in the `docs` directory creates asciidoctor documentation `docs/target/html_single/index.html` (~2 min)
-
-* :mechanical_arm: *build-all*: `mvn clean install -Dfull` runs all checks and creates documentation and distribution files (~20 min)
 
 == Legal notice
 
