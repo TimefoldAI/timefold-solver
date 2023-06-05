@@ -1,0 +1,15 @@
+# https://github.com/Ezard/semantic-prs
+enabled: true
+titleAndCommits: true
+allowMergeCommits: false
+types:
+  - feat
+  - fix
+  - docs
+  - perf
+  - test
+  - build
+  - ci
+  - chore
+  - revert
+  - deps
