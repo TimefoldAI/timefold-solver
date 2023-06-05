@@ -817,7 +817,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      *        It is recommended that this type be deeply immutable.
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
-     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}
+     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}.
+     *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
      * @return never null
      */
     <ResultD_> QuadConstraintStream<A, B, C, ResultD_> flattenLast(Function<D, Iterable<ResultD_>> mapping);

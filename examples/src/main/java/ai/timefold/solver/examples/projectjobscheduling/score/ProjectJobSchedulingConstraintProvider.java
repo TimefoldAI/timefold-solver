@@ -1,8 +1,5 @@
 package ai.timefold.solver.examples.projectjobscheduling.score;
 
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
@@ -43,9 +40,7 @@ public class ProjectJobSchedulingConstraintProvider implements ConstraintProvide
                 .filter(ResourceRequirement::isResourceRenewable)
                 .join(Allocation.class,
                         Joiners.equal(ResourceRequirement::getExecutionMode, Allocation::getExecutionMode))
-                .flattenLast(a -> IntStream.range(a.getStartDate(), a.getEndDate())
-                        .boxed()
-                        .collect(Collectors.toList()))
+                .flattenLast(Allocation::getBusyDates)
                 .groupBy((resourceReq, date) -> resourceReq.getResource(),
                         (resourceReq, date) -> date,
                         ConstraintCollectors.sum((resourceReq, date) -> resourceReq.getRequirement()))
