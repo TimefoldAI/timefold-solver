@@ -1,5 +1,7 @@
 package ai.timefold.solver.examples.projectjobscheduling.domain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -36,6 +38,11 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     // Shadow variables
     private Integer predecessorsDoneDate;
+
+    // Filled from shadow variables
+    private Integer startDate;
+    private Integer endDate;
+    private List<Integer> busyDates;
 
     public Allocation() {
     }
@@ -103,8 +110,8 @@ public class Allocation extends AbstractPersistable implements Labeled {
         this.delay = delay;
     }
 
-    @ShadowVariable(
-            variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class, sourceVariableName = "executionMode")
+    @ShadowVariable(variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
+            sourceVariableName = "executionMode")
     @ShadowVariable(variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class, sourceVariableName = "delay")
     public Integer getPredecessorsDoneDate() {
         return predecessorsDoneDate;
@@ -112,6 +119,19 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setPredecessorsDoneDate(Integer predecessorsDoneDate) {
         this.predecessorsDoneDate = predecessorsDoneDate;
+        if (predecessorsDoneDate == null) {
+            this.startDate = null;
+            this.endDate = null;
+            this.busyDates = Collections.emptyList();
+        } else {
+            this.startDate = predecessorsDoneDate + (delay == null ? 0 : delay);
+            this.endDate = startDate + (executionMode == null ? 0 : executionMode.getDuration());
+            List<Integer> busyDates = new ArrayList<>(endDate - startDate);
+            for (int i = startDate; i < endDate; i++) {
+                busyDates.add(i);
+            }
+            this.busyDates = busyDates;
+        }
     }
 
     // ************************************************************************
@@ -120,19 +140,17 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     @JsonIgnore
     public Integer getStartDate() {
-        if (predecessorsDoneDate == null) {
-            return null;
-        }
-        return predecessorsDoneDate + (delay == null ? 0 : delay);
+        return startDate;
     }
 
     @JsonIgnore
     public Integer getEndDate() {
-        if (predecessorsDoneDate == null) {
-            return null;
-        }
-        return predecessorsDoneDate + (delay == null ? 0 : delay)
-                + (executionMode == null ? 0 : executionMode.getDuration());
+        return endDate;
+    }
+
+    @JsonIgnore
+    public List<Integer> getBusyDates() {
+        return busyDates;
     }
 
     @JsonIgnore

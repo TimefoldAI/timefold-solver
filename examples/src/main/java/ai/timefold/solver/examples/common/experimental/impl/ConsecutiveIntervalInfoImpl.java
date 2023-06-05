@@ -14,19 +14,16 @@ import ai.timefold.solver.examples.common.experimental.api.IntervalCluster;
 
 public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements ConsecutiveIntervalInfo<Interval_, Point_, Difference_> {
+
     private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, IntervalClusterImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToCluster;
     private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
     private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, IntervalBreakImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToNextBreak;
-    private final Iterable<IntervalCluster<Interval_, Point_, Difference_>> intervalClusterIterable;
     private final BiFunction<Point_, Point_, Difference_> differenceFunction;
-    private final Iterable<IntervalBreak<Interval_, Point_, Difference_>> breaksIterable;
 
     public ConsecutiveIntervalInfoImpl(TreeSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
             BiFunction<Point_, Point_, Difference_> differenceFunction) {
         this.clusterStartSplitPointToCluster = new TreeMap<>();
         this.clusterStartSplitPointToNextBreak = new TreeMap<>();
-        this.intervalClusterIterable = new MapValuesIterable<>(clusterStartSplitPointToCluster);
-        this.breaksIterable = new MapValuesIterable<>(clusterStartSplitPointToNextBreak);
         this.splitPointSet = splitPointSet;
         this.differenceFunction = differenceFunction;
     }
@@ -260,19 +257,19 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
 
     @Override
     public Iterable<IntervalCluster<Interval_, Point_, Difference_>> getIntervalClusters() {
-        return intervalClusterIterable;
+        return (Iterable) clusterStartSplitPointToCluster.values();
     }
 
     @Override
     public Iterable<IntervalBreak<Interval_, Point_, Difference_>> getBreaks() {
-        return breaksIterable;
+        return (Iterable) clusterStartSplitPointToNextBreak.values();
     }
 
     @Override
     public String toString() {
         return "Clusters {" +
-                "intervalClusters=" + intervalClusterIterable +
-                ", breaks=" + breaksIterable +
+                "intervalClusters=" + getIntervalClusters() +
+                ", breaks=" + getBreaks() +
                 '}';
     }
 }

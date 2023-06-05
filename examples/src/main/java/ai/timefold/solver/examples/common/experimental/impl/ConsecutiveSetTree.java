@@ -28,6 +28,7 @@ import ai.timefold.solver.examples.common.experimental.api.Sequence;
  */
 public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements ConsecutiveInfo<Value_, Difference_> {
+
     private final BiFunction<Point_, Point_, Difference_> differenceFunction;
     private final BiFunction<Difference_, Difference_, Difference_> sumFunction;
     private final Difference_ maxDifference;
@@ -37,8 +38,6 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     private final NavigableMap<Value_, BreakImpl<Value_, Difference_>> startItemToPreviousBreak;
 
     private final Map<Value_, Point_> indexMap;
-    private final MapValuesIterable<Value_, SequenceImpl<Value_, Difference_>> sequenceList;
-    private final MapValuesIterable<Value_, BreakImpl<Value_, Difference_>> breakList;
 
     public ConsecutiveSetTree(BiFunction<Point_, Point_, Difference_> differenceFunction,
             BiFunction<Difference_, Difference_, Difference_> sumFunction,
@@ -53,21 +52,19 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         itemToCountMap = new TreeMap<>(comparator);
         startItemToSequence = new TreeMap<>(comparator);
         startItemToPreviousBreak = new TreeMap<>(comparator);
-        sequenceList = new MapValuesIterable<>(startItemToSequence);
-        breakList = new MapValuesIterable<>(startItemToPreviousBreak);
     }
 
     // Public API
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Iterable<Sequence<Value_, Difference_>> getConsecutiveSequences() {
-        return (Iterable) sequenceList;
+        return (Iterable) startItemToSequence.values();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Iterable<Break<Value_, Difference_>> getBreaks() {
-        return (Iterable) breakList;
+        return (Iterable) startItemToPreviousBreak.values();
     }
 
     public boolean add(Value_ item, Point_ point) {
@@ -335,8 +332,8 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     @Override
     public String toString() {
         return "Sequences {" +
-                "sequenceList=" + sequenceList +
-                ", breakList=" + breakList +
+                "sequenceList=" + getConsecutiveSequences() +
+                ", breakList=" + getBreaks() +
                 '}';
     }
 
