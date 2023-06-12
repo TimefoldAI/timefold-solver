@@ -19,19 +19,14 @@ jobs:
     timeout-minutes: 120
     steps:
       # Clone timefold-solver
+      # No need to check for stale repo, as Github merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
         uses: actions/checkout@v3
         with:
           path: ./timefold-solver
-      - name: Prevent stale fork of timefold-solver
-        env:
-          BLESSED_REPO: "timefold-solver"
-          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
-        shell: bash
-        working-directory: ./timefold-solver
-        run: .github/scripts/prevent_stale_fork.sh
 
       # Clone timefold-quickstarts
+      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
       - name: Find the proper timefold-quickstarts repo and branch
         env:
           CHAIN_USER: ${{ github.actor }}
@@ -64,8 +59,8 @@ jobs:
       - name: Quickly build timefold-solver
         working-directory: ./timefold-solver
         shell: bash
-        run: mvn clean install -B -Dquickly=true
+        run: mvn -B -Dquickly clean install
       - name: Build and test timefold-quickstarts
         working-directory: ./timefold-quickstarts
         shell: bash
-        run: mvn clean verify -B
+        run: mvn -B clean verify
