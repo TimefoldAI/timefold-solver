@@ -1,0 +1,71 @@
+name: Downstream - Timefold Quickstarts
+
+on:
+  pull_request:
+    branches: [main, '*.x']
+    paths-ignore:
+      - 'LICENSE*'
+      - '.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 120
+    steps:
+      # Clone timefold-solver
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v3
+        with:
+          path: ./timefold-solver
+      - name: Prevent stale fork of timefold-solver
+        env:
+          BLESSED_REPO: "timefold-solver"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
+        shell: bash
+        working-directory: ./timefold-solver
+        run: .github/scripts/prevent_stale_fork.sh
+
+      # Clone timefold-quickstarts
+      - name: Find the proper timefold-quickstarts repo and branch
+        env:
+          CHAIN_USER: ${{ github.actor }}
+          CHAIN_BRANCH: ${{ github.head_ref }}
+          CHAIN_REPO: "timefold-quickstarts"
+          CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
+        shell: bash
+        run: ./timefold-solver/.github/scripts/check_chain_repo.sh
+      - name: Checkout timefold-quickstarts
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
+          ref: ${{ env.TARGET_CHAIN_BRANCH }}
+          path: ./timefold-quickstarts
+      - name: Prevent stale fork of timefold-quickstarts
+        env:
+          BLESSED_REPO: "timefold-quickstarts"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
+        shell: bash
+        working-directory: ./timefold-quickstarts
+        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
+
+      # Build and test
+      - name: Setup Temurin 17 and Maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        shell: bash
+        run: mvn clean install -B -Dquickly=true
+      - name: Build and test timefold-quickstarts
+        working-directory: ./timefold-quickstarts
+        shell: bash
+        run: mvn clean verify -B
