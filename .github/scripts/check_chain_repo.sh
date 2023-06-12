@@ -25,4 +25,3 @@ else
     echo "TARGET_CHAIN_BRANCH=$CHAIN_BRANCH" >> "$GITHUB_ENV"
 fi
 echo "TARGET_CHAIN_REPO=$CHAIN_REPO" >> "$GITHUB_ENV"
-echo "Will use branch '$TARGET_CHAIN_BRANCH' from 'https://github.com/$TARGET_CHAIN_USER/$TARGET_CHAIN_REPO.git'"
