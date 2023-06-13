@@ -1,19 +1,23 @@
 package ai.timefold.solver.examples.common.experimental.impl;
 
+import java.util.function.BiFunction;
+
 import ai.timefold.solver.examples.common.experimental.api.Break;
 import ai.timefold.solver.examples.common.experimental.api.Sequence;
 
-final class BreakImpl<Value_, Difference_ extends Comparable<Difference_>>
+final class BreakImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements Break<Value_, Difference_> {
-    private Sequence<Value_, Difference_> previousSequence;
-    private Sequence<Value_, Difference_> nextSequence;
+
+    private final BiFunction<Point_, Point_, Difference_> lengthFunction;
+    SequenceImpl<Value_, Point_, Difference_> previousSequence;
+    final SequenceImpl<Value_, Point_, Difference_> nextSequence;
     private Difference_ length;
 
-    BreakImpl(Sequence<Value_, Difference_> previousSequence, Sequence<Value_, Difference_> nextSequence,
-            Difference_ length) {
-        this.previousSequence = previousSequence;
+    BreakImpl(SequenceImpl<Value_, Point_, Difference_> previousSequence,
+            SequenceImpl<Value_, Point_, Difference_> nextSequence, BiFunction<Point_, Point_, Difference_> lengthFunction) {
+        this.lengthFunction = lengthFunction;
         this.nextSequence = nextSequence;
-        this.length = length;
+        setPreviousSequence(previousSequence);
     }
 
     @Override
@@ -31,16 +35,13 @@ final class BreakImpl<Value_, Difference_ extends Comparable<Difference_>>
         return length;
     }
 
-    void setPreviousSequence(Sequence<Value_, Difference_> previousSequence) {
+    void setPreviousSequence(SequenceImpl<Value_, Point_, Difference_> previousSequence) {
         this.previousSequence = previousSequence;
+        updateLength();
     }
 
-    void setNextSequence(Sequence<Value_, Difference_> nextSequence) {
-        this.nextSequence = nextSequence;
-    }
-
-    void setLength(Difference_ length) {
-        this.length = length;
+    void updateLength() {
+        this.length = lengthFunction.apply(previousSequence.lastItem.index(), nextSequence.firstItem.index());
     }
 
     @Override

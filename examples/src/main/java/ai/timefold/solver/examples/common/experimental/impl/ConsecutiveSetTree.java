@@ -1,12 +1,12 @@
 package ai.timefold.solver.examples.common.experimental.impl;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.examples.common.experimental.api.Break;
@@ -30,28 +30,26 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         implements ConsecutiveInfo<Value_, Difference_> {
 
     private final BiFunction<Point_, Point_, Difference_> differenceFunction;
-    private final BiFunction<Difference_, Difference_, Difference_> sumFunction;
+    private final BiFunction<Point_, Point_, Difference_> sequenceLengthFunction;
     private final Difference_ maxDifference;
     private final Difference_ zeroDifference;
-    private final NavigableMap<Value_, Integer> itemToCountMap;
-    private final NavigableMap<Value_, SequenceImpl<Value_, Difference_>> startItemToSequence;
-    private final NavigableMap<Value_, BreakImpl<Value_, Difference_>> startItemToPreviousBreak;
+    private final Map<Value_, ValueCount<ComparableValue<Value_, Point_>>> valueCountMap = new HashMap<>();
+    private final NavigableSet<ComparableValue<Value_, Point_>> itemSet = new TreeSet<>();
+    private final NavigableMap<ComparableValue<Value_, Point_>, SequenceImpl<Value_, Point_, Difference_>> startItemToSequence =
+            new TreeMap<>();
+    private final NavigableMap<ComparableValue<Value_, Point_>, BreakImpl<Value_, Point_, Difference_>> startItemToPreviousBreak =
+            new TreeMap<>();
 
-    private final Map<Value_, Point_> indexMap;
+    private ComparableValue<Value_, Point_> firstItem;
+    private ComparableValue<Value_, Point_> lastItem;
 
     public ConsecutiveSetTree(BiFunction<Point_, Point_, Difference_> differenceFunction,
-            BiFunction<Difference_, Difference_, Difference_> sumFunction,
-            Difference_ maxDifference,
+            BiFunction<Difference_, Difference_, Difference_> sumFunction, Difference_ maxDifference,
             Difference_ zeroDifference) {
         this.differenceFunction = differenceFunction;
-        this.sumFunction = sumFunction;
+        this.sequenceLengthFunction = (first, last) -> sumFunction.apply(maxDifference, differenceFunction.apply(first, last));
         this.maxDifference = maxDifference;
         this.zeroDifference = zeroDifference;
-        indexMap = new HashMap<>();
-        Comparator<Value_> comparator = new ValueComparator<>(indexMap);
-        itemToCountMap = new TreeMap<>(comparator);
-        startItemToSequence = new TreeMap<>(comparator);
-        startItemToPreviousBreak = new TreeMap<>(comparator);
     }
 
     // Public API
@@ -67,149 +65,86 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         return (Iterable) startItemToPreviousBreak.values();
     }
 
-    public boolean add(Value_ item, Point_ point) {
-        indexMap.put(item, point);
-        int newCount = itemToCountMap.compute(item, (key, count) -> count == null ? 1 : count + 1);
-        if (newCount > 1) { // Item already in bag.
+    public boolean add(Value_ value, Point_ valueIndex) {
+        var valueCount = valueCountMap.get(value);
+        if (valueCount != null) { // Item already in bag.
+            var addingItem = valueCount.value;
+            if (!Objects.equals(addingItem.index(), valueIndex)) {
+                throw new IllegalStateException(
+                        "Impossible state: the item (" + value + ") is already in the bag with a different index ("
+                                + addingItem.index() + " vs " + valueIndex + ").\n" +
+                                "Maybe the index map function is not deterministic?");
+            }
+            valueCount.count++;
             return true;
         }
-        Value_ firstBeforeItem = startItemToSequence.floorKey(item);
-        Point_ itemIndex = indexMap.get(item);
-        if (firstBeforeItem != null) {
-            Value_ endOfBeforeSequenceItem = getEndItem(firstBeforeItem);
-            Point_ endOfBeforeSequenceIndex = indexMap.get(endOfBeforeSequenceItem);
-            if (isInNaturalOrderAndHashOrderIfEqual(itemIndex, item, endOfBeforeSequenceIndex, endOfBeforeSequenceItem)) {
+
+        // Adding item to the bag.
+        var addingItem = new ComparableValue<>(value, valueIndex);
+        valueCountMap.put(value, new ValueCount<>(addingItem));
+        itemSet.add(addingItem);
+        if (firstItem == null || addingItem.compareTo(firstItem) < 0) {
+            firstItem = addingItem;
+        }
+        if (lastItem == null || addingItem.compareTo(lastItem) > 0) {
+            lastItem = addingItem;
+        }
+
+        var firstBeforeItemEntry = startItemToSequence.floorEntry(addingItem);
+        if (firstBeforeItemEntry != null) {
+            var firstBeforeItem = firstBeforeItemEntry.getKey();
+            var endOfBeforeSequenceItem = firstBeforeItemEntry.getValue().lastItem;
+            var endOfBeforeSequenceIndex = endOfBeforeSequenceItem.index();
+            if (isInNaturalOrderAndHashOrderIfEqual(valueIndex, value, endOfBeforeSequenceIndex,
+                    endOfBeforeSequenceItem.value())) {
                 // Item is already in the bag; do nothing
                 return true;
+            }
+            // Item is outside the bag
+            var firstAfterItem = startItemToSequence.higherKey(addingItem);
+            if (firstAfterItem != null) {
+                addBetweenItems(addingItem, firstBeforeItem, endOfBeforeSequenceItem, firstAfterItem);
             } else {
-                // Item is outside the bag
-                Value_ firstAfterItem = startItemToSequence.higherKey(item);
-                if (firstAfterItem != null) {
-                    Point_ startOfAfterSequenceIndex = indexMap.get(firstAfterItem);
-                    addBetweenItems(item, itemIndex, firstBeforeItem, endOfBeforeSequenceItem,
-                            endOfBeforeSequenceIndex, firstAfterItem, startOfAfterSequenceIndex);
+                var prevBag = startItemToSequence.get(firstBeforeItem);
+                if (isFirstSuccessorOfSecond(addingItem, endOfBeforeSequenceItem)) {
+                    // We need to extend the first bag
+                    // No break since afterItem is null
+                    prevBag.setEnd(addingItem);
                 } else {
-                    SequenceImpl<Value_, Difference_> prevBag = startItemToSequence.get(firstBeforeItem);
-                    if (isFirstSuccessorOfSecond(itemIndex, item, endOfBeforeSequenceIndex, endOfBeforeSequenceItem)) {
-                        // We need to extend the first bag
-                        // No break since afterItem is null
-                        prevBag.setEnd(item);
-                    } else {
-                        // Start a new bag of consecutive items
-                        SequenceImpl<Value_, Difference_> newBag = new SequenceImpl<>(this, item);
-                        startItemToSequence.put(item, newBag);
-                        startItemToPreviousBreak.put(item,
-                                new BreakImpl<>(prevBag, newBag,
-                                        differenceFunction.apply(endOfBeforeSequenceIndex, itemIndex)));
-                    }
+                    // Start a new bag of consecutive items
+                    var newBag = new SequenceImpl<>(this, addingItem, sequenceLengthFunction);
+                    startItemToSequence.put(addingItem, newBag);
+                    startItemToPreviousBreak.put(addingItem, new BreakImpl<>(prevBag, newBag, differenceFunction));
                 }
             }
         } else {
             // No items before it
-            Value_ firstAfterItem = startItemToSequence.higherKey(item);
+            var firstAfterItem = startItemToSequence.higherKey(addingItem);
             if (firstAfterItem != null) {
-                Point_ startOfAfterSequenceIndex = indexMap.get(firstAfterItem);
-
-                if (isFirstSuccessorOfSecond(startOfAfterSequenceIndex, firstAfterItem, itemIndex, item)) {
+                if (isFirstSuccessorOfSecond(firstAfterItem, addingItem)) {
                     // We need to move the after bag to use item as key
-                    SequenceImpl<Value_, Difference_> afterBag = startItemToSequence.remove(firstAfterItem);
-                    afterBag.setStart(item);
+                    var afterBag = startItemToSequence.remove(firstAfterItem);
+                    afterBag.setStart(addingItem);
                     // No break since this is the first sequence
-                    startItemToSequence.put(item, afterBag);
+                    startItemToSequence.put(addingItem, afterBag);
                 } else {
                     // Start a new bag of consecutive items
-                    SequenceImpl<Value_, Difference_> afterBag = startItemToSequence.get(firstAfterItem);
-                    SequenceImpl<Value_, Difference_> newBag = new SequenceImpl<>(this, item);
-                    startItemToSequence.put(item, newBag);
-                    startItemToPreviousBreak.put(firstAfterItem,
-                            new BreakImpl<>(newBag, afterBag,
-                                    differenceFunction.apply(itemIndex, startOfAfterSequenceIndex)));
+                    var afterBag = startItemToSequence.get(firstAfterItem);
+                    var newBag = new SequenceImpl<>(this, addingItem, sequenceLengthFunction);
+                    startItemToSequence.put(addingItem, newBag);
+                    startItemToPreviousBreak.put(firstAfterItem, new BreakImpl<>(newBag, afterBag, differenceFunction));
                 }
             } else {
                 // Start a new bag of consecutive items
-                SequenceImpl<Value_, Difference_> newBag = new SequenceImpl<>(this, item);
-                startItemToSequence.put(item, newBag);
+                var newBag = new SequenceImpl<>(this, addingItem, sequenceLengthFunction);
+                startItemToSequence.put(addingItem, newBag);
                 // Bag have no other items, so no break
             }
         }
         return true;
     }
 
-    public boolean remove(Value_ item) {
-        Integer currentCount = itemToCountMap.get(item);
-        if (currentCount == null) { // Item not in bag.
-            return false;
-        }
-        if (currentCount == 1) {
-            itemToCountMap.remove(item);
-        } else { // Item still in bag.
-            itemToCountMap.put(item, currentCount - 1);
-            return true;
-        }
-
-        // Item is removed from bag
-        Value_ firstBeforeItem = startItemToSequence.floorKey(item);
-        SequenceImpl<Value_, Difference_> bag = startItemToSequence.get(firstBeforeItem);
-        Value_ endItem = bag.getLastItem();
-
-        // Bag is empty if first item = last item
-        if (bag.getFirstItem() == bag.getLastItem()) {
-            startItemToSequence.remove(firstBeforeItem);
-            BreakImpl<Value_, Difference_> removedBreak = startItemToPreviousBreak.remove(firstBeforeItem);
-            Map.Entry<Value_, BreakImpl<Value_, Difference_>> extendedBreakEntry =
-                    startItemToPreviousBreak.higherEntry(firstBeforeItem);
-            if (extendedBreakEntry != null) {
-                if (removedBreak != null) {
-                    BreakImpl<Value_, Difference_> extendedBreak = extendedBreakEntry.getValue();
-                    extendedBreak.setPreviousSequence(removedBreak.getPreviousSequence());
-                    updateLengthOfBreak(extendedBreak);
-                } else {
-                    startItemToPreviousBreak.remove(extendedBreakEntry.getKey());
-                }
-            }
-            indexMap.remove(item);
-            return true;
-        }
-
-        // Bag is not empty
-        return removeItemFromBag(bag, item, firstBeforeItem, endItem);
-    }
-
-    // Protected API
-    Break<Value_, Difference_> getBreakBefore(Value_ item) {
-        return startItemToPreviousBreak.get(item);
-    }
-
-    Break<Value_, Difference_> getBreakAfter(Value_ item) {
-        Map.Entry<Value_, BreakImpl<Value_, Difference_>> entry = startItemToPreviousBreak.higherEntry(item);
-        if (entry != null) {
-            return entry.getValue();
-        }
-        return null;
-    }
-
-    NavigableSet<Value_> getItemSet() {
-        return (NavigableSet<Value_>) itemToCountMap.keySet();
-    }
-
-    void updateLengthOfBreak(BreakImpl<Value_, Difference_> theBreak) {
-        theBreak.setLength(getBreakLengthBetween(theBreak.getPreviousSequenceEnd(), theBreak.getNextSequenceStart()));
-    }
-
-    Difference_ getSequenceLength(Sequence<Value_, Difference_> sequence) {
-        return sumFunction.apply(maxDifference, differenceFunction.apply(indexMap.get(sequence.getFirstItem()),
-                indexMap.get(sequence.getLastItem())));
-    }
-
-    Difference_ getBreakLengthBetween(Value_ from, Value_ to) {
-        return differenceFunction.apply(indexMap.get(from), indexMap.get(to));
-    }
-
-    Value_ getEndItem(Value_ key) {
-        return startItemToSequence.get(key).getLastItem();
-    }
-
-    private <T extends Comparable<T>> boolean isInNaturalOrderAndHashOrderIfEqual(T a, Value_ aItem, T b,
+    private static <T extends Comparable<T>, Value_> boolean isInNaturalOrderAndHashOrderIfEqual(T a, Value_ aItem, T b,
             Value_ bItem) {
         int difference = a.compareTo(b);
         if (difference != 0) {
@@ -218,115 +153,165 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         return System.identityHashCode(aItem) - System.identityHashCode(bItem) < 0;
     }
 
-    private boolean isFirstSuccessorOfSecond(Point_ first, Value_ firstValue, Point_ second,
-            Value_ secondValue) {
-        Difference_ difference = differenceFunction.apply(second, first);
-        return isInNaturalOrderAndHashOrderIfEqual(zeroDifference, secondValue, difference, firstValue) &&
-                difference.compareTo(maxDifference) <= 0;
-    }
-
-    private void addBetweenItems(Value_ item, Point_ itemIndex,
-            Value_ firstBeforeItem, Value_ endOfBeforeSequenceItem, Point_ endOfBeforeSequenceItemIndex,
-            Value_ firstAfterItem, Point_ startOfAfterSequenceIndex) {
-        if (isFirstSuccessorOfSecond(itemIndex, item, endOfBeforeSequenceItemIndex, endOfBeforeSequenceItem)) {
+    private void addBetweenItems(ComparableValue<Value_, Point_> comparableItem,
+            ComparableValue<Value_, Point_> firstBeforeItem, ComparableValue<Value_, Point_> endOfBeforeSequenceItem,
+            ComparableValue<Value_, Point_> firstAfterItem) {
+        if (isFirstSuccessorOfSecond(comparableItem, endOfBeforeSequenceItem)) {
             // We need to extend the first bag
-            SequenceImpl<Value_, Difference_> prevBag = startItemToSequence.get(firstBeforeItem);
-            if (isFirstSuccessorOfSecond(startOfAfterSequenceIndex, firstAfterItem, itemIndex, item)) {
+            var prevBag = startItemToSequence.get(firstBeforeItem);
+            if (isFirstSuccessorOfSecond(firstAfterItem, comparableItem)) {
                 // We need to merge the two bags
                 startItemToPreviousBreak.remove(firstAfterItem);
-                SequenceImpl<Value_, Difference_> afterBag = startItemToSequence.remove(firstAfterItem);
+                var afterBag = startItemToSequence.remove(firstAfterItem);
                 prevBag.merge(afterBag);
-                Map.Entry<Value_, BreakImpl<Value_, Difference_>> maybeNextBreak =
-                        startItemToPreviousBreak.higherEntry(firstAfterItem);
+                var maybeNextBreak = startItemToPreviousBreak.higherEntry(firstAfterItem);
                 if (maybeNextBreak != null) {
                     maybeNextBreak.getValue().setPreviousSequence(prevBag);
                 }
             } else {
-                prevBag.setEnd(item);
-                BreakImpl<Value_, Difference_> nextBreak = startItemToPreviousBreak.get(firstAfterItem);
-                nextBreak.setLength(differenceFunction.apply(itemIndex, startOfAfterSequenceIndex));
+                prevBag.setEnd(comparableItem);
+                startItemToPreviousBreak.get(firstAfterItem).updateLength();
             }
         } else {
             // Don't need to extend the first bag
-            if (isFirstSuccessorOfSecond(startOfAfterSequenceIndex, firstAfterItem, itemIndex, item)) {
+            if (isFirstSuccessorOfSecond(firstAfterItem, comparableItem)) {
                 // We need to move the after bag to use item as key
-                SequenceImpl<Value_, Difference_> afterBag = startItemToSequence.remove(firstAfterItem);
-                afterBag.setStart(item);
-                startItemToSequence.put(item, afterBag);
-                BreakImpl<Value_, Difference_> prevBreak = startItemToPreviousBreak.remove(firstAfterItem);
-                prevBreak.setLength(differenceFunction.apply(endOfBeforeSequenceItemIndex, itemIndex));
-                startItemToPreviousBreak.put(item, prevBreak);
+                var afterBag = startItemToSequence.remove(firstAfterItem);
+                afterBag.setStart(comparableItem);
+                startItemToSequence.put(comparableItem, afterBag);
+                var prevBreak = startItemToPreviousBreak.remove(firstAfterItem);
+                prevBreak.updateLength();
+                startItemToPreviousBreak.put(comparableItem, prevBreak);
             } else {
                 // Start a new bag of consecutive items
-                SequenceImpl<Value_, Difference_> newBag = new SequenceImpl<>(this, item);
-                startItemToSequence.put(item, newBag);
-                BreakImpl<Value_, Difference_> nextBreak = startItemToPreviousBreak.get(firstAfterItem);
-                nextBreak.setPreviousSequence(newBag);
-                nextBreak.setLength(differenceFunction.apply(itemIndex, startOfAfterSequenceIndex));
-                startItemToPreviousBreak.put(item, new BreakImpl<>(startItemToSequence.get(firstBeforeItem), newBag,
-                        differenceFunction.apply(endOfBeforeSequenceItemIndex, itemIndex)));
+                var newBag = new SequenceImpl<>(this, comparableItem, sequenceLengthFunction);
+                startItemToSequence.put(comparableItem, newBag);
+                startItemToPreviousBreak.get(firstAfterItem).setPreviousSequence(newBag);
+                startItemToPreviousBreak.put(comparableItem,
+                        new BreakImpl<>(startItemToSequence.get(firstBeforeItem), newBag, differenceFunction));
             }
         }
     }
 
-    private boolean removeItemFromBag(SequenceImpl<Value_, Difference_> bag, Value_ item, Value_ sequenceStart,
-            Value_ sequenceEnd) {
-        NavigableSet<Value_> itemSet = getItemSet();
+    public boolean remove(Value_ value) {
+        var valueCount = valueCountMap.get(value);
+        if (valueCount == null) { // Item not in bag.
+            return false;
+        }
+        valueCount.count--;
+        if (valueCount.count > 0) { // Item still in bag.
+            return true;
+        }
+
+        // Item is removed from bag
+        valueCountMap.remove(value);
+        var removingItem = valueCount.value;
+        itemSet.remove(removingItem);
+        boolean noMoreItems = itemSet.isEmpty();
+        if (removingItem.compareTo(firstItem) == 0) {
+            firstItem = noMoreItems ? null : itemSet.first();
+        }
+        if (removingItem.compareTo(lastItem) == 0) {
+            lastItem = noMoreItems ? null : itemSet.last();
+        }
+
+        var firstBeforeItemEntry = startItemToSequence.floorEntry(removingItem);
+        var firstBeforeItem = firstBeforeItemEntry.getKey();
+        var bag = firstBeforeItemEntry.getValue();
+        if (bag.getFirstItem() == bag.getLastItem()) { // Bag is empty if first item = last item
+            startItemToSequence.remove(firstBeforeItem);
+            var removedBreak = startItemToPreviousBreak.remove(firstBeforeItem);
+            var extendedBreakEntry = startItemToPreviousBreak.higherEntry(firstBeforeItem);
+            if (extendedBreakEntry != null) {
+                if (removedBreak != null) {
+                    var extendedBreak = extendedBreakEntry.getValue();
+                    extendedBreak.setPreviousSequence(removedBreak.previousSequence);
+                } else {
+                    startItemToPreviousBreak.remove(extendedBreakEntry.getKey());
+                }
+            }
+        } else { // Bag is not empty.
+            removeItemFromBag(bag, removingItem, firstBeforeItem, bag.lastItem);
+        }
+        return true;
+    }
+
+    // Protected API
+    private void removeItemFromBag(SequenceImpl<Value_, Point_, Difference_> bag, ComparableValue<Value_, Point_> item,
+            ComparableValue<Value_, Point_> sequenceStart, ComparableValue<Value_, Point_> sequenceEnd) {
         if (item.equals(sequenceStart)) {
             // Change start key to the item after this one
             bag.setStart(itemSet.higher(item));
             startItemToSequence.remove(sequenceStart);
-            BreakImpl<Value_, Difference_> extendedBreak = startItemToPreviousBreak.remove(sequenceStart);
-            Value_ firstItem = bag.getFirstItem();
+            var extendedBreak = startItemToPreviousBreak.remove(sequenceStart);
+            var firstItem = bag.firstItem;
             startItemToSequence.put(firstItem, bag);
             if (extendedBreak != null) {
-                updateLengthOfBreak(extendedBreak);
+                extendedBreak.updateLength();
                 startItemToPreviousBreak.put(firstItem, extendedBreak);
             }
-            indexMap.remove(item);
-            return true;
+            return;
         }
         if (item.equals(sequenceEnd)) {
             // Set end key to the item before this one
             bag.setEnd(itemSet.lower(item));
-            Map.Entry<Value_, BreakImpl<Value_, Difference_>> extendedBreakEntry =
-                    startItemToPreviousBreak.higherEntry(item);
+            var extendedBreakEntry = startItemToPreviousBreak.higherEntry(item);
             if (extendedBreakEntry != null) {
-                BreakImpl<Value_, Difference_> extendedBreak = extendedBreakEntry.getValue();
-                updateLengthOfBreak(extendedBreak);
+                var extendedBreak = extendedBreakEntry.getValue();
+                extendedBreak.updateLength();
             }
-            indexMap.remove(item);
-            return true;
+            return;
         }
 
-        Value_ firstAfterItem = bag.getItems().higher(item);
-        Value_ firstBeforeItem = bag.getItems().lower(item);
-
-        if (isFirstSuccessorOfSecond(
-                indexMap.get(firstAfterItem), firstAfterItem,
-                indexMap.get(firstBeforeItem), firstBeforeItem)) {
+        var firstAfterItem = bag.getComparableItems().higher(item);
+        var firstBeforeItem = bag.getComparableItems().lower(item);
+        if (isFirstSuccessorOfSecond(firstAfterItem, firstBeforeItem)) {
             // Bag is not split since the next two items are still close enough
-            indexMap.remove(item);
-            return true;
+            return;
         }
 
         // Need to split bag into two halves
         // Both halves are not empty as the item was not an endpoint
         // Additional, the breaks before and after the broken sequence
         // are not affected since an endpoint was not removed
-        SequenceImpl<Value_, Difference_> splitBag = bag.split(item);
-        Value_ firstSplitItem = splitBag.getFirstItem();
-        Value_ lastOriginalItem = bag.getLastItem();
+        var splitBag = bag.split(item);
+        var firstSplitItem = splitBag.firstItem;
         startItemToSequence.put(firstSplitItem, splitBag);
-        startItemToPreviousBreak.put(firstSplitItem,
-                new BreakImpl<>(bag, splitBag, getBreakLengthBetween(lastOriginalItem, firstSplitItem)));
-        Map.Entry<Value_, BreakImpl<Value_, Difference_>> maybeNextBreak =
-                startItemToPreviousBreak.higherEntry(firstAfterItem);
+        startItemToPreviousBreak.put(firstSplitItem, new BreakImpl<>(bag, splitBag, differenceFunction));
+        var maybeNextBreak = startItemToPreviousBreak.higherEntry(firstAfterItem);
         if (maybeNextBreak != null) {
             maybeNextBreak.getValue().setPreviousSequence(splitBag);
         }
-        indexMap.remove(item);
-        return true;
+    }
+
+    Break<Value_, Difference_> getBreakBefore(ComparableValue<Value_, Point_> item) {
+        return startItemToPreviousBreak.get(item);
+    }
+
+    Break<Value_, Difference_> getBreakAfter(ComparableValue<Value_, Point_> item) {
+        var entry = startItemToPreviousBreak.higherEntry(item);
+        if (entry != null) {
+            return entry.getValue();
+        }
+        return null;
+    }
+
+    NavigableSet<ComparableValue<Value_, Point_>> getItemSet() {
+        return itemSet;
+    }
+
+    ComparableValue<Value_, Point_> getFirstItem() {
+        return firstItem;
+    }
+
+    ComparableValue<Value_, Point_> getLastItem() {
+        return lastItem;
+    }
+
+    private boolean isFirstSuccessorOfSecond(ComparableValue<Value_, Point_> first, ComparableValue<Value_, Point_> second) {
+        var difference = differenceFunction.apply(second.index(), first.index());
+        return isInNaturalOrderAndHashOrderIfEqual(zeroDifference, second.value(), difference, first.value()) &&
+                difference.compareTo(maxDifference) <= 0;
     }
 
     @Override
@@ -337,38 +322,16 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                 '}';
     }
 
-    private static final class ValueComparator<Value_, Point_ extends Comparable<Point_>> implements Comparator<Value_> {
+    private final static class ValueCount<Value_> {
 
-        private final Map<Value_, Point_> indexMap;
+        private final Value_ value;
+        private int count;
 
-        public ValueComparator(Map<Value_, Point_> indexMap) {
-            this.indexMap = Objects.requireNonNull(indexMap);
+        public ValueCount(Value_ value) {
+            this.value = value;
+            count = 1;
         }
 
-        @Override
-        public int compare(Value_ o1, Value_ o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-            Point_ point1 = indexMap.get(o1);
-            Point_ point2 = indexMap.get(o2);
-            if (point1 == point2) {
-                return compareWithIdentityHashCode(o1, o2);
-            }
-            int comparison = point1.compareTo(point2);
-            if (comparison != 0) {
-                return comparison;
-            }
-            return compareWithIdentityHashCode(o1, o2);
-        }
-
-        private static int compareWithIdentityHashCode(Object o1, Object o2) {
-            // Identity Hashcode for duplicate protection; we must always include duplicates.
-            // Ex: two different games on the same time slot
-            int identityHashCode1 = System.identityHashCode(o1);
-            int identityHashCode2 = System.identityHashCode(o2);
-            return Integer.compare(identityHashCode1, identityHashCode2);
-        }
     }
 
 }

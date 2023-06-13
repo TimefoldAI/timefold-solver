@@ -21,7 +21,7 @@ final class IntervalTreeIterator<Interval_, Point_ extends Comparable<Point_>> i
 
     @Override
     public Interval_ next() {
-        Interval_ next = splitPointValueIterator.next();
+        var next = splitPointValueIterator.next();
 
         while (!splitPointValueIterator.hasNext() && splitPointSetIterator.hasNext()) {
             splitPointValueIterator = splitPointSetIterator.next().getValuesStartingFromSplitPointIterator();

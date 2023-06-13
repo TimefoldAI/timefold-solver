@@ -7,17 +7,12 @@ public final class Interval<Interval_, Point_ extends Comparable<Point_>> {
     private final IntervalSplitPoint<Interval_, Point_> startSplitPoint;
     private final IntervalSplitPoint<Interval_, Point_> endSplitPoint;
 
-    public Interval(Interval_ value, Function<Interval_, Point_> startMapping,
-            Function<Interval_, Point_> endMapping) {
+    public Interval(Interval_ value, Function<Interval_, Point_> startMapping, Function<Interval_, Point_> endMapping) {
         this.value = value;
-        Point_ start = startMapping.apply(value);
-        Point_ end = endMapping.apply(value);
+        var start = startMapping.apply(value);
+        var end = endMapping.apply(value);
         this.startSplitPoint = new IntervalSplitPoint<>(start);
-        if (start == end) {
-            this.endSplitPoint = this.startSplitPoint;
-        } else {
-            this.endSplitPoint = new IntervalSplitPoint<>(end);
-        }
+        this.endSplitPoint = (start == end) ? this.startSplitPoint : new IntervalSplitPoint<>(end);
     }
 
     public Interval_ getValue() {

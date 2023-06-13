@@ -32,9 +32,8 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
         if (null == o || splitPointSet.isEmpty()) {
             return false;
         }
-        Interval<Interval_, Point_> interval = getInterval(o);
-        IntervalSplitPoint<Interval_, Point_> floorStartSplitPoint =
-                splitPointSet.floor(interval.getStartSplitPoint());
+        var interval = getInterval(o);
+        var floorStartSplitPoint = splitPointSet.floor(interval.getStartSplitPoint());
         if (floorStartSplitPoint == null) {
             return false;
         }
@@ -46,11 +45,11 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     public boolean add(Interval<Interval_, Point_> interval) {
-        IntervalSplitPoint<Interval_, Point_> startSplitPoint = interval.getStartSplitPoint();
-        IntervalSplitPoint<Interval_, Point_> endSplitPoint = interval.getEndSplitPoint();
+        var startSplitPoint = interval.getStartSplitPoint();
+        var endSplitPoint = interval.getEndSplitPoint();
         boolean isChanged;
 
-        IntervalSplitPoint<Interval_, Point_> flooredStartSplitPoint = splitPointSet.floor(startSplitPoint);
+        var flooredStartSplitPoint = splitPointSet.floor(startSplitPoint);
         if (flooredStartSplitPoint == null || !flooredStartSplitPoint.equals(startSplitPoint)) {
             splitPointSet.add(startSplitPoint);
             startSplitPoint.createCollections();
@@ -59,7 +58,7 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
             isChanged = flooredStartSplitPoint.addIntervalStartingAtSplitPoint(interval);
         }
 
-        IntervalSplitPoint<Interval_, Point_> ceilingEndSplitPoint = splitPointSet.ceiling(endSplitPoint);
+        var ceilingEndSplitPoint = splitPointSet.ceiling(endSplitPoint);
         if (ceilingEndSplitPoint == null || !ceilingEndSplitPoint.equals(endSplitPoint)) {
             splitPointSet.add(endSplitPoint);
             endSplitPoint.createCollections();
@@ -75,10 +74,9 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     public boolean remove(Interval<Interval_, Point_> interval) {
-        IntervalSplitPoint<Interval_, Point_> startSplitPoint = interval.getStartSplitPoint();
-        IntervalSplitPoint<Interval_, Point_> endSplitPoint = interval.getEndSplitPoint();
-
-        IntervalSplitPoint<Interval_, Point_> flooredStartSplitPoint = splitPointSet.floor(startSplitPoint);
+        var startSplitPoint = interval.getStartSplitPoint();
+        var endSplitPoint = interval.getEndSplitPoint();
+        var flooredStartSplitPoint = splitPointSet.floor(startSplitPoint);
         if (flooredStartSplitPoint == null || !flooredStartSplitPoint.containsIntervalStarting(interval)) {
             return false;
         }
@@ -88,7 +86,7 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
             splitPointSet.remove(flooredStartSplitPoint);
         }
 
-        IntervalSplitPoint<Interval_, Point_> ceilEndSplitPoint = splitPointSet.ceiling(endSplitPoint);
+        var ceilEndSplitPoint = splitPointSet.ceiling(endSplitPoint);
         // Not null since the start point contained the interval
         ceilEndSplitPoint.removeIntervalEndingAtSplitPoint(interval);
         if (ceilEndSplitPoint.isEmpty()) {
