@@ -29,25 +29,20 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
         this.startSplitPoint = start;
         this.endSplitPoint = start;
         this.differenceFunction = differenceFunction;
-        int activeIntervals = 0;
-        count = 0;
-        boolean anyOverlap = false;
-        IntervalSplitPoint<Interval_, Point_> current = start;
+        this.count = 0;
+        var activeIntervals = 0;
+        var anyOverlap = false;
+        var current = start;
         do {
-            count += current.intervalsStartingAtSplitPointSet.size();
+            this.count += current.intervalsStartingAtSplitPointSet.size();
             activeIntervals += current.intervalsStartingAtSplitPointSet.size() - current.intervalsEndingAtSplitPointSet.size();
             if (activeIntervals > 1) {
                 anyOverlap = true;
             }
             current = splitPointSet.higher(current);
         } while (activeIntervals > 0 && current != null);
-        hasOverlap = anyOverlap;
-
-        if (current != null) {
-            endSplitPoint = splitPointSet.lower(current);
-        } else {
-            endSplitPoint = splitPointSet.last();
-        }
+        this.hasOverlap = anyOverlap;
+        this.endSplitPoint = (current != null) ? splitPointSet.lower(current) : splitPointSet.last();
     }
 
     IntervalClusterImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
