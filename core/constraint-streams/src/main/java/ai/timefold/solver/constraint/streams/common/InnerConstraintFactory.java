@@ -23,7 +23,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -55,9 +54,7 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
 
     private <A> DefaultBiJoiner<A, A> buildLessThanId(Class<A> sourceClass) {
         SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        MemberAccessor planningIdMemberAccessor =
-                ConfigUtils.findPlanningIdMemberAccessor(sourceClass, solutionDescriptor.getMemberAccessorFactory(),
-                        solutionDescriptor.getDomainAccessType());
+        MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
         if (planningIdMemberAccessor == null) {
             throw new IllegalArgumentException("The fromClass (" + sourceClass + ") has no member with a @"
                     + PlanningId.class.getSimpleName() + " annotation,"

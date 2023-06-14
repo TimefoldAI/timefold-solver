@@ -212,6 +212,9 @@ final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public Collection<?> getPlanningEntities() {
+        if (firstEntity == secondEntity) {
+            return Collections.singleton(firstEntity);
+        }
         return Set.of(firstEntity, secondEntity);
     }
 

@@ -1,5 +1,6 @@
 package ai.timefold.solver.benchmark.impl.statistic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -30,7 +31,7 @@ public abstract class PureSubSingleStatistic<Solution_, StatisticPoint_ extends 
     protected SingleStatisticType singleStatisticType;
 
     @XmlTransient
-    protected List<Chart_> chartList;
+    protected List<Chart_> chartList = new ArrayList<>();
 
     protected PureSubSingleStatistic() {
         // For JAXB.
