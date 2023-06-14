@@ -43,11 +43,12 @@ public class BestSolutionMutationProblemStatistic extends ProblemStatistic<LineC
                     long timeMillisSpent = point.getTimeMillisSpent();
                     long mutationCount = point.getMutationCount();
                     builder.add(solverLabel, timeMillisSpent, mutationCount);
+                    builder.add(solverLabel, timeMillisSpent + 1, 0L); // Drop back to zero.
                 }
             }
         }
         return singletonList(builder.build("bestSolutionMutationProblemStatisticChart",
                 problemBenchmarkResult.getName() + " best solution mutation statistic", "Time spent",
-                "Best solution mutation count.", true, true, false));
+                "Best solution mutation count", true, true, false));
     }
 }

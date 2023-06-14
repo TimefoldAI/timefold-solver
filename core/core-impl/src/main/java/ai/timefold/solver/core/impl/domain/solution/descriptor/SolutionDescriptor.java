@@ -153,6 +153,7 @@ public class SolutionDescriptor<Solution_> {
     private final Map<Class<?>, EntityDescriptor<Solution_>> entityDescriptorMap = new LinkedHashMap<>();
     private final List<Class<?>> reversedEntityClassList = new ArrayList<>();
     private final ConcurrentMap<Class<?>, EntityDescriptor<Solution_>> lowestEntityDescriptorMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, MemberAccessor> planningIdMemberAccessorMap = new ConcurrentHashMap<>();
 
     private SolutionCloner<Solution_> solutionCloner;
     private boolean assertModelForCloning = false;
@@ -853,6 +854,28 @@ public class SolutionDescriptor<Solution_> {
                 fact -> entityCount.increment(),
                 collection -> entityCount.add(collection.size()));
         return entityCount.intValue();
+    }
+
+    /**
+     * Return accessor for a given member of a given class, if present,
+     * and cache it for future use.
+     *
+     * @param factClass never null
+     * @return null if no such member exists
+     */
+    public MemberAccessor getPlanningIdAccessor(Class<?> factClass) {
+        MemberAccessor memberAccessor = planningIdMemberAccessorMap.get(factClass);
+        if (memberAccessor == null) {
+            memberAccessor =
+                    ConfigUtils.findPlanningIdMemberAccessor(factClass, getMemberAccessorFactory(), getDomainAccessType());
+            MemberAccessor nonNullMemberAccessor = Objects.requireNonNullElse(memberAccessor, DummyMemberAccessor.INSTANCE);
+            planningIdMemberAccessorMap.put(factClass, nonNullMemberAccessor);
+            return memberAccessor;
+        } else if (memberAccessor == DummyMemberAccessor.INSTANCE) {
+            return null;
+        } else {
+            return memberAccessor;
+        }
     }
 
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {

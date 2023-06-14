@@ -761,6 +761,11 @@ image::benchmarking-and-tweaking/bestSolutionMutationStatistic.png[align="center
 
 Use Tabu Search - an algorithm that behaves like a human - to get an estimation on how difficult it would be for a human to improve the previous best solution to that new best solution.
 
+[NOTE]
+====
+This statistic can slow down the solver noticeably, which affects the benchmark results.
+That's why it is optional and not enabled by default.
+====
 
 [[benchmarkReportMoveCountPerStepStatistic]]
 === Move count per step statistic (graph and CSV)
@@ -842,7 +847,7 @@ Multiple `singleStatisticType` elements are allowed.
 
 [NOTE]
 ====
-These statistic per single benchmark can slow down the solver noticeably, which affects the benchmark results.
+This statistic per single benchmark can slow down the solver noticeably, which affects the benchmark results.
 That's why they are optional and not enabled by default.
 ====
 
