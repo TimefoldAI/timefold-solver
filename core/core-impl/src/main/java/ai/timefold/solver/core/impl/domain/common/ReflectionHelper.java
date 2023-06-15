@@ -30,9 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Avoids the usage of Introspector to work on Android too.
- */
 public final class ReflectionHelper {
 
     private static final String PROPERTY_ACCESSOR_PREFIX_GET = "get";

@@ -57,7 +57,6 @@
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
-    <version.sniffer.plugin>1.23</version.sniffer.plugin>
     <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
     <version.source.plugin>3.3.0</version.source.plugin>
     <version.surefire.plugin>3.1.2</version.surefire.plugin>
@@ -551,31 +550,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>${version.sniffer.plugin}</version>
-          <configuration>
-            <signature>
-              <groupId>net.sf.androidscents.signature</groupId>
-              <artifactId>android-api-level-32</artifactId>
-              <version>12_r1</version>
-            </signature>
-            <ignores>
-              <ignore>java.lang.invoke.LambdaMetafactory</ignore>
-              <ignore>java.lang.invoke.MethodHandle</ignore>
-            </ignores>
-          </configuration>
-          <executions>
-            <execution>
-              <id>animal-sniffer</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>check</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${version.assembly.plugin}</version>
         </plugin>
@@ -778,7 +752,6 @@
         <skipTests>true</skipTests>
         <skipITs>true</skipITs>
         <formatter.skip>true</formatter.skip>
-        <animal.sniffer.skip>true</animal.sniffer.skip>
       </properties>
     </profile>
 

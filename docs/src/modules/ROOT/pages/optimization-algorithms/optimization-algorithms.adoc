@@ -899,11 +899,11 @@ A `@PlanningId` property must be:
 
 
 [[customThreadFactory]]
-=== Custom thread factory (WildFly, Android, GAE, ...)
+=== Custom thread factory (WildFly, GAE, ...)
 
 The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
 where arbitrary thread creation should be avoided,
-such as most application servers (including WildFly), Android, or Google App Engine.
+such as most application servers (including WildFly) or Google App Engine.
 
 Configure the `ThreadFactory` on the solver to create the <<multithreadedIncrementalSolving,move threads>>
 and the xref:partitioned-search/partitioned-search.adoc#partitionedSearch[Partition Search threads] with it:
