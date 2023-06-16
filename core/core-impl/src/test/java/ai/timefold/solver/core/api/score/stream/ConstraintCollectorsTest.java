@@ -25,7 +25,6 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1418,7 +1417,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void minNotComparable() {
-        UniConstraintCollector<Object, ?, Object> collector = min(Comparator.comparing(o -> (String) o));
+        UniConstraintCollector<Object, ?, Object> collector = min(Function.identity(), o -> (String) o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1483,7 +1482,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void minNotComparableBi() {
-        BiConstraintCollector<String, String, ?, String> collector = min((a, b) -> a, Comparator.comparing(o -> o));
+        BiConstraintCollector<String, String, ?, String> collector = min((a, b) -> a, o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1548,8 +1547,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void minNotComparableTri() {
-        TriConstraintCollector<String, String, String, ?, String> collector = min((a, b, c) -> a,
-                Comparator.comparing(o -> o));
+        TriConstraintCollector<String, String, String, ?, String> collector = min((a, b, c) -> a, o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1614,8 +1612,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void minNotComparableQuad() {
-        QuadConstraintCollector<String, String, String, String, ?, String> collector = min((a, b, c, d) -> a,
-                Comparator.comparing(o -> o));
+        QuadConstraintCollector<String, String, String, String, ?, String> collector = min((a, b, c, d) -> a, o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1677,7 +1674,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void maxNotComparable() {
-        UniConstraintCollector<String, ?, String> collector = max(Comparator.comparing(o -> o));
+        UniConstraintCollector<String, ?, String> collector = max(Function.identity(), o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1742,7 +1739,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void maxNotComparableBi() {
-        BiConstraintCollector<String, String, ?, String> collector = max((a, b) -> a, Comparator.comparing(o -> o));
+        BiConstraintCollector<String, String, ?, String> collector = max((a, b) -> a, o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1807,8 +1804,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void maxNotComparableTri() {
-        TriConstraintCollector<String, String, String, ?, String> collector = max((a, b, c) -> a,
-                Comparator.comparing(o -> o));
+        TriConstraintCollector<String, String, String, ?, String> collector = max((a, b, c) -> a, o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1873,8 +1869,7 @@ class ConstraintCollectorsTest {
 
     @Test
     void maxNotComparableQuad() {
-        QuadConstraintCollector<String, String, String, String, ?, String> collector = max((a, b, c, d) -> a,
-                Comparator.comparing(o -> o));
+        QuadConstraintCollector<String, String, String, String, ?, String> collector = max((a, b, c, d) -> a, o -> o);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -3442,7 +3437,7 @@ class ConstraintCollectorsTest {
     void conditionallyBi() {
         BiConstraintCollector<Integer, Integer, Object, Integer> collector = ConstraintCollectors.conditionally(
                 (i, i2) -> i < 2,
-                max(Integer::sum, Integer::compareTo));
+                max(Integer::sum, i -> i));
         Object container = collector.supplier().get();
 
         // Default state.
@@ -3474,7 +3469,7 @@ class ConstraintCollectorsTest {
         TriConstraintCollector<Integer, Integer, Integer, Object, Integer> collector =
                 ConstraintCollectors.conditionally(
                         (i, i2, i3) -> i < 2,
-                        max((i, i2, i3) -> i + i2 + i3, Integer::compareTo));
+                        max((i, i2, i3) -> i + i2 + i3, i -> i));
         Object container = collector.supplier().get();
 
         // Default state.
@@ -3506,7 +3501,7 @@ class ConstraintCollectorsTest {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, Object, Integer> collector =
                 ConstraintCollectors.conditionally(
                         (i, i2, i3, i4) -> i < 2,
-                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo));
+                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i));
         Object container = collector.supplier().get();
 
         // Default state.
@@ -3630,8 +3625,8 @@ class ConstraintCollectorsTest {
     @Test
     void compose2Bi() {
         BiConstraintCollector<Integer, Integer, ?, Pair<Integer, Integer>> collector =
-                compose(min(Integer::sum, Integer::compareTo),
-                        max(Integer::sum, Integer::compareTo),
+                compose(min(Integer::sum, i -> i),
+                        max(Integer::sum, i -> i),
                         Pair::of);
         Object container = collector.supplier().get();
 
@@ -3662,8 +3657,8 @@ class ConstraintCollectorsTest {
     @Test
     void compose3Bi() {
         BiConstraintCollector<Integer, Integer, ?, Triple<Integer, Integer, Double>> collector =
-                compose(min(Integer::sum, Integer::compareTo),
-                        max(Integer::sum, Integer::compareTo),
+                compose(min(Integer::sum, i -> i),
+                        max(Integer::sum, i -> i),
                         ConstraintCollectors.average(Integer::sum),
                         Triple::of);
         Object container = collector.supplier().get();
@@ -3696,8 +3691,8 @@ class ConstraintCollectorsTest {
     void compose4Bi() {
         BiConstraintCollector<Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countBi(),
-                        min(Integer::sum, Integer::compareTo),
-                        max(Integer::sum, Integer::compareTo),
+                        min(Integer::sum, i -> i),
+                        max(Integer::sum, i -> i),
                         ConstraintCollectors.average(Integer::sum),
                         Quadruple::of);
         Object container = collector.supplier().get();
@@ -3729,8 +3724,8 @@ class ConstraintCollectorsTest {
     @Test
     void compose2Tri() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Pair<Integer, Integer>> collector =
-                compose(min((i, i2, i3) -> i + i2 + i3, Integer::compareTo),
-                        max((i, i2, i3) -> i + i2 + i3, Integer::compareTo),
+                compose(min((i, i2, i3) -> i + i2 + i3, i -> i),
+                        max((i, i2, i3) -> i + i2 + i3, i -> i),
                         Pair::of);
         Object container = collector.supplier().get();
 
@@ -3761,8 +3756,8 @@ class ConstraintCollectorsTest {
     @Test
     void compose3Tri() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Triple<Integer, Integer, Double>> collector =
-                compose(min((i, i2, i3) -> i + i2 + i3, Integer::compareTo),
-                        max((i, i2, i3) -> i + i2 + i3, Integer::compareTo),
+                compose(min((i, i2, i3) -> i + i2 + i3, i -> i),
+                        max((i, i2, i3) -> i + i2 + i3, i -> i),
                         ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3),
                         Triple::of);
         Object container = collector.supplier().get();
@@ -3795,8 +3790,8 @@ class ConstraintCollectorsTest {
     void compose4Tri() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countTri(),
-                        min((i, i2, i3) -> i + i2 + i3, Integer::compareTo),
-                        max((i, i2, i3) -> i + i2 + i3, Integer::compareTo),
+                        min((i, i2, i3) -> i + i2 + i3, i -> i),
+                        max((i, i2, i3) -> i + i2 + i3, i -> i),
                         ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3),
                         Quadruple::of);
         Object container = collector.supplier().get();
@@ -3828,8 +3823,8 @@ class ConstraintCollectorsTest {
     @Test
     void compose2Quad() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Pair<Integer, Integer>> collector =
-                compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo),
-                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo),
+                compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
+                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         Pair::of);
         Object container = collector.supplier().get();
 
@@ -3860,8 +3855,8 @@ class ConstraintCollectorsTest {
     @Test
     void compose3Quad() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Triple<Integer, Integer, Double>> collector =
-                compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo),
-                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo),
+                compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
+                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         ConstraintCollectors.average((i, i2, i3, i4) -> i + i2 + i3 + i4),
                         Triple::of);
         Object container = collector.supplier().get();
@@ -3894,8 +3889,8 @@ class ConstraintCollectorsTest {
     void compose4Quad() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countQuad(),
-                        min((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo),
-                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, Integer::compareTo),
+                        min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
+                        max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         ConstraintCollectors.average((i, i2, i3, i4) -> i + i2 + i3 + i4),
                         Quadruple::of);
         Object container = collector.supplier().get();
