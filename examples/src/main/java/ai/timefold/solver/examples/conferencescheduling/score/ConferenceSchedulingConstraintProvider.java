@@ -1,6 +1,9 @@
 package ai.timefold.solver.examples.conferencescheduling.score;
 
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.compose;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countBi;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
 import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
 import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
 import static ai.timefold.solver.core.api.score.stream.Joiners.greaterThan;
@@ -22,6 +25,7 @@ import static ai.timefold.solver.examples.conferencescheduling.domain.Conference
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SAME_DAY_TALKS;
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SECTOR_CONFLICT;
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SPEAKER_CONFLICT;
+import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SPEAKER_MAKESPAN;
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SPEAKER_PREFERRED_ROOM_TAGS;
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SPEAKER_PREFERRED_TIMESLOT_TAGS;
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.SPEAKER_PROHIBITED_ROOM_TAGS;
@@ -44,6 +48,8 @@ import static ai.timefold.solver.examples.conferencescheduling.domain.Conference
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.THEME_TRACK_CONFLICT;
 import static ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration.THEME_TRACK_ROOM_STABILITY;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -107,7 +113,8 @@ public final class ConferenceSchedulingConstraintProvider implements ConstraintP
                 speakerPreferredRoomTags(factory),
                 speakerUndesiredRoomTags(factory),
                 talkPreferredRoomTags(factory),
-                talkUndesiredRoomTags(factory)
+                talkUndesiredRoomTags(factory),
+                speakerMakespan(factory)
         };
     }
 
@@ -459,6 +466,26 @@ public final class ConferenceSchedulingConstraintProvider implements ConstraintP
                 .penalizeConfigurable((talk, undesiredTagCount) -> undesiredTagCount * talk.getDurationInMinutes())
                 .indictWith((talk, undesiredTagCount) -> Collections.singleton(talk))
                 .asConstraint(TALK_UNDESIRED_ROOM_TAGS);
+    }
+
+    Constraint speakerMakespan(ConstraintFactory factory) {
+        return factory.forEach(Speaker.class)
+                .join(Talk.class,
+                        filtering((speaker, talk) -> talk.hasSpeaker(speaker)))
+                .groupBy((speaker, talk) -> speaker,
+                        compose(
+                                min((Speaker speaker, Talk talk) -> talk, talk -> talk.getTimeslot().getStartDateTime()),
+                                max((Speaker speaker, Talk talk) -> talk, talk -> talk.getTimeslot().getStartDateTime()),
+                                (firstTalk, lastTalk) -> {
+                                    LocalDate firstDate = firstTalk.getTimeslot().getStartDateTime().toLocalDate();
+                                    LocalDate lastDate = lastTalk.getTimeslot().getStartDateTime().toLocalDate();
+                                    return (int) Math.abs(ChronoUnit.DAYS.between(firstDate, lastDate));
+                                }))
+                .filter((speaker, daysBetweenTalks) -> daysBetweenTalks > 1)
+                // Each such day counts for 8 hours.
+                .penalizeConfigurable((speaker, daysBetweenTalks) -> (daysBetweenTalks - 1) * 8 * 60)
+                .indictWith((speaker, daysBetweenTalks) -> Collections.singleton(speaker))
+                .asConstraint(SPEAKER_MAKESPAN);
     }
 
 }

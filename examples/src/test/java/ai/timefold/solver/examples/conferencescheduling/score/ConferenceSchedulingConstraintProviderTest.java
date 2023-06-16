@@ -40,6 +40,11 @@ class ConferenceSchedulingConstraintProviderTest
             .withEndDateTime(START.plusDays(1).plusHours(1))
             .withTagSet(singleton("c"));
 
+    private static final Timeslot WEDNESDAY_9_TO_10 = new Timeslot(5)
+            .withStartDateTime(START.plusDays(2))
+            .withEndDateTime(START.plusDays(1).plusHours(1))
+            .withTagSet(singleton("c"));
+
     // ************************************************************************
     // Hard constraints
     // ************************************************************************
@@ -921,6 +926,32 @@ class ConferenceSchedulingConstraintProviderTest
         constraintVerifier.verifyThat(ConferenceSchedulingConstraintProvider::talkUndesiredRoomTags)
                 .given(talk1, talk2)
                 .penalizesBy(MONDAY_9_TO_10.getDurationInMinutes());
+    }
+
+    @ConstraintProviderTest
+    void speakerMakespan(ConstraintVerifier<ConferenceSchedulingConstraintProvider, ConferenceSolution> constraintVerifier) {
+        Room room = new Room(0)
+                .withTagSet(singleton("a"));
+        Speaker speaker1 = new Speaker(1)
+                .withUnavailableTimeslotSet(singleton(MONDAY_9_TO_10));
+        Speaker speaker2 = new Speaker(2)
+                .withUnavailableTimeslotSet(singleton(MONDAY_10_TO_11));
+        Talk talk1 = new Talk(1)
+                .withRoom(room)
+                .withSpeakerList(Arrays.asList(speaker1, speaker2))
+                .withTimeslot(MONDAY_9_TO_10);
+        Talk talk2 = new Talk(2)
+                .withSpeakerList(Arrays.asList(speaker1, speaker2))
+                .withRoom(room)
+                .withTimeslot(TUESDAY_9_TO_10);
+        Talk talk3 = new Talk(3)
+                .withSpeakerList(singletonList(speaker1))
+                .withRoom(room)
+                .withTimeslot(WEDNESDAY_9_TO_10);
+
+        constraintVerifier.verifyThat(ConferenceSchedulingConstraintProvider::speakerMakespan)
+                .given(speaker1, speaker2, talk1, talk2, talk3)
+                .penalizesBy(8 * 60); // Just speaker1 is penalized.
     }
 
     @Override
