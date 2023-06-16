@@ -68,7 +68,7 @@
       <plugin>
         <groupId>org.jreleaser</groupId>
         <artifactId>jreleaser-maven-plugin</artifactId>
-        <version>1.6.0</version>
+        <version>1.7.0</version>
         <inherited>false</inherited>
         <configuration>
           <jreleaser>
@@ -78,11 +78,13 @@
             </signing>
             <deploy>
               <maven>
+                <pomchecker>
+                  <!-- Artifacts that inherit <url> and <description> should not fail the release. -->
+                  <failOnWarning>false</failOnWarning>
+                </pomchecker>
                 <nexus2>
                   <maven-central>
                     <active>ALWAYS</active>
-                    <!-- TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397 -->
-                    <verifyPom>false</verifyPom>
                     <url>https://s01.oss.sonatype.org/service/local</url>
                     <closeRepository>true</closeRepository>
                     <releaseRepository>false</releaseRepository>
