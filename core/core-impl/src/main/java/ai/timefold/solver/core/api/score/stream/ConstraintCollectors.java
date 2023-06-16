@@ -732,7 +732,7 @@ public final class ConstraintCollectors {
      * incremental score calculation.
      * <p>
      * For example, {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 20)]} with
-     * {@code .groupBy(max(Person::name, Person::age))} returns {@code Ann} or {@code Eric},
+     * {@code .groupBy(min(Person::name, Person::age))} returns {@code Ann} or {@code Eric},
      * as both have the same age.
      * <p>
      * The default result of the collector (e.g. when never called) is {@code null}.
