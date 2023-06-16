@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -838,6 +839,12 @@ public class SolutionDescriptor<Solution_> {
     // Extraction methods
     // ************************************************************************
 
+    public Collection<Object> getAllEntities(Solution_ solution) {
+        List<Object> entities = new ArrayList<>();
+        visitAllEntities(solution, entities::add);
+        return entities;
+    }
+
     public Collection<Object> getAllEntitiesAndProblemFacts(Solution_ solution) {
         List<Object> facts = new ArrayList<>();
         visitAll(solution, facts::add);
@@ -880,6 +887,27 @@ public class SolutionDescriptor<Solution_> {
 
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {
         visitAllEntities(solution, visitor, collection -> collection.forEach(visitor));
+    }
+
+    public <Entity_> Entity_ findFirstEntityMatching(Solution_ solution, Predicate<Object> predicate) {
+        for (MemberAccessor entityMemberAccessor : entityMemberAccessorMap.values()) {
+            Object entity = extractMemberObject(entityMemberAccessor, solution);
+            if (entity != null) {
+                if (predicate.test(entity)) {
+                    return (Entity_) entity;
+                }
+            }
+        }
+        for (MemberAccessor entityCollectionMemberAccessor : entityCollectionMemberAccessorMap.values()) {
+            Collection<Object> entityCollection = extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution,
+                    false);
+            for (Object entity : entityCollection) {
+                if (predicate.test(entity)) {
+                    return (Entity_) entity;
+                }
+            }
+        }
+        return null;
     }
 
     private void visitAllEntities(Solution_ solution, Consumer<Object> visitor,
@@ -992,9 +1020,11 @@ public class SolutionDescriptor<Solution_> {
     }
 
     /**
+     * @deprecated This was never implemented; any code that depends on this will throw {@link UnsupportedOperationException}.
      * @param solution never null
      * @return {@code >= 0}
      */
+    @Deprecated(forRemoval = true, since = "1.0.0")
     public int getValueCount(Solution_ solution) {
         int valueCount = 0;
         // TODO FIXME for ValueRatioTabuSizeStrategy (or reuse maximumValueCount() for that variable descriptor?)

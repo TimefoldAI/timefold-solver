@@ -566,9 +566,7 @@ class DefaultSolverTest {
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
     }
 
-    // TODO https://issues.redhat.com/browse/PLANNER-1738
     @Test
-    @Disabled("We currently don't support an empty value list yet if the entity list is not empty.")
     void solveEmptyValueList() {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
