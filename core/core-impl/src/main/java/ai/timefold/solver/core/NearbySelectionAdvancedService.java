@@ -27,10 +27,10 @@ public interface NearbySelectionAdvancedService {
         Iterator<NearbySelectionAdvancedService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
-                    "Nearby selection requested but Timefold Enterprise not found on classpath.\n" +
-                            "Either add the ai.timefold.solver:timefold-solver-enterprise dependency, " +
+                    "Nearby selection requested but Timefold Solver Advanced Edition not found on classpath.\n" +
+                            "Either add the ai.timefold.solver.advanced:timefold-solver-advanced-core dependency, " +
                             "or remove nearby selection from solver configuration.\n" +
-                            "Note: Timefold Enterprise is a commercial product.");
+                            "Note: Timefold Solver Advanced Edition is a commercial product.");
         }
         return iterator.next();
     }

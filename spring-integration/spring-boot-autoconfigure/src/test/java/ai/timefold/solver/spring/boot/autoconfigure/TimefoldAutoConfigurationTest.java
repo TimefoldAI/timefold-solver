@@ -178,13 +178,6 @@ class TimefoldAutoConfigurationTest {
                     assertThat(solverConfig.getDaemon()).isTrue();
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
-        contextRunner
-                .withPropertyValues("timefold.solver.move-thread-count=2")
-                .run(context -> {
-                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig.getMoveThreadCount()).isEqualTo("2");
-                    assertThat(context.getBean(SolverFactory.class)).isNotNull();
-                });
     }
 
     @Test

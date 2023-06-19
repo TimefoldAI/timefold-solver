@@ -18,8 +18,6 @@ public class CloudBalancingBenchmarkApp extends CommonBenchmarkApp {
                         "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingScoreDirectorBenchmarkConfig.xml"),
                 new ArgOption("template",
                         "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl",
-                        true),
-                new ArgOption("partitioned",
-                        "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingPartitionedSearchBenchmarkConfig.xml"));
+                        true));
     }
 }

@@ -17,10 +17,10 @@ public interface PartitionedSearchAdvancedService {
         Iterator<PartitionedSearchAdvancedService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
-                    "Partitioned search requested  but Timefold Enterprise not found on classpath.\n" +
-                            "Either add the ai.timefold.solver:timefold-solver-enterprise dependency, " +
+                    "Partitioned search requested but Timefold Solver Advanced Edition not found on classpath.\n" +
+                            "Either add the ai.timefold.solver.advanced:timefold-solver-advanced-core dependency, " +
                             "or remove partitioned search from solver configuration.\n" +
-                            "Note: Timefold Enterprise is a commercial product.");
+                            "Note: Timefold Solver Advanced Edition is a commercial product.");
         }
         return iterator.next();
     }
