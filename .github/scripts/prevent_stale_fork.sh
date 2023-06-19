@@ -18,10 +18,6 @@ git merge upstream/$BLESSED_BRANCH
 
 if [ $? -ne 0 ]; then
     echo "Merge failed, trying rebase."
-    git rebase upstream/$BLESSED_BRANCH
-    if [ $? -ne 0 ]; then
-      echo "Rebase failed too."
-      echo "Please make sure your fork is up to date."
-      exit 1
-    fi
+    echo "Please make sure your fork is up to date."
+    exit 1
 fi
