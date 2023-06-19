@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.partitionedsearch;
 
-import ai.timefold.solver.core.enterprise.PartitionedSearchEnterpriseService;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
+import ai.timefold.solver.core.enterprise.PartitionedSearchEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
