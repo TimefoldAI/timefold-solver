@@ -1,4 +1,4 @@
-package ai.timefold.solver.core;
+package ai.timefold.solver.core.enterprise;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -17,10 +17,10 @@ public interface PartitionedSearchEnterpriseService {
         Iterator<PartitionedSearchEnterpriseService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
-                    "Partitioned search requested  but Timefold Enterprise not found on classpath.\n" +
-                            "Either add the ai.timefold.solver:timefold-solver-enterprise dependency, " +
+                    "Partitioned search requested but Timefold Solver Enterprise Edition not found on classpath.\n" +
+                            "Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency, " +
                             "or remove partitioned search from solver configuration.\n" +
-                            "Note: Timefold Enterprise is a commercial product.");
+                            "Note: Timefold Solver Enterprise Edition is a commercial product.");
         }
         return iterator.next();
     }

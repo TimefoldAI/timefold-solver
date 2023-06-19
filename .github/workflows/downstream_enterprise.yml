@@ -1,4 +1,4 @@
-name: Downstream - Timefold Quickstarts
+name: Downstream - Timefold Solver Enterprise Edition
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     concurrency:
-      group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}
+      group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 120
     steps:
@@ -25,29 +25,29 @@ jobs:
         with:
           path: ./timefold-solver
 
-      # Clone timefold-quickstarts
+      # Clone timefold-solver-enterprise
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
-      - name: Find the proper timefold-quickstarts repo and branch
+      - name: Find the proper timefold-solver-enterprise repo and branch
         env:
           CHAIN_USER: ${{ github.actor }}
           CHAIN_BRANCH: ${{ github.head_ref }}
-          CHAIN_REPO: "timefold-quickstarts"
-          CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
+          CHAIN_REPO: "timefold-solver-enterprise"
+          CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
         shell: bash
         run: ./timefold-solver/.github/scripts/check_chain_repo.sh
-      - name: Checkout timefold-quickstarts
+      - name: Checkout timefold-solver-enterprise
         uses: actions/checkout@v3
         with:
           repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
           ref: ${{ env.TARGET_CHAIN_BRANCH }}
-          path: ./timefold-quickstarts
+          path: ./timefold-solver-enterprise
           fetch-depth: 0 # Otherwise merge in the next step will fail on account of not having history.
-      - name: Prevent stale fork of timefold-quickstarts
+      - name: Prevent stale fork of timefold-solver-enterprise
         env:
-          BLESSED_REPO: "timefold-quickstarts"
-          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
+          BLESSED_REPO: "timefold-solver-enterprise"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
         shell: bash
-        working-directory: ./timefold-quickstarts
+        working-directory: ./timefold-solver-enterprise
         run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
 
       # Build and test
@@ -61,7 +61,7 @@ jobs:
         working-directory: ./timefold-solver
         shell: bash
         run: mvn -B -Dquickly clean install
-      - name: Build and test timefold-quickstarts
-        working-directory: ./timefold-quickstarts
+      - name: Build and test timefold-solver-enterprise
+        working-directory: ./timefold-solver-enterprise
         shell: bash
         run: mvn -B clean verify

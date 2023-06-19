@@ -13,10 +13,10 @@ import java.util.stream.Stream;
 /**
  * On the later JDKs, it is no longer possible to mock {@link Random} to return custom sequences.
  * Therefore we introduce this class to allow for that use case.
- *
+ * <p>
  * It allows to provide a sequence of pre-defined "random" values.
  * It throws an exception if that sequence has been exhausted.
- *
+ * <p>
  * Due to some internals of Timefold where randoms are read from
  * {@link ai.timefold.solver.core.impl.solver.scope.SolverScope}
  * and never updated in later phases and steps,

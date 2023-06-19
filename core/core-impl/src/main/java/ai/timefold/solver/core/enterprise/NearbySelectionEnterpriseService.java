@@ -1,4 +1,4 @@
-package ai.timefold.solver.core;
+package ai.timefold.solver.core.enterprise;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -27,10 +27,10 @@ public interface NearbySelectionEnterpriseService {
         Iterator<NearbySelectionEnterpriseService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
-                    "Nearby selection requested but Timefold Enterprise not found on classpath.\n" +
-                            "Either add the ai.timefold.solver:timefold-solver-enterprise dependency, " +
+                    "Nearby selection requested but Timefold Solver Enterprise Edition not found on classpath.\n" +
+                            "Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency, " +
                             "or remove nearby selection from solver configuration.\n" +
-                            "Note: Timefold Enterprise is a commercial product.");
+                            "Note: Timefold Solver Enterprise Edition is a commercial product.");
         }
         return iterator.next();
     }

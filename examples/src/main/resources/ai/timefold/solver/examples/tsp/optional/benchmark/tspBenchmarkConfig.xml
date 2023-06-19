@@ -45,22 +45,13 @@
       <localSearch>
         <unionMoveSelector>
           <changeMoveSelector/>
-          <swapMoveSelector>
-            <cacheType>STEP</cacheType>
-            <selectionOrder>SHUFFLED</selectionOrder>
-          </swapMoveSelector>
+          <swapMoveSelector />
           <subChainChangeMoveSelector>
             <subChainSelector>
               <maximumSubChainSize>40</maximumSubChainSize>
             </subChainSelector>
             <selectReversingMoveToo>true</selectReversingMoveToo>
           </subChainChangeMoveSelector>
-          <!--<subChainSwapMoveSelector>-->
-            <!--<subChainSelector>-->
-              <!--<maximumSubChainSize>40</maximumSubChainSize>-->
-            <!--</subChainSelector>-->
-            <!--<selectReversingMoveToo>true</selectReversingMoveToo>-->
-          <!--</subChainSwapMoveSelector>-->
         </unionMoveSelector>
         <acceptor>
           <entityTabuSize>5</entityTabuSize>
@@ -72,43 +63,21 @@
     </solver>
   </solverBenchmark>
   <solverBenchmark>
-    <name>Late Acceptance Nearby</name>
+    <name>Late Acceptance</name>
     <solver>
       <constructionHeuristic>
         <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
       </constructionHeuristic>
       <localSearch>
         <unionMoveSelector>
-          <changeMoveSelector>
-            <entitySelector id="entitySelector1"/>
-            <valueSelector>
-              <nearbySelection>
-                <originEntitySelector mimicSelectorRef="entitySelector1"/>
-                <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
-                <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-              </nearbySelection>
-            </valueSelector>
-          </changeMoveSelector>
-          <swapMoveSelector>
-            <entitySelector id="entitySelector2"/>
-            <secondaryEntitySelector>
-              <nearbySelection>
-                <originEntitySelector mimicSelectorRef="entitySelector2"/>
-                <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
-                <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-              </nearbySelection>
-            </secondaryEntitySelector>
-          </swapMoveSelector>
-          <tailChainSwapMoveSelector>
-            <entitySelector id="entitySelector3"/>
-            <valueSelector>
-              <nearbySelection>
-                <originEntitySelector mimicSelectorRef="entitySelector3"/>
-                <nearbyDistanceMeterClass>ai.timefold.solver.examples.tsp.domain.solver.nearby.VisitNearbyDistanceMeter</nearbyDistanceMeterClass>
-                <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-              </nearbySelection>
-            </valueSelector>
-          </tailChainSwapMoveSelector>
+          <changeMoveSelector/>
+          <swapMoveSelector />
+          <subChainChangeMoveSelector>
+            <subChainSelector>
+              <maximumSubChainSize>40</maximumSubChainSize>
+            </subChainSelector>
+            <selectReversingMoveToo>true</selectReversingMoveToo>
+          </subChainChangeMoveSelector>
         </unionMoveSelector>
       </localSearch>
     </solver>
