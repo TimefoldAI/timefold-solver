@@ -14,7 +14,7 @@ git config --local user.email "ci@timefold.ai"
 echo "Will rebase current branch onto '$BLESSED_BRANCH' from 'https://github.com/TimefoldAI/$BLESSED_REPO.git'"
 git remote add upstream https://github.com/TimefoldAI/$BLESSED_REPO.git
 git fetch upstream
-git merge upstream/$BLESSED_BRANCH
+git merge upstream/$BLESSED_BRANCH --allow-unrelated-histories
 
 if [ $? -ne 0 ]; then
     echo "Rebase failed, aborting."
