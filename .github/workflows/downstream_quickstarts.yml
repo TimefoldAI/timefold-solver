@@ -41,6 +41,7 @@ jobs:
           repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
           ref: ${{ env.TARGET_CHAIN_BRANCH }}
           path: ./timefold-quickstarts
+          fetch-depth: 0 # Otherwise merge in the next step will fail on account of not having history.
       - name: Prevent stale fork of timefold-quickstarts
         env:
           BLESSED_REPO: "timefold-quickstarts"
