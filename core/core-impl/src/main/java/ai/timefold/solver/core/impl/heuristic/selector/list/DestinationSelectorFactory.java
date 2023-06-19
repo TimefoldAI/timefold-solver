@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.NearbySelectionAdvancedService;
+import ai.timefold.solver.core.enterprise.NearbySelectionEnterpriseService;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -96,7 +96,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         if (nearbySelectionConfig == null) {
             return destinationSelector;
         }
-        return NearbySelectionAdvancedService.load()
+        return NearbySelectionEnterpriseService.load()
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, destinationSelector);
     }
 }

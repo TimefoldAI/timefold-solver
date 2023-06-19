@@ -1,4 +1,4 @@
-package ai.timefold.solver.core;
+package ai.timefold.solver.core.enterprise;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -13,19 +13,19 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
-public interface MultithreadedSolvingAdvancedService {
+public interface MultithreadedSolvingEnterpriseService {
 
-    static MultithreadedSolvingAdvancedService load(Integer moveThreadCount) {
-        ServiceLoader<MultithreadedSolvingAdvancedService> serviceLoader =
-                ServiceLoader.load(MultithreadedSolvingAdvancedService.class);
-        Iterator<MultithreadedSolvingAdvancedService> iterator = serviceLoader.iterator();
+    static MultithreadedSolvingEnterpriseService load(Integer moveThreadCount) {
+        ServiceLoader<MultithreadedSolvingEnterpriseService> serviceLoader =
+                ServiceLoader.load(MultithreadedSolvingEnterpriseService.class);
+        Iterator<MultithreadedSolvingEnterpriseService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
                     "Multi-threaded solving requested with moveThreadCount (" + moveThreadCount
-                            + ") but Timefold Solver Advanced Edition not found on classpath.\n" +
-                            "Either add the ai.timefold.solver.advanced:timefold-solver-advanced-core dependency, " +
+                            + ") but Timefold Solver Enterprise Edition not found on classpath.\n" +
+                            "Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency, " +
                             "or remove moveThreadCount from solver configuration.\n" +
-                            "Note: Timefold Solver Advanced Edition is a commercial product.");
+                            "Note: Timefold Solver Enterprise Edition is a commercial product.");
         }
         return iterator.next();
     }

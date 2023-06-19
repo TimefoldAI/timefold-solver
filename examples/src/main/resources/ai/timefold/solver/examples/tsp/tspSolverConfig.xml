@@ -38,7 +38,7 @@
         </subChainSelector>
         <selectReversingMoveToo>true</selectReversingMoveToo>
       </subChainSwapMoveSelector>
-      <!-- With Timefold Solver Advanced Edition, uncomment the following to enable Nearby Selection: -->
+      <!-- With Timefold Solver Enterprise Edition, uncomment the following to enable Nearby Selection: -->
       <!--      <changeMoveSelector>-->
       <!--        <entitySelector id="entitySelector1"/>-->
       <!--        <valueSelector>-->

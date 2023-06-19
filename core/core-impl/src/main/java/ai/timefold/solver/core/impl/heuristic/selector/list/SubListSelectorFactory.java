@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.NearbySelectionAdvancedService;
+import ai.timefold.solver.core.enterprise.NearbySelectionEnterpriseService;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -107,7 +107,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         if (nearbySelectionConfig == null) {
             return subListSelector;
         }
-        return NearbySelectionAdvancedService.load()
+        return NearbySelectionEnterpriseService.load()
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 

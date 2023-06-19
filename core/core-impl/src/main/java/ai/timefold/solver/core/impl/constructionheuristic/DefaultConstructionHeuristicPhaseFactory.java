@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import ai.timefold.solver.core.MultithreadedSolvingAdvancedService;
+import ai.timefold.solver.core.enterprise.MultithreadedSolvingEnterpriseService;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
@@ -179,7 +179,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (moveThreadCount == null) {
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
-            decider = MultithreadedSolvingAdvancedService.load(moveThreadCount)
+            decider = MultithreadedSolvingEnterpriseService.load(moveThreadCount)
                     .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {

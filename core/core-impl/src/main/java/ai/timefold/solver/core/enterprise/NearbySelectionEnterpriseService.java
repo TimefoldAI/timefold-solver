@@ -1,4 +1,4 @@
-package ai.timefold.solver.core;
+package ai.timefold.solver.core.enterprise;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -19,18 +19,18 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelecto
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
-public interface NearbySelectionAdvancedService {
+public interface NearbySelectionEnterpriseService {
 
-    static NearbySelectionAdvancedService load() {
-        ServiceLoader<NearbySelectionAdvancedService> serviceLoader =
-                ServiceLoader.load(NearbySelectionAdvancedService.class);
-        Iterator<NearbySelectionAdvancedService> iterator = serviceLoader.iterator();
+    static NearbySelectionEnterpriseService load() {
+        ServiceLoader<NearbySelectionEnterpriseService> serviceLoader =
+                ServiceLoader.load(NearbySelectionEnterpriseService.class);
+        Iterator<NearbySelectionEnterpriseService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
-                    "Nearby selection requested but Timefold Solver Advanced Edition not found on classpath.\n" +
-                            "Either add the ai.timefold.solver.advanced:timefold-solver-advanced-core dependency, " +
+                    "Nearby selection requested but Timefold Solver Enterprise Edition not found on classpath.\n" +
+                            "Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency, " +
                             "or remove nearby selection from solver configuration.\n" +
-                            "Note: Timefold Solver Advanced Edition is a commercial product.");
+                            "Note: Timefold Solver Enterprise Edition is a commercial product.");
         }
         return iterator.next();
     }

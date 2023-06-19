@@ -34,7 +34,7 @@
         <selectReversingMoveToo>true</selectReversingMoveToo>
       </subListSwapMoveSelector>
       <kOptListMoveSelector />
-      <!-- With Timefold Solver Advanced Edition, uncomment the following to enable Nearby Selection: -->
+      <!-- With Timefold Solver Enterprise Edition, uncomment the following to enable Nearby Selection: -->
       <!--      <listChangeMoveSelector>-->
       <!--        <valueSelector id="1"/>-->
       <!--        <destinationSelector>-->

@@ -115,7 +115,8 @@ Depending on the use case, some optimization algorithms perform better than othe
 [[requirements]]
 == Requirements
 
-Timefold is _open source_ software, released under http://www.apache.org/licenses/LICENSE-2.0.html[the Apache License 2.0].
+Timefold Solver Community Edition is _open source_ software,
+released under http://www.apache.org/licenses/LICENSE-2.0.html[the Apache License 2.0].
 This license is very liberal and allows reuse for commercial purposes.
 Read http://www.apache.org/foundation/licence-FAQ.html#WhatDoesItMEAN[the layman's explanation].
 
@@ -126,6 +127,10 @@ Timefold is available in <<useWithMavenGradleEtc,the Maven Central Repository>>.
 Timefold works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
 
 image::introduction/compatibility.png[align="center"]
+
+Timefold Solver Enterprise Edition is a commercial product that offers additional features,
+such as xref:move-and-neighborhood-selection/move-and-neighborhood-selection.adoc#nearbySelection[nearby selection]
+and xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multi-threaded solving].
 
 [[governance]]
 == Governance
