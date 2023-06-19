@@ -41,7 +41,7 @@ jobs:
           repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
           ref: ${{ env.TARGET_CHAIN_BRANCH }}
           path: ./timefold-solver-enterprise
-          fetch-depth: 0
+          fetch-depth: 2 # Otherwise merge in the next step will fail on account of not having history.
       - name: Prevent stale fork of timefold-solver-enterprise
         env:
           BLESSED_REPO: "timefold-solver-enterprise"
