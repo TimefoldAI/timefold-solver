@@ -11,7 +11,7 @@ git config --local user.name "Timefold CI"
 git config --local user.email "ci@timefold.ai"
 
 # Rebase the fork onto the latest.
-echo "Will rebase current branch onto '$BLESSED_BRANCH' from 'https://github.com/TimefoldAI/$BLESSED_REPO.git'"
+echo "Will merge current branch onto '$BLESSED_BRANCH' from 'https://github.com/TimefoldAI/$BLESSED_REPO.git'"
 git remote add upstream https://github.com/TimefoldAI/$BLESSED_REPO.git
 git fetch upstream $BLESSED_BRANCH
 git merge upstream/$BLESSED_BRANCH
