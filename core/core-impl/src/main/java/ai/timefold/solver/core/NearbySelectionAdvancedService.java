@@ -19,12 +19,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelecto
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
-public interface NearbySelectionEnterpriseService {
+public interface NearbySelectionAdvancedService {
 
-    static NearbySelectionEnterpriseService load() {
-        ServiceLoader<NearbySelectionEnterpriseService> serviceLoader =
-                ServiceLoader.load(NearbySelectionEnterpriseService.class);
-        Iterator<NearbySelectionEnterpriseService> iterator = serviceLoader.iterator();
+    static NearbySelectionAdvancedService load() {
+        ServiceLoader<NearbySelectionAdvancedService> serviceLoader =
+                ServiceLoader.load(NearbySelectionAdvancedService.class);
+        Iterator<NearbySelectionAdvancedService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
                     "Nearby selection requested but Timefold Enterprise not found on classpath.\n" +

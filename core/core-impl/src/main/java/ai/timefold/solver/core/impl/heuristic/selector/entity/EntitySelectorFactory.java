@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.NearbySelectionEnterpriseService;
+import ai.timefold.solver.core.NearbySelectionAdvancedService;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -175,7 +175,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             NearbySelectionConfig nearbySelectionConfig, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, EntitySelector<Solution_> entitySelector) {
-        return NearbySelectionEnterpriseService.load()
+        return NearbySelectionAdvancedService.load()
                 .applyNearbySelection(config, configPolicy, nearbySelectionConfig, minimumCacheType,
                         resolvedSelectionOrder, entitySelector);
     }

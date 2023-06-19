@@ -16,9 +16,9 @@ import java.util.stream.Stream;
 
 import jakarta.inject.Singleton;
 
-import ai.timefold.solver.core.MultithreadedSolvingEnterpriseService;
-import ai.timefold.solver.core.NearbySelectionEnterpriseService;
-import ai.timefold.solver.core.PartitionedSearchEnterpriseService;
+import ai.timefold.solver.core.MultithreadedSolvingAdvancedService;
+import ai.timefold.solver.core.NearbySelectionAdvancedService;
+import ai.timefold.solver.core.PartitionedSearchAdvancedService;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -95,8 +95,8 @@ class TimefoldProcessor {
 
     @BuildStep
     void registerSpi(BuildProducer<ServiceProviderBuildItem> services) {
-        Stream.of(ScoreDirectorFactoryService.class, JoinerService.class, MultithreadedSolvingEnterpriseService.class,
-                PartitionedSearchEnterpriseService.class, NearbySelectionEnterpriseService.class)
+        Stream.of(ScoreDirectorFactoryService.class, JoinerService.class, MultithreadedSolvingAdvancedService.class,
+                PartitionedSearchAdvancedService.class, NearbySelectionAdvancedService.class)
                 .forEach(service -> registerSpi(service, services));
     }
 

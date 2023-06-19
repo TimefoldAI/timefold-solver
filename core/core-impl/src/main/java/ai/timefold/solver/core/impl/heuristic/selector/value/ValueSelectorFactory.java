@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import ai.timefold.solver.core.NearbySelectionEnterpriseService;
+import ai.timefold.solver.core.NearbySelectionAdvancedService;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -448,7 +448,7 @@ public class ValueSelectorFactory<Solution_>
     private ValueSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ValueSelector<Solution_> valueSelector) {
-        return NearbySelectionEnterpriseService.load()
+        return NearbySelectionAdvancedService.load()
                 .applyNearbySelection(config, configPolicy, entityDescriptor, minimumCacheType, resolvedSelectionOrder,
                         valueSelector);
     }

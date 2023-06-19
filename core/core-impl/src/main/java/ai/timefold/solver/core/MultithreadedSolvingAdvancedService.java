@@ -13,12 +13,12 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
-public interface MultithreadedSolvingEnterpriseService {
+public interface MultithreadedSolvingAdvancedService {
 
-    static MultithreadedSolvingEnterpriseService load(Integer moveThreadCount) {
-        ServiceLoader<MultithreadedSolvingEnterpriseService> serviceLoader =
-                ServiceLoader.load(MultithreadedSolvingEnterpriseService.class);
-        Iterator<MultithreadedSolvingEnterpriseService> iterator = serviceLoader.iterator();
+    static MultithreadedSolvingAdvancedService load(Integer moveThreadCount) {
+        ServiceLoader<MultithreadedSolvingAdvancedService> serviceLoader =
+                ServiceLoader.load(MultithreadedSolvingAdvancedService.class);
+        Iterator<MultithreadedSolvingAdvancedService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
                     "Multi-threaded solving requested with moveThreadCount (" + moveThreadCount

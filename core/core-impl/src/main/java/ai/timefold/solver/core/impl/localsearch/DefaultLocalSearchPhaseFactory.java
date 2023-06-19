@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.MultithreadedSolvingEnterpriseService;
+import ai.timefold.solver.core.MultithreadedSolvingAdvancedService;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
@@ -79,7 +79,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         if (moveThreadCount == null) {
             decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
         } else {
-            decider = MultithreadedSolvingEnterpriseService.load(moveThreadCount)
+            decider = MultithreadedSolvingAdvancedService.load(moveThreadCount)
                     .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
                             configPolicy);
         }

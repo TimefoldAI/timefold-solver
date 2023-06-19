@@ -9,12 +9,12 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
-public interface PartitionedSearchEnterpriseService {
+public interface PartitionedSearchAdvancedService {
 
-    static PartitionedSearchEnterpriseService load() {
-        ServiceLoader<PartitionedSearchEnterpriseService> serviceLoader =
-                ServiceLoader.load(PartitionedSearchEnterpriseService.class);
-        Iterator<PartitionedSearchEnterpriseService> iterator = serviceLoader.iterator();
+    static PartitionedSearchAdvancedService load() {
+        ServiceLoader<PartitionedSearchAdvancedService> serviceLoader =
+                ServiceLoader.load(PartitionedSearchAdvancedService.class);
+        Iterator<PartitionedSearchAdvancedService> iterator = serviceLoader.iterator();
         if (!iterator.hasNext()) {
             throw new IllegalStateException(
                     "Partitioned search requested  but Timefold Enterprise not found on classpath.\n" +

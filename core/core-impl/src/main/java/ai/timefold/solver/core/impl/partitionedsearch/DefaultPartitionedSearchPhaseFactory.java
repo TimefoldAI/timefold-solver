@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.partitionedsearch;
 
-import ai.timefold.solver.core.PartitionedSearchEnterpriseService;
+import ai.timefold.solver.core.PartitionedSearchAdvancedService;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
@@ -17,7 +17,7 @@ public class DefaultPartitionedSearchPhaseFactory<Solution_>
     @Override
     public PartitionedSearchPhase<Solution_> buildPhase(int phaseIndex, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
             BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination) {
-        return PartitionedSearchEnterpriseService.load()
+        return PartitionedSearchAdvancedService.load()
                 .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicy, solverTermination,
                         this::buildPhaseTermination);
     }
