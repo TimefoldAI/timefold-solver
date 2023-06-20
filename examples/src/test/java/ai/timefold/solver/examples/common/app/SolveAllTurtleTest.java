@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -61,7 +60,7 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
         // 2) FAST_ASSERT to run past CH into LS to find easy bugs (but covers much ground)
         problem = buildAndSolve(solverConfig, EnvironmentMode.FAST_ASSERT, problem, 5L);
         // 3) NON_INTRUSIVE_FULL_ASSERT ASSERT to find LS bugs (but covers little ground)
-        problem = buildAndSolve(solverConfig, EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT, problem, 3L);
+        buildAndSolve(solverConfig, EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT, problem, 3L);
     }
 
     private static SolverConfig buildSolverConfig(String solverConfigResource) {
@@ -72,12 +71,6 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
             solverConfig.setMoveThreadCount(MOVE_THREAD_COUNT_OVERRIDE);
         }
         return solverConfig;
-    }
-
-    private static ConstraintStreamImplType resolveConstraintStreamType() {
-        String csImplProperty = System.getProperty(TestSystemProperties.CONSTRAINT_STREAM_IMPL_TYPE,
-                ConstraintStreamImplType.BAVET.name());
-        return ConstraintStreamImplType.valueOf(csImplProperty);
     }
 
     private Solution_ buildAndSolve(SolverConfig solverConfig, EnvironmentMode environmentMode,

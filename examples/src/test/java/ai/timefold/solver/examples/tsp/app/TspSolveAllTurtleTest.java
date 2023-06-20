@@ -1,5 +1,6 @@
 package ai.timefold.solver.examples.tsp.app;
 
+import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.app.UnsolvedDirSolveAllTurtleTest;
 import ai.timefold.solver.examples.tsp.domain.TspSolution;
@@ -7,7 +8,7 @@ import ai.timefold.solver.examples.tsp.optional.score.TspEasyScoreCalculator;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "tsp")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "tsp")
 class TspSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<TspSolution> {
 
     @Override

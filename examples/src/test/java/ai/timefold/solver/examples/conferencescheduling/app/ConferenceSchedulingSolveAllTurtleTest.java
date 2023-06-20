@@ -1,13 +1,14 @@
 
 package ai.timefold.solver.examples.conferencescheduling.app;
 
+import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.app.UnsolvedDirSolveAllTurtleTest;
 import ai.timefold.solver.examples.conferencescheduling.domain.ConferenceSolution;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "conferencescheduling")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "conferencescheduling")
 class ConferenceSchedulingSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<ConferenceSolution> {
 
     @Override
