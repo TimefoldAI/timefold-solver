@@ -1,12 +1,13 @@
 package ai.timefold.solver.examples.curriculumcourse.app;
 
+import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.app.UnsolvedDirSolveAllTurtleTest;
 import ai.timefold.solver.examples.curriculumcourse.domain.CourseSchedule;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "curriculumcourse")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "curriculumcourse")
 class CurriculumCourseSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<CourseSchedule> {
 
     @Override

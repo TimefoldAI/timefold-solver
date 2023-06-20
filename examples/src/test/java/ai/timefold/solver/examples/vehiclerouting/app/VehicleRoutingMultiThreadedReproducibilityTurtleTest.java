@@ -11,6 +11,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.vehiclerouting.domain.VehicleRoutingSolution;
 import ai.timefold.solver.examples.vehiclerouting.persistence.VehicleRoutingImporter;
@@ -23,7 +24,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * The idea is to verify one of the basic requirements of Multithreaded Solving - the reproducibility of results. After
  * a constant number of steps, every iteration must finish with the same score.
  */
-@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "vehiclerouting")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "vehiclerouting")
 class VehicleRoutingMultiThreadedReproducibilityTurtleTest {
 
     private static final int REPETITION_COUNT = 10;

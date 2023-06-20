@@ -13,11 +13,12 @@ import ai.timefold.solver.examples.cloudbalancing.swingui.realtime.AddComputerPr
 import ai.timefold.solver.examples.cloudbalancing.swingui.realtime.AddProcessProblemChange;
 import ai.timefold.solver.examples.cloudbalancing.swingui.realtime.DeleteComputerProblemChange;
 import ai.timefold.solver.examples.cloudbalancing.swingui.realtime.DeleteProcessProblemChange;
+import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.app.RealTimePlanningTurtleTest;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "cloudbalancing")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "cloudbalancing")
 class CloudBalancingRealTimePlanningTurtleTest extends RealTimePlanningTurtleTest<CloudBalance> {
 
     private CloudBalancingGenerator generator = new CloudBalancingGenerator(true);

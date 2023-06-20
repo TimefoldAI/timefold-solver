@@ -1,5 +1,6 @@
 package ai.timefold.solver.examples.vehiclerouting.app;
 
+import ai.timefold.solver.examples.common.TestSystemProperties;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.app.ImportDirSolveAllTurtleTest;
 import ai.timefold.solver.examples.vehiclerouting.domain.VehicleRoutingSolution;
@@ -7,7 +8,7 @@ import ai.timefold.solver.examples.vehiclerouting.optional.score.VehicleRoutingE
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "vehiclerouting")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "vehiclerouting")
 class VehicleRoutingSolveAllTurtleTest extends ImportDirSolveAllTurtleTest<VehicleRoutingSolution> {
 
     @Override
