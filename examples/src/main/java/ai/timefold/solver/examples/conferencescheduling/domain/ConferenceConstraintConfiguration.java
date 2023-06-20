@@ -50,6 +50,7 @@ public class ConferenceConstraintConfiguration extends AbstractPersistable {
     public static final String SPEAKER_UNDESIRED_ROOM_TAGS = "Speaker undesired room tags";
     public static final String TALK_PREFERRED_ROOM_TAGS = "Talk preferred room tags";
     public static final String TALK_UNDESIRED_ROOM_TAGS = "Talk undesired room tags";
+    public static final String SPEAKER_MAKESPAN = "Speaker makespan";
 
     private int minimumConsecutiveTalksPauseInMinutes = 30;
 
@@ -131,6 +132,8 @@ public class ConferenceConstraintConfiguration extends AbstractPersistable {
     private HardMediumSoftScore talkPreferredRoomTags = HardMediumSoftScore.ofSoft(20);
     @ConstraintWeight(TALK_UNDESIRED_ROOM_TAGS)
     private HardMediumSoftScore talkUndesiredRoomTags = HardMediumSoftScore.ofSoft(20);
+    @ConstraintWeight(SPEAKER_MAKESPAN)
+    private HardMediumSoftScore speakerMakespan = HardMediumSoftScore.ofSoft(20);
 
     public ConferenceConstraintConfiguration() {
     }
@@ -445,5 +448,13 @@ public class ConferenceConstraintConfiguration extends AbstractPersistable {
 
     public void setTalkUndesiredRoomTags(HardMediumSoftScore talkUndesiredRoomTags) {
         this.talkUndesiredRoomTags = talkUndesiredRoomTags;
+    }
+
+    public HardMediumSoftScore getSpeakerMakespan() {
+        return speakerMakespan;
+    }
+
+    public void setSpeakerMakespan(HardMediumSoftScore speakerMakespan) {
+        this.speakerMakespan = speakerMakespan;
     }
 }
