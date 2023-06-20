@@ -6,7 +6,7 @@
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-build-parent</artifactId>
     <version>0.9.40-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
+    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
   <artifactId>timefold-solver-ide-config</artifactId>
   <name>Timefold Solver IDE Configuration</name>
