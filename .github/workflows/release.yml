@@ -31,22 +31,23 @@ jobs:
       - name: Checkout timefold-solver
         uses: actions/checkout@v3
 
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-
       - name: Create release branch and switch to it
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git checkout -b ${{ github.event.inputs.releaseBranch }}
 
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
       - name: Set release version
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          git add -A && git commit -m "Release version ${{ github.event.inputs.version }}"
+          find . -name 'pom.xml' | xargs git add
+          git commit -m "Release version ${{ github.event.inputs.version }}"
 
       - name: Build release
         run: mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
@@ -76,13 +77,15 @@ jobs:
       - name: Set micro snapshot version
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
-          git add -A && git commit -m "Move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
+          find . -name 'pom.xml' | xargs git add
+          git commit -m "Move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
 
       - name: Switch back to source branch and set snapshot version
         run: |
           git checkout ${{ github.event.inputs.sourceBranch }}
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          git add -A && git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
+          find . -name 'pom.xml' | xargs git add
+          git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
       - name: Push everything to Git
         run: |
