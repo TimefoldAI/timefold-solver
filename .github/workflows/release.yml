@@ -10,6 +10,16 @@ on:
       nextVersion:
         description: 'Next version after release (-SNAPSHOT will be added automatically)'
         required: true
+      nextMicroVersion:
+        description: 'Next micro version after release (-SNAPSHOT will be added automatically)'
+        required: true
+      sourceBranch:
+        description: 'Branch to use for the release'
+        default: main
+        required: true
+      releaseBranch:
+        description: 'Release branch to create (e.g. 1.0.x for version 1.0.0)'
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,29 +33,25 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set release version timefold-solver
-        run: mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
+      - name: Create release branch and switch to it
+        run: |
+          git config --local user.email "${{ github.event.pusher.email }}"
+          git config --local user.name "${{ github.event.pusher.name }}"
+          git checkout -b ${{ github.event.inputs.releaseBranch }}
 
-      - name: Commit and push release version timefold-solver
-        uses: actions-js/push@v1.4
-        with:
-          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          message: Set release version ${{ github.event.inputs.version }}
+      - name: Set release version
+        run: |
+          mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
+          git add -A && git commit -m "Release version ${{ github.event.inputs.version }}"
 
-      - name: Build release timefold-solver
+      - name: Build release
         run: mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
-      - name: Update antora.yml timefold-solver
+      - name: Update antora.yml
         run: |
           cp docs/target/antora-template.yml docs/src/antora.yml
 
-      - name: Commit and push update antora.yml timefold-solver
-        uses: actions-js/push@v1.4
-        with:
-          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          message: Update antora.yml for release ${{ github.event.inputs.version }}
-
-      - name: Run JReleaser timefold-solver
+      - name: Run JReleaser
         run: mvn --no-transfer-progress --batch-mode -Dfull -pl . jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
@@ -55,8 +61,7 @@ jobs:
           JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME }}
           JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD }}
 
-      - name: JReleaser release output timefold-solver
-        if: always()
+      - name: JReleaser release output
         uses: actions/upload-artifact@v3
         with:
           name: jreleaser-release
@@ -64,12 +69,17 @@ jobs:
             timefold-solver/target/jreleaser/trace.log
             timefold-solver/target/jreleaser/output.properties
 
-      - name: Set snapshot version timefold-solver
-        run: mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
+      - name: Set micro snapshot version
+        run: |
+          mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
+          git add -A && git commit -m "Move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
 
-      - name: Commit and push tag snapshot version timefold-solver
-        uses: actions-js/push@v1.4
-        with:
-          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          message: Set next SNAPSHOT version ${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          tags: true
+      - name: Switch back to source branch and set snapshot version
+        run: |
+          git checkout ${{ github.event.inputs.sourceBranch }}
+          mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
+          git add -A && git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
+
+      - name: Push everything to Git
+        run: |
+          git push origin --all
