@@ -5,6 +5,9 @@ import ai.timefold.solver.examples.common.app.UnsolvedDirSolveAllTurtleTest;
 import ai.timefold.solver.examples.nqueens.domain.NQueens;
 import ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator;
 
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
+@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "nqueens")
 class NQueensSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<NQueens> {
 
     @Override
