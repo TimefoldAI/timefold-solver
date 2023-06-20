@@ -1,6 +1,4 @@
 # TODO release XSD to timefold.ai/xsd/
-# TODO reset timefold-quickstarts stable branch
-# TODO adjust website pom.yml release date and version
 # TODO tag github issues with version
 name: Release
 on:
@@ -21,14 +19,6 @@ jobs:
         with:
           path: 'timefold-solver'
           repository: 'TimefoldAI/timefold-solver'
-          fetch-depth: 0
-
-      - name: Checkout timefold-quickstarts
-        uses: actions/checkout@v3
-        with:
-          path: 'timefold-quickstarts'
-          repository: 'TimefoldAI/timefold-quickstarts'
-          ref: development
           fetch-depth: 0
 
       - uses: actions/setup-java@v3
