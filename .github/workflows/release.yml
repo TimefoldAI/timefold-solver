@@ -52,7 +52,7 @@ jobs:
           git commit -m "Release version ${{ github.event.inputs.version }}"
 
       - name: Build release (skips tests in dry run)
-        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTest=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
       - name: Update antora.yml
         run: |
@@ -90,6 +90,6 @@ jobs:
           git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
       - name: Push everything to Git
-        if: ${{ github.event.inputs.dryRun }} == 'false'
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           git push origin --all
