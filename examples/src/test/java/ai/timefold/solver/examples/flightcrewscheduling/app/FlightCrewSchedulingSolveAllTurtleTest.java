@@ -4,6 +4,9 @@ import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.app.UnsolvedDirSolveAllTurtleTest;
 import ai.timefold.solver.examples.flightcrewscheduling.domain.FlightCrewSolution;
 
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
+@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "flightcrewscheduling")
 class FlightCrewSchedulingSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<FlightCrewSolution> {
 
     @Override

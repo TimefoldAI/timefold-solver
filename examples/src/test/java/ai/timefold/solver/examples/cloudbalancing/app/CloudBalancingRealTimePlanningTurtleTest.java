@@ -15,6 +15,9 @@ import ai.timefold.solver.examples.cloudbalancing.swingui.realtime.DeleteCompute
 import ai.timefold.solver.examples.cloudbalancing.swingui.realtime.DeleteProcessProblemChange;
 import ai.timefold.solver.examples.common.app.RealTimePlanningTurtleTest;
 
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
+@EnabledIfSystemProperty(named = "ai.timefold.solver.examples.turtle", matches = "cloudbalancing")
 class CloudBalancingRealTimePlanningTurtleTest extends RealTimePlanningTurtleTest<CloudBalance> {
 
     private CloudBalancingGenerator generator = new CloudBalancingGenerator(true);

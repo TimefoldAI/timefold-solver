@@ -12,7 +12,8 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.examples.common.TurtleTest;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -23,7 +24,7 @@ public abstract class RealTimePlanningTurtleTest<Solution_> {
     public static final long SPENT_LIMIT = 5000L;
     protected Solver<Solution_> solver;
 
-    @TurtleTest
+    @Test
     public void realTimePlanning() throws InterruptedException, ExecutionException {
         final SolverFactory<Solution_> solverFactory = buildSolverFactory();
         final Solution_ problem = readProblem();

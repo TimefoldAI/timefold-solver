@@ -17,10 +17,11 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.examples.common.TestSystemProperties;
-import ai.timefold.solver.examples.common.TurtleTest;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -42,8 +43,8 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
 
     protected abstract ProblemFactory<Solution_> createProblemFactory(CommonApp<Solution_> commonApp);
 
+    @Execution(ExecutionMode.CONCURRENT)
     @TestFactory
-    @TurtleTest
     Stream<DynamicTest> runFastAndFullAssert() {
         CommonApp<Solution_> commonApp = createCommonApp();
         ProblemFactory<Solution_> problemFactory = createProblemFactory(commonApp);
@@ -65,13 +66,6 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
 
     private static SolverConfig buildSolverConfig(String solverConfigResource) {
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(solverConfigResource);
-        if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null) {
-            ConstraintStreamImplType constraintStreamImplType = resolveConstraintStreamType();
-            if (constraintStreamImplType == ConstraintStreamImplType.BAVET) {
-                throw new UnsupportedOperationException("Bavet not supported in a productized profile.");
-            }
-            solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamImplType(constraintStreamImplType);
-        }
         // buildAndSolve() fills in minutesSpentLimit
         solverConfig.setTerminationConfig(new TerminationConfig());
         if (MOVE_THREAD_COUNT_OVERRIDE != null) {
