@@ -4,9 +4,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-build-parent</artifactId>
+    <artifactId>timefold-solver-parent</artifactId>
     <version>0.9.40-SNAPSHOT</version>
-    <relativePath>../build-parent/pom.xml</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>timefold-solver-ide-config</artifactId>
   <name>Timefold Solver IDE Configuration</name>

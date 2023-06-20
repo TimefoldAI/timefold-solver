@@ -27,7 +27,9 @@
   </licenses>
 
   <properties>
+    <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
     <version.rewrite.plugin>4.47.0</version.rewrite.plugin>
+    <version.source.plugin>3.3.0</version.source.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
   </properties>
 
@@ -121,6 +123,20 @@
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${version.source.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${version.javadoc.plugin}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <profiles>
@@ -136,6 +152,40 @@
         <module>build/javadoc</module>
         <module>build/distribution-internal</module>
       </modules>
+      <build>
+        <plugins>
+          <plugin>
+            <!--
+              All modules need this to be able to publish on Maven Central.
+              Can not go into build-parent, because build-parent required ide-config.
+              Therefore ide-config needs to depend on this parent and still publish sources.
+            -->
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin> <!-- Make sure the build fails-fast on Javadoc issues. -->
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-javadoc-jar</id>
+                <!-- TODO Workaround switch back to "package" phase after fix https://issues.apache.org/jira/browse/MJAVADOC-747 -->
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <!--
