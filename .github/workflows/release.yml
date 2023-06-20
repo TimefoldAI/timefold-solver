@@ -14,7 +14,7 @@ on:
         description: 'Next micro version after release (-SNAPSHOT will be added automatically)'
         required: true
       sourceBranch:
-        description: 'Branch to use for the release'
+        description: 'Branch to cut the release from'
         default: main
         required: true
       releaseBranch:
@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Checkout timefold-solver
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Create release branch and switch to it
         run: |
@@ -49,8 +51,8 @@ jobs:
           find . -name 'pom.xml' | xargs git add
           git commit -m "Release version ${{ github.event.inputs.version }}"
 
-      - name: Build release
-        run: mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+      - name: Build release (skips tests in dry run)
+        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTest=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
       - name: Update antora.yml
         run: |
