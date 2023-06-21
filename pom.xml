@@ -80,14 +80,11 @@
             </signing>
             <release>
               <github>
-                <previousTagName>0.9.39</previousTagName>
+                <previousTagName>0.9.39</previousTagName> <!-- TODO Remove when previous tag follows the vX.Y.Z convention. -->
                 <releaseName>Timefold Solver Community Edition {{tagName}}</releaseName>
                 <draft>true</draft>
                 <overwrite>true</overwrite>
                 <sign>true</sign>
-                <issues>
-                  <enabled>true</enabled>
-                </issues>
                 <changelog>
                   <formatted>ALWAYS</formatted>
                   <preset>conventional-commits</preset>
@@ -95,6 +92,17 @@
                   <contributors>
                     <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
                   </contributors>
+                  <hide>
+                    <uncategorized>true</uncategorized>
+                    <categories>
+                      <category>build</category>
+                      <category>ci</category>
+                    </categories>
+                    <contributors>
+                      <contributor>GitHub</contributor>
+                      <contributor>dependabot</contributor>
+                    </contributors>
+                  </hide>
                 </changelog>
               </github>
             </release>

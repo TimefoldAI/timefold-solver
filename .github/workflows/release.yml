@@ -97,7 +97,7 @@ jobs:
           git checkout ${{ github.event.inputs.sourceBranch }}
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          mvn --no-transfer-progress --batch-mode -Dfull deploy -DskipTests=true 
+          mvn --no-transfer-progress --batch-mode -Dfull verify -DskipTests=true 
 
       - name: Update source branch and commit
         run: |
