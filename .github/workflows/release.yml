@@ -50,7 +50,7 @@ jobs:
       - name: Set release version and build release
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+          mvn --no-transfer-progress --batch-mode -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
       - name: Update release branch and commit the changes
         run: |
@@ -97,7 +97,7 @@ jobs:
           git checkout ${{ github.event.inputs.sourceBranch }}
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          mvn --no-transfer-progress --batch-mode -Dfull clean verify -DskipTests=true 
+          mvn --no-transfer-progress --batch-mode -Dfull deploy -DskipTests=true 
 
       - name: Update source branch and commit
         run: |
