@@ -79,9 +79,9 @@
               <armored>true</armored>
             </signing>
             <release>
-              <previousTagName>0.9.39</previousTagName>
-              <releaseName>Timefold Solver Community Edition {{tagName}}</releaseName>
               <github>
+                <previousTagName>0.9.39</previousTagName>
+                <releaseName>Timefold Solver Community Edition {{tagName}}</releaseName>
                 <draft>true</draft>
                 <overwrite>true</overwrite>
                 <sign>true</sign>
