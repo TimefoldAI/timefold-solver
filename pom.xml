@@ -80,6 +80,7 @@
             </signing>
             <release>
               <github>
+                <draft>true</draft>
                 <overwrite>true</overwrite>
                 <sign>true</sign>
                 <issues>
@@ -88,6 +89,7 @@
                 <changelog>
                   <formatted>ALWAYS</formatted>
                   <preset>conventional-commits</preset>
+                  <contentTemplate>.github/workflows/release-changelog-template.md</contentTemplate>
                   <contributors>
                     <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
                   </contributors>
