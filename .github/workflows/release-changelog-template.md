@@ -15,7 +15,7 @@ With Maven, just add the `timefold-solver-core` dependency in your `pom.xml` to 
 <dependency>
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-core</artifactId>
-  <version>0.9.39</version>
+  <version>{{versionNumber}}</version>
 </dependency>
 ```
 
@@ -30,7 +30,7 @@ Or better yet, import the `timefold-solver-bom` to avoid duplicating version num
         <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-bom</artifactId>
         <type>pom</type>
-        <version>0.9.39</version>
+        <version>{{versionNumber}}</version>
         <scope>import</scope>
       </dependency>
     </dependencies>
@@ -54,6 +54,6 @@ With Gradle, just add the `timefold-solver-core` dependency in your `build.gradl
 
 ```
 dependencies {
-    implementation 'ai.timefold.solver:timefold-solver-core:0.9.39'
+    implementation 'ai.timefold.solver:timefold-solver-core:{{versionNumber}}'
 }
 ```
