@@ -56,24 +56,6 @@
         </configuration>
         <executions>
           <execution>
-            <id>generate-single-html</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>process-asciidoc</goal>
-            </goals>
-            <configuration>
-              <!-- Needs to be duplicated to avoid rendering each adoc separately -->
-              <sourceDocumentName>${source.document.name}</sourceDocumentName>
-              <backend>html5</backend>
-              <outputDirectory>${docs.target.dir}/html_single</outputDirectory>
-              <outputFile>index.html</outputFile>
-              <attributes>
-                <imagesdir>.</imagesdir>
-                <source-highlighter>highlightjs</source-highlighter>
-              </attributes>
-            </configuration>
-          </execution>
-          <execution>
             <id>generate-pdf</id>
             <phase>generate-resources</phase>
             <goals>
@@ -89,29 +71,6 @@
                 <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
                 <source-highlighter>coderay</source-highlighter><!-- highlightjs does not work in PDF -->
               </attributes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>package-generated-docs</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>${project.artifactId}-${project.version}</finalName>
-              <appendAssemblyId>false</appendAssemblyId>
-              <archiveBaseDirectory>${docs.target.dir}/</archiveBaseDirectory>
-              <descriptors>
-                <descriptor>src/main/assembly/generated-docs-zip.xml</descriptor>
-              </descriptors>
-              <archive>
-                <addMavenDescriptor>true</addMavenDescriptor>
-              </archive>
             </configuration>
           </execution>
         </executions>
