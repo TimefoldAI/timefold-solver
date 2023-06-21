@@ -73,8 +73,8 @@ jobs:
         with:
           name: jreleaser-release
           path: |
-            timefold-solver/target/jreleaser/trace.log
-            timefold-solver/target/jreleaser/output.properties
+            target/jreleaser/trace.log
+            target/jreleaser/output.properties
 
       - name: Set micro snapshot version
         run: |
@@ -89,7 +89,13 @@ jobs:
           find . -name 'pom.xml' | xargs git add
           git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
-      - name: Push everything to Git
+      - name: Push release branch and tag to Git
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
-          git push origin --all
+          git push origin ${{ github.event.inputs.releaseBranch }}
+          git push origin --tags
+
+      - name: Create pull request to bump the version
+        run: gh pr create -B origin/${{ github.event.inputs.sourceBranch }} -H ${{ github.event.inputs.sourceBranch }} --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body 'Created by release automation'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
