@@ -51,6 +51,7 @@ jobs:
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
+          git commit -m "Testy test"
 
       - name: Push release branch and tag to Git
         run: |
