@@ -54,9 +54,12 @@ jobs:
       - name: Build release (skips tests in dry run)
         run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
-      - name: Update antora.yml on release branch
+      - name: Update antora.yml on release branch and push the changes
         run: |
           cp docs/target/antora-template.yml docs/src/antora.yml
+          git add docs/src/antora.yml
+          git commit -m "chore: release version ${{ github.event.inputs.version }}"
+          git push origin ${{ github.event.inputs.releaseBranch }}
 
       - name: Run JReleaser
         run: mvn --no-transfer-progress --batch-mode -Dfull -Djreleaser.dry.run=${{ github.event.inputs.dryRun }} -pl . jreleaser:full-release
