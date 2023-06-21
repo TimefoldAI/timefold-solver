@@ -45,58 +45,12 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set release version
-        run: |
-          mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          find . -name 'pom.xml' | xargs git add
-          git commit -m "Release version ${{ github.event.inputs.version }}"
-
-      - name: Build release (skips tests in dry run)
-        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
-
-      - name: Update antora.yml on release branch
-        run: |
-          cp docs/target/antora-template.yml docs/src/antora.yml
-
-      - name: Run JReleaser
-        run: mvn --no-transfer-progress --batch-mode -Dfull -Djreleaser.dry.run=${{ github.event.inputs.dryRun }} -pl . jreleaser:full-release
-        env:
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
-          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.JRELEASER_GPG_PUBLIC_KEY }}
-          JRELEASER_GPG_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
-          JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME }}
-          JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD }}
-
-      - name: JReleaser release output
-        uses: actions/upload-artifact@v3
-        with:
-          name: jreleaser-release
-          path: |
-            target/jreleaser/trace.log
-            target/jreleaser/output.properties
-
-      - name: Set micro snapshot version
-        run: |
-          mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
-          find . -name 'pom.xml' | xargs git add
-          git commit -m "Move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
-
       - name: Switch back to source branch and set snapshot version
         run: |
           git checkout ${{ github.event.inputs.sourceBranch }}
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
-
-      - name: Build snapshot to get the correct Antora template
-        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=true clean verify
-
-      - name: Update antora.yml on source branch and commit
-        run: |
-          cp docs/target/antora-template.yml docs/src/antora.yml
-          git add docs/src/antora.yml
-          git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
       - name: Push release branch and tag to Git
         run: |
@@ -105,6 +59,6 @@ jobs:
           git push origin --tags
 
       - name: Create pull request to bump the version
-        run: gh pr create --reviewer triceo,ge0ffrey --base origin/${{ github.event.inputs.sourceBranch }} --head origin/${{ github.event.inputs.releaseBranch }}-bump --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
+        run: gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump --title 'Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
