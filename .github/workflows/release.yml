@@ -5,13 +5,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version'
+        description: 'Release version (e.g. 1.0.0)'
         required: true
       nextVersion:
-        description: 'Next version after release (-SNAPSHOT will be added automatically)'
+        description: 'Next version after release (e.g. 1.1.0, -SNAPSHOT will be added automatically)'
         required: true
       nextMicroVersion:
-        description: 'Next micro version after release (-SNAPSHOT will be added automatically)'
+        description: 'Next version after release for release branch (e.g. 1.0.1, -SNAPSHOT will be added automatically)'
         required: true
       sourceBranch:
         description: 'Branch to cut the release from'
