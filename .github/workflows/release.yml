@@ -35,7 +35,6 @@ jobs:
 
       - name: Create release branch and switch to it
         run: |
-          ls -R
           git config user.name github-actions
           git config user.email github-actions@github.com
           git checkout -b ${{ github.event.inputs.releaseBranch }}
@@ -50,7 +49,7 @@ jobs:
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
           find . -name 'pom.xml' | xargs git add
-          git commit -m "Release version ${{ github.event.inputs.version }}"
+          git commit -m "chore: release version ${{ github.event.inputs.version }}"
 
       - name: Build release (skips tests in dry run)
         run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
@@ -81,11 +80,12 @@ jobs:
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
-          git commit -m "Move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
+          git commit -m "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
 
       - name: Switch back to source branch and set snapshot version
         run: |
           git checkout ${{ github.event.inputs.sourceBranch }}
+          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
 
@@ -96,15 +96,15 @@ jobs:
         run: |
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
-          git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
+          git commit -m "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
       - name: Push release branch and tag to Git
-        if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           git push origin ${{ github.event.inputs.releaseBranch }}
+          git push origin ${{ github.event.inputs.releaseBranch }}-bump
           git push origin --tags
 
       - name: Create pull request to bump the version
-        run: gh pr create --reviewer triceo,ge0ffrey --base origin/${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.sourceBranch }} --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
+        run: gh pr create --reviewer triceo,ge0ffrey --base origin/${{ github.event.inputs.sourceBranch }} --head origin/${{ github.event.inputs.releaseBranch }}-bump --title 'Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

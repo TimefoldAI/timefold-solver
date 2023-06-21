@@ -78,6 +78,22 @@
               <active>ALWAYS</active>
               <armored>true</armored>
             </signing>
+            <release>
+              <github>
+                <overwrite>true</overwrite>
+                <sign>true</sign>
+                <issues>
+                  <enabled>true</enabled>
+                </issues>
+                <changelog>
+                  <formatted>ALWAYS</formatted>
+                  <preset>conventional-commits</preset>
+                  <contributors>
+                    <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
+                  </contributors>
+                </changelog>
+              </github>
+            </release>
             <deploy>
               <maven>
                 <nexus2>
