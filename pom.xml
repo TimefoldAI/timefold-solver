@@ -134,7 +134,6 @@
       <modules>
         <module>docs</module>
         <module>build/javadoc</module>
-        <module>build/distribution-internal</module>
       </modules>
     </profile>
     <profile>

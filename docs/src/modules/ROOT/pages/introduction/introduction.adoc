@@ -164,60 +164,13 @@ Those documented `impl` classes are reliable and safe to use (unless explicitly 
 ====
 
 
-[[downloadAndRunTheExamples]]
-== Download and run the examples
-
-
-[[getTheReleaseZipAndRunTheExamples]]
-=== Get the release ZIP and run the examples
-
-To try it now:
-
-. Download a release zip of Timefold from https://timefold.ai[the Timefold website] and unzip it.
-. Open the directory [path]_examples_ and run the script.
-+
-Linux or Mac:
-+
-[source,sh,options="nowrap"]
-----
-$ cd examples
-$ ./runExamples.sh
-----
-+
-Windows:
-+
-[source,sh,options="nowrap"]
-----
-$ cd examples
-$ runExamples.bat
-----
-
-image::introduction/distributionZip.png[align="center"]
-
-The Examples GUI application will open.
-Pick an example to try it out:
-
-image::introduction/examplesAppScreenshot.png[align="center"]
-
-[NOTE]
-====
-Timefold itself has no GUI dependencies.
-It runs just as well on a server as it does on the desktop.
-====
-
-
-[[runTheExamplesInAnIDE]]
-=== Run the examples in an IDE
-
-To run the examples in IntelliJ IDEA, VSCode or Eclipse:
-
-. Open the file [path]_examples/sources/pom.xml_ as a new project, the maven integration will take care of the rest.
-. Run the examples from the project.
+[[startUsingTimefoldSolver]]
+== Start using Timefold Solver
 
 [[useWithMavenGradleEtc]]
-=== Use Timefold with Maven, Gradle, or ANT
+=== Use Timefold Solver with Maven, Gradle, or ANT
 
-The Timefold jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
+The Timefold Solver jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
 
 If you use Maven, add a dependency to `timefold-solver-core` in your `pom.xml`:
 
@@ -271,18 +224,8 @@ dependencies {
 }
 ----
 
-[NOTE]
-====
-The download zip's `binaries` directory contains far more jars then `timefold-solver-core` actually uses.
-It also contains the jars used by other modules, such as ``timefold-solver-benchmark``.
-
-Check the maven repository `pom.xml` files to determine the minimal dependency set of `timefold-solver-core` etc.
-====
-
-
 [[buildFromSource]]
-=== Build Timefold from source
-
+=== Build Timefold Solver from source
 
 *Prerequisites*
 
@@ -319,7 +262,7 @@ The first time, Maven might take a long time, because it needs to download jars.
 +
 [source,sh,options="nowrap"]
 ----
-$ cd timefold-solver-examples
+$ cd examples
 $ mvn exec:java
 ...
 ----
