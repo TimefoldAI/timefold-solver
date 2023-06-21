@@ -7,7 +7,7 @@ To finish the release of `timefold-solver`,
 please follow the steps below,
 preferably in order:
 
-- [ ] Close the repository on OSSRH.
+- [ ] Release the repository on OSSRH.
 - [ ] Wait for the artifacts to reach Maven Central.
 - [ ] Undraft the release on Github.
 - [ ] Start release automation for `timefold-quickstarts`.
