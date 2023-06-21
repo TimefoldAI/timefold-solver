@@ -35,6 +35,7 @@ jobs:
 
       - name: Create release branch and switch to it
         run: |
+          ls -R
           git config user.name github-actions
           git config user.email github-actions@github.com
           git checkout -b ${{ github.event.inputs.releaseBranch }}
@@ -104,6 +105,6 @@ jobs:
           git push origin --tags
 
       - name: Create pull request to bump the version
-        run: gh pr create -B origin/${{ github.event.inputs.sourceBranch }} -H ${{ github.event.inputs.sourceBranch }} --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
+        run: gh pr create --reviewer triceo,ge0ffrey --base origin/${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.sourceBranch }} --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

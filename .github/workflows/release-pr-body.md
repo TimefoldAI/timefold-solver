@@ -10,6 +10,8 @@ preferably in order:
 - [ ] Close the repository on OSSRH.
 - [ ] Wait for the artifacts to reach Maven Central.
 - [ ] Undraft the release on Github.
+- [ ] Start release automation for `timefold-quickstarts`.
+- [ ] Start release automation for `timefold-solver-enterprise`.
 - [ ] Merge this PR.
 
 Note: If this is a dry run, 
