@@ -5,7 +5,7 @@ Git tag has been published.
 
 To finish the release of `timefold-solver`, 
 please follow the steps below,
-preferrably in order:
+preferably in order:
 
 - [ ] Close the repository on OSSRH.
 - [ ] Wait for the artifacts to reach Maven Central.
