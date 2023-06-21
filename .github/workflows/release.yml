@@ -1,5 +1,3 @@
-# TODO release XSD to timefold.ai/xsd/
-# TODO tag github issues with version
 name: Release
 on:
   workflow_dispatch:
@@ -18,7 +16,8 @@ on:
         default: main
         required: true
       releaseBranch:
-        description: 'Release branch to create (e.g. 1.0.x for version 1.0.0)'
+        description: 'Release branch to create (e.g. 1.0.x for version 1.0.0; once created, branch protection rules apply)'
+        default: dry_run
         required: true
       dryRun:
         description: 'Do a dry run? (true or false)'
@@ -45,20 +44,27 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set release version
+      # We skip tests in dry run, to make the process faster.
+      # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
+      # But unless something catastrophic happened, PR checks on source branch already ensured that all tests pass.
+      - name: Set release version and build release
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          find . -name 'pom.xml' | xargs git add
-          git commit -m "chore: release version ${{ github.event.inputs.version }}"
+          mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
-      - name: Build release (skips tests in dry run)
-        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
-
-      - name: Update antora.yml on release branch and push the changes
+      - name: Update release branch and commit the changes
         run: |
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
+          find . -name 'pom.xml' | xargs git add
           git commit -m "chore: release version ${{ github.event.inputs.version }}"
+
+      # JReleaser requires the release branch to exist, so we need to push it before releasing.
+      # Once this is pushed, branch protection rules apply.
+      # So if any of the subsequent steps should fail, the release branch is there to stay; cannot be deleted.
+      # To minimize that chance, do a dry run first, with a branch named in a way that the protection rules don't apply.
+      - name: Push release branch to Git
+        run: |
           git push origin ${{ github.event.inputs.releaseBranch }}
 
       - name: Run JReleaser
@@ -80,7 +86,7 @@ jobs:
             target/jreleaser/trace.log
             target/jreleaser/output.properties
 
-      - name: Set micro snapshot version
+      - name: Set micro snapshot version on the release branch
         run: |
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
@@ -91,15 +97,13 @@ jobs:
           git checkout ${{ github.event.inputs.sourceBranch }}
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          find . -name 'pom.xml' | xargs git add
+          mvn --no-transfer-progress --batch-mode -Dfull clean verify -DskipTests=true 
 
-      - name: Build snapshot to get the correct Antora template
-        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=true clean verify
-
-      - name: Update antora.yml on source branch and commit
+      - name: Update source branch and commit
         run: |
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
+          find . -name 'pom.xml' | xargs git add
           git commit -m "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
       - name: Push release branch and tag to Git
@@ -108,6 +112,8 @@ jobs:
           git push origin ${{ github.event.inputs.releaseBranch }}-bump
           git push origin --tags
 
+      # There are some follow-up steps to continue the release.
+      # They will be listed in the PR body.
       - name: Create pull request to bump the version
         run: gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump --title 'Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
         env:
