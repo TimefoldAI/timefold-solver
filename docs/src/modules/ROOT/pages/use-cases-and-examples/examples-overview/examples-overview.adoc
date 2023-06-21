@@ -18,8 +18,7 @@ A _realistic contest_ is _an official, independent contest_:
 
 Realistic contests provide an objective comparison of Timefold with competitive software and academic research.
 
-The source code of all these examples is available in the distribution zip under [path]_examples/sources_
-and also in git under [path]_timefold/timefold-solver-examples_.
+The source code of all these examples is available on https://github.com/TimefoldAI/timefold-solver/tree/main/examples[GitHub].
 
 .Examples overview
 [cols="1,1a,1a,1a,1a",options="header"]
