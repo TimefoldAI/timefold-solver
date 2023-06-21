@@ -105,6 +105,6 @@ jobs:
           git push origin --tags
 
       - name: Create pull request to bump the version
-        run: gh pr create --reviewer triceo,ge0ffrey --base origin/${{ github.event.inputs.sourceBranch }} --head origin/${{ github.event.inputs.releaseBranch }}-bump --title 'Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
+        run: gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump --title 'Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
