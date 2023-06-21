@@ -54,7 +54,7 @@ jobs:
       - name: Build release (skips tests in dry run)
         run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=${{ github.event.inputs.dryRun }} clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
-      - name: Update antora.yml
+      - name: Update antora.yml on release branch
         run: |
           cp docs/target/antora-template.yml docs/src/antora.yml
 
@@ -87,6 +87,14 @@ jobs:
           git checkout ${{ github.event.inputs.sourceBranch }}
           mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
+
+      - name: Build snapshot to get the correct Antora template
+        run: mvn --no-transfer-progress --batch-mode -Dfull -DskipTests=true clean verify
+
+      - name: Update antora.yml on source branch and commit
+        run: |
+          cp docs/target/antora-template.yml docs/src/antora.yml
+          git add docs/src/antora.yml
           git commit -m "Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
       - name: Push release branch and tag to Git
@@ -96,6 +104,6 @@ jobs:
           git push origin --tags
 
       - name: Create pull request to bump the version
-        run: gh pr create -B origin/${{ github.event.inputs.sourceBranch }} -H ${{ github.event.inputs.sourceBranch }} --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body 'Created by release automation'
+        run: gh pr create -B origin/${{ github.event.inputs.sourceBranch }} -H ${{ github.event.inputs.sourceBranch }} --title 'Move to {{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
