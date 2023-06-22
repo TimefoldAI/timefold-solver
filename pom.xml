@@ -80,11 +80,19 @@
             </signing>
             <release>
               <github>
+                <commitAuthor>
+                  <name>Timefold Release Bot</name>
+                  <email>release@timefold.ai</email>
+                </commitAuthor>
                 <previousTagName>0.9.39</previousTagName> <!-- TODO Remove when previous tag follows the vX.Y.Z convention. -->
-                <releaseName>Timefold Solver Community Edition {{tagName}}</releaseName>
+                <releaseName>Timefold Solver Community Edition {{versionName}}</releaseName>
                 <draft>true</draft>
                 <overwrite>true</overwrite>
                 <sign>true</sign>
+                <milestone>
+                  <close>true</close>
+                  <name>{{versionName}}</name>
+                </milestone>
                 <changelog>
                   <formatted>ALWAYS</formatted>
                   <preset>conventional-commits</preset>

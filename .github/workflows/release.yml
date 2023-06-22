@@ -34,8 +34,8 @@ jobs:
 
       - name: Create release branch and switch to it
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name "Timefold Release Bot"
+          git config user.email "release@timefold.ai"
           git checkout -b ${{ github.event.inputs.releaseBranch }}
 
       - uses: actions/setup-java@v3
@@ -106,15 +106,15 @@ jobs:
           find . -name 'pom.xml' | xargs git add
           git commit -m "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
 
-      - name: Push release branch and tag to Git
+      - name: Push branches to git
         run: |
           git push origin ${{ github.event.inputs.releaseBranch }}
           git push origin ${{ github.event.inputs.releaseBranch }}-bump
-          git push origin --tags
 
       # There are some follow-up steps to continue the release.
       # They will be listed in the PR body.
       - name: Create pull request to bump the version
-        run: gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump --title 'Move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT' --body-file .github/workflows/release-pr-body.md
+        run: |
+          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump --title "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
