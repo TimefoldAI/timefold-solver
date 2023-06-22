@@ -19,4 +19,9 @@
     source code.
   </description>
   <url>https://timefold.ai</url>
+
+  <properties>
+    <java.module.name>ai.timefold.solver.ide.config</java.module.name>
+  </properties>
+
 </project>

@@ -49,16 +49,10 @@
     <version.impsort.plugin>1.9.0</version.impsort.plugin>
     <version.jacoco.plugin>0.8.10</version.jacoco.plugin>
     <version.jar.plugin>3.3.0</version.jar.plugin>
-    <!--
-      Do not upgrade unless prepared to deal with JPMS issues.
-      If upgrading, ensure build still passes with the full profile (-Dfull).
-    -->
-    <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
-    <version.source.plugin>3.3.0</version.source.plugin>
     <version.surefire.plugin>3.1.2</version.surefire.plugin>
     <version.versions.plugin>2.16.0</version.versions.plugin>
 
@@ -399,7 +393,6 @@
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
-          <version>${version.source.plugin}</version>
           <configuration>
             <excludes>
               <!-- The JAXB nor XSD artifacts should not appear in the sources JAR either (see the maven-jar-plugin). -->
@@ -428,7 +421,6 @@
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${version.javadoc.plugin}</version>
           <configuration>
             <author>false</author>
             <failOnError>true</failOnError>
@@ -753,43 +745,6 @@
         <skipITs>true</skipITs>
         <formatter.skip>true</formatter.skip>
       </properties>
-    </profile>
-
-    <profile>
-      <id>fullProfile</id>
-      <activation>
-        <property>
-          <name>full</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-source-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin> <!-- Make sure the build fails-fast on Javadoc issues. -->
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>build-javadoc-jar</id>
-                <!-- TODO Workaround switch back to "package" phase after fix https://issues.apache.org/jira/browse/MJAVADOC-747 -->
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>
