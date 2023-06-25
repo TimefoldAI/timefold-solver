@@ -26,7 +26,7 @@ on:
 jobs:
   build:
     env:
-      MAVEN_OPTS: "--no-transfer-progress --batch-mode"
+      MAVEN_ARGS: "--no-transfer-progress --batch-mode"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout timefold-solver
