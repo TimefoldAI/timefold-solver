@@ -51,8 +51,8 @@ jobs:
       # But unless something catastrophic happened, PR checks on source branch already ensured that all tests pass.
       - name: Set release version and build release
         run: |
-          mvn ${{ env.MAVEN_OPTS }} -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          mvn ${{ env.MAVEN_OPTS }} -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
+          mvn -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
 
       - name: Update release branch and commit the changes
         run: |
@@ -70,7 +70,7 @@ jobs:
           git push origin ${{ github.event.inputs.releaseBranch }}
 
       - name: Run JReleaser
-        run: mvn --no-transfer-progress --batch-mode -Dfull -Djreleaser.dry.run=${{ github.event.inputs.dryRun }} -pl . jreleaser:full-release
+        run: mvn -Dfull -Djreleaser.dry.run=${{ github.event.inputs.dryRun }} -pl . jreleaser:full-release
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
@@ -90,7 +90,7 @@ jobs:
 
       - name: Set micro snapshot version on the release branch
         run: |
-          mvn ${{ env.MAVEN_OPTS }} -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
+          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
           find . -name 'pom.xml' | xargs git add
           git commit -m "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
 
@@ -98,8 +98,8 @@ jobs:
         run: |
           git checkout ${{ github.event.inputs.sourceBranch }}
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
-          mvn ${{ env.MAVEN_OPTS }} -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          mvn ${{ env.MAVEN_OPTS }} -Dfull verify -DskipTests=true 
+          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
+          mvn -Dfull verify -DskipTests=true 
 
       - name: Update source branch and commit
         run: |
