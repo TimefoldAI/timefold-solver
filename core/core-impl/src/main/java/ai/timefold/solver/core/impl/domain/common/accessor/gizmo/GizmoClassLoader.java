@@ -14,7 +14,7 @@ public final class GizmoClassLoader extends ClassLoader {
 
     @Override
     public String getName() {
-        return "Timefold Gizmo SolutionCloner ClassLoader";
+        return "Timefold Gizmo ClassLoader";
     }
 
     @Override

@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.util.MutableReference;
 
@@ -99,17 +100,35 @@ public final class GizmoMemberAccessorImplementor {
     static MemberAccessor createAccessorFor(Member member, Class<? extends Annotation> annotationClass,
             GizmoClassLoader gizmoClassLoader) {
         String className = GizmoMemberAccessorFactory.getGeneratedClassName(member);
-        if (gizmoClassLoader.hasBytecodeFor(className)) {
-            return createInstance(className, gizmoClassLoader);
+        if (!gizmoClassLoader.hasBytecodeFor(className)) {
+            generateBytecode(member, annotationClass, gizmoClassLoader, className);
         }
+        return createInstance(className, gizmoClassLoader);
+    }
+
+    private static void generateBytecode(Member member, Class<? extends Annotation> annotationClass,
+            GizmoClassLoader gizmoClassLoader, String className) {
+        // Gizmo is only needed on the classpath if the bytecode is generated at runtime (not at build time).
+        assertGizmoOnClasspath();
         final MutableReference<byte[]> classBytecodeHolder = new MutableReference<>(null);
         ClassOutput classOutput = (path, byteCode) -> classBytecodeHolder.setValue(byteCode);
         GizmoMemberInfo memberInfo = new GizmoMemberInfo(new GizmoMemberDescriptor(member), annotationClass);
         defineAccessorFor(className, classOutput, memberInfo);
         byte[] classBytecode = classBytecodeHolder.getValue();
-
         gizmoClassLoader.storeBytecode(className, classBytecode);
-        return createInstance(className, gizmoClassLoader);
+    }
+
+    private static void assertGizmoOnClasspath() {
+        try {
+            // Check if Gizmo on the classpath by verifying we can access one of its classes
+            Class.forName("io.quarkus.gizmo.ClassCreator", false,
+                    Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("When using the domainAccessType (" +
+                    DomainAccessType.GIZMO +
+                    ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
+                    "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
+        }
     }
 
     private static MemberAccessor createInstance(String className, GizmoClassLoader gizmoClassLoader) {
