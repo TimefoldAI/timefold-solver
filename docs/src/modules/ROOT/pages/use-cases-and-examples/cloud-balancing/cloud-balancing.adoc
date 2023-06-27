@@ -242,7 +242,7 @@ public class CloudBalance ... {
 [[cloudBalancingMainMethod]]
 == Run the cloud balancing Hello World
 
-. xref:introduction/introduction.adoc#runTheExamplesInAnIDE[Download and configure the examples in your preferred IDE.]
+. xref:introduction/introduction.adoc#buildFromSource[Download and configure the examples in your preferred IDE.]
 . Create a run configuration with the following main class: `ai.timefold.solver.examples.cloudbalancing.app.CloudBalancingHelloWorld`
 +
 By default, the Cloud Balancing Hello World is configured to run for 120 seconds.
