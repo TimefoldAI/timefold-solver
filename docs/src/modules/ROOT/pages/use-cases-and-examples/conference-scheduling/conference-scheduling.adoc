@@ -66,6 +66,7 @@ Soft constraints (unless configured otherwise):
 ** Speaker undesired room tag: If a speaker has an undesired room tag, then all his/her talks should not be assigned to a room with that tag.
 ** Talk preferred room tag: If a talk has a preferred room tag, then it should be assigned to a room with that tag.
 ** Talk undesired room tag: If a talk has an undesired room tag, then it should not be assigned to a room with that tag.
+** Speaker makespan: A speaker should have as few free days between talks as possible.
 
 Every constraint can be configured to use a different score level (hard/medium/soft) or a different score weight.
 
