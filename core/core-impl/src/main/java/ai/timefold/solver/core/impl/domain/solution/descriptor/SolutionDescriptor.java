@@ -616,28 +616,12 @@ public class SolutionDescriptor<Solution_> {
         return problemFactCollectionMemberAccessorMap;
     }
 
-    public List<String> getProblemFactMemberAndProblemFactCollectionMemberNames() {
-        List<String> memberNames = new ArrayList<>(problemFactMemberAccessorMap.size()
-                + problemFactCollectionMemberAccessorMap.size());
-        memberNames.addAll(problemFactMemberAccessorMap.keySet());
-        memberNames.addAll(problemFactCollectionMemberAccessorMap.keySet());
-        return memberNames;
-    }
-
     public Map<String, MemberAccessor> getEntityMemberAccessorMap() {
         return entityMemberAccessorMap;
     }
 
     public Map<String, MemberAccessor> getEntityCollectionMemberAccessorMap() {
         return entityCollectionMemberAccessorMap;
-    }
-
-    public List<String> getEntityMemberAndEntityCollectionMemberNames() {
-        List<String> memberNames = new ArrayList<>(entityMemberAccessorMap.size()
-                + entityCollectionMemberAccessorMap.size());
-        memberNames.addAll(entityMemberAccessorMap.keySet());
-        memberNames.addAll(entityCollectionMemberAccessorMap.keySet());
-        return memberNames;
     }
 
     public Set<Class<?>> getProblemFactOrEntityClassSet() {
@@ -1026,7 +1010,7 @@ public class SolutionDescriptor<Solution_> {
      * @return {@code >= 0}
      */
     public int countUninitialized(Solution_ solution) {
-        return countUninitializedVariables(solution) + countUnassignedValues(solution);
+        return countUninitializedVariables(solution) + countUnassignedListVariableValues(solution);
     }
 
     /**
@@ -1042,19 +1026,24 @@ public class SolutionDescriptor<Solution_> {
     /**
      * Counts the number of elements from list variable value ranges, that are not assigned to any list variable.
      */
-    private int countUnassignedValues(Solution_ solution) {
+    private int countUnassignedListVariableValues(Solution_ solution) {
         int unassignedValueCount = 0;
         for (ListVariableDescriptor<Solution_> listVariableDescriptor : listVariableDescriptors) {
-            unassignedValueCount += countUnassignedValues(solution, listVariableDescriptor);
+            unassignedValueCount += countUnassignedListVariableValues(solution, listVariableDescriptor);
         }
         return unassignedValueCount;
     }
 
-    private int countUnassignedValues(Solution_ solution, ListVariableDescriptor<Solution_> variableDescriptor) {
+    private int countUnassignedListVariableValues(Solution_ solution, ListVariableDescriptor<Solution_> variableDescriptor) {
         long totalValueCount = variableDescriptor.getValueCount(solution, null);
         MutableInt assignedValuesCount = new MutableInt();
         visitAllEntities(solution,
-                entity -> assignedValuesCount.add(variableDescriptor.getListSize(entity)));
+                entity -> {
+                    EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
+                    if (entityDescriptor.matchesEntity(entity)) {
+                        assignedValuesCount.add(variableDescriptor.getListSize(entity));
+                    }
+                });
         // TODO maybe detect duplicates and elements that are outside the value range
         return Math.toIntExact(totalValueCount - assignedValuesCount.intValue());
     }
