@@ -95,7 +95,11 @@ public class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor
     }
 
     public List<Object> getListVariable(Object entity) {
-        return (List<Object>) getValue(entity);
+        Object value = getValue(entity);
+        if (value == null) {
+            throw new IllegalStateException("The planning list variable (" + this + ") of entity (" + entity + ") is null.");
+        }
+        return (List<Object>) value;
     }
 
     public Object removeElement(Object entity, int index) {
