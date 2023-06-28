@@ -49,7 +49,7 @@ public interface PhaseFactory<Solution_> {
             PhaseConfig phaseConfig = phaseConfigList.get(phaseIndex);
             if (phaseIndex > 0) {
                 PhaseConfig previousPhaseConfig = phaseConfigList.get(phaseIndex - 1);
-                if (!willTerminate(previousPhaseConfig)) {
+                if (!canTerminate(previousPhaseConfig)) {
                     throw new IllegalStateException("Solver configuration contains an unreachable phase. "
                             + "Phase #" + phaseIndex + " (" + phaseConfig + ") follows a phase "
                             + "without a configured termination (" + previousPhaseConfig + ").");
@@ -62,7 +62,7 @@ public interface PhaseFactory<Solution_> {
         return phaseList;
     }
 
-    private static boolean willTerminate(PhaseConfig phaseConfig) {
+    static boolean canTerminate(PhaseConfig phaseConfig) {
         if (phaseConfig instanceof ConstructionHeuristicPhaseConfig
                 || phaseConfig instanceof ExhaustiveSearchPhaseConfig
                 || phaseConfig instanceof CustomPhaseConfig) { // Termination guaranteed.

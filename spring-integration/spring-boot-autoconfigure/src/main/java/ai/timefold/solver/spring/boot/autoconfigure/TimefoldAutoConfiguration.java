@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -182,6 +183,15 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
         }
         if (solverConfig.getEntityClassList() == null) {
             solverConfig.setEntityClassList(findEntityClassList(entityScanner));
+        } else {
+            long entityClassCount = solverConfig.getEntityClassList().stream()
+                    .filter(Objects::nonNull)
+                    .count();
+            if (entityClassCount == 0L) {
+                throw new IllegalStateException("The solverConfig's entityClassList (" + solverConfig.getEntityClassList()
+                        + ") does not contain any non-null entries.\n"
+                        + "Maybe the classes listed there do not actually exist and therefore deserialization turned them to null?\n");
+            }
         }
         applyScoreDirectorFactoryProperties(solverConfig);
         SolverProperties solverProperties = timefoldProperties.getSolver();
