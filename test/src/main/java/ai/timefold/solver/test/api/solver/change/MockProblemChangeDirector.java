@@ -81,7 +81,7 @@ public class MockProblemChangeDirector implements ProblemChangeDirector {
     @Override
     public <EntityOrProblemFact> Optional<EntityOrProblemFact>
             lookUpWorkingObject(EntityOrProblemFact externalObject) {
-        return Optional.of((EntityOrProblemFact) lookUpTable.get(externalObject));
+        return Optional.ofNullable((EntityOrProblemFact) lookUpTable.get(externalObject));
     }
 
     @Override
