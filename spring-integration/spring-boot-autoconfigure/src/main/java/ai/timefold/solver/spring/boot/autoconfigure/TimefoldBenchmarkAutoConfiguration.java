@@ -1,5 +1,7 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static java.util.Objects.requireNonNullElse;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +10,7 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.spring.boot.autoconfigure.config.BenchmarkProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 
@@ -20,7 +19,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,13 +30,10 @@ import org.springframework.context.annotation.Configuration;
 public class TimefoldBenchmarkAutoConfiguration
         implements BeanClassLoaderAware {
 
-    private final ApplicationContext context;
     private final TimefoldProperties timefoldProperties;
     private ClassLoader beanClassLoader;
 
-    protected TimefoldBenchmarkAutoConfiguration(ApplicationContext context,
-            TimefoldProperties timefoldProperties) {
-        this.context = context;
+    protected TimefoldBenchmarkAutoConfiguration(TimefoldProperties timefoldProperties) {
         this.timefoldProperties = timefoldProperties;
     }
 
@@ -89,26 +84,20 @@ public class TimefoldBenchmarkAutoConfiguration
                         "is required if termination is not configured in the " +
                         "inherited solver benchmark config and solverBenchmarkBluePrint is used.");
             }
-            for (int i = 0; i < solverBenchmarkConfigList.size(); i++) {
-                SolverBenchmarkConfig solverBenchmarkConfig = solverBenchmarkConfigList.get(i);
-                TerminationConfig terminationConfig = solverBenchmarkConfig.getSolverConfig().getTerminationConfig();
-                if (terminationConfig == null || !terminationConfig.isConfigured()) {
-                    boolean isTerminationConfiguredForAllNonConstructionHeuristicPhases = !solverBenchmarkConfig
-                            .getSolverConfig().getPhaseConfigList().isEmpty();
-                    for (PhaseConfig<?> phaseConfig : solverBenchmarkConfig.getSolverConfig().getPhaseConfigList()) {
-                        if (!(phaseConfig instanceof ConstructionHeuristicPhaseConfig)) {
-                            if (phaseConfig.getTerminationConfig() == null
-                                    || !phaseConfig.getTerminationConfig().isConfigured()) {
-                                isTerminationConfiguredForAllNonConstructionHeuristicPhases = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (!isTerminationConfiguredForAllNonConstructionHeuristicPhases) {
-                        String benchmarkConfigName = solverBenchmarkConfig.getName();
-                        if (benchmarkConfigName == null) {
-                            benchmarkConfigName = "SolverBenchmarkConfig " + i;
-                        }
+            if (solverBenchmarkConfigList.size() == 1 && solverBenchmarkConfigList.get(0).getSolverConfig() == null) {
+                // Benchmark config was created from solver config, which means only the inherited solver config exists.
+                SolverBenchmarkConfig solverBenchmarkConfig = benchmarkConfig.getInheritedSolverBenchmarkConfig();
+                if (!solverBenchmarkConfig.getSolverConfig().canTerminate()) {
+                    String benchmarkConfigName =
+                            requireNonNullElse(solverBenchmarkConfig.getName(), "InheritedSolverBenchmarkConfig");
+                    unconfiguredTerminationSolverBenchmarkList.add(benchmarkConfigName);
+                }
+            } else {
+                for (int i = 0; i < solverBenchmarkConfigList.size(); i++) {
+                    SolverBenchmarkConfig solverBenchmarkConfig = solverBenchmarkConfigList.get(i);
+                    if (!solverConfig.canTerminate()) {
+                        String benchmarkConfigName =
+                                requireNonNullElse(solverBenchmarkConfig.getName(), "SolverBenchmarkConfig" + i);
                         unconfiguredTerminationSolverBenchmarkList.add(benchmarkConfigName);
                     }
                 }
