@@ -169,6 +169,27 @@ class TimefoldAutoConfigurationTest {
     }
 
     @Test
+    void solverConfigXml_property_noGlobalTermination() {
+        benchmarkContextRunner
+                .withClassLoader(testFilteredClassLoader)
+                .withPropertyValues(
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverConfigWithoutGlobalTermination.xml")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
+                    assertThat(solverConfig.getEntityClassList())
+                            .isEqualTo(Collections.singletonList(TestdataSpringEntity.class));
+                    assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass())
+                            .isEqualTo(TestdataSpringConstraintProvider.class);
+                    // Properties defined in customSpringBootSolverConfig.xml
+                    SolverFactory<TestdataSpringSolution> solverFactory = context.getBean(SolverFactory.class);
+                    assertThat(solverFactory).isNotNull();
+                    assertThat(solverFactory.buildSolver()).isNotNull();
+                });
+    }
+
+    @Test
     void solverProperties() {
         contextRunner
                 .withClassLoader(defaultConstraintsDrlFilteredClassLoader)
