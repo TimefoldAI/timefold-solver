@@ -90,7 +90,7 @@ class TimefoldProcessor {
 
     @BuildStep
     FeatureBuildItem feature() {
-        return new FeatureBuildItem("timefold");
+        return new FeatureBuildItem("timefold-solver");
     }
 
     @BuildStep
