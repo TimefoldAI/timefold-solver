@@ -24,10 +24,10 @@ public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTab
 
     @Override
     public HardSoftScore calculateScore(TimeTable timeTable) {
-        List<Lesson> lessonList = timeTable.getLessonList();
+        List<Lesson> lessons = timeTable.getLessons();
         int hardScore = 0;
-        for (Lesson a : lessonList) {
-            for (Lesson b : lessonList) {
+        for (Lesson a : lessons) {
+            for (Lesson b : lessons) {
                 if (a.getTimeslot() != null && a.getTimeslot().equals(b.getTimeslot())
                         && a.getId() < b.getId()) {
                     // A room can accommodate at most one lesson at the same time.

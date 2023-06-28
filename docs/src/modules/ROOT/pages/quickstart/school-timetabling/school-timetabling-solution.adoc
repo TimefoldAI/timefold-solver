@@ -32,12 +32,12 @@ public class TimeTable {
 
     @ValueRangeProvider
     @ProblemFactCollectionProperty
-    private List<Timeslot> timeslotList;
+    private List<Timeslot> timeslots;
     @ValueRangeProvider
     @ProblemFactCollectionProperty
-    private List<Room> roomList;
+    private List<Room> rooms;
     @PlanningEntityCollectionProperty
-    private List<Lesson> lessonList;
+    private List<Lesson> lessons;
 
     @PlanningScore
     private HardSoftScore score;
@@ -45,22 +45,22 @@ public class TimeTable {
     public TimeTable() {
     }
 
-    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList, List<Lesson> lessonList) {
-        this.timeslotList = timeslotList;
-        this.roomList = roomList;
-        this.lessonList = lessonList;
+    public TimeTable(List<Timeslot> timeslots, List<Room> rooms, List<Lesson> lessons) {
+        this.timeslots = timeslots;
+        this.rooms = rooms;
+        this.lessons = lessons;
     }
 
-    public List<Timeslot> getTimeslotList() {
-        return timeslotList;
+    public List<Timeslot> getTimeslots() {
+        return timeslots;
     }
 
-    public List<Room> getRoomList() {
-        return roomList;
+    public List<Room> getRooms() {
+        return rooms;
     }
 
-    public List<Lesson> getLessonList() {
-        return lessonList;
+    public List<Lesson> getLessons() {
+        return lessons;
     }
 
     public HardSoftScore getScore() {
@@ -75,11 +75,11 @@ so Timefold knows that this class contains all of the input and output data.
 
 Specifically, this class is the input of the problem:
 
-* A `timeslotList` field with all time slots
+* A `timeslots` field with all time slots
 ** This is a list of problem facts, because they do not change during solving.
-* A `roomList` field with all rooms
+* A `rooms` field with all rooms
 ** This is a list of problem facts, because they do not change during solving.
-* A `lessonList` field with all lessons
+* A `lessons` field with all lessons
 ** This is a list of planning entities, because they change during solving.
 ** Of each `Lesson`:
 *** The values of the `timeslot` and `room` fields are typically still `null`, so unassigned.
@@ -89,17 +89,17 @@ These fields are problem properties.
 
 However, this class is also the output of the solution:
 
-* A `lessonList` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving
+* A `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving
 * A `score` field that represents the quality of the output solution, for example, `0hard/-5soft`
 
 == The value range providers
 
-The `timeslotList` field is a value range provider.
+The `timeslots` field is a value range provider.
 It holds the `Timeslot` instances which Timefold can pick from to assign to the `timeslot` field of `Lesson` instances.
-The `timeslotList` field has an `@ValueRangeProvider` annotation to connect the `@PlanningVariable` with the `@ValueRangeProvider`,
+The `timeslots` field has an `@ValueRangeProvider` annotation to connect the `@PlanningVariable` with the `@ValueRangeProvider`,
 by matching the type of the planning variable with the type returned by the xref:configuration/configuration.adoc#planningValueRangeProvider[value range provider].
 
-Following the same logic, the `roomList` field also has an `@ValueRangeProvider` annotation.
+Following the same logic, the `rooms` field also has an `@ValueRangeProvider` annotation.
 
 == The problem fact and planning entity properties
 
@@ -107,9 +107,9 @@ Furthermore, Timefold needs to know which `Lesson` instances it can change
 as well as how to retrieve the `Timeslot` and `Room` instances used for score calculation
 by your `TimeTableConstraintProvider`.
 
-The `timeslotList` and `roomList` fields have an `@ProblemFactCollectionProperty` annotation,
+The `timeslots` and `rooms` fields have an `@ProblemFactCollectionProperty` annotation,
 so your `TimeTableConstraintProvider` can select _from_ those instances.
 
-The `lessonList` has an `@PlanningEntityCollectionProperty` annotation,
+The `lessons` has an `@PlanningEntityCollectionProperty` annotation,
 so Timefold can change them during solving
 and your `TimeTableConstraintProvider` can select _from_ those too.
