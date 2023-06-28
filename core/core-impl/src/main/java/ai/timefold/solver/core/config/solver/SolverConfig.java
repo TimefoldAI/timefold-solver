@@ -47,6 +47,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
+import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 
 /**
@@ -578,6 +579,24 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // ************************************************************************
     // Smart getters
     // ************************************************************************
+
+    /**
+     *
+     * @return true if the solver has either a global termination configured,
+     *         or all of its phases have a termination configured
+     */
+    public boolean canTerminate() {
+        if (terminationConfig == null || !terminationConfig.isConfigured()) {
+            if (getPhaseConfigList() == null) {
+                return true;
+            } else {
+                return getPhaseConfigList().stream()
+                        .allMatch(PhaseFactory::canTerminate);
+            }
+        } else {
+            return terminationConfig.isConfigured();
+        }
+    }
 
     public EnvironmentMode determineEnvironmentMode() {
         return Objects.requireNonNullElse(environmentMode, EnvironmentMode.REPRODUCIBLE);
