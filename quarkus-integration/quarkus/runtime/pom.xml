@@ -31,6 +31,11 @@
       <artifactId>timefold-solver-core</artifactId>
     </dependency>
     <dependency>
+      <!-- TODO Remove after gizmo is no longer needed at runtime https://github.com/TimefoldAI/timefold-solver/issues/133  -->
+      <groupId>io.quarkus.gizmo</groupId>
+      <artifactId>gizmo</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.graalvm.sdk</groupId>
       <artifactId>graal-sdk</artifactId>
     </dependency>
