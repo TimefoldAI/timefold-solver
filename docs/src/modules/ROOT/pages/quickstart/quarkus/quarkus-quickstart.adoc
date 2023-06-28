@@ -324,7 +324,7 @@ The following example uses the Linux command `curl` to send a POST request:
 
 [source,shell]
 ----
-$ curl -i -X POST http://localhost:8080/timeTable/solve -H "Content-Type:application/json" -d '{"timeslotList":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"roomList":[{"name":"Room A"},{"name":"Room B"}],"lessonList":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
+$ curl -i -X POST http://localhost:8080/timeTable/solve -H "Content-Type:application/json" -d '{"timeslots":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"rooms":[{"name":"Room A"},{"name":"Room B"}],"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
 ----
 
 After about five seconds, according to the termination spent time defined in your `application.properties`,
@@ -336,7 +336,7 @@ HTTP/1.1 200
 Content-Type: application/json
 ...
 
-{"timeslotList":...,"roomList":...,"lessonList":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room A"}},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room A"}},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room B"}},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room B"}}],"score":"0hard/0soft"}
+{"timeslots":...,"rooms":...,"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room A"}},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room A"}},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room B"}},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room B"}}],"score":"0hard/0soft"}
 ----
 
 Notice that your application assigned all four lessons to one of the two time slots and one of the two rooms.
@@ -476,8 +476,8 @@ public class TimeTableResourceTest {
     public void solve() {
         TimeTable problem = generateProblem();
         TimeTable solution = timeTableResource.solve(problem);
-        assertFalse(solution.getLessonList().isEmpty());
-        for (Lesson lesson : solution.getLessonList()) {
+        assertFalse(solution.getLessons().isEmpty());
+        for (Lesson lesson : solution.getLessons()) {
             assertNotNull(lesson.getTimeslot());
             assertNotNull(lesson.getRoom());
         }
@@ -485,31 +485,31 @@ public class TimeTableResourceTest {
     }
 
     private TimeTable generateProblem() {
-        List<Timeslot> timeslotList = new ArrayList<>();
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
+        List<Timeslot> timeslots = new ArrayList<>();
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
 
-        List<Room> roomList = new ArrayList<>();
-        roomList.add(new Room("Room A"));
-        roomList.add(new Room("Room B"));
-        roomList.add(new Room("Room C"));
+        List<Room> rooms = new ArrayList<>();
+        rooms.add(new Room("Room A"));
+        rooms.add(new Room("Room B"));
+        rooms.add(new Room("Room C"));
 
-        List<Lesson> lessonList = new ArrayList<>();
-        lessonList.add(new Lesson(101L, "Math", "B. May", "9th grade"));
-        lessonList.add(new Lesson(102L, "Physics", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(103L, "Geography", "M. Polo", "9th grade"));
-        lessonList.add(new Lesson(104L, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(105L, "Spanish", "P. Cruz", "9th grade"));
+        List<Lesson> lessons = new ArrayList<>();
+        lessons.add(new Lesson(101L, "Math", "B. May", "9th grade"));
+        lessons.add(new Lesson(102L, "Physics", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(103L, "Geography", "M. Polo", "9th grade"));
+        lessons.add(new Lesson(104L, "English", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(105L, "Spanish", "P. Cruz", "9th grade"));
 
-        lessonList.add(new Lesson(201L, "Math", "B. May", "10th grade"));
-        lessonList.add(new Lesson(202L, "Chemistry", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(203L, "History", "I. Jones", "10th grade"));
-        lessonList.add(new Lesson(204L, "English", "P. Cruz", "10th grade"));
-        lessonList.add(new Lesson(205L, "French", "M. Curie", "10th grade"));
-        return new TimeTable(timeslotList, roomList, lessonList);
+        lessons.add(new Lesson(201L, "Math", "B. May", "10th grade"));
+        lessons.add(new Lesson(202L, "Chemistry", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(203L, "History", "I. Jones", "10th grade"));
+        lessons.add(new Lesson(204L, "English", "P. Cruz", "10th grade"));
+        lessons.add(new Lesson(205L, "French", "M. Curie", "10th grade"));
+        return new TimeTable(timeslots, rooms, lessons);
     }
 
 }
@@ -649,7 +649,7 @@ public class TimeTableResource {
             throw new IllegalStateException("There is no timeTable with id (" + id + ").");
         }
         // Occurs in a single transaction, so each initialized lesson references the same timeslot/room instance
-        // that is contained by the timeTable's timeslotList/roomList.
+        // that is contained by the timeTable's timeslots/rooms.
         return new TimeTable(
                 Timeslot.listAll(Sort.by("dayOfWeek").and("startTime").and("endTime").and("id")),
                 Room.listAll(Sort.by("name").and("id")),
@@ -658,7 +658,7 @@ public class TimeTableResource {
 
     @Transactional
     protected void save(TimeTable timeTable) {
-        for (Lesson lesson : timeTable.getLessonList()) {
+        for (Lesson lesson : timeTable.getLessons()) {
             // TODO this is awfully naive: optimistic locking causes issues if called by the SolverManager
             Lesson attachedLesson = Lesson.findById(lesson.getId());
             attachedLesson.setTimeslot(lesson.getTimeslot());
@@ -718,8 +718,8 @@ public class TimeTableResourceTest {
             Thread.sleep(20L);
             timeTable = timeTableResource.getTimeTable();
         }
-        assertFalse(timeTable.getLessonList().isEmpty());
-        for (Lesson lesson : timeTable.getLessonList()) {
+        assertFalse(timeTable.getLessons().isEmpty());
+        for (Lesson lesson : timeTable.getLessons()) {
             assertNotNull(lesson.getTimeslot());
             assertNotNull(lesson.getRoom());
         }
