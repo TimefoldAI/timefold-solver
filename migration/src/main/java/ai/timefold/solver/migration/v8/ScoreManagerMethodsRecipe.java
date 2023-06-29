@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -34,53 +35,45 @@ public class ScoreManagerMethodsRecipe extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit,
-                    ExecutionContext executionContext) {
-                for (MatcherMeta matcherMeta : MATCHER_METAS) {
-                    doAfterVisit(new UsesMethod<>(matcherMeta.methodMatcher));
-                }
-                return compilationUnit;
-            }
-        };
-    }
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext>[] visitors = Arrays.stream(MATCHER_METAS)
+                .map(m -> new UsesMethod<>(m.methodMatcher))
+                .toArray(TreeVisitor[]::new);
+        return Preconditions.check(
+                Preconditions.or(visitors),
+                new JavaIsoVisitor<>() {
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<>() {
+                    @Override
+                    public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
+                        final Expression e = super.visitExpression(expression, executionContext);
 
-            @Override
-            public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
-                final Expression e = super.visitExpression(expression, executionContext);
-
-                MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
-                        .findFirst().orElse(null);
-                if (matcherMeta == null) {
-                    return e;
-                }
-                J.MethodInvocation mi = (J.MethodInvocation) e;
-                Expression select = mi.getSelect();
-                List<Expression> arguments = mi.getArguments();
-                String pattern = "#{any(" + matcherMeta.classFqn + ")}." +
-                        (matcherMeta.methodName.contains("Summary")
-                                ? "explain(#{any()}, SolutionUpdatePolicy.UPDATE_SCORE_ONLY).getSummary()"
-                                : matcherMeta.methodName.replace(")", ", SolutionUpdatePolicy.UPDATE_SCORE_ONLY)")
-                                        .replace("..", "#{any()}")
-                                        .replace("Score(", "("));
-                maybeAddImport("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy");
-                JavaTemplate template = JavaTemplate.builder(() -> getCursor().getParentOrThrow(), pattern)
-                        .javaParser(() -> buildJavaParser().build())
-                        .imports("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy")
-                        .build();
-                return e.withTemplate(template, e.getCoordinates().replace(), select, arguments.get(0));
-            }
-        };
+                        MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
+                                .findFirst().orElse(null);
+                        if (matcherMeta == null) {
+                            return e;
+                        }
+                        J.MethodInvocation mi = (J.MethodInvocation) e;
+                        Expression select = mi.getSelect();
+                        List<Expression> arguments = mi.getArguments();
+                        String pattern = "#{any(" + matcherMeta.classFqn + ")}." +
+                                (matcherMeta.methodName.contains("Summary")
+                                        ? "explain(#{any()}, SolutionUpdatePolicy.UPDATE_SCORE_ONLY).getSummary()"
+                                        : matcherMeta.methodName.replace(")", ", SolutionUpdatePolicy.UPDATE_SCORE_ONLY)")
+                                                .replace("..", "#{any()}")
+                                                .replace("Score(", "("));
+                        maybeAddImport("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy");
+                        return JavaTemplate.builder(pattern)
+                                .javaParser(buildJavaParser())
+                                .imports("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy")
+                                .build()
+                                .apply(getCursor(), e.getCoordinates().replace(), select, arguments.get(0));
+                    }
+                });
     }
 
     public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion().classpath("timefold-solver-core-impl");
+        return JavaParser.fromJavaVersion()
+                .classpath(JavaParser.runtimeClasspath());
     }
 
     private static final class MatcherMeta {

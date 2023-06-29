@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -14,7 +15,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-public class ScoreGettersRecipe extends Recipe {
+public final class ScoreGettersRecipe extends Recipe {
 
     private static final MatcherMeta[] MATCHER_METAS = {
             new MatcherMeta("IBendableScore", "getHardLevelsSize()"),
@@ -76,59 +77,51 @@ public class ScoreGettersRecipe extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit compilationUnit,
-                    ExecutionContext executionContext) {
-                for (MatcherMeta matcherMeta : MATCHER_METAS) {
-                    doAfterVisit(new UsesMethod<>(matcherMeta.methodMatcher));
-                }
-                return compilationUnit;
-            }
-        };
-    }
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext>[] visitors = Arrays.stream(MATCHER_METAS)
+                .map(m -> new UsesMethod<>(m.methodMatcher))
+                .toArray(TreeVisitor[]::new);
+        return Preconditions.check(
+                Preconditions.or(visitors),
+                new JavaIsoVisitor<>() {
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<>() {
+                    @Override
+                    public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
+                        final Expression e = super.visitExpression(expression, executionContext);
 
-            @Override
-            public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
-                final Expression e = super.visitExpression(expression, executionContext);
+                        MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
+                                .findFirst().orElse(null);
+                        if (matcherMeta == null) {
+                            return e;
+                        }
+                        J.MethodInvocation mi = (J.MethodInvocation) e;
+                        Expression select = mi.getSelect();
+                        List<Expression> arguments = mi.getArguments();
 
-                MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
-                        .findFirst().orElse(null);
-                if (matcherMeta == null) {
-                    return e;
-                }
-                J.MethodInvocation mi = (J.MethodInvocation) e;
-                Expression select = mi.getSelect();
-                List<Expression> arguments = mi.getArguments();
-
-                String score = "#{any(" + matcherMeta.scoreClassFqn + ")}";
-                String getterWithoutGet =
-                        matcherMeta.methodName.substring(3, 4).toLowerCase() +
-                                matcherMeta.methodName.substring(4);
-                String pattern = score + "." + getterWithoutGet;
-                if (getterWithoutGet.contains("(int)")) {
-                    pattern = pattern.replace("(int)", "(#{any(int)})");
-                    JavaTemplate template = JavaTemplate.builder(() -> getCursor().getParentOrThrow(), pattern)
-                            .javaParser(() -> buildJavaParser().build())
-                            .build();
-                    return e.withTemplate(template, e.getCoordinates().replace(), select, arguments.get(0));
-                } else {
-                    JavaTemplate template = JavaTemplate.builder(() -> getCursor().getParentOrThrow(), pattern)
-                            .javaParser(() -> buildJavaParser().build())
-                            .build();
-                    return e.withTemplate(template, e.getCoordinates().replace(), select);
-                }
-            }
-        };
+                        String score = "#{any(" + matcherMeta.scoreClassFqn + ")}";
+                        String getterWithoutGet =
+                                matcherMeta.methodName.substring(3, 4).toLowerCase() +
+                                        matcherMeta.methodName.substring(4);
+                        String pattern = score + "." + getterWithoutGet;
+                        if (getterWithoutGet.contains("(int)")) {
+                            pattern = pattern.replace("(int)", "(#{any(int)})");
+                            return JavaTemplate.builder(pattern)
+                                    .javaParser(buildJavaParser())
+                                    .build()
+                                    .apply(getCursor(), e.getCoordinates().replace(), select, arguments.get(0));
+                        } else {
+                            return JavaTemplate.builder(pattern)
+                                    .javaParser(buildJavaParser())
+                                    .build()
+                                    .apply(getCursor(), e.getCoordinates().replace(), select);
+                        }
+                    }
+                });
     }
 
     public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion().classpath("timefold-solver-core-impl");
+        return JavaParser.fromJavaVersion()
+                .classpath(JavaParser.runtimeClasspath());
     }
 
     private static final class MatcherMeta {
