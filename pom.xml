@@ -28,7 +28,7 @@
 
   <properties>
     <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
-    <version.rewrite.plugin>4.47.0</version.rewrite.plugin>
+    <version.rewrite.plugin>5.2.4</version.rewrite.plugin>
     <version.source.plugin>3.3.0</version.source.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
   </properties>
