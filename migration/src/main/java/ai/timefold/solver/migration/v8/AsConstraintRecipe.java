@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -17,7 +18,7 @@ import org.openrewrite.java.tree.J;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsConstraintRecipe extends Recipe {
+public final class AsConstraintRecipe extends Recipe {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsConstraintRecipe.class);
 
@@ -196,133 +197,127 @@ public class AsConstraintRecipe extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-        return new JavaIsoVisitor<>() {
-            @Override
-            public J.CompilationUnit visitCompilationUnit(
-                    J.CompilationUnit compilationUnit, ExecutionContext executionContext) {
-                for (MatcherMeta matcherMeta : MATCHER_METAS) {
-                    doAfterVisit(new UsesMethod<>(matcherMeta.methodMatcher));
-                }
-                return compilationUnit;
-            }
-        };
-    }
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext>[] visitors = Arrays.stream(MATCHER_METAS)
+                .map(m -> new UsesMethod<>(m.methodMatcher))
+                .toArray(TreeVisitor[]::new);
+        return Preconditions.check(
+                Preconditions.or(visitors),
+                new JavaIsoVisitor<>() {
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<>() {
+                    private final Pattern uniConstraintStreamPattern = Pattern.compile(
+                            "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream");
+                    private final Pattern biConstraintStreamPattern = Pattern.compile(
+                            "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream");
+                    private final Pattern triConstraintStreamPattern = Pattern.compile(
+                            "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream");
+                    private final Pattern quadConstraintStreamPattern = Pattern.compile(
+                            "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream");
 
-            private final Pattern uniConstraintStreamPattern = Pattern.compile(
-                    "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream");
-            private final Pattern biConstraintStreamPattern = Pattern.compile(
-                    "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream");
-            private final Pattern triConstraintStreamPattern = Pattern.compile(
-                    "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream");
-            private final Pattern quadConstraintStreamPattern = Pattern.compile(
-                    "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream");
+                    @Override
+                    public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
+                        final Expression e = super.visitExpression(expression, executionContext);
 
-            @Override
-            public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
-                final Expression e = super.visitExpression(expression, executionContext);
-
-                MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
-                        .findFirst().orElse(null);
-                if (matcherMeta == null) {
-                    return e;
-                }
-                J.MethodInvocation mi = (J.MethodInvocation) e;
-                Expression select = mi.getSelect();
-                List<Expression> arguments = mi.getArguments();
-
-                String templateCode;
-                if (select.getType().isAssignableFrom(uniConstraintStreamPattern)) {
-                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream)}\n";
-                } else if (select.getType().isAssignableFrom(biConstraintStreamPattern)) {
-                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream)}\n";
-                } else if (select.getType().isAssignableFrom(triConstraintStreamPattern)) {
-                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream)}\n";
-                } else if (select.getType().isAssignableFrom(quadConstraintStreamPattern)) {
-                    templateCode = "#{any(ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream)}\n";
-                } else {
-                    LOGGER.warn("Cannot refactor to asConstraint() method" +
-                            " for deprecated method called in expression (" + e + ").");
-                    return e;
-                }
-                if (!matcherMeta.configurable) {
-                    if (!matcherMeta.matchWeigherIncluded) {
-                        templateCode += "." + matcherMeta.methodName + "(#{any(ai.timefold.solver.core.api.score.Score)})\n";
-                    } else {
-                        templateCode += "." + matcherMeta.methodName + "(#{any(ai.timefold.solver.core.api.score.Score)}," +
-                                " #{any(" + matcherMeta.functionType + ")})\n";
-                    }
-                } else {
-                    if (!matcherMeta.matchWeigherIncluded) {
-                        templateCode += "." + matcherMeta.methodName + "()\n";
-                    } else {
-                        templateCode += "." + matcherMeta.methodName + "(" +
-                                "#{any(" + matcherMeta.functionType + ")})\n";
-                    }
-                }
-                if (!matcherMeta.constraintPackageIncluded) {
-                    templateCode += ".asConstraint(#{any(String)})";
-                } else {
-                    templateCode += ".asConstraint(#{any(String)}, #{any(String)})";
-                }
-                JavaTemplate template = JavaTemplate.builder(() -> getCursor().getParentOrThrow(), templateCode)
-                        .javaParser(() -> buildJavaParser().build())
-                        .build();
-                if (!matcherMeta.constraintPackageIncluded) {
-                    if (!matcherMeta.configurable) {
-                        if (!matcherMeta.matchWeigherIncluded) {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(1), arguments.get(0));
-                        } else {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(1), arguments.get(2), arguments.get(0));
+                        MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
+                                .findFirst().orElse(null);
+                        if (matcherMeta == null) {
+                            return e;
                         }
-                    } else {
-                        if (!matcherMeta.matchWeigherIncluded) {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(0));
+                        J.MethodInvocation mi = (J.MethodInvocation) e;
+                        Expression select = mi.getSelect();
+                        List<Expression> arguments = mi.getArguments();
+
+                        String templateCode;
+                        if (select.getType().isAssignableFrom(uniConstraintStreamPattern)) {
+                            templateCode = "#{any(ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream)}\n";
+                        } else if (select.getType().isAssignableFrom(biConstraintStreamPattern)) {
+                            templateCode = "#{any(ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream)}\n";
+                        } else if (select.getType().isAssignableFrom(triConstraintStreamPattern)) {
+                            templateCode = "#{any(ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream)}\n";
+                        } else if (select.getType().isAssignableFrom(quadConstraintStreamPattern)) {
+                            templateCode = "#{any(ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream)}\n";
                         } else {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(1), arguments.get(0));
+                            LOGGER.warn("Cannot refactor to asConstraint() method" +
+                                    " for deprecated method called in expression (" + e + ").");
+                            return e;
                         }
-                    }
-                } else {
-                    if (!matcherMeta.configurable) {
-                        if (!matcherMeta.matchWeigherIncluded) {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(2), arguments.get(0), arguments.get(1));
+                        if (!matcherMeta.configurable) {
+                            if (!matcherMeta.matchWeigherIncluded) {
+                                templateCode +=
+                                        "." + matcherMeta.methodName + "(#{any(ai.timefold.solver.core.api.score.Score)})\n";
+                            } else {
+                                templateCode +=
+                                        "." + matcherMeta.methodName + "(#{any(ai.timefold.solver.core.api.score.Score)}," +
+                                                " #{any(" + matcherMeta.functionType + ")})\n";
+                            }
                         } else {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(2), arguments.get(3), arguments.get(0), arguments.get(1));
+                            if (!matcherMeta.matchWeigherIncluded) {
+                                templateCode += "." + matcherMeta.methodName + "()\n";
+                            } else {
+                                templateCode += "." + matcherMeta.methodName + "(" +
+                                        "#{any(" + matcherMeta.functionType + ")})\n";
+                            }
                         }
-                    } else {
-                        if (!matcherMeta.matchWeigherIncluded) {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(0), arguments.get(1));
+                        if (!matcherMeta.constraintPackageIncluded) {
+                            templateCode += ".asConstraint(#{any(String)})";
                         } else {
-                            return e.withTemplate(template,
-                                    e.getCoordinates().replace(), select,
-                                    arguments.get(2), arguments.get(0), arguments.get(1));
+                            templateCode += ".asConstraint(#{any(String)}, #{any(String)})";
+                        }
+                        JavaTemplate template = JavaTemplate.builder(templateCode)
+                                .javaParser(buildJavaParser())
+                                .build();
+                        if (!matcherMeta.constraintPackageIncluded) {
+                            if (!matcherMeta.configurable) {
+                                if (!matcherMeta.matchWeigherIncluded) {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(1), arguments.get(0));
+                                } else {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(1), arguments.get(2), arguments.get(0));
+                                }
+                            } else {
+                                if (!matcherMeta.matchWeigherIncluded) {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(0));
+                                } else {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(1), arguments.get(0));
+                                }
+                            }
+                        } else {
+                            if (!matcherMeta.configurable) {
+                                if (!matcherMeta.matchWeigherIncluded) {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(2), arguments.get(0), arguments.get(1));
+                                } else {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(2), arguments.get(3), arguments.get(0), arguments.get(1));
+                                }
+                            } else {
+                                if (!matcherMeta.matchWeigherIncluded) {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(0), arguments.get(1));
+                                } else {
+                                    return template.apply(getCursor(),
+                                            e.getCoordinates().replace(), select,
+                                            arguments.get(2), arguments.get(0), arguments.get(1));
+                                }
+                            }
                         }
                     }
-                }
-            }
-        };
+                });
     }
 
     public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion().classpath("timefold-solver-core-impl");
+        return JavaParser.fromJavaVersion()
+                .classpath(JavaParser.runtimeClasspath());
     }
 
     private static class MatcherMeta {
