@@ -11,7 +11,8 @@ import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
  */
 public abstract class UnsolvedDirSolveAllTurtleTest<Solution_> extends SolveAllTurtleTest<Solution_> {
 
-    private static <Solution_> List<File> getUnsolvedDirFiles(CommonApp<Solution_> commonApp) {
+    @Override
+    protected List<File> getSolutionFiles(CommonApp<Solution_> commonApp) {
         File dataDir = CommonApp.determineDataDir(commonApp.getDataDirName());
         File unsolvedDataDir = new File(dataDir, "unsolved");
         if (!unsolvedDataDir.exists()) {
@@ -21,11 +22,6 @@ public abstract class UnsolvedDirSolveAllTurtleTest<Solution_> extends SolveAllT
             String inputFileExtension = commonApp.createSolutionFileIO().getInputFileExtension();
             return getAllFilesRecursivelyAndSorted(unsolvedDataDir, file -> file.getName().endsWith(inputFileExtension));
         }
-    }
-
-    @Override
-    protected List<File> getSolutionFiles(CommonApp<Solution_> commonApp) {
-        return getUnsolvedDirFiles(commonApp);
     }
 
     @Override
