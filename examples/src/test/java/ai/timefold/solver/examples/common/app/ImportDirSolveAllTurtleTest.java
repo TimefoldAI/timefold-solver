@@ -13,18 +13,6 @@ import ai.timefold.solver.examples.common.persistence.AbstractSolutionImporter;
  */
 public abstract class ImportDirSolveAllTurtleTest<Solution_> extends SolveAllTurtleTest<Solution_> {
 
-    private static <Solution_> List<File> getImportDirFiles(CommonApp<Solution_> commonApp) {
-        try (SolutionBusiness<Solution_, ?> solutionBusiness = commonApp.createSolutionBusiness()) {
-            File importDataDir = solutionBusiness.getImportDataDir();
-            if (!importDataDir.exists()) {
-                throw new IllegalStateException("The directory importDataDir (" + importDataDir.getAbsolutePath()
-                        + ") does not exist.");
-            } else {
-                return getAllFilesRecursivelyAndSorted(importDataDir, createSolutionImporter(commonApp)::acceptInputFile);
-            }
-        }
-    }
-
     private static <Solution_> AbstractSolutionImporter<Solution_> createSolutionImporter(CommonApp<Solution_> commonApp) {
         Set<AbstractSolutionImporter<Solution_>> importers = commonApp.createSolutionImporters();
         if (importers.size() != 1) {
@@ -37,7 +25,15 @@ public abstract class ImportDirSolveAllTurtleTest<Solution_> extends SolveAllTur
 
     @Override
     protected List<File> getSolutionFiles(CommonApp<Solution_> commonApp) {
-        return getImportDirFiles(commonApp);
+        try (SolutionBusiness<Solution_, ?> solutionBusiness = commonApp.createSolutionBusiness()) {
+            File importDataDir = solutionBusiness.getImportDataDir();
+            if (!importDataDir.exists()) {
+                throw new IllegalStateException("The directory importDataDir (" + importDataDir.getAbsolutePath()
+                        + ") does not exist.");
+            } else {
+                return getAllFilesRecursivelyAndSorted(importDataDir, createSolutionImporter(commonApp)::acceptInputFile);
+            }
+        }
     }
 
     @Override
