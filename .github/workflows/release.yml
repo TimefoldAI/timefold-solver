@@ -88,23 +88,23 @@ jobs:
 
       - name: Set micro snapshot version on the release branch
         run: |
-          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump
+          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version
           mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
           git commit -am "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
-          git push origin ${{ github.event.inputs.releaseBranch }}-bump
-          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.releaseBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump --title "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body-stable.md
+          git push origin ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version
+          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.releaseBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version --title "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body-stable.md
         env:
           GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
 
       - name: Switch back to source branch and set snapshot version
         run: |
           git checkout ${{ github.event.inputs.sourceBranch }}
-          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump2
+          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump-to-next-minor-version
           mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
           git commit -am "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
-          git push origin ${{ github.event.inputs.releaseBranch }}-bump2
-          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump2 --title "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body.md
+          git push origin ${{ github.event.inputs.releaseBranch }}-bump-to-next-minor-version
+          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump-to-next-minor-version --title "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
