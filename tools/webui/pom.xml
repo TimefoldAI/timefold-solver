@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-tools-parent</artifactId>
-    <version>0.9.40-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
 
   <artifactId>timefold-solver-webui</artifactId>
