@@ -6,7 +6,7 @@
 
 [NOTE]
 ====
-Partitioned search is a commercial feature of Timefold Solver Enterprise Edition.
+Partitioned search is a commercial feature of xref:introduction/introduction.adoc#enterpriseEdition[Timefold Solver Enterprise Edition].
 It is not open source, and it is free for development use only.
 https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
 ====

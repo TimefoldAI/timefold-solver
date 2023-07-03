@@ -1,5 +1,5 @@
 [[introduction]]
-= Timefold introduction
+= Introduction
 // Redirect to this page from .../docs/timefold/latest.
 :page-aliases: ../index.adoc
 :doctype: book
@@ -12,7 +12,8 @@
 Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time and money). Timefold optimizes such planning to do more business with less resources.
 This is known as _Constraint Satisfaction Programming_ (which is part of the _Operations Research_ discipline).
 
-https://timefold.ai[Timefold] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems. It solves use cases such as:
+https://timefold.ai[Timefold] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems.
+It solves use cases such as:
 
 * **Employee shift rostering**: timetabling nurses, repairmen, ...
 * **Agenda scheduling**: scheduling meetings, appointments, maintenance jobs, advertisements, ...
@@ -112,55 +113,69 @@ As you can see in the examples, most instances have a lot more possible solution
 Timefold supports several optimization algorithms to efficiently wade through that incredibly large number of possible solutions.
 Depending on the use case, some optimization algorithms perform better than others, but it's impossible to tell in advance. **With Timefold, it is easy to switch the optimization algorithm**, by changing the solver configuration in a few lines of XML or code.
 
-[[requirements]]
-== Requirements
+[[timefoldSolverStatus]]
+== Status of Timefold Solver
+
+Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
+It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^ technologies.
+Timefold Solver works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
+
+image::introduction/compatibility.png[align="center"]
+
+Timefold Solver is stable, reliable and scalable.
+It has been heavily tested with unit, integration, and stress tests, and is used in production throughout the world.
+One example handles over 50 000 variables with 5000 values each, multiple constraint types and billions of possible constraint matches.
+
+We offer two editions of Timefold Solver.
+
+[[communityEdition]]
+=== Timefold Solver Community Edition
 
 Timefold Solver Community Edition is _open source_ software,
 released under http://www.apache.org/licenses/LICENSE-2.0.html[the Apache License 2.0].
 This license is very liberal and allows reuse for commercial purposes.
 Read http://www.apache.org/foundation/licence-FAQ.html#WhatDoesItMEAN[the layman's explanation].
 
-Timefold is 100% pure Java^TM^ and runs on Java {java-version} or higher.
-It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^ technologies.
-Timefold is available in <<useWithMavenGradleEtc,the Maven Central Repository>>.
+Timefold Solver Community Edition is available in <<useWithMavenGradleEtc,the Maven Central Repository>>.
+It is and will always be free.
+The overwhelming majority of solver features will always be available in the Community Edition.
+Most users will be able to solve their planning problems with the Community Edition.
 
-Timefold works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
-
-image::introduction/compatibility.png[align="center"]
+[[enterpriseEdition]]
+=== Timefold Solver Enterprise Edition
 
 Timefold Solver Enterprise Edition is a commercial product that offers additional features,
 such as xref:move-and-neighborhood-selection/move-and-neighborhood-selection.adoc#nearbySelection[nearby selection]
 and xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multi-threaded solving].
+These features are essential to scale out to very large datasets.
 
-[[governance]]
-== Governance
+To use Timefold Solver Enterprise Edition in production,
+you need to https://timefold.ai/company/contact/[purchase a license].
+For information about how to use Timefold Solver Enterprise Edition,
+see <<switchToEnterpriseEdition,Switch To Enterprise Edition>>.
 
-
-[[statusOfTimefold]]
-=== Status of Timefold
-
-Timefold is stable, reliable and scalable. It has been heavily tested with unit, integration, and stress tests, and is used in production throughout the world. One example handles over 50 000 variables with 5000 values each, multiple constraint types and billions of possible constraint matches.
-
-See xref:release-notes/release-notes.adoc#releaseNotes[Release notes] for an overview of recent activity in the project.
-
+For a high-level overview of the differences between the two editions,
+see http://timefold.ai/pricing[Timefold Pricing].
 
 [[backwardsCompatibility]]
-=== Backwards compatibility
+== Backwards compatibility
 
-Timefold separates its API and implementation:
+Timefold Solver separates its API and implementation:
 
 * **Public API**: All classes in the package namespace *ai.timefold.solver.core.api*, *ai.timefold.solver.benchmark.api*, *ai.timefold.solver.test.api* and *ai.timefold.solver...api* are 100% *backwards compatible* in future releases (especially minor and hotfix releases).
 In rare circumstances, if the major version number changes, a few specific classes might have a few backwards incompatible changes, but those will be clearly documented in https://timefold.ai/docs/[the upgrade recipe].
 * **XML configuration**: The XML solver configuration is backwards compatible for all elements, except for elements that require the use of non-public API classes.
 The XML solver configuration is defined by the classes in the package namespace *ai.timefold.solver.core.config* and *ai.timefold.solver.benchmark.config*.
 * **Implementation classes**: All other classes are _not_ backwards compatible.
-They will change in future major or minor releases (but probably not in hotfix releases). https://timefold.ai/docs/[The upgrade recipe] describes every such relevant change and on how to quickly deal with it when upgrading to a newer version.
+They will change in future major or minor releases (but probably not in hotfix releases).
+https://timefold.ai/docs/[The upgrade recipe] describes every such relevant change and on how to quickly deal with it when upgrading to a newer version.
 
 
 [NOTE]
 ====
 This documentation covers some `impl` classes too.
-Those documented `impl` classes are reliable and safe to use (unless explicitly marked as experimental in this documentation), but we're just not entirely comfortable yet to write their signatures in stone.
+Those documented `impl` classes are reliable and safe to use (unless explicitly marked as experimental in this documentation),
+but we're just not entirely comfortable yet to write their signatures in stone.
 ====
 
 
@@ -168,7 +183,7 @@ Those documented `impl` classes are reliable and safe to use (unless explicitly 
 == Start using Timefold Solver
 
 [[useWithMavenGradleEtc]]
-=== Use Timefold Solver with Maven, Gradle, or ANT
+=== Use Timefold Solver with Maven or Gradle
 
 The Timefold Solver jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
 
@@ -223,6 +238,85 @@ dependencies {
   implementation 'ai.timefold.solver:timefold-solver-core:...'
 }
 ----
+
+[[switchToEnterpriseEdition]]
+=== Switch to Enterprise Edition
+
+In order to switch from Timefold Solver Community Edition to Enterprise Edition,
+first reference the Enterprise Edition Maven repository in your project.
+If you use Maven, add the following repository to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<project>
+  ...
+  <repositories>
+    <repository>
+      <id>timefold-solver-enterprise</id>
+      <name>Timefold Solver Enterprise</name>
+      <url>https://maven.pkg.github.com/TimefoldAI/timefold-solver-enterprise</url>
+    </repository>
+  </repositories>
+  ...
+</project>
+----
+
+If you use Gradle, add the following in your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+repositories {
+  mavenCentral()
+  maven {
+    url "https://maven.pkg.github.com/TimefoldAI/timefold-solver-enterprise"
+  }
+}
+----
+
+Having done that the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
+as shown in the table below.
+
+|===
+|Community Edition|Enterprise Edition
+
+|`ai.timefold.solver:timefold-solver-bom`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
+
+|`ai.timefold.solver:timefold-solver-core`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
+
+|`ai.timefold.solver:timefold-solver-quarkus`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
+
+|`ai.timefold.solver:timefold-solver-spring-boot-starter`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
+|===
+
+=== Upgrade to the latest version
+
+Quickly upgrade your source code to the latest and greatest version of Timefold,
+run this command:
+
+Maven:
+
+[source,shell,subs=attributes+]
+----
+$ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
+  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} \
+  -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+----
+
+Gradle:
+
+[source,shell,subs=attributes+]
+----
+$ curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle
+$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version}
+$ rm upgrade-timefold.gradle
+----
+
+It automatically replaces deprecated methods with better alternatives.
+Run your tests and commit the changes.
 
 [[buildFromSource]]
 === Build Timefold Solver from source
