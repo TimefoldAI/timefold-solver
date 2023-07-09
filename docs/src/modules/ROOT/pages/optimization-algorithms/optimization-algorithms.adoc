@@ -733,7 +733,7 @@ For example, implement `CustomPhaseCommand` and its `changeWorkingSolution()` me
 
 [source,java,options="nowrap"]
 ----
-public class ToOriginalMachineSolutionInitializer extends AbstractCustomPhaseCommand<MachineReassignment> {
+public class ToOriginalMachineSolutionInitializer implements CustomPhaseCommand<MachineReassignment> {
 
     public void changeWorkingSolution(ScoreDirector<MachineReassignment> scoreDirector) {
         MachineReassignment machineReassignment = scoreDirector.getWorkingSolution();
