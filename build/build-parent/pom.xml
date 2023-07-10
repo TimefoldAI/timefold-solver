@@ -281,7 +281,12 @@
                         </ignoreClasses>
                       </dependency>
                     </dependencies>
+                    <scopes>
+                      <scope>compile</scope>
+                      <scope>provided</scope>
+                    </scopes>
                     <findAllDuplicates>true</findAllDuplicates>
+                    <ignoreWhenIdentical>true</ignoreWhenIdentical>
                   </banDuplicateClasses>
                 </rules>
                 <fail>${enforcer.failOnDuplicatedClasses}</fail>
