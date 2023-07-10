@@ -5,8 +5,8 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
 
-    private int hardScore;
-    private int softScore;
+    int hardScore;
+    int softScore;
 
     HardSoftScoreInliner(boolean constraintMatchEnabled) {
         super(constraintMatchEnabled);
@@ -16,8 +16,7 @@ final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
     public WeightedScoreImpacter<HardSoftScore, HardSoftScoreContext> buildWeightedScoreImpacter(Constraint constraint,
             HardSoftScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
-        HardSoftScoreContext context = new HardSoftScoreContext(this, constraint, constraintWeight,
-                impact -> this.hardScore += impact, impact -> this.softScore += impact);
+        HardSoftScoreContext context = new HardSoftScoreContext(this, constraint, constraintWeight);
         if (constraintWeight.softScore() == 0) {
             return WeightedScoreImpacter.of(context, HardSoftScoreContext::changeHardScoreBy);
         } else if (constraintWeight.hardScore() == 0) {

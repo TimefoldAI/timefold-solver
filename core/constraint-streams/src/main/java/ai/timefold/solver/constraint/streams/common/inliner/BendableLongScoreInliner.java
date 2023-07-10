@@ -2,14 +2,13 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.constraint.streams.common.inliner.BendableLongScoreContext.IntLongConsumer;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 public final class BendableLongScoreInliner extends AbstractScoreInliner<BendableLongScore> {
 
-    private final long[] hardScores;
-    private final long[] softScores;
+    final long[] hardScores;
+    final long[] softScores;
 
     BendableLongScoreInliner(boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
         super(constraintMatchEnabled);
@@ -31,14 +30,11 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
                 singleLevel = i;
             }
         }
-        IntLongConsumer hardScoreUpdater = (scoreLevel, impact) -> this.hardScores[scoreLevel] += impact;
-        IntLongConsumer softScoreUpdater = (scoreLevel, impact) -> this.softScores[scoreLevel] += impact;
         if (singleLevel != null) {
             boolean isHardScore = singleLevel < constraintWeight.hardLevelsSize();
             int level = isHardScore ? singleLevel : singleLevel - constraintWeight.hardLevelsSize();
             BendableLongScoreContext context = new BendableLongScoreContext(this, constraint, constraintWeight,
-                    hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel),
-                    hardScoreUpdater, softScoreUpdater);
+                    hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
             if (isHardScore) {
                 return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
                         JustificationsSupplier justificationSupplier) -> ctx.changeHardScoreBy(impact, justificationSupplier));
@@ -47,8 +43,8 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
                         JustificationsSupplier justificationSupplier) -> ctx.changeSoftScoreBy(impact, justificationSupplier));
             }
         } else {
-            BendableLongScoreContext context = new BendableLongScoreContext(this, constraint, constraintWeight,
-                    hardScores.length, softScores.length, hardScoreUpdater, softScoreUpdater);
+            BendableLongScoreContext context =
+                    new BendableLongScoreContext(this, constraint, constraintWeight, hardScores.length, softScores.length);
             return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
                     JustificationsSupplier justificationSupplier) -> ctx.changeScoreBy(impact, justificationSupplier));
         }

@@ -21,19 +21,19 @@ import ai.timefold.solver.core.api.score.Score;
  * for the method types it doesn't support. The CS API guarantees no types are mixed. For example,
  * a {@link BigDecimal} parameter method won't be called on an instance built with an {@link IntImpactFunction}.
  */
-public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> {
+public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> WeightedScoreImpacter<Score_, Context_>
+    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, IntImpactFunction<Score_, Context_> impactFunction) {
         return new IntWeightedScoreImpacter<>(impactFunction, context);
     }
 
-    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> WeightedScoreImpacter<Score_, Context_>
+    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, LongImpactFunction<Score_, Context_> impactFunction) {
         return new LongWeightedScoreImpacter<>(impactFunction, context);
     }
 
-    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> WeightedScoreImpacter<Score_, Context_>
+    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, BigDecimalImpactFunction<Score_, Context_> impactFunction) {
         return new BigDecimalWeightedScoreImpacter<>(impactFunction, context);
     }
@@ -62,21 +62,21 @@ public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ ex
     Context_ getContext();
 
     @FunctionalInterface
-    interface IntImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> {
+    interface IntImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
         UndoScoreImpacter impact(Context_ context, int matchWeight, JustificationsSupplier justificationsSupplier);
 
     }
 
     @FunctionalInterface
-    interface LongImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> {
+    interface LongImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
         UndoScoreImpacter impact(Context_ context, long matchWeight, JustificationsSupplier justificationsSupplier);
 
     }
 
     @FunctionalInterface
-    interface BigDecimalImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>> {
+    interface BigDecimalImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
         UndoScoreImpacter impact(Context_ context, BigDecimal matchWeight, JustificationsSupplier justificationsSupplier);
 

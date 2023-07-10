@@ -1,26 +1,19 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
-import java.util.function.LongConsumer;
-
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore> {
+final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, HardSoftLongScoreInliner> {
 
-    private final LongConsumer softScoreUpdater;
-    private final LongConsumer hardScoreUpdater;
-
-    public HardSoftLongScoreContext(AbstractScoreInliner<HardSoftLongScore> parent, Constraint constraint,
-            HardSoftLongScore constraintWeight, LongConsumer hardScoreUpdater, LongConsumer softScoreUpdater) {
+    public HardSoftLongScoreContext(HardSoftLongScoreInliner parent, Constraint constraint,
+            HardSoftLongScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.softScoreUpdater = softScoreUpdater;
-        this.hardScoreUpdater = hardScoreUpdater;
     }
 
     public UndoScoreImpacter changeSoftScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
         long softImpact = constraintWeight.softScore() * matchWeight;
-        softScoreUpdater.accept(softImpact);
-        UndoScoreImpacter undoScoreImpact = () -> softScoreUpdater.accept(-softImpact);
+        parent.softScore += softImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -29,8 +22,8 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore> {
 
     public UndoScoreImpacter changeHardScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
         long hardImpact = constraintWeight.hardScore() * matchWeight;
-        hardScoreUpdater.accept(hardImpact);
-        UndoScoreImpacter undoScoreImpact = () -> hardScoreUpdater.accept(-hardImpact);
+        parent.hardScore += hardImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -40,11 +33,11 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore> {
     public UndoScoreImpacter changeScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
         long hardImpact = constraintWeight.hardScore() * matchWeight;
         long softImpact = constraintWeight.softScore() * matchWeight;
-        hardScoreUpdater.accept(hardImpact);
-        softScoreUpdater.accept(softImpact);
+        parent.hardScore += hardImpact;
+        parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> {
-            hardScoreUpdater.accept(-hardImpact);
-            softScoreUpdater.accept(-softImpact);
+            parent.hardScore -= hardImpact;
+            parent.softScore -= softImpact;
         };
         if (!constraintMatchEnabled) {
             return undoScoreImpact;

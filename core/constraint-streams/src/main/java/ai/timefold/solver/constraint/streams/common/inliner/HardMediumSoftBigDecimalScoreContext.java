@@ -1,30 +1,22 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
-import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class HardMediumSoftBigDecimalScoreContext extends ScoreContext<HardMediumSoftBigDecimalScore> {
+final class HardMediumSoftBigDecimalScoreContext
+        extends ScoreContext<HardMediumSoftBigDecimalScore, HardMediumSoftBigDecimalScoreInliner> {
 
-    private final Consumer<BigDecimal> softScoreUpdater;
-    private final Consumer<BigDecimal> mediumScoreUpdater;
-    private final Consumer<BigDecimal> hardScoreUpdater;
-
-    public HardMediumSoftBigDecimalScoreContext(AbstractScoreInliner<HardMediumSoftBigDecimalScore> parent,
-            Constraint constraint, HardMediumSoftBigDecimalScore constraintWeight, Consumer<BigDecimal> hardScoreUpdater,
-            Consumer<BigDecimal> mediumScoreUpdater, Consumer<BigDecimal> softScoreUpdater) {
+    public HardMediumSoftBigDecimalScoreContext(HardMediumSoftBigDecimalScoreInliner parent,
+            Constraint constraint, HardMediumSoftBigDecimalScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.softScoreUpdater = softScoreUpdater;
-        this.mediumScoreUpdater = mediumScoreUpdater;
-        this.hardScoreUpdater = hardScoreUpdater;
     }
 
     public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
         BigDecimal softImpact = constraintWeight.softScore().multiply(matchWeight);
-        softScoreUpdater.accept(softImpact);
-        UndoScoreImpacter undoScoreImpact = () -> softScoreUpdater.accept(softImpact.negate());
+        parent.softScore = parent.softScore.add(softImpact);
+        UndoScoreImpacter undoScoreImpact = () -> parent.softScore = parent.softScore.subtract(softImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -34,8 +26,8 @@ final class HardMediumSoftBigDecimalScoreContext extends ScoreContext<HardMedium
 
     public UndoScoreImpacter changeMediumScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
         BigDecimal mediumImpact = constraintWeight.mediumScore().multiply(matchWeight);
-        mediumScoreUpdater.accept(mediumImpact);
-        UndoScoreImpacter undoScoreImpact = () -> mediumScoreUpdater.accept(mediumImpact.negate());
+        parent.mediumScore = parent.mediumScore.add(mediumImpact);
+        UndoScoreImpacter undoScoreImpact = () -> parent.mediumScore = parent.mediumScore.subtract(mediumImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -45,8 +37,8 @@ final class HardMediumSoftBigDecimalScoreContext extends ScoreContext<HardMedium
 
     public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
         BigDecimal hardImpact = constraintWeight.hardScore().multiply(matchWeight);
-        hardScoreUpdater.accept(hardImpact);
-        UndoScoreImpacter undoScoreImpact = () -> hardScoreUpdater.accept(hardImpact.negate());
+        parent.hardScore = parent.hardScore.add(hardImpact);
+        UndoScoreImpacter undoScoreImpact = () -> parent.hardScore = parent.hardScore.subtract(hardImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -58,13 +50,13 @@ final class HardMediumSoftBigDecimalScoreContext extends ScoreContext<HardMedium
         BigDecimal hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         BigDecimal mediumImpact = constraintWeight.mediumScore().multiply(matchWeight);
         BigDecimal softImpact = constraintWeight.softScore().multiply(matchWeight);
-        hardScoreUpdater.accept(hardImpact);
-        mediumScoreUpdater.accept(mediumImpact);
-        softScoreUpdater.accept(softImpact);
+        parent.hardScore = parent.hardScore.add(hardImpact);
+        parent.mediumScore = parent.mediumScore.add(mediumImpact);
+        parent.softScore = parent.softScore.add(softImpact);
         UndoScoreImpacter undoScoreImpact = () -> {
-            hardScoreUpdater.accept(hardImpact.negate());
-            mediumScoreUpdater.accept(mediumImpact.negate());
-            softScoreUpdater.accept(softImpact.negate());
+            parent.hardScore = parent.hardScore.subtract(hardImpact);
+            parent.mediumScore = parent.mediumScore.subtract(mediumImpact);
+            parent.softScore = parent.softScore.subtract(softImpact);
         };
         if (!constraintMatchEnabled) {
             return undoScoreImpact;

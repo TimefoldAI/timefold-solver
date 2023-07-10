@@ -7,8 +7,8 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardSoftBigDecimalScore> {
 
-    private BigDecimal hardScore = BigDecimal.ZERO;
-    private BigDecimal softScore = BigDecimal.ZERO;
+    BigDecimal hardScore = BigDecimal.ZERO;
+    BigDecimal softScore = BigDecimal.ZERO;
 
     HardSoftBigDecimalScoreInliner(boolean constraintMatchEnabled) {
         super(constraintMatchEnabled);
@@ -18,10 +18,7 @@ final class HardSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardSoft
     public WeightedScoreImpacter<HardSoftBigDecimalScore, HardSoftBigDecimalScoreContext> buildWeightedScoreImpacter(
             Constraint constraint, HardSoftBigDecimalScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
-        HardSoftBigDecimalScoreContext context =
-                new HardSoftBigDecimalScoreContext(this, constraint, constraintWeight,
-                        impact -> this.hardScore = this.hardScore.add(impact),
-                        impact -> this.softScore = this.softScore.add(impact));
+        HardSoftBigDecimalScoreContext context = new HardSoftBigDecimalScoreContext(this, constraint, constraintWeight);
         if (constraintWeight.softScore().equals(BigDecimal.ZERO)) {
             return WeightedScoreImpacter.of(context, HardSoftBigDecimalScoreContext::changeHardScoreBy);
         } else if (constraintWeight.hardScore().equals(BigDecimal.ZERO)) {

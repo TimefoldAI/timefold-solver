@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.impl.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class CollectionUtils {
 
@@ -24,21 +27,25 @@ public final class CollectionUtils {
          * See PLANNER-2808 for details.
          */
         switch (originalList.size()) {
-            case 0:
+            case 0 -> {
                 return new ArrayList<>(0);
-            case 1:
+            }
+            case 1 -> {
                 List<E> singletonList = new ArrayList<>(1);
                 singletonList.add(originalList.get(0));
                 return singletonList;
-            case 2:
+            }
+            case 2 -> {
                 List<E> smallList = new ArrayList<>(2);
                 smallList.add(originalList.get(1));
                 smallList.add(originalList.get(0));
                 return smallList;
-            default:
+            }
+            default -> {
                 List<E> largeList = new ArrayList<>(originalList);
                 Collections.reverse(largeList);
                 return largeList;
+            }
         }
     }
 
@@ -47,6 +54,40 @@ public final class CollectionUtils {
         result.addAll(left);
         result.addAll(right);
         return result;
+    }
+
+    public static <T> List<T> toDistinctList(Collection<T> collection) {
+        int size = collection.size();
+        switch (size) {
+            case 0 -> {
+                return Collections.emptyList();
+            }
+            case 1 -> {
+                if (collection instanceof List<T> list) {
+                    return Collections.singletonList(list.get(0));
+                } else {
+                    return Collections.singletonList(collection.iterator().next());
+                }
+            }
+            default -> {
+                if (collection instanceof Set<T> set) {
+                    return new ArrayList<>(set);
+                }
+                /*
+                 * The following is better than ArrayList(LinkedHashSet) because HashSet is cheaper,
+                 * while still maintaining the original order of the collection.
+                 */
+                var resultList = new ArrayList<T>(size);
+                var set = new HashSet<T>(size);
+                for (T element : collection) {
+                    if (set.add(element)) {
+                        resultList.add(element);
+                    }
+                }
+                resultList.trimToSize();
+                return resultList;
+            }
+        }
     }
 
     private CollectionUtils() {

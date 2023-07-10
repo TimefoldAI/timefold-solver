@@ -1,14 +1,16 @@
 package ai.timefold.solver.core.impl.score.constraint;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 public final class DefaultIndictment<Score_ extends Score<Score_>> implements Indictment<Score_> {
 
@@ -35,12 +37,29 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     @Override
     public List<ConstraintJustification> getJustificationList() {
         if (constraintJustificationList == null) {
-            constraintJustificationList = constraintMatchSet.stream()
-                    .map(s -> (ConstraintJustification) s.getJustification())
-                    .distinct()
-                    .collect(Collectors.toList());
+            var nonDistinctConstraintJustificationList = buildConstraintJustificationList();
+            constraintJustificationList = CollectionUtils.toDistinctList(nonDistinctConstraintJustificationList);
         }
         return constraintJustificationList;
+    }
+
+    private Collection<ConstraintJustification> buildConstraintJustificationList() {
+        var constraintMatchSetSize = constraintMatchSet.size();
+        switch (constraintMatchSetSize) {
+            case 0 -> {
+                return Collections.emptyList();
+            }
+            case 1 -> {
+                return Collections.singletonList(constraintMatchSet.iterator().next().getJustification());
+            }
+            default -> {
+                var justificationSet = new LinkedHashSet<ConstraintJustification>(constraintMatchSet.size());
+                for (ConstraintMatch<Score_> constraintMatch : constraintMatchSet) {
+                    justificationSet.add(constraintMatch.getJustification());
+                }
+                return justificationSet;
+            }
+        }
     }
 
     @Override

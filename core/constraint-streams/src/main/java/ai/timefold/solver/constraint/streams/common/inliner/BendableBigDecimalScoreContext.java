@@ -5,40 +5,33 @@ import java.math.BigDecimal;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore> {
+final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
 
     private final int hardScoreLevelCount;
     private final int softScoreLevelCount;
     private final int scoreLevel;
     private final BigDecimal scoreLevelWeight;
-    private final IntBigDecimalConsumer softScoreLevelUpdater;
-    private final IntBigDecimalConsumer hardScoreLevelUpdater;
 
-    public BendableBigDecimalScoreContext(AbstractScoreInliner<BendableBigDecimalScore> parent, Constraint constraint,
+    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, Constraint constraint,
             BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount, int scoreLevel,
-            BigDecimal scoreLevelWeight, IntBigDecimalConsumer hardScoreLevelUpdater,
-            IntBigDecimalConsumer softScoreLevelUpdater) {
+            BigDecimal scoreLevelWeight) {
         super(parent, constraint, constraintWeight);
         this.hardScoreLevelCount = hardScoreLevelCount;
         this.softScoreLevelCount = softScoreLevelCount;
         this.scoreLevel = scoreLevel;
         this.scoreLevelWeight = scoreLevelWeight;
-        this.softScoreLevelUpdater = softScoreLevelUpdater;
-        this.hardScoreLevelUpdater = hardScoreLevelUpdater;
     }
 
-    public BendableBigDecimalScoreContext(AbstractScoreInliner<BendableBigDecimalScore> parent, Constraint constraint,
-            BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount,
-            IntBigDecimalConsumer hardScoreLevelUpdater, IntBigDecimalConsumer softScoreLevelUpdater) {
-        this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, BigDecimal.ZERO,
-                hardScoreLevelUpdater,
-                softScoreLevelUpdater);
+    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, Constraint constraint,
+            BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount) {
+        this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, BigDecimal.ZERO);
     }
 
     public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
         BigDecimal softImpact = scoreLevelWeight.multiply(matchWeight);
-        softScoreLevelUpdater.accept(scoreLevel, softImpact);
-        UndoScoreImpacter undoScoreImpact = () -> softScoreLevelUpdater.accept(scoreLevel, softImpact.negate());
+        parent.softScores[scoreLevel] = parent.softScores[scoreLevel].add(softImpact);
+        UndoScoreImpacter undoScoreImpact =
+                () -> parent.softScores[scoreLevel] = parent.softScores[scoreLevel].subtract(softImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -49,8 +42,9 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
 
     public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
         BigDecimal hardImpact = scoreLevelWeight.multiply(matchWeight);
-        hardScoreLevelUpdater.accept(scoreLevel, hardImpact);
-        UndoScoreImpacter undoScoreImpact = () -> hardScoreLevelUpdater.accept(scoreLevel, hardImpact.negate());
+        parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].add(hardImpact);
+        UndoScoreImpacter undoScoreImpact =
+                () -> parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].subtract(hardImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -65,19 +59,19 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
             BigDecimal hardImpact = constraintWeight.hardScore(hardScoreLevel).multiply(matchWeight);
             hardImpacts[hardScoreLevel] = hardImpact;
-            hardScoreLevelUpdater.accept(hardScoreLevel, hardImpact);
+            parent.hardScores[hardScoreLevel] = parent.hardScores[hardScoreLevel].add(hardImpact);
         }
         for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
             BigDecimal softImpact = constraintWeight.softScore(softScoreLevel).multiply(matchWeight);
             softImpacts[softScoreLevel] = softImpact;
-            softScoreLevelUpdater.accept(softScoreLevel, softImpact);
+            parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].add(softImpact);
         }
         UndoScoreImpacter undoScoreImpact = () -> {
             for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
-                hardScoreLevelUpdater.accept(hardScoreLevel, hardImpacts[hardScoreLevel].negate());
+                parent.hardScores[hardScoreLevel] = parent.hardScores[hardScoreLevel].subtract(hardImpacts[hardScoreLevel]);
             }
             for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
-                softScoreLevelUpdater.accept(softScoreLevel, softImpacts[softScoreLevel].negate());
+                parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].subtract(softImpacts[softScoreLevel]);
             }
         };
         if (!constraintMatchEnabled) {
@@ -85,12 +79,6 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         }
         return impactWithConstraintMatch(undoScoreImpact, BendableBigDecimalScore.of(hardImpacts, softImpacts),
                 justificationsSupplier);
-    }
-
-    public interface IntBigDecimalConsumer {
-
-        void accept(int value1, BigDecimal value2);
-
     }
 
 }

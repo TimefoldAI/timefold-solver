@@ -11,31 +11,46 @@ import java.util.Set;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 
 public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> implements ConstraintMatchTotal<Score_>,
         Comparable<DefaultConstraintMatchTotal<Score_>> {
 
+    private final String constraintId;
     private final String constraintPackage;
     private final String constraintName;
-    private final String constraintId;
     private final Score_ constraintWeight;
 
     private final Set<ConstraintMatch<Score_>> constraintMatchSet = new LinkedHashSet<>();
     private Score_ score;
 
     public DefaultConstraintMatchTotal(String constraintPackage, String constraintName) {
+        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName);
+    }
+
+    private DefaultConstraintMatchTotal(String constraintId, String constraintPackage, String constraintName) {
         this.constraintPackage = requireNonNull(constraintPackage);
         this.constraintName = requireNonNull(constraintName);
-        this.constraintId = ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
+        this.constraintId = requireNonNull(constraintId);
         this.constraintWeight = null;
     }
 
+    public DefaultConstraintMatchTotal(Constraint constraint, Score_ constraintWeight) {
+        this(constraint.getConstraintId(), constraint.getConstraintPackage(), constraint.getConstraintName(), constraintWeight);
+    }
+
     public DefaultConstraintMatchTotal(String constraintPackage, String constraintName, Score_ constraintWeight) {
+        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName,
+                constraintWeight);
+    }
+
+    private DefaultConstraintMatchTotal(String constraintId, String constraintPackage, String constraintName,
+            Score_ constraintWeight) {
         this.constraintPackage = requireNonNull(constraintPackage);
         this.constraintName = requireNonNull(constraintName);
-        this.constraintId = ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
+        this.constraintId = requireNonNull(constraintId);
         this.constraintWeight = requireNonNull(constraintWeight);
         this.score = constraintWeight.zero();
     }
@@ -95,8 +110,8 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
     public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, Collection<Object> indictedObjects,
             Score_ score) {
         this.score = this.score == null ? score : this.score.add(score);
-        ConstraintMatch<Score_> constraintMatch = new ConstraintMatch<>(constraintPackage, constraintName,
-                justification, indictedObjects, score);
+        ConstraintMatch<Score_> constraintMatch =
+                new ConstraintMatch<>(constraintId, constraintPackage, constraintName, justification, indictedObjects, score);
         constraintMatchSet.add(constraintMatch);
         return constraintMatch;
     }

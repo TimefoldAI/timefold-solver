@@ -3,14 +3,14 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
-public abstract class ScoreContext<Score_ extends Score<Score_>> {
+public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ extends AbstractScoreInliner<Score_>> {
 
-    private final AbstractScoreInliner<Score_> parent;
+    protected final ScoreInliner_ parent;
     protected final Constraint constraint;
     protected final Score_ constraintWeight;
     protected final boolean constraintMatchEnabled;
 
-    protected ScoreContext(AbstractScoreInliner<Score_> parent, Constraint constraint, Score_ constraintWeight) {
+    protected ScoreContext(ScoreInliner_ parent, Constraint constraint, Score_ constraintWeight) {
         this.parent = parent;
         this.constraint = constraint;
         this.constraintWeight = constraintWeight;

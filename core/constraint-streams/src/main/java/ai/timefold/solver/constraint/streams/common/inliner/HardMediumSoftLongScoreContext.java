@@ -1,29 +1,19 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
-import java.util.function.LongConsumer;
-
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLongScore> {
+final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLongScore, HardMediumSoftLongScoreInliner> {
 
-    private final LongConsumer softScoreUpdater;
-    private final LongConsumer mediumScoreUpdater;
-    private final LongConsumer hardScoreUpdater;
-
-    public HardMediumSoftLongScoreContext(AbstractScoreInliner<HardMediumSoftLongScore> parent, Constraint constraint,
-            HardMediumSoftLongScore constraintWeight, LongConsumer hardScoreUpdater, LongConsumer mediumScoreUpdater,
-            LongConsumer softScoreUpdater) {
+    public HardMediumSoftLongScoreContext(HardMediumSoftLongScoreInliner parent, Constraint constraint,
+            HardMediumSoftLongScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.softScoreUpdater = softScoreUpdater;
-        this.mediumScoreUpdater = mediumScoreUpdater;
-        this.hardScoreUpdater = hardScoreUpdater;
     }
 
     public UndoScoreImpacter changeSoftScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
         long softImpact = constraintWeight.softScore() * matchWeight;
-        softScoreUpdater.accept(softImpact);
-        UndoScoreImpacter undoScoreImpact = () -> softScoreUpdater.accept(-softImpact);
+        parent.softScore += softImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -32,8 +22,8 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
 
     public UndoScoreImpacter changeMediumScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
         long mediumImpact = constraintWeight.mediumScore() * matchWeight;
-        mediumScoreUpdater.accept(mediumImpact);
-        UndoScoreImpacter undoScoreImpact = () -> mediumScoreUpdater.accept(-mediumImpact);
+        parent.mediumScore += mediumImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.mediumScore -= mediumImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -43,8 +33,8 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
 
     public UndoScoreImpacter changeHardScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
         long hardImpact = constraintWeight.hardScore() * matchWeight;
-        hardScoreUpdater.accept(hardImpact);
-        UndoScoreImpacter undoScoreImpact = () -> hardScoreUpdater.accept(-hardImpact);
+        parent.hardScore += hardImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
@@ -55,13 +45,13 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         long hardImpact = constraintWeight.hardScore() * matchWeight;
         long mediumImpact = constraintWeight.mediumScore() * matchWeight;
         long softImpact = constraintWeight.softScore() * matchWeight;
-        hardScoreUpdater.accept(hardImpact);
-        mediumScoreUpdater.accept(mediumImpact);
-        softScoreUpdater.accept(softImpact);
+        parent.hardScore += hardImpact;
+        parent.mediumScore += mediumImpact;
+        parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> {
-            hardScoreUpdater.accept(-hardImpact);
-            mediumScoreUpdater.accept(-mediumImpact);
-            softScoreUpdater.accept(-softImpact);
+            parent.hardScore -= hardImpact;
+            parent.mediumScore -= mediumImpact;
+            parent.softScore -= softImpact;
         };
         if (!constraintMatchEnabled) {
             return undoScoreImpact;

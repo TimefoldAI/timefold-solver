@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 
-final class LongWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>>
+final class LongWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
         implements WeightedScoreImpacter<Score_, Context_> {
 
     private final LongImpactFunction<Score_, Context_> impactFunction;

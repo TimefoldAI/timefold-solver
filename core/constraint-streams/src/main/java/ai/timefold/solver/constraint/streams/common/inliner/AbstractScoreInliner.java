@@ -1,10 +1,10 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
@@ -26,6 +26,7 @@ import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
@@ -118,38 +119,64 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
     protected final Runnable addConstraintMatch(Constraint constraint, Score_ constraintWeight, Score_ score,
             JustificationsSupplier justificationsSupplier) {
-        String constraintPackage = constraint.getConstraintPackage();
-        String constraintName = constraint.getConstraintName();
-        DefaultConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.computeIfAbsent(
-                constraint.getConstraintId(),
-                key -> new DefaultConstraintMatchTotal<>(constraintPackage, constraintName, constraintWeight));
-        ConstraintMatch<Score_> constraintMatch = constraintMatchTotal.addConstraintMatch(
+        var constraintMatchTotal = getConstraintMatchTotal(constraint, constraintWeight);
+        var constraintMatch = constraintMatchTotal.addConstraintMatch(
                 justificationsSupplier.createConstraintJustification(score),
                 justificationsSupplier.createIndictedObjects(), score);
-        List<DefaultIndictment<Score_>> indictments = constraintMatch.getIndictedObjectList()
-                .stream()
-                .distinct() // One match might have the same justification twice
-                .map(justificationPart -> processJustification(constraintMatch, justificationPart))
-                .collect(Collectors.toList());
-        return () -> {
-            constraintMatchTotal.removeConstraintMatch(constraintMatch);
-            if (constraintMatchTotal.getConstraintMatchSet().isEmpty()) {
-                constraintMatchTotalMap.remove(constraint.getConstraintId());
+        var indictedObjectList = CollectionUtils.toDistinctList(constraintMatch.getIndictedObjectList());
+        if (indictedObjectList.isEmpty()) {
+            return () -> removeConstraintMatchFromTotal(constraintMatchTotal, constraintMatch);
+        } else {
+            var indictmentList = new ArrayList<DefaultIndictment<Score_>>(indictedObjectList.size());
+            for (var indictedObject : indictedObjectList) {
+                var indictment = getIndictment(constraintMatch, indictedObject);
+                indictment.addConstraintMatch(constraintMatch);
+                indictmentList.add(indictment);
             }
-            for (DefaultIndictment<Score_> indictment : indictments) {
-                indictment.removeConstraintMatch(constraintMatch);
-                if (indictment.getConstraintMatchSet().isEmpty()) {
-                    indictmentMap.remove(indictment.getIndictedObject());
-                }
-            }
-        };
+            return () -> {
+                removeConstraintMatchFromTotal(constraintMatchTotal, constraintMatch);
+                removeConstraintMatchFromIndictment(indictmentList, constraintMatch);
+            };
+        }
     }
 
-    private DefaultIndictment<Score_> processJustification(ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
-        DefaultIndictment<Score_> indictment = indictmentMap.computeIfAbsent(indictedObject,
-                key -> new DefaultIndictment<>(indictedObject, constraintMatch.getScore().zero()));
-        indictment.addConstraintMatch(constraintMatch);
+    private DefaultConstraintMatchTotal<Score_> getConstraintMatchTotal(Constraint constraint, Score_ constraintWeight) {
+        // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
+        String constraintId = constraint.getConstraintId();
+        var constraintMatchTotal = constraintMatchTotalMap.get(constraintId);
+        if (constraintMatchTotal == null) {
+            constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraint, constraintWeight);
+            constraintMatchTotalMap.put(constraintId, constraintMatchTotal);
+        }
+        return constraintMatchTotal;
+    }
+
+    private DefaultIndictment<Score_> getIndictment(ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
+        // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
+        var indictment = indictmentMap.get(indictedObject);
+        if (indictment == null) {
+            indictment = new DefaultIndictment<>(indictedObject, constraintMatch.getScore().zero());
+            indictmentMap.put(indictedObject, indictment);
+        }
         return indictment;
+    }
+
+    private void removeConstraintMatchFromTotal(DefaultConstraintMatchTotal<Score_> constraintMatchTotal,
+            ConstraintMatch<Score_> constraintMatch) {
+        constraintMatchTotal.removeConstraintMatch(constraintMatch);
+        if (constraintMatchTotal.getConstraintMatchSet().isEmpty()) {
+            constraintMatchTotalMap.remove(constraintMatch.getConstraintId());
+        }
+    }
+
+    private void removeConstraintMatchFromIndictment(List<DefaultIndictment<Score_>> indictmentList,
+            ConstraintMatch<Score_> constraintMatch) {
+        for (DefaultIndictment<Score_> indictment : indictmentList) {
+            indictment.removeConstraintMatch(constraintMatch);
+            if (indictment.getConstraintMatchSet().isEmpty()) {
+                indictmentMap.remove(indictment.getIndictedObject());
+            }
+        }
     }
 
     public boolean isConstraintMatchEnabled() {

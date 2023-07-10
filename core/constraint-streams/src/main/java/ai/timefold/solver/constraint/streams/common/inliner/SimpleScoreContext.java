@@ -1,24 +1,18 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
-import java.util.function.IntConsumer;
-
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class SimpleScoreContext extends ScoreContext<SimpleScore> {
+final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInliner> {
 
-    private final IntConsumer scoreUpdater;
-
-    public SimpleScoreContext(AbstractScoreInliner<SimpleScore> parent, Constraint constraint, SimpleScore constraintWeight,
-            IntConsumer scoreUpdater) {
+    public SimpleScoreContext(SimpleScoreInliner parent, Constraint constraint, SimpleScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.scoreUpdater = scoreUpdater;
     }
 
     public UndoScoreImpacter changeScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
         int impact = constraintWeight.score() * matchWeight;
-        scoreUpdater.accept(impact);
-        UndoScoreImpacter undoScoreImpact = () -> scoreUpdater.accept(-impact);
+        parent.score += impact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }

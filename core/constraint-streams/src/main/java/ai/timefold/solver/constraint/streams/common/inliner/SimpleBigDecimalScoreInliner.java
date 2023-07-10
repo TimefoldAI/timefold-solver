@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigDecimalScore> {
 
-    private BigDecimal score = BigDecimal.ZERO;
+    BigDecimal score = BigDecimal.ZERO;
 
     SimpleBigDecimalScoreInliner(boolean constraintMatchEnabled) {
         super(constraintMatchEnabled);
@@ -17,8 +17,7 @@ final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigD
     public WeightedScoreImpacter<SimpleBigDecimalScore, SimpleBigDecimalScoreContext> buildWeightedScoreImpacter(
             Constraint constraint, SimpleBigDecimalScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
-        SimpleBigDecimalScoreContext context = new SimpleBigDecimalScoreContext(this, constraint, constraintWeight,
-                impact -> this.score = this.score.add(impact));
+        SimpleBigDecimalScoreContext context = new SimpleBigDecimalScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context, SimpleBigDecimalScoreContext::changeScoreBy);
     }
 

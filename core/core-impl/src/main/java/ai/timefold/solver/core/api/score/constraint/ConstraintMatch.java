@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 
@@ -21,9 +22,9 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
  */
 public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comparable<ConstraintMatch<Score_>> {
 
+    private final String constraintId;
     private final String constraintPackage;
     private final String constraintName;
-    private final String constraintId;
 
     private final ConstraintJustification justification;
     private final List<Object> indictedObjects;
@@ -50,13 +51,36 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      */
     public ConstraintMatch(String constraintPackage, String constraintName, ConstraintJustification justification,
             Collection<Object> indictedObjects, Score_ score) {
+        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName,
+                justification, indictedObjects, score);
+    }
+
+    /**
+     * @param constraint never null
+     * @param justification never null
+     * @param score never null
+     */
+    public ConstraintMatch(Constraint constraint, ConstraintJustification justification, Collection<Object> indictedObjects,
+            Score_ score) {
+        this(constraint.getConstraintId(), constraint.getConstraintPackage(), constraint.getConstraintName(), justification,
+                indictedObjects, score);
+    }
+
+    /**
+     * @param constraintId never null
+     * @param constraintPackage never null
+     * @param constraintName never null
+     * @param justification never null
+     * @param score never null
+     */
+    public ConstraintMatch(String constraintId, String constraintPackage, String constraintName,
+            ConstraintJustification justification, Collection<Object> indictedObjects, Score_ score) {
+        this.constraintId = requireNonNull(constraintId);
         this.constraintPackage = requireNonNull(constraintPackage);
         this.constraintName = requireNonNull(constraintName);
-        this.constraintId = ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
         this.justification = requireNonNull(justification);
-        this.indictedObjects = requireNonNull(indictedObjects) instanceof List
-                ? (List<Object>) indictedObjects
-                : List.copyOf(indictedObjects);
+        this.indictedObjects =
+                requireNonNull(indictedObjects) instanceof List<Object> list ? list : List.copyOf(indictedObjects);
         this.score = requireNonNull(score);
     }
 
@@ -137,7 +161,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     // ************************************************************************
 
     public String getConstraintId() {
-        return ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
+        return constraintId;
     }
 
     public String getIdentificationString() {
