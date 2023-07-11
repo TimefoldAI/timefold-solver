@@ -18,6 +18,7 @@ final class IntWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ exte
 
     @Override
     public UndoScoreImpacter impactScore(int matchWeight, JustificationsSupplier justificationsSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, matchWeight, justificationsSupplier);
     }
 

@@ -2,12 +2,12 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecimalScore, HardSoftBigDecimalScoreInliner> {
 
-    public HardSoftBigDecimalScoreContext(HardSoftBigDecimalScoreInliner parent, Constraint constraint,
+    public HardSoftBigDecimalScoreContext(HardSoftBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             HardSoftBigDecimalScore constraintWeight) {
         super(parent, constraint, constraintWeight);
     }

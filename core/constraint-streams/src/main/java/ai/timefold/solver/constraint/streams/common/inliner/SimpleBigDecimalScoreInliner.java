@@ -2,8 +2,8 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigDecimalScore> {
 
@@ -15,7 +15,7 @@ final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigD
 
     @Override
     public WeightedScoreImpacter<SimpleBigDecimalScore, SimpleBigDecimalScoreContext> buildWeightedScoreImpacter(
-            Constraint constraint, SimpleBigDecimalScore constraintWeight) {
+            AbstractConstraint<?, ?, ?> constraint, SimpleBigDecimalScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         SimpleBigDecimalScoreContext context = new SimpleBigDecimalScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context, SimpleBigDecimalScoreContext::changeScoreBy);

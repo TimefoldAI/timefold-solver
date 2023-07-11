@@ -2,8 +2,8 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
 
@@ -12,7 +12,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
     private final int scoreLevel;
     private final BigDecimal scoreLevelWeight;
 
-    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, Constraint constraint,
+    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount, int scoreLevel,
             BigDecimal scoreLevelWeight) {
         super(parent, constraint, constraintWeight);
@@ -22,7 +22,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         this.scoreLevelWeight = scoreLevelWeight;
     }
 
-    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, Constraint constraint,
+    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount) {
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, BigDecimal.ZERO);
     }

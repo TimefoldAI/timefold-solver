@@ -3,23 +3,23 @@ package ai.timefold.solver.constraint.streams.bavet.tri;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractScorer;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
-import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacter;
+import ai.timefold.solver.core.api.function.QuadFunction;
 
 final class TriScorer<A, B, C> extends AbstractScorer<TriTuple<A, B, C>> {
 
-    private final TriFunction<A, B, C, UndoScoreImpacter> scoreImpacter;
+    private final QuadFunction<A, B, C, WeightedScoreImpacter<?, ?>, UndoScoreImpacter> scoreImpacter;
 
-    public TriScorer(String constraintPackage, String constraintName, Score<?> constraintWeight,
-            TriFunction<A, B, C, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
-        super(constraintPackage, constraintName, constraintWeight, inputStoreIndex);
+    public TriScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter,
+            QuadFunction<A, B, C, WeightedScoreImpacter<?, ?>, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
+        super(weightedScoreImpacter, inputStoreIndex);
         this.scoreImpacter = scoreImpacter;
     }
 
     @Override
     protected UndoScoreImpacter impact(TriTuple<A, B, C> tuple) {
         try {
-            return scoreImpacter.apply(tuple.factA, tuple.factB, tuple.factC);
+            return scoreImpacter.apply(tuple.factA, tuple.factB, tuple.factC, weightedScoreImpacter);
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

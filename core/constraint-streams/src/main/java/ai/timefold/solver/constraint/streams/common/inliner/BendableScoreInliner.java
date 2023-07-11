@@ -2,8 +2,8 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.util.Arrays;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
 
@@ -17,7 +17,8 @@ final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
     }
 
     @Override
-    public WeightedScoreImpacter<BendableScore, BendableScoreContext> buildWeightedScoreImpacter(Constraint constraint,
+    public WeightedScoreImpacter<BendableScore, BendableScoreContext> buildWeightedScoreImpacter(
+            AbstractConstraint<?, ?, ?> constraint,
             BendableScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         Integer singleLevel = null;

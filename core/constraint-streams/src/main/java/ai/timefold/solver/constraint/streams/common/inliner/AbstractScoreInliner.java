@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
@@ -115,7 +116,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
      * @param constraintWeight never null
      * @return never null
      */
-    public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(Constraint constraint, Score_ constraintWeight);
+    public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint,
+            Score_ constraintWeight);
 
     protected final Runnable addConstraintMatch(Constraint constraint, Score_ constraintWeight, Score_ score,
             JustificationsSupplier justificationsSupplier) {

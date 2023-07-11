@@ -18,11 +18,13 @@ final class LongWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ ext
 
     @Override
     public UndoScoreImpacter impactScore(int matchWeight, JustificationsSupplier justificationsSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, matchWeight, justificationsSupplier); // int can be cast to long
     }
 
     @Override
     public UndoScoreImpacter impactScore(long matchWeight, JustificationsSupplier justificationsSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, matchWeight, justificationsSupplier);
     }
 

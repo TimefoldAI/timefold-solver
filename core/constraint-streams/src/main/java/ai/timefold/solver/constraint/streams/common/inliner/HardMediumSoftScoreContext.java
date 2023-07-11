@@ -1,11 +1,11 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore, HardMediumSoftScoreInliner> {
 
-    public HardMediumSoftScoreContext(HardMediumSoftScoreInliner parent, Constraint constraint,
+    public HardMediumSoftScoreContext(HardMediumSoftScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             HardMediumSoftScore constraintWeight) {
         super(parent, constraint, constraintWeight);
     }

@@ -1,7 +1,7 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class SimpleLongScoreInliner extends AbstractScoreInliner<SimpleLongScore> {
 
@@ -12,7 +12,8 @@ final class SimpleLongScoreInliner extends AbstractScoreInliner<SimpleLongScore>
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleLongScore, SimpleLongScoreContext> buildWeightedScoreImpacter(Constraint constraint,
+    public WeightedScoreImpacter<SimpleLongScore, SimpleLongScoreContext> buildWeightedScoreImpacter(
+            AbstractConstraint<?, ?, ?> constraint,
             SimpleLongScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         SimpleLongScoreContext context = new SimpleLongScoreContext(this, constraint, constraintWeight);

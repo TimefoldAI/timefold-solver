@@ -1,7 +1,7 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardMediumSoftLongScoreInliner extends AbstractScoreInliner<HardMediumSoftLongScore> {
 
@@ -15,7 +15,7 @@ final class HardMediumSoftLongScoreInliner extends AbstractScoreInliner<HardMedi
 
     @Override
     public WeightedScoreImpacter<HardMediumSoftLongScore, HardMediumSoftLongScoreContext> buildWeightedScoreImpacter(
-            Constraint constraint, HardMediumSoftLongScore constraintWeight) {
+            AbstractConstraint<?, ?, ?> constraint, HardMediumSoftLongScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         long hardConstraintWeight = constraintWeight.hardScore();
         long mediumConstraintWeight = constraintWeight.mediumScore();

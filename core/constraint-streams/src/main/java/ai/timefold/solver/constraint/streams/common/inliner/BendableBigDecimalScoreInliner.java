@@ -3,8 +3,8 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<BendableBigDecimalScore> {
 
@@ -21,7 +21,7 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
 
     @Override
     public WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> buildWeightedScoreImpacter(
-            Constraint constraint, BendableBigDecimalScore constraintWeight) {
+            AbstractConstraint<?, ?, ?> constraint, BendableBigDecimalScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         Integer singleLevel = null;
         for (int i = 0; i < constraintWeight.levelsSize(); i++) {

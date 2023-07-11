@@ -1,7 +1,7 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
 
@@ -13,7 +13,8 @@ final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
     }
 
     @Override
-    public WeightedScoreImpacter<HardSoftScore, HardSoftScoreContext> buildWeightedScoreImpacter(Constraint constraint,
+    public WeightedScoreImpacter<HardSoftScore, HardSoftScoreContext> buildWeightedScoreImpacter(
+            AbstractConstraint<?, ?, ?> constraint,
             HardSoftScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         HardSoftScoreContext context = new HardSoftScoreContext(this, constraint, constraintWeight);

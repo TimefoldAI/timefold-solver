@@ -1,11 +1,11 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInliner> {
 
-    public SimpleScoreContext(SimpleScoreInliner parent, Constraint constraint, SimpleScore constraintWeight) {
+    public SimpleScoreContext(SimpleScoreInliner parent, AbstractConstraint<?, ?, ?> constraint, SimpleScore constraintWeight) {
         super(parent, constraint, constraintWeight);
     }
 

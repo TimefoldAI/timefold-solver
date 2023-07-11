@@ -1,7 +1,7 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class BendableScoreContext extends ScoreContext<BendableScore, BendableScoreInliner> {
 
@@ -10,8 +10,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     private final int scoreLevel;
     private final int scoreLevelWeight;
 
-    public BendableScoreContext(BendableScoreInliner parent, Constraint constraint, BendableScore constraintWeight,
-            int hardScoreLevelCount, int softScoreLevelCount, int scoreLevel, int scoreLevelWeight) {
+    public BendableScoreContext(BendableScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            BendableScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount, int scoreLevel,
+            int scoreLevelWeight) {
         super(parent, constraint, constraintWeight);
         this.hardScoreLevelCount = hardScoreLevelCount;
         this.softScoreLevelCount = softScoreLevelCount;
@@ -19,8 +20,8 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
         this.scoreLevelWeight = scoreLevelWeight;
     }
 
-    public BendableScoreContext(BendableScoreInliner parent, Constraint constraint, BendableScore constraintWeight,
-            int hardScoreLevelCount, int softScoreLevelCount) {
+    public BendableScoreContext(BendableScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            BendableScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount) {
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, -1);
     }
 

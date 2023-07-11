@@ -19,16 +19,19 @@ final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Contex
 
     @Override
     public UndoScoreImpacter impactScore(int matchWeight, JustificationsSupplier justificationsSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), justificationsSupplier);
     }
 
     @Override
     public UndoScoreImpacter impactScore(long matchWeight, JustificationsSupplier justificationsSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), justificationsSupplier);
     }
 
     @Override
     public UndoScoreImpacter impactScore(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, matchWeight, justificationsSupplier);
     }
 
