@@ -3,10 +3,8 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
@@ -19,17 +17,14 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 
 /**
  * Allows to create justifications and indictments lazily if and only if constraint matches are enabled.
- *
- * Justification and indictment creation is performance expensive and constraint matches are typically disabled.
- * So justifications and indictments are created lazily, outside of the typical hot path.
  */
-public final class JustificationsSupplier {
+public interface JustificationsSupplier {
 
-    public static JustificationsSupplier empty() {
-        return new JustificationsSupplier(DefaultConstraintJustification::of, Collections::emptyList);
+    static JustificationsSupplier empty() {
+        return new DefaultJustificationsSupplier(DefaultConstraintJustification::of, Collections.emptyList());
     }
 
-    public static <A> JustificationsSupplier of(Constraint constraint,
+    static <A> JustificationsSupplier of(Constraint constraint,
             BiFunction<A, Score<?>, ConstraintJustification> justificationMapping,
             Function<A, Collection<Object>> indictedObjectsMapping,
             A a) {
@@ -40,14 +35,11 @@ public final class JustificationsSupplier {
                 throw createJustificationException(constraint, e, a);
             }
         };
-        Supplier<Collection<Object>> explainingIndictedObjectsSupplier = () -> {
-            try {
-                return indictedObjectsMapping.apply(a);
-            } catch (Exception e) {
-                throw createIndictmentException(constraint, e, a);
-            }
-        };
-        return new JustificationsSupplier(explainingJustificationMapping, explainingIndictedObjectsSupplier);
+        try {
+            return new DefaultJustificationsSupplier(explainingJustificationMapping, indictedObjectsMapping.apply(a));
+        } catch (Exception e) {
+            throw createIndictmentException(constraint, e, a);
+        }
     }
 
     private static RuntimeException createJustificationException(Constraint constraint, Exception cause, Object... facts) {
@@ -66,7 +58,7 @@ public final class JustificationsSupplier {
                 + ") threw an exception collecting indicted objects from a tuple (" + factsToString(facts) + ").", cause);
     }
 
-    public static <A, B> JustificationsSupplier of(Constraint constraint,
+    static <A, B> JustificationsSupplier of(Constraint constraint,
             TriFunction<A, B, Score<?>, ConstraintJustification> justificationMapping,
             BiFunction<A, B, Collection<Object>> indictedObjectsMapping,
             A a, B b) {
@@ -77,17 +69,14 @@ public final class JustificationsSupplier {
                 throw createJustificationException(constraint, e, a, b);
             }
         };
-        Supplier<Collection<Object>> explainingIndictedObjectsSupplier = () -> {
-            try {
-                return indictedObjectsMapping.apply(a, b);
-            } catch (Exception e) {
-                throw createIndictmentException(constraint, e, a, b);
-            }
-        };
-        return new JustificationsSupplier(explainingJustificationMapping, explainingIndictedObjectsSupplier);
+        try {
+            return new DefaultJustificationsSupplier(explainingJustificationMapping, indictedObjectsMapping.apply(a, b));
+        } catch (Exception e) {
+            throw createIndictmentException(constraint, e, a, b);
+        }
     }
 
-    public static <A, B, C> JustificationsSupplier of(Constraint constraint,
+    static <A, B, C> JustificationsSupplier of(Constraint constraint,
             QuadFunction<A, B, C, Score<?>, ConstraintJustification> justificationMapping,
             TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping,
             A a, B b, C c) {
@@ -98,17 +87,14 @@ public final class JustificationsSupplier {
                 throw createJustificationException(constraint, e, a, b, c);
             }
         };
-        Supplier<Collection<Object>> explainingIndictedObjectsSupplier = () -> {
-            try {
-                return indictedObjectsMapping.apply(a, b, c);
-            } catch (Exception e) {
-                throw createIndictmentException(constraint, e, a, b, c);
-            }
-        };
-        return new JustificationsSupplier(explainingJustificationMapping, explainingIndictedObjectsSupplier);
+        try {
+            return new DefaultJustificationsSupplier(explainingJustificationMapping, indictedObjectsMapping.apply(a, b, c));
+        } catch (Exception e) {
+            throw createIndictmentException(constraint, e, a, b, c);
+        }
     }
 
-    public static <A, B, C, D> JustificationsSupplier of(Constraint constraint,
+    static <A, B, C, D> JustificationsSupplier of(Constraint constraint,
             PentaFunction<A, B, C, D, Score<?>, ConstraintJustification> justificationMapping,
             QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping,
             A a, B b, C c, D d) {
@@ -119,31 +105,15 @@ public final class JustificationsSupplier {
                 throw createJustificationException(constraint, e, a, b, c, d);
             }
         };
-        Supplier<Collection<Object>> explainingIndictedObjectsSupplier = () -> {
-            try {
-                return indictedObjectsMapping.apply(a, b, c, d);
-            } catch (Exception e) {
-                throw createIndictmentException(constraint, e, a, b, c, d);
-            }
-        };
-        return new JustificationsSupplier(explainingJustificationMapping, explainingIndictedObjectsSupplier);
+        try {
+            return new DefaultJustificationsSupplier(explainingJustificationMapping, indictedObjectsMapping.apply(a, b, c, d));
+        } catch (Exception e) {
+            throw createIndictmentException(constraint, e, a, b, c, d);
+        }
     }
 
-    private final Function<Score<?>, ConstraintJustification> constraintJustificationSupplier;
-    private final Supplier<Collection<Object>> indictedObjectsSupplier;
+    ConstraintJustification createConstraintJustification(Score<?> impact);
 
-    private JustificationsSupplier(Function<Score<?>, ConstraintJustification> constraintJustificationSupplier,
-            Supplier<Collection<Object>> indictedObjectsSupplier) {
-        this.constraintJustificationSupplier = Objects.requireNonNull(constraintJustificationSupplier);
-        this.indictedObjectsSupplier = Objects.requireNonNull(indictedObjectsSupplier);
-    }
-
-    public ConstraintJustification createConstraintJustification(Score<?> impact) {
-        return constraintJustificationSupplier.apply(impact);
-    }
-
-    public Collection<Object> createIndictedObjects() {
-        return indictedObjectsSupplier.get();
-    }
+    Collection<Object> indictedObjectCollection();
 
 }

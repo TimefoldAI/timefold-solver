@@ -2,9 +2,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.Score;
@@ -122,10 +124,13 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     protected final Runnable addConstraintMatch(Constraint constraint, Score_ constraintWeight, Score_ score,
             JustificationsSupplier justificationsSupplier) {
         var constraintMatchTotal = getConstraintMatchTotal(constraint, constraintWeight);
+        Collection<Object> indictedObjectCollection = justificationsSupplier.indictedObjectCollection();
         var constraintMatch = constraintMatchTotal.addConstraintMatch(
                 justificationsSupplier.createConstraintJustification(score),
-                justificationsSupplier.createIndictedObjects(), score);
-        var indictedObjectList = CollectionUtils.toDistinctList(constraintMatch.getIndictedObjectList());
+                indictedObjectCollection, score);
+        // Optimization: if the indicted objects are distinct, we can skip part of the conversion to distinct list.
+        var indictedObjectList = indictedObjectCollection instanceof Set<Object> set ? CollectionUtils.toDistinctList(set)
+                : CollectionUtils.toDistinctList(constraintMatch.getIndictedObjectList());
         if (indictedObjectList.isEmpty()) {
             return () -> removeConstraintMatchFromTotal(constraintMatchTotal, constraintMatch);
         } else {

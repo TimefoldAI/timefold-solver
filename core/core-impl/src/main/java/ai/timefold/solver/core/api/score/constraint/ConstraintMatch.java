@@ -27,7 +27,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     private final String constraintName;
 
     private final ConstraintJustification justification;
-    private final List<Object> indictedObjects;
+    private final List<Object> indictedObjectList;
     private final Score_ score;
 
     /**
@@ -50,9 +50,9 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param score never null
      */
     public ConstraintMatch(String constraintPackage, String constraintName, ConstraintJustification justification,
-            Collection<Object> indictedObjects, Score_ score) {
+            Collection<Object> indictedObjectList, Score_ score) {
         this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName,
-                justification, indictedObjects, score);
+                justification, indictedObjectList, score);
     }
 
     /**
@@ -60,10 +60,10 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param justification never null
      * @param score never null
      */
-    public ConstraintMatch(Constraint constraint, ConstraintJustification justification, Collection<Object> indictedObjects,
+    public ConstraintMatch(Constraint constraint, ConstraintJustification justification, Collection<Object> indictedObjectList,
             Score_ score) {
         this(constraint.getConstraintId(), constraint.getConstraintPackage(), constraint.getConstraintName(), justification,
-                indictedObjects, score);
+                indictedObjectList, score);
     }
 
     /**
@@ -74,13 +74,13 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param score never null
      */
     public ConstraintMatch(String constraintId, String constraintPackage, String constraintName,
-            ConstraintJustification justification, Collection<Object> indictedObjects, Score_ score) {
+            ConstraintJustification justification, Collection<Object> indictedObjectList, Score_ score) {
         this.constraintId = requireNonNull(constraintId);
         this.constraintPackage = requireNonNull(constraintPackage);
         this.constraintName = requireNonNull(constraintName);
         this.justification = requireNonNull(justification);
-        this.indictedObjects =
-                requireNonNull(indictedObjects) instanceof List<Object> list ? list : List.copyOf(indictedObjects);
+        this.indictedObjectList =
+                requireNonNull(indictedObjectList) instanceof List<Object> list ? list : List.copyOf(indictedObjectList);
         this.score = requireNonNull(score);
     }
 
@@ -149,7 +149,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @return never null, may be empty
      */
     public List<Object> getIndictedObjectList() {
-        return indictedObjects;
+        return indictedObjectList;
     }
 
     public Score_ getScore() {
