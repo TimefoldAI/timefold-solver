@@ -7,6 +7,8 @@
     --ts-violet-3-rgb: #2E1760;
     --ts-violet-4-rgb: #200F4F;
     --ts-violet-5-rgb: #000000; /* TODO FIXME */
+    --ts-violet-dark-1-rgb: #b6adfd;
+    --ts-violet-dark-2-rgb: #c1bbfd;
     --ts-gray-rgb: #666666;
     --ts-white-rgb: #FFFFFF;
     --ts-light-rgb: #F2F2F2;
@@ -48,6 +50,8 @@
     --bs-btn-disabled-border-color: var(--ts-violet-1-rgb);
 }
 .navbar-dark {
+    --bs-link-color: var(--ts-violet-dark-1-rgb);
+    --bs-link-hover-color: var(--ts-violet-dark-2-rgb);
     --bs-navbar-color: var(--ts-white-rgb);
     --bs-navbar-hover-color: var(--ts-white-rgb);
 }
