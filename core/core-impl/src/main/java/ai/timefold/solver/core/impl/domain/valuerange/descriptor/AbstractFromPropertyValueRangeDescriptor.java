@@ -127,15 +127,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         } else {
             valueRange = (ValueRange<Object>) valueRangeObject;
         }
-        valueRange = doNullInValueRangeWrapping(valueRange);
-        if (valueRange.isEmpty()) {
-            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") called on bean (" + bean
-                    + ") must not return an empty valueRange (" + valueRangeObject + ").\n"
-                    + "Maybe apply overconstrained planning as described in the documentation.");
-        }
-        return valueRange;
+        return doNullInValueRangeWrapping(valueRange);
     }
 
     private <T> List<T> transformCollectionToList(Collection<T> collection) {

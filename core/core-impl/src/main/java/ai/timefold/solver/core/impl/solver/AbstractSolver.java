@@ -6,6 +6,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -71,10 +72,33 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     protected void runPhases(SolverScope<Solution_> solverScope) {
-        if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
+        var solutionDescriptor = solverScope.getSolutionDescriptor();
+        var workingSolution = solverScope.getWorkingSolution();
+        if (!solutionDescriptor.hasMovableEntities(solverScope.getScoreDirector())) {
             logger.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
                     phaseList.size(),
-                    solverScope.getSolutionDescriptor().getEntityCount(solverScope.getWorkingSolution()));
+                    solutionDescriptor.getEntityCount(workingSolution));
+            return;
+        }
+        Object entityWithoutPossibleValues = solutionDescriptor.findFirstEntityMatching(workingSolution,
+                entity -> {
+                    var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
+                    for (GenuineVariableDescriptor<Solution_> variableDescriptor : entityDescriptor
+                            .getGenuineVariableDescriptorList()) {
+                        var valueCount = variableDescriptor.getValueCount(workingSolution, entity);
+                        if (valueCount == 0) {
+                            logger.info("There are no possible values for planning variable ({}) on planning entity ({}).",
+                                    variableDescriptor, entity);
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+        if (entityWithoutPossibleValues != null) {
+            logger.info(
+                    "Skipped all phases ({}): there are no possible values for planning variable(s) on one or more of planning entities. "
+                            + "See previous log messages for more information.",
+                    phaseList.size());
             return;
         }
         Iterator<Phase<Solution_>> it = phaseList.iterator();
