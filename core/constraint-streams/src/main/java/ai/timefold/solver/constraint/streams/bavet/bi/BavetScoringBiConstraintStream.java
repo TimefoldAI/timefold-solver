@@ -11,7 +11,6 @@ import ai.timefold.solver.constraint.streams.bavet.BavetConstraint;
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetScoringConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacter;
@@ -22,46 +21,39 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
         extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements BavetScoringConstraintStream<Solution_> {
 
-    private final boolean noMatchWeigher;
     private final ToIntBiFunction<A, B> intMatchWeigher;
     private final ToLongBiFunction<A, B> longMatchWeigher;
     private final BiFunction<A, B, BigDecimal> bigDecimalMatchWeigher;
     private BavetConstraint<Solution_> constraint;
 
     public BavetScoringBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractBiConstraintStream<Solution_, A, B> parent,
-            ToIntBiFunction<A, B> intMatchWeigher) {
-        this(constraintFactory, parent, false, intMatchWeigher, null, null);
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, ToIntBiFunction<A, B> intMatchWeigher) {
+        this(constraintFactory, parent, intMatchWeigher, null, null);
         if (intMatchWeigher == null) {
             throw new IllegalArgumentException("The matchWeigher (null) cannot be null.");
         }
     }
 
     public BavetScoringBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractBiConstraintStream<Solution_, A, B> parent,
-            ToLongBiFunction<A, B> longMatchWeigher) {
-        this(constraintFactory, parent, false, null, longMatchWeigher, null);
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, ToLongBiFunction<A, B> longMatchWeigher) {
+        this(constraintFactory, parent, null, longMatchWeigher, null);
         if (longMatchWeigher == null) {
             throw new IllegalArgumentException("The matchWeigher (null) cannot be null.");
         }
     }
 
     public BavetScoringBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractBiConstraintStream<Solution_, A, B> parent,
-            BiFunction<A, B, BigDecimal> bigDecimalMatchWeigher) {
-        this(constraintFactory, parent, false, null, null, bigDecimalMatchWeigher);
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, BiFunction<A, B, BigDecimal> bigDecimalMatchWeigher) {
+        this(constraintFactory, parent, null, null, bigDecimalMatchWeigher);
         if (bigDecimalMatchWeigher == null) {
             throw new IllegalArgumentException("The matchWeigher (null) cannot be null.");
         }
     }
 
     private BavetScoringBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractBiConstraintStream<Solution_, A, B> parent,
-            boolean noMatchWeigher,
-            ToIntBiFunction<A, B> intMatchWeigher, ToLongBiFunction<A, B> longMatchWeigher,
-            BiFunction<A, B, BigDecimal> bigDecimalMatchWeigher) {
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, ToIntBiFunction<A, B> intMatchWeigher,
+            ToLongBiFunction<A, B> longMatchWeigher, BiFunction<A, B, BigDecimal> bigDecimalMatchWeigher) {
         super(constraintFactory, parent);
-        this.noMatchWeigher = noMatchWeigher;
         this.intMatchWeigher = intMatchWeigher;
         this.longMatchWeigher = longMatchWeigher;
         this.bigDecimalMatchWeigher = bigDecimalMatchWeigher;
@@ -79,73 +71,79 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         assertEmptyChildStreamList();
-        Score_ constraintWeight = buildHelper.getConstraintWeight(constraint);
-        boolean constraintMatchEnabled = buildHelper.getScoreInliner().isConstraintMatchEnabled();
-        TriFunction<A, B, WeightedScoreImpacter<?, ?>, UndoScoreImpacter> scoreImpacter;
+        var constraintMatchEnabled = buildHelper.getScoreInliner().isConstraintMatchEnabled();
+        var scoreImpacter = constraintMatchEnabled ? buildScoreImpacterWithConstraintMatch() : buildScoreImpacter();
+        var constraintWeight = buildHelper.getConstraintWeight(constraint);
+        var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint, constraintWeight);
+        var scorer = new BiScorer<>(weightedScoreImpacter, scoreImpacter,
+                buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
+        buildHelper.putInsertUpdateRetract(this, scorer);
+    }
+
+    private TriFunction<WeightedScoreImpacter<?>, A, B, UndoScoreImpacter> buildScoreImpacter() {
         if (intMatchWeigher != null) {
-            if (constraintMatchEnabled) {
-                scoreImpacter = (a, b, impacter) -> {
-                    AbstractConstraint<?, ?, ?> constraint = impacter.getContext().getConstraint();
-                    int matchWeight = intMatchWeigher.applyAsInt(a, b);
-                    JustificationsSupplier justificationsSupplier =
-                            of(constraint, constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b);
-                    return impacter.impactScore(matchWeight, justificationsSupplier);
-                };
-            } else {
-                scoreImpacter = (a, b, impacter) -> {
-                    int matchWeight = intMatchWeigher.applyAsInt(a, b);
-                    return impacter.impactScore(matchWeight, null);
-                };
-            }
+            return (impacter, a, b) -> {
+                int matchWeight = intMatchWeigher.applyAsInt(a, b);
+                return impacter.impactScore(matchWeight, null);
+            };
         } else if (longMatchWeigher != null) {
-            if (constraintMatchEnabled) {
-                scoreImpacter = (a, b, impacter) -> {
-                    AbstractConstraint<?, ?, ?> constraint = impacter.getContext().getConstraint();
-                    long matchWeight = longMatchWeigher.applyAsLong(a, b);
-                    JustificationsSupplier justificationsSupplier =
-                            of(constraint, constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b);
-                    return impacter.impactScore(matchWeight, justificationsSupplier);
-                };
-            } else {
-                scoreImpacter = (a, b, impacter) -> {
-                    long matchWeight = longMatchWeigher.applyAsLong(a, b);
-                    return impacter.impactScore(matchWeight, null);
-                };
-            }
+            return (impacter, a, b) -> {
+                long matchWeight = longMatchWeigher.applyAsLong(a, b);
+                return impacter.impactScore(matchWeight, null);
+            };
         } else if (bigDecimalMatchWeigher != null) {
-            if (constraintMatchEnabled) {
-                scoreImpacter = (a, b, impacter) -> {
-                    AbstractConstraint<?, ?, ?> constraint = impacter.getContext().getConstraint();
-                    BigDecimal matchWeight = bigDecimalMatchWeigher.apply(a, b);
-                    JustificationsSupplier justificationsSupplier =
-                            of(constraint, constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b);
-                    return impacter.impactScore(matchWeight, justificationsSupplier);
-                };
-            } else {
-                scoreImpacter = (a, b, impacter) -> {
-                    BigDecimal matchWeight = bigDecimalMatchWeigher.apply(a, b);
-                    return impacter.impactScore(matchWeight, null);
-                };
-            }
-        } else if (noMatchWeigher) {
-            if (constraintMatchEnabled) {
-                scoreImpacter = (a, b, impacter) -> {
-                    AbstractConstraint<?, ?, ?> constraint = impacter.getContext().getConstraint();
-                    JustificationsSupplier justificationsSupplier =
-                            of(constraint, constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b);
-                    return impacter.impactScore(1, justificationsSupplier);
-                };
-            } else {
-                scoreImpacter = (a, b, impacter) -> impacter.impactScore(1, null);
-            }
+            return (impacter, a, b) -> {
+                BigDecimal matchWeight = bigDecimalMatchWeigher.apply(a, b);
+                return impacter.impactScore(matchWeight, null);
+            };
         } else {
             throw new IllegalStateException("Impossible state: neither of the supported match weighers provided.");
         }
-        WeightedScoreImpacter<Score_, ?> weightedScoreImpacter =
-                buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint, constraintWeight);
-        BiScorer<A, B> scorer = new BiScorer<>(weightedScoreImpacter, scoreImpacter,
-                buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
-        buildHelper.putInsertUpdateRetract(this, scorer);
+    }
+
+    private TriFunction<WeightedScoreImpacter<?>, A, B, UndoScoreImpacter> buildScoreImpacterWithConstraintMatch() {
+        if (intMatchWeigher != null) {
+            return (impacter, a, b) -> {
+                int matchWeight = intMatchWeigher.applyAsInt(a, b);
+                return impactWithConstraintMatch(impacter, matchWeight, a, b);
+            };
+        } else if (longMatchWeigher != null) {
+            return (impacter, a, b) -> {
+                long matchWeight = longMatchWeigher.applyAsLong(a, b);
+                return impactWithConstraintMatch(impacter, matchWeight, a, b);
+            };
+        } else if (bigDecimalMatchWeigher != null) {
+            return (impacter, a, b) -> {
+                BigDecimal matchWeight = bigDecimalMatchWeigher.apply(a, b);
+                return impactWithConstraintMatch(impacter, matchWeight, a, b);
+            };
+        } else {
+            throw new IllegalStateException("Impossible state: neither of the supported match weighers provided.");
+        }
+    }
+
+    private static <A, B> UndoScoreImpacter impactWithConstraintMatch(WeightedScoreImpacter<?> impacter, int matchWeight, A a,
+            B b) {
+        var constraint = impacter.getContext().getConstraint();
+        var justificationsSupplier = JustificationsSupplier.of(constraint, constraint.getJustificationMapping(),
+                constraint.getIndictedObjectsMapping(), a, b);
+        return impacter.impactScore(matchWeight, justificationsSupplier);
+    }
+
+    private static <A, B> UndoScoreImpacter impactWithConstraintMatch(WeightedScoreImpacter<?> impacter, long matchWeight, A a,
+            B b) {
+        var constraint = impacter.getContext().getConstraint();
+        var justificationsSupplier = JustificationsSupplier.of(constraint, constraint.getJustificationMapping(),
+                constraint.getIndictedObjectsMapping(), a, b);
+        return impacter.impactScore(matchWeight, justificationsSupplier);
+    }
+
+    private static <A, B> UndoScoreImpacter impactWithConstraintMatch(WeightedScoreImpacter<?> impacter, BigDecimal matchWeight,
+            A a, B b) {
+        var constraint = impacter.getContext().getConstraint();
+        var justificationsSupplier = JustificationsSupplier.of(constraint, constraint.getJustificationMapping(),
+                constraint.getIndictedObjectsMapping(), a, b);
+        return impacter.impactScore(matchWeight, justificationsSupplier);
     }
 
     // ************************************************************************

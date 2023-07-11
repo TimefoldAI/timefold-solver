@@ -22,7 +22,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
         BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableScore constraintWeight = buildScore(90, 0, 0);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -46,7 +46,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
         BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableScore constraintWeight = buildScore(0, 90, 0);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -70,7 +70,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
         BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableScore constraintWeight = buildScore(0, 0, 90);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -94,7 +94,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
         BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableScore constraintWeight = buildScore(10, 100, 1_000);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(10, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))

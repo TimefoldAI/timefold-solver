@@ -20,7 +20,7 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
     }
 
     @Override
-    public WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> buildWeightedScoreImpacter(
+    public WeightedScoreImpacter<BendableBigDecimalScoreContext> buildWeightedScoreImpacter(
             AbstractConstraint<?, ?, ?> constraint, BendableBigDecimalScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         Integer singleLevel = null;

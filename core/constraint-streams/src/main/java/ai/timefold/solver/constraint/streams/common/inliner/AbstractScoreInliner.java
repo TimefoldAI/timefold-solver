@@ -116,7 +116,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
      * @param constraintWeight never null
      * @return never null
      */
-    public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint,
+    public abstract WeightedScoreImpacter<?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint,
             Score_ constraintWeight);
 
     protected final Runnable addConstraintMatch(Constraint constraint, Score_ constraintWeight, Score_ score,

@@ -25,7 +25,7 @@ class BendableBigDecimalScoreInlinerTest
         BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableBigDecimalScore constraintWeight = buildScore(90, 0, 0);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableBigDecimalScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -49,7 +49,7 @@ class BendableBigDecimalScoreInlinerTest
         BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableBigDecimalScore constraintWeight = buildScore(0, 90, 0);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableBigDecimalScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -73,7 +73,7 @@ class BendableBigDecimalScoreInlinerTest
         BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableBigDecimalScore constraintWeight = buildScore(0, 0, 90);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableBigDecimalScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -97,7 +97,7 @@ class BendableBigDecimalScoreInlinerTest
         BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
 
         BendableBigDecimalScore constraintWeight = buildScore(10, 100, 1_000);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
+        WeightedScoreImpacter<BendableBigDecimalScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.TEN, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))

@@ -8,10 +8,10 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 
 final class TriScorer<A, B, C> extends AbstractScorer<TriTuple<A, B, C>> {
 
-    private final QuadFunction<A, B, C, WeightedScoreImpacter<?, ?>, UndoScoreImpacter> scoreImpacter;
+    private final QuadFunction<WeightedScoreImpacter<?>, A, B, C, UndoScoreImpacter> scoreImpacter;
 
-    public TriScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter,
-            QuadFunction<A, B, C, WeightedScoreImpacter<?, ?>, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
+    public TriScorer(WeightedScoreImpacter<?> weightedScoreImpacter,
+            QuadFunction<WeightedScoreImpacter<?>, A, B, C, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
         super(weightedScoreImpacter, inputStoreIndex);
         this.scoreImpacter = scoreImpacter;
     }
@@ -19,7 +19,7 @@ final class TriScorer<A, B, C> extends AbstractScorer<TriTuple<A, B, C>> {
     @Override
     protected UndoScoreImpacter impact(TriTuple<A, B, C> tuple) {
         try {
-            return scoreImpacter.apply(tuple.factA, tuple.factB, tuple.factC, weightedScoreImpacter);
+            return scoreImpacter.apply(weightedScoreImpacter, tuple.factA, tuple.factB, tuple.factC);
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

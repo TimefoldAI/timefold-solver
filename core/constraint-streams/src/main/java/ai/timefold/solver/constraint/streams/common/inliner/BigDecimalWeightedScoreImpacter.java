@@ -3,15 +3,13 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.Score;
+final class BigDecimalWeightedScoreImpacter<Context_ extends ScoreContext<?, ?>>
+        implements WeightedScoreImpacter<Context_> {
 
-final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
-        implements WeightedScoreImpacter<Score_, Context_> {
-
-    private final BigDecimalImpactFunction<Score_, Context_> impactFunction;
+    private final BigDecimalImpactFunction<Context_> impactFunction;
     private final Context_ context;
 
-    public BigDecimalWeightedScoreImpacter(BigDecimalImpactFunction<Score_, Context_> impactFunction,
+    public BigDecimalWeightedScoreImpacter(BigDecimalImpactFunction<Context_> impactFunction,
             Context_ context) {
         this.impactFunction = Objects.requireNonNull(impactFunction);
         this.context = context;

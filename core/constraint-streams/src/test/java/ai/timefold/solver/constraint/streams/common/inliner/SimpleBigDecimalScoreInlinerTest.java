@@ -26,7 +26,7 @@ class SimpleBigDecimalScoreInlinerTest
                 new SimpleBigDecimalScoreInliner(constraintMatchEnabled);
 
         SimpleBigDecimalScore constraintWeight = SimpleBigDecimalScore.of(BigDecimal.valueOf(10));
-        WeightedScoreImpacter<SimpleBigDecimalScore, SimpleBigDecimalScoreContext> hardImpacter =
+        WeightedScoreImpacter<SimpleBigDecimalScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.TEN, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))

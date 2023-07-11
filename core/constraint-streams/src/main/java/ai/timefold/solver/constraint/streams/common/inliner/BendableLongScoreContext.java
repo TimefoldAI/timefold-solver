@@ -42,7 +42,6 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         long hardImpact = scoreLevelWeight * matchWeight;
         parent.hardScores[scoreLevel] += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScores[scoreLevel] -= hardImpact;
-        ;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }

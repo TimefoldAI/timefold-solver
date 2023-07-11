@@ -16,7 +16,7 @@ final class HardMediumSoftBigDecimalScoreInliner extends AbstractScoreInliner<Ha
     }
 
     @Override
-    public WeightedScoreImpacter<HardMediumSoftBigDecimalScore, HardMediumSoftBigDecimalScoreContext>
+    public WeightedScoreImpacter<HardMediumSoftBigDecimalScoreContext>
             buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint,
                     HardMediumSoftBigDecimalScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);

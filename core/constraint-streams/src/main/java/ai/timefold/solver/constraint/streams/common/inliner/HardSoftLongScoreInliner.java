@@ -13,7 +13,7 @@ final class HardSoftLongScoreInliner extends AbstractScoreInliner<HardSoftLongSc
     }
 
     @Override
-    public WeightedScoreImpacter<HardSoftLongScore, HardSoftLongScoreContext> buildWeightedScoreImpacter(
+    public WeightedScoreImpacter<HardSoftLongScoreContext> buildWeightedScoreImpacter(
             AbstractConstraint<?, ?, ?> constraint,
             HardSoftLongScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);

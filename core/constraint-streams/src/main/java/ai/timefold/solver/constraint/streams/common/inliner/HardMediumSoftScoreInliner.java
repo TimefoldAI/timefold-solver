@@ -14,7 +14,7 @@ final class HardMediumSoftScoreInliner extends AbstractScoreInliner<HardMediumSo
     }
 
     @Override
-    public WeightedScoreImpacter<HardMediumSoftScore, HardMediumSoftScoreContext> buildWeightedScoreImpacter(
+    public WeightedScoreImpacter<HardMediumSoftScoreContext> buildWeightedScoreImpacter(
             AbstractConstraint<?, ?, ?> constraint, HardMediumSoftScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
         int hardConstraintWeight = constraintWeight.hardScore();

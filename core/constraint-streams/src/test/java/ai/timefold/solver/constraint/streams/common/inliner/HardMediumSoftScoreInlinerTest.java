@@ -24,7 +24,7 @@ class HardMediumSoftScoreInlinerTest
                 new HardMediumSoftScoreInliner(constraintMatchEnabled);
 
         HardMediumSoftScore constraintWeight = HardMediumSoftScore.ofHard(90);
-        WeightedScoreImpacter<HardMediumSoftScore, HardMediumSoftScoreContext> hardImpacter =
+        WeightedScoreImpacter<HardMediumSoftScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -49,7 +49,7 @@ class HardMediumSoftScoreInlinerTest
                 new HardMediumSoftScoreInliner(constraintMatchEnabled);
 
         HardMediumSoftScore constraintWeight = HardMediumSoftScore.ofMedium(90);
-        WeightedScoreImpacter<HardMediumSoftScore, HardMediumSoftScoreContext> hardImpacter =
+        WeightedScoreImpacter<HardMediumSoftScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -74,7 +74,7 @@ class HardMediumSoftScoreInlinerTest
                 new HardMediumSoftScoreInliner(constraintMatchEnabled);
 
         HardMediumSoftScore constraintWeight = HardMediumSoftScore.ofSoft(90);
-        WeightedScoreImpacter<HardMediumSoftScore, HardMediumSoftScoreContext> hardImpacter =
+        WeightedScoreImpacter<HardMediumSoftScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
@@ -99,7 +99,7 @@ class HardMediumSoftScoreInlinerTest
                 new HardMediumSoftScoreInliner(constraintMatchEnabled);
 
         HardMediumSoftScore constraintWeight = HardMediumSoftScore.of(10, 100, 1_000);
-        WeightedScoreImpacter<HardMediumSoftScore, HardMediumSoftScoreContext> hardImpacter =
+        WeightedScoreImpacter<HardMediumSoftScoreContext> hardImpacter =
                 scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
         UndoScoreImpacter undo1 = hardImpacter.impactScore(10, JustificationsSupplier.empty());
         assertThat(scoreInliner.extractScore(0))

@@ -12,7 +12,7 @@ final class SimpleScoreInliner extends AbstractScoreInliner<SimpleScore> {
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleScore, SimpleScoreContext> buildWeightedScoreImpacter(
+    public WeightedScoreImpacter<SimpleScoreContext> buildWeightedScoreImpacter(
             AbstractConstraint<?, ?, ?> constraint,
             SimpleScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);

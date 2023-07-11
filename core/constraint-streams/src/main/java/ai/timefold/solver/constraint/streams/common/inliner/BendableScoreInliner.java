@@ -17,7 +17,7 @@ final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
     }
 
     @Override
-    public WeightedScoreImpacter<BendableScore, BendableScoreContext> buildWeightedScoreImpacter(
+    public WeightedScoreImpacter<BendableScoreContext> buildWeightedScoreImpacter(
             AbstractConstraint<?, ?, ?> constraint,
             BendableScore constraintWeight) {
         validateConstraintWeight(constraint, constraintWeight);
