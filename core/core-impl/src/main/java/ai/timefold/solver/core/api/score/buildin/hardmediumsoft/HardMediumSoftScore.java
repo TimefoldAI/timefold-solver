@@ -24,8 +24,11 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     public static final HardMediumSoftScore ZERO = new HardMediumSoftScore(0, 0, 0, 0);
     public static final HardMediumSoftScore ONE_HARD = new HardMediumSoftScore(0, 1, 0, 0);
+    private static final HardMediumSoftScore MINUS_ONE_HARD = new HardMediumSoftScore(0, -1, 0, 0);
     public static final HardMediumSoftScore ONE_MEDIUM = new HardMediumSoftScore(0, 0, 1, 0);
+    private static final HardMediumSoftScore MINUS_ONE_MEDIUM = new HardMediumSoftScore(0, 0, -1, 0);
     public static final HardMediumSoftScore ONE_SOFT = new HardMediumSoftScore(0, 0, 0, 1);
+    private static final HardMediumSoftScore MINUS_ONE_SOFT = new HardMediumSoftScore(0, 0, 0, -1);
 
     public static HardMediumSoftScore parseScore(String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftScore.class, scoreString,
@@ -38,23 +41,60 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     public static HardMediumSoftScore ofUninitialized(int initScore, int hardScore, int mediumScore, int softScore) {
+        if (initScore == 0) {
+            return of(hardScore, mediumScore, softScore);
+        }
         return new HardMediumSoftScore(initScore, hardScore, mediumScore, softScore);
     }
 
     public static HardMediumSoftScore of(int hardScore, int mediumScore, int softScore) {
+        if (hardScore == -1 && mediumScore == 0 && softScore == 0) {
+            return MINUS_ONE_HARD;
+        } else if (hardScore == 0) {
+            if (mediumScore == -1 && softScore == 0) {
+                return MINUS_ONE_MEDIUM;
+            } else if (mediumScore == 0) {
+                if (softScore == -1) {
+                    return MINUS_ONE_SOFT;
+                } else if (softScore == 0) {
+                    return ZERO;
+                } else if (softScore == 1) {
+                    return ONE_SOFT;
+                }
+            } else if (mediumScore == 1 && softScore == 0) {
+                return ONE_MEDIUM;
+            }
+        } else if (hardScore == 1 && mediumScore == 0 && softScore == 0) {
+            return ONE_HARD;
+        }
         return new HardMediumSoftScore(0, hardScore, mediumScore, softScore);
     }
 
     public static HardMediumSoftScore ofHard(int hardScore) {
-        return of(hardScore, 0, 0);
+        return switch (hardScore) {
+            case -1 -> MINUS_ONE_HARD;
+            case 0 -> ZERO;
+            case 1 -> ONE_HARD;
+            default -> new HardMediumSoftScore(0, hardScore, 0, 0);
+        };
     }
 
     public static HardMediumSoftScore ofMedium(int mediumScore) {
-        return of(0, mediumScore, 0);
+        return switch (mediumScore) {
+            case -1 -> MINUS_ONE_MEDIUM;
+            case 0 -> ZERO;
+            case 1 -> ONE_MEDIUM;
+            default -> new HardMediumSoftScore(0, 0, mediumScore, 0);
+        };
     }
 
     public static HardMediumSoftScore ofSoft(int softScore) {
-        return of(0, 0, softScore);
+        return switch (softScore) {
+            case -1 -> MINUS_ONE_SOFT;
+            case 0 -> ZERO;
+            case 1 -> ONE_SOFT;
+            default -> new HardMediumSoftScore(0, 0, 0, softScore);
+        };
     }
 
     // ************************************************************************
@@ -161,7 +201,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore withInitScore(int newInitScore) {
-        return new HardMediumSoftScore(newInitScore, hardScore, mediumScore, softScore);
+        return ofUninitialized(newInitScore, hardScore, mediumScore, softScore);
     }
 
     /**
@@ -176,7 +216,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore add(HardMediumSoftScore addend) {
-        return new HardMediumSoftScore(
+        return ofUninitialized(
                 initScore + addend.initScore(),
                 hardScore + addend.hardScore(),
                 mediumScore + addend.mediumScore(),
@@ -185,7 +225,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore subtract(HardMediumSoftScore subtrahend) {
-        return new HardMediumSoftScore(
+        return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 hardScore - subtrahend.hardScore(),
                 mediumScore - subtrahend.mediumScore(),
@@ -194,7 +234,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore multiply(double multiplicand) {
-        return new HardMediumSoftScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (int) Math.floor(hardScore * multiplicand),
                 (int) Math.floor(mediumScore * multiplicand),
@@ -203,7 +243,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore divide(double divisor) {
-        return new HardMediumSoftScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (int) Math.floor(hardScore / divisor),
                 (int) Math.floor(mediumScore / divisor),
@@ -212,7 +252,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore power(double exponent) {
-        return new HardMediumSoftScore(
+        return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (int) Math.floor(Math.pow(hardScore, exponent)),
                 (int) Math.floor(Math.pow(mediumScore, exponent)),
@@ -221,7 +261,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
     @Override
     public HardMediumSoftScore abs() {
-        return new HardMediumSoftScore(Math.abs(initScore), Math.abs(hardScore), Math.abs(mediumScore), Math.abs(softScore));
+        return ofUninitialized(Math.abs(initScore), Math.abs(hardScore), Math.abs(mediumScore), Math.abs(softScore));
     }
 
     @Override

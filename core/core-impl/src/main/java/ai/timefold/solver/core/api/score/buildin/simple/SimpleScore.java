@@ -16,6 +16,7 @@ public final class SimpleScore implements Score<SimpleScore> {
 
     public static final SimpleScore ZERO = new SimpleScore(0, 0);
     public static final SimpleScore ONE = new SimpleScore(0, 1);
+    private static final SimpleScore MINUS_ONE = new SimpleScore(0, -1);
 
     public static SimpleScore parseScore(String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleScore.class, scoreString, "");
@@ -25,11 +26,19 @@ public final class SimpleScore implements Score<SimpleScore> {
     }
 
     public static SimpleScore ofUninitialized(int initScore, int score) {
+        if (initScore == 0) {
+            return of(score);
+        }
         return new SimpleScore(initScore, score);
     }
 
     public static SimpleScore of(int score) {
-        return new SimpleScore(0, score);
+        return switch (score) {
+            case -1 -> MINUS_ONE;
+            case 0 -> ZERO;
+            case 1 -> ONE;
+            default -> new SimpleScore(0, score);
+        };
     }
 
     // ************************************************************************
@@ -86,52 +95,52 @@ public final class SimpleScore implements Score<SimpleScore> {
 
     @Override
     public SimpleScore withInitScore(int newInitScore) {
-        return new SimpleScore(newInitScore, score);
+        return ofUninitialized(newInitScore, score);
     }
 
     @Override
     public SimpleScore add(SimpleScore addend) {
-        return new SimpleScore(
+        return ofUninitialized(
                 initScore + addend.initScore(),
                 score + addend.score());
     }
 
     @Override
     public SimpleScore subtract(SimpleScore subtrahend) {
-        return new SimpleScore(
+        return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 score - subtrahend.score());
     }
 
     @Override
     public SimpleScore multiply(double multiplicand) {
-        return new SimpleScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (int) Math.floor(score * multiplicand));
     }
 
     @Override
     public SimpleScore divide(double divisor) {
-        return new SimpleScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (int) Math.floor(score / divisor));
     }
 
     @Override
     public SimpleScore power(double exponent) {
-        return new SimpleScore(
+        return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (int) Math.floor(Math.pow(score, exponent)));
     }
 
     @Override
     public SimpleScore abs() {
-        return new SimpleScore(Math.abs(initScore), Math.abs(score));
+        return ofUninitialized(Math.abs(initScore), Math.abs(score));
     }
 
     @Override
     public SimpleScore zero() {
-        return SimpleScore.ZERO;
+        return ZERO;
     }
 
     @Override

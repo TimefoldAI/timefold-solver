@@ -25,6 +25,8 @@ public final class HardSoftScore implements Score<HardSoftScore> {
     public static final HardSoftScore ZERO = new HardSoftScore(0, 0, 0);
     public static final HardSoftScore ONE_HARD = new HardSoftScore(0, 1, 0);
     public static final HardSoftScore ONE_SOFT = new HardSoftScore(0, 0, 1);
+    private static final HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0, 0, -1);
+    private static final HardSoftScore MINUS_ONE_HARD = new HardSoftScore(0, -1, 0);
 
     public static HardSoftScore parseScore(String scoreString) {
         String[] scoreTokens = parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
@@ -35,19 +37,57 @@ public final class HardSoftScore implements Score<HardSoftScore> {
     }
 
     public static HardSoftScore ofUninitialized(int initScore, int hardScore, int softScore) {
+        if (initScore == 0) {
+            return of(hardScore, softScore);
+        }
         return new HardSoftScore(initScore, hardScore, softScore);
     }
 
     public static HardSoftScore of(int hardScore, int softScore) {
+        // Optimization for frequently seen values.
+        if (hardScore == 0) {
+            if (softScore == -1) {
+                return MINUS_ONE_SOFT;
+            } else if (softScore == 0) {
+                return ZERO;
+            } else if (softScore == 1) {
+                return ONE_SOFT;
+            }
+        } else if (softScore == 0) {
+            if (hardScore == 1) {
+                return ONE_HARD;
+            } else if (hardScore == -1) {
+                return MINUS_ONE_HARD;
+            }
+        }
+        // Every other case is constructed.
         return new HardSoftScore(0, hardScore, softScore);
     }
 
     public static HardSoftScore ofHard(int hardScore) {
-        return of(hardScore, 0);
+        // Optimization for frequently seen values.
+        if (hardScore == -1) {
+            return MINUS_ONE_HARD;
+        } else if (hardScore == 0) {
+            return ZERO;
+        } else if (hardScore == 1) {
+            return ONE_HARD;
+        }
+        // Every other case is constructed.
+        return new HardSoftScore(0, hardScore, 0);
     }
 
     public static HardSoftScore ofSoft(int softScore) {
-        return of(0, softScore);
+        // Optimization for frequently seen values.
+        if (softScore == -1) {
+            return MINUS_ONE_SOFT;
+        } else if (softScore == 0) {
+            return ZERO;
+        } else if (softScore == 1) {
+            return ONE_SOFT;
+        }
+        // Every other case is constructed.
+        return new HardSoftScore(0, 0, softScore);
     }
 
     // ************************************************************************
@@ -129,7 +169,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore withInitScore(int newInitScore) {
-        return new HardSoftScore(newInitScore, hardScore, softScore);
+        return ofUninitialized(newInitScore, hardScore, softScore);
     }
 
     @Override
@@ -139,7 +179,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore add(HardSoftScore addend) {
-        return new HardSoftScore(
+        return ofUninitialized(
                 initScore + addend.initScore(),
                 hardScore + addend.hardScore(),
                 softScore + addend.softScore());
@@ -147,7 +187,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore subtract(HardSoftScore subtrahend) {
-        return new HardSoftScore(
+        return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 hardScore - subtrahend.hardScore(),
                 softScore - subtrahend.softScore());
@@ -155,7 +195,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore multiply(double multiplicand) {
-        return new HardSoftScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (int) Math.floor(hardScore * multiplicand),
                 (int) Math.floor(softScore * multiplicand));
@@ -163,7 +203,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore divide(double divisor) {
-        return new HardSoftScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (int) Math.floor(hardScore / divisor),
                 (int) Math.floor(softScore / divisor));
@@ -171,7 +211,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore power(double exponent) {
-        return new HardSoftScore(
+        return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (int) Math.floor(Math.pow(hardScore, exponent)),
                 (int) Math.floor(Math.pow(softScore, exponent)));
@@ -179,12 +219,12 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public HardSoftScore abs() {
-        return new HardSoftScore(Math.abs(initScore), Math.abs(hardScore), Math.abs(softScore));
+        return ofUninitialized(Math.abs(initScore), Math.abs(hardScore), Math.abs(softScore));
     }
 
     @Override
     public HardSoftScore zero() {
-        return HardSoftScore.ZERO;
+        return ZERO;
     }
 
     @Override

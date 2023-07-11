@@ -16,6 +16,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
 
     public static final SimpleLongScore ZERO = new SimpleLongScore(0, 0L);
     public static final SimpleLongScore ONE = new SimpleLongScore(0, 1L);
+    public static final SimpleLongScore MINUS_ONE = new SimpleLongScore(0, -1L);
 
     public static SimpleLongScore parseScore(String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleLongScore.class, scoreString, "");
@@ -25,11 +26,22 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     public static SimpleLongScore ofUninitialized(int initScore, long score) {
+        if (initScore == 0) {
+            return of(score);
+        }
         return new SimpleLongScore(initScore, score);
     }
 
     public static SimpleLongScore of(long score) {
-        return new SimpleLongScore(0, score);
+        if (score == -1L) {
+            return MINUS_ONE;
+        } else if (score == 0L) {
+            return ZERO;
+        } else if (score == 1L) {
+            return ONE;
+        } else {
+            return new SimpleLongScore(0, score);
+        }
     }
 
     // ************************************************************************
@@ -86,52 +98,52 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
 
     @Override
     public SimpleLongScore withInitScore(int newInitScore) {
-        return new SimpleLongScore(newInitScore, score);
+        return ofUninitialized(newInitScore, score);
     }
 
     @Override
     public SimpleLongScore add(SimpleLongScore addend) {
-        return new SimpleLongScore(
+        return ofUninitialized(
                 initScore + addend.initScore(),
                 score + addend.score());
     }
 
     @Override
     public SimpleLongScore subtract(SimpleLongScore subtrahend) {
-        return new SimpleLongScore(
+        return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 score - subtrahend.score());
     }
 
     @Override
     public SimpleLongScore multiply(double multiplicand) {
-        return new SimpleLongScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (long) Math.floor(score * multiplicand));
     }
 
     @Override
     public SimpleLongScore divide(double divisor) {
-        return new SimpleLongScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (long) Math.floor(score / divisor));
     }
 
     @Override
     public SimpleLongScore power(double exponent) {
-        return new SimpleLongScore(
+        return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (long) Math.floor(Math.pow(score, exponent)));
     }
 
     @Override
     public SimpleLongScore abs() {
-        return new SimpleLongScore(Math.abs(initScore), Math.abs(score));
+        return ofUninitialized(Math.abs(initScore), Math.abs(score));
     }
 
     @Override
     public SimpleLongScore zero() {
-        return SimpleLongScore.ZERO;
+        return ZERO;
     }
 
     @Override

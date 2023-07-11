@@ -74,12 +74,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.lookUpEnabled = lookUpEnabled;
-        lookUpManager = lookUpEnabled
+        this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
                 : null;
-        this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
-        variableListenerSupport = VariableListenerSupport.create(this);
-        variableListenerSupport.linkVariableListeners();
+        this.constraintMatchEnabledPreference = true;
+        this.variableListenerSupport = VariableListenerSupport.create(this);
+        this.variableListenerSupport.linkVariableListeners();
     }
 
     @Override
