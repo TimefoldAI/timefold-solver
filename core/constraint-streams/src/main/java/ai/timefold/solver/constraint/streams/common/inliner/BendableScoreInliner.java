@@ -11,7 +11,11 @@ final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
     final int[] softScores;
 
     BendableScoreInliner(boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        super(constraintMatchEnabled);
+        this(1, constraintMatchEnabled, hardLevelsSize, softLevelsSize);
+    }
+
+    BendableScoreInliner(int constraintCount, boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
+        super(constraintCount, constraintMatchEnabled);
         hardScores = new int[hardLevelsSize];
         softScores = new int[softLevelsSize];
     }

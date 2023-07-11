@@ -12,7 +12,12 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
     final BigDecimal[] softScores;
 
     BendableBigDecimalScoreInliner(boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        super(constraintMatchEnabled);
+        this(1, constraintMatchEnabled, hardLevelsSize, softLevelsSize);
+    }
+
+    BendableBigDecimalScoreInliner(int constraintCount, boolean constraintMatchEnabled, int hardLevelsSize,
+            int softLevelsSize) {
+        super(constraintCount, constraintMatchEnabled);
         hardScores = new BigDecimal[hardLevelsSize];
         Arrays.fill(hardScores, BigDecimal.ZERO);
         softScores = new BigDecimal[softLevelsSize];

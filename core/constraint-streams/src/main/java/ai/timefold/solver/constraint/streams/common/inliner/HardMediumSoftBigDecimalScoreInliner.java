@@ -12,7 +12,11 @@ final class HardMediumSoftBigDecimalScoreInliner extends AbstractScoreInliner<Ha
     BigDecimal softScore = BigDecimal.ZERO;
 
     HardMediumSoftBigDecimalScoreInliner(boolean constraintMatchEnabled) {
-        super(constraintMatchEnabled);
+        this(1, constraintMatchEnabled);
+    }
+
+    HardMediumSoftBigDecimalScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
+        super(constraintCount, constraintMatchEnabled);
     }
 
     @Override

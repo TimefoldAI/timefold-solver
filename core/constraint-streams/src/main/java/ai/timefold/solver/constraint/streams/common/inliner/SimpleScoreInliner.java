@@ -8,7 +8,11 @@ final class SimpleScoreInliner extends AbstractScoreInliner<SimpleScore> {
     int score;
 
     SimpleScoreInliner(boolean constraintMatchEnabled) {
-        super(constraintMatchEnabled);
+        this(1, constraintMatchEnabled);
+    }
+
+    SimpleScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
+        super(constraintCount, constraintMatchEnabled);
     }
 
     @Override

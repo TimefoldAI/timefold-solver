@@ -9,7 +9,11 @@ final class HardSoftLongScoreInliner extends AbstractScoreInliner<HardSoftLongSc
     long softScore;
 
     HardSoftLongScoreInliner(boolean constraintMatchEnabled) {
-        super(constraintMatchEnabled);
+        this(1, constraintMatchEnabled);
+    }
+
+    HardSoftLongScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
+        super(constraintCount, constraintMatchEnabled);
     }
 
     @Override

@@ -38,37 +38,38 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             "ai.timefold.solver.score.stream.inliner";
 
     public static <Score_ extends Score<Score_>, ScoreInliner_ extends AbstractScoreInliner<Score_>> ScoreInliner_
-            buildScoreInliner(ScoreDefinition<Score_> scoreDefinition, boolean constraintMatchEnabled) {
+            buildScoreInliner(ScoreDefinition<Score_> scoreDefinition, int constraintCount, boolean constraintMatchEnabled) {
         if (scoreDefinition instanceof SimpleScoreDefinition) {
-            return (ScoreInliner_) new SimpleScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new SimpleScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof SimpleLongScoreDefinition) {
-            return (ScoreInliner_) new SimpleLongScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new SimpleLongScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof SimpleBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new SimpleBigDecimalScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new SimpleBigDecimalScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardSoftScoreDefinition) {
-            return (ScoreInliner_) new HardSoftScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new HardSoftScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardSoftLongScoreDefinition) {
-            return (ScoreInliner_) new HardSoftLongScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new HardSoftLongScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardSoftBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new HardSoftBigDecimalScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new HardSoftBigDecimalScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new HardMediumSoftScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftLongScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftLongScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new HardMediumSoftLongScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftBigDecimalScoreInliner(constraintMatchEnabled);
+            return (ScoreInliner_) new HardMediumSoftBigDecimalScoreInliner(constraintCount, constraintMatchEnabled);
         } else if (scoreDefinition instanceof BendableScoreDefinition) {
             BendableScoreDefinition bendableScoreDefinition = (BendableScoreDefinition) scoreDefinition;
-            return (ScoreInliner_) new BendableScoreInliner(constraintMatchEnabled, bendableScoreDefinition.getHardLevelsSize(),
+            return (ScoreInliner_) new BendableScoreInliner(constraintCount, constraintMatchEnabled,
+                    bendableScoreDefinition.getHardLevelsSize(),
                     bendableScoreDefinition.getSoftLevelsSize());
         } else if (scoreDefinition instanceof BendableLongScoreDefinition) {
             BendableLongScoreDefinition bendableScoreDefinition = (BendableLongScoreDefinition) scoreDefinition;
-            return (ScoreInliner_) new BendableLongScoreInliner(constraintMatchEnabled,
+            return (ScoreInliner_) new BendableLongScoreInliner(constraintCount, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(),
                     bendableScoreDefinition.getSoftLevelsSize());
         } else if (scoreDefinition instanceof BendableBigDecimalScoreDefinition) {
             BendableBigDecimalScoreDefinition bendableScoreDefinition = (BendableBigDecimalScoreDefinition) scoreDefinition;
-            return (ScoreInliner_) new BendableBigDecimalScoreInliner(constraintMatchEnabled,
+            return (ScoreInliner_) new BendableBigDecimalScoreInliner(constraintCount, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
         } else {
             String customScoreInlinerClassName = System.getProperty(CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME);
@@ -78,14 +79,14 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                         "If you're attempting to use a custom score, " +
                         "provide your " + AbstractScoreInliner.class.getSimpleName() + " implementation using the '" +
                         CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME + "' system property.\n" +
-                        "Note: support for custom scores will be removed in Timefold 9.0.");
+                        "Note: support for custom scores will be removed in Timefold 2.0.");
             }
             try {
                 Class<?> customScoreInlinerClass = Class.forName(customScoreInlinerClassName);
                 if (!AbstractScoreInliner.class.isAssignableFrom(customScoreInlinerClass)) {
                     throw new IllegalStateException("Custom score inliner class (" + customScoreInlinerClassName +
                             ") does not extend " + AbstractScoreInliner.class.getCanonicalName() + ".\n" +
-                            "Note: support for custom scores will be removed in Timefold 9.0.");
+                            "Note: support for custom scores will be removed in Timefold 2.0.");
                 }
                 return ((Class<ScoreInliner_>) customScoreInlinerClass).getConstructor()
                         .newInstance();
@@ -94,7 +95,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                 throw new IllegalStateException("Custom score inliner class (" + customScoreInlinerClassName +
                         ") can not be instantiated.\n" +
                         "Maybe add a no-arg public constructor?\n" +
-                        "Note: support for custom scores will be removed in Timefold 9.0.", cause);
+                        "Note: support for custom scores will be removed in Timefold 2.0.", cause);
             }
         }
     }
@@ -103,9 +104,9 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     private final Map<String, DefaultConstraintMatchTotal<Score_>> constraintMatchTotalMap;
     private final Map<Object, DefaultIndictment<Score_>> indictmentMap;
 
-    protected AbstractScoreInliner(boolean constraintMatchEnabled) {
+    protected AbstractScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
         this.constraintMatchEnabled = constraintMatchEnabled;
-        this.constraintMatchTotalMap = constraintMatchEnabled ? new LinkedHashMap<>() : null;
+        this.constraintMatchTotalMap = constraintMatchEnabled ? CollectionUtils.newLinkedHashMap(constraintCount) : null;
         this.indictmentMap = constraintMatchEnabled ? new LinkedHashMap<>() : null;
     }
 

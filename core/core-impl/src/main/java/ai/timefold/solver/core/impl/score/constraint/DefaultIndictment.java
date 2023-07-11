@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.constraint;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,13 +36,12 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     @Override
     public List<ConstraintJustification> getJustificationList() {
         if (constraintJustificationList == null) {
-            var nonDistinctConstraintJustificationList = buildConstraintJustificationList();
-            constraintJustificationList = CollectionUtils.toDistinctList(nonDistinctConstraintJustificationList);
+            constraintJustificationList = buildConstraintJustificationList();
         }
         return constraintJustificationList;
     }
 
-    private Collection<ConstraintJustification> buildConstraintJustificationList() {
+    private List<ConstraintJustification> buildConstraintJustificationList() {
         var constraintMatchSetSize = constraintMatchSet.size();
         switch (constraintMatchSetSize) {
             case 0 -> {
@@ -53,11 +51,11 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
                 return Collections.singletonList(constraintMatchSet.iterator().next().getJustification());
             }
             default -> {
-                var justificationSet = new LinkedHashSet<ConstraintJustification>(constraintMatchSet.size());
+                Set<ConstraintJustification> justificationSet = CollectionUtils.newLinkedHashSet(constraintMatchSetSize);
                 for (ConstraintMatch<Score_> constraintMatch : constraintMatchSet) {
                     justificationSet.add(constraintMatch.getJustification());
                 }
-                return justificationSet;
+                return CollectionUtils.toDistinctList(justificationSet);
             }
         }
     }
