@@ -1,12 +1,10 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.Score;
@@ -30,7 +28,15 @@ import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
+/**
+ * Keeps track of the working score and constraint matches for a single constraint session.
+ * Every time constraint weights change, a new instance needs to be created.
+ *
+ * @param <Score_>
+ */
 public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
     @Deprecated(forRemoval = true)
@@ -38,38 +44,39 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             "ai.timefold.solver.score.stream.inliner";
 
     public static <Score_ extends Score<Score_>, ScoreInliner_ extends AbstractScoreInliner<Score_>> ScoreInliner_
-            buildScoreInliner(ScoreDefinition<Score_> scoreDefinition, int constraintCount, boolean constraintMatchEnabled) {
+            buildScoreInliner(ScoreDefinition<Score_> scoreDefinition, Map<Constraint, Score_> constraintWeightMap,
+                    boolean constraintMatchEnabled) {
         if (scoreDefinition instanceof SimpleScoreDefinition) {
-            return (ScoreInliner_) new SimpleScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new SimpleScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof SimpleLongScoreDefinition) {
-            return (ScoreInliner_) new SimpleLongScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new SimpleLongScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof SimpleBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new SimpleBigDecimalScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new SimpleBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardSoftScoreDefinition) {
-            return (ScoreInliner_) new HardSoftScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new HardSoftScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardSoftLongScoreDefinition) {
-            return (ScoreInliner_) new HardSoftLongScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new HardSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardSoftBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new HardSoftBigDecimalScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new HardSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new HardMediumSoftScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftLongScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftLongScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new HardMediumSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftBigDecimalScoreInliner(constraintCount, constraintMatchEnabled);
+            return (ScoreInliner_) new HardMediumSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof BendableScoreDefinition) {
             BendableScoreDefinition bendableScoreDefinition = (BendableScoreDefinition) scoreDefinition;
-            return (ScoreInliner_) new BendableScoreInliner(constraintCount, constraintMatchEnabled,
+            return (ScoreInliner_) new BendableScoreInliner((Map) constraintWeightMap, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(),
                     bendableScoreDefinition.getSoftLevelsSize());
         } else if (scoreDefinition instanceof BendableLongScoreDefinition) {
             BendableLongScoreDefinition bendableScoreDefinition = (BendableLongScoreDefinition) scoreDefinition;
-            return (ScoreInliner_) new BendableLongScoreInliner(constraintCount, constraintMatchEnabled,
+            return (ScoreInliner_) new BendableLongScoreInliner((Map) constraintWeightMap, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(),
                     bendableScoreDefinition.getSoftLevelsSize());
         } else if (scoreDefinition instanceof BendableBigDecimalScoreDefinition) {
             BendableBigDecimalScoreDefinition bendableScoreDefinition = (BendableBigDecimalScoreDefinition) scoreDefinition;
-            return (ScoreInliner_) new BendableBigDecimalScoreInliner(constraintCount, constraintMatchEnabled,
+            return (ScoreInliner_) new BendableBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
         } else {
             String customScoreInlinerClassName = System.getProperty(CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME);
@@ -101,13 +108,25 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     }
 
     protected final boolean constraintMatchEnabled;
-    private final Map<String, DefaultConstraintMatchTotal<Score_>> constraintMatchTotalMap;
-    private final Map<Object, DefaultIndictment<Score_>> indictmentMap;
+    protected final Map<Constraint, Score_> constraintWeightMap;
+    private final Map<Constraint, ElementAwareList<ConstraintMatchCarrier<Score_>>> constraintMatchMap;
+    private Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = null;
+    private Map<Object, Indictment<Score_>> indictmentMap = null;
 
-    protected AbstractScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
+    protected AbstractScoreInliner(Map<Constraint, Score_> constraintWeightMap, boolean constraintMatchEnabled) {
         this.constraintMatchEnabled = constraintMatchEnabled;
-        this.constraintMatchTotalMap = constraintMatchEnabled ? CollectionUtils.newLinkedHashMap(constraintCount) : null;
-        this.indictmentMap = constraintMatchEnabled ? new LinkedHashMap<>() : null;
+        constraintWeightMap.forEach(this::validateConstraintWeight);
+        this.constraintWeightMap = constraintWeightMap;
+        this.constraintMatchMap =
+                constraintMatchEnabled ? CollectionUtils.newIdentityHashMap(constraintWeightMap.size()) : null;
+    }
+
+    private void validateConstraintWeight(Constraint constraint, Score_ constraintWeight) {
+        if (constraintWeight == null || constraintWeight.isZero()) {
+            throw new IllegalArgumentException("Impossible state: The constraintWeight (" +
+                    constraintWeight + ") cannot be zero, constraint (" + constraint +
+                    ") should have been culled during session creation.");
+        }
     }
 
     public abstract Score_ extractScore(int initScore);
@@ -116,75 +135,39 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
      * Create a new instance of {@link WeightedScoreImpacter} for a particular constraint.
      *
      * @param constraint never null
-     * @param constraintWeight never null
      * @return never null
      */
-    public abstract WeightedScoreImpacter<?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint,
-            Score_ constraintWeight);
+    public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint);
 
-    protected final Runnable addConstraintMatch(Constraint constraint, Score_ constraintWeight, Score_ score,
-            JustificationsSupplier justificationsSupplier) {
-        var constraintMatchTotal = getConstraintMatchTotal(constraint, constraintWeight);
-        Collection<Object> indictedObjectCollection = justificationsSupplier.indictedObjectCollection();
-        var constraintMatch = constraintMatchTotal.addConstraintMatch(
-                justificationsSupplier.createConstraintJustification(score),
-                indictedObjectCollection, score);
-        // Optimization: if the indicted objects are distinct, we can skip part of the conversion to distinct list.
-        var indictedObjectList = indictedObjectCollection instanceof Set<Object> set ? CollectionUtils.toDistinctList(set)
-                : CollectionUtils.toDistinctList(constraintMatch.getIndictedObjectList());
-        if (indictedObjectList.isEmpty()) {
-            return () -> removeConstraintMatchFromTotal(constraintMatchTotal, constraintMatch);
-        } else {
-            var indictmentList = new ArrayList<DefaultIndictment<Score_>>(indictedObjectList.size());
-            for (var indictedObject : indictedObjectList) {
-                var indictment = getIndictment(constraintMatch, indictedObject);
-                indictment.addConstraintMatch(constraintMatch);
-                indictmentList.add(indictment);
-            }
-            return () -> {
-                removeConstraintMatchFromTotal(constraintMatchTotal, constraintMatch);
-                removeConstraintMatchFromIndictment(indictmentList, constraintMatch);
-            };
-        }
+    protected final Runnable addConstraintMatch(Constraint constraint, Score_ score,
+            ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+        ElementAwareList<ConstraintMatchCarrier<Score_>> constraintMatchList = getConstraintMatchList(constraint);
+        /*
+         * Creating a constraint match is a heavy operation which may yet be undone.
+         * Defer creation of the constraint match until a later point.
+         */
+        ElementAwareListEntry<ConstraintMatchCarrier<Score_>> entry =
+                constraintMatchList.add(new ConstraintMatchCarrier<>(constraintMatchSupplier, constraint, score));
+        clearMaps();
+        return () -> {
+            entry.remove();
+            clearMaps();
+        };
     }
 
-    private DefaultConstraintMatchTotal<Score_> getConstraintMatchTotal(Constraint constraint, Score_ constraintWeight) {
-        // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
-        String constraintId = constraint.getConstraintId();
-        var constraintMatchTotal = constraintMatchTotalMap.get(constraintId);
-        if (constraintMatchTotal == null) {
-            constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraint, constraintWeight);
-            constraintMatchTotalMap.put(constraintId, constraintMatchTotal);
+    private ElementAwareList<ConstraintMatchCarrier<Score_>> getConstraintMatchList(Constraint constraint) {
+        // Optimization: computeIfAbsent() would have created a lambda on the hot path.
+        ElementAwareList<ConstraintMatchCarrier<Score_>> constraintMatchList = constraintMatchMap.get(constraint);
+        if (constraintMatchList == null) {
+            constraintMatchList = new ElementAwareList<>();
+            constraintMatchMap.put(constraint, constraintMatchList);
         }
-        return constraintMatchTotal;
+        return constraintMatchList;
     }
 
-    private DefaultIndictment<Score_> getIndictment(ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
-        // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
-        var indictment = indictmentMap.get(indictedObject);
-        if (indictment == null) {
-            indictment = new DefaultIndictment<>(indictedObject, constraintMatch.getScore().zero());
-            indictmentMap.put(indictedObject, indictment);
-        }
-        return indictment;
-    }
-
-    private void removeConstraintMatchFromTotal(DefaultConstraintMatchTotal<Score_> constraintMatchTotal,
-            ConstraintMatch<Score_> constraintMatch) {
-        constraintMatchTotal.removeConstraintMatch(constraintMatch);
-        if (constraintMatchTotal.getConstraintMatchSet().isEmpty()) {
-            constraintMatchTotalMap.remove(constraintMatch.getConstraintId());
-        }
-    }
-
-    private void removeConstraintMatchFromIndictment(List<DefaultIndictment<Score_>> indictmentList,
-            ConstraintMatch<Score_> constraintMatch) {
-        for (DefaultIndictment<Score_> indictment : indictmentList) {
-            indictment.removeConstraintMatch(constraintMatch);
-            if (indictment.getConstraintMatchSet().isEmpty()) {
-                indictmentMap.remove(indictment.getIndictedObject());
-            }
-        }
+    private void clearMaps() {
+        constraintMatchTotalMap = null;
+        indictmentMap = null;
     }
 
     public boolean isConstraintMatchEnabled() {
@@ -192,21 +175,83 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     }
 
     public final Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        // Unchecked assignment necessary as CMT and DefaultCMT incompatible in the Map generics.
-        return (Map) constraintMatchTotalMap;
+        if (constraintMatchTotalMap == null) {
+            rebuildConstraintMatchTotalsAndIndictments();
+        }
+        return constraintMatchTotalMap;
+    }
+
+    private void rebuildConstraintMatchTotalsAndIndictments() {
+        Map<String, ConstraintMatchTotal<Score_>> workingConstraintMatchTotalMap = new TreeMap<>();
+        Map<Object, Indictment<Score_>> workingIndictmentMap = new LinkedHashMap<>();
+        for (Map.Entry<Constraint, ElementAwareList<ConstraintMatchCarrier<Score_>>> entry : constraintMatchMap.entrySet()) {
+            var constraint = entry.getKey();
+            DefaultConstraintMatchTotal<Score_> constraintMatchTotal =
+                    new DefaultConstraintMatchTotal<>(constraint, constraintWeightMap.get(constraint));
+            entry.getValue().forEach(carrier -> {
+                // Constraint match instances are only created here, when we actually need them.
+                ConstraintMatch<Score_> constraintMatch = carrier.get();
+                constraintMatchTotal.addConstraintMatch(constraintMatch);
+                for (var indictedObject : constraintMatch.getIndictedObjectList()) {
+                    var indictment =
+                            (DefaultIndictment<Score_>) getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
+                    /*
+                     * Optimization: In order to not have to go over the indicted object list and remove duplicates,
+                     * we use a method that will silently skip duplicate constraint matches.
+                     * This is harmless, because the two identical indicted objects come from the same constraint match.
+                     */
+                    indictment.addConstraintMatchWithoutFail(constraintMatch);
+                }
+            });
+            workingConstraintMatchTotalMap.put(constraint.getConstraintId(), constraintMatchTotal);
+        }
+        constraintMatchTotalMap = workingConstraintMatchTotalMap;
+        indictmentMap = workingIndictmentMap;
+    }
+
+    private DefaultIndictment<Score_> getIndictment(Map<Object, Indictment<Score_>> indictmentMap,
+            ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
+        // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
+        var indictment = (DefaultIndictment<Score_>) indictmentMap.get(indictedObject);
+        if (indictment == null) {
+            indictment = new DefaultIndictment<>(indictedObject, constraintMatch.getScore().zero());
+            indictmentMap.put(indictedObject, indictment);
+        }
+        return indictment;
     }
 
     public final Map<Object, Indictment<Score_>> getIndictmentMap() {
-        // Unchecked assignment necessary as Indictment and DefaultIndictment incompatible in the Map generics.
-        return (Map) indictmentMap;
+        if (indictmentMap == null) {
+            rebuildConstraintMatchTotalsAndIndictments();
+        }
+        return indictmentMap;
     }
 
-    protected final void validateConstraintWeight(Constraint constraint, Score_ constraintWeight) {
-        if (constraintWeight == null || constraintWeight.isZero()) {
-            throw new IllegalArgumentException("Impossible state: The constraintWeight (" +
-                    constraintWeight + ") cannot be zero, constraint (" + constraint +
-                    ") should have been culled during session creation.");
+    private static final class ConstraintMatchCarrier<Score_ extends Score<Score_>>
+            implements
+            Supplier<ConstraintMatch<Score_>> {
+
+        private final Constraint constraint;
+        private final ConstraintMatchSupplier<Score_> constraintMatchSupplier;
+        private final Score_ score;
+        private ConstraintMatch<Score_> constraintMatch;
+
+        private ConstraintMatchCarrier(ConstraintMatchSupplier<Score_> constraintMatchSupplier, Constraint constraint,
+                Score_ score) {
+            this.constraint = constraint;
+            this.constraintMatchSupplier = constraintMatchSupplier;
+            this.score = score;
         }
+
+        @Override
+        public ConstraintMatch<Score_> get() {
+            if (constraintMatch == null) {
+                // Repeated requests for score explanation should not create the same constraint match over and over.
+                constraintMatch = constraintMatchSupplier.apply(constraint, score);
+            }
+            return constraintMatch;
+        }
+
     }
 
 }

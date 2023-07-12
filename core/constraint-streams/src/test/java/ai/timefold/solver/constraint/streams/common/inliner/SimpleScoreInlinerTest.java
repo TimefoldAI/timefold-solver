@@ -2,7 +2,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.Map;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -12,24 +16,21 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
 
     @Test
     void defaultScore() {
-        SimpleScoreInliner scoreInliner =
-                new SimpleScoreInliner(constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(SimpleScore.ZERO);
     }
 
     @Test
     void impact() {
-        SimpleScoreInliner scoreInliner =
-                new SimpleScoreInliner(constraintMatchEnabled);
+        var constraintWeight = SimpleScore.of(10);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<SimpleScore>) impacter.getContext().parent;
 
-        SimpleScore constraintWeight = SimpleScore.of(10);
-        WeightedScoreImpacter<SimpleScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(10, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(SimpleScore.of(100));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(20, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(SimpleScore.of(300));
 
@@ -46,4 +47,11 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
     protected SolutionDescriptor<TestdataSolution> buildSolutionDescriptor() {
         return TestdataSolution.buildSolutionDescriptor();
     }
+
+    @Override
+    protected AbstractScoreInliner<SimpleScore> buildScoreInliner(Map<Constraint, SimpleScore> constraintWeightMap,
+            boolean constraintMatchEnabled) {
+        return new SimpleScoreInliner(constraintWeightMap, constraintMatchEnabled);
+    }
+
 }

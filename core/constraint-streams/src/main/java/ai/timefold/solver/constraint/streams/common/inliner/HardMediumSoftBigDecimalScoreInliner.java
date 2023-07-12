@@ -1,9 +1,11 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardMediumSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardMediumSoftBigDecimalScore> {
 
@@ -11,19 +13,15 @@ final class HardMediumSoftBigDecimalScoreInliner extends AbstractScoreInliner<Ha
     BigDecimal mediumScore = BigDecimal.ZERO;
     BigDecimal softScore = BigDecimal.ZERO;
 
-    HardMediumSoftBigDecimalScoreInliner(boolean constraintMatchEnabled) {
-        this(1, constraintMatchEnabled);
-    }
-
-    HardMediumSoftBigDecimalScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
-        super(constraintCount, constraintMatchEnabled);
+    HardMediumSoftBigDecimalScoreInliner(Map<Constraint, HardMediumSoftBigDecimalScore> constraintWeightMap,
+            boolean constraintMatchEnabled) {
+        super(constraintWeightMap, constraintMatchEnabled);
     }
 
     @Override
-    public WeightedScoreImpacter<HardMediumSoftBigDecimalScoreContext>
-            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint,
-                    HardMediumSoftBigDecimalScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<HardMediumSoftBigDecimalScore, ?>
+            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+        HardMediumSoftBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
         BigDecimal hardConstraintWeight = constraintWeight.hardScore();
         BigDecimal mediumConstraintWeight = constraintWeight.mediumScore();
         BigDecimal softConstraintWeight = constraintWeight.softScore();

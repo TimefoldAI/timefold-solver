@@ -1,26 +1,24 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import java.util.Map;
+
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
 
     int hardScore;
     int softScore;
 
-    HardSoftScoreInliner(boolean constraintMatchEnabled) {
-        this(1, constraintMatchEnabled);
-    }
-
-    HardSoftScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
-        super(constraintCount, constraintMatchEnabled);
+    HardSoftScoreInliner(Map<Constraint, HardSoftScore> constraintWeightMap, boolean constraintMatchEnabled) {
+        super(constraintWeightMap, constraintMatchEnabled);
     }
 
     @Override
-    public WeightedScoreImpacter<HardSoftScoreContext> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint,
-            HardSoftScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<HardSoftScore, ?> buildWeightedScoreImpacter(
+            AbstractConstraint<?, ?, ?> constraint) {
+        HardSoftScore constraintWeight = constraintWeightMap.get(constraint);
         HardSoftScoreContext context = new HardSoftScoreContext(this, constraint, constraintWeight);
         if (constraintWeight.softScore() == 0) {
             return WeightedScoreImpacter.of(context, HardSoftScoreContext::changeHardScoreBy);

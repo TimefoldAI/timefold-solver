@@ -1,31 +1,28 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
 
     final int[] hardScores;
     final int[] softScores;
 
-    BendableScoreInliner(boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        this(1, constraintMatchEnabled, hardLevelsSize, softLevelsSize);
-    }
-
-    BendableScoreInliner(int constraintCount, boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        super(constraintCount, constraintMatchEnabled);
+    BendableScoreInliner(Map<Constraint, BendableScore> constraintWeightMap, boolean constraintMatchEnabled, int hardLevelsSize,
+            int softLevelsSize) {
+        super(constraintWeightMap, constraintMatchEnabled);
         hardScores = new int[hardLevelsSize];
         softScores = new int[softLevelsSize];
     }
 
     @Override
-    public WeightedScoreImpacter<BendableScoreContext> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint,
-            BendableScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<BendableScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         Integer singleLevel = null;
+        BendableScore constraintWeight = constraintWeightMap.get(constraint);
         for (int i = 0; i < constraintWeight.levelsSize(); i++) {
             if (constraintWeight.hardOrSoftScore(i) != 0L) {
                 if (singleLevel != null) {

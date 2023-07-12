@@ -30,8 +30,8 @@ public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ e
     }
 
     protected UndoScoreImpacter impactWithConstraintMatch(UndoScoreImpacter undoScoreImpact, Score_ score,
-            JustificationsSupplier justificationsSupplier) {
-        Runnable undoConstraintMatch = parent.addConstraintMatch(constraint, constraintWeight, score, justificationsSupplier);
+            ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+        Runnable undoConstraintMatch = parent.addConstraintMatch(constraint, score, constraintMatchSupplier);
         return () -> {
             undoScoreImpact.run();
             undoConstraintMatch.run();

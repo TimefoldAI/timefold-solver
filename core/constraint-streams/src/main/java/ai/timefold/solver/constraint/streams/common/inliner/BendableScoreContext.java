@@ -25,7 +25,8 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, -1);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(int matchWeight,
+            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         int softImpact = scoreLevelWeight * matchWeight;
         parent.softScores[scoreLevel] += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScores[scoreLevel] -= softImpact;
@@ -33,10 +34,12 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
-                BendableScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact), justificationsSupplier);
+                BendableScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact),
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(int matchWeight,
+            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         int hardImpact = scoreLevelWeight * matchWeight;
         parent.hardScores[scoreLevel] += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScores[scoreLevel] -= hardImpact;
@@ -44,10 +47,11 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
-                BendableScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact), justificationsSupplier);
+                BendableScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact),
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(int matchWeight, ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         int[] hardImpacts = new int[hardScoreLevelCount];
         int[] softImpacts = new int[softScoreLevelCount];
         for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
@@ -71,7 +75,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, BendableScore.of(hardImpacts, softImpacts), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, BendableScore.of(hardImpacts, softImpacts), constraintMatchSupplier);
     }
 
 }

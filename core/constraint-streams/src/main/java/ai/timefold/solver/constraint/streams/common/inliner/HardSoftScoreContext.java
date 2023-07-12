@@ -10,27 +10,29 @@ final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftSco
         super(parent, constraint, constraintWeight);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(int matchWeight,
+            ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
         int softImpact = constraintWeight.softScore() * matchWeight;
         parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofSoft(softImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofSoft(softImpact), constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(int matchWeight,
+            ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
         int hardImpact = constraintWeight.hardScore() * matchWeight;
         parent.hardScore += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofHard(hardImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofHard(hardImpact), constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(int matchWeight, ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
         int hardImpact = constraintWeight.hardScore() * matchWeight;
         int softImpact = constraintWeight.softScore() * matchWeight;
         parent.hardScore += hardImpact;
@@ -42,7 +44,7 @@ final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftSco
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.of(hardImpact, softImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.of(hardImpact, softImpact), constraintMatchSupplier);
     }
 
 }

@@ -9,10 +9,10 @@ import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacte
 
 final class UniScorer<A> extends AbstractScorer<UniTuple<A>> {
 
-    private final BiFunction<WeightedScoreImpacter<?>, A, UndoScoreImpacter> scoreImpacter;
+    private final BiFunction<WeightedScoreImpacter<?, ?>, A, UndoScoreImpacter> scoreImpacter;
 
-    public UniScorer(WeightedScoreImpacter<?> weightedScoreImpacter,
-            BiFunction<WeightedScoreImpacter<?>, A, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
+    public UniScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter,
+            BiFunction<WeightedScoreImpacter<?, ?>, A, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
         super(weightedScoreImpacter, inputStoreIndex);
         this.scoreImpacter = scoreImpacter;
     }

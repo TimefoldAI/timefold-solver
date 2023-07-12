@@ -109,11 +109,16 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
      */
     public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, Collection<Object> indictedObjects,
             Score_ score) {
-        this.score = this.score == null ? score : this.score.add(score);
         ConstraintMatch<Score_> constraintMatch =
                 new ConstraintMatch<>(constraintId, constraintPackage, constraintName, justification, indictedObjects, score);
-        constraintMatchSet.add(constraintMatch);
+        addConstraintMatch(constraintMatch);
         return constraintMatch;
+    }
+
+    public void addConstraintMatch(ConstraintMatch<Score_> constraintMatch) {
+        Score_ constraintMatchScore = constraintMatch.getScore();
+        this.score = this.score == null ? constraintMatchScore : this.score.add(constraintMatchScore);
+        constraintMatchSet.add(constraintMatch);
     }
 
     public void removeConstraintMatch(ConstraintMatch<Score_> constraintMatch) {

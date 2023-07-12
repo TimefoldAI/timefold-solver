@@ -25,7 +25,8 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, -1);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(long matchWeight,
+            ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) {
         long softImpact = scoreLevelWeight * matchWeight;
         parent.softScores[scoreLevel] += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScores[scoreLevel] -= softImpact;
@@ -35,10 +36,11 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         }
         return impactWithConstraintMatch(undoScoreImpact,
                 BendableLongScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(long matchWeight,
+            ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) {
         long hardImpact = scoreLevelWeight * matchWeight;
         parent.hardScores[scoreLevel] += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScores[scoreLevel] -= hardImpact;
@@ -47,10 +49,11 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         }
         return impactWithConstraintMatch(undoScoreImpact,
                 BendableLongScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(long matchWeight,
+            ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) {
         long[] hardImpacts = new long[hardScoreLevelCount];
         long[] softImpacts = new long[softScoreLevelCount];
         for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
@@ -75,7 +78,7 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, BendableLongScore.of(hardImpacts, softImpacts),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
 }

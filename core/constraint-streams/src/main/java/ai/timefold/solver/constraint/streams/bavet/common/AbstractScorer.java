@@ -7,10 +7,10 @@ import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacte
 
 public abstract class AbstractScorer<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
 
-    protected final WeightedScoreImpacter<?> weightedScoreImpacter;
+    protected final WeightedScoreImpacter<?, ?> weightedScoreImpacter;
     private final int inputStoreIndex;
 
-    protected AbstractScorer(WeightedScoreImpacter<?> weightedScoreImpacter, int inputStoreIndex) {
+    protected AbstractScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter, int inputStoreIndex) {
         this.weightedScoreImpacter = weightedScoreImpacter;
         this.inputStoreIndex = inputStoreIndex;
     }

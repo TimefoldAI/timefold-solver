@@ -52,8 +52,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             }
         }
         AbstractScoreInliner<Score_> scoreInliner =
-                AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap.size(), constraintMatchEnabled);
-        NodeBuildHelper<Score_> buildHelper = new NodeBuildHelper<>(constraintStreamSet, constraintWeightMap, scoreInliner);
+                AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
+        NodeBuildHelper<Score_> buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
         // Build constraintStreamSet in reverse order to create downstream nodes first
         // so every node only has final variables (some of which have downstream node method references).
         List<BavetAbstractConstraintStream<Solution_>> reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);

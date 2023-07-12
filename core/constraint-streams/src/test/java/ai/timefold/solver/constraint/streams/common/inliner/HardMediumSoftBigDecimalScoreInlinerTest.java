@@ -3,8 +3,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardMediumSoftBigDecimalScoreSolution;
 
@@ -15,24 +18,21 @@ class HardMediumSoftBigDecimalScoreInlinerTest
 
     @Test
     void defaultScore() {
-        HardMediumSoftBigDecimalScoreInliner scoreInliner =
-                new HardMediumSoftBigDecimalScoreInliner(constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(HardMediumSoftBigDecimalScore.ZERO);
     }
 
     @Test
     void impactHard() {
-        HardMediumSoftBigDecimalScoreInliner scoreInliner =
-                new HardMediumSoftBigDecimalScoreInliner(constraintMatchEnabled);
+        var constraintWeight = HardMediumSoftBigDecimalScore.ofHard(BigDecimal.valueOf(90));
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
 
-        HardMediumSoftBigDecimalScore constraintWeight = HardMediumSoftBigDecimalScore.ofHard(BigDecimal.valueOf(90));
-        WeightedScoreImpacter<HardMediumSoftBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.valueOf(90), BigDecimal.ZERO, BigDecimal.ZERO));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(2), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.valueOf(270), BigDecimal.ZERO, BigDecimal.ZERO));
 
@@ -47,17 +47,15 @@ class HardMediumSoftBigDecimalScoreInlinerTest
 
     @Test
     void impactMedium() {
-        HardMediumSoftBigDecimalScoreInliner scoreInliner =
-                new HardMediumSoftBigDecimalScoreInliner(constraintMatchEnabled);
+        var constraintWeight = HardMediumSoftBigDecimalScore.ofMedium(BigDecimal.valueOf(90));
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
 
-        HardMediumSoftBigDecimalScore constraintWeight = HardMediumSoftBigDecimalScore.ofMedium(BigDecimal.valueOf(90));
-        WeightedScoreImpacter<HardMediumSoftBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.valueOf(90), BigDecimal.ZERO));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(2), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.valueOf(270), BigDecimal.ZERO));
 
@@ -72,17 +70,15 @@ class HardMediumSoftBigDecimalScoreInlinerTest
 
     @Test
     void impactSoft() {
-        HardMediumSoftBigDecimalScoreInliner scoreInliner =
-                new HardMediumSoftBigDecimalScoreInliner(constraintMatchEnabled);
+        var constraintWeight = HardMediumSoftBigDecimalScore.ofSoft(BigDecimal.valueOf(90));
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
 
-        HardMediumSoftBigDecimalScore constraintWeight = HardMediumSoftBigDecimalScore.ofSoft(BigDecimal.valueOf(90));
-        WeightedScoreImpacter<HardMediumSoftBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.valueOf(90)));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(2), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.valueOf(270)));
 
@@ -97,19 +93,17 @@ class HardMediumSoftBigDecimalScoreInlinerTest
 
     @Test
     void impactAll() {
-        HardMediumSoftBigDecimalScoreInliner scoreInliner =
-                new HardMediumSoftBigDecimalScoreInliner(constraintMatchEnabled);
+        var constraintWeight =
+                HardMediumSoftBigDecimalScore.of(BigDecimal.valueOf(10), BigDecimal.valueOf(100), BigDecimal.valueOf(1_000));
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
 
-        HardMediumSoftBigDecimalScore constraintWeight = HardMediumSoftBigDecimalScore.of(
-                BigDecimal.valueOf(10), BigDecimal.valueOf(100), BigDecimal.valueOf(1_000));
-        WeightedScoreImpacter<HardMediumSoftBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.TEN, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.valueOf(100), BigDecimal.valueOf(1_000),
                         BigDecimal.valueOf(10_000)));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(20), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.valueOf(300), BigDecimal.valueOf(3_000),
                         BigDecimal.valueOf(30_000)));
@@ -127,5 +121,11 @@ class HardMediumSoftBigDecimalScoreInlinerTest
     @Override
     protected SolutionDescriptor<TestdataHardMediumSoftBigDecimalScoreSolution> buildSolutionDescriptor() {
         return TestdataHardMediumSoftBigDecimalScoreSolution.buildSolutionDescriptor();
+    }
+
+    @Override
+    protected AbstractScoreInliner<HardMediumSoftBigDecimalScore> buildScoreInliner(
+            Map<Constraint, HardMediumSoftBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
+        return new HardMediumSoftBigDecimalScoreInliner(constraintWeightMap, constraintMatchEnabled);
     }
 }

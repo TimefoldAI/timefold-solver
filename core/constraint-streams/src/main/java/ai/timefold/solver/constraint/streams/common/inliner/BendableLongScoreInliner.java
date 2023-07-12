@@ -1,31 +1,28 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 
 public final class BendableLongScoreInliner extends AbstractScoreInliner<BendableLongScore> {
 
     final long[] hardScores;
     final long[] softScores;
 
-    BendableLongScoreInliner(boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        this(1, constraintMatchEnabled, hardLevelsSize, softLevelsSize);
-    }
-
-    BendableLongScoreInliner(int constraintCount, boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        super(constraintCount, constraintMatchEnabled);
+    BendableLongScoreInliner(Map<Constraint, BendableLongScore> constraintWeightMap, boolean constraintMatchEnabled,
+            int hardLevelsSize, int softLevelsSize) {
+        super(constraintWeightMap, constraintMatchEnabled);
         hardScores = new long[hardLevelsSize];
         softScores = new long[softLevelsSize];
     }
 
     @Override
-    public WeightedScoreImpacter<BendableLongScoreContext> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint,
-            BendableLongScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<BendableLongScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         Integer singleLevel = null;
+        BendableLongScore constraintWeight = constraintWeightMap.get(constraint);
         for (int i = 0; i < constraintWeight.levelsSize(); i++) {
             if (constraintWeight.hardOrSoftScore(i) != 0L) {
                 if (singleLevel != null) {
@@ -42,16 +39,19 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
                     hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
             if (isHardScore) {
                 return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
-                        JustificationsSupplier justificationSupplier) -> ctx.changeHardScoreBy(impact, justificationSupplier));
+                        ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeHardScoreBy(impact,
+                                constraintMatchSupplier));
             } else {
                 return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
-                        JustificationsSupplier justificationSupplier) -> ctx.changeSoftScoreBy(impact, justificationSupplier));
+                        ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeSoftScoreBy(impact,
+                                constraintMatchSupplier));
             }
         } else {
             BendableLongScoreContext context =
                     new BendableLongScoreContext(this, constraint, constraintWeight, hardScores.length, softScores.length);
             return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
-                    JustificationsSupplier justificationSupplier) -> ctx.changeScoreBy(impact, justificationSupplier));
+                    ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeScoreBy(impact,
+                            constraintMatchSupplier));
         }
     }
 

@@ -10,17 +10,19 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         super(parent, constraint, constraintWeight);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(long matchWeight,
+            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) {
         long softImpact = constraintWeight.softScore() * matchWeight;
         parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofSoft(softImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofSoft(softImpact), constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeMediumScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeMediumScoreBy(long matchWeight,
+            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) {
         long mediumImpact = constraintWeight.mediumScore() * matchWeight;
         parent.mediumScore += mediumImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.mediumScore -= mediumImpact;
@@ -28,20 +30,22 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofMedium(mediumImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(long matchWeight,
+            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) {
         long hardImpact = constraintWeight.hardScore() * matchWeight;
         parent.hardScore += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofHard(hardImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofHard(hardImpact), constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(long matchWeight,
+            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) {
         long hardImpact = constraintWeight.hardScore() * matchWeight;
         long mediumImpact = constraintWeight.mediumScore() * matchWeight;
         long softImpact = constraintWeight.softScore() * matchWeight;
@@ -57,7 +61,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.of(hardImpact, mediumImpact, softImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
 }

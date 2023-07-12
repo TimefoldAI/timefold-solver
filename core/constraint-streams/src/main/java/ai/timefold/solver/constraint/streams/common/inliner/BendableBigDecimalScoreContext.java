@@ -27,7 +27,8 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, BigDecimal.ZERO);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         BigDecimal softImpact = scoreLevelWeight.multiply(matchWeight);
         parent.softScores[scoreLevel] = parent.softScores[scoreLevel].add(softImpact);
         UndoScoreImpacter undoScoreImpact =
@@ -37,10 +38,11 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         }
         return impactWithConstraintMatch(undoScoreImpact,
                 BendableBigDecimalScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         BigDecimal hardImpact = scoreLevelWeight.multiply(matchWeight);
         parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].add(hardImpact);
         UndoScoreImpacter undoScoreImpact =
@@ -50,10 +52,11 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         }
         return impactWithConstraintMatch(undoScoreImpact,
                 BendableBigDecimalScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         BigDecimal[] hardImpacts = new BigDecimal[hardScoreLevelCount];
         BigDecimal[] softImpacts = new BigDecimal[softScoreLevelCount];
         for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
@@ -78,7 +81,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, BendableBigDecimalScore.of(hardImpacts, softImpacts),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
 }

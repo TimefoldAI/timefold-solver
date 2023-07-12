@@ -1,7 +1,5 @@
 package ai.timefold.solver.constraint.streams.bavet.bi;
 
-import static ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier.of;
-
 import java.math.BigDecimal;
 import java.util.function.BiFunction;
 import java.util.function.ToIntBiFunction;
@@ -11,7 +9,7 @@ import ai.timefold.solver.constraint.streams.bavet.BavetConstraint;
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetScoringConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.constraint.streams.common.inliner.JustificationsSupplier;
+import ai.timefold.solver.constraint.streams.common.inliner.ConstraintMatchSupplier;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacter;
 import ai.timefold.solver.core.api.function.TriFunction;
@@ -73,14 +71,13 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
         assertEmptyChildStreamList();
         var constraintMatchEnabled = buildHelper.getScoreInliner().isConstraintMatchEnabled();
         var scoreImpacter = constraintMatchEnabled ? buildScoreImpacterWithConstraintMatch() : buildScoreImpacter();
-        var constraintWeight = buildHelper.getConstraintWeight(constraint);
-        var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint, constraintWeight);
+        var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint);
         var scorer = new BiScorer<>(weightedScoreImpacter, scoreImpacter,
                 buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
         buildHelper.putInsertUpdateRetract(this, scorer);
     }
 
-    private TriFunction<WeightedScoreImpacter<?>, A, B, UndoScoreImpacter> buildScoreImpacter() {
+    private TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter> buildScoreImpacter() {
         if (intMatchWeigher != null) {
             return (impacter, a, b) -> {
                 int matchWeight = intMatchWeigher.applyAsInt(a, b);
@@ -101,7 +98,7 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
         }
     }
 
-    private TriFunction<WeightedScoreImpacter<?>, A, B, UndoScoreImpacter> buildScoreImpacterWithConstraintMatch() {
+    private TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter> buildScoreImpacterWithConstraintMatch() {
         if (intMatchWeigher != null) {
             return (impacter, a, b) -> {
                 int matchWeight = intMatchWeigher.applyAsInt(a, b);
@@ -122,28 +119,30 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
         }
     }
 
-    private static <A, B> UndoScoreImpacter impactWithConstraintMatch(WeightedScoreImpacter<?> impacter, int matchWeight, A a,
-            B b) {
+    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter
+            impactWithConstraintMatch(WeightedScoreImpacter<Score_, ?> impacter, int matchWeight, A a, B b) {
         var constraint = impacter.getContext().getConstraint();
-        var justificationsSupplier = JustificationsSupplier.of(constraint, constraint.getJustificationMapping(),
+        var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b);
-        return impacter.impactScore(matchWeight, justificationsSupplier);
+        return impacter.impactScore(matchWeight, constraintMatchSupplier);
     }
 
-    private static <A, B> UndoScoreImpacter impactWithConstraintMatch(WeightedScoreImpacter<?> impacter, long matchWeight, A a,
+    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter impactWithConstraintMatch(
+            WeightedScoreImpacter<Score_, ?> impacter, long matchWeight, A a,
             B b) {
         var constraint = impacter.getContext().getConstraint();
-        var justificationsSupplier = JustificationsSupplier.of(constraint, constraint.getJustificationMapping(),
+        var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b);
-        return impacter.impactScore(matchWeight, justificationsSupplier);
+        return impacter.impactScore(matchWeight, constraintMatchSupplier);
     }
 
-    private static <A, B> UndoScoreImpacter impactWithConstraintMatch(WeightedScoreImpacter<?> impacter, BigDecimal matchWeight,
+    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter impactWithConstraintMatch(
+            WeightedScoreImpacter<Score_, ?> impacter, BigDecimal matchWeight,
             A a, B b) {
         var constraint = impacter.getContext().getConstraint();
-        var justificationsSupplier = JustificationsSupplier.of(constraint, constraint.getJustificationMapping(),
+        var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b);
-        return impacter.impactScore(matchWeight, justificationsSupplier);
+        return impacter.impactScore(matchWeight, constraintMatchSupplier);
     }
 
     // ************************************************************************

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -109,6 +110,10 @@ public final class CollectionUtils {
 
     public static <K, V> Map<K, V> newHashMap(int size) {
         return new HashMap<>(calculateCapacityForDefaultLoadFactor(size));
+    }
+
+    public static <K, V> Map<K, V> newIdentityHashMap(int size) {
+        return new IdentityHashMap<>(calculateCapacityForDefaultLoadFactor(size));
     }
 
     public static <K, V> Map<K, V> newLinkedHashMap(int size) {

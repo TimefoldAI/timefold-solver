@@ -70,14 +70,21 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     // ************************************************************************
 
     public void addConstraintMatch(ConstraintMatch<Score_> constraintMatch) {
-        score = score.add(constraintMatch.getScore());
-        boolean added = constraintMatchSet.add(constraintMatch);
+        boolean added = addConstraintMatchWithoutFail(constraintMatch);
         if (!added) {
             throw new IllegalStateException("The indictment (" + this
                     + ") could not add constraintMatch (" + constraintMatch
                     + ") to its constraintMatchSet (" + constraintMatchSet + ").");
         }
-        constraintJustificationList = null; // Rebuild later.
+    }
+
+    public boolean addConstraintMatchWithoutFail(ConstraintMatch<Score_> constraintMatch) {
+        boolean added = constraintMatchSet.add(constraintMatch);
+        if (added) {
+            score = score.add(constraintMatch.getScore());
+            constraintJustificationList = null; // Rebuild later.
+        }
+        return added;
     }
 
     public void removeConstraintMatch(ConstraintMatch<Score_> constraintMatch) {

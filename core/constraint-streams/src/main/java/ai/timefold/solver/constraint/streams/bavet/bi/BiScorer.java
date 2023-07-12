@@ -8,10 +8,10 @@ import ai.timefold.solver.core.api.function.TriFunction;
 
 final class BiScorer<A, B> extends AbstractScorer<BiTuple<A, B>> {
 
-    private final TriFunction<WeightedScoreImpacter<?>, A, B, UndoScoreImpacter> scoreImpacter;
+    private final TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter> scoreImpacter;
 
-    public BiScorer(WeightedScoreImpacter<?> weightedScoreImpacter,
-            TriFunction<WeightedScoreImpacter<?>, A, B, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
+    public BiScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter,
+            TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
         super(weightedScoreImpacter, inputStoreIndex);
         this.scoreImpacter = scoreImpacter;
     }

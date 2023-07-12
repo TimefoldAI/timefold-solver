@@ -1,26 +1,24 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigDecimalScore> {
 
     BigDecimal score = BigDecimal.ZERO;
 
-    SimpleBigDecimalScoreInliner(boolean constraintMatchEnabled) {
-        this(1, constraintMatchEnabled);
-    }
-
-    SimpleBigDecimalScoreInliner(int constraintCount, boolean constraintMatchEnabled) {
-        super(constraintCount, constraintMatchEnabled);
+    SimpleBigDecimalScoreInliner(Map<Constraint, SimpleBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
+        super(constraintWeightMap, constraintMatchEnabled);
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleBigDecimalScoreContext> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint, SimpleBigDecimalScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<SimpleBigDecimalScore, ?>
+            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+        SimpleBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
         SimpleBigDecimalScoreContext context = new SimpleBigDecimalScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context, SimpleBigDecimalScoreContext::changeScoreBy);
     }

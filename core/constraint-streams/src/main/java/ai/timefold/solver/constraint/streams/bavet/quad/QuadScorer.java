@@ -8,10 +8,10 @@ import ai.timefold.solver.core.api.function.PentaFunction;
 
 final class QuadScorer<A, B, C, D> extends AbstractScorer<QuadTuple<A, B, C, D>> {
 
-    private final PentaFunction<WeightedScoreImpacter<?>, A, B, C, D, UndoScoreImpacter> scoreImpacter;
+    private final PentaFunction<WeightedScoreImpacter<?, ?>, A, B, C, D, UndoScoreImpacter> scoreImpacter;
 
-    public QuadScorer(WeightedScoreImpacter<?> weightedScoreImpacter,
-            PentaFunction<WeightedScoreImpacter<?>, A, B, C, D, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
+    public QuadScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter,
+            PentaFunction<WeightedScoreImpacter<?, ?>, A, B, C, D, UndoScoreImpacter> scoreImpacter, int inputStoreIndex) {
         super(weightedScoreImpacter, inputStoreIndex);
         this.scoreImpacter = scoreImpacter;
     }

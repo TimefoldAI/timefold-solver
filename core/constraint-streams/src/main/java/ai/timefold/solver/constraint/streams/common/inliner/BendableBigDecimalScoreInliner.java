@@ -2,22 +2,20 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<BendableBigDecimalScore> {
 
     final BigDecimal[] hardScores;
     final BigDecimal[] softScores;
 
-    BendableBigDecimalScoreInliner(boolean constraintMatchEnabled, int hardLevelsSize, int softLevelsSize) {
-        this(1, constraintMatchEnabled, hardLevelsSize, softLevelsSize);
-    }
-
-    BendableBigDecimalScoreInliner(int constraintCount, boolean constraintMatchEnabled, int hardLevelsSize,
-            int softLevelsSize) {
-        super(constraintCount, constraintMatchEnabled);
+    BendableBigDecimalScoreInliner(Map<Constraint, BendableBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled,
+            int hardLevelsSize, int softLevelsSize) {
+        super(constraintWeightMap, constraintMatchEnabled);
         hardScores = new BigDecimal[hardLevelsSize];
         Arrays.fill(hardScores, BigDecimal.ZERO);
         softScores = new BigDecimal[softLevelsSize];
@@ -25,10 +23,10 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
     }
 
     @Override
-    public WeightedScoreImpacter<BendableBigDecimalScoreContext> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint, BendableBigDecimalScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<BendableBigDecimalScore, ?>
+            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         Integer singleLevel = null;
+        BendableBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
         for (int i = 0; i < constraintWeight.levelsSize(); i++) {
             if (!constraintWeight.hardOrSoftScore(i).equals(BigDecimal.ZERO)) {
                 if (singleLevel != null) {

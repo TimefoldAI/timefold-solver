@@ -9,14 +9,14 @@ final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInli
         super(parent, constraint, constraintWeight);
     }
 
-    public UndoScoreImpacter changeScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(int matchWeight, ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
         int impact = constraintWeight.score() * matchWeight;
         parent.score += impact;
         UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, SimpleScore.of(impact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, SimpleScore.of(impact), constraintMatchSupplier);
     }
 
 }
