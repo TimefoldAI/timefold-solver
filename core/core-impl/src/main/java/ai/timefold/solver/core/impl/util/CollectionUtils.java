@@ -68,7 +68,7 @@ public final class CollectionUtils {
             }
             case 1 -> {
                 if (collection instanceof List<T> list) {
-                    return Collections.singletonList(list.get(0));
+                    return list; // Optimization: not making a defensive copy.
                 } else {
                     return Collections.singletonList(collection.iterator().next());
                 }
