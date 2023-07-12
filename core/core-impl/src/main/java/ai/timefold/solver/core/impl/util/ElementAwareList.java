@@ -1,25 +1,21 @@
-package ai.timefold.solver.constraint.streams.bavet.common.collection;
+package ai.timefold.solver.core.impl.util;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Different from {@link LinkedList} because nodes/indexes are allowed
- * to directly reference {@link TupleListEntry} instances
- * to avoid the lookup by index cost.
- * Also doesn't implement the {@link List} interface.
+ * Linked list that allows to add and remove an element in O(1) time.
+ * Ideal for incremental operations with frequent undo.
  *
  * @param <T> The element type. Often a tuple.
  */
-public final class TupleList<T> {
+public final class ElementAwareList<T> {
 
     private int size = 0;
-    private TupleListEntry<T> first = null;
-    private TupleListEntry<T> last = null;
+    private ElementAwareListEntry<T> first = null;
+    private ElementAwareListEntry<T> last = null;
 
-    public TupleListEntry<T> add(T tuple) {
-        TupleListEntry<T> entry = new TupleListEntry<>(this, tuple, last);
+    public ElementAwareListEntry<T> add(T tuple) {
+        ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
         if (first == null) {
             first = entry;
         } else {
@@ -30,7 +26,7 @@ public final class TupleList<T> {
         return entry;
     }
 
-    public void remove(TupleListEntry<T> entry) {
+    public void remove(ElementAwareListEntry<T> entry) {
         if (first == entry) {
             first = entry.next;
         } else {
@@ -46,11 +42,11 @@ public final class TupleList<T> {
         size--;
     }
 
-    public TupleListEntry<T> first() {
+    public ElementAwareListEntry<T> first() {
         return first;
     }
 
-    public TupleListEntry<T> last() {
+    public ElementAwareListEntry<T> last() {
         return last;
     }
 
@@ -59,10 +55,10 @@ public final class TupleList<T> {
     }
 
     public void forEach(Consumer<T> tupleConsumer) {
-        TupleListEntry<T> entry = first;
+        ElementAwareListEntry<T> entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            TupleListEntry<T> next = entry.next;
+            ElementAwareListEntry<T> next = entry.next;
             tupleConsumer.accept(entry.getElement());
             entry = next;
         }

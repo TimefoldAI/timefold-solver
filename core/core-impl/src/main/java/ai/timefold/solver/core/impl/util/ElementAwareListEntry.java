@@ -1,31 +1,25 @@
-package ai.timefold.solver.constraint.streams.bavet.common.collection;
+package ai.timefold.solver.core.impl.util;
 
 /**
- * An entry of {@link TupleList}
+ * An entry of {@link ElementAwareList}
  *
  * @param <T> The element type. Often a tuple.
  */
-public final class TupleListEntry<T> {
+public final class ElementAwareListEntry<T> {
 
-    private TupleList<T> list;
+    private ElementAwareList<T> list;
     private final T element;
-    TupleListEntry<T> previous;
-    TupleListEntry<T> next;
+    ElementAwareListEntry<T> previous;
+    ElementAwareListEntry<T> next;
 
-    TupleListEntry(TupleList<T> list, T element, TupleListEntry<T> previous) {
+    ElementAwareListEntry(ElementAwareList<T> list, T element, ElementAwareListEntry<T> previous) {
         this.list = list;
         this.element = element;
         this.previous = previous;
         this.next = null;
     }
 
-    public TupleListEntry<T> next() {
-        return next;
-    }
-
-    public TupleListEntry<T> removeAndNext() {
-        TupleListEntry<T> next = this.next;
-        remove(); // Sets this.next = null
+    public ElementAwareListEntry<T> next() {
         return next;
     }
 
@@ -41,7 +35,7 @@ public final class TupleListEntry<T> {
         return element;
     }
 
-    public TupleList<T> getList() {
+    public ElementAwareList<T> getList() {
         return list;
     }
 

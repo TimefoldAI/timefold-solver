@@ -2,20 +2,20 @@ package ai.timefold.solver.constraint.streams.bavet.common.index;
 
 import java.util.function.Consumer;
 
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleList;
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
-final class NoneIndexer<T, Value_> implements Indexer<T> {
+final class NoneIndexer<T> implements Indexer<T> {
 
-    private final TupleList<T> tupleList = new TupleList<>();
+    private final ElementAwareList<T> tupleList = new ElementAwareList<>();
 
     @Override
-    public TupleListEntry<T> put(IndexProperties indexProperties, T tuple) {
+    public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
         return tupleList.add(tuple);
     }
 
     @Override
-    public void remove(IndexProperties indexProperties, TupleListEntry<T> entry) {
+    public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
         entry.remove();
     }
 

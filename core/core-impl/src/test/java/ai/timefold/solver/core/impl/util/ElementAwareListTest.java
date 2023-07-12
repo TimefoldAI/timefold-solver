@@ -1,30 +1,29 @@
-package ai.timefold.solver.constraint.streams.bavet.common.collection;
+package ai.timefold.solver.core.impl.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
-
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class TupleListTest {
+class ElementAwareListTest {
 
     @Test
     void addRemove() {
-        TupleList<UniTuple<String>> tupleList = new TupleList<>();
+        ElementAwareList<String> tupleList = new ElementAwareList<>();
         assertThat(tupleList.size()).isEqualTo(0);
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
 
-        TupleListEntry<UniTuple<String>> entryA = tupleList.add(new UniTuple<>("A", 0));
-        assertThat(entryA.getElement().factA).isEqualTo("A");
+        ElementAwareListEntry<String> entryA = tupleList.add("A");
+        Assertions.assertThat(entryA.getElement()).isEqualTo("A");
         assertThat(tupleList.size()).isEqualTo(1);
         assertThat(tupleList.first()).isEqualTo(entryA);
         assertThat(entryA.previous).isNull();
         assertThat(entryA.next).isNull();
         assertThat(tupleList.last()).isEqualTo(entryA);
 
-        TupleListEntry<UniTuple<String>> entryB = tupleList.add(new UniTuple<>("B", 0));
-        assertThat(entryB.getElement().factA).isEqualTo("B");
+        ElementAwareListEntry<String> entryB = tupleList.add("B");
+        Assertions.assertThat(entryB.getElement()).isEqualTo("B");
         assertThat(tupleList.size()).isEqualTo(2);
         assertThat(tupleList.first()).isEqualTo(entryA);
         assertThat(entryA.previous).isNull();
