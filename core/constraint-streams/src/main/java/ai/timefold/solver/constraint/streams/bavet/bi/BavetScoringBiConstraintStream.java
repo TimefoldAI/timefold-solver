@@ -127,18 +127,16 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
         return impacter.impactScore(matchWeight, constraintMatchSupplier);
     }
 
-    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter impactWithConstraintMatch(
-            WeightedScoreImpacter<Score_, ?> impacter, long matchWeight, A a,
-            B b) {
+    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter
+            impactWithConstraintMatch(WeightedScoreImpacter<Score_, ?> impacter, long matchWeight, A a, B b) {
         var constraint = impacter.getContext().getConstraint();
         var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b);
         return impacter.impactScore(matchWeight, constraintMatchSupplier);
     }
 
-    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter impactWithConstraintMatch(
-            WeightedScoreImpacter<Score_, ?> impacter, BigDecimal matchWeight,
-            A a, B b) {
+    private static <A, B, Score_ extends Score<Score_>> UndoScoreImpacter
+            impactWithConstraintMatch(WeightedScoreImpacter<Score_, ?> impacter, BigDecimal matchWeight, A a, B b) {
         var constraint = impacter.getContext().getConstraint();
         var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b);
