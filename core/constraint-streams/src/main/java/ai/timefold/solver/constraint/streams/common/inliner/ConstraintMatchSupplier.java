@@ -17,7 +17,16 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 
 /**
- * Allows to create constraint matches lazily if and only if constraint matches are enabled.
+ * Allows creating {@link ConstraintMatch} instances lazily if and only if they are required by the end user.
+ * <p>
+ * Lazy behavior is important for constraint matching performance.
+ * In order to create {@link ConstraintMatch}, an entire {@link ConstraintJustification} object needs to be created,
+ * along with the collection of indicted objects.
+ * Creating these structures every time a constraint is matched would be wasteful,
+ * as the same constraint match can be undone almost immediately, resulting in a lot of pointless garbage.
+ * Therefore, {@link ConstraintMatch} (along with all of its supporting data structures)
+ * is only created when actually needed, and that is during score explanation.
+ * Until that point, this thin wrapper serves as a placeholder which understands what to create when needed.
  */
 @FunctionalInterface
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
