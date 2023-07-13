@@ -2,13 +2,13 @@ package ai.timefold.solver.core.impl.score;
 
 import static java.util.Comparator.comparing;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
@@ -108,11 +108,14 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
         this.solution = scoreDirector.getWorkingSolution();
         this.score = scoreDirector.calculateScore();
         this.constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
-        this.constraintJustificationList = constraintMatchTotalMap.values()
-                .stream()
-                .flatMap(constraintMatchTotal -> constraintMatchTotal.getConstraintMatchSet().stream())
-                .map(constraintMatch -> (ConstraintJustification) constraintMatch.getJustification())
-                .collect(Collectors.toList());
+        List<ConstraintJustification> workingConstraintJustificationList = new ArrayList<>();
+        for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotalMap.values()) {
+            for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+                ConstraintJustification justification = constraintMatch.getJustification();
+                workingConstraintJustificationList.add(justification);
+            }
+        }
+        this.constraintJustificationList = workingConstraintJustificationList;
         this.indictmentMap = scoreDirector.getIndictmentMap();
     }
 
