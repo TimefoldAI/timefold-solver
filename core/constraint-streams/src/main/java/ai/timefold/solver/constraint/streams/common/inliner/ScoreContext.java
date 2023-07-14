@@ -31,11 +31,7 @@ public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ e
 
     protected UndoScoreImpacter impactWithConstraintMatch(UndoScoreImpacter undoScoreImpact, Score_ score,
             ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        Runnable undoConstraintMatch = parent.addConstraintMatch(constraint, score, constraintMatchSupplier);
-        return () -> {
-            undoScoreImpact.run();
-            undoConstraintMatch.run();
-        };
+        return parent.addConstraintMatch(constraint, score, constraintMatchSupplier, undoScoreImpact);
     }
 
 }

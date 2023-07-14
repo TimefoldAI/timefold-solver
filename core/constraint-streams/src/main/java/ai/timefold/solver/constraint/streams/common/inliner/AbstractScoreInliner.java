@@ -139,8 +139,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
      */
     public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint);
 
-    protected final Runnable addConstraintMatch(Constraint constraint, Score_ score,
-            ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+    protected final UndoScoreImpacter addConstraintMatch(Constraint constraint, Score_ score,
+            ConstraintMatchSupplier<Score_> constraintMatchSupplier, UndoScoreImpacter undoScoreImpact) {
         ElementAwareList<ConstraintMatchCarrier<Score_>> constraintMatchList = getConstraintMatchList(constraint);
         /*
          * Creating a constraint match is a heavy operation which may yet be undone.
@@ -150,6 +150,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                 constraintMatchList.add(new ConstraintMatchCarrier<>(constraintMatchSupplier, constraint, score));
         clearMaps();
         return () -> {
+            undoScoreImpact.run();
             entry.remove();
             clearMaps();
         };
@@ -188,8 +189,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             var constraint = entry.getKey();
             DefaultConstraintMatchTotal<Score_> constraintMatchTotal =
                     new DefaultConstraintMatchTotal<>(constraint, constraintWeightMap.get(constraint));
-            entry.getValue().forEach(carrier -> {
-                // Constraint match instances are only created here, when we actually need them.
+            for (ConstraintMatchCarrier<Score_> carrier : entry.getValue()) {
+                // Constraint match instances are only created here when we actually need them.
                 ConstraintMatch<Score_> constraintMatch = carrier.get();
                 constraintMatchTotal.addConstraintMatch(constraintMatch);
                 for (var indictedObject : constraintMatch.getIndictedObjectList()) {
@@ -198,11 +199,11 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                     /*
                      * Optimization: In order to not have to go over the indicted object list and remove duplicates,
                      * we use a method that will silently skip duplicate constraint matches.
-                     * This is harmless, because the two identical indicted objects come from the same constraint match.
+                     * This is harmless because the two identical indicted objects come from the same constraint match.
                      */
                     indictment.addConstraintMatchWithoutFail(constraintMatch);
                 }
-            });
+            }
             workingConstraintMatchTotalMap.put(constraint.getConstraintId(), constraintMatchTotal);
         }
         constraintMatchTotalMap = workingConstraintMatchTotalMap;

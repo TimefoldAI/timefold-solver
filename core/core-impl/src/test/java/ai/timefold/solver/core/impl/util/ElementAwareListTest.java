@@ -3,7 +3,11 @@ package ai.timefold.solver.core.impl.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 class ElementAwareListTest {
 
@@ -43,6 +47,31 @@ class ElementAwareListTest {
         assertThat(tupleList.size()).isEqualTo(0);
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
+    }
+
+    @Test
+    public void iterator() {
+        // create a list and add some elements
+        ElementAwareList<String> list = new ElementAwareList<>();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(list).isEmpty();
+            Iterator<String> iter = list.iterator();
+            softly.assertThat(iter.hasNext()).isFalse();
+            softly.assertThatThrownBy(iter::next).isInstanceOf(NoSuchElementException.class);
+        });
+
+        list.add("A");
+        list.add("B");
+        list.add("C");
+        // iterate through the list, ensuring all elements are present
+        Iterator<String> iter = list.iterator();
+        Assertions.assertThat(iter.hasNext()).isTrue();
+        Assertions.assertThat(iter.next()).isEqualTo("A");
+        Assertions.assertThat(iter.hasNext()).isTrue();
+        Assertions.assertThat(iter.next()).isEqualTo("B");
+        Assertions.assertThat(iter.hasNext()).isTrue();
+        Assertions.assertThat(iter.next()).isEqualTo("C");
+        Assertions.assertThat(iter.hasNext()).isFalse();
     }
 
 }

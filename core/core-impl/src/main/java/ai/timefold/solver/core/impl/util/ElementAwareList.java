@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.util;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 /**
@@ -8,7 +10,7 @@ import java.util.function.Consumer;
  *
  * @param <T> The element type. Often a tuple.
  */
-public final class ElementAwareList<T> {
+public final class ElementAwareList<T> implements Iterable<T> {
 
     private int size = 0;
     private ElementAwareListEntry<T> first = null;
@@ -54,7 +56,8 @@ public final class ElementAwareList<T> {
         return size;
     }
 
-    public void forEach(Consumer<T> tupleConsumer) {
+    @Override
+    public void forEach(Consumer<? super T> tupleConsumer) {
         ElementAwareListEntry<T> entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
@@ -62,6 +65,33 @@ public final class ElementAwareList<T> {
             tupleConsumer.accept(entry.getElement());
             entry = next;
         }
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<>() {
+
+            private ElementAwareListEntry<T> nextEntry = first;
+
+            @Override
+            public boolean hasNext() {
+                if (size == 0) {
+                    return false;
+                }
+                return nextEntry != null;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                T element = nextEntry.getElement();
+                nextEntry = nextEntry.next;
+                return element;
+            }
+
+        };
     }
 
     @Override
