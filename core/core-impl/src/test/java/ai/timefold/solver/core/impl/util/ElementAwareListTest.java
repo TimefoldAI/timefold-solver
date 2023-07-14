@@ -2,12 +2,12 @@ package ai.timefold.solver.core.impl.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 class ElementAwareListTest {
 
