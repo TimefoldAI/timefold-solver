@@ -12,9 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.Cartesia
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
 
 public class PooledEntityPlacerFactory<Solution_>
@@ -64,34 +62,29 @@ public class PooledEntityPlacerFactory<Solution_>
 
     @Override
     public PooledEntityPlacer<Solution_> buildEntityPlacer(HeuristicConfigPolicy<Solution_> configPolicy) {
-        MoveSelectorConfig moveSelectorConfig_ =
+        var moveSelectorConfig_ =
                 config.getMoveSelectorConfig() == null ? buildMoveSelectorConfig(configPolicy) : config.getMoveSelectorConfig();
-
-        MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
+        var moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
                 .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
         return new PooledEntityPlacer<>(moveSelector);
     }
 
-    private MoveSelectorConfig buildMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
-        EntityDescriptor<Solution_> entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
-        EntitySelectorConfig entitySelectorConfig =
+    private MoveSelectorConfig<?> buildMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
+        var entitySelectorConfig =
                 AbstractFromConfigFactory.getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
+        validateCacheType(entitySelectorConfig);
 
-        List<GenuineVariableDescriptor<Solution_>> variableDescriptors = entityDescriptor.getGenuineVariableDescriptorList();
-        List<MoveSelectorConfig> subMoveSelectorConfigList = new ArrayList<>(variableDescriptors.size());
-        for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptors) {
+        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+        var subMoveSelectorConfigList = new ArrayList<MoveSelectorConfig>(variableDescriptorList.size());
+        for (var variableDescriptor : variableDescriptorList) {
             subMoveSelectorConfigList
                     .add(buildChangeMoveSelectorConfig(configPolicy, entitySelectorConfig.getId(), variableDescriptor));
         }
         // The first entitySelectorConfig must be the mimic recorder, not the mimic replayer
         ((ChangeMoveSelectorConfig) subMoveSelectorConfigList.get(0)).setEntitySelectorConfig(entitySelectorConfig);
-        MoveSelectorConfig moveSelectorConfig_;
-        if (subMoveSelectorConfigList.size() > 1) {
-            // Default to cartesian product (not a union) of planning variables.
-            moveSelectorConfig_ = new CartesianProductMoveSelectorConfig(subMoveSelectorConfigList);
-        } else {
-            moveSelectorConfig_ = subMoveSelectorConfigList.get(0);
-        }
-        return moveSelectorConfig_;
+        // Default to cartesian product (not a union) of planning variables.
+        return subMoveSelectorConfigList.size() > 1 ? new CartesianProductMoveSelectorConfig(subMoveSelectorConfigList)
+                : subMoveSelectorConfigList.get(0);
     }
 }

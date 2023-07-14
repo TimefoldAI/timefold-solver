@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.config.heuristic.selector.common.Selection
 import static ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType.STEP;
 
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
@@ -33,5 +34,26 @@ abstract class AbstractEntityPlacerFactory<Solution_, EntityPlacerConfig_ extend
                     .withSorterManner(configPolicy.getValueSorterManner());
         }
         return changeMoveSelectorConfig.withValueSelectorConfig(changeValueSelectorConfig);
+    }
+
+    protected void validateCacheType(EntitySelectorConfig entitySelectorConfig) {
+        /*
+         * Step cache is built after the step is started and all events are triggered.
+         * In construction heuristics though, each step corresponds to one entity in the placer iterator.
+         * Therefore, the entity placer iterator is called before any step is started.
+         * This results in an NPE, because the step cache has yet to be built.
+         *
+         * The only way to solve this is to call the placer iterator after a step starts.
+         * But if we then find out the iterator is empty,
+         * we've started a step that never should have been started in the first place.
+         *
+         * This is a chicken-and-egg problem which we're "solving" by throwing an exception.
+         */
+        if (entitySelectorConfig.getCacheType() != null
+                && entitySelectorConfig.getCacheType().compareTo(SelectionCacheType.PHASE) < 0) {
+            throw new IllegalArgumentException(
+                    "The entityPlacer (%s) cannot have an entitySelectorConfig (%s) with a cacheType (%s) lower than %s."
+                            .formatted(config, entitySelectorConfig, entitySelectorConfig.getCacheType(), PHASE));
+        }
     }
 }
