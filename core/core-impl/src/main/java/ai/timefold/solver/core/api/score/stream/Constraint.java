@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 public interface Constraint {
 
     /**
-     * The {@link ConstraintFactory} that build this.
+     * The {@link ConstraintFactory} that built this.
      *
      * @deprecated for removal as it is not necessary on the public API.
      * @return never null
