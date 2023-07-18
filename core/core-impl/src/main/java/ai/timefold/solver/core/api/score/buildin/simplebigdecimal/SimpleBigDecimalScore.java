@@ -27,11 +27,20 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     public static SimpleBigDecimalScore ofUninitialized(int initScore, BigDecimal score) {
+        if (initScore == 0) {
+            return of(score);
+        }
         return new SimpleBigDecimalScore(initScore, score);
     }
 
     public static SimpleBigDecimalScore of(BigDecimal score) {
-        return new SimpleBigDecimalScore(0, score);
+        if (score.signum() == 0) {
+            return ZERO;
+        } else if (score.equals(BigDecimal.ONE)) {
+            return ONE;
+        } else {
+            return new SimpleBigDecimalScore(0, score);
+        }
     }
 
     // ************************************************************************
@@ -88,19 +97,19 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
 
     @Override
     public SimpleBigDecimalScore withInitScore(int newInitScore) {
-        return new SimpleBigDecimalScore(newInitScore, score);
+        return ofUninitialized(newInitScore, score);
     }
 
     @Override
     public SimpleBigDecimalScore add(SimpleBigDecimalScore addend) {
-        return new SimpleBigDecimalScore(
+        return ofUninitialized(
                 initScore + addend.initScore(),
                 score.add(addend.score()));
     }
 
     @Override
     public SimpleBigDecimalScore subtract(SimpleBigDecimalScore subtrahend) {
-        return new SimpleBigDecimalScore(
+        return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 score.subtract(subtrahend.score()));
     }
@@ -111,7 +120,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
         // because together with the floor rounding it gives unwanted behaviour
         BigDecimal multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
         // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-        return new SimpleBigDecimalScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 score.multiply(multiplicandBigDecimal).setScale(score.scale(), RoundingMode.FLOOR));
     }
@@ -122,7 +131,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
         // because together with the floor rounding it gives unwanted behaviour
         BigDecimal divisorBigDecimal = BigDecimal.valueOf(divisor);
         // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
-        return new SimpleBigDecimalScore(
+        return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 score.divide(divisorBigDecimal, score.scale(), RoundingMode.FLOOR));
     }
@@ -135,19 +144,19 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
         // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
         // TODO FIXME remove .intValue() so non-integer exponents produce correct results
         // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
-        return new SimpleBigDecimalScore(
+        return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 score.pow(exponentBigDecimal.intValue()).setScale(score.scale(), RoundingMode.FLOOR));
     }
 
     @Override
     public SimpleBigDecimalScore abs() {
-        return new SimpleBigDecimalScore(Math.abs(initScore), score.abs());
+        return ofUninitialized(Math.abs(initScore), score.abs());
     }
 
     @Override
     public SimpleBigDecimalScore zero() {
-        return SimpleBigDecimalScore.ZERO;
+        return ZERO;
     }
 
     @Override

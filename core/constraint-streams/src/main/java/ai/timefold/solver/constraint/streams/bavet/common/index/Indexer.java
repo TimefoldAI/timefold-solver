@@ -2,8 +2,8 @@ package ai.timefold.solver.constraint.streams.bavet.common.index;
 
 import java.util.function.Consumer;
 
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * An indexer for entity or fact {@code X},
@@ -22,9 +22,9 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  */
 public interface Indexer<T> {
 
-    TupleListEntry<T> put(IndexProperties indexProperties, T tuple);
+    ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple);
 
-    void remove(IndexProperties indexProperties, TupleListEntry<T> entry);
+    void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry);
 
     int size(IndexProperties indexProperties);
 

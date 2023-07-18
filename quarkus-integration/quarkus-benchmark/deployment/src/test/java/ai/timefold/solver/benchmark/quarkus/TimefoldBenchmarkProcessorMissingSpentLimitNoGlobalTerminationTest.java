@@ -1,6 +1,6 @@
 package ai.timefold.solver.benchmark.quarkus;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.ExecutionException;
 

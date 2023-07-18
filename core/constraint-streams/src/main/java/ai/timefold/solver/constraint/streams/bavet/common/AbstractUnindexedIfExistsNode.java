@@ -1,12 +1,12 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleList;
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * There is a strong likelihood that any change made to this class
@@ -24,8 +24,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
     private final int inputStoreIndexRightEntry;
 
     // Acts as a leftTupleList too
-    private final TupleList<ExistsCounter<LeftTuple_>> leftCounterList = new TupleList<>();
-    private final TupleList<UniTuple<Right_>> rightTupleList = new TupleList<>();
+    private final ElementAwareList<ExistsCounter<LeftTuple_>> leftCounterList = new ElementAwareList<>();
+    private final ElementAwareList<UniTuple<Right_>> rightTupleList = new ElementAwareList<>();
 
     protected AbstractUnindexedIfExistsNode(boolean shouldExist,
             int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
@@ -45,13 +45,13 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
                     + ") was already added in the tupleStore.");
         }
         ExistsCounter<LeftTuple_> counter = new ExistsCounter<>(leftTuple);
-        TupleListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftCounterList.add(counter);
+        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftCounterList.add(counter);
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
 
         if (!isFiltering) {
             counter.countRight = rightTupleList.size();
         } else {
-            TupleList<FilteringTracker<LeftTuple_>> leftTrackerList = new TupleList<>();
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = new ElementAwareList<>();
             rightTupleList.forEach(rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
@@ -60,7 +60,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        TupleListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
+        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         if (counterEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
@@ -72,7 +72,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             updateUnchangedCounterLeft(counter);
         } else {
             // Call filtering for the leftTuple and rightTuple combinations again
-            TupleList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
             leftTrackerList.forEach(FilteringTracker::remove);
             counter.countRight = 0;
             rightTupleList.forEach(rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
@@ -82,7 +82,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        TupleListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.removeStore(inputStoreIndexLeftCounterEntry);
+        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.removeStore(inputStoreIndexLeftCounterEntry);
         if (counterEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -90,7 +90,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         ExistsCounter<LeftTuple_> counter = counterEntry.getElement();
         counterEntry.remove();
         if (isFiltering) {
-            TupleList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
             leftTrackerList.forEach(FilteringTracker::remove);
         }
         killCounterLeft(counter);
@@ -102,12 +102,12 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        TupleListEntry<UniTuple<Right_>> rightEntry = rightTupleList.add(rightTuple);
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTupleList.add(rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         if (!isFiltering) {
             leftCounterList.forEach(this::incrementCounterRight);
         } else {
-            TupleList<FilteringTracker<LeftTuple_>> rightTrackerList = new TupleList<>();
+            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = new ElementAwareList<>();
             leftCounterList.forEach(counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
@@ -115,21 +115,21 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        TupleListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
         if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
         }
         if (isFiltering) {
-            TupleList<FilteringTracker<LeftTuple_>> rightTrackerList = updateRightTrackerList(rightTuple);
+            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = updateRightTrackerList(rightTuple);
             leftCounterList.forEach(counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
         }
     }
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        TupleListEntry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
         if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;

@@ -2,13 +2,13 @@ package ai.timefold.solver.core.api.score.buildin.simplebigdecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.buildin.AbstractScoreTest;
 import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 class SimpleBigDecimalScoreTest extends AbstractScoreTest {
@@ -31,9 +31,13 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
 
     @Test
     void testToString() {
-        assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.0"))).hasToString("0.0");
-        assertThat(SimpleBigDecimalScore.of(new BigDecimal("-147.2"))).hasToString("-147.2");
-        assertThat(SimpleBigDecimalScore.ofUninitialized(-7, new BigDecimal("-147.2"))).hasToString("-7init/-147.2");
+        assertSoftly(softly -> {
+            softly.assertThat(SimpleBigDecimalScore.of(BigDecimal.ZERO)).hasToString("0");
+            softly.assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.0"))).hasToString("0");
+            softly.assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.00"))).hasToString("0");
+            softly.assertThat(SimpleBigDecimalScore.of(new BigDecimal("-147.2"))).hasToString("-147.2");
+            softly.assertThat(SimpleBigDecimalScore.ofUninitialized(-7, new BigDecimal("-147.2"))).hasToString("-7init/-147.2");
+        });
     }
 
     @Test
@@ -116,7 +120,7 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     @Test
     void zero() {
         SimpleBigDecimalScore manualZero = SimpleBigDecimalScore.of(BigDecimal.ZERO);
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
             softly.assertThat(manualZero.zero()).isEqualTo(manualZero);
             softly.assertThat(manualZero.isZero()).isTrue();
             SimpleBigDecimalScore manualOne = SimpleBigDecimalScore.of(BigDecimal.ONE);

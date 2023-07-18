@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.score.constraint;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 public final class DefaultIndictment<Score_ extends Score<Score_>> implements Indictment<Score_> {
 
@@ -35,12 +36,28 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     @Override
     public List<ConstraintJustification> getJustificationList() {
         if (constraintJustificationList == null) {
-            constraintJustificationList = constraintMatchSet.stream()
-                    .map(s -> (ConstraintJustification) s.getJustification())
-                    .distinct()
-                    .collect(Collectors.toList());
+            constraintJustificationList = buildConstraintJustificationList();
         }
         return constraintJustificationList;
+    }
+
+    private List<ConstraintJustification> buildConstraintJustificationList() {
+        var constraintMatchSetSize = constraintMatchSet.size();
+        switch (constraintMatchSetSize) {
+            case 0 -> {
+                return Collections.emptyList();
+            }
+            case 1 -> {
+                return Collections.singletonList(constraintMatchSet.iterator().next().getJustification());
+            }
+            default -> {
+                Set<ConstraintJustification> justificationSet = CollectionUtils.newLinkedHashSet(constraintMatchSetSize);
+                for (ConstraintMatch<Score_> constraintMatch : constraintMatchSet) {
+                    justificationSet.add(constraintMatch.getJustification());
+                }
+                return CollectionUtils.toDistinctList(justificationSet);
+            }
+        }
     }
 
     @Override
@@ -53,14 +70,21 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     // ************************************************************************
 
     public void addConstraintMatch(ConstraintMatch<Score_> constraintMatch) {
-        score = score.add(constraintMatch.getScore());
-        boolean added = constraintMatchSet.add(constraintMatch);
+        boolean added = addConstraintMatchWithoutFail(constraintMatch);
         if (!added) {
             throw new IllegalStateException("The indictment (" + this
                     + ") could not add constraintMatch (" + constraintMatch
                     + ") to its constraintMatchSet (" + constraintMatchSet + ").");
         }
-        constraintJustificationList = null; // Rebuild later.
+    }
+
+    public boolean addConstraintMatchWithoutFail(ConstraintMatch<Score_> constraintMatch) {
+        boolean added = constraintMatchSet.add(constraintMatch);
+        if (added) {
+            score = score.add(constraintMatch.getScore());
+            constraintJustificationList = null; // Rebuild later.
+        }
+        return added;
     }
 
     public void removeConstraintMatch(ConstraintMatch<Score_> constraintMatch) {

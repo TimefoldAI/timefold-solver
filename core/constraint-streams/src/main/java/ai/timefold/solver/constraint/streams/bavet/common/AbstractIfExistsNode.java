@@ -5,14 +5,14 @@ import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleStat
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleList;
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * This class has two direct children: {@link AbstractIndexedIfExistsNode} and {@link AbstractUnindexedIfExistsNode}.
@@ -163,8 +163,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         } // Else do not even propagate an update
     }
 
-    protected TupleList<FilteringTracker<LeftTuple_>> updateRightTrackerList(UniTuple<Right_> rightTuple) {
-        TupleList<FilteringTracker<LeftTuple_>> rightTrackerList = rightTuple.getStore(inputStoreIndexRightTrackerList);
+    protected ElementAwareList<FilteringTracker<LeftTuple_>> updateRightTrackerList(UniTuple<Right_> rightTuple) {
+        ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = rightTuple.getStore(inputStoreIndexRightTrackerList);
         rightTrackerList.forEach(filteringTacker -> {
             decrementCounterRight(filteringTacker.counter);
             filteringTacker.remove();
@@ -173,19 +173,20 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     }
 
     protected void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
-            TupleList<FilteringTracker<LeftTuple_>> leftTrackerList) {
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList) {
         if (testFiltering(leftTuple, rightTuple)) {
             counter.countRight++;
-            TupleList<FilteringTracker<LeftTuple_>> rightTrackerList = rightTuple.getStore(inputStoreIndexRightTrackerList);
+            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList =
+                    rightTuple.getStore(inputStoreIndexRightTrackerList);
             new FilteringTracker<>(counter, leftTrackerList, rightTrackerList);
         }
     }
 
     protected void updateCounterFromRight(UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
-            TupleList<FilteringTracker<LeftTuple_>> rightTrackerList) {
+            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
         if (testFiltering(counter.leftTuple, rightTuple)) {
             incrementCounterRight(counter);
-            TupleList<FilteringTracker<LeftTuple_>> leftTrackerList =
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList =
                     counter.leftTuple.getStore(inputStoreIndexLeftTrackerList);
             new FilteringTracker<>(counter, leftTrackerList, rightTrackerList);
         }
@@ -260,11 +261,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {
         final ExistsCounter<LeftTuple_> counter;
-        private final TupleListEntry<FilteringTracker<LeftTuple_>> leftTrackerEntry;
-        private final TupleListEntry<FilteringTracker<LeftTuple_>> rightTrackerEntry;
+        private final ElementAwareListEntry<FilteringTracker<LeftTuple_>> leftTrackerEntry;
+        private final ElementAwareListEntry<FilteringTracker<LeftTuple_>> rightTrackerEntry;
 
-        FilteringTracker(ExistsCounter<LeftTuple_> counter, TupleList<FilteringTracker<LeftTuple_>> leftTrackerList,
-                TupleList<FilteringTracker<LeftTuple_>> rightTrackerList) {
+        FilteringTracker(ExistsCounter<LeftTuple_> counter, ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList,
+                ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
             this.counter = counter;
             leftTrackerEntry = leftTrackerList.add(this);
             rightTrackerEntry = rightTrackerList.add(this);

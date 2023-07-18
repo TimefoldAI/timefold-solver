@@ -1,55 +1,50 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
-import java.util.function.IntConsumer;
-
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class HardSoftScoreContext extends ScoreContext<HardSoftScore> {
+final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftScoreInliner> {
 
-    private final IntConsumer softScoreUpdater;
-    private final IntConsumer hardScoreUpdater;
-
-    public HardSoftScoreContext(AbstractScoreInliner<HardSoftScore> parent, Constraint constraint,
-            HardSoftScore constraintWeight, IntConsumer hardScoreUpdater, IntConsumer softScoreUpdater) {
+    public HardSoftScoreContext(HardSoftScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            HardSoftScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.softScoreUpdater = softScoreUpdater;
-        this.hardScoreUpdater = hardScoreUpdater;
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(int matchWeight,
+            ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
         int softImpact = constraintWeight.softScore() * matchWeight;
-        softScoreUpdater.accept(softImpact);
-        UndoScoreImpacter undoScoreImpact = () -> softScoreUpdater.accept(-softImpact);
+        parent.softScore += softImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofSoft(softImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofSoft(softImpact), constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(int matchWeight,
+            ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
         int hardImpact = constraintWeight.hardScore() * matchWeight;
-        hardScoreUpdater.accept(hardImpact);
-        UndoScoreImpacter undoScoreImpact = () -> hardScoreUpdater.accept(-hardImpact);
+        parent.hardScore += hardImpact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofHard(hardImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.ofHard(hardImpact), constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(int matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(int matchWeight, ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
         int hardImpact = constraintWeight.hardScore() * matchWeight;
         int softImpact = constraintWeight.softScore() * matchWeight;
-        hardScoreUpdater.accept(hardImpact);
-        softScoreUpdater.accept(softImpact);
+        parent.hardScore += hardImpact;
+        parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> {
-            hardScoreUpdater.accept(-hardImpact);
-            softScoreUpdater.accept(-softImpact);
+            parent.hardScore -= hardImpact;
+            parent.softScore -= softImpact;
         };
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.of(hardImpact, softImpact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, HardSoftScore.of(hardImpact, softImpact), constraintMatchSupplier);
     }
 
 }

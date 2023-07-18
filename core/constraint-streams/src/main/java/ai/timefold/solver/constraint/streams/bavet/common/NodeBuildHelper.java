@@ -16,23 +16,19 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 
 public final class NodeBuildHelper<Score_ extends Score<Score_>> {
 
     private final Set<? extends ConstraintStream> activeStreamSet;
-    private final Map<Constraint, Score_> constraintWeightMap;
     private final AbstractScoreInliner<Score_> scoreInliner;
     private final Map<ConstraintStream, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap;
     private final Map<ConstraintStream, Integer> storeIndexMap;
 
     private List<AbstractNode> reversedNodeList;
 
-    public NodeBuildHelper(Set<? extends ConstraintStream> activeStreamSet, Map<Constraint, Score_> constraintWeightMap,
-            AbstractScoreInliner<Score_> scoreInliner) {
+    public NodeBuildHelper(Set<? extends ConstraintStream> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
         this.activeStreamSet = activeStreamSet;
-        this.constraintWeightMap = constraintWeightMap;
         this.scoreInliner = scoreInliner;
         int activeStreamSetSize = activeStreamSet.size();
         this.tupleLifecycleMap = new HashMap<>(Math.max(16, activeStreamSetSize));
@@ -46,10 +42,6 @@ public final class NodeBuildHelper<Score_ extends Score<Score_>> {
 
     public AbstractScoreInliner<Score_> getScoreInliner() {
         return scoreInliner;
-    }
-
-    public Score_ getConstraintWeight(Constraint constraint) {
-        return constraintWeightMap.get(constraint);
     }
 
     public void addNode(AbstractNode node) {
