@@ -446,4 +446,65 @@ class DefaultPillarSelectorTest {
         pillarSelector2.solvingEnded(solverScope);
     }
 
+    @Test
+    void stepCacheClearedOnPhaseEnded() {
+        TestdataValue val1 = new TestdataValue("1");
+        TestdataValue val2 = new TestdataValue("2");
+        TestdataValue val3 = new TestdataValue("3");
+
+        final TestdataEntity a = new TestdataEntity("a", val1);
+        final TestdataEntity b = new TestdataEntity("b", val2);
+        final TestdataEntity c = new TestdataEntity("c", val3);
+        final TestdataEntity d = new TestdataEntity("d", val2);
+        final TestdataEntity e = new TestdataEntity("e", val3);
+        final TestdataEntity f = new TestdataEntity("f", val3);
+
+        GenuineVariableDescriptor variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        EntitySelector entitySelector = SelectorTestUtils.mockEntitySelector(variableDescriptor.getEntityDescriptor(),
+                a, b, c, d, e, f);
+
+        DefaultPillarSelector pillarSelector1 = new DefaultPillarSelector(entitySelector, List.of(variableDescriptor), false,
+                SubPillarConfigPolicy.withoutSubpillars());
+        DefaultPillarSelector pillarSelector2 = new DefaultPillarSelector(entitySelector, List.of(variableDescriptor), false,
+                SubPillarConfigPolicy.withoutSubpillars());
+
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
+        pillarSelector1.solvingStarted(solverScope);
+        pillarSelector2.solvingStarted(solverScope);
+
+        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
+        pillarSelector1.phaseStarted(phaseScopeA);
+        pillarSelector2.phaseStarted(phaseScopeA);
+
+        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
+
+        /*
+         * There is no guarantee that stepEnded() was called, local search can decide to go directly to phaseEnded().
+         * Therefore we need to ensure that the step cache is cleared on phaseEnded() as well.
+         */
+        SupplyManager pillarSupplyManager = solverScope.getScoreDirector().getSupplyManager();
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        pillarSelector1.stepStarted(stepScopeA1);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
+
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector2.getPillarDemand())).isEqualTo(1);
+        pillarSelector2.stepStarted(stepScopeA1);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector2.getPillarDemand())).isEqualTo(2);
+
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(2);
+        pillarSelector1.phaseEnded(phaseScopeA);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
+
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
+        pillarSelector2.phaseEnded(phaseScopeA);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+
+        pillarSelector1.solvingEnded(solverScope);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        pillarSelector2.solvingEnded(solverScope);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector2.getPillarDemand())).isEqualTo(0);
+    }
+
 }
