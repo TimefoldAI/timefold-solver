@@ -10,13 +10,13 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
-public class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
+public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
 
-    protected final MoveSelector<Solution_> childMoveSelector;
-    protected final SelectionFilter<Solution_, Move<Solution_>> filter;
-    protected final boolean bailOutEnabled;
+    private final MoveSelector<Solution_> childMoveSelector;
+    private final SelectionFilter<Solution_, Move<Solution_>> filter;
+    private final boolean bailOutEnabled;
 
-    protected ScoreDirector<Solution_> scoreDirector = null;
+    private ScoreDirector<Solution_> scoreDirector = null;
 
     public FilteringMoveSelector(MoveSelector<Solution_> childMoveSelector,
             SelectionFilter<Solution_, Move<Solution_>> filter) {
@@ -83,8 +83,8 @@ public class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solut
                 if (bailOutEnabled) {
                     // if childMoveIterator is neverEnding and nothing is accepted, bail out of the infinite loop
                     if (attemptsBeforeBailOut <= 0L) {
-                        logger.warn("Bailing out of neverEnding selector ({}) to avoid infinite loop.",
-                                FilteringMoveSelector.this);
+                        logger.warn("Bailing out of neverEnding selector ({}) after ({}) attempts to avoid infinite loop.",
+                                FilteringMoveSelector.this, bailOutSize);
                         return noUpcomingSelection();
                     }
                     attemptsBeforeBailOut--;
@@ -96,16 +96,32 @@ public class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solut
 
     }
 
-    protected long determineBailOutSize() {
+    private long determineBailOutSize() {
         if (!bailOutEnabled) {
             return -1L;
         }
-        return childMoveSelector.getSize() * 10L;
+        try {
+            return childMoveSelector.getSize() * 10L;
+        } catch (Exception ex) {
+            /*
+             * Some move selectors throw an exception when getSize() is called.
+             * In this case, we choose to disregard it and pick a large-enough bail-out size anyway.
+             * The ${bailOutSize+1}th move could in theory show up where previous ${bailOutSize} moves did not,
+             * but we consider this to be an acceptable risk,
+             * outweighed by the benefit of the solver never running into an endless loop.
+             */
+            long bailOutSize = Short.MAX_VALUE * 10L;
+            logger.trace(
+                    "        Never-ending move selector ({}) failed to provide size, choosing a bail-out size of ({}) attempts.",
+                    childMoveSelector, bailOutSize, ex);
+            return bailOutSize;
+        }
     }
 
-    protected boolean accept(ScoreDirector<Solution_> scoreDirector, Move<Solution_> move) {
+    private boolean accept(ScoreDirector<Solution_> scoreDirector, Move<Solution_> move) {
         if (filter != null) {
             if (!filter.accept(scoreDirector, move)) {
+                logger.trace("        Move ({}) filtered out by a selection filter ({}).", move, filter);
                 return false;
             }
         }

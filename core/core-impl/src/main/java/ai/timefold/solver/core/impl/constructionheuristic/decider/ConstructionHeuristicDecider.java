@@ -86,8 +86,6 @@ public class ConstructionHeuristicDecider<Solution_> {
             ConstructionHeuristicMoveScope<Solution_> moveScope = new ConstructionHeuristicMoveScope<>(stepScope, moveIndex,
                     move);
             moveIndex++;
-            // Do not filter out pointless moves, because the original value of the entity(s) is irrelevant.
-            // If the original value is null and the variable is nullable, the move to null must be done too.
             doMove(moveScope);
             if (forager.isQuitEarly()) {
                 break;
