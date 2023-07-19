@@ -39,7 +39,8 @@ class SubListChangeMoveSelectorFactoryTest {
 
         RandomSubListChangeMoveSelector<TestdataListSolution> selector =
                 (RandomSubListChangeMoveSelector<TestdataListSolution>) moveSelectorFactory
-                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
+                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                                false);
 
         assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isTrue();
@@ -58,7 +59,8 @@ class SubListChangeMoveSelectorFactoryTest {
 
         RandomSubListChangeMoveSelector<TestdataListSolution> selector =
                 (RandomSubListChangeMoveSelector<TestdataListSolution>) moveSelectorFactory
-                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
+                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                                false);
 
         assertThat(selector.isSelectReversingMoveToo()).isFalse();
     }
@@ -73,7 +75,7 @@ class SubListChangeMoveSelectorFactoryTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
-                        SelectionOrder.RANDOM))
+                        SelectionOrder.RANDOM, false))
                 .withMessageContaining("cannot unfold");
     }
 
@@ -94,7 +96,7 @@ class SubListChangeMoveSelectorFactoryTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
-                        SelectionOrder.RANDOM))
+                        SelectionOrder.RANDOM, false))
                 .withMessageContaining("not a planning list variable");
     }
 
@@ -129,7 +131,7 @@ class SubListChangeMoveSelectorFactoryTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> factory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
-                        SelectionOrder.RANDOM))
+                        SelectionOrder.RANDOM, false))
                 .withMessageContainingAll(propertyName, childConfigName);
     }
 
@@ -148,7 +150,8 @@ class SubListChangeMoveSelectorFactoryTest {
 
         RandomSubListChangeMoveSelector<TestdataListSolution> moveSelector =
                 (RandomSubListChangeMoveSelector<TestdataListSolution>) factory
-                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
+                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                                false);
 
         assertThat(((RandomSubListSelector<?>) moveSelector.getSubListSelector()).getMinimumSubListSize())
                 .isEqualTo(minimumSubListSize);

@@ -145,7 +145,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         MoveSelectorConfig<?> moveSelectorConfig_ = buildMoveSelectorConfig(configPolicy,
                 sourceEntitySelector, mimicSelectorId);
         MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
-                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL);
+                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, true);
         ScoreBounder scoreBounder = scoreBounderEnabled
                 ? new TrendBasedScoreBounder(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
                 : null;

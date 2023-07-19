@@ -94,15 +94,9 @@ public class LocalSearchDecider<Solution_> {
         for (Move<Solution_> move : moveSelector) {
             LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, move);
             moveIndex++;
-            // TODO use Selector filtering to filter out not doable moves
-            if (!move.isMoveDoable(scoreDirector)) {
-                logger.trace("{}        Move index ({}) not doable, ignoring move ({}).",
-                        logIndentation, moveScope.getMoveIndex(), move);
-            } else {
-                doMove(moveScope);
-                if (forager.isQuitEarly()) {
-                    break;
-                }
+            doMove(moveScope);
+            if (forager.isQuitEarly()) {
+                break;
             }
             stepScope.getPhaseScope().getSolverScope().checkYielding();
             if (termination.isPhaseTerminated(stepScope.getPhaseScope())) {
@@ -115,6 +109,10 @@ public class LocalSearchDecider<Solution_> {
 
     protected <Score_ extends Score<Score_>> void doMove(LocalSearchMoveScope<Solution_> moveScope) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = moveScope.getScoreDirector();
+        if (!moveScope.getMove().isMoveDoable(scoreDirector)) {
+            throw new IllegalStateException("Impossible state: Local search move selector (" + moveSelector
+                    + ") provided a non-doable move (" + moveScope.getMove() + ").");
+        }
         scoreDirector.doAndProcessMove(moveScope.getMove(), assertMoveScoreFromScratch, score -> {
             moveScope.setScore(score);
             boolean accepted = acceptor.isAccepted(moveScope);

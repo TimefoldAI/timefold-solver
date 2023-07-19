@@ -62,7 +62,7 @@ public class CompositeMove<Solution_> implements Move<Solution_> {
      * @param moves never null, never empty. Do not modify this argument afterwards or this CompositeMove corrupts.
      */
     @SafeVarargs
-    public CompositeMove(Move<Solution_>... moves) {
+    CompositeMove(Move<Solution_>... moves) {
         this.moves = moves;
     }
 

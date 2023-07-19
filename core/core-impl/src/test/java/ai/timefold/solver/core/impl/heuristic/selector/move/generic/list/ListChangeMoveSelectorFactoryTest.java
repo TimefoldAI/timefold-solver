@@ -35,7 +35,8 @@ class ListChangeMoveSelectorFactoryTest {
                         .withValueSelectorConfig(new ValueSelectorConfig("valueList")));
         MoveSelector<TestdataListSolution> moveSelector =
                 MoveSelectorFactory.<TestdataListSolution> create(moveSelectorConfig).buildMoveSelector(
-                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
+                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
         assertThat(moveSelector).isInstanceOf(ListChangeMoveSelector.class);
     }
 
@@ -45,7 +46,8 @@ class ListChangeMoveSelectorFactoryTest {
         ListChangeMoveSelectorConfig moveSelectorConfig = new ListChangeMoveSelectorConfig();
         MoveSelector<TestdataListSolution> moveSelector =
                 MoveSelectorFactory.<TestdataListSolution> create(moveSelectorConfig).buildMoveSelector(
-                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
+                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
         assertThat(moveSelector).isInstanceOf(ListChangeMoveSelector.class);
     }
 
@@ -92,7 +94,8 @@ class ListChangeMoveSelectorFactoryTest {
         ListChangeMoveSelectorConfig moveSelectorConfig = new ListChangeMoveSelectorConfig();
         MoveSelector<TestdataMixedVariablesSolution> moveSelector =
                 MoveSelectorFactory.<TestdataMixedVariablesSolution> create(moveSelectorConfig).buildMoveSelector(
-                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
+                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
         assertThat(moveSelector).isInstanceOf(ListChangeMoveSelector.class);
     }
 
@@ -106,7 +109,7 @@ class ListChangeMoveSelectorFactoryTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
-                        SelectionOrder.RANDOM))
+                        SelectionOrder.RANDOM, false))
                 .withMessageContaining("cannot unfold");
     }
 
@@ -125,8 +128,8 @@ class ListChangeMoveSelectorFactoryTest {
                 buildHeuristicConfigPolicy(TestdataMixedVariablesSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy,
-                        SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM))
+                .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
+                        SelectionOrder.RANDOM, false))
                 .withMessageContaining("not a planning list variable");
     }
 }

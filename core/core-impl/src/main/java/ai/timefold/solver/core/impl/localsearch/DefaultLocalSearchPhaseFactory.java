@@ -180,10 +180,10 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         }
         if (phaseConfig.getMoveSelectorConfig() == null) {
             moveSelector = new UnionMoveSelectorFactory<Solution_>(determineDefaultMoveSelectorConfig(configPolicy))
-                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder);
+                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
         } else {
             moveSelector = MoveSelectorFactory.<Solution_> create(phaseConfig.getMoveSelectorConfig())
-                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder);
+                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
         }
         return moveSelector;
     }
