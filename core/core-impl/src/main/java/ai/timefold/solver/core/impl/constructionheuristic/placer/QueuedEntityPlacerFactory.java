@@ -91,7 +91,7 @@ public class QueuedEntityPlacerFactory<Solution_>
         List<MoveSelector<Solution_>> moveSelectorList = new ArrayList<>(moveSelectorConfigList_.size());
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList_) {
             MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig)
-                    .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL);
+                    .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
             moveSelectorList.add(moveSelector);
         }
         return new QueuedEntityPlacer<>(entitySelector, moveSelectorList);

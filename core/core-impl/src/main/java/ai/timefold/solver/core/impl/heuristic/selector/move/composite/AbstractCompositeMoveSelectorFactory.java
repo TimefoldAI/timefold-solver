@@ -22,9 +22,10 @@ abstract class AbstractCompositeMoveSelectorFactory<Solution_, MoveSelectorConfi
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType, boolean randomSelection) {
         return innerMoveSelectorList.stream()
                 .map(moveSelectorConfig -> {
-                    MoveSelectorFactory<Solution_> innerMoveSelectorFactory = MoveSelectorFactory.create(moveSelectorConfig);
+                    AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory =
+                            MoveSelectorFactory.create(moveSelectorConfig);
                     SelectionOrder selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-                    return innerMoveSelectorFactory.buildMoveSelector(configPolicy, minimumCacheType, selectionOrder);
+                    return moveSelectorFactory.buildMoveSelector(configPolicy, minimumCacheType, selectionOrder, false);
                 }).collect(Collectors.toList());
     }
 }

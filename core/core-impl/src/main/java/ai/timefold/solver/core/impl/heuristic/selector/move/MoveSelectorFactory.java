@@ -41,7 +41,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KO
 
 public interface MoveSelectorFactory<Solution_> {
 
-    static <Solution_> MoveSelectorFactory<Solution_> create(MoveSelectorConfig<?> moveSelectorConfig) {
+    static <Solution_> AbstractMoveSelectorFactory<Solution_, ?> create(MoveSelectorConfig<?> moveSelectorConfig) {
         if (ChangeMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
             return new ChangeMoveSelectorFactory<>((ChangeMoveSelectorConfig) moveSelectorConfig);
         } else if (SwapMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
@@ -90,8 +90,9 @@ public interface MoveSelectorFactory<Solution_> {
      *        then it should be at least this {@link SelectionCacheType} because an ancestor already uses such caching
      *        and less would be pointless.
      * @param inheritedSelectionOrder never null
+     * @param skipNonDoableMoves
      * @return never null
      */
     MoveSelector<Solution_> buildMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder);
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, boolean skipNonDoableMoves);
 }

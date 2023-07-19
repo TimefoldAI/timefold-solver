@@ -151,7 +151,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
                 }
                 moveList = Arrays.copyOfRange(newMoveList, 0, newSize);
             }
-            return new CompositeMove<>(moveList);
+            return CompositeMove.buildMove(moveList);
         }
 
     }
@@ -217,7 +217,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
                     return moveList.get(0);
                 }
             }
-            return new CompositeMove<>(moveList.toArray(new Move[0]));
+            return CompositeMove.buildMove(moveList.toArray(new Move[0]));
         }
 
     }

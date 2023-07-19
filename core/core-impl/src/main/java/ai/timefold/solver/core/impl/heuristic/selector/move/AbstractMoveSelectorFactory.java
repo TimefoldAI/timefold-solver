@@ -49,11 +49,11 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
      */
     @Override
     public MoveSelector<Solution_> buildMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, boolean skipNonDoableMoves) {
         MoveSelectorConfig<?> unfoldedMoveSelectorConfig = buildUnfoldedMoveSelectorConfig(configPolicy);
         if (unfoldedMoveSelectorConfig != null) {
             return MoveSelectorFactory.<Solution_> create(unfoldedMoveSelectorConfig)
-                    .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder);
+                    .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder, skipNonDoableMoves);
         }
 
         SelectionCacheType resolvedCacheType = SelectionCacheType.resolve(config.getCacheType(), minimumCacheType);
@@ -70,7 +70,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         MoveSelector<Solution_> moveSelector = buildBaseMoveSelector(configPolicy, selectionCacheType, randomMoveSelection);
         validateResolvedCacheType(resolvedCacheType, moveSelector);
 
-        moveSelector = applyFiltering(moveSelector);
+        moveSelector = applyFiltering(moveSelector, skipNonDoableMoves);
         moveSelector = applySorting(resolvedCacheType, resolvedSelectionOrder, moveSelector);
         moveSelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, moveSelector);
         moveSelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, moveSelector);
@@ -132,13 +132,27 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         return config.getFilterClass() != null;
     }
 
-    private MoveSelector<Solution_> applyFiltering(MoveSelector<Solution_> moveSelector) {
+    private MoveSelector<Solution_> applyFiltering(MoveSelector<Solution_> moveSelector, boolean skipNonDoableMoves) {
+        /*
+         * Do not filter out pointless moves in Construction Heuristics,
+         * because the original value of the entity is irrelevant.
+         * If the original value is null and the variable is nullable,
+         * the change move to null must be done too.
+         */
+        SelectionFilter<Solution_, Move<Solution_>> baseFilter = skipNonDoableMoves
+                ? DoableMoveSelectionFilter.INSTANCE
+                : null;
         if (hasFiltering()) {
             SelectionFilter<Solution_, Move<Solution_>> selectionFilter =
                     ConfigUtils.newInstance(config, "filterClass", config.getFilterClass());
-            moveSelector = new FilteringMoveSelector<>(moveSelector, selectionFilter);
+            SelectionFilter<Solution_, Move<Solution_>> finalFilter =
+                    baseFilter == null ? selectionFilter : SelectionFilter.compose(baseFilter, selectionFilter);
+            return new FilteringMoveSelector<>(moveSelector, finalFilter);
+        } else if (baseFilter != null) {
+            return new FilteringMoveSelector<>(moveSelector, baseFilter);
+        } else {
+            return moveSelector;
         }
-        return moveSelector;
     }
 
     protected void validateSorting(SelectionOrder resolvedSelectionOrder) {

@@ -45,4 +45,9 @@ public class PinEntityFilter<Solution_> implements SelectionFilter<Solution_, Ob
     public int hashCode() {
         return Objects.hash(memberAccessor);
     }
+
+    @Override
+    public String toString() {
+        return "Non-pinned entities only";
+    }
 }
