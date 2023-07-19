@@ -4,8 +4,11 @@
 :page-aliases: quickstart/quickstart.adoc
 :imagesdir: ../..
 
-Each _quick start_ gets you up and running with Timefold quickly.
-Pick the quick start that best aligns with your requirements:
+IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository
+contains the source code for all these guides and more.
+
+Each _quick start guide_ gets you up and running with Timefold quickly.
+Pick one that aligns with your requirements:
 
 * xref:quickstart/hello-world/hello-world-quickstart.adoc#helloWorldJavaQuickStart[*Hello World Java*]
 ** Build a simple Java application that uses Timefold to optimize a school timetable for students and teachers.
