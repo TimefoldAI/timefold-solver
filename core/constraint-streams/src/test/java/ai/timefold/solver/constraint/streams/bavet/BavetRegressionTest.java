@@ -66,4 +66,44 @@ class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector);
     }
+
+    @TestTemplate
+    public void filteringIfExistsNullConflict() { // See https://github.com/TimefoldAI/timefold-solver/issues/186.
+        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataEntity.class)
+                                        .ifExists(TestdataEntity.class,
+                                                filtering((a, b) -> {
+                                                    if (a.getValue() == null) {
+                                                        throw new IllegalStateException(
+                                                                "Impossible state: value of A is null even though forEach() should have eliminated it.");
+                                                    }
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        });
+
+        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
+        TestdataEntity entity1 = solution.getEntityList().get(0);
+        TestdataEntity entity2 = solution.getEntityList().get(1);
+        TestdataValue value = solution.getValueList().get(0);
+        entity1.setValue(null);
+        entity2.setValue(value);
+
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity2)); // Only entity1 is left, because forEach/ifExists ignore nulls.
+
+        // Switch entity1 and entity2 values; now entity2 has null and entity1 does not.
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(null);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1));
+    }
 }
