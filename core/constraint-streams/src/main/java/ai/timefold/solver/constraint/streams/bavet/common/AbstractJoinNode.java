@@ -4,8 +4,6 @@ import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleStat
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.UPDATING;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
@@ -75,20 +73,15 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     protected final void innerUpdateLeft(LeftTuple_ leftTuple, Consumer<Consumer<UniTuple<Right_>>> rightTupleConsumer) {
         // Prefer an update over retract-insert if possible
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+        // Propagate the update for downstream filters, matchWeighers, ...
         if (!isFiltering) {
-            // Propagate the update for downstream filters, matchWeighers, ...
-            outTupleListLeft.forEach(outTuple -> updateOutTupleLeft(outTuple, leftTuple));
+            for (OutTuple_ outTuple : outTupleListLeft) {
+                updateOutTupleLeft(outTuple, leftTuple);
+            }
         } else {
-            // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead
-            Map<ElementAwareList<OutTuple_>, OutTuple_> rightToOutMap = new IdentityHashMap<>(outTupleListLeft.size());
-            outTupleListLeft.forEach(outTuple -> {
-                ElementAwareListEntry<OutTuple_> rightOutEntry = outTuple.getStore(outputStoreIndexRightOutEntry);
-                rightToOutMap.put(rightOutEntry.getList(), outTuple);
-
-            });
             rightTupleConsumer.accept(rightTuple -> {
                 ElementAwareList<OutTuple_> rightOutList = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, rightToOutMap, rightOutList);
+                processOutTupleUpdate(leftTuple, rightTuple, rightOutList, outTupleListLeft, outputStoreIndexRightOutEntry);
             });
         }
     }
@@ -122,27 +115,21 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         if (!isFiltering) {
             // Propagate the update for downstream filters, matchWeighers, ...
-            outTupleListRight.forEach(outTuple -> {
+            for (OutTuple_ outTuple : outTupleListRight) {
                 setOutTupleRightFact(outTuple, rightTuple);
                 doUpdateOutTuple(outTuple);
-            });
+            }
         } else {
-            // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead
-            Map<ElementAwareList<OutTuple_>, OutTuple_> leftToOutMap = new IdentityHashMap<>(outTupleListRight.size());
-            outTupleListRight.forEach(outTuple -> {
-                ElementAwareListEntry<OutTuple_> leftOutEntry = outTuple.getStore(outputStoreIndexLeftOutEntry);
-                leftToOutMap.put(leftOutEntry.getList(), outTuple);
-            });
             leftTupleConsumer.accept(leftTuple -> {
                 ElementAwareList<OutTuple_> leftOutList = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, leftToOutMap, leftOutList);
+                processOutTupleUpdate(leftTuple, rightTuple, leftOutList, outTupleListRight, outputStoreIndexLeftOutEntry);
             });
         }
     }
 
-    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
-            Map<ElementAwareList<OutTuple_>, OutTuple_> outMap, ElementAwareList<OutTuple_> outList) {
-        OutTuple_ outTuple = outMap.get(outList);
+    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
+            ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
+        OutTuple_ outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
                 insertOutTuple(leftTuple, rightTuple);
@@ -154,6 +141,19 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
                 retractOutTuple(outTuple);
             }
         }
+    }
+
+    private OutTuple_ findOutTuple(ElementAwareList<OutTuple_> outTupleList, ElementAwareList<OutTuple_> outList,
+            int outputStoreIndexOutEntry) {
+        // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead.
+        for (OutTuple_ outTuple : outTupleList) {
+            ElementAwareListEntry<OutTuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
+            ElementAwareList<OutTuple_> outEntryList = outEntry.getList();
+            if (outList == outEntryList) {
+                return outTuple;
+            }
+        }
+        return null;
     }
 
     protected final void retractOutTuple(OutTuple_ outTuple) {
