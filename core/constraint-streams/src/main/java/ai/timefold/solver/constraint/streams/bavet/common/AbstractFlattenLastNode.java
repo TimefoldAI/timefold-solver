@@ -1,13 +1,11 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
@@ -24,7 +22,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
      * Calls for example {@link AbstractScorer#insert(AbstractTuple)}, and/or ...
      */
     private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
-    private final Queue<OutTuple_> dirtyTupleQueue = new ArrayDeque<>(1000);
+    private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue = DirtyQueue.ofTuples();
 
     protected AbstractFlattenLastNode(int flattenLastStoreIndex,
             Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction,
@@ -68,7 +66,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     private void addTuple(InTuple_ originalTuple, FlattenedItem_ item, List<OutTuple_> outTupleList) {
         OutTuple_ tuple = createTuple(originalTuple, item);
         outTupleList.add(tuple);
-        dirtyTupleQueue.add(tuple);
+        dirtyTupleQueue.insert(tuple);
     }
 
     protected abstract OutTuple_ createTuple(InTuple_ originalTuple, FlattenedItem_ item);
@@ -112,8 +110,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
                     outTupleIterator.remove();
                     removeTuple(outTuple);
                 } else {
-                    outTuple.setState(TupleState.UPDATING);
-                    dirtyTupleQueue.add(outTuple);
+                    dirtyTupleQueue.insertWithState(outTuple, TupleState.UPDATING);
                 }
             }
         }
@@ -163,46 +160,23 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     }
 
     private void removeTuple(OutTuple_ outTuple) {
-        switch (outTuple.getState()) {
+        switch (outTuple.state) {
             case CREATING:
-                outTuple.setState(TupleState.ABORTING);
+                dirtyTupleQueue.insertWithState(outTuple, TupleState.ABORTING);
                 break;
             case UPDATING:
             case OK:
-                outTuple.setState(TupleState.DYING);
+                dirtyTupleQueue.insertWithState(outTuple, TupleState.DYING);
                 break;
             default:
                 throw new IllegalStateException("Impossible state: The tuple (" + outTuple +
-                        ") is in an unexpected state (" + outTuple.getState() + ").");
+                        ") is in an unexpected state (" + outTuple.state + ").");
         }
-        dirtyTupleQueue.add(outTuple);
     }
 
     @Override
     public void calculateScore() {
-        for (OutTuple_ outTuple : dirtyTupleQueue) {
-            switch (outTuple.getState()) {
-                case CREATING:
-                    nextNodesTupleLifecycle.insert(outTuple);
-                    outTuple.setState(TupleState.OK);
-                    break;
-                case UPDATING:
-                    nextNodesTupleLifecycle.update(outTuple);
-                    outTuple.setState(TupleState.OK);
-                    break;
-                case DYING:
-                    nextNodesTupleLifecycle.retract(outTuple);
-                    outTuple.setState(TupleState.DEAD);
-                    break;
-                case ABORTING:
-                    outTuple.setState(TupleState.DEAD);
-                    break;
-                default:
-                    throw new IllegalStateException("Impossible state: The tuple (" + outTuple + ") in node (" +
-                            this + ") is in an unexpected state (" + outTuple.getState() + ").");
-            }
-        }
-        dirtyTupleQueue.clear();
+        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
     }
 
 }

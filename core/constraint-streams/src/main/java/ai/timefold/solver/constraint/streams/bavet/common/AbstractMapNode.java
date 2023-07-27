@@ -1,8 +1,5 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
@@ -17,13 +14,13 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
      */
     private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
     protected final int outputStoreSize;
-    private final Queue<OutTuple_> dirtyTupleQueue;
+    private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
 
     protected AbstractMapNode(int inputStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, int outputStoreSize) {
         this.inputStoreIndex = inputStoreIndex;
         this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.outputStoreSize = outputStoreSize;
-        dirtyTupleQueue = new ArrayDeque<>(1000);
+        dirtyTupleQueue = DirtyQueue.ofTuples();
     }
 
     @Override
@@ -34,7 +31,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
         }
         OutTuple_ outTuple = map(tuple);
         tuple.setStore(inputStoreIndex, outTuple);
-        dirtyTupleQueue.add(outTuple);
+        dirtyTupleQueue.insert(outTuple);
     }
 
     protected abstract OutTuple_ map(InTuple_ inTuple);
@@ -48,8 +45,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             return;
         }
         if (remap(tuple, outTuple)) {
-            outTuple.setState(TupleState.UPDATING);
-            dirtyTupleQueue.add(outTuple);
+            dirtyTupleQueue.insertWithState(outTuple, TupleState.UPDATING);
         }
     }
 
@@ -67,37 +63,12 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        outTuple.setState(TupleState.DYING);
-        dirtyTupleQueue.add(outTuple);
+        dirtyTupleQueue.insertWithState(outTuple, TupleState.DYING);
     }
 
     @Override
     public void calculateScore() {
-        for (OutTuple_ tuple : dirtyTupleQueue) {
-            switch (tuple.getState()) {
-                case CREATING:
-                    nextNodesTupleLifecycle.insert(tuple);
-                    tuple.setState(TupleState.OK);
-                    break;
-                case UPDATING:
-                    nextNodesTupleLifecycle.update(tuple);
-                    tuple.setState(TupleState.OK);
-                    break;
-                case DYING:
-                    nextNodesTupleLifecycle.retract(tuple);
-                    tuple.setState(TupleState.DEAD);
-                    break;
-                case ABORTING:
-                    tuple.setState(TupleState.DEAD);
-                    break;
-                case OK:
-                case DEAD:
-                default:
-                    throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
-                            this + ") is in an unexpected state (" + tuple.getState() + ").");
-            }
-        }
-        dirtyTupleQueue.clear();
+        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
     }
 
 }

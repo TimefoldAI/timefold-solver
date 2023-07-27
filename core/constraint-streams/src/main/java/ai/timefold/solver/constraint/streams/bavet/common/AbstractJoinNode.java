@@ -1,16 +1,17 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.ArrayDeque;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.UPDATING;
+
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Queue;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
@@ -37,7 +38,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
-    protected final Queue<OutTuple_> dirtyTupleQueue;
+    protected final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
 
     protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
@@ -48,7 +49,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         this.isFiltering = isFiltering;
         this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
         this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
-        dirtyTupleQueue = new ArrayDeque<>(1000);
+        dirtyTupleQueue = DirtyQueue.ofTuples();
     }
 
     protected abstract OutTuple_ createOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -67,7 +68,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         ElementAwareListEntry<OutTuple_> outEntryRight = outTupleListRight.add(outTuple);
         outTuple.setStore(outputStoreIndexRightOutEntry, outEntryRight);
-        dirtyTupleQueue.add(outTuple);
+        dirtyTupleQueue.insert(outTuple);
     }
 
     protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
@@ -103,22 +104,21 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void doUpdateOutTuple(OutTuple_ outTuple) {
-        switch (outTuple.getState()) {
+        switch (outTuple.state) {
             case CREATING:
             case UPDATING:
                 // Don't add the tuple to the dirtyTupleQueue twice
                 break;
             case OK:
-                outTuple.setState(TupleState.UPDATING);
-                dirtyTupleQueue.add(outTuple);
+                dirtyTupleQueue.insertWithState(outTuple, UPDATING);
                 break;
             // Impossible because they shouldn't linger in the indexes
             case DYING:
             case ABORTING:
             case DEAD:
             default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.getState() + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.getState() + ").");
+                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
+                        this + ") is in an unexpected state (" + outTuple.state + ").");
         }
     }
 
@@ -166,58 +166,33 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         outEntryLeft.remove();
         ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
-        switch (outTuple.getState()) {
+        switch (outTuple.state) {
             case CREATING:
                 // Don't add the tuple to the dirtyTupleQueue twice
                 // Kill it before it propagates
-                outTuple.setState(TupleState.ABORTING);
+                dirtyTupleQueue.changeState(outTuple, ABORTING);
                 break;
             case OK:
-                outTuple.setState(TupleState.DYING);
-                dirtyTupleQueue.add(outTuple);
+                dirtyTupleQueue.insertWithState(outTuple, DYING);
                 break;
             case UPDATING:
                 // Don't add the tuple to the dirtyTupleQueue twice
                 // Kill the original propagation
-                outTuple.setState(TupleState.DYING);
+                dirtyTupleQueue.changeState(outTuple, DYING);
                 break;
             // Impossible because they shouldn't linger in the indexes
             case DYING:
             case ABORTING:
             case DEAD:
             default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.getState() + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.getState() + ").");
+                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
+                        this + ") is in an unexpected state (" + outTuple.state + ").");
         }
     }
 
     @Override
     public final void calculateScore() {
-        for (OutTuple_ tuple : dirtyTupleQueue) {
-            switch (tuple.getState()) {
-                case CREATING:
-                    nextNodesTupleLifecycle.insert(tuple);
-                    tuple.setState(TupleState.OK);
-                    break;
-                case UPDATING:
-                    nextNodesTupleLifecycle.update(tuple);
-                    tuple.setState(TupleState.OK);
-                    break;
-                case DYING:
-                    nextNodesTupleLifecycle.retract(tuple);
-                    tuple.setState(TupleState.DEAD);
-                    break;
-                case ABORTING:
-                    tuple.setState(TupleState.DEAD);
-                    break;
-                case OK:
-                case DEAD:
-                default:
-                    throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
-                            this + ") is in an unexpected state (" + tuple.getState() + ").");
-            }
-        }
-        dirtyTupleQueue.clear();
+        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
     }
 
 }

@@ -34,14 +34,6 @@ public abstract sealed class AbstractTuple permits UniTuple, BiTuple, TriTuple, 
         this.storeIsArray = store != null;
     }
 
-    public final TupleState getState() {
-        return state;
-    }
-
-    public final void setState(TupleState state) {
-        this.state = state;
-    }
-
     public final <Value_> Value_ getStore(int index) {
         if (storeIsArray) {
             return (Value_) ((Object[]) store)[index];

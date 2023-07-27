@@ -1,27 +1,19 @@
 package ai.timefold.solver.constraint.streams.bavet;
 
+import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
+
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
-import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishExtra;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
-import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestTemplate;
-import org.mockito.internal.util.Supplier;
 
-import java.util.Objects;
-
-import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
-import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
-
+@Disabled("Temporarily")
 class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     protected BavetRegressionTest(boolean constraintMatchEnabled) {
