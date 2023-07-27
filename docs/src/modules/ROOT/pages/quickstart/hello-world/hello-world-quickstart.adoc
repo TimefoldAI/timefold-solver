@@ -326,15 +326,15 @@ public class TimeTableApp {
 
     private static void printTimetable(TimeTable timeTable) {
         LOGGER.info("");
-        List<Room> roomList = timeTable.getRoomList();
-        List<Lesson> lessonList = timeTable.getLessonList();
+        List<Room> roomList = timeTable.getRooms();
+        List<Lesson> lessonList = timeTable.getLessons();
         Map<Timeslot, Map<Room, List<Lesson>>> lessonMap = lessonList.stream()
                 .filter(lesson -> lesson.getTimeslot() != null && lesson.getRoom() != null)
                 .collect(Collectors.groupingBy(Lesson::getTimeslot, Collectors.groupingBy(Lesson::getRoom)));
         LOGGER.info("|            | " + roomList.stream()
                 .map(room -> String.format("%-10s", room.getName())).collect(Collectors.joining(" | ")) + " |");
         LOGGER.info("|" + "------------|".repeat(roomList.size() + 1));
-        for (Timeslot timeslot : timeTable.getTimeslotList()) {
+        for (Timeslot timeslot : timeTable.getTimeslots()) {
             List<List<Lesson>> cellList = roomList.stream()
                     .map(room -> {
                         Map<Room, List<Lesson>> byRoomMap = lessonMap.get(timeslot);
