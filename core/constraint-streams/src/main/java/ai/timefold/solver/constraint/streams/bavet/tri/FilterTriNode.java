@@ -10,23 +10,11 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 final class FilterTriNode<A, B, C> extends AbstractFilterNode<TriTuple<A, B, C>> {
 
     private final TriPredicate<A, B, C> predicate;
-    private final int outputStoreSize;
 
     public FilterTriNode(int inputStoreIndex, TriPredicate<A, B, C> predicate,
-            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize) {
+            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle) {
         super(inputStoreIndex, nextNodesTupleLifecycle);
         this.predicate = Objects.requireNonNull(predicate);
-        this.outputStoreSize = outputStoreSize;
-    }
-
-    @Override
-    protected TriTuple<A, B, C> clone(TriTuple<A, B, C> inTuple) {
-        return new TriTuple<>(inTuple.factA, inTuple.factB, inTuple.factC, outputStoreSize);
-    }
-
-    @Override
-    protected void remap(TriTuple<A, B, C> inTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.updateIfDifferent(inTuple.factA, inTuple.factB, inTuple.factC);
     }
 
     @Override

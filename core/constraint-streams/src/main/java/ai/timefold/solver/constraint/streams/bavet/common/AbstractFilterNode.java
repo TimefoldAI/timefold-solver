@@ -1,53 +1,65 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
+/**
+ * Filter node is a pass-through node which does not propagate tuples that do not pass a predicate.
+ * It is designed not to create tuples, as that would become a very expensive operation.
+ * This has a consequence on how tuple state is stored.
+ * By the time a tuple makes it to {@link #insert(AbstractTuple)}, {@link #update(AbstractTuple)} or
+ * {@link #retract(AbstractTuple)},
+ * its state is already {@link TupleState#OK} from the input node.
+ * Therefore, in order not to have to create a clone of the tuple,
+ * this node's tuple state is stored in {@link AbstractTuple}'s state store as opposed to {@link AbstractTuple#state}.
+ *
+ * @param <Tuple_>
+ */
 public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         extends AbstractNode
         implements TupleLifecycle<Tuple_> {
 
-    private final int inputStoreIndex;
+    private final int tupleStateStoreIndex;
     /**
      * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
      */
     private final TupleLifecycle<Tuple_> nextNodesTupleLifecycle;
     private final DirtyQueue<Tuple_, Tuple_> dirtyTupleQueue;
 
-    protected AbstractFilterNode(int inputStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
-        this.inputStoreIndex = inputStoreIndex;
+    protected AbstractFilterNode(int tupleStateStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+        this.tupleStateStoreIndex = tupleStateStoreIndex;
         this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
-        dirtyTupleQueue = DirtyQueue.ofTuples();
+        /*
+         * The tuple state is stored through the queue, which needs to know it for score calculation.
+         * Read operations happen through the tuple directly.
+         */
+        dirtyTupleQueue = new DirtyQueue<>(Function.identity(),
+                tuple -> tuple.getStore(tupleStateStoreIndex),
+                (tuple, state) -> tuple.setStore(tupleStateStoreIndex, state));
     }
 
     @Override
     public void insert(Tuple_ tuple) {
-        if (tuple.getStore(inputStoreIndex) != null) {
-            throw new IllegalStateException("Impossible state: the output for the tuple (" + tuple
-                    + ") was already added in the tupleStore.");
+        if (tuple.getStore(tupleStateStoreIndex) != null) {
+            throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") was already inserted.");
         }
         if (testFiltering(tuple)) {
-            Tuple_ outTuple = clone(tuple);
-            tuple.setStore(inputStoreIndex, outTuple);
-            dirtyTupleQueue.insertWithState(outTuple, TupleState.CREATING);
+            dirtyTupleQueue.insertWithState(tuple, TupleState.CREATING);
         }
     }
-
-    protected abstract Tuple_ clone(Tuple_ inTuple);
-
-    protected abstract void remap(Tuple_ inTuple, Tuple_ outTuple);
 
     protected abstract boolean testFiltering(Tuple_ tuple);
 
     @Override
     public void update(Tuple_ tuple) {
-        Tuple_ outTuple = tuple.getStore(inputStoreIndex);
-        if (outTuple == null) { // The tuple was never inserted because it did not pass the filter.
+        TupleState tupleState = tuple.getStore(tupleStateStoreIndex);
+        if (tupleState == null) { // The tuple was never inserted because it did not pass the filter.
             insert(tuple);
         } else if (testFiltering(tuple)) {
-            remap(tuple, outTuple);
-            dirtyTupleQueue.insertWithState(outTuple, TupleState.UPDATING);
+            dirtyTupleQueue.insertWithState(tuple, TupleState.UPDATING);
         } else {
             retract(tuple);
         }
@@ -55,12 +67,12 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
 
     @Override
     public void retract(Tuple_ tuple) {
-        Tuple_ outTuple = tuple.removeStore(inputStoreIndex);
-        if (outTuple == null) { // The tuple was never inserted because it did not pass the filter.
+        TupleState tupleState = tuple.removeStore(tupleStateStoreIndex);
+        if (tupleState == null) { // The tuple was never inserted because it did not pass the filter.
             return;
         }
-        dirtyTupleQueue.insertWithState(outTuple,
-                outTuple.state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+        dirtyTupleQueue.insertWithState(tuple,
+                tupleState == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override

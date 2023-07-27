@@ -10,23 +10,10 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 final class FilterUniNode<A> extends AbstractFilterNode<UniTuple<A>> {
 
     private final Predicate<A> predicate;
-    private final int outputStoreSize;
 
-    public FilterUniNode(int inputStoreIndex, Predicate<A> predicate, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            int outputStoreSize) {
+    public FilterUniNode(int inputStoreIndex, Predicate<A> predicate, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle) {
         super(inputStoreIndex, nextNodesTupleLifecycle);
         this.predicate = Objects.requireNonNull(predicate);
-        this.outputStoreSize = outputStoreSize;
-    }
-
-    @Override
-    protected UniTuple<A> clone(UniTuple<A> inTuple) {
-        return new UniTuple<>(inTuple.factA, outputStoreSize);
-    }
-
-    @Override
-    protected void remap(UniTuple<A> inTuple, UniTuple<A> outTuple) {
-        outTuple.updateIfDifferent(inTuple.factA);
     }
 
     @Override
