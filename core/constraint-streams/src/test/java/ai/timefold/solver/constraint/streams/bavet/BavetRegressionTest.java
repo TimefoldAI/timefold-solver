@@ -10,10 +10,8 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestTemplate;
 
-@Disabled("Temporarily")
 class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     protected BavetRegressionTest(boolean constraintMatchEnabled) {
@@ -56,7 +54,8 @@ class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity1));
     }
 
     @TestTemplate
