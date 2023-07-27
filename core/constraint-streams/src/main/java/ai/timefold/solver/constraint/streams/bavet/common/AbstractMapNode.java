@@ -9,18 +9,13 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
         implements TupleLifecycle<InTuple_> {
 
     private final int inputStoreIndex;
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
-     */
-    private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
     protected final int outputStoreSize;
     private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
 
     protected AbstractMapNode(int inputStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, int outputStoreSize) {
         this.inputStoreIndex = inputStoreIndex;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.outputStoreSize = outputStoreSize;
-        dirtyTupleQueue = DirtyQueue.ofTuples();
+        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
     }
 
     @Override
@@ -68,7 +63,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
+        dirtyTupleQueue.calculateScore(this);
     }
 
 }

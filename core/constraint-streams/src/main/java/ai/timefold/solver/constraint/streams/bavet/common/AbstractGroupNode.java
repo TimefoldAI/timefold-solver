@@ -43,10 +43,6 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
      */
     private final boolean hasCollector;
     /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)}, and/or ...
-     */
-    private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
-    /**
      * Used when {@link #hasMultipleGroups} is true, otherwise {@link #singletonGroup} is used.
      */
     private final Map<Object, AbstractGroup<OutTuple_, ResultContainer_>> groupMap;
@@ -70,14 +66,21 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
         this.finisher = finisher;
         this.hasMultipleGroups = groupKeyFunction != null;
         this.hasCollector = supplier != null;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         /*
          * Not using the default sizing to 1000.
          * The number of groups can be very small, and that situation is not unlikely.
          * Therefore, the size of these collections is kept default.
          */
         this.groupMap = hasMultipleGroups ? new HashMap<>() : null;
-        this.dirtyGroupQueue = new DirtyQueue<>(g -> g.outTuple, g -> g.outTuple.state, (g, s) -> g.outTuple.state = s);
+        this.dirtyGroupQueue = new DirtyQueue<>(nextNodesTupleLifecycle, g -> g.outTuple, g -> g.outTuple.state,
+                (g, s) -> g.outTuple.state = s,
+                hasCollector ? group -> {
+                    OutTuple_ outTuple = group.outTuple;
+                    TupleState state = outTuple.state;
+                    if (state == TupleState.CREATING || state == TupleState.UPDATING) {
+                        updateOutTupleToFinisher(outTuple, group.getResultContainer());
+                    }
+                } : null);
         this.useAssertingGroupKey = environmentMode.isAsserted();
     }
 
@@ -267,17 +270,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
 
     @Override
     public void calculateScore() {
-        if (hasCollector) {
-            dirtyGroupQueue.clear(this, nextNodesTupleLifecycle, group -> {
-                OutTuple_ outTuple = group.outTuple;
-                TupleState state = outTuple.state;
-                if (state == TupleState.CREATING || state == TupleState.UPDATING) {
-                    updateOutTupleToFinisher(outTuple, group.getResultContainer());
-                }
-            });
-        } else {
-            dirtyGroupQueue.clear(this, nextNodesTupleLifecycle);
-        }
+        dirtyGroupQueue.calculateScore(this);
     }
 
     /**

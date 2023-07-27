@@ -12,10 +12,6 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 public final class ForEachUniNode<A> extends AbstractNode {
 
     private final Class<A> forEachClass;
-    /**
-     * Calls for example {@link UniScorer#insert(UniTuple)}, and/or ...
-     */
-    private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final int outputStoreSize;
 
     private final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
@@ -23,9 +19,8 @@ public final class ForEachUniNode<A> extends AbstractNode {
 
     public ForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         this.forEachClass = forEachClass;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.outputStoreSize = outputStoreSize;
-        dirtyTupleQueue = DirtyQueue.ofTuples();
+        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
     }
 
     public void insert(A a) {
@@ -68,7 +63,7 @@ public final class ForEachUniNode<A> extends AbstractNode {
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
+        dirtyTupleQueue.calculateScore(this);
     }
 
     @Override

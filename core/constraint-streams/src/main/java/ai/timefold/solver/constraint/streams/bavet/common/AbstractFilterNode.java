@@ -1,7 +1,5 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.function.Function;
-
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
@@ -23,20 +21,15 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         implements TupleLifecycle<Tuple_> {
 
     private final int tupleStateStoreIndex;
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
-     */
-    private final TupleLifecycle<Tuple_> nextNodesTupleLifecycle;
     private final DirtyQueue<Tuple_, Tuple_> dirtyTupleQueue;
 
     protected AbstractFilterNode(int tupleStateStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this.tupleStateStoreIndex = tupleStateStoreIndex;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         /*
          * The tuple state is stored through the queue, which needs to know it for score calculation.
          * Read operations happen through the tuple directly.
          */
-        dirtyTupleQueue = new DirtyQueue<>(Function.identity(),
+        this.dirtyTupleQueue = new DirtyQueue<>(nextNodesTupleLifecycle, null,
                 tuple -> tuple.getStore(tupleStateStoreIndex),
                 (tuple, state) -> tuple.setStore(tupleStateStoreIndex, state));
     }
@@ -77,7 +70,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
+        dirtyTupleQueue.calculateScore(this);
     }
 
 }

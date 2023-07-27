@@ -18,18 +18,14 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     private final int flattenLastStoreIndex;
     private final Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction;
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)}, and/or ...
-     */
-    private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
-    private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue = DirtyQueue.ofTuples();
+    private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
 
     protected AbstractFlattenLastNode(int flattenLastStoreIndex,
             Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
         this.flattenLastStoreIndex = flattenLastStoreIndex;
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
-        this.nextNodesTupleLifecycle = Objects.requireNonNull(nextNodesTupleLifecycle);
+        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
     }
 
     @Override
@@ -176,7 +172,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
+        dirtyTupleQueue.calculateScore(this);
     }
 
 }

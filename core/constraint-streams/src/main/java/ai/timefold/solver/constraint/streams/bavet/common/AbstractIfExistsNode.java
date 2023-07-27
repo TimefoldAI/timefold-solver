@@ -1,7 +1,8 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.*;
-import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DEAD;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.CREATING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.UPDATING;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
@@ -30,10 +31,6 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected final int inputStoreIndexLeftTrackerList; // -1 if !isFiltering
     protected final int inputStoreIndexRightTrackerList; // -1 if !isFiltering
 
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)}, and/or ...
-     */
-    private final TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle;
     protected final boolean isFiltering;
     // No outputStoreSize because this node is not a tuple source, even though it has a dirtyCounterQueue.
     protected final DirtyQueue<ExistsCounter<LeftTuple_>, LeftTuple_> dirtyCounterQueue;
@@ -45,9 +42,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         this.shouldExist = shouldExist;
         this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
         this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.isFiltering = isFiltering;
-        this.dirtyCounterQueue = new DirtyQueue<>(c -> c.leftTuple, c -> c.state, (c, s) -> c.state = s, 1000);
+        this.dirtyCounterQueue =
+                new DirtyQueue<>(nextNodesTupleLifecycle, c -> c.leftTuple, c -> c.state, (c, s) -> c.state = s, 1000);
     }
 
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -223,7 +220,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     @Override
     public final void calculateScore() {
-        dirtyCounterQueue.clear(this, nextNodesTupleLifecycle);
+        dirtyCounterQueue.calculateScore(this);
     }
 
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {

@@ -1,10 +1,8 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Queue;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -13,88 +11,110 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> implements Iterable<Carrier_> {
+public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> {
 
-    public static <Tuple_ extends AbstractTuple> DirtyQueue<Tuple_, Tuple_> ofTuples() {
-        return new DirtyQueue<>(Function.identity(), tuple -> tuple.state, (tuple, state) -> tuple.state = state, 1000);
+    public static <Tuple_ extends AbstractTuple> DirtyQueue<Tuple_, Tuple_>
+            ofTuples(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+        return new DirtyQueue<>(nextNodesTupleLifecycle, null, tuple -> tuple.state,
+                (tuple, state) -> tuple.state = state, 1000);
     }
 
-    private final Function<Carrier_, Tuple_> tupleGetter;
+    /**
+     * Propagates tuples downstream.
+     * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
+     */
+    private final TupleLifecycle<Tuple_> nextNodesTupleLifecycle;
+    private final Function<Carrier_, Tuple_> tupleExtractor;
     private final Function<Carrier_, TupleState> stateGetter;
     private final BiConsumer<Carrier_, TupleState> stateSetter;
-    private final Queue<Carrier_> dirtyTupleQueue;
+    private final Consumer<Carrier_> carrierProcessor;
+    private final List<Carrier_> dirtyList;
+    private final List<Carrier_> insertingList;
+    private final List<Carrier_> updatingList;
 
-    public DirtyQueue(Function<Carrier_, Tuple_> tupleGetter, Function<Carrier_, TupleState> stateGetter,
-            BiConsumer<Carrier_, TupleState> stateSetter, int size) {
-        this.tupleGetter = tupleGetter;
-        this.stateGetter = stateGetter;
-        this.stateSetter = stateSetter;
-        dirtyTupleQueue = new ArrayDeque<>(size);
+    private DirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Function<Carrier_, Tuple_> tupleExtractor,
+            Function<Carrier_, TupleState> stateGetter, BiConsumer<Carrier_, TupleState> stateSetter,
+            Consumer<Carrier_> carrierProcessor, int size) {
+        this.nextNodesTupleLifecycle = Objects.requireNonNull(nextNodesTupleLifecycle);
+        this.tupleExtractor = tupleExtractor; // Null if the tuple is the carrier.
+        this.stateGetter = Objects.requireNonNull(stateGetter);
+        this.stateSetter = Objects.requireNonNull(stateSetter);
+        this.carrierProcessor = carrierProcessor; // Only required for group nodes.
+        this.dirtyList = new ArrayList<>(size);
+        // Guesstimate that inserts and updates are roughly equally common.
+        this.insertingList = new ArrayList<>(size / 2);
+        this.updatingList = new ArrayList<>(size / 2);
     }
 
-    public DirtyQueue(Function<Carrier_, Tuple_> tupleGetter, Function<Carrier_, TupleState> stateGetter,
-            BiConsumer<Carrier_, TupleState> stateSetter) {
-        this(tupleGetter, stateGetter, stateSetter, 16);
+    public DirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Function<Carrier_, Tuple_> tupleExtractor,
+            Function<Carrier_, TupleState> stateGetter, BiConsumer<Carrier_, TupleState> stateSetter, int size) {
+        this(nextNodesTupleLifecycle, tupleExtractor, stateGetter, stateSetter, null, size);
     }
 
-    public void insert(Carrier_ tuple) {
-        dirtyTupleQueue.add(tuple);
+    public DirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Function<Carrier_, Tuple_> tupleExtractor,
+            Function<Carrier_, TupleState> stateGetter, BiConsumer<Carrier_, TupleState> stateSetter,
+            Consumer<Carrier_> carrierProcessor) {
+        this(nextNodesTupleLifecycle, tupleExtractor, stateGetter, stateSetter, carrierProcessor, 1000);
     }
 
-    public void insertWithState(Carrier_ tuple, TupleState state) {
-        changeState(tuple, state);
-        insert(tuple);
+    public DirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Function<Carrier_, Tuple_> tupleExtractor,
+            Function<Carrier_, TupleState> stateGetter, BiConsumer<Carrier_, TupleState> stateSetter) {
+        this(nextNodesTupleLifecycle, tupleExtractor, stateGetter, stateSetter, null);
     }
 
-    public void changeState(Carrier_ tuple, TupleState state) {
-        stateSetter.accept(tuple, state);
+    public void insert(Carrier_ carrier) {
+        dirtyList.add(carrier);
     }
 
-    public void clear(AbstractNode node, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Consumer<Carrier_> consumer) {
-        List<Carrier_> insertList = new ArrayList<>(dirtyTupleQueue.size());
-        List<Carrier_> updateList = new ArrayList<>(dirtyTupleQueue.size());
+    public void insertWithState(Carrier_ carrier, TupleState state) {
+        changeState(carrier, state);
+        insert(carrier);
+    }
+
+    public void changeState(Carrier_ carrier, TupleState state) {
+        stateSetter.accept(carrier, state);
+    }
+
+    public void calculateScore(AbstractNode node) {
+        if (dirtyList.isEmpty()) {
+            return;
+        }
         // First pass; do removals and prepare inserts and updates.
-        for (Carrier_ carrier : dirtyTupleQueue) {
-            if (consumer != null) {
-                consumer.accept(carrier);
-            }
+        for (Carrier_ carrier : dirtyList) {
             switch (stateGetter.apply(carrier)) {
-                case CREATING -> insertList.add(carrier);
-                case UPDATING -> updateList.add(carrier);
-                case DYING -> {
-                    Tuple_ tuple = tupleGetter.apply(carrier);
-                    nextNodesTupleLifecycle.retract(tuple);
-                    stateSetter.accept(carrier, TupleState.DEAD);
-                }
+                case CREATING -> insertingList.add(carrier);
+                case UPDATING -> updatingList.add(carrier);
+                case DYING -> propagate(carrier, nextNodesTupleLifecycle::retract, TupleState.DEAD);
                 case ABORTING -> stateSetter.accept(carrier, TupleState.DEAD);
                 default -> {
-                    Tuple_ tuple = tupleGetter.apply(carrier);
+                    Tuple_ tuple = tupleExtractor.apply(carrier);
                     throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
                             node + ") is in an unexpected state (" + tuple.state + ").");
                 }
             }
         }
-        // Second pass for updates.
-        for (Carrier_ carrier : updateList) {
-            Tuple_ tuple = tupleGetter.apply(carrier);
-            nextNodesTupleLifecycle.update(tuple);
-            stateSetter.accept(carrier, TupleState.OK);
-        }
-        // Third pass for inserts.
-        for (Carrier_ carrier : insertList) {
-            Tuple_ tuple = tupleGetter.apply(carrier);
-            nextNodesTupleLifecycle.insert(tuple);
-            stateSetter.accept(carrier, TupleState.OK);
-        }
-        dirtyTupleQueue.clear();
+        dirtyList.clear();
+        processSublist(updatingList, nextNodesTupleLifecycle::update); // Second pass for updates.
+        processSublist(insertingList, nextNodesTupleLifecycle::insert); // Third pass for inserts.
     }
 
-    public void clear(AbstractNode node, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
-        clear(node, nextNodesTupleLifecycle, null);
+    private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
+        Tuple_ tuple = tupleExtractor == null ? (Tuple_) carrier : tupleExtractor.apply(carrier);
+        propagator.accept(tuple);
+        stateSetter.accept(carrier, tupleState);
     }
 
-    @Override
-    public Iterator<Carrier_> iterator() {
-        return dirtyTupleQueue.iterator();
+    private void processSublist(List<Carrier_> list, Consumer<Tuple_> propagator) {
+        if (!list.isEmpty()) {
+            boolean hasProcessor = carrierProcessor != null;
+            for (Carrier_ carrier : list) {
+                if (hasProcessor) {
+                    carrierProcessor.accept(carrier);
+                }
+                propagate(carrier, propagator, TupleState.OK);
+            }
+            list.clear();
+        }
     }
+
 }

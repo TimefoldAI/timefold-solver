@@ -31,10 +31,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
 
     protected final int inputStoreIndexLeftOutTupleList;
     protected final int inputStoreIndexRightOutTupleList;
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
-     */
-    private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
@@ -45,11 +41,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
             int outputStoreIndexLeftOutEntry, int outputStoreIndexRightOutEntry) {
         this.inputStoreIndexLeftOutTupleList = inputStoreIndexLeftOutTupleList;
         this.inputStoreIndexRightOutTupleList = inputStoreIndexRightOutTupleList;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.isFiltering = isFiltering;
         this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
         this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
-        dirtyTupleQueue = DirtyQueue.ofTuples();
+        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
     }
 
     protected abstract OutTuple_ createOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -192,7 +187,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
 
     @Override
     public final void calculateScore() {
-        dirtyTupleQueue.clear(this, nextNodesTupleLifecycle);
+        dirtyTupleQueue.calculateScore(this);
     }
 
 }
