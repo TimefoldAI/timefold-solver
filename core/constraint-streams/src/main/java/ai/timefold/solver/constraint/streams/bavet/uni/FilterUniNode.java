@@ -25,6 +25,11 @@ final class FilterUniNode<A> extends AbstractFilterNode<UniTuple<A>> {
     }
 
     @Override
+    protected void remap(UniTuple<A> inTuple, UniTuple<A> outTuple) {
+        outTuple.updateIfDifferent(inTuple.factA);
+    }
+
+    @Override
     protected boolean testFiltering(UniTuple<A> tuple) {
         return predicate.test(tuple.factA);
     }

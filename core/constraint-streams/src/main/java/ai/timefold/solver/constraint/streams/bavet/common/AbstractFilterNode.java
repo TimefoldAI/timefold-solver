@@ -36,6 +36,8 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
 
     protected abstract Tuple_ clone(Tuple_ inTuple);
 
+    protected abstract void remap(Tuple_ inTuple, Tuple_ outTuple);
+
     protected abstract boolean testFiltering(Tuple_ tuple);
 
     @Override
@@ -44,6 +46,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         if (outTuple == null) { // The tuple was never inserted because it did not pass the filter.
             insert(tuple);
         } else if (testFiltering(tuple)) {
+            remap(tuple, outTuple);
             dirtyTupleQueue.insertWithState(outTuple, TupleState.UPDATING);
         } else {
             retract(tuple);

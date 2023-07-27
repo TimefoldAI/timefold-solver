@@ -25,6 +25,11 @@ final class FilterTriNode<A, B, C> extends AbstractFilterNode<TriTuple<A, B, C>>
     }
 
     @Override
+    protected void remap(TriTuple<A, B, C> inTuple, TriTuple<A, B, C> outTuple) {
+        outTuple.updateIfDifferent(inTuple.factA, inTuple.factB, inTuple.factC);
+    }
+
+    @Override
     protected boolean testFiltering(TriTuple<A, B, C> tuple) {
         return predicate.test(tuple.factA, tuple.factB, tuple.factC);
     }

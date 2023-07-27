@@ -25,6 +25,11 @@ final class FilterQuadNode<A, B, C, D> extends AbstractFilterNode<QuadTuple<A, B
     }
 
     @Override
+    protected void remap(QuadTuple<A, B, C, D> inTuple, QuadTuple<A, B, C, D> outTuple) {
+        outTuple.updateIfDifferent(inTuple.factA, inTuple.factB, inTuple.factC, inTuple.factD);
+    }
+
+    @Override
     protected boolean testFiltering(QuadTuple<A, B, C, D> tuple) {
         return predicate.test(tuple.factA, tuple.factB, tuple.factC, tuple.factD);
     }

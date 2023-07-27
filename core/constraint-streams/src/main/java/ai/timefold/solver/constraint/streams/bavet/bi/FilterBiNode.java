@@ -25,6 +25,11 @@ final class FilterBiNode<A, B> extends AbstractFilterNode<BiTuple<A, B>> {
     }
 
     @Override
+    protected void remap(BiTuple<A, B> inTuple, BiTuple<A, B> outTuple) {
+        outTuple.updateIfDifferent(inTuple.factA, inTuple.factB);
+    }
+
+    @Override
     protected boolean testFiltering(BiTuple<A, B> tuple) {
         return predicate.test(tuple.factA, tuple.factB);
     }
