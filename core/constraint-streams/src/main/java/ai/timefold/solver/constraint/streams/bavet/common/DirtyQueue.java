@@ -1,7 +1,9 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -49,28 +51,40 @@ public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> implements
     }
 
     public void clear(AbstractNode node, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Consumer<Carrier_> consumer) {
+        List<Carrier_> insertList = new ArrayList<>(dirtyTupleQueue.size());
+        List<Carrier_> updateList = new ArrayList<>(dirtyTupleQueue.size());
+        // First pass; do removals and prepare inserts and updates.
         for (Carrier_ carrier : dirtyTupleQueue) {
-            Tuple_ tuple = tupleGetter.apply(carrier);
             if (consumer != null) {
                 consumer.accept(carrier);
             }
             switch (stateGetter.apply(carrier)) {
-                case CREATING -> {
-                    nextNodesTupleLifecycle.insert(tuple);
-                    stateSetter.accept(carrier, TupleState.OK);
-                }
-                case UPDATING -> {
-                    nextNodesTupleLifecycle.update(tuple);
-                    stateSetter.accept(carrier, TupleState.OK);
-                }
+                case CREATING -> insertList.add(carrier);
+                case UPDATING -> updateList.add(carrier);
                 case DYING -> {
+                    Tuple_ tuple = tupleGetter.apply(carrier);
                     nextNodesTupleLifecycle.retract(tuple);
                     stateSetter.accept(carrier, TupleState.DEAD);
                 }
                 case ABORTING -> stateSetter.accept(carrier, TupleState.DEAD);
-                default -> throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
-                        node + ") is in an unexpected state (" + tuple.state + ").");
+                default -> {
+                    Tuple_ tuple = tupleGetter.apply(carrier);
+                    throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
+                            node + ") is in an unexpected state (" + tuple.state + ").");
+                }
             }
+        }
+        // Second pass for updates.
+        for (Carrier_ carrier : updateList) {
+            Tuple_ tuple = tupleGetter.apply(carrier);
+            nextNodesTupleLifecycle.update(tuple);
+            stateSetter.accept(carrier, TupleState.OK);
+        }
+        // Third pass for inserts.
+        for (Carrier_ carrier : insertList) {
+            Tuple_ tuple = tupleGetter.apply(carrier);
+            nextNodesTupleLifecycle.insert(tuple);
+            stateSetter.accept(carrier, TupleState.OK);
         }
         dirtyTupleQueue.clear();
     }
