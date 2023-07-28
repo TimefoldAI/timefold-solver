@@ -40,6 +40,7 @@
     <!-- ************************************************************************ -->
     <!-- Plugins -->
     <!-- ************************************************************************ -->
+    <version.antrun.plugin>3.1.0</version.antrun.plugin>
     <version.asciidoctor.plugin>2.2.4</version.asciidoctor.plugin>
     <version.assembly.plugin>3.6.0</version.assembly.plugin>
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
@@ -173,6 +174,10 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>${version.antrun.plugin}</version>
+        </plugin>
         <plugin>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
@@ -692,6 +697,8 @@
                                 Include class files from every module.
                               -->
                               <include name="**/target/classes/**/*.class"/>
+                              <!-- To avoid warning about class file not matching the jacoco.exec data. -->
+                              <exclude name="**/target/classes/**/it/*/*.class"/>
                             </fileset>
                           </classfiles>
                           <sourcefiles encoding="UTF-8">
@@ -700,6 +707,7 @@
                                 Include source files from every module.
                               -->
                               <include name="**/src/main/**/*.java"/>
+                              <exclude name="**/target/classes/**/it/*/*.java"/>
                             </fileset>
                           </sourcefiles>
                         </group>
