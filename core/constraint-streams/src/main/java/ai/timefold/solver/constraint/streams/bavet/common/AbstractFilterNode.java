@@ -63,7 +63,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
             return;
         }
         dirtyTupleQueue.insertWithState(tuple,
-                tupleState == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+                tupleState.isDirty() ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override

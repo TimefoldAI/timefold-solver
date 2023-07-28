@@ -1,6 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -12,17 +13,17 @@ abstract sealed class AbstractDirtyQueue<Carrier_, Tuple_ extends AbstractTuple>
         permits FilterDirtyQueue, GenericDirtyQueue, GroupDirtyQueue, IfExistsDirtyQueue {
 
     private final List<Carrier_> dirtyList;
-    private final List<Carrier_> insertingList;
-    private final List<Carrier_> updatingList;
+    private final BitSet updatingIndicesSet;
+    private final BitSet insertingIndicesSet;
     private final Consumer<Tuple_> retractPropagator;
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
 
     private AbstractDirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         this.dirtyList = new ArrayList<>(size);
-        // Guesstimate that inserts and updates are roughly equally common.
-        this.insertingList = new ArrayList<>(size / 2);
-        this.updatingList = new ArrayList<>(size / 2);
+        // Guesstimate that updates are the most common.
+        this.updatingIndicesSet = new BitSet((size / 10) * 8);
+        this.insertingIndicesSet = new BitSet(size / 10);
         // Don't create these lambdas over and over again.
         this.retractPropagator = nextNodesTupleLifecycle::retract;
         this.updatePropagator = nextNodesTupleLifecycle::update;
@@ -56,11 +57,20 @@ abstract sealed class AbstractDirtyQueue<Carrier_, Tuple_ extends AbstractTuple>
         if (dirtyList.isEmpty()) {
             return;
         }
-        // First pass; do removals and prepare inserts and updates.
-        for (Carrier_ carrier : dirtyList) {
-            switch (extractState(carrier)) {
-                case CREATING -> insertingList.add(carrier);
-                case UPDATING -> updatingList.add(carrier);
+        processRetracts(node); // First pass; do removals and prepare inserts and updates.
+        processInserts(); // Second pass for inserts.
+        processUpdates(); // Third pass for updates.
+        dirtyList.clear();
+    }
+
+    private void processRetracts(AbstractNode node) {
+        int size = dirtyList.size();
+        for (int i = 0; i < size; i++) {
+            Carrier_ carrier = dirtyList.get(i);
+            TupleState state = extractState(carrier);
+            switch (state) {
+                case CREATING -> insertingIndicesSet.set(i);
+                case UPDATING -> updatingIndicesSet.set(i);
                 case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
                 case ABORTING -> changeState(carrier, TupleState.DEAD);
                 default -> {
@@ -70,9 +80,6 @@ abstract sealed class AbstractDirtyQueue<Carrier_, Tuple_ extends AbstractTuple>
                 }
             }
         }
-        dirtyList.clear();
-        processSublist(updatingList, updatePropagator); // Second pass for updates.
-        processSublist(insertingList, insertPropagator); // Third pass for inserts.
     }
 
     private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
@@ -81,13 +88,22 @@ abstract sealed class AbstractDirtyQueue<Carrier_, Tuple_ extends AbstractTuple>
         changeState(carrier, tupleState);
     }
 
-    private void processSublist(List<Carrier_> list, Consumer<Tuple_> propagator) {
-        if (!list.isEmpty()) {
-            for (Carrier_ carrier : list) {
+    private void processUpdates() {
+        processSublist(updatingIndicesSet, updatePropagator);
+    }
+
+    private void processInserts() {
+        processSublist(insertingIndicesSet, insertPropagator);
+    }
+
+    private void processSublist(BitSet indicesToProcess, Consumer<Tuple_> propagator) {
+        if (!indicesToProcess.isEmpty()) {
+            for (int i = indicesToProcess.nextSetBit(0); i != -1; i = indicesToProcess.nextSetBit(i + 1)) {
+                Carrier_ carrier = dirtyList.get(i);
                 processCarrier(carrier);
                 propagate(carrier, propagator, TupleState.OK);
             }
-            list.clear();
+            indicesToProcess.clear();
         }
     }
 
