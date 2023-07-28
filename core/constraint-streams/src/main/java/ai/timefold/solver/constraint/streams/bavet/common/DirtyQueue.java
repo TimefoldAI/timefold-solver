@@ -19,11 +19,6 @@ public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> {
                 (tuple, state) -> tuple.state = state, 1000);
     }
 
-    /**
-     * Propagates tuples downstream.
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
-     */
-    private final TupleLifecycle<Tuple_> nextNodesTupleLifecycle;
     private final Function<Carrier_, Tuple_> tupleExtractor;
     private final Function<Carrier_, TupleState> stateGetter;
     private final BiConsumer<Carrier_, TupleState> stateSetter;
@@ -31,11 +26,13 @@ public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> {
     private final List<Carrier_> dirtyList;
     private final List<Carrier_> insertingList;
     private final List<Carrier_> updatingList;
+    private final Consumer<Tuple_> retractPropagator;
+    private final Consumer<Tuple_> updatePropagator;
+    private final Consumer<Tuple_> insertPropagator;
 
     private DirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Function<Carrier_, Tuple_> tupleExtractor,
             Function<Carrier_, TupleState> stateGetter, BiConsumer<Carrier_, TupleState> stateSetter,
             Consumer<Carrier_> carrierProcessor, int size) {
-        this.nextNodesTupleLifecycle = Objects.requireNonNull(nextNodesTupleLifecycle);
         this.tupleExtractor = tupleExtractor; // Null if the tuple is the carrier.
         this.stateGetter = Objects.requireNonNull(stateGetter);
         this.stateSetter = Objects.requireNonNull(stateSetter);
@@ -44,6 +41,10 @@ public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> {
         // Guesstimate that inserts and updates are roughly equally common.
         this.insertingList = new ArrayList<>(size / 2);
         this.updatingList = new ArrayList<>(size / 2);
+        // Don't create these lambdas over and over again.
+        this.retractPropagator = nextNodesTupleLifecycle::retract;
+        this.updatePropagator = nextNodesTupleLifecycle::update;
+        this.insertPropagator = nextNodesTupleLifecycle::insert;
     }
 
     public DirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Function<Carrier_, Tuple_> tupleExtractor,
@@ -84,7 +85,7 @@ public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> {
             switch (stateGetter.apply(carrier)) {
                 case CREATING -> insertingList.add(carrier);
                 case UPDATING -> updatingList.add(carrier);
-                case DYING -> propagate(carrier, nextNodesTupleLifecycle::retract, TupleState.DEAD);
+                case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
                 case ABORTING -> stateSetter.accept(carrier, TupleState.DEAD);
                 default -> {
                     Tuple_ tuple = tupleExtractor.apply(carrier);
@@ -94,8 +95,8 @@ public final class DirtyQueue<Carrier_, Tuple_ extends AbstractTuple> {
             }
         }
         dirtyList.clear();
-        processSublist(updatingList, nextNodesTupleLifecycle::update); // Second pass for updates.
-        processSublist(insertingList, nextNodesTupleLifecycle::insert); // Third pass for inserts.
+        processSublist(updatingList, updatePropagator); // Second pass for updates.
+        processSublist(insertingList, insertPropagator); // Third pass for inserts.
     }
 
     private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
