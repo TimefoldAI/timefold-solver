@@ -58,8 +58,8 @@ abstract sealed class AbstractDirtyQueue<Carrier_, Tuple_ extends AbstractTuple>
             return;
         }
         processRetracts(node); // First pass; do removals and prepare inserts and updates.
-        processInserts(); // Second pass for inserts.
-        processUpdates(); // Third pass for updates.
+        processUpdates(); // Second pass for updates.
+        processInserts(); // Third pass for inserts.
         dirtyList.clear();
     }
 
