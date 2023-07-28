@@ -32,7 +32,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
-    protected final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
+    protected final GenericDirtyQueue<OutTuple_> dirtyTupleQueue;
 
     protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
@@ -42,7 +42,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         this.isFiltering = isFiltering;
         this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
         this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
-        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
+        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
     }
 
     protected abstract OutTuple_ createOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);

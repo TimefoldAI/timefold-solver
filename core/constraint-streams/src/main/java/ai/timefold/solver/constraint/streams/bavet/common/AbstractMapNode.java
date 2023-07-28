@@ -10,12 +10,12 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
 
     private final int inputStoreIndex;
     protected final int outputStoreSize;
-    private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
+    private final GenericDirtyQueue<OutTuple_> dirtyTupleQueue;
 
     protected AbstractMapNode(int inputStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, int outputStoreSize) {
         this.inputStoreIndex = inputStoreIndex;
         this.outputStoreSize = outputStoreSize;
-        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
+        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override

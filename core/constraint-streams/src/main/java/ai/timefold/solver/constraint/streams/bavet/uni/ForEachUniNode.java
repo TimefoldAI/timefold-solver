@@ -4,7 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
-import ai.timefold.solver.constraint.streams.bavet.common.DirtyQueue;
+import ai.timefold.solver.constraint.streams.bavet.common.GenericDirtyQueue;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
@@ -15,12 +15,12 @@ public final class ForEachUniNode<A> extends AbstractNode {
     private final int outputStoreSize;
 
     private final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
-    private final DirtyQueue<UniTuple<A>, UniTuple<A>> dirtyTupleQueue;
+    private final GenericDirtyQueue<UniTuple<A>> dirtyTupleQueue;
 
     public ForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         this.forEachClass = forEachClass;
         this.outputStoreSize = outputStoreSize;
-        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
+        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
     }
 
     public void insert(A a) {

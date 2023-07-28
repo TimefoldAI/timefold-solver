@@ -33,7 +33,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     protected final boolean isFiltering;
     // No outputStoreSize because this node is not a tuple source, even though it has a dirtyCounterQueue.
-    protected final DirtyQueue<ExistsCounter<LeftTuple_>, LeftTuple_> dirtyCounterQueue;
+    protected final IfExistsDirtyQueue<LeftTuple_> dirtyCounterQueue;
 
     protected AbstractIfExistsNode(boolean shouldExist,
             int inputStoreIndexLeftTrackerList, int inputStoreIndexRightTrackerList,
@@ -43,8 +43,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
         this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
         this.isFiltering = isFiltering;
-        this.dirtyCounterQueue =
-                new DirtyQueue<>(nextNodesTupleLifecycle, c -> c.leftTuple, c -> c.state, (c, s) -> c.state = s, 1000);
+        this.dirtyCounterQueue = new IfExistsDirtyQueue<>(nextNodesTupleLifecycle);
     }
 
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);

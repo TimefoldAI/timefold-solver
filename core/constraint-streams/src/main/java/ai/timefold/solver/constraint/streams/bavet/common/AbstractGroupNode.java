@@ -53,7 +53,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
      *           When all tuples are removed, the field will be set to null, as if the group never existed.
      */
     private AbstractGroup<OutTuple_, ResultContainer_> singletonGroup;
-    private final DirtyQueue<AbstractGroup<OutTuple_, ResultContainer_>, OutTuple_> dirtyGroupQueue;
+    private final GroupDirtyQueue<OutTuple_, ResultContainer_> dirtyGroupQueue;
     private final boolean useAssertingGroupKey;
 
     protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex, Function<InTuple_, GroupKey_> groupKeyFunction,
@@ -72,15 +72,13 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
          * Therefore, the size of these collections is kept default.
          */
         this.groupMap = hasMultipleGroups ? new HashMap<>() : null;
-        this.dirtyGroupQueue = new DirtyQueue<>(nextNodesTupleLifecycle, g -> g.outTuple, g -> g.outTuple.state,
-                (g, s) -> g.outTuple.state = s,
-                hasCollector ? group -> {
-                    OutTuple_ outTuple = group.outTuple;
-                    TupleState state = outTuple.state;
-                    if (state == TupleState.CREATING || state == TupleState.UPDATING) {
-                        updateOutTupleToFinisher(outTuple, group.getResultContainer());
-                    }
-                } : null);
+        this.dirtyGroupQueue = new GroupDirtyQueue<>(nextNodesTupleLifecycle, hasCollector ? group -> {
+            OutTuple_ outTuple = group.outTuple;
+            TupleState state = outTuple.state;
+            if (state == TupleState.CREATING || state == TupleState.UPDATING) {
+                updateOutTupleToFinisher(outTuple, group.getResultContainer());
+            }
+        } : null);
         this.useAssertingGroupKey = environmentMode.isAsserted();
     }
 

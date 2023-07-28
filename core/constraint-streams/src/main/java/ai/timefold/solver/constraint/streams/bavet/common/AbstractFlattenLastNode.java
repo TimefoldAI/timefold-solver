@@ -18,14 +18,14 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     private final int flattenLastStoreIndex;
     private final Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction;
-    private final DirtyQueue<OutTuple_, OutTuple_> dirtyTupleQueue;
+    private final GenericDirtyQueue<OutTuple_> dirtyTupleQueue;
 
     protected AbstractFlattenLastNode(int flattenLastStoreIndex,
             Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
         this.flattenLastStoreIndex = flattenLastStoreIndex;
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
-        this.dirtyTupleQueue = DirtyQueue.ofTuples(nextNodesTupleLifecycle);
+        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override

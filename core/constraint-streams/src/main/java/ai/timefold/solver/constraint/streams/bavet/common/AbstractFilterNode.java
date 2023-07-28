@@ -21,7 +21,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         implements TupleLifecycle<Tuple_> {
 
     private final int tupleStateStoreIndex;
-    private final DirtyQueue<Tuple_, Tuple_> dirtyTupleQueue;
+    private final FilterDirtyQueue<Tuple_> dirtyTupleQueue;
 
     protected AbstractFilterNode(int tupleStateStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this.tupleStateStoreIndex = tupleStateStoreIndex;
@@ -29,9 +29,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
          * The tuple state is stored through the queue, which needs to know it for score calculation.
          * Read operations happen through the tuple directly.
          */
-        this.dirtyTupleQueue = new DirtyQueue<>(nextNodesTupleLifecycle, null,
-                tuple -> tuple.getStore(tupleStateStoreIndex),
-                (tuple, state) -> tuple.setStore(tupleStateStoreIndex, state));
+        this.dirtyTupleQueue = new FilterDirtyQueue<>(nextNodesTupleLifecycle, tupleStateStoreIndex);
     }
 
     @Override
