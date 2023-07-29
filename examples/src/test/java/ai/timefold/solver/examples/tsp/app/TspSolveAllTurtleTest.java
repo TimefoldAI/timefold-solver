@@ -8,7 +8,7 @@ import ai.timefold.solver.examples.tsp.optional.score.TspEasyScoreCalculator;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "tsp")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "tsp|all")
 class TspSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<TspSolution> {
 
     @Override

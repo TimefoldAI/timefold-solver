@@ -8,7 +8,7 @@ import ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalcul
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "nqueens")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "nqueens|all")
 class NQueensSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<NQueens> {
 
     @Override

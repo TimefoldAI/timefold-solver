@@ -7,7 +7,7 @@ import ai.timefold.solver.examples.curriculumcourse.domain.CourseSchedule;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "curriculumcourse")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "curriculumcourse|all")
 class CurriculumCourseSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<CourseSchedule> {
 
     @Override

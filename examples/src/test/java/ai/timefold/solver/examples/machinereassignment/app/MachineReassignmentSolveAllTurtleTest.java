@@ -7,7 +7,7 @@ import ai.timefold.solver.examples.machinereassignment.domain.MachineReassignmen
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "machinereassignment")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "machinereassignment|all")
 class MachineReassignmentSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<MachineReassignment> {
 
     @Override

@@ -7,7 +7,7 @@ import ai.timefold.solver.examples.travelingtournament.domain.TravelingTournamen
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "travelingtournament")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "travelingtournament|all")
 class TravelingTournamentSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<TravelingTournament> {
 
     @Override

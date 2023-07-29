@@ -18,7 +18,7 @@ import ai.timefold.solver.examples.common.app.RealTimePlanningTurtleTest;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "cloudbalancing")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "cloudbalancing|all")
 class CloudBalancingRealTimePlanningTurtleTest extends RealTimePlanningTurtleTest<CloudBalance> {
 
     private CloudBalancingGenerator generator = new CloudBalancingGenerator(true);

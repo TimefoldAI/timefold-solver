@@ -8,7 +8,7 @@ import ai.timefold.solver.examples.vehiclerouting.optional.score.VehicleRoutingE
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "vehiclerouting")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "vehiclerouting|all")
 class VehicleRoutingSolveAllTurtleTest extends ImportDirSolveAllTurtleTest<VehicleRoutingSolution> {
 
     @Override
