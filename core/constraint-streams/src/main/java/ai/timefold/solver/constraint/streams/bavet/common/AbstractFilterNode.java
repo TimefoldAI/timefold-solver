@@ -10,9 +10,9 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * This has a consequence on how tuple state is stored.
  * By the time a tuple makes it to {@link #insert(AbstractTuple)}, {@link #update(AbstractTuple)} or
  * {@link #retract(AbstractTuple)},
- * its state is already {@link TupleState#OK} from the input node.
+ * its state is already {@link TupleState#OK} from the source node.
  * Therefore, in order not to have to create a clone of the tuple,
- * this node's tuple state is stored in {@link AbstractTuple}'s state store as opposed to {@link AbstractTuple#state}.
+ * this node's local tuple state is stored in {@link AbstractTuple}'s state store as opposed to {@link AbstractTuple#state}.
  *
  * @param <Tuple_>
  */
@@ -34,7 +34,8 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
 
     @Override
     public void insert(Tuple_ tuple) {
-        if (tuple.getStore(tupleStateStoreIndex) != null) {
+        TupleState tupleState = tuple.getStore(tupleStateStoreIndex);
+        if (tupleState != null && tupleState.isActive()) {
             throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") was already inserted.");
         }
         if (testFiltering(tuple)) {
@@ -46,11 +47,29 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
 
     @Override
     public void update(Tuple_ tuple) {
+        /*
+         * The tuple state here is a local state for the purposes of the filter node.
+         * It does not represent the state of the tuple as coming from the source node.
+         * Therefore even locally dead tuple may be valid,
+         * as dead in this context means the tuple went through calculateScore()
+         * and was aborted/died locally in the filter node,
+         * but not in the source node.
+         */
         TupleState tupleState = tuple.getStore(tupleStateStoreIndex);
-        if (tupleState == null) { // The tuple was never inserted because it did not pass the filter.
+        if (tupleState == null) { // The tuple was never locally inserted because it did not pass the filter.
             insert(tuple);
         } else if (testFiltering(tuple)) {
-            dirtyTupleQueue.insertWithState(tuple, TupleState.UPDATING);
+            switch (tupleState) {
+                case DEAD: // Already went through calculateScore(), this is a fresh update.
+                case OK: // Already went through calculateScore(), this is a fresh update.
+                    dirtyTupleQueue.insertWithState(tuple, TupleState.UPDATING);
+                    break;
+                case CREATING: // No need to update the tuple, it is being inserted.
+                case UPDATING: // No need to update the tuple, as it is already being updated.
+                    break;
+                default:
+                    throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") was (" + tupleState + ").");
+            }
         } else {
             retract(tuple);
         }
@@ -59,11 +78,18 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
     @Override
     public void retract(Tuple_ tuple) {
         TupleState tupleState = tuple.removeStore(tupleStateStoreIndex);
-        if (tupleState == null) { // The tuple was never inserted because it did not pass the filter.
+        if (tupleState == null) { // The tuple was never locally inserted because it did not pass the filter.
             return;
+        } else if (!tupleState.isActive() && tupleState != TupleState.DEAD) {
+            /*
+             * Only active tuples may be retracted;
+             * unless they are already locally dead,
+             * which means a fresh retract from the source node.
+             */
+            throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") is not active (" + tupleState + ").");
         }
         dirtyTupleQueue.insertWithState(tuple,
-                tupleState.isDirty() ? TupleState.ABORTING : TupleState.DYING);
+                tupleState == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override
