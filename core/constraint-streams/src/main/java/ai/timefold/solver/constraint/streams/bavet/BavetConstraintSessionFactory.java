@@ -12,7 +12,7 @@ import java.util.Set;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.constraint.streams.bavet.uni.ForEachUniNode;
+import ai.timefold.solver.constraint.streams.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -62,17 +62,21 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             constraintStream.buildNode(buildHelper);
         }
         List<AbstractNode> nodeList = buildHelper.destroyAndGetNodeList();
-        Map<Class<?>, ForEachUniNode<Object>> declaredClassToNodeMap = new LinkedHashMap<>();
+        Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap = new LinkedHashMap<>();
         long nextNodeId = 0;
         for (AbstractNode node : nodeList) {
             node.setId(nextNodeId++);
-            if (node instanceof ForEachUniNode) {
-                ForEachUniNode<Object> forEachUniNode = (ForEachUniNode<Object>) node;
-                ForEachUniNode<Object> old = declaredClassToNodeMap.put(forEachUniNode.getForEachClass(), forEachUniNode);
-                if (old != null) {
-                    throw new IllegalStateException("Impossible state: For class (" + forEachUniNode.getForEachClass()
-                            + ") there are 2 nodes (" + forEachUniNode + ", " + old + ").");
+            if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
+                Class<?> forEachClass = forEachUniNode.getForEachClass();
+                List<AbstractForEachUniNode<Object>> forEachUniNodeList =
+                        declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>());
+                if (forEachUniNodeList.size() == 2) {
+                    // Each class can have at most 2 forEach nodes: one including null vars, the other excluding them.
+                    throw new IllegalStateException("Impossible state: For class (" + forEachClass
+                            + ") there are already 2 nodes (" + forEachUniNodeList + "), not adding another ("
+                            + forEachUniNode + ").");
                 }
+                forEachUniNodeList.add((AbstractForEachUniNode<Object>) forEachUniNode);
             }
         }
         return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, nodeList.toArray(new AbstractNode[0]));

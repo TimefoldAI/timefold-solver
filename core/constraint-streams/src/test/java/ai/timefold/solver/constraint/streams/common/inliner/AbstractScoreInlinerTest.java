@@ -54,7 +54,17 @@ public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<S
         }
 
         @Override
+        public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <A> UniConstraintStream<A> from(Class<A> fromClass) {
             throw new UnsupportedOperationException();
         }
 

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.uni.BavetAbstractUniConstraintStream;
@@ -13,6 +14,7 @@ import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 public final class BavetConstraintFactory<Solution_>
@@ -70,15 +72,42 @@ public final class BavetConstraintFactory<Solution_>
     // ************************************************************************
 
     @Override
+    public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
+        assertValidFromType(sourceClass);
+        Predicate<A> nullityFilter = getNullityFilter(sourceClass);
+        return share(new BavetForEachUniConstraintStream<>(this, sourceClass, nullityFilter, RetrievalSemantics.STANDARD));
+    }
+
+    private <A> Predicate<A> getNullityFilter(Class<A> fromClass) {
+        EntityDescriptor<Solution_> entityDescriptor = getSolutionDescriptor().findEntityDescriptor(fromClass);
+        if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
+            return (Predicate<A>) entityDescriptor.getHasNoNullVariables();
+        }
+        return null;
+    }
+
+    @Override
     public <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass) {
         assertValidFromType(sourceClass);
-        return share(new BavetForEachUniConstraintStream<>(this, sourceClass, RetrievalSemantics.STANDARD));
+        return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
+    }
+
+    @Override
+    public <A> UniConstraintStream<A> from(Class<A> fromClass) {
+        assertValidFromType(fromClass);
+        EntityDescriptor<Solution_> entityDescriptor = getSolutionDescriptor().findEntityDescriptor(fromClass);
+        if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
+            Predicate<A> predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
+            return share(new BavetForEachUniConstraintStream<>(this, fromClass, predicate, RetrievalSemantics.LEGACY));
+        } else {
+            return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
+        }
     }
 
     @Override
     public <A> BavetAbstractUniConstraintStream<Solution_, A> fromUnfiltered(Class<A> fromClass) {
         assertValidFromType(fromClass);
-        return share(new BavetForEachUniConstraintStream<>(this, fromClass, RetrievalSemantics.LEGACY));
+        return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
     }
 
     // ************************************************************************
