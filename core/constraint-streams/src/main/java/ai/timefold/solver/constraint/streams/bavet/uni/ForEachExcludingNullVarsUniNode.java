@@ -18,7 +18,7 @@ public final class ForEachExcludingNullVarsUniNode<A> extends AbstractForEachUni
 
     @Override
     public void insert(A a) {
-        if (!filter.test(a)) {
+        if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
         super.insert(a);
@@ -32,17 +32,16 @@ public final class ForEachExcludingNullVarsUniNode<A> extends AbstractForEachUni
         } else if (filter.test(a)) {
             innerUpdate(a, tuple);
         } else {
-            retract(a);
+            super.retract(a); // Call super.retract() to avoid testing the filter again.
         }
     }
 
     @Override
     public void retract(A a) {
-        UniTuple<A> tuple = tupleMap.remove(a);
-        if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
+        if (!filter.test(a)) { // The tuple was never inserted because it did not pass the filter.
             return;
         }
-        innerRetract(a, tuple);
+        super.retract(a);
     }
 
 }

@@ -23,9 +23,8 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;
-
+    private final GenericDirtyQueue<UniTuple<A>> dirtyTupleQueue;
     protected final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
-    protected final GenericDirtyQueue<UniTuple<A>> dirtyTupleQueue;
 
     public AbstractForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
@@ -34,12 +33,8 @@ public abstract sealed class AbstractForEachUniNode<A>
         this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
     }
 
-    protected UniTuple<A> createTuple(A a) {
-        return new UniTuple<>(a, outputStoreSize);
-    }
-
     public void insert(A a) {
-        UniTuple<A> tuple = createTuple(a);
+        UniTuple<A> tuple = new UniTuple<>(a, outputStoreSize);
         UniTuple<A> old = tupleMap.put(a, tuple);
         if (old != null) {
             throw new IllegalStateException("The fact (" + a + ") was already inserted, so it cannot insert again.");
@@ -49,40 +44,45 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     public abstract void update(A a);
 
-    protected void innerUpdate(A a, UniTuple<A> tuple) {
-        if (tuple.state.isDirty()) {
-            if (tuple.state == TupleState.DYING || tuple.state == TupleState.ABORTING) {
+    protected final void innerUpdate(A a, UniTuple<A> tuple) {
+        TupleState state = tuple.state;
+        if (state.isDirty()) {
+            if (state == TupleState.DYING || state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (" + a + ") was retracted, so it cannot update.");
             }
+            // CREATING or UPDATING is ignored; it's already in the queue.
         } else {
             dirtyTupleQueue.insertWithState(tuple, TupleState.UPDATING);
         }
     }
 
-    public abstract void retract(A a);
-
-    protected void innerRetract(A a, UniTuple<A> tuple) {
-        if (tuple.state.isDirty()) {
-            if (tuple.state == TupleState.DYING || tuple.state == TupleState.ABORTING) {
+    public void retract(A a) {
+        UniTuple<A> tuple = tupleMap.remove(a);
+        if (tuple == null) {
+            throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot retract.");
+        }
+        TupleState state = tuple.state;
+        if (state.isDirty()) {
+            if (state == TupleState.DYING || state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (" + a + ") was already retracted, so it cannot retract.");
             }
-            dirtyTupleQueue.changeState(tuple, TupleState.ABORTING);
+            dirtyTupleQueue.changeState(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
         } else {
             dirtyTupleQueue.insertWithState(tuple, TupleState.DYING);
         }
     }
 
     @Override
-    public void calculateScore() {
+    public final void calculateScore() {
         dirtyTupleQueue.calculateScore(this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return super.toString() + "(" + forEachClass.getSimpleName() + ")";
     }
 
-    public Class<A> getForEachClass() {
+    public final Class<A> getForEachClass() {
         return forEachClass;
     }
 

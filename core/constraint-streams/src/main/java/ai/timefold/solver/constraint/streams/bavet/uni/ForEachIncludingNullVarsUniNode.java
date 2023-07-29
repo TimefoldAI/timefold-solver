@@ -19,13 +19,4 @@ public final class ForEachIncludingNullVarsUniNode<A> extends AbstractForEachUni
         innerUpdate(a, tuple);
     }
 
-    @Override
-    public void retract(A a) {
-        UniTuple<A> tuple = tupleMap.remove(a);
-        if (tuple == null) {
-            throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot retract.");
-        }
-        innerRetract(a, tuple);
-    }
-
 }
