@@ -35,18 +35,15 @@ public abstract sealed class AbstractTuple permits UniTuple, BiTuple, TriTuple, 
     }
 
     public final <Value_> Value_ getStore(int index) {
-        if (storeIsArray) {
-            return (Value_) ((Object[]) store)[index];
-        }
-        return (Value_) store;
+        return (Value_) (storeIsArray ? ((Object[]) store)[index] : store);
     }
 
     public final void setStore(int index, Object value) {
         if (storeIsArray) {
             ((Object[]) store)[index] = value;
-            return;
+        } else {
+            store = value;
         }
-        store = value;
     }
 
     public <Value_> Value_ removeStore(int index) {
