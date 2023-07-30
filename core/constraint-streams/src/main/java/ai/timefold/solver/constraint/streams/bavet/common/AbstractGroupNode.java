@@ -109,8 +109,8 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
             case CREATING, UPDATING -> {
                 // Already in the correct state.
             }
-            case OK, DYING -> propagationQueue.update(newGroup, TupleState.UPDATING);
-            case ABORTING -> propagationQueue.insert(newGroup, TupleState.CREATING);
+            case OK, DYING -> propagationQueue.update(newGroup);
+            case ABORTING -> propagationQueue.insert(newGroup);
             default -> throw new IllegalStateException("Impossible state: The group (" + newGroup + ") in node (" + this
                     + ") is in an unexpected state (" + outTuple.state + ").");
         }
@@ -154,7 +154,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
                 hasCollector ? new GroupWithAccumulate<>(groupMapKey, supplier.get(), outTuple)
                         : new GroupWithoutAccumulate<>(groupMapKey, outTuple);
         // Don't add it if (state == CREATING), but (newGroup != null), which is a 2nd insert of the same newGroupKey.
-        propagationQueue.insert(group, TupleState.CREATING);
+        propagationQueue.insert(group);
         return group;
     }
 
@@ -184,7 +184,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
                 case CREATING, UPDATING -> {
                     // Already in the correct state.
                 }
-                case OK -> propagationQueue.update(oldGroup, TupleState.UPDATING);
+                case OK -> propagationQueue.update(oldGroup);
                 default -> throw new IllegalStateException("Impossible state: The group (" + oldGroup + ") in node (" + this
                         + ") is in an unexpected state (" + outTuple.state + ").");
             }
@@ -222,7 +222,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
                 if (killGroup) {
                     propagationQueue.retract(group, TupleState.DYING);
                 } else {
-                    propagationQueue.update(group, TupleState.UPDATING);
+                    propagationQueue.update(group);
                 }
             }
             default -> throw new IllegalStateException("Impossible state: The group (" + group + ") in node (" + this

@@ -17,7 +17,9 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @param <Carrier_>
  * @param <Tuple_>
  */
-public abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ extends AbstractTuple> {
+public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ extends AbstractTuple>
+        implements PropagationQueue<Carrier_>
+        permits GroupPropagationQueue, IfExistsPropagationQueue {
 
     private final List<Carrier_> dirtyList;
     private final BitSet retractQueue;
@@ -56,8 +58,9 @@ public abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ extends A
         // Only necessary for group nodes.
     }
 
-    public void insert(Carrier_ carrier, TupleState state) {
-        replace(carrier, state, insertQueue);
+    @Override
+    public void insert(Carrier_ carrier) {
+        replace(carrier, TupleState.CREATING, insertQueue);
     }
 
     private void replace(Carrier_ carrier, TupleState state, BitSet newQueue) {
@@ -77,14 +80,17 @@ public abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ extends A
         changeState(carrier, state);
     }
 
-    public void update(Carrier_ carrier, TupleState state) {
-        replace(carrier, state, updateQueue);
+    @Override
+    public void update(Carrier_ carrier) {
+        replace(carrier, TupleState.UPDATING, updateQueue);
     }
 
+    @Override
     public void retract(Carrier_ carrier, TupleState state) {
         replace(carrier, state, retractQueue);
     }
 
+    @Override
     public void calculateScore(AbstractNode node) {
         processRetracts(node);
         processUpdates(node);

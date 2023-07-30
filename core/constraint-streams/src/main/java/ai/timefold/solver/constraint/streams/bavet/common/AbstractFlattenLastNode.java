@@ -62,7 +62,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     private void addTuple(InTuple_ originalTuple, FlattenedItem_ item, List<OutTuple_> outTupleList) {
         OutTuple_ tuple = createTuple(originalTuple, item);
         outTupleList.add(tuple);
-        propagationQueue.insert(tuple, TupleState.CREATING);
+        propagationQueue.insert(tuple);
     }
 
     protected abstract OutTuple_ createTuple(InTuple_ originalTuple, FlattenedItem_ item);
@@ -106,7 +106,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
                     outTupleIterator.remove();
                     removeTuple(outTuple);
                 } else {
-                    propagationQueue.update(outTuple, TupleState.UPDATING);
+                    propagationQueue.update(outTuple);
                 }
             }
         }

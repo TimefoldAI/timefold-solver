@@ -17,7 +17,9 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @param <Carrier_>
  * @param <Tuple_>
  */
-public abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractTuple> {
+public sealed abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractTuple>
+        implements PropagationQueue<Carrier_>
+        permits FilterPropagationQueue, GenericPropagationQueue {
 
     private final List<Carrier_> retractList;
     private final List<Carrier_> updateList;
@@ -51,33 +53,25 @@ public abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends Ab
         // Only necessary for group nodes.
     }
 
+    @Override
     public void insert(Carrier_ carrier) {
+        changeState(carrier, TupleState.CREATING);
         insertList.add(carrier);
     }
 
-    public void insert(Carrier_ carrier, TupleState state) {
-        changeState(carrier, state);
-        insert(carrier);
-    }
-
+    @Override
     public void update(Carrier_ carrier) {
+        changeState(carrier, TupleState.UPDATING);
         updateList.add(carrier);
     }
 
-    public void update(Carrier_ carrier, TupleState state) {
+    @Override
+    public void retract(Carrier_ carrier, TupleState state) {
         changeState(carrier, state);
-        update(carrier);
-    }
-
-    public void retract(Carrier_ carrier) {
         retractList.add(carrier);
     }
 
-    public void retract(Carrier_ carrier, TupleState state) {
-        changeState(carrier, state);
-        retract(carrier);
-    }
-
+    @Override
     public void calculateScore(AbstractNode node) {
         processRetracts(node);
         processUpdates(node);

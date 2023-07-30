@@ -3,7 +3,6 @@ package ai.timefold.solver.constraint.streams.bavet.common;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.CREATING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
-import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.UPDATING;
 
 import java.util.function.Consumer;
 
@@ -63,7 +62,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         ElementAwareListEntry<OutTuple_> outEntryRight = outTupleListRight.add(outTuple);
         outTuple.setStore(outputStoreIndexRightOutEntry, outEntryRight);
-        propagationQueue.insert(outTuple, CREATING);
+        propagationQueue.insert(outTuple);
     }
 
     protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
@@ -101,7 +100,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         } else if (state != TupleState.OK) { // Already in the queue in the correct state.
             return;
         }
-        propagationQueue.update(outTuple, UPDATING);
+        propagationQueue.update(outTuple);
     }
 
     protected final void innerUpdateRight(UniTuple<Right_> rightTuple, Consumer<Consumer<LeftTuple_>> leftTupleConsumer) {

@@ -1,9 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
-import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.CREATING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
-import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.UPDATING;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
@@ -53,7 +51,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected void initCounterLeft(ExistsCounter<LeftTuple_> counter) {
         if (shouldExist ? counter.countRight > 0 : counter.countRight == 0) {
             // Counters start out dead
-            propagationQueue.insert(counter, CREATING);
+            propagationQueue.insert(counter);
         }
     }
 
@@ -63,7 +61,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
             return;
         }
         // Still needed to propagate the update for downstream filters, matchWeighers, ...
-        propagationQueue.update(counter, UPDATING);
+        propagationQueue.update(counter);
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter) {
@@ -74,8 +72,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
                 case CREATING, UPDATING -> {
                     // Don't add the tuple to the propagation queue twice
                 }
-                case OK, DYING -> propagationQueue.update(counter, UPDATING);
-                case DEAD, ABORTING -> propagationQueue.insert(counter, CREATING);
+                case OK, DYING -> propagationQueue.update(counter);
+                case DEAD, ABORTING -> propagationQueue.insert(counter);
                 default -> throw new IllegalStateException("Impossible state: the counter (" + counter
                         + ") has an impossible insert state (" + state + ").");
             }
@@ -156,8 +154,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     private void doInsertCounter(ExistsCounter<LeftTuple_> counter) {
         switch (counter.state) {
-            case DYING -> propagationQueue.update(counter, UPDATING);
-            case DEAD, ABORTING -> propagationQueue.insert(counter, CREATING);
+            case DYING -> propagationQueue.update(counter);
+            case DEAD, ABORTING -> propagationQueue.insert(counter);
             default -> throw new IllegalStateException("Impossible state: the counter (" + counter
                     + ") has an impossible insert state (" + counter.state + ").");
         }

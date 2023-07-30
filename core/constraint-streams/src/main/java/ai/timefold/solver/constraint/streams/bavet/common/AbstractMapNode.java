@@ -26,7 +26,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
         }
         OutTuple_ outTuple = map(tuple);
         tuple.setStore(inputStoreIndex, outTuple);
-        propagationQueue.insert(outTuple, TupleState.CREATING);
+        propagationQueue.insert(outTuple);
     }
 
     protected abstract OutTuple_ map(InTuple_ inTuple);
@@ -46,7 +46,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
                 // Already in the queue in the correct state.
                 return;
             }
-            propagationQueue.update(outTuple, TupleState.UPDATING);
+            propagationQueue.update(outTuple);
         }
     }
 

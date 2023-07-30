@@ -39,7 +39,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         if (old != null) {
             throw new IllegalStateException("The fact (" + a + ") was already inserted, so it cannot insert again.");
         }
-        propagationQueue.insert(tuple, TupleState.CREATING);
+        propagationQueue.insert(tuple);
     }
 
     public abstract void update(A a);
@@ -52,7 +52,7 @@ public abstract sealed class AbstractForEachUniNode<A>
             }
             // CREATING or UPDATING is ignored; it's already in the queue.
         } else {
-            propagationQueue.update(tuple, TupleState.UPDATING);
+            propagationQueue.update(tuple);
         }
     }
 
