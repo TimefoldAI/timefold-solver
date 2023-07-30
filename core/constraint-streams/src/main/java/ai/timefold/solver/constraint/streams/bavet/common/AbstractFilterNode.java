@@ -21,15 +21,11 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         implements TupleLifecycle<Tuple_> {
 
     private final int tupleStateStoreIndex;
-    private final FilterDirtyQueue<Tuple_> dirtyTupleQueue;
+    private final FilterPropagationQueue<Tuple_> propagationQueue;
 
     protected AbstractFilterNode(int tupleStateStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this.tupleStateStoreIndex = tupleStateStoreIndex;
-        /*
-         * The tuple state is stored through the queue, which needs to know it for score calculation.
-         * Read operations happen through the tuple directly.
-         */
-        this.dirtyTupleQueue = new FilterDirtyQueue<>(nextNodesTupleLifecycle, tupleStateStoreIndex);
+        this.propagationQueue = new FilterPropagationQueue<>(nextNodesTupleLifecycle, tupleStateStoreIndex);
     }
 
     @Override
@@ -39,7 +35,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
             throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") was already inserted.");
         }
         if (testFiltering(tuple)) {
-            dirtyTupleQueue.insertWithState(tuple, TupleState.CREATING);
+            propagationQueue.insert(tuple, TupleState.CREATING);
         }
     }
 
@@ -62,7 +58,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
             switch (tupleState) {
                 case DEAD: // Already went through calculateScore(), this is a fresh update.
                 case OK: // Already went through calculateScore(), this is a fresh update.
-                    dirtyTupleQueue.insertWithState(tuple, TupleState.UPDATING);
+                    propagationQueue.update(tuple, TupleState.UPDATING);
                     break;
                 case CREATING: // No need to update the tuple, it is being inserted.
                 case UPDATING: // No need to update the tuple, as it is already being updated.
@@ -88,13 +84,12 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
              */
             throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") is not active (" + tupleState + ").");
         }
-        dirtyTupleQueue.insertWithState(tuple,
-                tupleState == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+        propagationQueue.retract(tuple, tupleState == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.calculateScore(this);
+        propagationQueue.calculateScore(this);
     }
 
 }

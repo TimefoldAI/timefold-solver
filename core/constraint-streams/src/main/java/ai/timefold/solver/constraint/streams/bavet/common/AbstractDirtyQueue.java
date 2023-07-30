@@ -10,7 +10,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
 abstract sealed class AbstractDirtyQueue<Carrier_, Tuple_ extends AbstractTuple>
-        permits FilterDirtyQueue, GenericDirtyQueue, GroupDirtyQueue, IfExistsDirtyQueue {
+        permits GenericDirtyQueue, GroupDirtyQueue, IfExistsDirtyQueue {
 
     private final List<Carrier_> dirtyList;
     private final BitSet updatingIndicesSet;

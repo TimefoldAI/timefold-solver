@@ -4,11 +4,11 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-final class FilterDirtyQueue<Tuple_ extends AbstractTuple> extends AbstractDirtyQueue<Tuple_, Tuple_> {
+final class FilterPropagationQueue<Tuple_ extends AbstractTuple> extends AbstractStaticPropagationQueue<Tuple_, Tuple_> {
 
     private final int tupleStateStoreIndex;
 
-    public FilterDirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int tupleStateStoreIndex) {
+    public FilterPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int tupleStateStoreIndex) {
         super(nextNodesTupleLifecycle);
         this.tupleStateStoreIndex = tupleStateStoreIndex;
     }
@@ -24,7 +24,8 @@ final class FilterDirtyQueue<Tuple_ extends AbstractTuple> extends AbstractDirty
     }
 
     @Override
-    public void changeState(Tuple_ tuple, TupleState state) {
+    protected void changeState(Tuple_ tuple, TupleState state) {
         tuple.setStore(tupleStateStoreIndex, state);
     }
+
 }
