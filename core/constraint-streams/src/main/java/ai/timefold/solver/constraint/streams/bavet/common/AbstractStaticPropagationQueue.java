@@ -116,7 +116,7 @@ abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractT
             if (state == TupleState.DEAD) {
                 /*
                  * DEAD is allowed, as that signifies the tuple was both in insert/update and retract queues.
-                 * This happens when a tuple was inserted/updated and subsequently retracted.
+                 * This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
                  * We can safely ignore the later insert/update,
                  * as by this point the more recent retract has already been processed,
                  * as signified by the DEAD state; the tuple already died or was aborted.

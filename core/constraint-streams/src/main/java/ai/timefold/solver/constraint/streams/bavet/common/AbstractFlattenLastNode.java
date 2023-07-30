@@ -18,14 +18,14 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     private final int flattenLastStoreIndex;
     private final Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction;
-    private final GenericDirtyQueue<OutTuple_> dirtyTupleQueue;
+    private final FlattenLastPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractFlattenLastNode(int flattenLastStoreIndex,
             Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
         this.flattenLastStoreIndex = flattenLastStoreIndex;
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
-        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
+        this.propagationQueue = new FlattenLastPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override
@@ -62,7 +62,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     private void addTuple(InTuple_ originalTuple, FlattenedItem_ item, List<OutTuple_> outTupleList) {
         OutTuple_ tuple = createTuple(originalTuple, item);
         outTupleList.add(tuple);
-        dirtyTupleQueue.insert(tuple);
+        propagationQueue.insert(tuple, TupleState.CREATING);
     }
 
     protected abstract OutTuple_ createTuple(InTuple_ originalTuple, FlattenedItem_ item);
@@ -106,7 +106,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
                     outTupleIterator.remove();
                     removeTuple(outTuple);
                 } else {
-                    dirtyTupleQueue.insertWithState(outTuple, TupleState.UPDATING);
+                    propagationQueue.update(outTuple, TupleState.UPDATING);
                 }
             }
         }
@@ -156,23 +156,17 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     }
 
     private void removeTuple(OutTuple_ outTuple) {
-        switch (outTuple.state) {
-            case CREATING:
-                dirtyTupleQueue.insertWithState(outTuple, TupleState.ABORTING);
-                break;
-            case UPDATING:
-            case OK:
-                dirtyTupleQueue.insertWithState(outTuple, TupleState.DYING);
-                break;
-            default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple +
-                        ") is in an unexpected state (" + outTuple.state + ").");
+        TupleState state = outTuple.state;
+        if (!state.isActive()) {
+            throw new IllegalStateException("Impossible state: The tuple (" + outTuple +
+                    ") is in an unexpected state (" + outTuple.state + ").");
         }
+        propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.calculateScore(this);
+        propagationQueue.calculateScore(this);
     }
 
 }
