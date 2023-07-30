@@ -1,6 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.CREATING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
 import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.UPDATING;
 
@@ -10,6 +11,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
@@ -32,7 +34,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
-    private final GenericDirtyQueue<OutTuple_> dirtyTupleQueue;
+    private final JoinPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
@@ -42,7 +44,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         this.isFiltering = isFiltering;
         this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
         this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
-        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
+        this.propagationQueue = new JoinPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     protected abstract OutTuple_ createOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -61,7 +63,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         ElementAwareListEntry<OutTuple_> outEntryRight = outTupleListRight.add(outTuple);
         outTuple.setStore(outputStoreIndexRightOutEntry, outEntryRight);
-        dirtyTupleQueue.insert(outTuple);
+        propagationQueue.insert(outTuple, CREATING);
     }
 
     protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
@@ -92,22 +94,14 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void doUpdateOutTuple(OutTuple_ outTuple) {
-        switch (outTuple.state) {
-            case CREATING:
-            case UPDATING:
-                // Don't add the tuple to the dirtyTupleQueue twice
-                break;
-            case OK:
-                dirtyTupleQueue.insertWithState(outTuple, UPDATING);
-                break;
-            // Impossible because they shouldn't linger in the indexes
-            case DYING:
-            case ABORTING:
-            case DEAD:
-            default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.state + ").");
+        TupleState state = outTuple.state;
+        if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
+            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
+                    this + ") is in an unexpected state (" + outTuple.state + ").");
+        } else if (state != TupleState.OK) { // Already in the queue in the correct state.
+            return;
         }
+        propagationQueue.update(outTuple, UPDATING);
     }
 
     protected final void innerUpdateRight(UniTuple<Right_> rightTuple, Consumer<Consumer<LeftTuple_>> leftTupleConsumer) {
@@ -161,33 +155,18 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         outEntryLeft.remove();
         ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
-        switch (outTuple.state) {
-            case CREATING:
-                // Don't add the tuple to the dirtyTupleQueue twice
-                // Kill it before it propagates
-                dirtyTupleQueue.changeState(outTuple, ABORTING);
-                break;
-            case OK:
-                dirtyTupleQueue.insertWithState(outTuple, DYING);
-                break;
-            case UPDATING:
-                // Don't add the tuple to the dirtyTupleQueue twice
-                // Kill the original propagation
-                dirtyTupleQueue.changeState(outTuple, DYING);
-                break;
-            // Impossible because they shouldn't linger in the indexes
-            case DYING:
-            case ABORTING:
-            case DEAD:
-            default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.state + ").");
+        TupleState state = outTuple.state;
+        if (!state.isActive()) {
+            // Impossible because they shouldn't linger in the indexes.
+            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
+                    + ") is in an unexpected state (" + outTuple.state + ").");
         }
+        propagationQueue.retract(outTuple, state == CREATING ? ABORTING : DYING);
     }
 
     @Override
     public final void calculateScore() {
-        dirtyTupleQueue.calculateScore(this);
+        propagationQueue.calculateScore(this);
     }
 
 }

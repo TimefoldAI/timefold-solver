@@ -4,9 +4,9 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-public final class GenericDirtyQueue<Tuple_ extends AbstractTuple> extends AbstractDirtyQueue<Tuple_, Tuple_> {
+final class JoinPropagationQueue<Tuple_ extends AbstractTuple> extends AbstractStaticPropagationQueue<Tuple_, Tuple_> {
 
-    public GenericDirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    public JoinPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         super(nextNodesTupleLifecycle);
     }
 
@@ -21,7 +21,8 @@ public final class GenericDirtyQueue<Tuple_ extends AbstractTuple> extends Abstr
     }
 
     @Override
-    public void changeState(Tuple_ tuple, TupleState state) {
+    protected void changeState(Tuple_ tuple, TupleState state) {
         tuple.state = state;
     }
+
 }
