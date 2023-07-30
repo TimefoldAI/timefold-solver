@@ -5,15 +5,10 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
 public final class GenericPropagationQueue<Tuple_ extends AbstractTuple>
-        extends AbstractStaticPropagationQueue<Tuple_, Tuple_> {
+        extends AbstractStaticPropagationQueue<Tuple_> {
 
     public GenericPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         super(nextNodesTupleLifecycle);
-    }
-
-    @Override
-    protected Tuple_ extractTuple(Tuple_ tuple) {
-        return tuple;
     }
 
     @Override

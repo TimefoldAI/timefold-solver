@@ -14,21 +14,20 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * This is the most efficient implementation.
  * It will throw exceptions if a tuple is in the wrong queue, based on its state.
  *
- * @param <Carrier_>
  * @param <Tuple_>
  */
-public sealed abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractTuple>
-        implements PropagationQueue<Carrier_>
+public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends AbstractTuple>
+        implements PropagationQueue<Tuple_>
         permits FilterPropagationQueue, GenericPropagationQueue {
 
-    private final List<Carrier_> retractList;
-    private final List<Carrier_> updateList;
-    private final List<Carrier_> insertList;
+    private final List<Tuple_> retractList;
+    private final List<Tuple_> updateList;
+    private final List<Tuple_> insertList;
     private final Consumer<Tuple_> retractPropagator;
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
 
-    private AbstractStaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
+    protected AbstractStaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         // Guesstimate that updates are the most common.
         this.retractList = new ArrayList<>(size / 10);
         this.updateList = new ArrayList<>((size / 10) * 8);
@@ -39,34 +38,28 @@ public sealed abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ ext
         this.insertPropagator = nextNodesTupleLifecycle::insert;
     }
 
-    public AbstractStaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    protected AbstractStaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this(nextNodesTupleLifecycle, 1000);
     }
 
-    protected abstract Tuple_ extractTuple(Carrier_ carrier);
+    protected abstract TupleState extractState(Tuple_ carrier);
 
-    protected abstract TupleState extractState(Carrier_ carrier);
-
-    protected abstract void changeState(Carrier_ carrier, TupleState state);
-
-    protected void processCarrier(Carrier_ carrier) {
-        // Only necessary for group nodes.
-    }
+    protected abstract void changeState(Tuple_ carrier, TupleState state);
 
     @Override
-    public void insert(Carrier_ carrier) {
+    public void insert(Tuple_ carrier) {
         changeState(carrier, TupleState.CREATING);
         insertList.add(carrier);
     }
 
     @Override
-    public void update(Carrier_ carrier) {
+    public void update(Tuple_ carrier) {
         changeState(carrier, TupleState.UPDATING);
         updateList.add(carrier);
     }
 
     @Override
-    public void retract(Carrier_ carrier, TupleState state) {
+    public void retract(Tuple_ carrier, TupleState state) {
         changeState(carrier, state);
         retractList.add(carrier);
     }
@@ -79,13 +72,12 @@ public sealed abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ ext
     }
 
     private void processRetracts(AbstractNode node) {
-        for (Carrier_ carrier : retractList) {
-            TupleState state = extractState(carrier);
+        for (Tuple_ tuple : retractList) {
+            TupleState state = extractState(tuple);
             switch (state) {
-                case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
-                case ABORTING -> changeState(carrier, TupleState.DEAD);
+                case DYING -> propagate(tuple, retractPropagator, TupleState.DEAD);
+                case ABORTING -> changeState(tuple, TupleState.DEAD);
                 default -> {
-                    Tuple_ tuple = extractTuple(carrier);
                     throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
                             node + ") is in an unexpected state (" + state + ").");
                 }
@@ -94,19 +86,18 @@ public sealed abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ ext
         retractList.clear();
     }
 
-    private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
-        Tuple_ tuple = extractTuple(carrier);
+    private void propagate(Tuple_ tuple, Consumer<Tuple_> propagator, TupleState tupleState) {
         propagator.accept(tuple);
-        changeState(carrier, tupleState);
+        changeState(tuple, tupleState);
     }
 
     private void processUpdates(AbstractNode node) {
         process(node, updateList, TupleState.UPDATING, updatePropagator);
     }
 
-    private void process(AbstractNode node, List<Carrier_> list, TupleState expectedState, Consumer<Tuple_> propagator) {
-        for (Carrier_ carrier : list) {
-            TupleState state = extractState(carrier);
+    private void process(AbstractNode node, List<Tuple_> list, TupleState expectedState, Consumer<Tuple_> propagator) {
+        for (Tuple_ tuple : list) {
+            TupleState state = extractState(tuple);
             if (state == TupleState.DEAD) {
                 /*
                  * DEAD is allowed, as that signifies the tuple was both in insert/update and retract queues.
@@ -117,12 +108,10 @@ public sealed abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ ext
                  */
                 continue;
             } else if (state != expectedState) {
-                Tuple_ tuple = extractTuple(carrier);
                 throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
                         node + ") is in an unexpected state (" + state + ").");
             }
-            processCarrier(carrier);
-            propagate(carrier, propagator, TupleState.OK);
+            propagate(tuple, propagator, TupleState.OK);
         }
         list.clear();
     }
