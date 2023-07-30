@@ -33,13 +33,15 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     protected AbstractIndexedIfExistsNode(boolean shouldExist,
             Function<Right_, IndexProperties> mappingRight,
+            int inputStoreIndexLeftPropagationQueueMetadata,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<LeftTuple_>> indexerLeft,
             Indexer<UniTuple<Right_>> indexerRight,
             boolean isFiltering) {
-        super(shouldExist, inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
+        super(shouldExist, inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftTrackerList,
+                inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, isFiltering);
         this.mappingRight = mappingRight;
         this.inputStoreIndexLeftProperties = inputStoreIndexLeftProperties;

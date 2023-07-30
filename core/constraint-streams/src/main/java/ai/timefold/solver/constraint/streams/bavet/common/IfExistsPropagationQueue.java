@@ -4,10 +4,11 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-final class IfExistsDirtyQueue<Tuple_ extends AbstractTuple> extends AbstractDirtyQueue<ExistsCounter<Tuple_>, Tuple_> {
+final class IfExistsPropagationQueue<Tuple_ extends AbstractTuple>
+        extends AbstractDynamicPropagationQueue<ExistsCounter<Tuple_>, Tuple_> {
 
-    public IfExistsDirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
-        super(nextNodesTupleLifecycle);
+    public IfExistsPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int dirtyListPositionStoreIndex) {
+        super(nextNodesTupleLifecycle, dirtyListPositionStoreIndex);
     }
 
     @Override

@@ -67,11 +67,13 @@ final class BavetIfExistsBiConstraintStream<Solution_, A, B, C>
                         JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
                         buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),
                         downstream, indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
                         : new IndexedIfExistsBiNode<>(shouldExist,
                                 JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
+                                buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
@@ -82,8 +84,10 @@ final class BavetIfExistsBiConstraintStream<Solution_, A, B, C>
                                 filtering))
                 : (filtering == null ? new UnindexedIfExistsBiNode<>(shouldExist,
                         buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()), downstream)
                         : new UnindexedIfExistsBiNode<>(shouldExist,
+                                buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),

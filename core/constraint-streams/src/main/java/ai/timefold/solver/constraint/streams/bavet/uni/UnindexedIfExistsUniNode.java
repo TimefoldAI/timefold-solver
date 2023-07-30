@@ -11,21 +11,20 @@ final class UnindexedIfExistsUniNode<A, B> extends AbstractUnindexedIfExistsNode
     private final BiPredicate<A, B> filtering;
 
     public UnindexedIfExistsUniNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightEntry,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle) {
         this(shouldExist,
-                inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, null);
     }
 
     public UnindexedIfExistsUniNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftCounterEntry,
+            int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             BiPredicate<A, B> filtering) {
         super(shouldExist,
-                inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
+                inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
                 inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, filtering != null);
         this.filtering = filtering;
