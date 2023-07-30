@@ -4,7 +4,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
-import ai.timefold.solver.constraint.streams.bavet.common.GenericDirtyQueue;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
@@ -23,14 +22,14 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;
-    private final GenericDirtyQueue<UniTuple<A>> dirtyTupleQueue;
+    private final ForEachPropagationQueue<UniTuple<A>> propagationQueue;
     protected final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
 
     public AbstractForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
         this.forEachClass = forEachClass;
         this.outputStoreSize = outputStoreSize;
-        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
+        this.propagationQueue = new ForEachPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     public void insert(A a) {
@@ -39,7 +38,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         if (old != null) {
             throw new IllegalStateException("The fact (" + a + ") was already inserted, so it cannot insert again.");
         }
-        dirtyTupleQueue.insert(tuple);
+        propagationQueue.insert(tuple, TupleState.CREATING);
     }
 
     public abstract void update(A a);
@@ -52,7 +51,7 @@ public abstract sealed class AbstractForEachUniNode<A>
             }
             // CREATING or UPDATING is ignored; it's already in the queue.
         } else {
-            dirtyTupleQueue.insertWithState(tuple, TupleState.UPDATING);
+            propagationQueue.update(tuple, TupleState.UPDATING);
         }
     }
 
@@ -66,15 +65,15 @@ public abstract sealed class AbstractForEachUniNode<A>
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (" + a + ") was already retracted, so it cannot retract.");
             }
-            dirtyTupleQueue.changeState(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+            propagationQueue.retract(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
         } else {
-            dirtyTupleQueue.insertWithState(tuple, TupleState.DYING);
+            propagationQueue.retract(tuple, TupleState.DYING);
         }
     }
 
     @Override
     public final void calculateScore() {
-        dirtyTupleQueue.calculateScore(this);
+        propagationQueue.calculateScore(this);
     }
 
     @Override

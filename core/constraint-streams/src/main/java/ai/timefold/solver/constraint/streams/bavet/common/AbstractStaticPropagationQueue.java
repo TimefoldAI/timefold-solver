@@ -17,7 +17,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @param <Carrier_>
  * @param <Tuple_>
  */
-abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractTuple> {
+public abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractTuple> {
 
     private final List<Carrier_> retractList;
     private final List<Carrier_> updateList;
