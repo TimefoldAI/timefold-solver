@@ -56,14 +56,12 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
             insert(tuple);
         } else if (testFiltering(tuple)) {
             switch (tupleState) {
-                case DEAD: // Already went through calculateScore(), this is a fresh update.
-                case OK: // Already went through calculateScore(), this is a fresh update.
-                    propagationQueue.update(tuple);
-                    break;
-                case CREATING: // No need to update the tuple, it is being inserted.
-                case UPDATING: // No need to update the tuple, as it is already being updated.
-                    break;
-                default:
+                case DEAD, OK -> // Already went through calculateScore(), this is a fresh update.
+                        propagationQueue.update(tuple);
+                case CREATING, UPDATING -> {
+                    // No need to update the tuple, it is already in the correct state.
+                }
+                default ->
                     throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") was (" + tupleState + ").");
             }
         } else {

@@ -3,7 +3,6 @@ package ai.timefold.solver.constraint.streams.bavet.common;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
@@ -17,7 +16,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @param <Carrier_>
  * @param <Tuple_>
  */
-public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ extends AbstractTuple>
+public sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractPropagationMetadataCarrier, Tuple_ extends AbstractTuple>
         implements PropagationQueue<Carrier_>
         permits GroupPropagationQueue, IfExistsPropagationQueue {
 
@@ -25,15 +24,12 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ ex
     private final BitSet retractQueue;
     private final BitSet updateQueue;
     private final BitSet insertQueue;
-    private final int dirtyListPositionStoreIndex;
     private final Consumer<Tuple_> retractPropagator;
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
 
-    private AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int dirtyListPositionStoreIndex,
-            int size) {
+    private AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         this.dirtyList = new ArrayList<>(size);
-        this.dirtyListPositionStoreIndex = dirtyListPositionStoreIndex;
         // Guesstimate that updates are the most common.
         this.retractQueue = new BitSet(size / 10);
         this.updateQueue = new BitSet((size / 10) * 8);
@@ -44,18 +40,8 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ ex
         this.insertPropagator = nextNodesTupleLifecycle::insert;
     }
 
-    public AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int dirtyListPositionStoreIndex) {
-        this(nextNodesTupleLifecycle, dirtyListPositionStoreIndex, 1000);
-    }
-
-    protected abstract Tuple_ extractTuple(Carrier_ carrier);
-
-    protected abstract TupleState extractState(Carrier_ carrier);
-
-    protected abstract void changeState(Carrier_ carrier, TupleState state);
-
-    protected void processCarrier(Carrier_ carrier) {
-        // Only necessary for group nodes.
+    public AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+        this(nextNodesTupleLifecycle, 1000);
     }
 
     @Override
@@ -64,21 +50,23 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ ex
     }
 
     private void replace(Carrier_ carrier, TupleState state, BitSet newQueue) {
-        Tuple_ tuple = extractTuple(carrier);
-        Position currentPosition = tuple.getStore(dirtyListPositionStoreIndex);
-        if (currentPosition == null) { // This item is in no queue yet.
+        BitSet currentQueue = carrier.currentQueue;
+        if (currentQueue == null) { // This item is in no queue yet.
             dirtyList.add(carrier);
             int position = dirtyList.size() - 1;
             newQueue.set(position);
-            tuple.setStore(dirtyListPositionStoreIndex, new Position(position, newQueue));
-        } else if (currentPosition.originalQueue != newQueue) { // Only move items between queues if necessary.
-            int position = currentPosition.dirtyListPosition;
-            currentPosition.originalQueue.clear(position);
+            carrier.currentQueue = newQueue;
+            carrier.positionInDirtyList = position;
+        } else if (currentQueue != newQueue) { // Only move items between queues if necessary.
+            int position = carrier.positionInDirtyList;
+            currentQueue.clear(position);
             newQueue.set(position);
-            currentPosition.originalQueue = newQueue;
+            carrier.currentQueue = newQueue;
         }
         changeState(carrier, state);
     }
+
+    protected abstract void changeState(Carrier_ carrier, TupleState state);
 
     @Override
     public void update(Carrier_ carrier) {
@@ -110,7 +98,7 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ ex
                 case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
                 case ABORTING -> {
                     changeState(carrier, TupleState.DEAD);
-                    tuple.setStore(dirtyListPositionStoreIndex, null);
+                    clearMetadata(carrier);
                 }
                 default -> throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" + node
                         + ") is in an unexpected state (" + state + ").");
@@ -119,11 +107,20 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ ex
         retractQueue.clear();
     }
 
+    protected abstract TupleState extractState(Carrier_ carrier);
+
+    protected abstract Tuple_ extractTuple(Carrier_ carrier);
+
+    private void clearMetadata(Carrier_ carrier) {
+        carrier.currentQueue = null;
+        carrier.positionInDirtyList = -1;
+    }
+
     private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
         Tuple_ tuple = extractTuple(carrier);
         propagator.accept(tuple);
         changeState(carrier, tupleState);
-        tuple.setStore(dirtyListPositionStoreIndex, null);
+        clearMetadata(carrier);
     }
 
     private void processUpdates(AbstractNode node) {
@@ -148,20 +145,12 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_, Tuple_ ex
         queue.clear();
     }
 
-    private void processInserts(AbstractNode node) {
-        process(node, insertQueue, TupleState.CREATING, insertPropagator);
+    protected void processCarrier(Carrier_ carrier) {
+        // Only necessary for group nodes.
     }
 
-    private static final class Position {
-
-        public final int dirtyListPosition;
-        public BitSet originalQueue;
-
-        public Position(int dirtyListPosition, BitSet originalQueue) {
-            this.dirtyListPosition = dirtyListPosition;
-            this.originalQueue = Objects.requireNonNull(originalQueue);
-        }
-
+    private void processInserts(AbstractNode node) {
+        process(node, insertQueue, TupleState.CREATING, insertPropagator);
     }
 
 }

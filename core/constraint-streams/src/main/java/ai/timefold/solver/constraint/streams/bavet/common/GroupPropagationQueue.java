@@ -11,9 +11,9 @@ final class GroupPropagationQueue<Tuple_ extends AbstractTuple, ResultContainer_
 
     private final Consumer<AbstractGroup<Tuple_, ResultContainer_>> groupProcessor;
 
-    public GroupPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int dirtyListPositionStoreIndex,
+    public GroupPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
             Consumer<AbstractGroup<Tuple_, ResultContainer_>> groupProcessor) {
-        super(nextNodesTupleLifecycle, dirtyListPositionStoreIndex);
+        super(nextNodesTupleLifecycle);
         this.groupProcessor = groupProcessor;
     }
 

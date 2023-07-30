@@ -12,9 +12,9 @@ final class Group1Mapping0CollectorUniNode<OldA, A>
     private final int outputStoreSize;
 
     public Group1Mapping0CollectorUniNode(Function<OldA, A> groupKeyMapping,
-            int groupStoreIndex, int dirtyListPositionStoreIndex,
+            int groupStoreIndex,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, dirtyListPositionStoreIndex,
+        super(groupStoreIndex,
                 tuple -> createGroupKey(groupKeyMapping, tuple), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

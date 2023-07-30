@@ -12,9 +12,9 @@ final class Group1Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A>
     private final int outputStoreSize;
 
     public Group1Mapping0CollectorQuadNode(QuadFunction<OldA, OldB, OldC, OldD, A> groupKeyMapping,
-            int groupStoreIndex, int dirtyListPositionStoreIndex,
+            int groupStoreIndex,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, dirtyListPositionStoreIndex,
+        super(groupStoreIndex,
                 tuple -> createGroupKey(groupKeyMapping, tuple), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

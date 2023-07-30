@@ -12,11 +12,11 @@ final class Group0Mapping2CollectorTriNode<OldA, OldB, OldC, A, B, ResultContain
 
     private final int outputStoreSize;
 
-    public Group0Mapping2CollectorTriNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
+    public Group0Mapping2CollectorTriNode(int groupStoreIndex, int undoStoreIndex,
             TriConstraintCollector<OldA, OldB, OldC, ResultContainerA_, A> collectorA,
             TriConstraintCollector<OldA, OldB, OldC, ResultContainerB_, B> collectorB,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
+        super(groupStoreIndex, undoStoreIndex,
                 null, mergeCollectors(collectorA, collectorB), nextNodesTupleLifecycle,
                 environmentMode);
         this.outputStoreSize = outputStoreSize;

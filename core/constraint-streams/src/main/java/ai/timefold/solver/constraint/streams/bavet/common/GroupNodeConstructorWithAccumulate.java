@@ -29,10 +29,9 @@ final class GroupNodeConstructorWithAccumulate<Tuple_ extends AbstractTuple> imp
         int groupStoreIndex = buildHelper.reserveTupleStoreIndex(parentTupleSource);
         int undoStoreIndex = buildHelper.reserveTupleStoreIndex(parentTupleSource);
         TupleLifecycle<Tuple_> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(aftStreamChildList);
-        int dirtyListPositionStoreIndex = buildHelper.reserveTupleStoreIndex(aftStream);
         int outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
         var node = nodeConstructorFunction.apply(groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
-                dirtyListPositionStoreIndex, environmentMode);
+                environmentMode);
         buildHelper.addNode(node, bridgeStream);
     }
 }

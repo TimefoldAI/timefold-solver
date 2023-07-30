@@ -13,14 +13,14 @@ final class Group0Mapping4CollectorUniNode<OldA, A, B, C, D, ResultContainerA_, 
 
     private final int outputStoreSize;
 
-    public Group0Mapping4CollectorUniNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
+    public Group0Mapping4CollectorUniNode(int groupStoreIndex, int undoStoreIndex,
             UniConstraintCollector<OldA, ResultContainerA_, A> collectorA,
             UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
             UniConstraintCollector<OldA, ResultContainerC_, C> collectorC,
             UniConstraintCollector<OldA, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
+        super(groupStoreIndex, undoStoreIndex,
                 null, mergeCollectors(collectorA, collectorB, collectorC, collectorD),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;

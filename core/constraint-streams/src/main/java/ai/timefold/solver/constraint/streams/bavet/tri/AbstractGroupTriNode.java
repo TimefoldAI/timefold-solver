@@ -15,21 +15,22 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Abstract
 
     private final QuadFunction<ResultContainer_, OldA, OldB, OldC, Runnable> accumulator;
 
-    protected AbstractGroupTriNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
+    protected AbstractGroupTriNode(int groupStoreIndex, int undoStoreIndex,
             Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
             TriConstraintCollector<OldA, OldB, OldC, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex, groupKeyFunction,
+        super(groupStoreIndex, undoStoreIndex, groupKeyFunction,
                 collector == null ? null : collector.supplier(),
                 collector == null ? null : collector.finisher(),
                 nextNodesTupleLifecycle, environmentMode);
         accumulator = collector == null ? null : collector.accumulator();
     }
 
-    protected AbstractGroupTriNode(int groupStoreIndex, int dirtyListPositionStoreIndex,
+    protected AbstractGroupTriNode(int groupStoreIndex,
             Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, dirtyListPositionStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        super(groupStoreIndex,
+                groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
         accumulator = null;
     }
 

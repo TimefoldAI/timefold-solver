@@ -34,7 +34,6 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     private final IfExistsPropagationQueue<LeftTuple_> propagationQueue;
 
     protected AbstractIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftPropagationQueueMetadata,
             int inputStoreIndexLeftTrackerList, int inputStoreIndexRightTrackerList,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
             boolean isFiltering) {
@@ -42,8 +41,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
         this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
         this.isFiltering = isFiltering;
-        this.propagationQueue =
-                new IfExistsPropagationQueue<>(nextNodesTupleLifecycle, inputStoreIndexLeftPropagationQueueMetadata);
+        this.propagationQueue = new IfExistsPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);

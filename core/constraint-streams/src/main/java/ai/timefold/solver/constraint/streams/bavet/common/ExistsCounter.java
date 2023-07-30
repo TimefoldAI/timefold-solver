@@ -5,7 +5,8 @@ import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleStat
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-public final class ExistsCounter<Tuple_ extends AbstractTuple> {
+public final class ExistsCounter<Tuple_ extends AbstractTuple>
+        extends AbstractPropagationMetadataCarrier {
 
     final Tuple_ leftTuple;
     TupleState state = DEAD;

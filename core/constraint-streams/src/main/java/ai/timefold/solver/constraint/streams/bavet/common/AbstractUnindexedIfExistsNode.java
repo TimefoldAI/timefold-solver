@@ -28,12 +28,11 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
     private final ElementAwareList<UniTuple<Right_>> rightTupleList = new ElementAwareList<>();
 
     protected AbstractUnindexedIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            boolean isFiltering) {
+            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry,
+            int inputStoreIndexRightTrackerList,
+            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering) {
         super(shouldExist,
-                inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
+                inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, isFiltering);
         this.inputStoreIndexLeftCounterEntry = inputStoreIndexLeftCounterEntry;
         this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;

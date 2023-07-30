@@ -7,8 +7,8 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 final class IfExistsPropagationQueue<Tuple_ extends AbstractTuple>
         extends AbstractDynamicPropagationQueue<ExistsCounter<Tuple_>, Tuple_> {
 
-    public IfExistsPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int dirtyListPositionStoreIndex) {
-        super(nextNodesTupleLifecycle, dirtyListPositionStoreIndex);
+    public IfExistsPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+        super(nextNodesTupleLifecycle);
     }
 
     @Override

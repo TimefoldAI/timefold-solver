@@ -4,7 +4,9 @@ import java.util.Objects;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 
-abstract class AbstractGroup<OutTuple_ extends AbstractTuple, ResultContainer_> {
+sealed abstract class AbstractGroup<OutTuple_ extends AbstractTuple, ResultContainer_>
+        extends AbstractPropagationMetadataCarrier
+        permits GroupWithAccumulate, GroupWithoutAccumulate {
 
     public final Object groupKey;
     public final OutTuple_ outTuple;

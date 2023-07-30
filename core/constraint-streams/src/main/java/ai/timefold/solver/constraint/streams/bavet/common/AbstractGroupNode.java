@@ -56,7 +56,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     private final GroupPropagationQueue<OutTuple_, ResultContainer_> propagationQueue;
     private final boolean useAssertingGroupKey;
 
-    protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
+    protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex,
             Function<InTuple_, GroupKey_> groupKeyFunction, Supplier<ResultContainer_> supplier,
             Function<ResultContainer_, Result_> finisher,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
@@ -73,7 +73,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
          * Therefore, the size of these collections is kept default.
          */
         this.groupMap = hasMultipleGroups ? new HashMap<>() : null;
-        this.propagationQueue = new GroupPropagationQueue<>(nextNodesTupleLifecycle, dirtyListPositionStoreIndex,
+        this.propagationQueue = new GroupPropagationQueue<>(nextNodesTupleLifecycle,
                 hasCollector ? group -> {
                     OutTuple_ outTuple = group.outTuple;
                     TupleState state = outTuple.state;
@@ -84,10 +84,10 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
         this.useAssertingGroupKey = environmentMode.isAsserted();
     }
 
-    protected AbstractGroupNode(int groupStoreIndex, int dirtyListPositionStoreIndex,
+    protected AbstractGroupNode(int groupStoreIndex,
             Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
             EnvironmentMode environmentMode) {
-        this(groupStoreIndex, -1, dirtyListPositionStoreIndex,
+        this(groupStoreIndex, -1,
                 groupKeyFunction, null, null, nextNodesTupleLifecycle,
                 environmentMode);
     }

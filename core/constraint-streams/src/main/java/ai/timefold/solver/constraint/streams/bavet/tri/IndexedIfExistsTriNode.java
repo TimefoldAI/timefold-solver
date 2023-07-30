@@ -19,29 +19,27 @@ final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNo
 
     public IndexedIfExistsTriNode(boolean shouldExist,
             TriFunction<A, B, C, IndexProperties> mappingABC, Function<D, IndexProperties> mappingD,
-            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftProperties,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
+            int inputStoreIndexRightEntry,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<TriTuple<A, B, C>>> indexerABC, Indexer<UniTuple<D>> indexerD) {
         this(shouldExist, mappingABC, mappingD,
-                inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
+                inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, indexerABC, indexerD,
                 null);
     }
 
     public IndexedIfExistsTriNode(boolean shouldExist,
             TriFunction<A, B, C, IndexProperties> mappingABC, Function<D, IndexProperties> mappingD,
-            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftProperties,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightProperties,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
+            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<TriTuple<A, B, C>>> indexerABC, Indexer<UniTuple<D>> indexerD,
             QuadPredicate<A, B, C, D> filtering) {
         super(shouldExist, mappingD,
-                inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry,
-                inputStoreIndexLeftTrackerList, inputStoreIndexRightProperties, inputStoreIndexRightEntry,
-                inputStoreIndexRightTrackerList,
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
+                inputStoreIndexRightProperties, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, indexerABC, indexerD,
                 filtering != null);
         this.mappingABC = mappingABC;

@@ -19,27 +19,25 @@ final class IndexedIfExistsQuadNode<A, B, C, D, E> extends AbstractIndexedIfExis
 
     public IndexedIfExistsQuadNode(boolean shouldExist,
             QuadFunction<A, B, C, D, IndexProperties> mappingABCD, Function<E, IndexProperties> mappingE,
-            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftProperties,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
+            int inputStoreIndexRightEntry,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<QuadTuple<A, B, C, D>>> indexerABCD, Indexer<UniTuple<E>> indexerE) {
         this(shouldExist, mappingABCD, mappingE,
-                inputStoreIndexLeftPropagationQueueMetadata, inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
+                inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, indexerABCD, indexerE,
                 null);
     }
 
     public IndexedIfExistsQuadNode(boolean shouldExist,
             QuadFunction<A, B, C, D, IndexProperties> mappingABCD, Function<E, IndexProperties> mappingE,
-            int inputStoreIndexLeftPropagationQueueMetadata, int inputStoreIndexLeftProperties,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightProperties,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
+            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<QuadTuple<A, B, C, D>>> indexerABCD, Indexer<UniTuple<E>> indexerE,
             PentaPredicate<A, B, C, D, E> filtering) {
         super(shouldExist, mappingE,
-                inputStoreIndexLeftPropagationQueueMetadata,
                 inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
                 inputStoreIndexRightProperties, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, indexerABCD, indexerE,
