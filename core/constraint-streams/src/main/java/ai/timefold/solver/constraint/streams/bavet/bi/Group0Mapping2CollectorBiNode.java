@@ -12,12 +12,12 @@ final class Group0Mapping2CollectorBiNode<OldA, OldB, A, B, ResultContainerA_, R
 
     private final int outputStoreSize;
 
-    public Group0Mapping2CollectorBiNode(int groupStoreIndex, int undoStoreIndex,
+    public Group0Mapping2CollectorBiNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
             BiConstraintCollector<OldA, OldB, ResultContainerA_, A> collectorA,
             BiConstraintCollector<OldA, OldB, ResultContainerB_, B> collectorB,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, mergeCollectors(collectorA, collectorB), nextNodesTupleLifecycle,
-                environmentMode);
+        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
+                null, mergeCollectors(collectorA, collectorB), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }
 

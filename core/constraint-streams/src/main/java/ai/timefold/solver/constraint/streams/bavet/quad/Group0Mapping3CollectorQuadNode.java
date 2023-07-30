@@ -13,12 +13,13 @@ final class Group0Mapping3CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C, Res
 
     private final int outputStoreSize;
 
-    public Group0Mapping3CollectorQuadNode(int groupStoreIndex, int undoStoreIndex,
+    public Group0Mapping3CollectorQuadNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
             QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerA_, A> collectorA,
             QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerB_, B> collectorB,
             QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerC_, C> collectorC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, mergeCollectors(collectorA, collectorB, collectorC),
+        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
+                null, mergeCollectors(collectorA, collectorB, collectorC),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }
@@ -29,8 +30,7 @@ final class Group0Mapping3CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C, Res
                     QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerB_, B> collectorB,
                     QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerC_, C> collectorC) {
         return (QuadConstraintCollector<OldA, OldB, OldC, OldD, Object, Triple<A, B, C>>) ConstraintCollectors.compose(
-                collectorA,
-                collectorB, collectorC, Triple::of);
+                collectorA, collectorB, collectorC, Triple::of);
     }
 
     @Override

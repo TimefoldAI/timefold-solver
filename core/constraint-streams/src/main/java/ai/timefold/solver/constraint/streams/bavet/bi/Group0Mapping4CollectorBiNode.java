@@ -13,14 +13,15 @@ final class Group0Mapping4CollectorBiNode<OldA, OldB, A, B, C, D, ResultContaine
 
     private final int outputStoreSize;
 
-    public Group0Mapping4CollectorBiNode(int groupStoreIndex, int undoStoreIndex,
+    public Group0Mapping4CollectorBiNode(int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
             BiConstraintCollector<OldA, OldB, ResultContainerA_, A> collectorA,
             BiConstraintCollector<OldA, OldB, ResultContainerB_, B> collectorB,
             BiConstraintCollector<OldA, OldB, ResultContainerC_, C> collectorC,
             BiConstraintCollector<OldA, OldB, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, mergeCollectors(collectorA, collectorB, collectorC, collectorD),
+        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
+                null, mergeCollectors(collectorA, collectorB, collectorC, collectorD),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

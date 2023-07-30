@@ -6,14 +6,14 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-final class GroupDirtyQueue<Tuple_ extends AbstractTuple, ResultContainer_>
-        extends AbstractDirtyQueue<AbstractGroup<Tuple_, ResultContainer_>, Tuple_> {
+final class GroupPropagationQueue<Tuple_ extends AbstractTuple, ResultContainer_>
+        extends AbstractDynamicPropagationQueue<AbstractGroup<Tuple_, ResultContainer_>, Tuple_> {
 
     private final Consumer<AbstractGroup<Tuple_, ResultContainer_>> groupProcessor;
 
-    public GroupDirtyQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
+    public GroupPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int dirtyListPositionStoreIndex,
             Consumer<AbstractGroup<Tuple_, ResultContainer_>> groupProcessor) {
-        super(nextNodesTupleLifecycle);
+        super(nextNodesTupleLifecycle, dirtyListPositionStoreIndex);
         this.groupProcessor = groupProcessor;
     }
 

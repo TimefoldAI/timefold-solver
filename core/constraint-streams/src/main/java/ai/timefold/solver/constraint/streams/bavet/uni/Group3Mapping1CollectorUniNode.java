@@ -17,11 +17,12 @@ final class Group3Mapping1CollectorUniNode<OldA, A, B, C, D, ResultContainer_>
     private final int outputStoreSize;
 
     public Group3Mapping1CollectorUniNode(Function<OldA, A> groupKeyMappingA, Function<OldA, B> groupKeyMappingB,
-            Function<OldA, C> groupKeyMappingC, int groupStoreIndex, int undoStoreIndex,
+            Function<OldA, C> groupKeyMappingC,
+            int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
             UniConstraintCollector<OldA, ResultContainer_, D> collector,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex,
+        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
                 tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, groupKeyMappingC, tuple), collector,
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;

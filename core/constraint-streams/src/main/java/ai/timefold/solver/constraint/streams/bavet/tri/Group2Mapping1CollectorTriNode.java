@@ -16,10 +16,12 @@ final class Group2Mapping1CollectorTriNode<OldA, OldB, OldC, A, B, C, ResultCont
     private final int outputStoreSize;
 
     public Group2Mapping1CollectorTriNode(TriFunction<OldA, OldB, OldC, A> groupKeyMappingA,
-            TriFunction<OldA, OldB, OldC, B> groupKeyMappingB, int groupStoreIndex, int undoStoreIndex,
+            TriFunction<OldA, OldB, OldC, B> groupKeyMappingB,
+            int groupStoreIndex, int undoStoreIndex, int dirtyListPositionStoreIndex,
             TriConstraintCollector<OldA, OldB, OldC, ResultContainer_, C> collector,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple), collector,
+        super(groupStoreIndex, undoStoreIndex, dirtyListPositionStoreIndex,
+                tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple), collector,
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

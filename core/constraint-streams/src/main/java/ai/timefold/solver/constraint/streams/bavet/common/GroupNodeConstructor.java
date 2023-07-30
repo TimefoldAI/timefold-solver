@@ -24,7 +24,7 @@ public interface GroupNodeConstructor<Tuple_ extends AbstractTuple> {
     interface NodeConstructorWithAccumulate<Tuple_ extends AbstractTuple> {
 
         AbstractNode apply(int groupStoreIndex, int undoStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
-                int outputStoreSize, EnvironmentMode environmentMode);
+                int outputStoreSize, int dirtyListPositionStoreIndex, EnvironmentMode environmentMode);
 
     }
 
@@ -32,7 +32,7 @@ public interface GroupNodeConstructor<Tuple_ extends AbstractTuple> {
     interface NodeConstructorWithoutAccumulate<Tuple_ extends AbstractTuple> {
 
         AbstractNode apply(int groupStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int outputStoreSize,
-                EnvironmentMode environmentMode);
+                int dirtyListPositionStoreIndex, EnvironmentMode environmentMode);
 
     }
 
