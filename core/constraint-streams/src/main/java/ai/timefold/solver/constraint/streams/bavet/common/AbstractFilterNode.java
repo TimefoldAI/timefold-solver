@@ -82,7 +82,8 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
              * unless they are already locally dead,
              * which means a fresh retract from the source node.
              */
-            throw new IllegalStateException("Impossible state: the tuple (" + tuple + ") is not active (" + tupleState + ").");
+            throw new IllegalStateException(
+                    "Impossible state: the tuple (" + tuple + ") can not be retracted (" + tupleState + ").");
         }
         propagationQueue.retract(tuple, tupleState == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }

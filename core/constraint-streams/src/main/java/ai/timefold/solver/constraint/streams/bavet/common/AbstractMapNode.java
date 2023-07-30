@@ -10,12 +10,12 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
 
     private final int inputStoreIndex;
     protected final int outputStoreSize;
-    private final GenericDirtyQueue<OutTuple_> dirtyTupleQueue;
+    private final MapPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractMapNode(int inputStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, int outputStoreSize) {
         this.inputStoreIndex = inputStoreIndex;
         this.outputStoreSize = outputStoreSize;
-        this.dirtyTupleQueue = new GenericDirtyQueue<>(nextNodesTupleLifecycle);
+        this.propagationQueue = new MapPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override
@@ -26,7 +26,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
         }
         OutTuple_ outTuple = map(tuple);
         tuple.setStore(inputStoreIndex, outTuple);
-        dirtyTupleQueue.insert(outTuple);
+        propagationQueue.insert(outTuple, TupleState.CREATING);
     }
 
     protected abstract OutTuple_ map(InTuple_ inTuple);
@@ -39,8 +39,14 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             insert(tuple);
             return;
         }
-        if (remap(tuple, outTuple)) {
-            dirtyTupleQueue.insertWithState(outTuple, TupleState.UPDATING);
+        boolean wasUpdated = remap(tuple, outTuple);
+        if (wasUpdated) { // Only propagate if the tuple actually changed.
+            TupleState previousState = outTuple.state;
+            if (previousState == TupleState.CREATING || previousState == TupleState.UPDATING) {
+                // Already in the queue in the correct state.
+                return;
+            }
+            propagationQueue.update(outTuple, TupleState.UPDATING);
         }
     }
 
@@ -58,12 +64,12 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        dirtyTupleQueue.insertWithState(outTuple, TupleState.DYING);
+        propagationQueue.retract(outTuple, outTuple.state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override
     public void calculateScore() {
-        dirtyTupleQueue.calculateScore(this);
+        propagationQueue.calculateScore(this);
     }
 
 }

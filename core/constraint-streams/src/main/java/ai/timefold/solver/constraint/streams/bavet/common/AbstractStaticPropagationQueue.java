@@ -8,6 +8,15 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
+/**
+ * The implementation moves tuples directly into an either retract, update or insert queue,
+ * without any option of moving between the queues.
+ * This is the most efficient implementation.
+ * It will throw exceptions if a tuple is in the wrong queue, based on its state.
+ *
+ * @param <Carrier_>
+ * @param <Tuple_>
+ */
 abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractTuple> {
 
     private final List<Carrier_> retractList;
@@ -104,7 +113,16 @@ abstract class AbstractStaticPropagationQueue<Carrier_, Tuple_ extends AbstractT
     private void process(AbstractNode node, List<Carrier_> list, TupleState expectedState, Consumer<Tuple_> propagator) {
         for (Carrier_ carrier : list) {
             TupleState state = extractState(carrier);
-            if (state != expectedState) {
+            if (state == TupleState.DEAD) {
+                /*
+                 * DEAD is allowed, as that signifies the tuple was both in insert/update and retract queues.
+                 * This happens when a tuple was inserted/updated and subsequently retracted.
+                 * We can safely ignore the later insert/update,
+                 * as by this point the more recent retract has already been processed,
+                 * as signified by the DEAD state; the tuple already died or was aborted.
+                 */
+                continue;
+            } else if (state != expectedState) {
                 Tuple_ tuple = extractTuple(carrier);
                 throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
                         node + ") is in an unexpected state (" + state + ").");
