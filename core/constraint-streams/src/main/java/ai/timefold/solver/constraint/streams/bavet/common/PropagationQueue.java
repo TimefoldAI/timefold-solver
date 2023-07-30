@@ -28,6 +28,6 @@ public sealed interface PropagationQueue<T> permits AbstractDynamicPropagationQu
 
     void retract(T item, TupleState state);
 
-    void calculateScore(AbstractNode node);
+    void propagateAndClear();
 
 }

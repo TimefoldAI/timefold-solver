@@ -166,7 +166,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     @Override
     public void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
 }

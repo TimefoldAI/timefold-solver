@@ -5,6 +5,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.constraint.streams.bavet.common.AbstractPropagationMetadataCarrier.PropagationType;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
@@ -22,7 +23,6 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends Ab
 
     private final List<Carrier_> dirtyList;
     private final BitSet retractQueue;
-    private final BitSet updateQueue;
     private final BitSet insertQueue;
     private final Consumer<Tuple_> retractPropagator;
     private final Consumer<Tuple_> updatePropagator;
@@ -30,10 +30,9 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends Ab
 
     private AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         this.dirtyList = new ArrayList<>(size);
-        // Guesstimate that updates are the most common.
-        this.retractQueue = new BitSet(size / 10);
-        this.updateQueue = new BitSet((size / 10) * 8);
-        this.insertQueue = new BitSet(size / 10);
+        // Updates tend to be dominant; update queue isn't stored, it's deduced as neither insert nor retract.
+        this.retractQueue = new BitSet(size);
+        this.insertQueue = new BitSet(size);
         // Don't create these lambdas over and over again.
         this.retractPropagator = nextNodesTupleLifecycle::retract;
         this.updatePropagator = nextNodesTupleLifecycle::update;
@@ -46,111 +45,170 @@ public sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends Ab
 
     @Override
     public void insert(Carrier_ carrier) {
-        replace(carrier, TupleState.CREATING, insertQueue);
+        PropagationType previousPropagationType = carrier.propagationType;
+        carrier.propagationType = PropagationType.INSERT;
+        switch (previousPropagationType) {
+            case NONE -> makeDirty(carrier, insertQueue);
+            case UPDATE -> insertQueue.set(carrier.positionInDirtyList);
+            case RETRACT -> {
+                int currentPosition = carrier.positionInDirtyList;
+                retractQueue.clear(currentPosition);
+                insertQueue.set(currentPosition);
+            }
+            default ->
+                throw new IllegalStateException(
+                        "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
+        }
+        changeState(carrier, TupleState.CREATING);
     }
 
-    private void replace(Carrier_ carrier, TupleState state, BitSet newQueue) {
-        BitSet currentQueue = carrier.currentQueue;
-        if (currentQueue == null) { // This item is in no queue yet.
-            dirtyList.add(carrier);
-            int position = dirtyList.size() - 1;
-            newQueue.set(position);
-            carrier.currentQueue = newQueue;
-            carrier.positionInDirtyList = position;
-        } else if (currentQueue != newQueue) { // Only move items between queues if necessary.
-            int position = carrier.positionInDirtyList;
-            currentQueue.clear(position);
-            newQueue.set(position);
-            carrier.currentQueue = newQueue;
-        }
-        changeState(carrier, state);
+    private void makeDirty(Carrier_ carrier, BitSet queue) {
+        dirtyList.add(carrier);
+        int position = dirtyList.size() - 1;
+        queue.set(position);
+        carrier.positionInDirtyList = position;
     }
 
     protected abstract void changeState(Carrier_ carrier, TupleState state);
 
     @Override
     public void update(Carrier_ carrier) {
-        replace(carrier, TupleState.UPDATING, updateQueue);
+        PropagationType previousPropagationType = carrier.propagationType;
+        carrier.propagationType = PropagationType.UPDATE;
+        switch (previousPropagationType) {
+            case NONE -> {
+                dirtyList.add(carrier);
+                carrier.positionInDirtyList = dirtyList.size() - 1;
+            }
+            case INSERT -> insertQueue.clear(carrier.positionInDirtyList);
+            case RETRACT -> {
+                int currentPosition = carrier.positionInDirtyList;
+                retractQueue.clear(currentPosition);
+            }
+            default ->
+                throw new IllegalStateException(
+                        "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
+        }
+        changeState(carrier, TupleState.UPDATING);
     }
 
     @Override
     public void retract(Carrier_ carrier, TupleState state) {
-        replace(carrier, state, retractQueue);
+        if (state.isActive() || state == TupleState.DEAD) {
+            throw new IllegalStateException("Impossible state: The state (" + state + ") is not a valid retract state.");
+        }
+        PropagationType previousPropagationType = carrier.propagationType;
+        carrier.propagationType = PropagationType.RETRACT;
+        switch (previousPropagationType) {
+            case NONE -> makeDirty(carrier, retractQueue);
+            case INSERT -> {
+                int currentPosition = carrier.positionInDirtyList;
+                insertQueue.clear(currentPosition);
+                retractQueue.set(currentPosition);
+            }
+            case UPDATE -> retractQueue.set(carrier.positionInDirtyList);
+            default ->
+                throw new IllegalStateException(
+                        "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
+        }
+        changeState(carrier, state);
     }
 
     @Override
-    public void calculateScore(AbstractNode node) {
-        processRetracts(node);
-        processUpdates(node);
-        processInserts(node);
+    public void propagateAndClear() {
+        if (dirtyList.isEmpty()) {
+            return;
+        }
+        processRetracts();
+        processUpdates();
+        processInserts();
         dirtyList.clear();
+        retractQueue.clear();
+        insertQueue.clear();
     }
 
-    private void processRetracts(AbstractNode node) {
+    private void processRetracts() {
         if (retractQueue.isEmpty()) {
             return;
         }
-        for (int i = retractQueue.nextSetBit(0); i != -1; i = retractQueue.nextSetBit(i + 1)) {
+        int i = retractQueue.nextSetBit(0);
+        while (i != -1) {
             Carrier_ carrier = dirtyList.get(i);
             TupleState state = extractState(carrier);
-            Tuple_ tuple = extractTuple(carrier);
             switch (state) {
                 case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
                 case ABORTING -> {
                     changeState(carrier, TupleState.DEAD);
-                    clearMetadata(carrier);
+                    carrier.clearMetadata();
                 }
-                default -> throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" + node
-                        + ") is in an unexpected state (" + state + ").");
             }
+            i = retractQueue.nextSetBit(i + 1);
         }
-        retractQueue.clear();
     }
 
     protected abstract TupleState extractState(Carrier_ carrier);
 
     protected abstract Tuple_ extractTuple(Carrier_ carrier);
 
-    private void clearMetadata(Carrier_ carrier) {
-        carrier.currentQueue = null;
-        carrier.positionInDirtyList = -1;
-    }
-
     private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
         Tuple_ tuple = extractTuple(carrier);
         propagator.accept(tuple);
         changeState(carrier, tupleState);
-        clearMetadata(carrier);
+        carrier.clearMetadata();
     }
 
-    private void processUpdates(AbstractNode node) {
-        process(node, updateQueue, TupleState.UPDATING, updatePropagator);
+    private void processUpdates() {
+        BitSet insertAndRetractQueue = buildInsertAndRetractQueue();
+        if (insertAndRetractQueue == null) { // Iterate over the entire list more efficiently.
+            for (Carrier_ carrier : dirtyList) {
+                propagateInsertOrUpdate(carrier, updatePropagator);
+            }
+        } else { // The gaps in the queue are the updates.
+            int dirtyListSize = dirtyList.size();
+            int i = insertAndRetractQueue.nextClearBit(0);
+            while (i != -1 && i < dirtyListSize) {
+                propagateInsertOrUpdate(dirtyList.get(i), updatePropagator);
+                i = insertAndRetractQueue.nextClearBit(i + 1);
+            }
+        }
     }
 
-    private void process(AbstractNode node, BitSet queue, TupleState expectedState, Consumer<Tuple_> propagator) {
-        if (queue.isEmpty()) {
+    private BitSet buildInsertAndRetractQueue() {
+        boolean noInserts = insertQueue.isEmpty();
+        boolean noRetracts = retractQueue.isEmpty();
+        if (noInserts && noRetracts) {
+            return null;
+        } else if (noInserts) {
+            return retractQueue;
+        } else if (noRetracts) {
+            return insertQueue;
+        } else {
+            BitSet updateQueue = new BitSet();
+            updateQueue.or(insertQueue);
+            updateQueue.or(retractQueue);
+            return updateQueue;
+        }
+    }
+
+    /**
+     * Exists so that implementations can customize the update/insert propagation.
+     *
+     * @param carrier never null
+     * @param propagator never null
+     */
+    protected void propagateInsertOrUpdate(Carrier_ carrier, Consumer<Tuple_> propagator) {
+        propagate(carrier, propagator, TupleState.OK);
+    }
+
+    private void processInserts() {
+        if (insertQueue.isEmpty()) {
             return;
         }
-        for (int i = queue.nextSetBit(0); i != -1; i = queue.nextSetBit(i + 1)) {
-            Carrier_ carrier = dirtyList.get(i);
-            TupleState state = extractState(carrier);
-            if (state != expectedState) {
-                Tuple_ tuple = extractTuple(carrier);
-                throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
-                        node + ") is in an unexpected state (" + state + ").");
-            }
-            processCarrier(carrier);
-            propagate(carrier, propagator, TupleState.OK);
+        int i = insertQueue.nextSetBit(0);
+        while (i != -1) {
+            propagateInsertOrUpdate(dirtyList.get(i), insertPropagator);
+            i = insertQueue.nextSetBit(i + 1);
         }
-        queue.clear();
-    }
-
-    protected void processCarrier(Carrier_ carrier) {
-        // Only necessary for group nodes.
-    }
-
-    private void processInserts(AbstractNode node) {
-        process(node, insertQueue, TupleState.CREATING, insertPropagator);
     }
 
 }

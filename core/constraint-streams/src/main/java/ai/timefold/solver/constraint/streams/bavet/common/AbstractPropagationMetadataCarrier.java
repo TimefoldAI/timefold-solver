@@ -1,7 +1,5 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.BitSet;
-
 /**
  * {@link AbstractDynamicPropagationQueue} requires the items it carries to extend this class,
  * in order to be able to store metadata on them.
@@ -10,7 +8,25 @@ import java.util.BitSet;
 sealed abstract class AbstractPropagationMetadataCarrier
         permits AbstractGroup, ExistsCounter {
 
-    public BitSet currentQueue = null;
-    public int positionInDirtyList = -1;
+    public PropagationType propagationType;
+    public int positionInDirtyList;
+
+    protected AbstractPropagationMetadataCarrier() {
+        clearMetadata();
+    }
+
+    public enum PropagationType {
+
+        NONE,
+        INSERT,
+        UPDATE,
+        RETRACT;
+
+    }
+
+    public void clearMetadata() {
+        propagationType = PropagationType.NONE;
+        positionInDirtyList = -1;
+    }
 
 }

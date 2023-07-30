@@ -258,7 +258,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
 
     @Override
     public void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
     /**

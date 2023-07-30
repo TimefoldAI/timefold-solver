@@ -69,7 +69,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
 
     @Override
     public void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
 }

@@ -165,7 +165,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
 
     @Override
     public final void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
 }

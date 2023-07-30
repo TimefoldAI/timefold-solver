@@ -57,7 +57,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         } else if (testFiltering(tuple)) {
             switch (tupleState) {
                 case DEAD, OK -> // Already went through calculateScore(), this is a fresh update.
-                        propagationQueue.update(tuple);
+                    propagationQueue.update(tuple);
                 case CREATING, UPDATING -> {
                     // No need to update the tuple, it is already in the correct state.
                 }
@@ -88,7 +88,7 @@ public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
 
     @Override
     public void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
 }

@@ -33,10 +33,11 @@ final class GroupPropagationQueue<Tuple_ extends AbstractTuple, ResultContainer_
     }
 
     @Override
-    protected void processCarrier(AbstractGroup<Tuple_, ResultContainer_> group) {
+    protected void propagateInsertOrUpdate(AbstractGroup<Tuple_, ResultContainer_> group, Consumer<Tuple_> propagator) {
         if (groupProcessor != null) {
             groupProcessor.accept(group);
         }
+        super.propagateInsertOrUpdate(group, propagator);
     }
 
 }

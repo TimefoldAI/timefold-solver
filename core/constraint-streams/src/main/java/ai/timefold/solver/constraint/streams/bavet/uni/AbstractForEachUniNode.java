@@ -74,7 +74,7 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     @Override
     public final void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
     @Override

@@ -172,7 +172,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     @Override
     public final void calculateScore() {
-        propagationQueue.calculateScore(this);
+        propagationQueue.propagateAndClear();
     }
 
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {
