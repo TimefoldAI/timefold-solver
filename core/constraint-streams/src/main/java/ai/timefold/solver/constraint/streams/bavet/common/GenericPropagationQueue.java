@@ -4,9 +4,10 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
-final class FlattenLastPropagationQueue<Tuple_ extends AbstractTuple> extends AbstractStaticPropagationQueue<Tuple_, Tuple_> {
+public final class GenericPropagationQueue<Tuple_ extends AbstractTuple>
+        extends AbstractStaticPropagationQueue<Tuple_, Tuple_> {
 
-    public FlattenLastPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    public GenericPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         super(nextNodesTupleLifecycle);
     }
 
