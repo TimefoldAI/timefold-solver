@@ -12,7 +12,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
 /**
  * This implementation has the capability to move tuples between the individual propagation queues.
- * This is significantly less efficient than the {@link AbstractStaticPropagationQueue}.
+ * This is significantly less efficient than the {@link StaticPropagationQueue}.
  *
  * @param <Carrier_>
  * @param <Tuple_>
