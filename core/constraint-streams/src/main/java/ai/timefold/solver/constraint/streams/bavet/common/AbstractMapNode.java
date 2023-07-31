@@ -10,12 +10,12 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
 
     private final int inputStoreIndex;
     protected final int outputStoreSize;
-    private final GenericPropagationQueue<OutTuple_> propagationQueue;
+    private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractMapNode(int inputStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, int outputStoreSize) {
         this.inputStoreIndex = inputStoreIndex;
         this.outputStoreSize = outputStoreSize;
-        this.propagationQueue = new GenericPropagationQueue<>(nextNodesTupleLifecycle);
+        this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override

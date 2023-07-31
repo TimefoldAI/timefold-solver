@@ -5,6 +5,7 @@ import java.util.function.BiPredicate;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.api.score.Score;
 
 final class BavetFilterBiConstraintStream<Solution_, A, B>
@@ -28,9 +29,8 @@ final class BavetFilterBiConstraintStream<Solution_, A, B>
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        var node = new FilterBiNode<>(inputStoreIndex, predicate, buildHelper.getAggregatedTupleLifecycle(childStreamList));
-        buildHelper.addNode(node, this);
+        buildHelper.<BiTuple<A, B>> putInsertUpdateRetract(this, childStreamList,
+                tupleLifecycle -> new ConditionalBiTupleLifecycle<>(predicate, tupleLifecycle));
     }
 
     // ************************************************************************

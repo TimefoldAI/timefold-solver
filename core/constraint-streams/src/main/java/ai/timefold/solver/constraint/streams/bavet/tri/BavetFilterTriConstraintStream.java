@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
 
@@ -28,9 +29,8 @@ final class BavetFilterTriConstraintStream<Solution_, A, B, C>
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        var node = new FilterTriNode<>(inputStoreIndex, predicate, buildHelper.getAggregatedTupleLifecycle(childStreamList));
-        buildHelper.addNode(node, this);
+        buildHelper.<TriTuple<A, B, C>> putInsertUpdateRetract(this, childStreamList,
+                tupleLifecycle -> new ConditionalTriTupleLifecycle<>(predicate, tupleLifecycle));
     }
 
     // ************************************************************************

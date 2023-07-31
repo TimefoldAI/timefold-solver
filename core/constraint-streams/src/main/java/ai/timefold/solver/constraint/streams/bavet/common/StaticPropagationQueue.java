@@ -16,9 +16,8 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  *
  * @param <Tuple_>
  */
-public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends AbstractTuple>
-        implements PropagationQueue<Tuple_>
-        permits FilterPropagationQueue, GenericPropagationQueue {
+public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
+        implements PropagationQueue<Tuple_> {
 
     private final Deque<Tuple_> retractQueue;
     private final Deque<Tuple_> updateQueue;
@@ -27,7 +26,7 @@ public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends Abstr
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
 
-    protected AbstractStaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
+    public StaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         // Guesstimate that updates are dominant.
         this.retractQueue = new ArrayDeque<>(size / 20);
         this.updateQueue = new ArrayDeque<>((size / 20) * 18);
@@ -38,23 +37,19 @@ public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends Abstr
         this.insertPropagator = nextNodesTupleLifecycle::insert;
     }
 
-    protected AbstractStaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    public StaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this(nextNodesTupleLifecycle, 1000);
     }
 
-    protected abstract TupleState extractState(Tuple_ carrier);
-
-    protected abstract void changeState(Tuple_ carrier, TupleState state);
-
     @Override
     public void insert(Tuple_ carrier) {
-        changeState(carrier, TupleState.CREATING);
+        carrier.state = TupleState.CREATING;
         insertQueue.add(carrier);
     }
 
     @Override
     public void update(Tuple_ carrier) {
-        changeState(carrier, TupleState.UPDATING);
+        carrier.state = TupleState.UPDATING;
         updateQueue.add(carrier);
     }
 
@@ -63,7 +58,7 @@ public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends Abstr
         if (state.isActive() || state == TupleState.DEAD) {
             throw new IllegalStateException("Impossible state: The state (" + state + ") is not a valid retract state.");
         }
-        changeState(carrier, state);
+        carrier.state = state;
         retractQueue.add(carrier);
     }
 
@@ -79,10 +74,10 @@ public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends Abstr
             return;
         }
         for (Tuple_ tuple : retractQueue) {
-            TupleState state = extractState(tuple);
+            TupleState state = tuple.state;
             switch (state) {
                 case DYING -> propagate(tuple, retractPropagator, TupleState.DEAD);
-                case ABORTING -> changeState(tuple, TupleState.DEAD);
+                case ABORTING -> tuple.state = TupleState.DEAD;
             }
         }
         retractQueue.clear();
@@ -90,7 +85,7 @@ public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends Abstr
 
     private void propagate(Tuple_ tuple, Consumer<Tuple_> propagator, TupleState tupleState) {
         propagator.accept(tuple);
-        changeState(tuple, tupleState);
+        tuple.state = tupleState;
     }
 
     private void processUpdates() {
@@ -102,7 +97,7 @@ public sealed abstract class AbstractStaticPropagationQueue<Tuple_ extends Abstr
             return;
         }
         for (Tuple_ tuple : dirtyQueue) {
-            TupleState state = extractState(tuple);
+            TupleState state = tuple.state;
             if (state == TupleState.DEAD) {
                 /*
                  * DEAD signifies the tuple was both in insert/update and retract queues.

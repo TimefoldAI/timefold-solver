@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.score.Score;
 
 final class BavetFilterUniConstraintStream<Solution_, A>
@@ -27,9 +28,8 @@ final class BavetFilterUniConstraintStream<Solution_, A>
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        var node = new FilterUniNode<>(inputStoreIndex, predicate, buildHelper.getAggregatedTupleLifecycle(childStreamList));
-        buildHelper.addNode(node, this);
+        buildHelper.<UniTuple<A>> putInsertUpdateRetract(this, childStreamList,
+                tupleLifecycle -> new ConditionalUniTupleLifecycle<>(predicate, tupleLifecycle));
     }
 
     // ************************************************************************

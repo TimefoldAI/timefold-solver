@@ -6,11 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractConditionalTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.common.AbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
@@ -59,6 +62,13 @@ public final class NodeBuildHelper<Score_ extends Score<Score_>> {
     public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(ConstraintStream stream,
             TupleLifecycle<Tuple_> tupleLifecycle) {
         tupleLifecycleMap.put(stream, tupleLifecycle);
+    }
+
+    public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(ConstraintStream stream,
+            List<? extends AbstractConstraintStream> childStreamList,
+            Function<TupleLifecycle<Tuple_>, AbstractConditionalTupleLifecycle<Tuple_>> tupleLifecycleFunction) {
+        TupleLifecycle<Tuple_> tupleLifecycle = getAggregatedTupleLifecycle(childStreamList);
+        putInsertUpdateRetract(stream, tupleLifecycleFunction.apply(tupleLifecycle));
     }
 
     public <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> getAggregatedTupleLifecycle(
