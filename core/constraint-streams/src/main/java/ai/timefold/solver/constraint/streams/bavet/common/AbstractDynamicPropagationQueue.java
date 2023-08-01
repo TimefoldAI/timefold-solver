@@ -29,6 +29,11 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
     private final Consumer<Tuple_> insertPropagator;
 
     private AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
+        /*
+         * All dirty carriers are stored in a list, never moved, never removed unless after propagation.
+         * Their unchanging position in the list is their index for the bitset-based queues.
+         * This way, we can cheaply move them between the queues.
+         */
         this.dirtyList = new ArrayList<>(size);
         // Updates tend to be dominant; update queue isn't stored, it's deduced as neither insert nor retract.
         this.retractQueue = new BitSet(size);
