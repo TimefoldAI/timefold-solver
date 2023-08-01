@@ -17,7 +17,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @param <Carrier_>
  * @param <Tuple_>
  */
-public sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractPropagationMetadataCarrier, Tuple_ extends AbstractTuple>
+sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractPropagationMetadataCarrier, Tuple_ extends AbstractTuple>
         implements PropagationQueue<Carrier_>
         permits GroupPropagationQueue, IfExistsPropagationQueue {
 
