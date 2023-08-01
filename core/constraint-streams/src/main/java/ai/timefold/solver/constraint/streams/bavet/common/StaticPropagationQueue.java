@@ -74,8 +74,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
             return;
         }
         for (Tuple_ tuple : retractQueue) {
-            TupleState state = tuple.state;
-            switch (state) {
+            switch (tuple.state) {
                 case DYING -> propagate(tuple, retractPropagator, TupleState.DEAD);
                 case ABORTING -> tuple.state = TupleState.DEAD;
             }
@@ -97,8 +96,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
             return;
         }
         for (Tuple_ tuple : dirtyQueue) {
-            TupleState state = tuple.state;
-            if (state == TupleState.DEAD) {
+            if (tuple.state == TupleState.DEAD) {
                 /*
                  * DEAD signifies the tuple was both in insert/update and retract queues.
                  * This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
