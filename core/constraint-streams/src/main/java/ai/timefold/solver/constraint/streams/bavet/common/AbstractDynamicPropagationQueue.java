@@ -81,10 +81,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
                 carrier.positionInDirtyList = dirtyList.size() - 1;
             }
             case INSERT -> insertQueue.clear(carrier.positionInDirtyList);
-            case RETRACT -> {
-                int currentPosition = carrier.positionInDirtyList;
-                retractQueue.clear(currentPosition);
-            }
+            case RETRACT -> retractQueue.clear(carrier.positionInDirtyList);
             default ->
                 throw new IllegalStateException(
                         "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
