@@ -8,25 +8,6 @@ package ai.timefold.solver.constraint.streams.bavet.common;
 sealed abstract class AbstractPropagationMetadataCarrier
         permits AbstractGroup, ExistsCounter {
 
-    public PropagationType propagationType;
-    public int positionInDirtyList;
-
-    protected AbstractPropagationMetadataCarrier() {
-        clearMetadata();
-    }
-
-    public enum PropagationType {
-
-        NONE,
-        INSERT,
-        UPDATE,
-        RETRACT;
-
-    }
-
-    public void clearMetadata() {
-        propagationType = PropagationType.NONE;
-        positionInDirtyList = -1;
-    }
+    public int positionInDirtyList = -1;
 
 }

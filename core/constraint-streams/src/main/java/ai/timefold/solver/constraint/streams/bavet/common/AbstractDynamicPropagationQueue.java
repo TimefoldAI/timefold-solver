@@ -5,7 +5,6 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractPropagationMetadataCarrier.PropagationType;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
@@ -50,18 +49,19 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void insert(Carrier_ carrier) {
-        PropagationType previousPropagationType = carrier.propagationType;
-        carrier.propagationType = PropagationType.INSERT;
-        switch (previousPropagationType) {
-            case NONE -> makeDirty(carrier, insertQueue);
-            case UPDATE -> insertQueue.set(carrier.positionInDirtyList);
-            case RETRACT -> {
-                int currentPosition = carrier.positionInDirtyList;
-                retractQueue.clear(currentPosition);
-                insertQueue.set(currentPosition);
+        int positionInDirtyList = carrier.positionInDirtyList;
+        if (positionInDirtyList < 0) {
+            makeDirty(carrier, insertQueue);
+        } else {
+            switch (extractState(carrier)) {
+                case UPDATING -> insertQueue.set(positionInDirtyList);
+                case ABORTING, DYING -> {
+                    retractQueue.clear(positionInDirtyList);
+                    insertQueue.set(positionInDirtyList);
+                }
+                default ->
+                    throw new IllegalStateException("Impossible state: Cannot insert (" + carrier + "), already inserting.");
             }
-            default ->
-                throw new IllegalStateException("Impossible state: Cannot insert (" + carrier + "), already inserting.");
         }
         changeState(carrier, TupleState.CREATING);
     }
@@ -77,17 +77,17 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void update(Carrier_ carrier) {
-        PropagationType previousPropagationType = carrier.propagationType;
-        carrier.propagationType = PropagationType.UPDATE;
-        switch (previousPropagationType) {
-            case NONE -> {
-                dirtyList.add(carrier);
-                carrier.positionInDirtyList = dirtyList.size() - 1;
-            }
-            case INSERT -> insertQueue.clear(carrier.positionInDirtyList);
-            case RETRACT -> retractQueue.clear(carrier.positionInDirtyList);
-            default -> {
-                // Skip double updates.
+        int positionInDirtyList = carrier.positionInDirtyList;
+        if (positionInDirtyList < 0) {
+            dirtyList.add(carrier);
+            carrier.positionInDirtyList = dirtyList.size() - 1;
+        } else {
+            switch (extractState(carrier)) {
+                case CREATING -> insertQueue.clear(positionInDirtyList);
+                case ABORTING, DYING -> retractQueue.clear(positionInDirtyList);
+                default -> {
+                    // Skip double updates.
+                }
             }
         }
         changeState(carrier, TupleState.UPDATING);
@@ -98,19 +98,20 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         if (state.isActive() || state == TupleState.DEAD) {
             throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
         }
-        PropagationType previousPropagationType = carrier.propagationType;
-        carrier.propagationType = PropagationType.RETRACT;
-        switch (previousPropagationType) {
-            case NONE -> makeDirty(carrier, retractQueue);
-            case INSERT -> {
-                int currentPosition = carrier.positionInDirtyList;
-                insertQueue.clear(currentPosition);
-                retractQueue.set(currentPosition);
-            }
-            case UPDATE -> retractQueue.set(carrier.positionInDirtyList);
-            default ->
-                throw new IllegalStateException("Impossible state: Cannot retract (" + carrier + "), already retracting.");
+        int positionInDirtyList = carrier.positionInDirtyList;
+        if (positionInDirtyList < 0) {
+            makeDirty(carrier, retractQueue);
+        } else {
+            switch (extractState(carrier)) {
+                case CREATING -> {
+                    insertQueue.clear(positionInDirtyList);
+                    retractQueue.set(positionInDirtyList);
+                }
+                case UPDATING -> retractQueue.set(positionInDirtyList);
+                default ->
+                    throw new IllegalStateException("Impossible state: Cannot retract (" + carrier + "), already retracting.");
 
+            }
         }
         changeState(carrier, state);
     }
@@ -148,7 +149,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     private void clean(Carrier_ carrier, TupleState tupleState) {
         changeState(carrier, tupleState);
-        carrier.clearMetadata();
+        carrier.positionInDirtyList = -1;
     }
 
     protected abstract Tuple_ extractTuple(Carrier_ carrier);
