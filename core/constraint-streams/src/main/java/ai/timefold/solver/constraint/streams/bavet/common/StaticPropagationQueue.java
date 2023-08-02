@@ -83,8 +83,9 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     }
 
     private void propagate(Tuple_ tuple, Consumer<Tuple_> propagator, TupleState tupleState) {
-        propagator.accept(tuple);
+        // Change state before propagation, so that the next node can't make decisions on the original state.
         tuple.state = tupleState;
+        propagator.accept(tuple);
     }
 
     private void processUpdates() {
@@ -96,13 +97,16 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
             return;
         }
         for (Tuple_ tuple : dirtyQueue) {
-            if (tuple.state == TupleState.DEAD) {
+            if (!tuple.state.isDirty()) {
                 /*
                  * DEAD signifies the tuple was both in insert/update and retract queues.
                  * This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
                  * We can safely ignore the later insert/update,
                  * as by this point the more recent retract has already been processed,
-                 * as signified by the DEAD state; the tuple already died or was aborted.
+                 * setting the state to DEAD.
+                 *
+                 * Similarly OK signifies that the tuple was already updated once
+                 * and another update would be redundant.
                  */
                 continue;
             }

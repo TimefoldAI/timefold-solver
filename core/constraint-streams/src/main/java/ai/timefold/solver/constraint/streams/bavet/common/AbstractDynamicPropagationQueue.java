@@ -139,10 +139,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
             TupleState state = extractState(carrier);
             switch (state) {
                 case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
-                case ABORTING -> {
-                    changeState(carrier, TupleState.DEAD);
-                    carrier.clearMetadata();
-                }
+                case ABORTING -> clean(carrier, TupleState.DEAD);
             }
             i = retractQueue.nextSetBit(i + 1);
         }
@@ -150,13 +147,16 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     protected abstract TupleState extractState(Carrier_ carrier);
 
+    private void clean(Carrier_ carrier, TupleState tupleState) {
+        changeState(carrier, tupleState);
+        carrier.clearMetadata();
+    }
+
     protected abstract Tuple_ extractTuple(Carrier_ carrier);
 
     private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
-        Tuple_ tuple = extractTuple(carrier);
-        propagator.accept(tuple);
-        changeState(carrier, tupleState);
-        carrier.clearMetadata();
+        clean(carrier, tupleState); // Hide original state from the next node by doing this before propagation.
+        propagator.accept(extractTuple(carrier));
     }
 
     private void processUpdates() {
