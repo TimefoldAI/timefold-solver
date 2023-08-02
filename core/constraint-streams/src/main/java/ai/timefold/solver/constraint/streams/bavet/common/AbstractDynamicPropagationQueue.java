@@ -61,8 +61,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
                 insertQueue.set(currentPosition);
             }
             default ->
-                throw new IllegalStateException(
-                        "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
+                throw new IllegalStateException("Impossible state: Cannot insert (" + carrier + "), already inserting.");
         }
         changeState(carrier, TupleState.CREATING);
     }
@@ -87,9 +86,9 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
             }
             case INSERT -> insertQueue.clear(carrier.positionInDirtyList);
             case RETRACT -> retractQueue.clear(carrier.positionInDirtyList);
-            default ->
-                throw new IllegalStateException(
-                        "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
+            default -> {
+                // Skip double updates.
+            }
         }
         changeState(carrier, TupleState.UPDATING);
     }
@@ -97,7 +96,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
     @Override
     public void retract(Carrier_ carrier, TupleState state) {
         if (state.isActive() || state == TupleState.DEAD) {
-            throw new IllegalStateException("Impossible state: The state (" + state + ") is not a valid retract state.");
+            throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
         }
         PropagationType previousPropagationType = carrier.propagationType;
         carrier.propagationType = PropagationType.RETRACT;
@@ -110,8 +109,8 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
             }
             case UPDATE -> retractQueue.set(carrier.positionInDirtyList);
             default ->
-                throw new IllegalStateException(
-                        "Impossible state: The propagationType (" + previousPropagationType + ") is not implemented.");
+                throw new IllegalStateException("Impossible state: Cannot retract (" + carrier + "), already retracting.");
+
         }
         changeState(carrier, state);
     }

@@ -27,7 +27,7 @@ public abstract sealed class AbstractTuple permits UniTuple, BiTuple, TriTuple, 
     private final boolean storeIsArray;
 
     private Object store;
-    public TupleState state = TupleState.CREATING;
+    public TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
 
     protected AbstractTuple(int storeSize) {
         this.store = (storeSize < 2) ? null : new Object[storeSize];

@@ -43,12 +43,18 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void insert(Tuple_ carrier) {
+        if (carrier.state == TupleState.CREATING) {
+            throw new IllegalStateException("Impossible state: The tuple (" + carrier + ") is already in the insert queue.");
+        }
         carrier.state = TupleState.CREATING;
         insertQueue.add(carrier);
     }
 
     @Override
     public void update(Tuple_ carrier) {
+        if (carrier.state == TupleState.UPDATING) { // Skip double updates.
+            return;
+        }
         carrier.state = TupleState.UPDATING;
         updateQueue.add(carrier);
     }
@@ -56,7 +62,9 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     @Override
     public void retract(Tuple_ carrier, TupleState state) {
         if (state.isActive() || state == TupleState.DEAD) {
-            throw new IllegalStateException("Impossible state: The state (" + state + ") is not a valid retract state.");
+            throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
+        } else if (carrier.state == TupleState.ABORTING || carrier.state == TupleState.DYING) {
+            throw new IllegalStateException("Impossible state: The tuple (" + carrier + ") is already in the retract queue.");
         }
         carrier.state = state;
         retractQueue.add(carrier);
@@ -97,16 +105,13 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
             return;
         }
         for (Tuple_ tuple : dirtyQueue) {
-            if (!tuple.state.isDirty()) {
+            if (tuple.state == TupleState.DEAD) {
                 /*
                  * DEAD signifies the tuple was both in insert/update and retract queues.
                  * This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
                  * We can safely ignore the later insert/update,
                  * as by this point the more recent retract has already been processed,
                  * setting the state to DEAD.
-                 *
-                 * Similarly OK signifies that the tuple was already updated once
-                 * and another update would be redundant.
                  */
                 continue;
             }
