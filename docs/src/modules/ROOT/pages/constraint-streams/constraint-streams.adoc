@@ -460,7 +460,8 @@ It does not create cartesian products and therefore generally performs better.
 
 ==== Evaluation of multiple joiners
 
-When using multiple joiners, there are some important considerations to keep in mind:
+When using multiple joiners, there are some important considerations to keep in mind.
+Consider the following example:
 
 [source,java,options="nowrap"]
 ----
@@ -477,7 +478,7 @@ When indexing joiners (such as `equal()` and `lessThan()`) check their indexes,
 they take the input tuple and create a set of keys that will enter the index.
 These keys are different for the left and right side of the joiner.
 
-From the left side,
+In the above example, from the left side,
 the key is `[VehicleShift instance && result of calling VehicleShift.getMaxTravelTime()]`.
 (Using the first mapping function of each joiner.)
 From the right side,
