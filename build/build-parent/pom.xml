@@ -21,7 +21,7 @@
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.4.8</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.20.0</version.org.apache.logging.log4j>
-    <version.io.quarkus>3.2.2.Final</version.io.quarkus>
+    <version.io.quarkus>3.2.3.Final</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.commons.text>1.10.0</version.org.apache.commons.text>
     <version.org.apache.poi>5.2.3</version.org.apache.poi>
