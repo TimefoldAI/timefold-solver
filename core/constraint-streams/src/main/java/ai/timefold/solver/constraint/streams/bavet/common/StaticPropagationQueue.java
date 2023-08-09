@@ -71,13 +71,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     }
 
     @Override
-    public void propagateAndClear() {
-        processRetracts();
-        processUpdates();
-        processInserts();
-    }
-
-    private void processRetracts() {
+    public void propagateRetracts() {
         if (retractQueue.isEmpty()) {
             return;
         }
@@ -96,7 +90,8 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
         propagator.accept(tuple);
     }
 
-    private void processUpdates() {
+    @Override
+    public void propagateUpdates() {
         process(updateQueue, updatePropagator);
     }
 
@@ -120,8 +115,20 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
         dirtyQueue.clear();
     }
 
-    private void processInserts() {
+    @Override
+    public void propagateInserts() {
         process(insertQueue, insertPropagator);
+    }
+
+    @Override
+    public void clear() {
+        if (!retractQueue.isEmpty()) {
+            throw new IllegalStateException("Impossible state: The retract queue (" + retractQueue + ") is not empty.");
+        } else if (!updateQueue.isEmpty()) {
+            throw new IllegalStateException("Impossible state: The update queue (" + updateQueue + ") is not empty.");
+        } else if (!insertQueue.isEmpty()) {
+            throw new IllegalStateException("Impossible state: The insert queue (" + insertQueue + ") is not empty.");
+        }
     }
 
 }

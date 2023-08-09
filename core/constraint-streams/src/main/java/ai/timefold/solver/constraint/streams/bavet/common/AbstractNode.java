@@ -6,7 +6,11 @@ public abstract class AbstractNode {
     private long layerIndex;
 
     public final void calculateScore() {
-        getPropagationQueue().propagateAndClear();
+        PropagationQueue<?> propagationQueue = getPropagationQueue();
+        propagationQueue.propagateRetracts();
+        propagationQueue.propagateUpdates();
+        propagationQueue.propagateInserts();
+        propagationQueue.clear();
     }
 
     abstract protected PropagationQueue<?> getPropagationQueue();

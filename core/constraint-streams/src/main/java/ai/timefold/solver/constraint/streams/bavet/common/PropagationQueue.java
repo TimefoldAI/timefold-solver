@@ -28,6 +28,12 @@ public sealed interface PropagationQueue<T> permits AbstractDynamicPropagationQu
 
     void retract(T item, TupleState state);
 
-    void propagateAndClear();
+    void propagateRetracts();
+
+    void propagateUpdates();
+
+    void propagateInserts();
+
+    void clear();
 
 }

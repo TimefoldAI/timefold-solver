@@ -73,6 +73,8 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         carrier.positionInDirtyList = position;
     }
 
+    protected abstract TupleState extractState(Carrier_ carrier);
+
     protected abstract void changeState(Carrier_ carrier, TupleState state);
 
     @Override
@@ -117,19 +119,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
     }
 
     @Override
-    public void propagateAndClear() {
-        if (dirtyList.isEmpty()) {
-            return;
-        }
-        processRetracts();
-        processUpdates();
-        processInserts();
-        dirtyList.clear();
-        retractQueue.clear();
-        insertQueue.clear();
-    }
-
-    private void processRetracts() {
+    public void propagateRetracts() {
         if (retractQueue.isEmpty()) {
             return;
         }
@@ -145,21 +135,20 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         }
     }
 
-    protected abstract TupleState extractState(Carrier_ carrier);
+    private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
+        clean(carrier, tupleState); // Hide original state from the next node by doing this before propagation.
+        propagator.accept(extractTuple(carrier));
+    }
+
+    protected abstract Tuple_ extractTuple(Carrier_ carrier);
 
     protected void clean(Carrier_ carrier, TupleState tupleState) {
         changeState(carrier, tupleState);
         carrier.positionInDirtyList = -1;
     }
 
-    protected abstract Tuple_ extractTuple(Carrier_ carrier);
-
-    private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
-        clean(carrier, tupleState); // Hide original state from the next node by doing this before propagation.
-        propagator.accept(extractTuple(carrier));
-    }
-
-    private void processUpdates() {
+    @Override
+    public void propagateUpdates() {
         BitSet insertAndRetractQueue = buildInsertAndRetractQueue();
         if (insertAndRetractQueue == null) { // Iterate over the entire list more efficiently.
             for (Carrier_ carrier : dirtyList) {
@@ -192,6 +181,18 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         }
     }
 
+    @Override
+    public void propagateInserts() {
+        if (insertQueue.isEmpty()) {
+            return;
+        }
+        int i = insertQueue.nextSetBit(0);
+        while (i != -1) {
+            propagateInsertOrUpdate(dirtyList.get(i), insertPropagator);
+            i = insertQueue.nextSetBit(i + 1);
+        }
+    }
+
     /**
      * Exists so that implementations can customize the update/insert propagation.
      *
@@ -202,15 +203,11 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         propagate(carrier, propagator, TupleState.OK);
     }
 
-    private void processInserts() {
-        if (insertQueue.isEmpty()) {
-            return;
-        }
-        int i = insertQueue.nextSetBit(0);
-        while (i != -1) {
-            propagateInsertOrUpdate(dirtyList.get(i), insertPropagator);
-            i = insertQueue.nextSetBit(i + 1);
-        }
+    @Override
+    public void clear() {
+        dirtyList.clear();
+        retractQueue.clear();
+        insertQueue.clear();
     }
 
 }
