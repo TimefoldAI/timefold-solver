@@ -147,7 +147,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     protected abstract TupleState extractState(Carrier_ carrier);
 
-    private void clean(Carrier_ carrier, TupleState tupleState) {
+    protected void clean(Carrier_ carrier, TupleState tupleState) {
         changeState(carrier, tupleState);
         carrier.positionInDirtyList = -1;
     }
