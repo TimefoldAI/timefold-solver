@@ -29,7 +29,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     }
 
     @Override
-    public void insert(InTuple_ tuple) {
+    public final void insert(InTuple_ tuple) {
         if (tuple.getStore(flattenLastStoreIndex) != null) {
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple
                     + ") was already added in the tupleStore.");
@@ -68,7 +68,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     protected abstract OutTuple_ createTuple(InTuple_ originalTuple, FlattenedItem_ item);
 
     @Override
-    public void update(InTuple_ tuple) {
+    public final void update(InTuple_ tuple) {
         List<OutTuple_> outTupleList = tuple.getStore(flattenLastStoreIndex);
         if (outTupleList == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s).
@@ -144,7 +144,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     protected abstract FlattenedItem_ getEffectiveFactOut(OutTuple_ outTuple);
 
     @Override
-    public void retract(InTuple_ tuple) {
+    public final void retract(InTuple_ tuple) {
         List<OutTuple_> outTupleList = tuple.removeStore(flattenLastStoreIndex);
         if (outTupleList == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -165,8 +165,18 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     }
 
     @Override
-    protected final StaticPropagationQueue<OutTuple_> getPropagationQueue() {
-        return propagationQueue;
+    public final void propagateRetracts() {
+        propagationQueue.propagateRetracts();
+    }
+
+    @Override
+    public final void propagateUpdates() {
+        propagationQueue.propagateUpdates();
+    }
+
+    @Override
+    public final void propagateInserts() {
+        propagationQueue.propagateInserts();
     }
 
 }

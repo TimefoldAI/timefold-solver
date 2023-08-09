@@ -171,8 +171,18 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     }
 
     @Override
-    protected final IfExistsPropagationQueue<LeftTuple_> getPropagationQueue() {
-        return propagationQueue;
+    public final void propagateRetracts() {
+        propagationQueue.propagateRetracts();
+    }
+
+    @Override
+    public final void propagateUpdates() {
+        propagationQueue.propagateUpdates();
+    }
+
+    @Override
+    public final void propagateInserts() {
+        propagationQueue.propagateInserts();
     }
 
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {

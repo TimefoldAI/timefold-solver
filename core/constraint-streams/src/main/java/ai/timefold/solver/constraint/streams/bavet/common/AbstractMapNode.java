@@ -19,7 +19,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
     }
 
     @Override
-    public void insert(InTuple_ tuple) {
+    public final void insert(InTuple_ tuple) {
         if (tuple.getStore(inputStoreIndex) != null) {
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple
                     + ") was already added in the tupleStore.");
@@ -32,7 +32,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
     protected abstract OutTuple_ map(InTuple_ inTuple);
 
     @Override
-    public void update(InTuple_ tuple) {
+    public final void update(InTuple_ tuple) {
         OutTuple_ outTuple = tuple.getStore(inputStoreIndex);
         if (outTuple == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -58,7 +58,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
     protected abstract boolean remap(InTuple_ inTuple, OutTuple_ oldOutTuple);
 
     @Override
-    public void retract(InTuple_ tuple) {
+    public final void retract(InTuple_ tuple) {
         OutTuple_ outTuple = tuple.removeStore(inputStoreIndex);
         if (outTuple == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -68,7 +68,18 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
     }
 
     @Override
-    protected final StaticPropagationQueue<OutTuple_> getPropagationQueue() {
-        return propagationQueue;
+    public final void propagateRetracts() {
+        propagationQueue.propagateRetracts();
     }
+
+    @Override
+    public final void propagateUpdates() {
+        propagationQueue.propagateUpdates();
+    }
+
+    @Override
+    public final void propagateInserts() {
+        propagationQueue.propagateInserts();
+    }
+
 }

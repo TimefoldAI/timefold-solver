@@ -73,8 +73,18 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     @Override
-    protected final StaticPropagationQueue<UniTuple<A>> getPropagationQueue() {
-        return propagationQueue;
+    public final void propagateRetracts() {
+        propagationQueue.propagateRetracts();
+    }
+
+    @Override
+    public final void propagateUpdates() {
+        propagationQueue.propagateUpdates();
+    }
+
+    @Override
+    public final void propagateInserts() {
+        propagationQueue.propagateInserts();
     }
 
     public final Class<A> getForEachClass() {

@@ -164,8 +164,18 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     @Override
-    protected final StaticPropagationQueue<OutTuple_> getPropagationQueue() {
-        return propagationQueue;
+    public final void propagateRetracts() {
+        propagationQueue.propagateRetracts();
+    }
+
+    @Override
+    public final void propagateUpdates() {
+        propagationQueue.propagateUpdates();
+    }
+
+    @Override
+    public final void propagateInserts() {
+        propagationQueue.propagateInserts();
     }
 
 }

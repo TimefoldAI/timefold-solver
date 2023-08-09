@@ -93,7 +93,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     }
 
     @Override
-    public void insert(InTuple_ tuple) {
+    public final void insert(InTuple_ tuple) {
         if (tuple.getStore(groupStoreIndex) != null) {
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple
                     + ") was already added in the tupleStore.");
@@ -173,7 +173,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     }
 
     @Override
-    public void update(InTuple_ tuple) {
+    public final void update(InTuple_ tuple) {
         AbstractGroup<OutTuple_, ResultContainer_> oldGroup = tuple.getStore(groupStoreIndex);
         if (oldGroup == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -251,7 +251,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     }
 
     @Override
-    public void retract(InTuple_ tuple) {
+    public final void retract(InTuple_ tuple) {
         AbstractGroup<OutTuple_, ResultContainer_> group = tuple.removeStore(groupStoreIndex);
         if (group == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -267,8 +267,18 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     protected abstract Runnable accumulate(ResultContainer_ resultContainer, InTuple_ tuple);
 
     @Override
-    protected final GroupPropagationQueue<OutTuple_, ResultContainer_> getPropagationQueue() {
-        return propagationQueue;
+    public final void propagateRetracts() {
+        propagationQueue.propagateRetracts();
+    }
+
+    @Override
+    public final void propagateUpdates() {
+        propagationQueue.propagateUpdates();
+    }
+
+    @Override
+    public final void propagateInserts() {
+        propagationQueue.propagateInserts();
     }
 
     /**

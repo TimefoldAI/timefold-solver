@@ -34,6 +34,4 @@ public sealed interface PropagationQueue<T> permits AbstractDynamicPropagationQu
 
     void propagateInserts();
 
-    void clear();
-
 }
