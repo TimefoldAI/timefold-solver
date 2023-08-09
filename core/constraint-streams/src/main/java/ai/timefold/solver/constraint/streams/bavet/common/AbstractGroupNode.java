@@ -12,7 +12,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
 public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple, GroupKey_, ResultContainer_, Result_>
-        extends AbstractNode<AbstractGroup<OutTuple_, ResultContainer_>, GroupPropagationQueue<OutTuple_, ResultContainer_>>
+        extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
     private final int groupStoreIndex;

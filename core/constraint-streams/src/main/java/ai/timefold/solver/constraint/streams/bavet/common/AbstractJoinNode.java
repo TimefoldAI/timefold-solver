@@ -25,7 +25,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  * @param <Right_>
  */
 public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_, OutTuple_ extends AbstractTuple>
-        extends AbstractNode<OutTuple_, StaticPropagationQueue<OutTuple_>>
+        extends AbstractNode
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
     protected final int inputStoreIndexLeftOutTupleList;

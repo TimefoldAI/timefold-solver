@@ -8,9 +8,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
+import ai.timefold.solver.constraint.streams.bavet.common.AbstractIfExistsNode;
+import ai.timefold.solver.constraint.streams.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
@@ -66,6 +72,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         long nextNodeId = 0;
         for (AbstractNode node : nodeList) {
             node.setId(nextNodeId++);
+            node.setLayerIndex(determineLayerIndex(node, buildHelper));
             if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
                 Class<?> forEachClass = forEachUniNode.getForEachClass();
                 List<AbstractForEachUniNode<Object>> forEachUniNodeList =
@@ -79,7 +86,41 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 forEachUniNodeList.add((AbstractForEachUniNode<Object>) forEachUniNode);
             }
         }
-        return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, nodeList.toArray(new AbstractNode[0]));
+        SortedMap<Long, List<AbstractNode>> layerMap = new TreeMap<>();
+        for (AbstractNode node : nodeList) {
+            layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>()).add(node);
+        }
+        int layerCount = layerMap.size();
+        AbstractNode[][] layeredNodes = new AbstractNode[layerCount][];
+        for (int i = 0; i < layerCount; i++) {
+            List<AbstractNode> layer = layerMap.get((long) i);
+            layeredNodes[i] = layer.toArray(new AbstractNode[0]);
+        }
+        return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, layeredNodes);
+    }
+
+    private long determineLayerIndex(AbstractNode node, NodeBuildHelper<Score_> buildHelper) {
+        if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
+            return 0;
+        } else if (node instanceof AbstractJoinNode<?, ?, ?> joinNode) {
+            var nodeCreator = (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(joinNode);
+            var leftParent = nodeCreator.getLeftParent();
+            var rightParent = nodeCreator.getRightParent();
+            var leftParentNode = buildHelper.findParentNode(leftParent);
+            var rightParentNode = buildHelper.findParentNode(rightParent);
+            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+        } else if (node instanceof AbstractIfExistsNode<?, ?> ifExistsNode) {
+            var nodeCreator = (BavetIfExistsConstraintStream<?>) buildHelper.getNodeCreatingStream(ifExistsNode);
+            var leftParent = nodeCreator.getLeftParent();
+            var rightParent = nodeCreator.getRightParent();
+            var leftParentNode = buildHelper.findParentNode(leftParent);
+            var rightParentNode = buildHelper.findParentNode(rightParent);
+            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+        } else {
+            var nodeCreator = (BavetAbstractConstraintStream<?>) buildHelper.getNodeCreatingStream(node);
+            var parentNode = buildHelper.findParentNode(nodeCreator.getParent());
+            return parentNode.getLayerIndex() + 1;
+        }
     }
 
 }

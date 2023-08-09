@@ -15,15 +15,15 @@ final class BavetConstraintSession<Score_ extends Score<Score_>> {
 
     private final AbstractScoreInliner<Score_> scoreInliner;
     private final Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap;
-    private final AbstractNode[] nodes; // Indexed by nodeIndex
+    private final AbstractNode[][] layeredNodes; // First level is the layer, second determines iteration order.
     private final Map<Class<?>, AbstractForEachUniNode<Object>[]> effectiveClassToNodeArrayMap;
 
     public BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner,
             Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap,
-            AbstractNode[] nodes) {
+            AbstractNode[][] layeredNodes) {
         this.scoreInliner = scoreInliner;
         this.declaredClassToNodeMap = declaredClassToNodeMap;
-        this.nodes = nodes;
+        this.layeredNodes = layeredNodes;
         this.effectiveClassToNodeArrayMap = new IdentityHashMap<>(declaredClassToNodeMap.size());
     }
 
@@ -64,8 +64,10 @@ final class BavetConstraintSession<Score_ extends Score<Score_>> {
     }
 
     public Score_ calculateScore(int initScore) {
-        for (AbstractNode node : nodes) {
-            node.calculateScore();
+        for (AbstractNode[] nodesInLayer : layeredNodes) {
+            for (AbstractNode node : nodesInLayer) {
+                node.calculateScore();
+            }
         }
         return scoreInliner.extractScore(initScore);
     }

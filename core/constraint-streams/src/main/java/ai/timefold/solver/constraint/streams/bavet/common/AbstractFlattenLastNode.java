@@ -13,7 +13,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
 public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple, EffectiveItem_, FlattenedItem_>
-        extends AbstractNode<OutTuple_, StaticPropagationQueue<OutTuple_>>
+        extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
     private final int flattenLastStoreIndex;

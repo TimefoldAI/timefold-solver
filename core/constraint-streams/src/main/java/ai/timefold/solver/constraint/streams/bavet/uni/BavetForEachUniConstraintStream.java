@@ -50,7 +50,7 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var node = filter == null ? new ForEachIncludingNullVarsUniNode<>(forEachClass, tupleLifecycle, outputStoreSize)
                 : new ForEachExcludingNullVarsUniNode<>(forEachClass, filter, tupleLifecycle, outputStoreSize);
-        buildHelper.addNode(node);
+        buildHelper.addNode(node, this, null);
     }
 
     // ************************************************************************

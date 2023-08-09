@@ -18,7 +18,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
  * @param <A>
  */
 public abstract sealed class AbstractForEachUniNode<A>
-        extends AbstractNode<UniTuple<A>, StaticPropagationQueue<UniTuple<A>>>
+        extends AbstractNode
         permits ForEachIncludingNullVarsUniNode, ForEachExcludingNullVarsUniNode {
 
     private final Class<A> forEachClass;

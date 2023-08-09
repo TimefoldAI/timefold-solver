@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  * @param <Right_>
  */
 public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Right_>
-        extends AbstractNode<ExistsCounter<LeftTuple_>, IfExistsPropagationQueue<LeftTuple_>>
+        extends AbstractNode
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
     protected final boolean shouldExist;
