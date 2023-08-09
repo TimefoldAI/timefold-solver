@@ -25,6 +25,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     private final Consumer<Tuple_> retractPropagator;
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
+    private boolean propagationStarted = false;
 
     public StaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         // Guesstimate that updates are dominant.
@@ -43,7 +44,10 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void insert(Tuple_ carrier) {
-        if (carrier.state == TupleState.CREATING) {
+        if (propagationStarted) {
+            throw new IllegalStateException(
+                    "Impossible state: Cannot insert (" + carrier + "), propagation has already started.");
+        } else if (carrier.state == TupleState.CREATING) {
             throw new IllegalStateException("Impossible state: The tuple (" + carrier + ") is already in the insert queue.");
         }
         carrier.state = TupleState.CREATING;
@@ -52,7 +56,10 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void update(Tuple_ carrier) {
-        if (carrier.state == TupleState.UPDATING) { // Skip double updates.
+        if (propagationStarted) {
+            throw new IllegalStateException(
+                    "Impossible state: Cannot update (" + carrier + "), propagation has already started.");
+        } else if (carrier.state == TupleState.UPDATING) { // Skip double updates.
             return;
         }
         carrier.state = TupleState.UPDATING;
@@ -61,6 +68,12 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void retract(Tuple_ carrier, TupleState state) {
+        if (propagationStarted) {
+            throw new IllegalStateException(
+                    "Impossible state: Cannot retract (" + carrier + "), propagation has already started.");
+        } else if (carrier.state == state) { // Skip double retracts.
+            return;
+        }
         if (state.isActive() || state == TupleState.DEAD) {
             throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
         } else if (carrier.state == TupleState.ABORTING || carrier.state == TupleState.DYING) {
@@ -72,6 +85,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void propagateRetracts() {
+        propagationStarted = true;
         if (retractQueue.isEmpty()) {
             return;
         }
@@ -96,7 +110,9 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     }
 
     private void process(Deque<Tuple_> dirtyQueue, Consumer<Tuple_> propagator) {
-        if (dirtyQueue.isEmpty()) {
+        if (!propagationStarted) {
+            throw new IllegalStateException("Impossible state: Propagation has not started yet.");
+        } else if (dirtyQueue.isEmpty()) {
             return;
         }
         for (Tuple_ tuple : dirtyQueue) {
@@ -122,6 +138,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void clear() {
+        propagationStarted = false;
         if (!retractQueue.isEmpty()) {
             throw new IllegalStateException("Impossible state: The retract queue (" + retractQueue + ") is not empty.");
         } else if (!updateQueue.isEmpty()) {

@@ -64,12 +64,30 @@ final class BavetConstraintSession<Score_ extends Score<Score_>> {
     }
 
     public Score_ calculateScore(int initScore) {
-        for (AbstractNode[] nodesInLayer : layeredNodes) {
-            for (AbstractNode node : nodesInLayer) {
-                node.calculateScore();
-            }
+        int layerCount = layeredNodes.length;
+        for (int layerIndex = 0; layerIndex < layerCount; layerIndex++) {
+            calculateScoreInLayer(layerIndex);
         }
         return scoreInliner.extractScore(initScore);
+    }
+
+    private void calculateScoreInLayer(int layerIndex) {
+        AbstractNode[] nodesInLayer = layeredNodes[layerIndex];
+        int nodeCount = nodesInLayer.length;
+        if (nodeCount == 1) { // Avoid iteration.
+            nodesInLayer[0].propagateEverything();
+        } else {
+            for (AbstractNode abstractNode : nodesInLayer) {
+                abstractNode.propagateRetracts();
+            }
+            for (AbstractNode abstractNode : nodesInLayer) {
+                abstractNode.propagateUpdates();
+            }
+            for (AbstractNode node : nodesInLayer) {
+                node.propagateInserts();
+                node.clearPropagationQueue();
+            }
+        }
     }
 
     public AbstractScoreInliner<Score_> getScoreInliner() {

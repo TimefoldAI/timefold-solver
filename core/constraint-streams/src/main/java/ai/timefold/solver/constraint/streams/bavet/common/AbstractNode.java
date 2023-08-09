@@ -5,7 +5,27 @@ public abstract class AbstractNode {
     private long id;
     private long layerIndex;
 
-    public final void calculateScore() {
+    public final void propagateRetracts() {
+        PropagationQueue<?> propagationQueue = getPropagationQueue();
+        propagationQueue.propagateRetracts();
+    }
+
+    public final void propagateUpdates() {
+        PropagationQueue<?> propagationQueue = getPropagationQueue();
+        propagationQueue.propagateUpdates();
+    }
+
+    public final void propagateInserts() {
+        PropagationQueue<?> propagationQueue = getPropagationQueue();
+        propagationQueue.propagateInserts();
+    }
+
+    public final void clearPropagationQueue() {
+        PropagationQueue<?> propagationQueue = getPropagationQueue();
+        propagationQueue.clear();
+    }
+
+    public final void propagateEverything() { // For testing purposes.
         PropagationQueue<?> propagationQueue = getPropagationQueue();
         propagationQueue.propagateRetracts();
         propagationQueue.propagateUpdates();

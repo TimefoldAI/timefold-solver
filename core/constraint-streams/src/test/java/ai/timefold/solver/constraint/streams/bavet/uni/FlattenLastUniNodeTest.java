@@ -63,7 +63,7 @@ class FlattenLastUniNodeTest {
         node.insert(firstTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream).insert(argThat(t -> Objects.equals(t.factA, "A")));
         verify(downstream).insert(argThat(t -> Objects.equals(t.factA, "B")));
         verifyNoMoreInteractions(downstream);
@@ -74,7 +74,7 @@ class FlattenLastUniNodeTest {
         node.insert(secondTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream).insert(argThat(t -> Objects.equals(t.factA, "B")));
         verify(downstream).insert(argThat(t -> Objects.equals(t.factA, "C")));
         verifyNoMoreInteractions(downstream);
@@ -84,7 +84,7 @@ class FlattenLastUniNodeTest {
         node.retract(firstTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream).retract(argThat(t -> Objects.equals(t.factA, "A")));
         verify(downstream).retract(argThat(t -> Objects.equals(t.factA, "B")));
         verifyNoMoreInteractions(downstream);
@@ -94,14 +94,14 @@ class FlattenLastUniNodeTest {
         node.retract(secondTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream).retract(argThat(t -> Objects.equals(t.factA, "B")));
         verify(downstream).retract(argThat(t -> Objects.equals(t.factA, "C")));
         verifyNoMoreInteractions(downstream);
         reset(downstream);
 
         // Nothing happens on an empty node.
-        node.calculateScore();
+        node.propagateEverything();
         verifyNoInteractions(downstream);
     }
 
@@ -119,7 +119,7 @@ class FlattenLastUniNodeTest {
         node.insert(secondTuple);
 
         // Clear the dirty queue.
-        node.calculateScore();
+        node.propagateEverything();
         reset(downstream);
 
         // The tuple is updated, removing A, adding X and another B.
@@ -127,7 +127,7 @@ class FlattenLastUniNodeTest {
         node.update(firstTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream).retract(argThat(t -> Objects.equals(t.factA, "A")));
         verify(downstream).update(argThat(t -> Objects.equals(t.factA, "B")));
         verify(downstream).insert(argThat(t -> Objects.equals(t.factA, "X")));
@@ -140,7 +140,7 @@ class FlattenLastUniNodeTest {
         node.update(secondTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream).retract(argThat(t -> Objects.equals(t.factA, "B")));
         verify(downstream).update(argThat(t -> Objects.equals(t.factA, "C")));
         verify(downstream).insert(argThat(t -> Objects.equals(t.factA, "X")));
@@ -152,7 +152,7 @@ class FlattenLastUniNodeTest {
         node.update(firstTuple);
         verifyNoInteractions(downstream);
 
-        node.calculateScore();
+        node.propagateEverything();
         verify(downstream, times(2)).retract(argThat(t -> Objects.equals(t.factA, "B")));
         verify(downstream).update(argThat(t -> Objects.equals(t.factA, "X")));
         verifyNoMoreInteractions(downstream);

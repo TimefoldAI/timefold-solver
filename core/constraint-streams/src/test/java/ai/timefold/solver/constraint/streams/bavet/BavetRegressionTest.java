@@ -272,7 +272,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(value);
 
         scoreDirector.setWorkingSolution(solution);
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector);
 
         // Switch entity1 and entity2 values; now entity2 has null and entity1 does not.
@@ -282,9 +281,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
-        // TODO update the assertions once no longer throwing exceptions
-        assertScore(scoreDirector,
-                assertMatch(entity2));
+        assertScore(scoreDirector);
 
         // Switch entity1 and entity2 values again to test the same from the other side.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -293,9 +290,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value);
         scoreDirector.afterVariableChanged(entity2, "value");
-        // TODO update the assertions once no longer throwing exceptions
-        assertScore(scoreDirector,
-                assertMatch(entity1));
+        assertScore(scoreDirector);
     }
 
     /**

@@ -26,6 +26,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
     private final Consumer<Tuple_> retractPropagator;
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
+    private boolean propagationStarted = false;
 
     private AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         /*
@@ -49,6 +50,10 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void insert(Carrier_ carrier) {
+        if (propagationStarted) {
+            throw new IllegalStateException(
+                    "Impossible state: Cannot insert (" + carrier + "), propagation has already started.");
+        }
         int positionInDirtyList = carrier.positionInDirtyList;
         if (positionInDirtyList < 0) {
             makeDirty(carrier, insertQueue);
@@ -79,6 +84,10 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void update(Carrier_ carrier) {
+        if (propagationStarted) {
+            throw new IllegalStateException(
+                    "Impossible state: Cannot update (" + carrier + "), propagation has already started.");
+        }
         int positionInDirtyList = carrier.positionInDirtyList;
         if (positionInDirtyList < 0) {
             dirtyList.add(carrier);
@@ -97,7 +106,10 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void retract(Carrier_ carrier, TupleState state) {
-        if (state.isActive() || state == TupleState.DEAD) {
+        if (propagationStarted) {
+            throw new IllegalStateException(
+                    "Impossible state: Cannot retract (" + carrier + "), propagation has already started.");
+        } else if (state.isActive() || state == TupleState.DEAD) {
             throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
         }
         int positionInDirtyList = carrier.positionInDirtyList;
@@ -120,6 +132,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void propagateRetracts() {
+        propagationStarted = true;
         if (retractQueue.isEmpty()) {
             return;
         }
@@ -149,6 +162,9 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void propagateUpdates() {
+        if (!propagationStarted) {
+            throw new IllegalStateException("Impossible state: Propagation has not started yet.");
+        }
         BitSet insertAndRetractQueue = buildInsertAndRetractQueue();
         if (insertAndRetractQueue == null) { // Iterate over the entire list more efficiently.
             for (Carrier_ carrier : dirtyList) {
@@ -183,6 +199,9 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
     @Override
     public void propagateInserts() {
+        if (!propagationStarted) {
+            throw new IllegalStateException("Impossible state: Propagation has not started yet.");
+        }
         if (insertQueue.isEmpty()) {
             return;
         }
@@ -208,6 +227,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         dirtyList.clear();
         retractQueue.clear();
         insertQueue.clear();
+        propagationStarted = false;
     }
 
 }
