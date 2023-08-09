@@ -5,7 +5,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
 public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple>
-        extends AbstractNode
+        extends AbstractNode<OutTuple_, StaticPropagationQueue<OutTuple_>>
         implements TupleLifecycle<InTuple_> {
 
     private final int inputStoreIndex;
@@ -68,8 +68,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
     }
 
     @Override
-    public void calculateScore() {
-        propagationQueue.propagateAndClear();
+    protected final StaticPropagationQueue<OutTuple_> getPropagationQueue() {
+        return propagationQueue;
     }
-
 }

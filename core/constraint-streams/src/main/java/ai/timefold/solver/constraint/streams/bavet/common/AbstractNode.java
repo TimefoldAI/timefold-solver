@@ -1,10 +1,14 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-public abstract class AbstractNode {
+public abstract class AbstractNode<T, PropagationQueue_ extends PropagationQueue<T>> {
 
     private long id;
 
-    public abstract void calculateScore();
+    public final void calculateScore() {
+        getPropagationQueue().propagateAndClear();
+    }
+
+    abstract protected PropagationQueue_ getPropagationQueue();
 
     public void setId(long id) {
         this.id = id;
