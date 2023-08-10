@@ -16,8 +16,21 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * During their own propagation cycles, which happen after the original propagation cycle is complete,
  * they will only see one of the two stable states.
  * <p>
- * After all items in the queue are propagated, the queue is cleared.
+ * The propagation operation consists of three phases:
+ * <ol>
+ * <li>Retracts: {@link #propagateRetracts()}</li>
+ * <li>Updates: {@link #propagateUpdates()}</li>
+ * <li>Inserts: {@link #propagateInserts()}</li>
+ * </ol>
+ * All of them need to be called, and in this order.
+ * Otherwise, the queue will be in an inconsistent state,
+ * likely resulting in runtime exceptions and/or score corruption.
+ * <p>
+ * The reason why these operations are not combined into a single method is the fact
+ * that multiple nodes may need to execute their retracts first,
+ * and only when all of those are propagated, the rest of the phases can start.
  *
+ * @see AbstractNode More information about propagation.
  * @param <T>
  */
 public sealed interface PropagationQueue<T> permits AbstractDynamicPropagationQueue, StaticPropagationQueue {
@@ -28,10 +41,20 @@ public sealed interface PropagationQueue<T> permits AbstractDynamicPropagationQu
 
     void retract(T item, TupleState state);
 
+    /**
+     * Starts the propagation event. Must be followed by {@link #propagateUpdates()}.
+     */
     void propagateRetracts();
 
+    /**
+     * Must be preceded by {@link #propagateRetracts()} and followed by {@link #propagateInserts()}.
+     */
     void propagateUpdates();
 
+    /**
+     * Must by preceded by {@link #propagateRetracts()} and {@link #propagateUpdates()}.
+     * Ends the propagation event and clears the queue.
+     */
     void propagateInserts();
 
 }

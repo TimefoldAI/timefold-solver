@@ -18,6 +18,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstrain
 import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.PropagationQueue;
 import ai.timefold.solver.constraint.streams.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
@@ -99,6 +100,21 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, layeredNodes);
     }
 
+    /**
+     * Nodes are propagated in layers.
+     * See {@link PropagationQueue} and {@link AbstractNode} for details.
+     * This method determines the layer of each node.
+     * It does so by reverse-engineering the parent nodes of each node.
+     * Nodes without parents (forEach nodes) are in layer 0.
+     * Nodes with parents are one layer above their parents.
+     * Some nodes have multiple parents, such as {@link AbstractJoinNode} and {@link AbstractIfExistsNode}.
+     * These are one layer above the highest parent.
+     * This is done to ensure that, when a child node starts propagating, all its parents have already propagated.
+     *
+     * @param node never null
+     * @param buildHelper never null
+     * @return at least 0
+     */
     private long determineLayerIndex(AbstractNode node, NodeBuildHelper<Score_> buildHelper) {
         if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
             return 0;
