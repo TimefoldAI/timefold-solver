@@ -1,5 +1,6 @@
 package ai.timefold.solver.constraint.streams.bavet;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,12 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 
+/**
+ * The type is public to make it easier for Bavet-specific minimal bug reproducers to be created.
+ * Instances should be created through {@link BavetConstraintStreamScoreDirectorFactory#newSession(boolean, Object)}.
+ *
+ * @param <Score_>
+ */
 public final class BavetConstraintSession<Score_ extends Score<Score_>> {
 
     private final AbstractScoreInliner<Score_> scoreInliner;
@@ -18,7 +25,11 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>> {
     private final AbstractNode[][] layeredNodes; // First level is the layer, second determines iteration order.
     private final Map<Class<?>, AbstractForEachUniNode<Object>[]> effectiveClassToNodeArrayMap;
 
-    public BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner,
+    BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner) {
+        this(scoreInliner, Collections.emptyMap(), new AbstractNode[0][0]);
+    }
+
+    BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner,
             Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap,
             AbstractNode[][] layeredNodes) {
         this.scoreInliner = scoreInliner;
@@ -28,15 +39,15 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>> {
     }
 
     public void insert(Object fact) {
-        Class<?> factClass = fact.getClass();
-        for (AbstractForEachUniNode<Object> node : findNodes(factClass)) {
+        var factClass = fact.getClass();
+        for (var node : findNodes(factClass)) {
             node.insert(fact);
         }
     }
 
     private AbstractForEachUniNode<Object>[] findNodes(Class<?> factClass) {
         // Map.computeIfAbsent() would have created lambdas on the hot path, this will not.
-        AbstractForEachUniNode<Object>[] nodeArray = effectiveClassToNodeArrayMap.get(factClass);
+        var nodeArray = effectiveClassToNodeArrayMap.get(factClass);
         if (nodeArray == null) {
             nodeArray = declaredClassToNodeMap.entrySet()
                     .stream()
@@ -50,40 +61,40 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>> {
     }
 
     public void update(Object fact) {
-        Class<?> factClass = fact.getClass();
-        for (AbstractForEachUniNode<Object> node : findNodes(factClass)) {
+        var factClass = fact.getClass();
+        for (var node : findNodes(factClass)) {
             node.update(fact);
         }
     }
 
     public void retract(Object fact) {
-        Class<?> factClass = fact.getClass();
-        for (AbstractForEachUniNode<Object> node : findNodes(factClass)) {
+        var factClass = fact.getClass();
+        for (var node : findNodes(factClass)) {
             node.retract(fact);
         }
     }
 
     public Score_ calculateScore(int initScore) {
-        int layerCount = layeredNodes.length;
-        for (int layerIndex = 0; layerIndex < layerCount; layerIndex++) {
+        var layerCount = layeredNodes.length;
+        for (var layerIndex = 0; layerIndex < layerCount; layerIndex++) {
             calculateScoreInLayer(layerIndex);
         }
         return scoreInliner.extractScore(initScore);
     }
 
     private void calculateScoreInLayer(int layerIndex) {
-        AbstractNode[] nodesInLayer = layeredNodes[layerIndex];
-        int nodeCount = nodesInLayer.length;
-        if (nodeCount == 1) { // Avoid iteration.
+        var nodesInLayer = layeredNodes[layerIndex];
+        var nodeCount = nodesInLayer.length;
+        if (nodeCount == 1) {
             nodesInLayer[0].propagateEverything();
         } else {
-            for (AbstractNode node : nodesInLayer) {
+            for (var node : nodesInLayer) {
                 node.propagateRetracts();
             }
-            for (AbstractNode node : nodesInLayer) {
+            for (var node : nodesInLayer) {
                 node.propagateUpdates();
             }
-            for (AbstractNode node : nodesInLayer) {
+            for (var node : nodesInLayer) {
                 node.propagateInserts();
             }
         }

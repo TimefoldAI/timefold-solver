@@ -30,7 +30,7 @@ import ai.timefold.solver.constraint.streams.bavet.BavetConstraintSession;
  * And due to the fact that propagation is done in layers,
  * the join propagations will only ever be triggered after its inputs have completed their propagation.
  * <p>
- * As this is a critical to the correctness of Bavet,
+ * As this is critical to the correctness of Bavet,
  * there is specific test coverage for these corner cases.
  *
  * @see PropagationQueue More information about propagation.
@@ -38,7 +38,7 @@ import ai.timefold.solver.constraint.streams.bavet.BavetConstraintSession;
 public abstract class AbstractNode {
 
     private long id;
-    private long layerIndex;
+    private long layerIndex = -1;
 
     public abstract void propagateRetracts();
 
@@ -56,11 +56,18 @@ public abstract class AbstractNode {
         this.id = id;
     }
 
-    public final void setLayerIndex(long id) {
-        this.layerIndex = id;
+    public final void setLayerIndex(long layerIndex) {
+        if (layerIndex < 0) {
+            throw new IllegalArgumentException("Impossible state: layer index (" + layerIndex + ") must be at least 0.");
+        }
+        this.layerIndex = layerIndex;
     }
 
     public final long getLayerIndex() {
+        if (layerIndex == -1) {
+            throw new IllegalStateException(
+                    "Impossible state: layer index for node (" + this + ") requested before being set.");
+        }
         return layerIndex;
     }
 

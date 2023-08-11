@@ -49,20 +49,29 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         Map<Constraint, Score_> constraintWeightMap = new HashMap<>(constraintList.size());
         for (BavetConstraint<Solution_> constraint : constraintList) {
             Score_ constraintWeight = constraint.extractConstraintWeight(workingSolution);
-            // Filter out nodes that only lead to constraints with zero weight.
-            // Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
+            /*
+             * Filter out nodes that only lead to constraints with zero weight.
+             * Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
+             */
             if (!constraintWeight.equals(zeroScore)) {
-                // Relies on BavetConstraintFactory#share(Stream_) occurring for all constraint stream instances
-                // to ensure there are no 2 equal ConstraintStream instances (with different child stream lists).
+                /*
+                 * Relies on BavetConstraintFactory#share(Stream_) occurring for all constraint stream instances
+                 * to ensure there are no 2 equal ConstraintStream instances (with different child stream lists).
+                 */
                 constraint.collectActiveConstraintStreams(constraintStreamSet);
                 constraintWeightMap.put(constraint, constraintWeight);
             }
         }
         AbstractScoreInliner<Score_> scoreInliner =
                 AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
+        if (constraintStreamSet.isEmpty()) { // All constraints were disabled.
+            return new BavetConstraintSession<>(scoreInliner);
+        }
+        /*
+         * Build constraintStreamSet in reverse order to create downstream nodes first
+         * so every node only has final variables (some of which have downstream node method references).
+         */
         NodeBuildHelper<Score_> buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
-        // Build constraintStreamSet in reverse order to create downstream nodes first
-        // so every node only has final variables (some of which have downstream node method references).
         List<BavetAbstractConstraintStream<Solution_>> reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
         Collections.reverse(reversedConstraintStreamList);
         for (BavetAbstractConstraintStream<Solution_> constraintStream : reversedConstraintStreamList) {
@@ -72,6 +81,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap = new LinkedHashMap<>();
         long nextNodeId = 0;
         for (AbstractNode node : nodeList) {
+            /*
+             * Nodes are iterated first to last, starting with forEach(), the ultimate parent.
+             * Parents are guaranteed to come before children.
+             */
             node.setId(nextNodeId++);
             node.setLayerIndex(determineLayerIndex(node, buildHelper));
             if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
@@ -79,7 +92,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 List<AbstractForEachUniNode<Object>> forEachUniNodeList =
                         declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>());
                 if (forEachUniNodeList.size() == 2) {
-                    // Each class can have at most 2 forEach nodes: one including null vars, the other excluding them.
+                    // Each class can have at most two forEach nodes: one including null vars, the other excluding them.
                     throw new IllegalStateException("Impossible state: For class (" + forEachClass
                             + ") there are already 2 nodes (" + forEachUniNodeList + "), not adding another ("
                             + forEachUniNode + ").");
