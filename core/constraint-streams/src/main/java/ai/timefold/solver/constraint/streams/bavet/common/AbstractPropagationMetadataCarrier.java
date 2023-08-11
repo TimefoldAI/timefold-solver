@@ -9,7 +9,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * This metadata is necessary for efficient operation of the queue.
  */
 sealed abstract class AbstractPropagationMetadataCarrier<Tuple_ extends AbstractTuple>
-        permits AbstractGroup, ExistsCounter {
+        permits Group, ExistsCounter {
 
     public int positionInDirtyList = -1;
 
