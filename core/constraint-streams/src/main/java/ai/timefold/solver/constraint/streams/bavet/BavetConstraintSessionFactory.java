@@ -19,6 +19,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstrain
 import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.PropagationQueue;
+import ai.timefold.solver.constraint.streams.bavet.common.Propagator;
 import ai.timefold.solver.constraint.streams.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
@@ -100,15 +101,16 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 forEachUniNodeList.add((AbstractForEachUniNode<Object>) forEachUniNode);
             }
         }
-        SortedMap<Long, List<AbstractNode>> layerMap = new TreeMap<>();
+        SortedMap<Long, List<Propagator>> layerMap = new TreeMap<>();
         for (AbstractNode node : nodeList) {
-            layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>()).add(node);
+            layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>())
+                    .add(node.getPropagator());
         }
         int layerCount = layerMap.size();
-        AbstractNode[][] layeredNodes = new AbstractNode[layerCount][];
+        Propagator[][] layeredNodes = new Propagator[layerCount][];
         for (int i = 0; i < layerCount; i++) {
-            List<AbstractNode> layer = layerMap.get((long) i);
-            layeredNodes[i] = layer.toArray(new AbstractNode[0]);
+            List<Propagator> layer = layerMap.get((long) i);
+            layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
         return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, layeredNodes);
     }

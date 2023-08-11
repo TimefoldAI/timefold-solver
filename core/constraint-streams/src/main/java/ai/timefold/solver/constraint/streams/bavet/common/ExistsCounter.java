@@ -15,17 +15,17 @@ public final class ExistsCounter<Tuple_ extends AbstractTuple>
     }
 
     @Override
-    public TupleState extractState() {
-        return state;
-    }
-
-    @Override
-    public Tuple_ extractTuple() {
+    public Tuple_ getTuple() {
         return leftTuple;
     }
 
     @Override
-    public void changeState(TupleState state) {
+    public TupleState getState() {
+        return state;
+    }
+
+    @Override
+    public void setState(TupleState state) {
         this.state = state;
     }
 

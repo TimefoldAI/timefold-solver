@@ -13,10 +13,10 @@ sealed abstract class AbstractPropagationMetadataCarrier<Tuple_ extends Abstract
 
     public int positionInDirtyList = -1;
 
-    public abstract TupleState extractState();
+    public abstract Tuple_ getTuple();
 
-    public abstract Tuple_ extractTuple();
+    public abstract TupleState getState();
 
-    public abstract void changeState(TupleState state);
+    public abstract void setState(TupleState state);
 
 }

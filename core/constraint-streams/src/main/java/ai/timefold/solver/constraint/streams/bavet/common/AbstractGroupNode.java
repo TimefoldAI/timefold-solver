@@ -267,18 +267,8 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     protected abstract Runnable accumulate(ResultContainer_ resultContainer, InTuple_ tuple);
 
     @Override
-    public final void propagateRetracts() {
-        propagationQueue.propagateRetracts();
-    }
-
-    @Override
-    public final void propagateUpdates() {
-        propagationQueue.propagateUpdates();
-    }
-
-    @Override
-    public final void propagateInserts() {
-        propagationQueue.propagateInserts();
+    public Propagator getPropagator() {
+        return propagationQueue;
     }
 
     /**

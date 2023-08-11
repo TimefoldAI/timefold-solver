@@ -5,7 +5,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
+import ai.timefold.solver.constraint.streams.bavet.common.PropagationQueue;
+import ai.timefold.solver.constraint.streams.bavet.common.Propagator;
 import ai.timefold.solver.constraint.streams.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
@@ -16,22 +17,23 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
  * The type is public to make it easier for Bavet-specific minimal bug reproducers to be created.
  * Instances should be created through {@link BavetConstraintStreamScoreDirectorFactory#newSession(boolean, Object)}.
  *
+ * @see PropagationQueue Description of the tuple propagation mechanism.
  * @param <Score_>
  */
 public final class BavetConstraintSession<Score_ extends Score<Score_>> {
 
     private final AbstractScoreInliner<Score_> scoreInliner;
     private final Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap;
-    private final AbstractNode[][] layeredNodes; // First level is the layer, second determines iteration order.
+    private final Propagator[][] layeredNodes; // First level is the layer, second determines iteration order.
     private final Map<Class<?>, AbstractForEachUniNode<Object>[]> effectiveClassToNodeArrayMap;
 
     BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner) {
-        this(scoreInliner, Collections.emptyMap(), new AbstractNode[0][0]);
+        this(scoreInliner, Collections.emptyMap(), new Propagator[0][0]);
     }
 
     BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner,
             Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap,
-            AbstractNode[][] layeredNodes) {
+            Propagator[][] layeredNodes) {
         this.scoreInliner = scoreInliner;
         this.declaredClassToNodeMap = declaredClassToNodeMap;
         this.layeredNodes = layeredNodes;

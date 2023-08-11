@@ -68,18 +68,8 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
     }
 
     @Override
-    public final void propagateRetracts() {
-        propagationQueue.propagateRetracts();
-    }
-
-    @Override
-    public final void propagateUpdates() {
-        propagationQueue.propagateUpdates();
-    }
-
-    @Override
-    public final void propagateInserts() {
-        propagationQueue.propagateInserts();
+    public Propagator getPropagator() {
+        return propagationQueue;
     }
 
 }

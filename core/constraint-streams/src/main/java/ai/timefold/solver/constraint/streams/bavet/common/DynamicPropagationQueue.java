@@ -58,7 +58,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
         if (positionInDirtyList < 0) {
             makeDirty(carrier, insertQueue);
         } else {
-            switch (carrier.extractState()) {
+            switch (carrier.getState()) {
                 case UPDATING -> insertQueue.set(positionInDirtyList);
                 case ABORTING, DYING -> {
                     retractQueue.clear(positionInDirtyList);
@@ -68,7 +68,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
                     throw new IllegalStateException("Impossible state: Cannot insert (" + carrier + "), already inserting.");
             }
         }
-        carrier.changeState(TupleState.CREATING);
+        carrier.setState(TupleState.CREATING);
     }
 
     private void makeDirty(Carrier_ carrier, BitSet queue) {
@@ -85,7 +85,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
             dirtyList.add(carrier);
             carrier.positionInDirtyList = dirtyList.size() - 1;
         } else {
-            switch (carrier.extractState()) {
+            switch (carrier.getState()) {
                 case CREATING -> insertQueue.clear(positionInDirtyList);
                 case ABORTING, DYING -> retractQueue.clear(positionInDirtyList);
                 default -> {
@@ -93,7 +93,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
                 }
             }
         }
-        carrier.changeState(TupleState.UPDATING);
+        carrier.setState(TupleState.UPDATING);
     }
 
     @Override
@@ -105,7 +105,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
         if (positionInDirtyList < 0) {
             makeDirty(carrier, retractQueue);
         } else {
-            switch (carrier.extractState()) {
+            switch (carrier.getState()) {
                 case CREATING -> {
                     insertQueue.clear(positionInDirtyList);
                     retractQueue.set(positionInDirtyList);
@@ -116,7 +116,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
 
             }
         }
-        carrier.changeState(state);
+        carrier.setState(state);
     }
 
     @Override
@@ -127,7 +127,7 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
         int i = retractQueue.nextSetBit(0);
         while (i != -1) {
             Carrier_ carrier = dirtyList.get(i);
-            TupleState state = carrier.extractState();
+            TupleState state = carrier.getState();
             switch (state) {
                 case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
                 case ABORTING -> clean(carrier, TupleState.DEAD);
@@ -139,11 +139,11 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
     private static <Tuple_ extends AbstractTuple, Carrier_ extends AbstractPropagationMetadataCarrier<Tuple_>> void
             propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
         clean(carrier, tupleState); // Hide original state from the next node by doing this before propagation.
-        propagator.accept(carrier.extractTuple());
+        propagator.accept(carrier.getTuple());
     }
 
     private static void clean(AbstractPropagationMetadataCarrier<?> carrier, TupleState tupleState) {
-        carrier.changeState(tupleState);
+        carrier.setState(tupleState);
         carrier.positionInDirtyList = -1;
     }
 

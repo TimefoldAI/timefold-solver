@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
+import ai.timefold.solver.constraint.streams.bavet.common.Propagator;
 import ai.timefold.solver.constraint.streams.bavet.common.StaticPropagationQueue;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
@@ -73,18 +74,8 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     @Override
-    public final void propagateRetracts() {
-        propagationQueue.propagateRetracts();
-    }
-
-    @Override
-    public final void propagateUpdates() {
-        propagationQueue.propagateUpdates();
-    }
-
-    @Override
-    public final void propagateInserts() {
-        propagationQueue.propagateInserts();
+    public Propagator getPropagator() {
+        return propagationQueue;
     }
 
     public final Class<A> getForEachClass() {

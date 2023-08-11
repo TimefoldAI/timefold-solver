@@ -19,17 +19,17 @@ sealed abstract class AbstractGroup<OutTuple_ extends AbstractTuple, ResultConta
     public abstract ResultContainer_ getResultContainer();
 
     @Override
-    public TupleState extractState() {
-        return outTuple.state;
-    }
-
-    @Override
-    public OutTuple_ extractTuple() {
+    public OutTuple_ getTuple() {
         return outTuple;
     }
 
     @Override
-    public void changeState(TupleState state) {
+    public TupleState getState() {
+        return outTuple.state;
+    }
+
+    @Override
+    public void setState(TupleState state) {
         outTuple.state = state;
     }
 
