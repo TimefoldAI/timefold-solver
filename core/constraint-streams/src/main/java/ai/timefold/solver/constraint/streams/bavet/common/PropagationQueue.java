@@ -33,7 +33,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @see AbstractNode More information about propagation.
  * @param <T>
  */
-public sealed interface PropagationQueue<T> permits AbstractDynamicPropagationQueue, StaticPropagationQueue {
+public sealed interface PropagationQueue<T> permits DynamicPropagationQueue, StaticPropagationQueue {
 
     void insert(T item);
 

@@ -1,9 +1,10 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 
 sealed abstract class AbstractGroup<OutTuple_ extends AbstractTuple, ResultContainer_>
-        extends AbstractPropagationMetadataCarrier
+        extends AbstractPropagationMetadataCarrier<OutTuple_>
         permits GroupWithAccumulateAndGroupKey, GroupWithAccumulateWithoutGroupKey, GroupWithoutAccumulate {
 
     public final OutTuple_ outTuple;
@@ -17,8 +18,19 @@ sealed abstract class AbstractGroup<OutTuple_ extends AbstractTuple, ResultConta
 
     public abstract ResultContainer_ getResultContainer();
 
-    public final OutTuple_ getOutTuple() {
+    @Override
+    public TupleState extractState() {
+        return outTuple.state;
+    }
+
+    @Override
+    public OutTuple_ extractTuple() {
         return outTuple;
+    }
+
+    @Override
+    public void changeState(TupleState state) {
+        outTuple.state = state;
     }
 
 }

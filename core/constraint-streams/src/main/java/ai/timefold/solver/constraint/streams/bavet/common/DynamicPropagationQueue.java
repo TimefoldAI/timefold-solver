@@ -16,10 +16,10 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * @param <Carrier_>
  * @param <Tuple_>
  */
-sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractPropagationMetadataCarrier, Tuple_ extends AbstractTuple>
-        implements PropagationQueue<Carrier_>
-        permits GroupPropagationQueue, IfExistsPropagationQueue {
+final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ extends AbstractPropagationMetadataCarrier<Tuple_>>
+        implements PropagationQueue<Carrier_> {
 
+    private final Consumer<Carrier_> preprocessor;
     private final List<Carrier_> dirtyList;
     private final BitSet retractQueue;
     private final BitSet insertQueue;
@@ -27,7 +27,8 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
     private final Consumer<Tuple_> updatePropagator;
     private final Consumer<Tuple_> insertPropagator;
 
-    private AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
+    private DynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Consumer<Carrier_> preprocessor, int size) {
+        this.preprocessor = preprocessor;
         /*
          * All dirty carriers are stored in a list, never moved, never removed unless after propagation.
          * Their unchanging position in the list is their index for the bitset-based queues.
@@ -43,17 +44,21 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         this.insertPropagator = nextNodesTupleLifecycle::insert;
     }
 
-    public AbstractDynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
-        this(nextNodesTupleLifecycle, 1000);
+    public DynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+        this(nextNodesTupleLifecycle, null);
+    }
+
+    public DynamicPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, Consumer<Carrier_> preprocessor) {
+        this(nextNodesTupleLifecycle, preprocessor, 1000);
     }
 
     @Override
-    public final void insert(Carrier_ carrier) {
+    public void insert(Carrier_ carrier) {
         int positionInDirtyList = carrier.positionInDirtyList;
         if (positionInDirtyList < 0) {
             makeDirty(carrier, insertQueue);
         } else {
-            switch (extractState(carrier)) {
+            switch (carrier.extractState()) {
                 case UPDATING -> insertQueue.set(positionInDirtyList);
                 case ABORTING, DYING -> {
                     retractQueue.clear(positionInDirtyList);
@@ -63,7 +68,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
                     throw new IllegalStateException("Impossible state: Cannot insert (" + carrier + "), already inserting.");
             }
         }
-        changeState(carrier, TupleState.CREATING);
+        carrier.changeState(TupleState.CREATING);
     }
 
     private void makeDirty(Carrier_ carrier, BitSet queue) {
@@ -73,18 +78,14 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         carrier.positionInDirtyList = position;
     }
 
-    protected abstract TupleState extractState(Carrier_ carrier);
-
-    protected abstract void changeState(Carrier_ carrier, TupleState state);
-
     @Override
-    public final void update(Carrier_ carrier) {
+    public void update(Carrier_ carrier) {
         int positionInDirtyList = carrier.positionInDirtyList;
         if (positionInDirtyList < 0) {
             dirtyList.add(carrier);
             carrier.positionInDirtyList = dirtyList.size() - 1;
         } else {
-            switch (extractState(carrier)) {
+            switch (carrier.extractState()) {
                 case CREATING -> insertQueue.clear(positionInDirtyList);
                 case ABORTING, DYING -> retractQueue.clear(positionInDirtyList);
                 default -> {
@@ -92,11 +93,11 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
                 }
             }
         }
-        changeState(carrier, TupleState.UPDATING);
+        carrier.changeState(TupleState.UPDATING);
     }
 
     @Override
-    public final void retract(Carrier_ carrier, TupleState state) {
+    public void retract(Carrier_ carrier, TupleState state) {
         if (state.isActive() || state == TupleState.DEAD) {
             throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
         }
@@ -104,7 +105,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         if (positionInDirtyList < 0) {
             makeDirty(carrier, retractQueue);
         } else {
-            switch (extractState(carrier)) {
+            switch (carrier.extractState()) {
                 case CREATING -> {
                     insertQueue.clear(positionInDirtyList);
                     retractQueue.set(positionInDirtyList);
@@ -115,18 +116,18 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
 
             }
         }
-        changeState(carrier, state);
+        carrier.changeState(state);
     }
 
     @Override
-    public final void propagateRetracts() {
+    public void propagateRetracts() {
         if (retractQueue.isEmpty()) {
             return;
         }
         int i = retractQueue.nextSetBit(0);
         while (i != -1) {
             Carrier_ carrier = dirtyList.get(i);
-            TupleState state = extractState(carrier);
+            TupleState state = carrier.extractState();
             switch (state) {
                 case DYING -> propagate(carrier, retractPropagator, TupleState.DEAD);
                 case ABORTING -> clean(carrier, TupleState.DEAD);
@@ -135,21 +136,20 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         }
     }
 
-    private void propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
+    private static <Tuple_ extends AbstractTuple, Carrier_ extends AbstractPropagationMetadataCarrier<Tuple_>> void
+            propagate(Carrier_ carrier, Consumer<Tuple_> propagator, TupleState tupleState) {
         clean(carrier, tupleState); // Hide original state from the next node by doing this before propagation.
-        propagator.accept(extractTuple(carrier));
+        propagator.accept(carrier.extractTuple());
     }
 
-    protected abstract Tuple_ extractTuple(Carrier_ carrier);
-
-    protected void clean(Carrier_ carrier, TupleState tupleState) {
-        changeState(carrier, tupleState);
+    private static void clean(AbstractPropagationMetadataCarrier<?> carrier, TupleState tupleState) {
+        carrier.changeState(tupleState);
         carrier.positionInDirtyList = -1;
     }
 
     @Override
-    public final void propagateUpdates() {
-        BitSet insertAndRetractQueue = buildInsertAndRetractQueue();
+    public void propagateUpdates() {
+        BitSet insertAndRetractQueue = buildInsertAndRetractQueue(insertQueue, retractQueue);
         if (insertAndRetractQueue == null) { // Iterate over the entire list more efficiently.
             for (Carrier_ carrier : dirtyList) {
                 propagateInsertOrUpdate(carrier, updatePropagator);
@@ -164,7 +164,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
         }
     }
 
-    private BitSet buildInsertAndRetractQueue() {
+    private static BitSet buildInsertAndRetractQueue(BitSet insertQueue, BitSet retractQueue) {
         boolean noInserts = insertQueue.isEmpty();
         boolean noRetracts = retractQueue.isEmpty();
         if (noInserts && noRetracts) {
@@ -182,7 +182,7 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
     }
 
     @Override
-    public final void propagateInserts() {
+    public void propagateInserts() {
         if (!insertQueue.isEmpty()) {
             int i = insertQueue.nextSetBit(0);
             while (i != -1) {
@@ -201,7 +201,10 @@ sealed abstract class AbstractDynamicPropagationQueue<Carrier_ extends AbstractP
      * @param carrier never null
      * @param propagator never null
      */
-    protected void propagateInsertOrUpdate(Carrier_ carrier, Consumer<Tuple_> propagator) {
+    private void propagateInsertOrUpdate(Carrier_ carrier, Consumer<Tuple_> propagator) {
+        if (preprocessor != null) {
+            preprocessor.accept(carrier);
+        }
         propagate(carrier, propagator, TupleState.OK);
     }
 

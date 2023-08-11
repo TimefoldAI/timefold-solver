@@ -53,7 +53,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
      *           When all tuples are removed, the field will be set to null, as if the group never existed.
      */
     private AbstractGroup<OutTuple_, ResultContainer_> singletonGroup;
-    private final GroupPropagationQueue<OutTuple_, ResultContainer_> propagationQueue;
+    private final DynamicPropagationQueue<OutTuple_, AbstractGroup<OutTuple_, ResultContainer_>> propagationQueue;
     private final boolean useAssertingGroupKey;
 
     protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex,
@@ -73,14 +73,14 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
          * Therefore, the size of these collections is kept default.
          */
         this.groupMap = hasMultipleGroups ? new HashMap<>() : null;
-        this.propagationQueue = new GroupPropagationQueue<>(nextNodesTupleLifecycle,
-                hasCollector ? group -> {
+        this.propagationQueue = hasCollector ? new DynamicPropagationQueue<>(nextNodesTupleLifecycle,
+                group -> {
                     OutTuple_ outTuple = group.outTuple;
                     TupleState state = outTuple.state;
                     if (state == TupleState.CREATING || state == TupleState.UPDATING) {
                         updateOutTupleToFinisher(outTuple, group.getResultContainer());
                     }
-                } : null);
+                }) : new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
         this.useAssertingGroupKey = environmentMode.isAsserted();
     }
 
