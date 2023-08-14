@@ -458,6 +458,56 @@ stream), use <<constraintStreamsConditionalPropagation,ifExists>> instead.
 It does not create cartesian products and therefore generally performs better.
 ====
 
+==== Evaluation of multiple joiners
+
+When using multiple joiners, there are some important considerations to keep in mind.
+Consider the following example:
+
+[source,java,options="nowrap"]
+----
+    factory.forEach(VehicleShift.class)
+        .join(Visit.class,
+            Joiners.equal(Function.identity(), Visit::getVehicleShift), // Visit's VehicleShift is not null...
+            Joiners.lessThan(
+                    vehicleShift -> vehicleShift.getMaxTravelTime(),
+                    visit -> visit.getVehicleShift().getMaxTravelTime() // ... yet NPE may be thrown here.
+            ))
+----
+
+When indexing joiners (such as `equal()` and `lessThan()`) check their indexes,
+they take the input tuple and create a set of keys that will enter the index.
+These keys are different for the left and right side of the joiner.
+
+In the above example, from the left side,
+the key is `[VehicleShift instance && result of calling VehicleShift.getMaxTravelTime()]`.
+(Using the first mapping function of each joiner.)
+From the right side,
+the key is `[the result of calling Visit.getVehicleShift() && result of calling Visit.getVehicleShift().getMaxTravelTime()]`.
+(Using the second mapping function of each joiner.)
+
+However, both of the key mapping functions are calculated independently of the other,
+and therefore the `lessThan()` joiner's mapping functions will be executed even in cases
+when the `equal()` joiner would not match.
+This leads to a `NullPointerException` being thrown in the example above,
+where the `lessThan()` joiner's mapping functions are executed on a `Visit` instance
+that has a `null` `vehicleShift` property which wasn't (yet) filtered out by the `equal()` joiner.
+The filtering only happens inside the joiner's indexes and to access them,
+we need these keys to be generated first.
+
+To avoid these issues,
+do not assume that subsequent joiners' mapping functions only apply after the previous joiners have matched.
+Alternatively (and possibly at the cost of reduced performance) use the filtering joiner,
+which is processed differently and does not suffer from this issue:
+
+[source,java,options="nowrap"]
+----
+    factory.forEach(VehicleShift.class)
+        .join(Visit.class,
+            Joiners.equal(Function.identity(), Visit::getVehicleShift), // Visit's VehicleShift is not null...
+            Joiners.filtering((vehicleShift, visit) ->
+                vehicleShift.getMaxTravelTime() < visit.getVehicleShift().getMaxTravelTime()
+        ))
+----
 
 [[constraintStreamsGroupingAndCollectors]]
 === Grouping and collectors

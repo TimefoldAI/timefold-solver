@@ -13,7 +13,8 @@ final class Group0Mapping1CollectorBiNode<OldA, OldB, A, ResultContainer_>
     public Group0Mapping1CollectorBiNode(int groupStoreIndex, int undoStoreIndex,
             BiConstraintCollector<OldA, OldB, ResultContainer_, A> collector,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, collector, nextNodesTupleLifecycle, environmentMode);
+        super(groupStoreIndex, undoStoreIndex,
+                null, collector, nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }
 

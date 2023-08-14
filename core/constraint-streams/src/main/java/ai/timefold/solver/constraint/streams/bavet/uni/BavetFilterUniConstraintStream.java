@@ -8,7 +8,8 @@ import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.score.Score;
 
-final class BavetFilterUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A> {
+final class BavetFilterUniConstraintStream<Solution_, A>
+        extends BavetAbstractUniConstraintStream<Solution_, A> {
 
     private final Predicate<A> predicate;
 

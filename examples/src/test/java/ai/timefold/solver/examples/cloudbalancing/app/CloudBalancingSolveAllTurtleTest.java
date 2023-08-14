@@ -8,7 +8,7 @@ import ai.timefold.solver.examples.common.app.UnsolvedDirSolveAllTurtleTest;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "cloudbalancing")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "cloudbalancing|all")
 class CloudBalancingSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<CloudBalance> {
 
     @Override

@@ -20,7 +20,8 @@ final class Group0Mapping4CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C, D, 
             QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, mergeCollectors(collectorA, collectorB, collectorC, collectorD),
+        super(groupStoreIndex, undoStoreIndex,
+                null, mergeCollectors(collectorA, collectorB, collectorC, collectorD),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

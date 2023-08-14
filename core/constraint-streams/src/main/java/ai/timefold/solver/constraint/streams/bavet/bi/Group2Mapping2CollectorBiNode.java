@@ -23,7 +23,8 @@ final class Group2Mapping2CollectorBiNode<OldA, OldB, A, B, C, D, ResultContaine
             BiConstraintCollector<OldA, OldB, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple),
+        super(groupStoreIndex, undoStoreIndex,
+                tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple),
                 mergeCollectors(collectorC, collectorD), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

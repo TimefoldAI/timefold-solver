@@ -19,13 +19,13 @@ final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNo
 
     public IndexedIfExistsTriNode(boolean shouldExist,
             TriFunction<A, B, C, IndexProperties> mappingABC, Function<D, IndexProperties> mappingD,
-            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
+            int inputStoreIndexRightEntry,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<TriTuple<A, B, C>>> indexerABC, Indexer<UniTuple<D>> indexerD) {
         this(shouldExist, mappingABC, mappingD,
-                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
+                inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, indexerABC, indexerD,
                 null);
     }

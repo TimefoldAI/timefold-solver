@@ -19,16 +19,19 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends AbstractTuple, 
             Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
             BiConstraintCollector<OldA, OldB, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, groupKeyFunction,
+        super(groupStoreIndex, undoStoreIndex,
+                groupKeyFunction,
                 collector == null ? null : collector.supplier(),
                 collector == null ? null : collector.finisher(),
                 nextNodesTupleLifecycle, environmentMode);
         accumulator = collector == null ? null : collector.accumulator();
     }
 
-    protected AbstractGroupBiNode(int groupStoreIndex, Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+    protected AbstractGroupBiNode(int groupStoreIndex,
+            Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
+            EnvironmentMode environmentMode) {
+        super(groupStoreIndex,
+                groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
         accumulator = null;
     }
 

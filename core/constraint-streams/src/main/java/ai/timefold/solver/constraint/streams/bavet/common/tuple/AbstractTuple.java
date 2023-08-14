@@ -27,34 +27,23 @@ public abstract sealed class AbstractTuple permits UniTuple, BiTuple, TriTuple, 
     private final boolean storeIsArray;
 
     private Object store;
-    public TupleState state = TupleState.CREATING;
+    public TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
 
     protected AbstractTuple(int storeSize) {
         this.store = (storeSize < 2) ? null : new Object[storeSize];
         this.storeIsArray = store != null;
     }
 
-    public final TupleState getState() {
-        return state;
-    }
-
-    public final void setState(TupleState state) {
-        this.state = state;
-    }
-
     public final <Value_> Value_ getStore(int index) {
-        if (storeIsArray) {
-            return (Value_) ((Object[]) store)[index];
-        }
-        return (Value_) store;
+        return (Value_) (storeIsArray ? ((Object[]) store)[index] : store);
     }
 
     public final void setStore(int index, Object value) {
         if (storeIsArray) {
             ((Object[]) store)[index] = value;
-            return;
+        } else {
+            store = value;
         }
-        store = value;
     }
 
     public <Value_> Value_ removeStore(int index) {

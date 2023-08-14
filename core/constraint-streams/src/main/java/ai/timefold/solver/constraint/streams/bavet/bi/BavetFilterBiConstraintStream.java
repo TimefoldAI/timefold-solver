@@ -8,7 +8,8 @@ import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.api.score.Score;
 
-final class BavetFilterBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B> {
+final class BavetFilterBiConstraintStream<Solution_, A, B>
+        extends BavetAbstractBiConstraintStream<Solution_, A, B> {
 
     private final BiPredicate<A, B> predicate;
 

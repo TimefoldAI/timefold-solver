@@ -96,7 +96,22 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     @Override
     public String toString() {
-        return "size = " + size;
+        switch (size) {
+            case 0 -> {
+                return "[]";
+            }
+            case 1 -> {
+                return "[" + first.getElement() + "]";
+            }
+            default -> {
+                StringBuilder builder = new StringBuilder("[");
+                for (T entry : this) {
+                    builder.append(entry).append(", ");
+                }
+                builder.replace(builder.length() - 2, builder.length(), "");
+                return builder.append("]").toString();
+            }
+        }
     }
 
 }

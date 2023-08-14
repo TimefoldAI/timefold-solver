@@ -15,11 +15,13 @@ final class Group1Mapping2CollectorUniNode<OldA, A, B, C, ResultContainerB_, Res
 
     private final int outputStoreSize;
 
-    public Group1Mapping2CollectorUniNode(Function<OldA, A> groupKeyMapping, int groupStoreIndex, int undoStoreIndex,
+    public Group1Mapping2CollectorUniNode(Function<OldA, A> groupKeyMapping,
+            int groupStoreIndex, int undoStoreIndex,
             UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
             UniConstraintCollector<OldA, ResultContainerC_, C> collectorC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, tuple -> createGroupKey(groupKeyMapping, tuple),
+        super(groupStoreIndex, undoStoreIndex,
+                tuple -> createGroupKey(groupKeyMapping, tuple),
                 Group0Mapping2CollectorUniNode.mergeCollectors(collectorB, collectorC), nextNodesTupleLifecycle,
                 environmentMode);
         this.outputStoreSize = outputStoreSize;

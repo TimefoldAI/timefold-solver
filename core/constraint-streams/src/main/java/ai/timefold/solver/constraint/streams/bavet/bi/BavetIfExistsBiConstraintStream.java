@@ -4,6 +4,7 @@ import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexerFactory;
@@ -15,7 +16,8 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
 
 final class BavetIfExistsBiConstraintStream<Solution_, A, B, C>
-        extends BavetAbstractBiConstraintStream<Solution_, A, B> {
+        extends BavetAbstractBiConstraintStream<Solution_, A, B>
+        implements BavetIfExistsConstraintStream<Solution_> {
 
     private final BavetAbstractBiConstraintStream<Solution_, A, B> parentAB;
     private final BavetForeBridgeUniConstraintStream<Solution_, C> parentBridgeC;
@@ -89,7 +91,7 @@ final class BavetIfExistsBiConstraintStream<Solution_, A, B, C>
                                 buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),
                                 downstream, filtering));
-        buildHelper.addNode(node, this, parentBridgeC);
+        buildHelper.addNode(node, this, this, parentBridgeC);
     }
 
     // ************************************************************************
@@ -106,5 +108,15 @@ final class BavetIfExistsBiConstraintStream<Solution_, A, B, C>
     // ************************************************************************
     // Getters/setters
     // ************************************************************************
+
+    @Override
+    public BavetAbstractConstraintStream<Solution_> getLeftParent() {
+        return parentAB;
+    }
+
+    @Override
+    public BavetAbstractConstraintStream<Solution_> getRightParent() {
+        return parentBridgeC;
+    }
 
 }

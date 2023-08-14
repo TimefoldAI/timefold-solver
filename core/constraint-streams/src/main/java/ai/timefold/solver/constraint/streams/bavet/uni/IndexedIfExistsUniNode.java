@@ -17,15 +17,14 @@ final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<Uni
 
     public IndexedIfExistsUniNode(boolean shouldExist,
             Function<A, IndexProperties> mappingA, Function<B, IndexProperties> mappingB,
-            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
+            int inputStoreIndexRightEntry,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<UniTuple<A>>> indexerA, Indexer<UniTuple<B>> indexerB) {
         this(shouldExist, mappingA, mappingB,
-                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, -1,
-                nextNodesTupleLifecycle, indexerA, indexerB,
-                null);
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
+                inputStoreIndexRightEntry, -1,
+                nextNodesTupleLifecycle, indexerA, indexerB, null);
     }
 
     public IndexedIfExistsUniNode(boolean shouldExist,
@@ -38,8 +37,7 @@ final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<Uni
         super(shouldExist, mappingB,
                 inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
                 inputStoreIndexRightProperties, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, indexerA, indexerB,
-                filtering != null);
+                nextNodesTupleLifecycle, indexerA, indexerB, filtering != null);
         this.mappingA = mappingA;
         this.filtering = filtering;
     }

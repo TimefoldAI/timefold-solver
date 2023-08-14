@@ -16,8 +16,8 @@ final class Group0Mapping2CollectorUniNode<OldA, A, B, ResultContainerA_, Result
             UniConstraintCollector<OldA, ResultContainerA_, A> collectorA,
             UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, mergeCollectors(collectorA, collectorB), nextNodesTupleLifecycle,
-                environmentMode);
+        super(groupStoreIndex, undoStoreIndex,
+                null, mergeCollectors(collectorA, collectorB), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }
 

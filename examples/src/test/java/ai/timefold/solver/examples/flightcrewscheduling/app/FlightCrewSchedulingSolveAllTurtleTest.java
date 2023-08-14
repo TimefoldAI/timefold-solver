@@ -7,7 +7,7 @@ import ai.timefold.solver.examples.flightcrewscheduling.domain.FlightCrewSolutio
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "flightcrewscheduling")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "flightcrewscheduling|all")
 class FlightCrewSchedulingSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<FlightCrewSolution> {
 
     @Override

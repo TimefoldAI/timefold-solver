@@ -7,7 +7,7 @@ import ai.timefold.solver.examples.examination.domain.Examination;
 
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "examination")
+@EnabledIfSystemProperty(named = TestSystemProperties.TURTLE_TEST_SELECTION, matches = "examination|all")
 class ExaminationSolveAllTurtleTest extends UnsolvedDirSolveAllTurtleTest<Examination> {
 
     @Override

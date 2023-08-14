@@ -14,19 +14,18 @@ final class UnindexedIfExistsQuadNode<A, B, C, D, E> extends AbstractUnindexedIf
             int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightEntry,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle) {
         this(shouldExist,
-                inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, null);
     }
 
     public UnindexedIfExistsQuadNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry,
+            int inputStoreIndexRightTrackerList,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             PentaPredicate<A, B, C, D, E> filtering) {
         super(shouldExist,
-                inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
-                inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
+                inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList, inputStoreIndexRightEntry,
+                inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, filtering != null);
         this.filtering = filtering;
     }

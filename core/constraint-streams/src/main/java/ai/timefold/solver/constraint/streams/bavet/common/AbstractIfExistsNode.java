@@ -1,9 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DEAD;
-
-import java.util.ArrayDeque;
-import java.util.Queue;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
@@ -32,13 +30,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected final int inputStoreIndexLeftTrackerList; // -1 if !isFiltering
     protected final int inputStoreIndexRightTrackerList; // -1 if !isFiltering
 
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)}, and/or ...
-     */
-    private final TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle;
     protected final boolean isFiltering;
-    // No outputStoreSize because this node is not a tuple source, even though it has a dirtyCounterQueue.
-    protected final Queue<ExistsCounter<LeftTuple_>> dirtyCounterQueue;
+    private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
     protected AbstractIfExistsNode(boolean shouldExist,
             int inputStoreIndexLeftTrackerList, int inputStoreIndexRightTrackerList,
@@ -47,9 +40,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         this.shouldExist = shouldExist;
         this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
         this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.isFiltering = isFiltering;
-        this.dirtyCounterQueue = new ArrayDeque<>(1000);
+        this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -57,80 +49,46 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected void initCounterLeft(ExistsCounter<LeftTuple_> counter) {
         if (shouldExist ? counter.countRight > 0 : counter.countRight == 0) {
             // Counters start out dead
-            counter.state = TupleState.CREATING;
-            dirtyCounterQueue.add(counter);
+            propagationQueue.insert(counter);
         }
     }
 
     protected final void updateUnchangedCounterLeft(ExistsCounter<LeftTuple_> counter) {
-        switch (counter.state) {
-            case CREATING:
-            case UPDATING:
-            case DYING:
-            case ABORTING:
-            case DEAD:
-                // Counter state does not change because the index properties didn't change
-                break;
-            case OK:
-                // Still needed to propagate the update for downstream filters, matchWeighers, ...
-                counter.state = TupleState.UPDATING;
-                dirtyCounterQueue.add(counter);
-                break;
-            default:
-                throw new IllegalStateException("Impossible state: The counter (" + counter.state + ") in node (" +
-                        this + ") is in an unexpected state (" + counter.state + ").");
+        if (counter.state != TupleState.OK) {
+            // Counter state does not change because the index properties didn't change
+            return;
         }
+        // Still needed to propagate the update for downstream filters, matchWeighers, ...
+        propagationQueue.update(counter);
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter) {
+        TupleState state = counter.state;
         if (shouldExist ? counter.countRight > 0 : counter.countRight == 0) {
             // Insert or update
-            switch (counter.state) {
-                case CREATING:
-                case UPDATING:
-                    // Don't add the tuple to the dirtyTupleQueue twice
-                    break;
-                case OK:
-                    counter.state = TupleState.UPDATING;
-                    dirtyCounterQueue.add(counter);
-                    break;
-                case DYING:
-                    counter.state = TupleState.UPDATING;
-                    break;
-                case DEAD:
-                    counter.state = TupleState.CREATING;
-                    dirtyCounterQueue.add(counter);
-                    break;
-                case ABORTING:
-                    counter.state = TupleState.CREATING;
-                    break;
-                default:
-                    throw new IllegalStateException("Impossible state: the counter (" + counter
-                            + ") has an impossible insert state (" + counter.state + ").");
+            switch (state) {
+                case CREATING, UPDATING -> {
+                    // Don't add the tuple to the propagation queue twice
+                }
+                case OK, DYING -> propagationQueue.update(counter);
+                case DEAD, ABORTING -> propagationQueue.insert(counter);
+                default -> throw new IllegalStateException("Impossible state: the counter (" + counter
+                        + ") has an impossible insert state (" + state + ").");
             }
         } else {
             // Retract or remain dead
-            switch (counter.state) {
-                case CREATING:
-                    // Kill it before it propagates
-                    counter.state = TupleState.ABORTING;
-                    break;
-                case UPDATING:
-                    // Kill the original propagation
-                    counter.state = TupleState.DYING;
-                    break;
-                case OK:
-                    counter.state = TupleState.DYING;
-                    dirtyCounterQueue.add(counter);
-                    break;
-                case DYING:
-                case DEAD:
-                case ABORTING:
-                    // Don't add the tuple to the dirtyTupleQueue twice
-                    break;
-                default:
-                    throw new IllegalStateException("Impossible state: The counter (" + counter
-                            + ") has an impossible retract state (" + counter.state + ").");
+            if (!state.isActive()) {
+                // Don't add the tuple to the propagation queue twice.
+                return;
+            }
+            switch (state) {
+                case CREATING -> // Kill it before it propagates.
+                    propagationQueue.retract(counter, ABORTING);
+                case OK, UPDATING -> // Kill the original propagation.
+                    propagationQueue.retract(counter, DYING);
+                default -> throw new IllegalStateException("Impossible state: The counter (" + counter
+                        + ") has an impossible retract state (" + state + ").");
+
             }
         }
     }
@@ -194,69 +152,27 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     private void doInsertCounter(ExistsCounter<LeftTuple_> counter) {
         switch (counter.state) {
-            case DYING:
-                counter.state = TupleState.UPDATING;
-                break;
-            case DEAD:
-                counter.state = TupleState.CREATING;
-                dirtyCounterQueue.add(counter);
-                break;
-            case ABORTING:
-                counter.state = TupleState.CREATING;
-                break;
-            default:
-                throw new IllegalStateException("Impossible state: the counter (" + counter
-                        + ") has an impossible insert state (" + counter.state + ").");
+            case DYING -> propagationQueue.update(counter);
+            case DEAD, ABORTING -> propagationQueue.insert(counter);
+            default -> throw new IllegalStateException("Impossible state: the counter (" + counter
+                    + ") has an impossible insert state (" + counter.state + ").");
         }
     }
 
     private void doRetractCounter(ExistsCounter<LeftTuple_> counter) {
         switch (counter.state) {
-            case CREATING:
-                // Kill it before it propagates
-                counter.state = TupleState.ABORTING;
-                break;
-            case UPDATING:
-                // Kill the original propagation
-                counter.state = TupleState.DYING;
-                break;
-            case OK:
-                counter.state = TupleState.DYING;
-                dirtyCounterQueue.add(counter);
-                break;
-            default:
-                throw new IllegalStateException("Impossible state: The counter (" + counter
-                        + ") has an impossible retract state (" + counter.state + ").");
+            case CREATING -> // Kill it before it propagates.
+                propagationQueue.retract(counter, ABORTING);
+            case OK, UPDATING -> // Kill the original propagation.
+                propagationQueue.retract(counter, DYING);
+            default -> throw new IllegalStateException("Impossible state: The counter (" + counter
+                    + ") has an impossible retract state (" + counter.state + ").");
         }
     }
 
     @Override
-    public final void calculateScore() {
-        for (ExistsCounter<LeftTuple_> counter : dirtyCounterQueue) {
-            switch (counter.state) {
-                case CREATING:
-                    nextNodesTupleLifecycle.insert(counter.leftTuple);
-                    counter.state = TupleState.OK;
-                    break;
-                case UPDATING:
-                    nextNodesTupleLifecycle.update(counter.leftTuple);
-                    counter.state = TupleState.OK;
-                    break;
-                case DYING:
-                    nextNodesTupleLifecycle.retract(counter.leftTuple);
-                    counter.state = DEAD;
-                    break;
-                case ABORTING:
-                    counter.state = DEAD;
-                    break;
-                case OK:
-                case DEAD:
-                default:
-                    throw new IllegalStateException("Impossible state: The dirty counter (" + counter
-                            + ") has an non-dirty state (" + counter.state + ").");
-            }
-        }
-        dirtyCounterQueue.clear();
+    public Propagator getPropagator() {
+        return propagationQueue;
     }
 
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {

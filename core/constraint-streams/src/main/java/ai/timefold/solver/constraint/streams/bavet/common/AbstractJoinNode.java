@@ -1,9 +1,9 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.ArrayDeque;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Queue;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.ABORTING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.CREATING;
+import static ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState.DYING;
+
 import java.util.function.Consumer;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
@@ -30,25 +30,20 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
 
     protected final int inputStoreIndexLeftOutTupleList;
     protected final int inputStoreIndexRightOutTupleList;
-    /**
-     * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
-     */
-    private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
-    protected final Queue<OutTuple_> dirtyTupleQueue;
+    private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             int outputStoreIndexLeftOutEntry, int outputStoreIndexRightOutEntry) {
         this.inputStoreIndexLeftOutTupleList = inputStoreIndexLeftOutTupleList;
         this.inputStoreIndexRightOutTupleList = inputStoreIndexRightOutTupleList;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         this.isFiltering = isFiltering;
         this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
         this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
-        dirtyTupleQueue = new ArrayDeque<>(1000);
+        this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     protected abstract OutTuple_ createOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -67,7 +62,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         ElementAwareListEntry<OutTuple_> outEntryRight = outTupleListRight.add(outTuple);
         outTuple.setStore(outputStoreIndexRightOutEntry, outEntryRight);
-        dirtyTupleQueue.add(outTuple);
+        propagationQueue.insert(outTuple);
     }
 
     protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
@@ -79,20 +74,15 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     protected final void innerUpdateLeft(LeftTuple_ leftTuple, Consumer<Consumer<UniTuple<Right_>>> rightTupleConsumer) {
         // Prefer an update over retract-insert if possible
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+        // Propagate the update for downstream filters, matchWeighers, ...
         if (!isFiltering) {
-            // Propagate the update for downstream filters, matchWeighers, ...
-            outTupleListLeft.forEach(outTuple -> updateOutTupleLeft(outTuple, leftTuple));
+            for (OutTuple_ outTuple : outTupleListLeft) {
+                updateOutTupleLeft(outTuple, leftTuple);
+            }
         } else {
-            // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead
-            Map<ElementAwareList<OutTuple_>, OutTuple_> rightToOutMap = new IdentityHashMap<>(outTupleListLeft.size());
-            outTupleListLeft.forEach(outTuple -> {
-                ElementAwareListEntry<OutTuple_> rightOutEntry = outTuple.getStore(outputStoreIndexRightOutEntry);
-                rightToOutMap.put(rightOutEntry.getList(), outTuple);
-
-            });
             rightTupleConsumer.accept(rightTuple -> {
                 ElementAwareList<OutTuple_> rightOutList = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, rightToOutMap, rightOutList);
+                processOutTupleUpdate(leftTuple, rightTuple, rightOutList, outTupleListLeft, outputStoreIndexRightOutEntry);
             });
         }
     }
@@ -103,23 +93,14 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void doUpdateOutTuple(OutTuple_ outTuple) {
-        switch (outTuple.getState()) {
-            case CREATING:
-            case UPDATING:
-                // Don't add the tuple to the dirtyTupleQueue twice
-                break;
-            case OK:
-                outTuple.setState(TupleState.UPDATING);
-                dirtyTupleQueue.add(outTuple);
-                break;
-            // Impossible because they shouldn't linger in the indexes
-            case DYING:
-            case ABORTING:
-            case DEAD:
-            default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.getState() + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.getState() + ").");
+        TupleState state = outTuple.state;
+        if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
+            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
+                    this + ") is in an unexpected state (" + outTuple.state + ").");
+        } else if (state != TupleState.OK) { // Already in the queue in the correct state.
+            return;
         }
+        propagationQueue.update(outTuple);
     }
 
     protected final void innerUpdateRight(UniTuple<Right_> rightTuple, Consumer<Consumer<LeftTuple_>> leftTupleConsumer) {
@@ -127,27 +108,21 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         if (!isFiltering) {
             // Propagate the update for downstream filters, matchWeighers, ...
-            outTupleListRight.forEach(outTuple -> {
+            for (OutTuple_ outTuple : outTupleListRight) {
                 setOutTupleRightFact(outTuple, rightTuple);
                 doUpdateOutTuple(outTuple);
-            });
+            }
         } else {
-            // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead
-            Map<ElementAwareList<OutTuple_>, OutTuple_> leftToOutMap = new IdentityHashMap<>(outTupleListRight.size());
-            outTupleListRight.forEach(outTuple -> {
-                ElementAwareListEntry<OutTuple_> leftOutEntry = outTuple.getStore(outputStoreIndexLeftOutEntry);
-                leftToOutMap.put(leftOutEntry.getList(), outTuple);
-            });
             leftTupleConsumer.accept(leftTuple -> {
                 ElementAwareList<OutTuple_> leftOutList = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, leftToOutMap, leftOutList);
+                processOutTupleUpdate(leftTuple, rightTuple, leftOutList, outTupleListRight, outputStoreIndexLeftOutEntry);
             });
         }
     }
 
-    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
-            Map<ElementAwareList<OutTuple_>, OutTuple_> outMap, ElementAwareList<OutTuple_> outList) {
-        OutTuple_ outTuple = outMap.get(outList);
+    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
+            ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
+        OutTuple_ outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
                 insertOutTuple(leftTuple, rightTuple);
@@ -161,63 +136,36 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
+    private OutTuple_ findOutTuple(ElementAwareList<OutTuple_> outTupleList, ElementAwareList<OutTuple_> outList,
+            int outputStoreIndexOutEntry) {
+        // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead.
+        for (OutTuple_ outTuple : outTupleList) {
+            ElementAwareListEntry<OutTuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
+            ElementAwareList<OutTuple_> outEntryList = outEntry.getList();
+            if (outList == outEntryList) {
+                return outTuple;
+            }
+        }
+        return null;
+    }
+
     protected final void retractOutTuple(OutTuple_ outTuple) {
         ElementAwareListEntry<OutTuple_> outEntryLeft = outTuple.removeStore(outputStoreIndexLeftOutEntry);
         outEntryLeft.remove();
         ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
-        switch (outTuple.getState()) {
-            case CREATING:
-                // Don't add the tuple to the dirtyTupleQueue twice
-                // Kill it before it propagates
-                outTuple.setState(TupleState.ABORTING);
-                break;
-            case OK:
-                outTuple.setState(TupleState.DYING);
-                dirtyTupleQueue.add(outTuple);
-                break;
-            case UPDATING:
-                // Don't add the tuple to the dirtyTupleQueue twice
-                // Kill the original propagation
-                outTuple.setState(TupleState.DYING);
-                break;
-            // Impossible because they shouldn't linger in the indexes
-            case DYING:
-            case ABORTING:
-            case DEAD:
-            default:
-                throw new IllegalStateException("Impossible state: The tuple (" + outTuple.getState() + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.getState() + ").");
+        TupleState state = outTuple.state;
+        if (!state.isActive()) {
+            // Impossible because they shouldn't linger in the indexes.
+            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
+                    + ") is in an unexpected state (" + outTuple.state + ").");
         }
+        propagationQueue.retract(outTuple, state == CREATING ? ABORTING : DYING);
     }
 
     @Override
-    public final void calculateScore() {
-        for (OutTuple_ tuple : dirtyTupleQueue) {
-            switch (tuple.getState()) {
-                case CREATING:
-                    nextNodesTupleLifecycle.insert(tuple);
-                    tuple.setState(TupleState.OK);
-                    break;
-                case UPDATING:
-                    nextNodesTupleLifecycle.update(tuple);
-                    tuple.setState(TupleState.OK);
-                    break;
-                case DYING:
-                    nextNodesTupleLifecycle.retract(tuple);
-                    tuple.setState(TupleState.DEAD);
-                    break;
-                case ABORTING:
-                    tuple.setState(TupleState.DEAD);
-                    break;
-                case OK:
-                case DEAD:
-                default:
-                    throw new IllegalStateException("Impossible state: The tuple (" + tuple + ") in node (" +
-                            this + ") is in an unexpected state (" + tuple.getState() + ").");
-            }
-        }
-        dirtyTupleQueue.clear();
+    public Propagator getPropagator() {
+        return propagationQueue;
     }
 
 }

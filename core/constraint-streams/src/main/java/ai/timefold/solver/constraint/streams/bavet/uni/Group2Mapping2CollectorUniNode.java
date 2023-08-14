@@ -22,7 +22,8 @@ final class Group2Mapping2CollectorUniNode<OldA, A, B, C, D, ResultContainerC_, 
             UniConstraintCollector<OldA, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple),
+        super(groupStoreIndex, undoStoreIndex,
+                tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple),
                 mergeCollectors(collectorC, collectorD), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

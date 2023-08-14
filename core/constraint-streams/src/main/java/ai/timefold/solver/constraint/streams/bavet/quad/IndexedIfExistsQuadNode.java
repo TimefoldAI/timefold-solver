@@ -19,13 +19,13 @@ final class IndexedIfExistsQuadNode<A, B, C, D, E> extends AbstractIndexedIfExis
 
     public IndexedIfExistsQuadNode(boolean shouldExist,
             QuadFunction<A, B, C, D, IndexProperties> mappingABCD, Function<E, IndexProperties> mappingE,
-            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
+            int inputStoreIndexRightEntry,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<QuadTuple<A, B, C, D>>> indexerABCD, Indexer<UniTuple<E>> indexerE) {
         this(shouldExist, mappingABCD, mappingE,
-                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
+                inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, indexerABCD, indexerE,
                 null);
     }

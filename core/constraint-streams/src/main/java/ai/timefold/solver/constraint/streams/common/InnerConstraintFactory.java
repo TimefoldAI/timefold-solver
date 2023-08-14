@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.constraint.streams.common.bi.BiJoinerComber;
@@ -22,27 +21,10 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Constraint> implements ConstraintFactory {
-
-    @Override
-    public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
-        UniConstraintStream<A> stream = forEachIncludingNullVars(sourceClass);
-        Predicate<A> nullityFilter = getNullityFilter(sourceClass);
-        return nullityFilter == null ? stream : stream.filter(nullityFilter);
-    }
-
-    public <A> Predicate<A> getNullityFilter(Class<A> fromClass) {
-        EntityDescriptor<Solution_> entityDescriptor = getSolutionDescriptor().findEntityDescriptor(fromClass);
-        if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
-            return (Predicate<A>) entityDescriptor.getHasNoNullVariables();
-        }
-        return null;
-    }
 
     @Override
     public <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A>... joiners) {
@@ -62,17 +44,6 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
         }
         Function<A, Comparable> planningIdGetter = planningIdMemberAccessor.getGetterFunction();
         return (DefaultBiJoiner<A, A>) lessThan(planningIdGetter);
-    }
-
-    @Override
-    public <A> UniConstraintStream<A> from(Class<A> fromClass) {
-        UniConstraintStream<A> stream = fromUnfiltered(fromClass);
-        EntityDescriptor<Solution_> entityDescriptor = getSolutionDescriptor().findEntityDescriptor(fromClass);
-        if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
-            Predicate<A> predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
-            stream = stream.filter(predicate);
-        }
-        return stream;
     }
 
     @Override

@@ -78,7 +78,7 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         downstream, filtering, outputStoreSize + 2,
                         outputStoreSize, outputStoreSize + 1);
-        buildHelper.addNode(node, leftParent, rightParent);
+        buildHelper.addNode(node, this, leftParent, rightParent);
     }
 
     // ************************************************************************
@@ -118,5 +118,15 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
     // ************************************************************************
     // Getters/setters
     // ************************************************************************
+
+    @Override
+    public BavetAbstractConstraintStream<Solution_> getLeftParent() {
+        return leftParent;
+    }
+
+    @Override
+    public BavetAbstractConstraintStream<Solution_> getRightParent() {
+        return rightParent;
+    }
 
 }
