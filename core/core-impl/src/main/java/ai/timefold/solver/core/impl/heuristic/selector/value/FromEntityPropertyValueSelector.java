@@ -64,8 +64,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public long getSize(Object entity) {
-        ValueRange<?> valueRange = valueRangeDescriptor.extractValueRange(workingSolution, entity);
-        return ((CountableValueRange<?>) valueRange).getSize();
+        return valueRangeDescriptor.extractValueRangeSize(workingSolution, entity);
     }
 
     @Override

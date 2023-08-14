@@ -5,13 +5,17 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractUncountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 
 /**
  * Note: Floating point numbers (float, double) cannot represent a decimal number correctly.
  * If floating point numbers leak into the scoring function, they are likely to cause score corruptions.
  * To avoid that, use either {@link java.math.BigDecimal} or fixed-point arithmetic.
+ *
+ * @deprecated Prefer {@link BigDecimalValueRange}.
  */
+@Deprecated(forRemoval = true, since = "1.1.0")
 public class DoubleValueRange extends AbstractUncountableValueRange<Double> {
 
     private final double from;

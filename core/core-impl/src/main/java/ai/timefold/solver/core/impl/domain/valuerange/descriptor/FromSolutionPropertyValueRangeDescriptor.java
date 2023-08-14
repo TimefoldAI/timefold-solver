@@ -33,8 +33,18 @@ public class FromSolutionPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
+    public long extractValueRangeSize(Solution_ solution, Object entity) {
+        return readValueRangeSize(solution);
+    }
+
+    @Override
     public ValueRange<?> extractValueRange(Solution_ solution) {
         return readValueRange(solution);
+    }
+
+    @Override
+    public long extractValueRangeSize(Solution_ solution) {
+        return readValueRangeSize(solution);
     }
 
 }

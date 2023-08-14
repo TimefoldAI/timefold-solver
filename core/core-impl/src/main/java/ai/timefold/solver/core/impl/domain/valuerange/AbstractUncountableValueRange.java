@@ -9,7 +9,11 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
  *
  * @see ValueRange
  * @see ValueRangeFactory
+ * @deprecated Uncountable value ranges were never fully supported in many places throughout the solver
+ *             and therefore never gained traction.
+ *             Use {@link CountableValueRange} instead, and configure a step.
  */
+@Deprecated(forRemoval = true, since = "1.1.0")
 public abstract class AbstractUncountableValueRange<T> implements ValueRange<T> {
 
 }

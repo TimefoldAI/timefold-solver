@@ -70,4 +70,24 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         return doNullInValueRangeWrapping(new CompositeCountableValueRange(childValueRangeList));
     }
 
+    @Override
+    public long extractValueRangeSize(Solution_ solution, Object entity) {
+        int size = addNullInValueRange ? 1 : 0;
+        for (ValueRangeDescriptor<Solution_> valueRangeDescriptor : childValueRangeDescriptorList) {
+            size += ((CountableValueRange) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
+        }
+        return size;
+    }
+
+    @Override
+    public long extractValueRangeSize(Solution_ solution) {
+        int size = addNullInValueRange ? 1 : 0;
+        for (ValueRangeDescriptor<Solution_> valueRangeDescriptor : childValueRangeDescriptorList) {
+            EntityIndependentValueRangeDescriptor<Solution_> entityIndependentValueRangeDescriptor =
+                    (EntityIndependentValueRangeDescriptor) valueRangeDescriptor;
+            size += ((CountableValueRange) entityIndependentValueRangeDescriptor.extractValueRange(solution)).getSize();
+        }
+        return size;
+    }
+
 }

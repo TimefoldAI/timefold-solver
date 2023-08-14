@@ -42,4 +42,13 @@ public interface ValueRangeDescriptor<Solution_> {
      */
     ValueRange<?> extractValueRange(Solution_ solution, Object entity);
 
+    /**
+     * @param solution never null
+     * @param entity never null. To avoid this parameter,
+     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRangeSize} instead.
+     * @return never null
+     * @throws UnsupportedOperationException if {@link #isCountable()} returns false
+     */
+    long extractValueRangeSize(Solution_ solution, Object entity);
+
 }

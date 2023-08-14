@@ -1010,7 +1010,9 @@ public class SolutionDescriptor<Solution_> {
      * @return {@code >= 0}
      */
     public int countUninitialized(Solution_ solution) {
-        return countUninitializedVariables(solution) + countUnassignedListVariableValues(solution);
+        int uninitializedVariableCount = countUninitializedVariables(solution);
+        int uninitializedValueCount = countUnassignedListVariableValues(solution);
+        return uninitializedValueCount + uninitializedVariableCount;
     }
 
     /**

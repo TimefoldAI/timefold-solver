@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -275,11 +274,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     }
 
     public long getValueCount(Solution_ solution, Object entity) {
-        if (!valueRangeDescriptor.isCountable()) {
-            // TODO report this better than just ignoring it
-            return 0L;
-        }
-        return ((CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
+        return valueRangeDescriptor.extractValueRangeSize(solution, entity);
     }
 
     @Override
