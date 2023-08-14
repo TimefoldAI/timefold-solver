@@ -82,7 +82,9 @@ public final class ValueRangeFactory {
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
      * @return never null
+     * @deprecated Prefer {@link #createBigDecimalValueRange(BigDecimal, BigDecimal)}.
      */
+    @Deprecated(forRemoval = true, since = "1.1.0")
     public static ValueRange<Double> createDoubleValueRange(double from, double to) {
         return new DoubleValueRange(from, to);
     }

@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -138,12 +140,49 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         return valueRange;
     }
 
+    protected long readValueRangeSize(Object bean) {
+        Object valueRangeObject = memberAccessor.executeGetter(bean);
+        if (valueRangeObject == null) {
+            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
+                    + " annotated member (" + memberAccessor
+                    + ") called on bean (" + bean
+                    + ") must not return a null valueRangeObject (" + valueRangeObject + ").");
+        }
+        int size = addNullInValueRange ? 1 : 0;
+        if (collectionWrapping) {
+            return size + ((Collection<Object>) valueRangeObject).size();
+        } else if (arrayWrapping) {
+            return size + Array.getLength(valueRangeObject);
+        }
+        ValueRange<Object> valueRange = (ValueRange<Object>) valueRangeObject;
+        if (valueRange.isEmpty()) {
+            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
+                    + " annotated member (" + memberAccessor
+                    + ") called on bean (" + bean
+                    + ") must not return an empty valueRange (" + valueRangeObject + ").\n"
+                    + "Maybe apply overconstrained planning as described in the documentation.");
+        } else if (valueRange instanceof CountableValueRange<Object> countableValueRange) {
+            return size + countableValueRange.getSize();
+        } else {
+            throw new UnsupportedOperationException("The @" + ValueRangeProvider.class.getSimpleName()
+                    + " annotated member (" + memberAccessor
+                    + ") called on bean (" + bean
+                    + ") is not countable and therefore does not support getSize().");
+        }
+    }
+
     private <T> List<T> transformCollectionToList(Collection<T> collection) {
-        // TODO The user might not be aware of these performance pitfalls with Set and LinkedList:
-        // - If only ValueRange.createOriginalIterator() is used, cloning a Set to a List is a waste of time.
-        // - If the List is a LinkedList, ValueRange.createRandomIterator(Random)
-        //   and ValueRange.get(int) are not efficient.
-        return (collection instanceof List ? (List<T>) collection : new ArrayList<>(collection));
+        if (collection instanceof List<T> list) {
+            if (collection instanceof LinkedList<T> linkedList) {
+                // ValueRange.createRandomIterator(Random) and ValueRange.get(int) wouldn't be efficient.
+                return new ArrayList<>(linkedList);
+            } else {
+                return list;
+            }
+        } else {
+            // TODO If only ValueRange.createOriginalIterator() is used, cloning a Set to a List is a waste of time.
+            return new ArrayList<>(collection);
+        }
     }
 
 }
