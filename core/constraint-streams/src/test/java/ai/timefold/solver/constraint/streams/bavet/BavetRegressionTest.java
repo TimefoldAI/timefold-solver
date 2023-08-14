@@ -212,7 +212,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(value);
 
         scoreDirector.setWorkingSolution(solution);
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector,
                 assertMatch(entity2, entity2));
 
@@ -223,7 +222,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector,
                 assertMatch(entity1, entity1));
 
@@ -234,7 +232,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value);
         scoreDirector.afterVariableChanged(entity2, "value");
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector,
                 assertMatch(entity2, entity2));
     }
@@ -331,7 +328,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
          * Tuple (entity2, entity2) comes in, values are equal, therefore not exists, therefore entity2 penalized.
          */
         scoreDirector.setWorkingSolution(solution);
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector,
                 assertMatch(entity2));
 
@@ -342,7 +338,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector,
                 assertMatch(entity1));
 
@@ -353,7 +348,6 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value);
         scoreDirector.afterVariableChanged(entity2, "value");
-        // TODO update the assertions once no longer throwing exceptions
         assertScore(scoreDirector,
                 assertMatch(entity2));
     }

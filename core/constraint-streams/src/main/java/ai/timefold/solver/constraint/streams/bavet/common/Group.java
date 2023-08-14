@@ -18,7 +18,7 @@ final class Group<OutTuple_ extends AbstractTuple, ResultContainer_>
 
     public static <OutTuple_ extends AbstractTuple, ResultContainer_> Group<OutTuple_, ResultContainer_> create(Object groupKey,
             ResultContainer_ resultContainer, OutTuple_ outTuple) {
-        return new Group<>(new FullGroupData<>(groupKey, resultContainer), outTuple);
+        return new Group<>(new GroupDataWithKeyAndAccumulate<>(groupKey, resultContainer), outTuple);
     }
 
     private final GroupData<ResultContainer_> groupData;
@@ -85,7 +85,7 @@ final class Group<OutTuple_ extends AbstractTuple, ResultContainer_>
 
     }
 
-    private record FullGroupData<ResultContainer_>(Object groupKey,
+    private record GroupDataWithKeyAndAccumulate<ResultContainer_>(Object groupKey,
             ResultContainer_ resultContainer) implements GroupData<ResultContainer_> {
 
     }
