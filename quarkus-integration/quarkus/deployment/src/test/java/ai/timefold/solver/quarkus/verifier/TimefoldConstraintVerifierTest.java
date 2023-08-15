@@ -28,7 +28,7 @@ class TimefoldConstraintVerifierTest {
     ConstraintVerifier<TestdataQuarkusConstraintProvider, TestdataQuarkusSolution> constraintVerifier;
 
     @Test
-    void constraintVerifierDroolsStreamImpl() {
+    void constraintVerifierBavet() {
         TestdataQuarkusSolution solution = new TestdataQuarkusSolution();
         TestdataQuarkusEntity entityA = new TestdataQuarkusEntity();
         TestdataQuarkusEntity entityB = new TestdataQuarkusEntity();

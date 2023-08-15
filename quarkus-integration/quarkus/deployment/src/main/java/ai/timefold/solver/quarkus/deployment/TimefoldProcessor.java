@@ -240,11 +240,8 @@ class TimefoldProcessor {
 
         if (determineIfNative.isNative()) {
             // DroolsAlphaNetworkCompilationEnabled is a three-state boolean (null, true, false); if it not
-            // null, ScoreDirectorFactoryFactory will throw an error if Drools isn't use (i.e. BAVET or Easy/Incremental)
-            if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null && solverConfig
-                    .getScoreDirectorFactoryConfig().getConstraintStreamImplType() != ConstraintStreamImplType.BAVET) {
-                disableANC(solverConfig);
-            } else if (solverConfig.getScoreDirectorFactoryConfig().getScoreDrlList() != null
+            // null, ScoreDirectorFactoryFactory will throw an error if Drools isn't used (i.e. BAVET or Easy/Incremental)
+            if (solverConfig.getScoreDirectorFactoryConfig().getScoreDrlList() != null
                     || solverConfig.getScoreDirectorFactoryConfig().getScoreDrlFileList() == null) {
                 disableANC(solverConfig);
             }

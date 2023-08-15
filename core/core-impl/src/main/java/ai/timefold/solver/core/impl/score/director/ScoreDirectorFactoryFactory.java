@@ -168,7 +168,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
     }
 
     private void validateNoDroolsAlphaNetworkCompilation() {
-        if (config.getDroolsAlphaNetworkCompilationEnabled() != null) {
+        if (Objects.equals(config.getDroolsAlphaNetworkCompilationEnabled(), Boolean.TRUE)) {
             throw new IllegalStateException("If there is no scoreDrl (" + config.getScoreDrlList()
                     + "), scoreDrlFile (" + config.getScoreDrlFileList() + ") or constraintProviderClass ("
                     + config.getConstraintProviderClass() + ") with " + DROOLS + " impl type ("
