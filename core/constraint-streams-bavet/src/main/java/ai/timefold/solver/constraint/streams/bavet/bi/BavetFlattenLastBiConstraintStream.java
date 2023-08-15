@@ -1,26 +1,29 @@
 package ai.timefold.solver.constraint.streams.bavet.bi;
 
-import java.util.Set;
+import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.AbstractFlattenLastNode;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.api.score.Score;
 
-public final class BavetFlattenLastBiConstraintStream<Solution_, A, B>
+final class BavetFlattenLastBiConstraintStream<Solution_, A, B, NewB>
         extends BavetAbstractBiConstraintStream<Solution_, A, B> {
 
-    private final BavetAbstractConstraintStream<Solution_> parent;
+    private final Function<B, Iterable<NewB>> mappingFunction;
+    private BavetAftBridgeBiConstraintStream<Solution_, A, NewB> flattenLastStream;
 
     public BavetFlattenLastBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractConstraintStream<Solution_> parent) {
-        super(constraintFactory, parent.getRetrievalSemantics());
-        this.parent = parent;
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent,
+            Function<B, Iterable<NewB>> mappingFunction) {
+        super(constraintFactory, parent);
+        this.mappingFunction = mappingFunction;
     }
 
-    @Override
-    public boolean guaranteesDistinct() {
-        return false;
+    public void setAftBridge(BavetAftBridgeBiConstraintStream<Solution_, A, NewB> flattenLastStream) {
+        this.flattenLastStream = flattenLastStream;
     }
 
     // ************************************************************************
@@ -28,14 +31,20 @@ public final class BavetFlattenLastBiConstraintStream<Solution_, A, B>
     // ************************************************************************
 
     @Override
-    public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
-        parent.collectActiveConstraintStreams(constraintStreamSet);
-        constraintStreamSet.add(this);
+    public boolean guaranteesDistinct() {
+        return false;
     }
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        // Do nothing. BavetFlattenLastBridgeUniConstraintStream, etc build everything.
+        assertEmptyChildStreamList();
+        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
+        int outputStoreSize = buildHelper.extractTupleStoreSize(flattenLastStream);
+        AbstractFlattenLastNode<BiTuple<A, B>, BiTuple<A, NewB>, B, NewB> node = new FlattenLastBiNode<>(
+                inputStoreIndex, mappingFunction,
+                buildHelper.getAggregatedTupleLifecycle(flattenLastStream.getChildStreamList()),
+                outputStoreSize);
+        buildHelper.addNode(node, this);
     }
 
     // ************************************************************************
@@ -44,13 +53,13 @@ public final class BavetFlattenLastBiConstraintStream<Solution_, A, B>
 
     // TODO
 
-    @Override
-    public String toString() {
-        return "FlattenLast() with " + childStreamList.size() + " children";
-    }
-
     // ************************************************************************
     // Getters/setters
     // ************************************************************************
+
+    @Override
+    public String toString() {
+        return "FlattenLast()";
+    }
 
 }

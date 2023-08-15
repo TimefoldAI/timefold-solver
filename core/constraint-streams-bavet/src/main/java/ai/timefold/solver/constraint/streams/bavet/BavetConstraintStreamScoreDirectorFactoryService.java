@@ -1,6 +1,6 @@
 package ai.timefold.solver.constraint.streams.bavet;
 
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.DROOLS;
+import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.BAVET;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -22,11 +22,6 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
         extends AbstractConstraintStreamScoreDirectorFactoryService<Solution_, Score_> {
 
     @Override
-    public int getPriority() {
-        return Integer.MIN_VALUE;
-    }
-
-    @Override
     public ScoreDirectorType getSupportedScoreDirectorType() {
         return ScoreDirectorType.CONSTRAINT_STREAMS;
     }
@@ -37,7 +32,7 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
             EnvironmentMode environmentMode) {
         ConstraintStreamImplType constraintStreamImplType_ =
                 Objects.requireNonNullElse(config.getConstraintStreamImplType(), ConstraintStreamImplType.BAVET);
-        if (constraintStreamImplType_ == DROOLS) {
+        if (constraintStreamImplType_ != BAVET) {
             return null;
         }
         if (config.getConstraintProviderClass() != null) {
@@ -51,7 +46,7 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
                         "constraintProviderClass", config.getConstraintProviderClass());
                 ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                         config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
-                return buildScoreDirectorFactory(solutionDescriptor, constraintProvider, environmentMode, false);
+                return buildScoreDirectorFactory(solutionDescriptor, constraintProvider, environmentMode);
             };
         } else {
             if (config.getConstraintProviderCustomProperties() != null) {
@@ -64,18 +59,9 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
     }
 
     @Override
-    public boolean supportsImplType(ConstraintStreamImplType constraintStreamImplType) {
-        return constraintStreamImplType == ConstraintStreamImplType.BAVET;
-    }
-
-    @Override
     public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(
             SolutionDescriptor<Solution_> solutionDescriptor, ConstraintProvider constraintProvider,
-            EnvironmentMode environmentMode, boolean droolsAlphaNetworkCompilationEnabled) {
-        if (droolsAlphaNetworkCompilationEnabled) {
-            throw new IllegalStateException("With Constraint Streams " + ConstraintStreamImplType.BAVET +
-                    ", there can be no droolsAlphaNetworkCompilationEnabled (" + droolsAlphaNetworkCompilationEnabled + ").");
-        }
+            EnvironmentMode environmentMode) {
         return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode);
     }
 

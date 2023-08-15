@@ -1,28 +1,23 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
-import java.util.function.LongConsumer;
-
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore> {
+final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleLongScoreInliner> {
 
-    private final LongConsumer scoreUpdater;
-
-    public SimpleLongScoreContext(AbstractScoreInliner<SimpleLongScore> parent, Constraint constraint,
-            SimpleLongScore constraintWeight, LongConsumer scoreUpdater) {
+    public SimpleLongScoreContext(SimpleLongScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            SimpleLongScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.scoreUpdater = scoreUpdater;
     }
 
-    public UndoScoreImpacter changeScoreBy(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(long matchWeight, ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) {
         long impact = constraintWeight.score() * matchWeight;
-        scoreUpdater.accept(impact);
-        UndoScoreImpacter undoScoreImpact = () -> scoreUpdater.accept(-impact);
+        parent.score += impact;
+        UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, SimpleLongScore.of(impact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, SimpleLongScore.of(impact), constraintMatchSupplier);
     }
 
 }

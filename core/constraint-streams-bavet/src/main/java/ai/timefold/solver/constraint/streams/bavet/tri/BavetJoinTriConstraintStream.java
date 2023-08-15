@@ -4,16 +4,15 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.bi.BavetJoinBridgeBiConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.bi.BiTuple;
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.index.JoinerUtils;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetJoinBridgeUniConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.tri.DefaultTriJoiner;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
@@ -22,15 +21,15 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
         extends BavetAbstractTriConstraintStream<Solution_, A, B, C>
         implements BavetJoinConstraintStream<Solution_> {
 
-    private final BavetJoinBridgeBiConstraintStream<Solution_, A, B> leftParent;
-    private final BavetJoinBridgeUniConstraintStream<Solution_, C> rightParent;
+    private final BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent;
+    private final BavetForeBridgeUniConstraintStream<Solution_, C> rightParent;
 
     private final DefaultTriJoiner<A, B, C> joiner;
     private final TriPredicate<A, B, C> filtering;
 
     public BavetJoinTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetJoinBridgeBiConstraintStream<Solution_, A, B> leftParent,
-            BavetJoinBridgeUniConstraintStream<Solution_, C> rightParent,
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent,
+            BavetForeBridgeUniConstraintStream<Solution_, C> rightParent,
             DefaultTriJoiner<A, B, C> joiner, TriPredicate<A, B, C> filtering) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
@@ -60,7 +59,7 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory indexerFactory = new IndexerFactory(joiner);
-        AbstractJoinNode<BiTuple<A, B>, C, TriTuple<A, B, C>, TriTupleImpl<A, B, C>> node = indexerFactory.hasJoiners()
+        var node = indexerFactory.hasJoiners()
                 ? new IndexedJoinTriNode<>(
                         JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
@@ -79,7 +78,7 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         downstream, filtering, outputStoreSize + 2,
                         outputStoreSize, outputStoreSize + 1);
-        buildHelper.addNode(node, leftParent, rightParent);
+        buildHelper.addNode(node, this, leftParent, rightParent);
     }
 
     // ************************************************************************
@@ -119,5 +118,15 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
     // ************************************************************************
     // Getters/setters
     // ************************************************************************
+
+    @Override
+    public BavetAbstractConstraintStream<Solution_> getLeftParent() {
+        return leftParent;
+    }
+
+    @Override
+    public BavetAbstractConstraintStream<Solution_> getRightParent() {
+        return rightParent;
+    }
 
 }

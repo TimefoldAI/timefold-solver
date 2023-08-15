@@ -1,16 +1,17 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
-public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, MutableOutTuple_ extends OutTuple_, GroupKey_, ResultContainer_, Result_>
+public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
@@ -42,25 +43,22 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
      */
     private final boolean hasCollector;
     /**
-     * Calls for example {@link AbstractScorer#insert(Tuple)}, and/or ...
-     */
-    private final TupleLifecycle<OutTuple_> nextNodesTupleLifecycle;
-    /**
      * Used when {@link #hasMultipleGroups} is true, otherwise {@link #singletonGroup} is used.
      */
-    private final Map<Object, AbstractGroup<MutableOutTuple_, ResultContainer_>> groupMap;
+    private final Map<Object, Group<OutTuple_, ResultContainer_>> groupMap;
     /**
      * Used when {@link #hasMultipleGroups} is false, otherwise {@link #groupMap} is used.
      *
      * @implNote The field is lazy initialized in order to maintain the same semantics as with the groupMap above.
      *           When all tuples are removed, the field will be set to null, as if the group never existed.
      */
-    private AbstractGroup<MutableOutTuple_, ResultContainer_> singletonGroup;
-    private final Queue<AbstractGroup<MutableOutTuple_, ResultContainer_>> dirtyGroupQueue;
+    private Group<OutTuple_, ResultContainer_> singletonGroup;
+    private final DynamicPropagationQueue<OutTuple_, Group<OutTuple_, ResultContainer_>> propagationQueue;
     private final boolean useAssertingGroupKey;
 
-    protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex, Function<InTuple_, GroupKey_> groupKeyFunction,
-            Supplier<ResultContainer_> supplier, Function<ResultContainer_, Result_> finisher,
+    protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex,
+            Function<InTuple_, GroupKey_> groupKeyFunction, Supplier<ResultContainer_> supplier,
+            Function<ResultContainer_, Result_> finisher,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         this.groupStoreIndex = groupStoreIndex;
         this.undoStoreIndex = undoStoreIndex;
@@ -69,72 +67,77 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         this.finisher = finisher;
         this.hasMultipleGroups = groupKeyFunction != null;
         this.hasCollector = supplier != null;
-        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
         /*
          * Not using the default sizing to 1000.
          * The number of groups can be very small, and that situation is not unlikely.
          * Therefore, the size of these collections is kept default.
          */
         this.groupMap = hasMultipleGroups ? new HashMap<>() : null;
-        this.dirtyGroupQueue = new ArrayDeque<>();
+        this.propagationQueue = hasCollector ? new DynamicPropagationQueue<>(nextNodesTupleLifecycle,
+                group -> {
+                    var outTuple = group.getTuple();
+                    var state = outTuple.state;
+                    if (state == TupleState.CREATING || state == TupleState.UPDATING) {
+                        updateOutTupleToFinisher(outTuple, group.getResultContainer());
+                    }
+                }) : new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
         this.useAssertingGroupKey = environmentMode.isAsserted();
     }
 
-    protected AbstractGroupNode(int groupStoreIndex, Function<InTuple_, GroupKey_> groupKeyFunction,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        this(groupStoreIndex, -1, groupKeyFunction, null, null, nextNodesTupleLifecycle, environmentMode);
+    protected AbstractGroupNode(int groupStoreIndex,
+            Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
+            EnvironmentMode environmentMode) {
+        this(groupStoreIndex, -1,
+                groupKeyFunction, null, null, nextNodesTupleLifecycle,
+                environmentMode);
     }
 
     @Override
-    public void insert(InTuple_ tuple) {
+    public final void insert(InTuple_ tuple) {
         if (tuple.getStore(groupStoreIndex) != null) {
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple
                     + ") was already added in the tupleStore.");
         }
-        GroupKey_ userSuppliedKey = hasMultipleGroups ? groupKeyFunction.apply(tuple) : null;
+        var userSuppliedKey = hasMultipleGroups ? groupKeyFunction.apply(tuple) : null;
         createTuple(tuple, userSuppliedKey);
     }
 
     private void createTuple(InTuple_ tuple, GroupKey_ userSuppliedKey) {
-        AbstractGroup<MutableOutTuple_, ResultContainer_> newGroup = getOrCreateGroup(userSuppliedKey);
-        OutTuple_ outTuple = accumulate(tuple, newGroup);
-        switch (outTuple.getState()) {
+        var newGroup = getOrCreateGroup(userSuppliedKey);
+        var outTuple = accumulate(tuple, newGroup);
+        switch (outTuple.state) {// Already in the correct state.
             case CREATING:
             case UPDATING:
                 break;
             case OK:
-                outTuple.setState(BavetTupleState.UPDATING);
-                dirtyGroupQueue.add(newGroup);
-                break;
             case DYING:
-                outTuple.setState(BavetTupleState.UPDATING);
+                propagationQueue.update(newGroup);
                 break;
             case ABORTING:
-                outTuple.setState(BavetTupleState.CREATING);
+                propagationQueue.insert(newGroup);
                 break;
-            case DEAD:
             default:
-                throw new IllegalStateException("Impossible state: The group (" + newGroup + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.getState() + ").");
+                throw new IllegalStateException("Impossible state: The group (" + newGroup + ") in node (" + this
+                        + ") is in an unexpected state (" + outTuple.state + ").");
         }
     }
 
-    private OutTuple_ accumulate(InTuple_ tuple, AbstractGroup<MutableOutTuple_, ResultContainer_> group) {
+    private OutTuple_ accumulate(InTuple_ tuple, Group<OutTuple_, ResultContainer_> group) {
         if (hasCollector) {
-            Runnable undoAccumulator = accumulate(group.getResultContainer(), tuple);
+            var undoAccumulator = accumulate(group.getResultContainer(), tuple);
             tuple.setStore(undoStoreIndex, undoAccumulator);
         }
         tuple.setStore(groupStoreIndex, group);
-        return group.outTuple;
+        return group.getTuple();
     }
 
-    private AbstractGroup<MutableOutTuple_, ResultContainer_> getOrCreateGroup(GroupKey_ userSuppliedKey) {
-        Object groupMapKey = useAssertingGroupKey ? new AssertingGroupKey(userSuppliedKey) : userSuppliedKey;
+    private Group<OutTuple_, ResultContainer_> getOrCreateGroup(GroupKey_ userSuppliedKey) {
+        var groupMapKey = useAssertingGroupKey ? new AssertingGroupKey(userSuppliedKey) : userSuppliedKey;
         if (hasMultipleGroups) {
             // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-            AbstractGroup<MutableOutTuple_, ResultContainer_> group = groupMap.get(groupMapKey);
+            var group = groupMap.get(groupMapKey);
             if (group == null) {
-                group = createGroup(groupMapKey);
+                group = createGroupWithGroupKey(groupMapKey);
                 groupMap.put(groupMapKey, group);
             } else {
                 group.parentCount++;
@@ -142,7 +145,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             return group;
         } else {
             if (singletonGroup == null) {
-                singletonGroup = createGroup(groupMapKey);
+                singletonGroup = createGroupWithoutGroupKey();
             } else {
                 singletonGroup.parentCount++;
             }
@@ -150,14 +153,23 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         }
     }
 
-    private AbstractGroup<MutableOutTuple_, ResultContainer_> createGroup(Object groupMapKey) {
-        GroupKey_ userSuppliedKey = extractUserSuppliedKey(groupMapKey);
-        MutableOutTuple_ outTuple = createOutTuple(userSuppliedKey);
-        AbstractGroup<MutableOutTuple_, ResultContainer_> group =
-                hasCollector ? new GroupWithAccumulate<>(groupMapKey, supplier.get(), outTuple)
-                        : new GroupWithoutAccumulate<>(groupMapKey, outTuple);
-        // Don't add it if (state == CREATING), but (newGroup != null), which is a 2nd insert of the same newGroupKey.
-        dirtyGroupQueue.add(group);
+    private Group<OutTuple_, ResultContainer_> createGroupWithGroupKey(Object groupMapKey) {
+        var userSuppliedKey = extractUserSuppliedKey(groupMapKey);
+        var outTuple = createOutTuple(userSuppliedKey);
+        var group = hasCollector ? Group.create(groupMapKey, supplier.get(), outTuple)
+                : Group.<OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple);
+        propagationQueue.insert(group);
+        return group;
+    }
+
+    private Group<OutTuple_, ResultContainer_> createGroupWithoutGroupKey() {
+        var outTuple = createOutTuple(null);
+        if (!hasCollector) {
+            throw new IllegalStateException("Impossible state: The node (" + this + ") has no collector, "
+                    + "but it is still trying to create a group without a group key.");
+        }
+        var group = Group.createWithoutGroupKey(supplier.get(), outTuple);
+        propagationQueue.insert(group);
         return group;
     }
 
@@ -166,8 +178,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     }
 
     @Override
-    public void update(InTuple_ tuple) {
-        AbstractGroup<MutableOutTuple_, ResultContainer_> oldGroup = tuple.getStore(groupStoreIndex);
+    public final void update(InTuple_ tuple) {
+        Group<OutTuple_, ResultContainer_> oldGroup = tuple.getStore(groupStoreIndex);
         if (oldGroup == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insert(tuple);
@@ -178,25 +190,21 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             undoAccumulator.run();
         }
 
-        GroupKey_ oldUserSuppliedGroupKey = extractUserSuppliedKey(oldGroup.groupKey);
-        GroupKey_ newUserSuppliedGroupKey = hasMultipleGroups ? groupKeyFunction.apply(tuple) : null;
+        var oldUserSuppliedGroupKey = hasMultipleGroups ? extractUserSuppliedKey(oldGroup.getGroupKey()) : null;
+        var newUserSuppliedGroupKey = hasMultipleGroups ? groupKeyFunction.apply(tuple) : null;
         if (Objects.equals(newUserSuppliedGroupKey, oldUserSuppliedGroupKey)) {
             // No need to change parentCount because it is the same group
-            OutTuple_ outTuple = accumulate(tuple, oldGroup);
-            switch (outTuple.getState()) {
+            var outTuple = accumulate(tuple, oldGroup);
+            switch (outTuple.state) {// Already in the correct state.
                 case CREATING:
                 case UPDATING:
                     break;
                 case OK:
-                    outTuple.setState(BavetTupleState.UPDATING);
-                    dirtyGroupQueue.add(oldGroup);
+                    propagationQueue.update(oldGroup);
                     break;
-                case DYING:
-                case ABORTING:
-                case DEAD:
                 default:
-                    throw new IllegalStateException("Impossible state: The group (" + oldGroup + ") in node (" +
-                            this + ") is in an unexpected state (" + outTuple.getState() + ").");
+                    throw new IllegalStateException("Impossible state: The group (" + oldGroup + ") in node (" + this
+                            + ") is in an unexpected state (" + outTuple.state + ").");
             }
         } else {
             killTuple(oldGroup);
@@ -204,56 +212,56 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         }
     }
 
-    private void killTuple(AbstractGroup<MutableOutTuple_, ResultContainer_> group) {
-        int newParentCount = --group.parentCount;
-        boolean killGroup = (newParentCount == 0);
+    private void killTuple(Group<OutTuple_, ResultContainer_> group) {
+        var newParentCount = --group.parentCount;
+        var killGroup = (newParentCount == 0);
         if (killGroup) {
-            Object groupKey = group.groupKey;
-            AbstractGroup<MutableOutTuple_, ResultContainer_> old = removeGroup(groupKey);
-            if (old == null) {
+            var groupKey = hasMultipleGroups ? group.getGroupKey() : null;
+            var oldGroup = removeGroup(groupKey);
+            if (oldGroup == null) {
                 throw new IllegalStateException("Impossible state: the group for the groupKey ("
                         + groupKey + ") doesn't exist in the groupMap.\n" +
                         "Maybe groupKey hashcode changed while it shouldn't have?");
             }
         }
-        OutTuple_ outTuple = group.outTuple;
-        switch (outTuple.getState()) {
+        var outTuple = group.getTuple();
+        switch (outTuple.state) {
             case CREATING:
                 if (killGroup) {
-                    outTuple.setState(BavetTupleState.ABORTING);
+                    propagationQueue.retract(group, TupleState.ABORTING);
                 }
                 break;
             case UPDATING:
                 if (killGroup) {
-                    outTuple.setState(BavetTupleState.DYING);
+                    propagationQueue.retract(group, TupleState.DYING);
                 }
                 break;
             case OK:
-                outTuple.setState(killGroup ? BavetTupleState.DYING : BavetTupleState.UPDATING);
-                dirtyGroupQueue.add(group);
+                if (killGroup) {
+                    propagationQueue.retract(group, TupleState.DYING);
+                } else {
+                    propagationQueue.update(group);
+                }
                 break;
-            case DYING:
-            case ABORTING:
-            case DEAD:
             default:
-                throw new IllegalStateException("Impossible state: The group (" + group + ") in node (" +
-                        this + ") is in an unexpected state (" + outTuple.getState() + ").");
+                throw new IllegalStateException("Impossible state: The group (" + group + ") in node (" + this
+                        + ") is in an unexpected state (" + outTuple.state + ").");
         }
     }
 
-    private AbstractGroup<MutableOutTuple_, ResultContainer_> removeGroup(Object groupKey) {
+    private Group<OutTuple_, ResultContainer_> removeGroup(Object groupKey) {
         if (hasMultipleGroups) {
             return groupMap.remove(groupKey);
         } else {
-            AbstractGroup<MutableOutTuple_, ResultContainer_> old = singletonGroup;
+            var oldGroup = singletonGroup;
             singletonGroup = null;
-            return old;
+            return oldGroup;
         }
     }
 
     @Override
-    public void retract(InTuple_ tuple) {
-        AbstractGroup<MutableOutTuple_, ResultContainer_> group = tuple.removeStore(groupStoreIndex);
+    public final void retract(InTuple_ tuple) {
+        Group<OutTuple_, ResultContainer_> group = tuple.removeStore(groupStoreIndex);
         if (group == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -268,40 +276,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     protected abstract Runnable accumulate(ResultContainer_ resultContainer, InTuple_ tuple);
 
     @Override
-    public void calculateScore() {
-        for (AbstractGroup<MutableOutTuple_, ResultContainer_> group : dirtyGroupQueue) {
-            MutableOutTuple_ outTuple = group.outTuple;
-            // Delay calculating finisher right until the tuple propagates
-            switch (outTuple.getState()) {
-                case CREATING:
-                    if (hasCollector) {
-                        updateOutTupleToFinisher(outTuple, group.getResultContainer());
-                    }
-                    nextNodesTupleLifecycle.insert(outTuple);
-                    outTuple.setState(BavetTupleState.OK);
-                    break;
-                case UPDATING:
-                    if (hasCollector) {
-                        updateOutTupleToFinisher(outTuple, group.getResultContainer());
-                    }
-                    nextNodesTupleLifecycle.update(outTuple);
-                    outTuple.setState(BavetTupleState.OK);
-                    break;
-                case DYING:
-                    nextNodesTupleLifecycle.retract(outTuple);
-                    outTuple.setState(BavetTupleState.DEAD);
-                    break;
-                case ABORTING:
-                    outTuple.setState(BavetTupleState.DEAD);
-                    break;
-                case OK:
-                case DEAD:
-                default:
-                    throw new IllegalStateException("Impossible state: The group (" + group + ") in node (" +
-                            this + ") is in an unexpected state (" + outTuple.getState() + ").");
-            }
-        }
-        dirtyGroupQueue.clear();
+    public Propagator getPropagator() {
+        return propagationQueue;
     }
 
     /**
@@ -309,14 +285,13 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
      * @param groupKey null if the node only has one group
      * @return never null
      */
-    protected abstract MutableOutTuple_ createOutTuple(GroupKey_ groupKey);
+    protected abstract OutTuple_ createOutTuple(GroupKey_ groupKey);
 
-    private void updateOutTupleToFinisher(MutableOutTuple_ outTuple, ResultContainer_ resultContainer) {
-        Result_ result = finisher.apply(resultContainer);
-        updateOutTupleToResult(outTuple, result);
+    private void updateOutTupleToFinisher(OutTuple_ outTuple, ResultContainer_ resultContainer) {
+        updateOutTupleToResult(outTuple, finisher.apply(resultContainer));
     }
 
-    protected abstract void updateOutTupleToResult(MutableOutTuple_ outTuple, Result_ result);
+    protected abstract void updateOutTupleToResult(OutTuple_ outTuple, Result_ result);
 
     /**
      * Group key hashcode must never change once introduced to the group map.
@@ -354,7 +329,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
 
         @Override
         public int hashCode() {
-            GroupKey_ key = getKey();
+            var key = getKey();
             return key == null ? 0 : key.hashCode();
         }
     }

@@ -160,12 +160,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
                     }
 
                     @Override
-                    public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
-                            withDroolsAlphaNetworkCompilationEnabled(boolean droolsAlphaNetworkCompilationEnabled) {
-                        throw new UnsupportedOperationException(noConstraintProviderErrorMsg);
-                    }
-
-                    @Override
                     public SingleConstraintVerification<SolutionClass_>
                             verifyThat(BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
                         throw new UnsupportedOperationException(noConstraintProviderErrorMsg);

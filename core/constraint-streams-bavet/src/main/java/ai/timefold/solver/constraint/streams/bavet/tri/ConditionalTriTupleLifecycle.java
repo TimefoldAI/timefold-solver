@@ -1,7 +1,8 @@
 package ai.timefold.solver.constraint.streams.bavet.tri;
 
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractConditionalTupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractConditionalTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.function.TriPredicate;
 
 final class ConditionalTriTupleLifecycle<A, B, C> extends AbstractConditionalTupleLifecycle<TriTuple<A, B, C>> {
@@ -14,7 +15,7 @@ final class ConditionalTriTupleLifecycle<A, B, C> extends AbstractConditionalTup
 
     @Override
     protected boolean test(TriTuple<A, B, C> tuple) {
-        return predicate.test(tuple.getFactA(), tuple.getFactB(), tuple.getFactC());
+        return predicate.test(tuple.factA, tuple.factB, tuple.factC);
     }
 
 }

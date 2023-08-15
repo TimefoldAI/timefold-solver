@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 
-final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>>
+final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
         implements WeightedScoreImpacter<Score_, Context_> {
 
     private final BigDecimalImpactFunction<Score_, Context_> impactFunction;
@@ -18,18 +18,21 @@ final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Contex
     }
 
     @Override
-    public UndoScoreImpacter impactScore(int matchWeight, JustificationsSupplier justificationsSupplier) {
-        return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), justificationsSupplier);
+    public UndoScoreImpacter impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
+        return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), constraintMatchSupplier);
     }
 
     @Override
-    public UndoScoreImpacter impactScore(long matchWeight, JustificationsSupplier justificationsSupplier) {
-        return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), justificationsSupplier);
+    public UndoScoreImpacter impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
+        return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), constraintMatchSupplier);
     }
 
     @Override
-    public UndoScoreImpacter impactScore(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
-        return impactFunction.impact(context, matchWeight, justificationsSupplier);
+    public UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
+        return impactFunction.impact(context, matchWeight, constraintMatchSupplier);
     }
 
     @Override

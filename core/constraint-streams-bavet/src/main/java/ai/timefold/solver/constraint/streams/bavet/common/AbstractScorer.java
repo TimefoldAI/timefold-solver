@@ -1,19 +1,17 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.inliner.UndoScoreImpacter;
-import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.constraint.streams.common.inliner.WeightedScoreImpacter;
 
-public abstract class AbstractScorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_> {
+public abstract class AbstractScorer<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
 
-    private final String constraintId;
-    private final Score<?> constraintWeight;
+    protected final WeightedScoreImpacter<?, ?> weightedScoreImpacter;
     private final int inputStoreIndex;
 
-    protected AbstractScorer(String constraintPackage, String constraintName,
-            Score<?> constraintWeight, int inputStoreIndex) {
-        this.constraintId = ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
-        this.constraintWeight = constraintWeight;
+    protected AbstractScorer(WeightedScoreImpacter<?, ?> weightedScoreImpacter, int inputStoreIndex) {
+        this.weightedScoreImpacter = weightedScoreImpacter;
         this.inputStoreIndex = inputStoreIndex;
     }
 
@@ -47,7 +45,8 @@ public abstract class AbstractScorer<Tuple_ extends Tuple> implements TupleLifec
      */
     protected RuntimeException createExceptionOnImpact(Tuple_ tuple, Exception cause) {
         return new IllegalStateException(
-                "Consequence of a constraint (" + constraintId + ") threw an exception processing a tuple (" + tuple + ").",
+                "Consequence of a constraint (" + weightedScoreImpacter.getContext().getConstraint().getConstraintId()
+                        + ") threw an exception processing a tuple (" + tuple + ").",
                 cause);
     }
 
@@ -63,7 +62,8 @@ public abstract class AbstractScorer<Tuple_ extends Tuple> implements TupleLifec
 
     @Override
     public final String toString() {
-        return getClass().getSimpleName() + "(" + constraintId + ") with constraintWeight (" + constraintWeight + ")";
+        return getClass().getSimpleName() + "(" + weightedScoreImpacter.getContext().getConstraint().getConstraintId()
+                + ") with constraintWeight (" + weightedScoreImpacter.getContext().getConstraintWeight() + ")";
     }
 
 }

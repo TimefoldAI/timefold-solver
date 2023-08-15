@@ -47,7 +47,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
              */
             return (Score_) constraintFactory.getSolutionDescriptor().getScoreDefinition().getOneSoftestScore();
         }
-        Score_ constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
+        var constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
         constraintFactory.getSolutionDescriptor().validateConstraintWeight(constraintPackage, constraintName, constraintWeight);
         switch (scoreImpactType) {
             case PENALTY:
@@ -56,15 +56,15 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
             case MIXED:
                 return constraintWeight;
             default:
-                throw new IllegalStateException("Unknown score impact type: (" + scoreImpactType + ")");
+                throw new IllegalArgumentException();
         }
     }
 
     public final void assertCorrectImpact(int impact) {
-        if (scoreImpactType == ScoreImpactType.MIXED) { // No need to do anything.
+        if (impact >= 0) {
             return;
         }
-        if (impact < 0) {
+        if (scoreImpactType != ScoreImpactType.MIXED) {
             throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
                     + getConstraintId() + "). " +
                     "Check constraint provider implementation.");
@@ -72,10 +72,10 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     }
 
     public final void assertCorrectImpact(long impact) {
-        if (scoreImpactType == ScoreImpactType.MIXED) { // No need to do anything.
+        if (impact >= 0L) {
             return;
         }
-        if (impact < 0L) {
+        if (scoreImpactType != ScoreImpactType.MIXED) {
             throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
                     + getConstraintId() + "). " +
                     "Check constraint provider implementation.");
@@ -83,10 +83,10 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     }
 
     public final void assertCorrectImpact(BigDecimal impact) {
-        if (scoreImpactType == ScoreImpactType.MIXED) { // No need to do anything.
+        if (impact.signum() >= 0) {
             return;
         }
-        if (impact.signum() < 0) {
+        if (scoreImpactType != ScoreImpactType.MIXED) {
             throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
                     + getConstraintId() + "). " +
                     "Check constraint provider implementation.");

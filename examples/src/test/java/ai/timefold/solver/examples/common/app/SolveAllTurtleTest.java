@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -65,26 +64,12 @@ public abstract class SolveAllTurtleTest<Solution_> extends LoggingTest {
 
     private static SolverConfig buildSolverConfig(String solverConfigResource) {
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(solverConfigResource);
-        if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null) {
-            ConstraintStreamImplType constraintStreamImplType = resolveConstraintStreamType();
-            if (constraintStreamImplType == ConstraintStreamImplType.BAVET) {
-                throw new UnsupportedOperationException("Bavet not supported in a productized profile.");
-            }
-            solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamImplType(constraintStreamImplType);
-        }
         // buildAndSolve() fills in minutesSpentLimit
         solverConfig.setTerminationConfig(new TerminationConfig());
         if (MOVE_THREAD_COUNT_OVERRIDE != null) {
             solverConfig.setMoveThreadCount(MOVE_THREAD_COUNT_OVERRIDE);
         }
         return solverConfig;
-    }
-
-    private static ConstraintStreamImplType resolveConstraintStreamType() {
-        String csImplProperty = System.getProperty(TestSystemProperties.CONSTRAINT_STREAM_IMPL_TYPE,
-                ConstraintStreamImplType.DROOLS.name()).trim().toUpperCase();
-        return csImplProperty.equals(ConstraintStreamImplType.DROOLS.name()) ? ConstraintStreamImplType.DROOLS
-                : ConstraintStreamImplType.BAVET;
     }
 
     private Solution_ buildAndSolve(SolverConfig solverConfig, EnvironmentMode environmentMode,

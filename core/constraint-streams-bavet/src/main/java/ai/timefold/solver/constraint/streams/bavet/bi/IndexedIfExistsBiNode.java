@@ -5,10 +5,11 @@ import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.constraint.streams.bavet.common.ExistsCounter;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexProperties;
 import ai.timefold.solver.constraint.streams.bavet.common.index.Indexer;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.api.function.TriPredicate;
 
 final class IndexedIfExistsBiNode<A, B, C> extends AbstractIndexedIfExistsNode<BiTuple<A, B>, C> {
@@ -18,13 +19,13 @@ final class IndexedIfExistsBiNode<A, B, C> extends AbstractIndexedIfExistsNode<B
 
     public IndexedIfExistsBiNode(boolean shouldExist,
             BiFunction<A, B, IndexProperties> mappingAB, Function<C, IndexProperties> mappingC,
-            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
+            int inputStoreIndexRightEntry,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle,
             Indexer<ExistsCounter<BiTuple<A, B>>> indexerAB, Indexer<UniTuple<C>> indexerC) {
         this(shouldExist, mappingAB, mappingC,
-                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, -1,
+                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
+                inputStoreIndexRightEntry, -1,
                 nextNodesTupleLifecycle, indexerAB, indexerC,
                 null);
     }
@@ -47,12 +48,12 @@ final class IndexedIfExistsBiNode<A, B, C> extends AbstractIndexedIfExistsNode<B
 
     @Override
     protected IndexProperties createIndexProperties(BiTuple<A, B> leftTuple) {
-        return mappingAB.apply(leftTuple.getFactA(), leftTuple.getFactB());
+        return mappingAB.apply(leftTuple.factA, leftTuple.factB);
     }
 
     @Override
     protected boolean testFiltering(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return filtering.test(leftTuple.getFactA(), leftTuple.getFactB(), rightTuple.getFactA());
+        return filtering.test(leftTuple.factA, leftTuple.factB, rightTuple.factA);
     }
 
 }

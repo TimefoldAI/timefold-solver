@@ -1,29 +1,26 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
-import java.util.function.Consumer;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalScore> {
+final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalScore, SimpleBigDecimalScoreInliner> {
 
-    private final Consumer<BigDecimal> scoreUpdater;
-
-    public SimpleBigDecimalScoreContext(AbstractScoreInliner<SimpleBigDecimalScore> parent, Constraint constraint,
-            SimpleBigDecimalScore constraintWeight, Consumer<BigDecimal> scoreUpdater) {
+    public SimpleBigDecimalScoreContext(SimpleBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            SimpleBigDecimalScore constraintWeight) {
         super(parent, constraint, constraintWeight);
-        this.scoreUpdater = scoreUpdater;
     }
 
-    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<SimpleBigDecimalScore> constraintMatchSupplier) {
         BigDecimal impact = constraintWeight.score().multiply(matchWeight);
-        scoreUpdater.accept(impact);
-        UndoScoreImpacter undoScoreImpact = () -> scoreUpdater.accept(impact.negate());
+        parent.score = parent.score.add(impact);
+        UndoScoreImpacter undoScoreImpact = () -> parent.score = parent.score.subtract(impact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, SimpleBigDecimalScore.of(impact), justificationsSupplier);
+        return impactWithConstraintMatch(undoScoreImpact, SimpleBigDecimalScore.of(impact), constraintMatchSupplier);
     }
 
 }

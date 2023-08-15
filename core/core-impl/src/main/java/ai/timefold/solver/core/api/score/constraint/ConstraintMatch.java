@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 
@@ -21,12 +22,12 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
  */
 public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comparable<ConstraintMatch<Score_>> {
 
+    private final String constraintId;
     private final String constraintPackage;
     private final String constraintName;
-    private final String constraintId;
 
     private final ConstraintJustification justification;
-    private final List<Object> indictedObjects;
+    private final List<Object> indictedObjectList;
     private final Score_ score;
 
     /**
@@ -49,14 +50,38 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param score never null
      */
     public ConstraintMatch(String constraintPackage, String constraintName, ConstraintJustification justification,
-            Collection<Object> indictedObjects, Score_ score) {
+            Collection<Object> indictedObjectList, Score_ score) {
+        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName,
+                justification, indictedObjectList, score);
+    }
+
+    /**
+     * @param constraint never null
+     * @param justification never null
+     * @param score never null
+     */
+    public ConstraintMatch(Constraint constraint, ConstraintJustification justification, Collection<Object> indictedObjectList,
+            Score_ score) {
+        this(constraint.getConstraintId(), constraint.getConstraintPackage(), constraint.getConstraintName(), justification,
+                indictedObjectList, score);
+    }
+
+    /**
+     * @param constraintId never null
+     * @param constraintPackage never null
+     * @param constraintName never null
+     * @param justification never null
+     * @param score never null
+     */
+    public ConstraintMatch(String constraintId, String constraintPackage, String constraintName,
+            ConstraintJustification justification, Collection<Object> indictedObjectList, Score_ score) {
+        this.constraintId = requireNonNull(constraintId);
         this.constraintPackage = requireNonNull(constraintPackage);
         this.constraintName = requireNonNull(constraintName);
-        this.constraintId = ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
         this.justification = requireNonNull(justification);
-        this.indictedObjects = requireNonNull(indictedObjects) instanceof List
-                ? (List<Object>) indictedObjects
-                : List.copyOf(indictedObjects);
+        this.indictedObjectList =
+                requireNonNull(indictedObjectList) instanceof List ? (List) indictedObjectList
+                        : List.copyOf(indictedObjectList);
         this.score = requireNonNull(score);
     }
 
@@ -80,6 +105,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * (eg. [A, B] for a bi stream),
      * unless a custom justification mapping was provided, in which case it throws an exception,
      * pointing users towards {@link #getJustification()}.</li>
+     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
      * @deprecated Prefer {@link #getJustification()} or {@link #getIndictedObjectList()}.
@@ -108,6 +134,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <li>For constraint streams, it returns {@link DefaultConstraintJustification} from the matching tuple
      * (eg. [A, B] for a bi stream), unless a custom justification mapping was provided,
      * in which case it returns the return value of that function.</li>
+     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
      * @return never null
@@ -128,12 +155,13 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <li>For constraint streams, it returns the facts from the matching tuple
      * (eg. [A, B] for a bi stream), unless a custom indictment mapping was provided,
      * in which case it returns the return value of that function.</li>
+     * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
      * @return never null, may be empty
      */
     public List<Object> getIndictedObjectList() {
-        return indictedObjects;
+        return indictedObjectList;
     }
 
     public Score_ getScore() {
@@ -145,7 +173,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     // ************************************************************************
 
     public String getConstraintId() {
-        return ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
+        return constraintId;
     }
 
     public String getIdentificationString() {
