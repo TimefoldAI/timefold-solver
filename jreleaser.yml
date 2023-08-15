@@ -1,0 +1,52 @@
+project:
+  java:
+    groupId: "ai.timefold.solver"
+
+signing:
+  active: ALWAYS
+  armored: true
+
+release:
+  github:
+    commitAuthor:
+      name: "Timefold Release Bot"
+      email: "release@timefold.ai"
+    releaseName: "Timefold Solver Community Edition {{projectVersion}}"
+    # TODO Remove when previous tag follows the vX.Y.Z convention.
+    previousTagName: "0.8.39"
+    draft: true
+    overwrite: true
+    sign: true
+    milestone:
+      close: true
+      name: "{{projectVersion}}"
+
+deploy:
+  maven:
+    nexus2:
+      maven-central:
+        active: ALWAYS
+        url: https://s01.oss.sonatype.org/service/local
+        # TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397
+        verifyPom: false
+        closeRepository: true
+        releaseRepository: false
+        stagingRepositories:
+          - "target/staging-deploy"
+        artifactOverrides:
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-core
+            sourceJar: false
+            javadocJar: false
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-spring-boot-starter
+            sourceJar: false
+            javadocJar: false
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-ide-config
+            sourceJar: true
+            javadocJar: false
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-webui
+            sourceJar: true
+            javadocJar: false

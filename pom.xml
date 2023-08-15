@@ -73,60 +73,6 @@
     <module>examples</module>
   </modules>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jreleaser</groupId>
-        <artifactId>jreleaser-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <inherited>false</inherited>
-        <configuration>
-          <jreleaser>
-            <signing>
-              <active>ALWAYS</active>
-              <armored>true</armored>
-            </signing>
-            <deploy>
-              <maven>
-                <nexus2>
-                  <maven-central>
-                    <active>ALWAYS</active>
-                    <!-- TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397 -->
-                    <verifyPom>false</verifyPom>
-                    <url>https://s01.oss.sonatype.org/service/local</url>
-                    <closeRepository>true</closeRepository>
-                    <releaseRepository>false</releaseRepository>
-                    <stagingRepositories>target/staging-deploy</stagingRepositories>
-                    <artifactOverrides>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-core</artifactId>
-                        <sourceJar>false</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-spring-boot-starter</artifactId>
-                        <sourceJar>false</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-ide-config</artifactId>
-                        <sourceJar>true</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                    </artifactOverrides>
-                  </maven-central>
-                </nexus2>
-              </maven>
-            </deploy>
-          </jreleaser>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
   <profiles>
     <profile>
       <id>fullProfile</id>
