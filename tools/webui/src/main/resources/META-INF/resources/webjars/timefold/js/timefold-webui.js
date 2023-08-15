@@ -6,7 +6,7 @@ function replaceTimefoldAutoHeaderFooter() {
       $(`<div class="container-fluid">
         <nav class="navbar sticky-top navbar-expand-lg navbar-dark shadow mb-3">
           <a class="navbar-brand" href="https://timefold.ai">
-            <img src="/webjars/timefold/img/timefold-logo-horizontal-negative.svg" alt="Timefold logo" width="200">
+            <img src="webjars/timefold/img/timefold-logo-horizontal-negative.svg" alt="Timefold logo" width="200">
           </a>
         </nav>
       </div>`));
@@ -26,15 +26,42 @@ function replaceTimefoldAutoHeaderFooter() {
                <div class="me-auto"><a class="text-white" href="https://timefold.ai/product/support/">Support</a></div>
              </div>
            </div>
+           <div id="applicationInfo" class="container text-center"></div>
          </footer>`));
+
+      applicationInfo();
   }
 
 }
 
+function showSimpleError(title) {
+    const notification = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 50rem"/>`)
+        .append($(`<div class="toast-header bg-danger">
+                 <strong class="me-auto text-dark">Error</strong>
+                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+               </div>`))
+        .append($(`<div class="toast-body"/>`)
+            .append($(`<p/>`).text(title))
+        );
+    $("#notificationPanel").append(notification);
+    notification.toast({delay: 30000});
+    notification.toast('show');
+}
+
 function showError(title, xhr) {
-  const serverErrorMessage = !xhr.responseJSON ? `${xhr.status}: ${xhr.statusText}` : xhr.responseJSON.message;
-  console.error(title + "\n" + serverErrorMessage);
-  const notification = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 30rem"/>`)
+  var serverErrorMessage = !xhr.responseJSON ? `${xhr.status}: ${xhr.statusText}` : xhr.responseJSON.message;
+  var serverErrorCode = !xhr.responseJSON ? `unknown` : xhr.responseJSON.code;
+  var serverErrorId = !xhr.responseJSON ? `----` : xhr.responseJSON.id;
+  var serverErrorDetails = !xhr.responseJSON ? `no details provided` : xhr.responseJSON.details;
+
+  if (xhr.responseJSON && !serverErrorMessage) {
+	  serverErrorMessage = JSON.stringify(xhr.responseJSON);
+	  serverErrorCode = xhr.statusText + '(' + xhr.status + ')';
+	  serverErrorId = `----`;
+  }
+
+  console.error(title + "\n" + serverErrorMessage + " : " + serverErrorDetails);
+  const notification = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 50rem"/>`)
     .append($(`<div class="toast-header bg-danger">
                  <strong class="me-auto text-dark">Error</strong>
                  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -42,12 +69,24 @@ function showError(title, xhr) {
     .append($(`<div class="toast-body"/>`)
       .append($(`<p/>`).text(title))
       .append($(`<pre/>`)
-        .append($(`<code/>`).text(serverErrorMessage))
+        .append($(`<code/>`).text(serverErrorMessage + "\n\nCode: " + serverErrorCode + "\nError id: " + serverErrorId))
       )
     );
   $("#notificationPanel").append(notification);
   notification.toast({delay: 30000});
   notification.toast('show');
+}
+
+// ****************************************************************************
+// Application info
+// ****************************************************************************
+
+function applicationInfo() {
+  $.getJSON("info", function (info) {
+       $("#applicationInfo").append("<small>" + info.application + " (version: " + info.version + ", built at: " + info.built + ")</small>");
+   }).fail(function (xhr, ajaxOptions, thrownError) {
+       console.warn("Unable to collect application information");
+   });
 }
 
 // ****************************************************************************
