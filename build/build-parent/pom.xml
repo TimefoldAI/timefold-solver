@@ -20,24 +20,24 @@
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
     <!-- SNAPSHOT and KIE dependency versions -->
-    <version.org.drools>8.37.0.Final</version.org.drools>
+    <version.org.drools>8.42.0.Final</version.org.drools>
 
     <!-- Normal dependency versions -->
     <version.ch.qos.logback>1.2.9</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.20.0</version.org.apache.logging.log4j>
     <version.com.thoughtworks.xstream>1.4.20</version.com.thoughtworks.xstream>
-    <version.io.quarkus>2.16.6.Final</version.io.quarkus>
+    <version.io.quarkus>2.16.9.Final</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.commons.text>1.10.0</version.org.apache.commons.text>
     <version.org.apache.poi>5.2.3</version.org.apache.poi>
     <version.org.assertj>3.24.2</version.org.assertj>
-    <version.org.freemarker>2.3.31</version.org.freemarker>
+    <version.org.freemarker>2.3.32</version.org.freemarker>
     <version.org.jdom2>2.0.6.1</version.org.jdom2>
     <version.org.jfree.jfreechart>1.5.4</version.org.jfree.jfreechart>
     <version.org.openrewrite.recipe>1.18.1</version.org.openrewrite.recipe>
     <version.org.slf4j>1.7.36</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
-    <version.org.springframework>5.3.27</version.org.springframework>
-    <version.org.springframework.boot>2.7.10</version.org.springframework.boot>
+    <version.org.springframework>5.3.29</version.org.springframework>
+    <version.org.springframework.boot>2.7.14</version.org.springframework.boot>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -82,7 +82,7 @@
     <jacoco.agent.argLine/>
     <enforcer.failOnDuplicatedClasses>true</enforcer.failOnDuplicatedClasses>
     <!-- Latest release to be used by api-compatibility-check to check backwards compatibility of the API. -->
-    <revapi.oldTimefoldVersion>8.29.0.Final</revapi.oldTimefoldVersion>
+    <revapi.oldTimefoldVersion>0.8.38</revapi.oldTimefoldVersion>
     <!--suppress UnresolvedMavenProperty-->
     <project.root.dir>${maven.multiModuleProjectDirectory}</project.root.dir>
 
