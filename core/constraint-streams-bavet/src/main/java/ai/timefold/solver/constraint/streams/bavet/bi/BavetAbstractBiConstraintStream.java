@@ -3,9 +3,7 @@ package ai.timefold.solver.constraint.streams.bavet.bi;
 import static ai.timefold.solver.constraint.streams.bavet.common.GroupNodeConstructor.of;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -16,17 +14,18 @@ import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetScoringConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.GroupNodeConstructor;
-import ai.timefold.solver.constraint.streams.bavet.quad.BavetGroupQuadConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.quad.QuadTuple;
-import ai.timefold.solver.constraint.streams.bavet.tri.BavetGroupTriConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeTriConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.constraint.streams.bavet.tri.BavetJoinTriConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.uni.BavetAbstractUniConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetGroupUniConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetIfExistsBridgeUniConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetJoinBridgeUniConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetMapUniConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.uni.UniTuple;
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.constraint.streams.common.bi.BiConstraintBuilderImpl;
@@ -46,24 +45,14 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends BavetAbstractConstraintStream<Solution_>
         implements InnerBiConstraintStream<A, B> {
 
-    protected final List<BavetAbstractBiConstraintStream<Solution_, A, B>> childStreamList = new ArrayList<>(2);
+    protected BavetAbstractBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetAbstractConstraintStream<Solution_> parent) {
+        super(constraintFactory, parent);
+    }
 
-    public BavetAbstractBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+    protected BavetAbstractBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             RetrievalSemantics retrievalSemantics) {
         super(constraintFactory, retrievalSemantics);
-    }
-
-    public List<BavetAbstractBiConstraintStream<Solution_, A, B>> getChildStreamList() {
-        return childStreamList;
-    }
-
-    // ************************************************************************
-    // Stream builder methods
-    // ************************************************************************
-
-    public <Stream_ extends BavetAbstractBiConstraintStream<Solution_, A, B>> Stream_ shareAndAddChild(
-            Stream_ stream) {
-        return constraintFactory.share(stream, childStreamList::add);
     }
 
     // ************************************************************************
@@ -72,8 +61,7 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
 
     @Override
     public BavetAbstractBiConstraintStream<Solution_, A, B> filter(BiPredicate<A, B> predicate) {
-        return shareAndAddChild(
-                new BavetFilterBiConstraintStream<>(constraintFactory, this, predicate));
+        return shareAndAddChild(new BavetFilterBiConstraintStream<>(constraintFactory, this, predicate));
     }
 
     // ************************************************************************
@@ -84,19 +72,12 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     @SafeVarargs
     public final <C> TriConstraintStream<A, B, C> join(UniConstraintStream<C> otherStream,
             TriJoiner<A, B, C>... joiners) {
-        BavetAbstractUniConstraintStream<Solution_, C> other = assertBavetUniConstraintStream(otherStream);
-        TriJoinerComber<A, B, C> joinerComber = TriJoinerComber.comb(joiners);
-
-        BavetJoinBridgeBiConstraintStream<Solution_, A, B> leftBridge =
-                new BavetJoinBridgeBiConstraintStream<>(constraintFactory, this, true);
-        BavetJoinBridgeUniConstraintStream<Solution_, C> rightBridge =
-                new BavetJoinBridgeUniConstraintStream<>(constraintFactory, other, false);
-        BavetJoinTriConstraintStream<Solution_, A, B, C> joinStream =
-                new BavetJoinTriConstraintStream<>(constraintFactory, leftBridge, rightBridge,
-                        joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering());
-        leftBridge.setJoinStream(joinStream);
-        rightBridge.setJoinStream(joinStream);
-
+        var other = (BavetAbstractUniConstraintStream<Solution_, C>) otherStream;
+        var joinerComber = TriJoinerComber.comb(joiners);
+        var leftBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, this);
+        var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
+        var joinStream = new BavetJoinTriConstraintStream<>(constraintFactory, leftBridge, rightBridge,
+                joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering());
         return constraintFactory.share(joinStream, joinStream_ -> {
             // Connect the bridges upstream, as it is an actual new join.
             getChildStreamList().add(leftBridge);
@@ -162,10 +143,9 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
 
     private <C> BiConstraintStream<A, B> ifExistsOrNot(boolean shouldExist, UniConstraintStream<C> otherStream,
             TriJoiner<A, B, C>[] joiners) {
-        BavetAbstractUniConstraintStream<Solution_, C> other = assertBavetUniConstraintStream(otherStream);
-        TriJoinerComber<A, B, C> joinerComber = TriJoinerComber.comb(joiners);
-        BavetIfExistsBridgeUniConstraintStream<Solution_, C> parentBridgeC = other.shareAndAddChild(
-                new BavetIfExistsBridgeUniConstraintStream<>(constraintFactory, other));
+        var other = (BavetAbstractUniConstraintStream<Solution_, C>) otherStream;
+        var joinerComber = TriJoinerComber.comb(joiners);
+        var parentBridgeC = other.shareAndAddChild(new BavetForeBridgeUniConstraintStream<>(constraintFactory, other));
         return constraintFactory.share(
                 new BavetIfExistsBiConstraintStream<>(constraintFactory, this, parentBridgeC,
                         shouldExist, joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering()),
@@ -179,37 +159,34 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     @Override
     public <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
             BiConstraintCollector<A, B, ResultContainer_, Result_> collector) {
-        GroupNodeConstructor<UniTuple<Result_>> nodeConstructor = of((groupStoreIndex, undoStoreIndex, tupleLifecycle,
-                outputStoreSize, environmentMode) -> new Group0Mapping1CollectorBiNode<>(groupStoreIndex, undoStoreIndex,
-                        collector, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<UniTuple<Result_>> nodeConstructor =
+                of((groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode) -> new Group0Mapping1CollectorBiNode<>(groupStoreIndex, undoStoreIndex, collector,
+                                tupleLifecycle, outputStoreSize, environmentMode));
         return buildUniGroupBy(nodeConstructor);
     }
 
     private <NewA> UniConstraintStream<NewA> buildUniGroupBy(GroupNodeConstructor<UniTuple<NewA>> nodeConstructor) {
-        BavetUniGroupBridgeBiConstraintStream<Solution_, A, B, NewA> bridge = shareAndAddChild(
-                new BavetUniGroupBridgeBiConstraintStream<>(constraintFactory, this, nodeConstructor));
-        return constraintFactory.share(
-                new BavetGroupUniConstraintStream<>(constraintFactory, bridge),
-                bridge::setGroupStream);
+        var stream = shareAndAddChild(new BavetUniGroupBiConstraintStream<>(constraintFactory, this, nodeConstructor));
+        return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
+                stream::setAftBridge);
     }
 
     @Override
     public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
             BiConstraintCollector<A, B, ResultContainerA_, ResultA_> collectorA,
             BiConstraintCollector<A, B, ResultContainerB_, ResultB_> collectorB) {
-        GroupNodeConstructor<BiTuple<ResultA_, ResultB_>> nodeConstructor = of((groupStoreIndex, undoStoreIndex, tupleLifecycle,
-                outputStoreSize, environmentMode) -> new Group0Mapping2CollectorBiNode<>(groupStoreIndex, undoStoreIndex,
-                        collectorA, collectorB, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<BiTuple<ResultA_, ResultB_>> nodeConstructor =
+                of((groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode) -> new Group0Mapping2CollectorBiNode<>(groupStoreIndex, undoStoreIndex, collectorA,
+                                collectorB, tupleLifecycle, outputStoreSize, environmentMode));
         return buildBiGroupBy(nodeConstructor);
     }
 
     private <NewA, NewB> BiConstraintStream<NewA, NewB>
             buildBiGroupBy(GroupNodeConstructor<BiTuple<NewA, NewB>> nodeConstructor) {
-        BavetBiGroupBridgeBiConstraintStream<Solution_, A, B, NewA, NewB> bridge = shareAndAddChild(
-                new BavetBiGroupBridgeBiConstraintStream<>(constraintFactory, this, nodeConstructor));
-        return constraintFactory.share(
-                new BavetGroupBiConstraintStream<>(constraintFactory, bridge),
-                bridge::setGroupStream);
+        var stream = shareAndAddChild(new BavetBiGroupBiConstraintStream<>(constraintFactory, this, nodeConstructor));
+        return constraintFactory.share(new BavetAftBridgeBiConstraintStream<>(constraintFactory, stream), stream::setAftBridge);
     }
 
     @Override
@@ -218,19 +195,18 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
             groupBy(BiConstraintCollector<A, B, ResultContainerA_, ResultA_> collectorA,
                     BiConstraintCollector<A, B, ResultContainerB_, ResultB_> collectorB,
                     BiConstraintCollector<A, B, ResultContainerC_, ResultC_> collectorC) {
-        GroupNodeConstructor<TriTuple<ResultA_, ResultB_, ResultC_>> nodeConstructor = of((groupStoreIndex, undoStoreIndex,
-                tupleLifecycle, outputStoreSize, environmentMode) -> new Group0Mapping3CollectorBiNode<>(groupStoreIndex,
-                        undoStoreIndex, collectorA, collectorB, collectorC, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<TriTuple<ResultA_, ResultB_, ResultC_>> nodeConstructor =
+                of((groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode) -> new Group0Mapping3CollectorBiNode<>(groupStoreIndex, undoStoreIndex, collectorA,
+                                collectorB, collectorC, tupleLifecycle, outputStoreSize, environmentMode));
         return buildTriGroupBy(nodeConstructor);
     }
 
     private <NewA, NewB, NewC> TriConstraintStream<NewA, NewB, NewC>
             buildTriGroupBy(GroupNodeConstructor<TriTuple<NewA, NewB, NewC>> nodeConstructor) {
-        BavetTriGroupBridgeBiConstraintStream<Solution_, A, B, NewA, NewB, NewC> bridge = shareAndAddChild(
-                new BavetTriGroupBridgeBiConstraintStream<>(constraintFactory, this, nodeConstructor));
-        return constraintFactory.share(
-                new BavetGroupTriConstraintStream<>(constraintFactory, bridge),
-                bridge::setGroupStream);
+        var stream = shareAndAddChild(new BavetTriGroupBiConstraintStream<>(constraintFactory, this, nodeConstructor));
+        return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
+                stream::setAftBridge);
     }
 
     @Override
@@ -249,11 +225,9 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
 
     private <NewA, NewB, NewC, NewD> QuadConstraintStream<NewA, NewB, NewC, NewD>
             buildQuadGroupBy(GroupNodeConstructor<QuadTuple<NewA, NewB, NewC, NewD>> nodeConstructor) {
-        BavetQuadGroupBridgeBiConstraintStream<Solution_, A, B, NewA, NewB, NewC, NewD> bridge = shareAndAddChild(
-                new BavetQuadGroupBridgeBiConstraintStream<>(constraintFactory, this, nodeConstructor));
-        return constraintFactory.share(
-                new BavetGroupQuadConstraintStream<>(constraintFactory, bridge),
-                bridge::setGroupStream);
+        var stream = shareAndAddChild(new BavetQuadGroupBiConstraintStream<>(constraintFactory, this, nodeConstructor));
+        return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
+                stream::setAftBridge);
     }
 
     @Override
@@ -295,9 +269,10 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     public <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
             BiFunction<A, B, GroupKey_> groupKeyMapping,
             BiConstraintCollector<A, B, ResultContainer_, Result_> collector) {
-        GroupNodeConstructor<BiTuple<GroupKey_, Result_>> nodeConstructor = of((groupStoreIndex, undoStoreIndex, tupleLifecycle,
-                outputStoreSize, environmentMode) -> new Group1Mapping1CollectorBiNode<>(groupKeyMapping, groupStoreIndex,
-                        undoStoreIndex, collector, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<BiTuple<GroupKey_, Result_>> nodeConstructor =
+                of((groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode) -> new Group1Mapping1CollectorBiNode<>(groupKeyMapping, groupStoreIndex,
+                                undoStoreIndex, collector, tupleLifecycle, outputStoreSize, environmentMode));
         return buildBiGroupBy(nodeConstructor);
     }
 
@@ -327,10 +302,11 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
                     BiFunction<A, B, GroupKeyA_> groupKeyAMapping, BiFunction<A, B, GroupKeyB_> groupKeyBMapping,
                     BiConstraintCollector<A, B, ResultContainerC_, ResultC_> collectorC,
                     BiConstraintCollector<A, B, ResultContainerD_, ResultD_> collectorD) {
-        GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_>> nodeConstructor = of((groupStoreIndex,
-                undoStoreIndex, tupleLifecycle, outputStoreSize,
-                environmentMode) -> new Group2Mapping2CollectorBiNode<>(groupKeyAMapping, groupKeyBMapping, groupStoreIndex,
-                        undoStoreIndex, collectorC, collectorD, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_>> nodeConstructor =
+                of((groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode) -> new Group2Mapping2CollectorBiNode<>(groupKeyAMapping, groupKeyBMapping,
+                                groupStoreIndex, undoStoreIndex, collectorC, collectorD, tupleLifecycle, outputStoreSize,
+                                environmentMode));
         return buildQuadGroupBy(nodeConstructor);
     }
 
@@ -338,9 +314,10 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     public <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
             BiFunction<A, B, GroupKeyA_> groupKeyAMapping, BiFunction<A, B, GroupKeyB_> groupKeyBMapping,
             BiFunction<A, B, GroupKeyC_> groupKeyCMapping) {
-        GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_>> nodeConstructor = of((groupStoreIndex,
-                tupleLifecycle, outputStoreSize, environmentMode) -> new Group3Mapping0CollectorBiNode<>(groupKeyAMapping,
-                        groupKeyBMapping, groupKeyCMapping, groupStoreIndex, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_>> nodeConstructor =
+                of((groupStoreIndex, tupleLifecycle, outputStoreSize, environmentMode) -> new Group3Mapping0CollectorBiNode<>(
+                        groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, groupStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode));
         return buildTriGroupBy(nodeConstructor);
     }
 
@@ -350,10 +327,11 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
             groupBy(BiFunction<A, B, GroupKeyA_> groupKeyAMapping, BiFunction<A, B, GroupKeyB_> groupKeyBMapping,
                     BiFunction<A, B, GroupKeyC_> groupKeyCMapping,
                     BiConstraintCollector<A, B, ResultContainerD_, ResultD_> collectorD) {
-        GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>> nodeConstructor = of((groupStoreIndex,
-                undoStoreIndex, tupleLifecycle, outputStoreSize,
-                environmentMode) -> new Group3Mapping1CollectorBiNode<>(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping,
-                        groupStoreIndex, undoStoreIndex, collectorD, tupleLifecycle, outputStoreSize, environmentMode));
+        GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>> nodeConstructor =
+                of((groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
+                        environmentMode) -> new Group3Mapping1CollectorBiNode<>(groupKeyAMapping, groupKeyBMapping,
+                                groupKeyCMapping, groupStoreIndex, undoStoreIndex, collectorD, tupleLifecycle, outputStoreSize,
+                                environmentMode));
         return buildQuadGroupBy(nodeConstructor);
     }
 
@@ -373,21 +351,25 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     // ************************************************************************
 
     @Override
+    public BiConstraintStream<A, B> distinct() {
+        if (guaranteesDistinct()) {
+            return this;
+        } else {
+            return groupBy((a, b) -> a, (a, b) -> b);
+        }
+    }
+
+    @Override
     public <ResultA_> UniConstraintStream<ResultA_> map(BiFunction<A, B, ResultA_> mapping) {
-        BavetMapBridgeBiConstraintStream<Solution_, A, B, ResultA_> bridge = shareAndAddChild(
-                new BavetMapBridgeBiConstraintStream<>(constraintFactory, this, mapping));
-        return constraintFactory.share(
-                new BavetMapUniConstraintStream<>(constraintFactory, bridge),
-                bridge::setMapStream);
+        var stream = shareAndAddChild(new BavetUniMapBiConstraintStream<>(constraintFactory, this, mapping));
+        return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
+                stream::setAftBridge);
     }
 
     @Override
     public <ResultB_> BiConstraintStream<A, ResultB_> flattenLast(Function<B, Iterable<ResultB_>> mapping) {
-        BavetFlattenLastBridgeBiConstraintStream<Solution_, A, B, ResultB_> bridge = shareAndAddChild(
-                new BavetFlattenLastBridgeBiConstraintStream<>(constraintFactory, this, mapping));
-        return constraintFactory.share(
-                new BavetFlattenLastBiConstraintStream<>(constraintFactory, bridge),
-                bridge::setFlattenLastStream);
+        var stream = shareAndAddChild(new BavetFlattenLastBiConstraintStream<>(constraintFactory, this, mapping));
+        return constraintFactory.share(new BavetAftBridgeBiConstraintStream<>(constraintFactory, stream), stream::setAftBridge);
     }
 
     // ************************************************************************

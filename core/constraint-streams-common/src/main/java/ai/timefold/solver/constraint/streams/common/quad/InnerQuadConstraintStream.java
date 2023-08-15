@@ -26,23 +26,6 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
         return List::of;
     }
 
-    /**
-     * This method will return true if the constraint stream is guaranteed to only produce distinct tuples.
-     * See {@link #distinct()} for details.
-     *
-     * @return true if the guarantee of distinct tuples is provided
-     */
-    boolean guaranteesDistinct();
-
-    @Override
-    default QuadConstraintStream<A, B, C, D> distinct() {
-        if (guaranteesDistinct()) {
-            return this;
-        } else {
-            return groupBy((a, b, c, d) -> a, (a, b, c, d) -> b, (a, b, c, d) -> c, (a, b, c, d) -> d);
-        }
-    }
-
     @Override
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalize(Score_ constraintWeight,
             ToIntQuadFunction<A, B, C, D> matchWeigher) {

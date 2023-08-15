@@ -99,18 +99,18 @@ public interface ConstraintStreamFunctionalTest {
     void groupBy_4Mapping0Collector();
 
     // ************************************************************************
-    // Map/flatten/distinct
+    // Map/expand/flatten/distinct
     // ************************************************************************
 
     void distinct();
 
-    void mapWithDuplicates();
+    void mapToUniWithDuplicates();
 
-    void mapWithoutDuplicates();
+    void mapToUniWithoutDuplicates();
 
-    void mapAndDistinctWithDuplicates();
+    void mapToUniAndDistinctWithDuplicates();
 
-    void mapAndDistinctWithoutDuplicates();
+    void mapToUniAndDistinctWithoutDuplicates();
 
     void flattenLastWithDuplicates();
 

@@ -2,7 +2,6 @@ package ai.timefold.solver.test.impl.score.stream;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
@@ -11,7 +10,6 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
@@ -22,9 +20,8 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     /**
      * {@link ConstraintVerifier} is mutable,
-     * due to {@link #withConstraintStreamImplType(ConstraintStreamImplType)} and
-     * {@link #withDroolsAlphaNetworkCompilationEnabled(boolean)}.
-     * Since these methods can be run at any time, possibly invalidating the pre-built score director factories,
+     * due to {@link #withConstraintStreamImplType(ConstraintStreamImplType)}.
+     * Since this method can be run at any time, possibly invalidating the pre-built score director factories,
      * the easiest way of dealing with the issue is to keep an internal immutable constraint verifier instance
      * and clearing it every time the configuration changes.
      * The code that was using the old configuration will continue running on the old instance,
@@ -34,7 +31,6 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     private final AtomicReference<ConfiguredConstraintVerifier<ConstraintProvider_, Solution_, Score_>> configuredConstraintVerifierRef =
             new AtomicReference<>();
     private final AtomicReference<ConstraintStreamImplType> constraintStreamImplTypeRef = new AtomicReference<>();
-    private final AtomicReference<Boolean> droolsAlphaNetworkCompilationEnabledRef = new AtomicReference<>();
 
     public DefaultConstraintVerifier(ConstraintProvider_ constraintProvider, SolutionDescriptor<Solution_> solutionDescriptor) {
         this.constraintProvider = constraintProvider;
@@ -49,30 +45,7 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     public ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
             ConstraintStreamImplType constraintStreamImplType) {
         requireNonNull(constraintStreamImplType);
-        var droolsAlphaNetworkCompilationEnabled = this.droolsAlphaNetworkCompilationEnabledRef.get();
-        if (droolsAlphaNetworkCompilationEnabled != null &&
-                droolsAlphaNetworkCompilationEnabled &&
-                constraintStreamImplType != ConstraintStreamImplType.DROOLS) {
-            throw new IllegalArgumentException("Can not switch to " + ConstraintStreamImplType.class.getSimpleName()
-                    + "." + constraintStreamImplType + " while Drools Alpha Network Compilation enabled.");
-        }
         this.constraintStreamImplTypeRef.set(constraintStreamImplType);
-        this.configuredConstraintVerifierRef.set(null);
-        return this;
-    }
-
-    public boolean isDroolsAlphaNetworkCompilationEnabled() {
-        return Objects.requireNonNullElse(droolsAlphaNetworkCompilationEnabledRef.get(), !ConfigUtils.isNativeImage());
-    }
-
-    @Override
-    public ConstraintVerifier<ConstraintProvider_, Solution_> withDroolsAlphaNetworkCompilationEnabled(
-            boolean droolsAlphaNetworkCompilationEnabled) {
-        if (droolsAlphaNetworkCompilationEnabled && getConstraintStreamImplType() == ConstraintStreamImplType.BAVET) {
-            throw new IllegalArgumentException("Can not enable Drools Alpha Network Compilation with "
-                    + ConstraintStreamImplType.class.getSimpleName() + "." + ConstraintStreamImplType.BAVET + ".");
-        }
-        this.droolsAlphaNetworkCompilationEnabledRef.set(droolsAlphaNetworkCompilationEnabled);
         this.configuredConstraintVerifierRef.set(null);
         return this;
     }
@@ -91,7 +64,7 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
         return configuredConstraintVerifierRef.updateAndGet(v -> {
             if (v == null) {
                 return new ConfiguredConstraintVerifier<>(constraintProvider, solutionDescriptor,
-                        getConstraintStreamImplType(), isDroolsAlphaNetworkCompilationEnabled());
+                        getConstraintStreamImplType());
             }
             return v;
         });

@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 
-final class IntWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_>>
+final class IntWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
         implements WeightedScoreImpacter<Score_, Context_> {
 
     private final IntImpactFunction<Score_, Context_> impactFunction;
@@ -17,17 +17,18 @@ final class IntWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ exte
     }
 
     @Override
-    public UndoScoreImpacter impactScore(int matchWeight, JustificationsSupplier justificationsSupplier) {
-        return impactFunction.impact(context, matchWeight, justificationsSupplier);
+    public UndoScoreImpacter impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+        context.getConstraint().assertCorrectImpact(matchWeight);
+        return impactFunction.impact(context, matchWeight, constraintMatchSupplier);
     }
 
     @Override
-    public UndoScoreImpacter impactScore(long matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         throw new UnsupportedOperationException("Impossible state: passing long into an int impacter.");
     }
 
     @Override
-    public UndoScoreImpacter impactScore(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         throw new UnsupportedOperationException("Impossible state: passing BigDecimal into an int impacter.");
     }
 

@@ -1,50 +1,31 @@
 package ai.timefold.solver.constraint.streams.bavet.quad;
 
 import java.util.Objects;
-import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.Score;
 
-public final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
+final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {
 
-    private final BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent;
     private final QuadPredicate<A, B, C, D> predicate;
 
     public BavetFilterQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent,
             QuadPredicate<A, B, C, D> predicate) {
-        super(constraintFactory, parent.getRetrievalSemantics());
-        this.parent = parent;
+        super(constraintFactory, parent);
         this.predicate = predicate;
         if (predicate == null) {
             throw new IllegalArgumentException("The predicate (null) cannot be null.");
         }
     }
 
-    @Override
-    public boolean guaranteesDistinct() {
-        return parent.guaranteesDistinct();
-    }
-
     // ************************************************************************
     // Node creation
     // ************************************************************************
-
-    @Override
-    public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
-        parent.collectActiveConstraintStreams(constraintStreamSet);
-        constraintStreamSet.add(this);
-    }
-
-    @Override
-    public BavetAbstractConstraintStream<Solution_> getTupleSource() {
-        return parent.getTupleSource();
-    }
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {

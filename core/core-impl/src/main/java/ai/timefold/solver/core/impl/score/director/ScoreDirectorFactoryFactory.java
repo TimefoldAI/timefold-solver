@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.BAVET;
 import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.DROOLS;
 import static ai.timefold.solver.core.impl.score.director.ScoreDirectorType.CONSTRAINT_STREAMS;
 import static ai.timefold.solver.core.impl.score.director.ScoreDirectorType.DRL;
@@ -71,45 +70,9 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                 ServiceLoader.load(ScoreDirectorFactoryService.class);
         Map<ScoreDirectorType, Supplier<AbstractScoreDirectorFactory<Solution_, Score_>>> scoreDirectorFactorySupplierMap =
                 new EnumMap<>(ScoreDirectorType.class);
-        boolean isBavet = false;
         for (ScoreDirectorFactoryService<Solution_, Score_> service : scoreDirectorFactoryServiceLoader) {
             Supplier<AbstractScoreDirectorFactory<Solution_, Score_>> factory =
                     service.buildScoreDirectorFactory(classLoader, solutionDescriptor, config, environmentMode);
-            if (service.getSupportedScoreDirectorType() == CONSTRAINT_STREAMS) {
-                /*
-                 * CS-D will be available if on the classpath and user did not request BAVET.
-                 * CS-B will be available if on the classpath and user did not request DROOLS.
-                 * The following logic deals with the decision of which CS impl to pick if both available.
-                 */
-                switch (service.getPriority()) {
-                    case Integer.MAX_VALUE:
-                        if (config.getConstraintStreamImplType() == BAVET) {
-                            // Drools should be skipped.
-                            continue;
-                        } else {
-                            // Drools will be registered as the CS impl.
-                            isBavet = false;
-                        }
-                        break;
-                    case Integer.MIN_VALUE:
-                        if (scoreDirectorFactorySupplierMap.containsKey(CONSTRAINT_STREAMS)) {
-                            /*
-                             * We already have a CS service registered, and it is of a higher priority.
-                             * This means Drools was loaded first, but Bavet is available too.
-                             * Such situation can only happen if the user did not specify an impl type.
-                             * Therefore, we skip Bavet as Drools is the default and already registered.
-                             */
-                            continue;
-                        } else {
-                            // Bavet will be registered as the CS impl.
-                            isBavet = true;
-                        }
-                        break;
-                    default:
-                        throw new IllegalStateException(
-                                "Impossible state: Unknown service priority (" + service.getPriority() + ")");
-                }
-            }
             if (factory != null) {
                 scoreDirectorFactorySupplierMap.put(service.getSupportedScoreDirectorType(), factory);
             }
@@ -140,18 +103,13 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
         }
 
         if (constraintStreamScoreDirectorFactorySupplier != null) {
-            if (isBavet) {
-                validateNoDroolsAlphaNetworkCompilation();
-                validateNoGizmoKieBaseSupplier();
-            }
+            validateNoDroolsAlphaNetworkCompilation();
+            validateNoGizmoKieBaseSupplier();
             return constraintStreamScoreDirectorFactorySupplier.get();
         } else if (config.getConstraintProviderClass() != null) {
-            String expectedModule = config.getConstraintStreamImplType() == BAVET
-                    ? "timefold-solver-constraint-streams-bavet"
-                    : "timefold-solver-constraint-streams-drools";
             throw new IllegalStateException("Constraint Streams requested via constraintProviderClass (" +
                     config.getConstraintProviderClass() + ") but the supporting classes were not found on the classpath.\n"
-                    + "Maybe include ai.timefold.solver:" + expectedModule + " dependency in your project?\n"
+                    + "Maybe include ai.timefold.solver:timefold-solver-constraint-streams-bavet dependency in your project?\n"
                     + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
         }
 
@@ -167,6 +125,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                         + "Maybe ensure your uberjar bundles META-INF/services from included JAR files?");
             }
         }
+
         throw new IllegalArgumentException("The scoreDirectorFactory lacks configuration for "
                 + "either constraintProviderClass, easyScoreCalculatorClass or incrementalScoreCalculatorClass.");
     }

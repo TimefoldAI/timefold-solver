@@ -8,28 +8,32 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractConditionalTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.LeftTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.RightTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 
 public final class NodeBuildHelper<Score_ extends Score<Score_>> {
 
     private final Set<? extends ConstraintStream> activeStreamSet;
-    private final Map<Constraint, Score_> constraintWeightMap;
     private final AbstractScoreInliner<Score_> scoreInliner;
-    private final Map<ConstraintStream, TupleLifecycle<? extends Tuple>> tupleLifecycleMap;
+    private final Map<AbstractNode, BavetAbstractConstraintStream<?>> nodeCreatorMap;
+    private final Map<ConstraintStream, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap;
     private final Map<ConstraintStream, Integer> storeIndexMap;
 
     private List<AbstractNode> reversedNodeList;
 
-    public NodeBuildHelper(Set<? extends ConstraintStream> activeStreamSet, Map<Constraint, Score_> constraintWeightMap,
-            AbstractScoreInliner<Score_> scoreInliner) {
+    public NodeBuildHelper(Set<? extends ConstraintStream> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
         this.activeStreamSet = activeStreamSet;
-        this.constraintWeightMap = constraintWeightMap;
         this.scoreInliner = scoreInliner;
         int activeStreamSetSize = activeStreamSet.size();
+        this.nodeCreatorMap = new HashMap<>(Math.max(16, activeStreamSetSize));
         this.tupleLifecycleMap = new HashMap<>(Math.max(16, activeStreamSetSize));
         this.storeIndexMap = new HashMap<>(Math.max(16, activeStreamSetSize / 2));
         this.reversedNodeList = new ArrayList<>(activeStreamSetSize);
@@ -43,37 +47,43 @@ public final class NodeBuildHelper<Score_ extends Score<Score_>> {
         return scoreInliner;
     }
 
-    public Score_ getConstraintWeight(Constraint constraint) {
-        return constraintWeightMap.get(constraint);
+    public void addNode(AbstractNode node, BavetAbstractConstraintStream<?> creator) {
+        addNode(node, creator, creator);
     }
 
-    public void addNode(AbstractNode node) {
+    public void addNode(AbstractNode node, BavetAbstractConstraintStream<?> creator, BavetAbstractConstraintStream<?> parent) {
         reversedNodeList.add(node);
+        nodeCreatorMap.put(node, creator);
+        if (!(node instanceof AbstractForEachUniNode<?>)) {
+            if (parent == null) {
+                throw new IllegalStateException("Impossible state: The node (" + node + ") has no parent (" + parent + ").");
+            }
+            putInsertUpdateRetract(parent, (TupleLifecycle<? extends AbstractTuple>) node);
+        }
     }
 
-    public void addNode(AbstractNode node, ConstraintStream parent) {
-        addNode(node);
-        putInsertUpdateRetract(parent, (TupleLifecycle<? extends Tuple>) node);
+    public void addNode(AbstractNode node, BavetAbstractConstraintStream<?> creator,
+            BavetAbstractConstraintStream<?> leftParent,
+            BavetAbstractConstraintStream<?> rightParent) {
+        reversedNodeList.add(node);
+        nodeCreatorMap.put(node, creator);
+        putInsertUpdateRetract(leftParent, TupleLifecycle.ofLeft((LeftTupleLifecycle<? extends AbstractTuple>) node));
+        putInsertUpdateRetract(rightParent, TupleLifecycle.ofRight((RightTupleLifecycle<? extends AbstractTuple>) node));
     }
 
-    public void addNode(AbstractNode node, ConstraintStream leftParent, ConstraintStream rightParent) {
-        addNode(node);
-        putInsertUpdateRetract(leftParent, TupleLifecycle.ofLeft((LeftTupleLifecycle<? extends Tuple>) node));
-        putInsertUpdateRetract(rightParent, TupleLifecycle.ofRight((RightTupleLifecycle<? extends Tuple>) node));
-    }
-
-    public <Tuple_ extends Tuple> void putInsertUpdateRetract(ConstraintStream stream, TupleLifecycle<Tuple_> tupleLifecycle) {
+    public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(ConstraintStream stream,
+            TupleLifecycle<Tuple_> tupleLifecycle) {
         tupleLifecycleMap.put(stream, tupleLifecycle);
     }
 
-    public <Tuple_ extends Tuple> void putInsertUpdateRetract(ConstraintStream stream,
-            List<? extends AbstractConstraintStream> childStreamList,
+    public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(ConstraintStream stream,
+            List<? extends AbstractConstraintStream<?>> childStreamList,
             Function<TupleLifecycle<Tuple_>, AbstractConditionalTupleLifecycle<Tuple_>> tupleLifecycleFunction) {
         TupleLifecycle<Tuple_> tupleLifecycle = getAggregatedTupleLifecycle(childStreamList);
         putInsertUpdateRetract(stream, tupleLifecycleFunction.apply(tupleLifecycle));
     }
 
-    public <Tuple_ extends Tuple> TupleLifecycle<Tuple_> getAggregatedTupleLifecycle(
+    public <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> getAggregatedTupleLifecycle(
             List<? extends ConstraintStream> streamList) {
         TupleLifecycle<Tuple_>[] tupleLifecycles = streamList.stream()
                 .filter(this::isStreamActive)
@@ -86,12 +96,12 @@ public final class NodeBuildHelper<Score_ extends Score<Score_>> {
             case 1:
                 return tupleLifecycles[0];
             default:
-                return new AggregatedTupleLifecycle<>(tupleLifecycles);
+                return TupleLifecycle.of(tupleLifecycles);
         }
     }
 
-    private static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> getTupleLifecycle(ConstraintStream stream,
-            Map<ConstraintStream, TupleLifecycle<? extends Tuple>> tupleLifecycleMap) {
+    private static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> getTupleLifecycle(ConstraintStream stream,
+            Map<ConstraintStream, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap) {
         TupleLifecycle<Tuple_> tupleLifecycle = (TupleLifecycle<Tuple_>) tupleLifecycleMap.get(stream);
         if (tupleLifecycle == null) {
             throw new IllegalStateException("Impossible state: the stream (" + stream + ") hasn't built a node yet.");
@@ -122,6 +132,26 @@ public final class NodeBuildHelper<Score_ extends Score<Score_>> {
         Collections.reverse(nodeList);
         this.reversedNodeList = null;
         return nodeList;
+    }
+
+    public BavetAbstractConstraintStream<?> getNodeCreatingStream(AbstractNode node) {
+        return nodeCreatorMap.get(node);
+    }
+
+    public AbstractNode findParentNode(BavetAbstractConstraintStream<?> childNodeCreator) {
+        if (childNodeCreator == null) { // We've recursed to the bottom without finding a parent node.
+            throw new IllegalStateException(
+                    "Impossible state: node-creating stream (" + childNodeCreator + ") has no parent node.");
+        }
+        // Look the stream up among node creators and if found, the node is the parent node.
+        for (Map.Entry<AbstractNode, BavetAbstractConstraintStream<?>> entry : this.nodeCreatorMap.entrySet()) {
+            if (entry.getValue() == childNodeCreator) {
+                return entry.getKey();
+            }
+        }
+        // Otherwise recurse to the parent node creator;
+        // this happens for bridges, filters and other streams that do not create nodes.
+        return findParentNode(childNodeCreator.getParent());
     }
 
 }

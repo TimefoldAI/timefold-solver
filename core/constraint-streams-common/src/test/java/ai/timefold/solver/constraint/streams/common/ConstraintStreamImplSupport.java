@@ -7,10 +7,6 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public interface ConstraintStreamImplSupport {
 
-    void assumeBavet();
-
-    void assumeDrools();
-
     boolean isConstreamMatchEnabled();
 
     <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(

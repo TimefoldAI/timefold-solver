@@ -2,8 +2,9 @@ package ai.timefold.solver.constraint.streams.bavet.uni;
 
 import java.util.function.Predicate;
 
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractConditionalTupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractConditionalTupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
 final class ConditionalUniTupleLifecycle<A> extends AbstractConditionalTupleLifecycle<UniTuple<A>> {
     private final Predicate<A> predicate;
@@ -15,6 +16,6 @@ final class ConditionalUniTupleLifecycle<A> extends AbstractConditionalTupleLife
 
     @Override
     protected boolean test(UniTuple<A> tuple) {
-        return predicate.test(tuple.getFactA());
+        return predicate.test(tuple.factA);
     }
 }

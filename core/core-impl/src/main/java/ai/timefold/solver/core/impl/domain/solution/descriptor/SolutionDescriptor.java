@@ -153,6 +153,7 @@ public class SolutionDescriptor<Solution_> {
     private final Map<Class<?>, EntityDescriptor<Solution_>> entityDescriptorMap = new LinkedHashMap<>();
     private final List<Class<?>> reversedEntityClassList = new ArrayList<>();
     private final ConcurrentMap<Class<?>, EntityDescriptor<Solution_>> lowestEntityDescriptorMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, MemberAccessor> planningIdMemberAccessorMap = new ConcurrentHashMap<>();
 
     private SolutionCloner<Solution_> solutionCloner;
     private boolean assertModelForCloning = false;
@@ -644,14 +645,6 @@ public class SolutionDescriptor<Solution_> {
         return entityCollectionMemberAccessorMap;
     }
 
-    public List<String> getEntityMemberAndEntityCollectionMemberNames() {
-        List<String> memberNames = new ArrayList<>(entityMemberAccessorMap.size()
-                + entityCollectionMemberAccessorMap.size());
-        memberNames.addAll(entityMemberAccessorMap.keySet());
-        memberNames.addAll(entityCollectionMemberAccessorMap.keySet());
-        return memberNames;
-    }
-
     public Set<Class<?>> getProblemFactOrEntityClassSet() {
         return problemFactOrEntityClassSet;
     }
@@ -868,6 +861,28 @@ public class SolutionDescriptor<Solution_> {
         return entityCount.intValue();
     }
 
+    /**
+     * Return accessor for a given member of a given class, if present,
+     * and cache it for future use.
+     *
+     * @param factClass never null
+     * @return null if no such member exists
+     */
+    public MemberAccessor getPlanningIdAccessor(Class<?> factClass) {
+        MemberAccessor memberAccessor = planningIdMemberAccessorMap.get(factClass);
+        if (memberAccessor == null) {
+            memberAccessor =
+                    ConfigUtils.findPlanningIdMemberAccessor(factClass, getMemberAccessorFactory(), getDomainAccessType());
+            MemberAccessor nonNullMemberAccessor = Objects.requireNonNullElse(memberAccessor, DummyMemberAccessor.INSTANCE);
+            planningIdMemberAccessorMap.put(factClass, nonNullMemberAccessor);
+            return memberAccessor;
+        } else if (memberAccessor == DummyMemberAccessor.INSTANCE) {
+            return null;
+        } else {
+            return memberAccessor;
+        }
+    }
+
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {
         visitAllEntities(solution, visitor, collection -> collection.forEach(visitor));
     }
@@ -1016,7 +1031,9 @@ public class SolutionDescriptor<Solution_> {
      * @return {@code >= 0}
      */
     public int countUninitialized(Solution_ solution) {
-        return countUninitializedVariables(solution) + countUnassignedValues(solution);
+        int uninitializedVariableCount = countUninitializedVariables(solution);
+        int uninitializedValueCount = countUnassignedListVariableValues(solution);
+        return uninitializedValueCount + uninitializedVariableCount;
     }
 
     /**
@@ -1032,19 +1049,24 @@ public class SolutionDescriptor<Solution_> {
     /**
      * Counts the number of elements from list variable value ranges, that are not assigned to any list variable.
      */
-    private int countUnassignedValues(Solution_ solution) {
+    private int countUnassignedListVariableValues(Solution_ solution) {
         int unassignedValueCount = 0;
         for (ListVariableDescriptor<Solution_> listVariableDescriptor : listVariableDescriptors) {
-            unassignedValueCount += countUnassignedValues(solution, listVariableDescriptor);
+            unassignedValueCount += countUnassignedListVariableValues(solution, listVariableDescriptor);
         }
         return unassignedValueCount;
     }
 
-    private int countUnassignedValues(Solution_ solution, ListVariableDescriptor<Solution_> variableDescriptor) {
+    private int countUnassignedListVariableValues(Solution_ solution, ListVariableDescriptor<Solution_> variableDescriptor) {
         long totalValueCount = variableDescriptor.getValueCount(solution, null);
         MutableInt assignedValuesCount = new MutableInt();
         visitAllEntities(solution,
-                entity -> assignedValuesCount.add(variableDescriptor.getListSize(entity)));
+                entity -> {
+                    EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
+                    if (entityDescriptor.matchesEntity(entity)) {
+                        assignedValuesCount.add(variableDescriptor.getListSize(entity));
+                    }
+                });
         // TODO maybe detect duplicates and elements that are outside the value range
         return Math.toIntExact(totalValueCount - assignedValuesCount.intValue());
     }

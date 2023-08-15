@@ -2,95 +2,86 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import java.math.BigDecimal;
 
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 
-final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore> {
+final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
 
     private final int hardScoreLevelCount;
     private final int softScoreLevelCount;
     private final int scoreLevel;
     private final BigDecimal scoreLevelWeight;
-    private final IntBigDecimalConsumer softScoreLevelUpdater;
-    private final IntBigDecimalConsumer hardScoreLevelUpdater;
 
-    public BendableBigDecimalScoreContext(AbstractScoreInliner<BendableBigDecimalScore> parent, Constraint constraint,
+    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount, int scoreLevel,
-            BigDecimal scoreLevelWeight, IntBigDecimalConsumer hardScoreLevelUpdater,
-            IntBigDecimalConsumer softScoreLevelUpdater) {
+            BigDecimal scoreLevelWeight) {
         super(parent, constraint, constraintWeight);
         this.hardScoreLevelCount = hardScoreLevelCount;
         this.softScoreLevelCount = softScoreLevelCount;
         this.scoreLevel = scoreLevel;
         this.scoreLevelWeight = scoreLevelWeight;
-        this.softScoreLevelUpdater = softScoreLevelUpdater;
-        this.hardScoreLevelUpdater = hardScoreLevelUpdater;
     }
 
-    public BendableBigDecimalScoreContext(AbstractScoreInliner<BendableBigDecimalScore> parent, Constraint constraint,
-            BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount,
-            IntBigDecimalConsumer hardScoreLevelUpdater, IntBigDecimalConsumer softScoreLevelUpdater) {
-        this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, BigDecimal.ZERO,
-                hardScoreLevelUpdater,
-                softScoreLevelUpdater);
+    public BendableBigDecimalScoreContext(BendableBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            BendableBigDecimalScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount) {
+        this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, BigDecimal.ZERO);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         BigDecimal softImpact = scoreLevelWeight.multiply(matchWeight);
-        softScoreLevelUpdater.accept(scoreLevel, softImpact);
-        UndoScoreImpacter undoScoreImpact = () -> softScoreLevelUpdater.accept(scoreLevel, softImpact.negate());
+        parent.softScores[scoreLevel] = parent.softScores[scoreLevel].add(softImpact);
+        UndoScoreImpacter undoScoreImpact =
+                () -> parent.softScores[scoreLevel] = parent.softScores[scoreLevel].subtract(softImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
                 BendableBigDecimalScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         BigDecimal hardImpact = scoreLevelWeight.multiply(matchWeight);
-        hardScoreLevelUpdater.accept(scoreLevel, hardImpact);
-        UndoScoreImpacter undoScoreImpact = () -> hardScoreLevelUpdater.accept(scoreLevel, hardImpact.negate());
+        parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].add(hardImpact);
+        UndoScoreImpacter undoScoreImpact =
+                () -> parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].subtract(hardImpact);
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
                 BendableBigDecimalScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact),
-                justificationsSupplier);
+                constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight, JustificationsSupplier justificationsSupplier) {
+    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight,
+            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         BigDecimal[] hardImpacts = new BigDecimal[hardScoreLevelCount];
         BigDecimal[] softImpacts = new BigDecimal[softScoreLevelCount];
         for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
             BigDecimal hardImpact = constraintWeight.hardScore(hardScoreLevel).multiply(matchWeight);
             hardImpacts[hardScoreLevel] = hardImpact;
-            hardScoreLevelUpdater.accept(hardScoreLevel, hardImpact);
+            parent.hardScores[hardScoreLevel] = parent.hardScores[hardScoreLevel].add(hardImpact);
         }
         for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
             BigDecimal softImpact = constraintWeight.softScore(softScoreLevel).multiply(matchWeight);
             softImpacts[softScoreLevel] = softImpact;
-            softScoreLevelUpdater.accept(softScoreLevel, softImpact);
+            parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].add(softImpact);
         }
         UndoScoreImpacter undoScoreImpact = () -> {
             for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
-                hardScoreLevelUpdater.accept(hardScoreLevel, hardImpacts[hardScoreLevel].negate());
+                parent.hardScores[hardScoreLevel] = parent.hardScores[hardScoreLevel].subtract(hardImpacts[hardScoreLevel]);
             }
             for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
-                softScoreLevelUpdater.accept(softScoreLevel, softImpacts[softScoreLevel].negate());
+                parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].subtract(softImpacts[softScoreLevel]);
             }
         };
         if (!constraintMatchEnabled) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, BendableBigDecimalScore.of(hardImpacts, softImpacts),
-                justificationsSupplier);
-    }
-
-    public interface IntBigDecimalConsumer {
-
-        void accept(int value1, BigDecimal value2);
-
+                constraintMatchSupplier);
     }
 
 }

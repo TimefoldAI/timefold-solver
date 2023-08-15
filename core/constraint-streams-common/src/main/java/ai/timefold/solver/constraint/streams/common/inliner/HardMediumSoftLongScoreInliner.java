@@ -1,44 +1,50 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import java.util.Map;
+
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class HardMediumSoftLongScoreInliner extends AbstractScoreInliner<HardMediumSoftLongScore> {
 
-    private long hardScore;
-    private long mediumScore;
-    private long softScore;
+    long hardScore;
+    long mediumScore;
+    long softScore;
 
-    HardMediumSoftLongScoreInliner(boolean constraintMatchEnabled) {
-        super(constraintMatchEnabled);
+    HardMediumSoftLongScoreInliner(Map<Constraint, HardMediumSoftLongScore> constraintWeightMap,
+            boolean constraintMatchEnabled) {
+        super(constraintWeightMap, constraintMatchEnabled);
     }
 
     @Override
-    public WeightedScoreImpacter<HardMediumSoftLongScore, HardMediumSoftLongScoreContext> buildWeightedScoreImpacter(
-            Constraint constraint, HardMediumSoftLongScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
+    public WeightedScoreImpacter<HardMediumSoftLongScore, ?>
+            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+        HardMediumSoftLongScore constraintWeight = constraintWeightMap.get(constraint);
         long hardConstraintWeight = constraintWeight.hardScore();
         long mediumConstraintWeight = constraintWeight.mediumScore();
         long softConstraintWeight = constraintWeight.softScore();
-        HardMediumSoftLongScoreContext context = new HardMediumSoftLongScoreContext(this, constraint, constraintWeight,
-                impact -> this.hardScore += impact, impact -> this.mediumScore += impact,
-                impact -> this.softScore += impact);
+        HardMediumSoftLongScoreContext context = new HardMediumSoftLongScoreContext(this, constraint, constraintWeight);
         if (mediumConstraintWeight == 0L && softConstraintWeight == 0L) {
             return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight, JustificationsSupplier justificationsSupplier) -> ctx
-                            .changeHardScoreBy(matchWeight, justificationsSupplier));
+                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
+                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
+                                    .changeHardScoreBy(matchWeight, constraintMatchSupplier));
         } else if (hardConstraintWeight == 0L && softConstraintWeight == 0L) {
             return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight, JustificationsSupplier justificationsSupplier) -> ctx
-                            .changeMediumScoreBy(matchWeight, justificationsSupplier));
+                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
+                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
+                                    .changeMediumScoreBy(matchWeight, constraintMatchSupplier));
         } else if (hardConstraintWeight == 0L && mediumConstraintWeight == 0L) {
             return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight, JustificationsSupplier justificationsSupplier) -> ctx
-                            .changeSoftScoreBy(matchWeight, justificationsSupplier));
+                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
+                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
+                                    .changeSoftScoreBy(matchWeight, constraintMatchSupplier));
         } else {
             return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight, JustificationsSupplier justificationsSupplier) -> ctx
-                            .changeScoreBy(matchWeight, justificationsSupplier));
+                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
+                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
+                                    .changeScoreBy(matchWeight, constraintMatchSupplier));
         }
     }
 

@@ -4,7 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -25,7 +24,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -58,7 +56,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Map<Class, MemberAccessor> planningIdAccessorCacheMap = new HashMap<>(0);
     protected final Factory_ scoreDirectorFactory;
     protected final boolean lookUpEnabled;
     protected final LookUpManager lookUpManager;
@@ -77,12 +74,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.lookUpEnabled = lookUpEnabled;
-        lookUpManager = lookUpEnabled
+        this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
                 : null;
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
-        variableListenerSupport = VariableListenerSupport.create(this);
-        variableListenerSupport.linkVariableListeners();
+        this.variableListenerSupport = VariableListenerSupport.create(this);
+        this.variableListenerSupport.linkVariableListeners();
     }
 
     @Override
@@ -175,15 +172,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private void assertNonNullPlanningId(Object fact) {
-        Class factClass = fact.getClass();
-        // Cannot use Map.computeIfAbsent(), as we also want to cache null values.
-        if (!planningIdAccessorCacheMap.containsKey(factClass)) {
-            SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-            planningIdAccessorCacheMap.put(factClass,
-                    ConfigUtils.findPlanningIdMemberAccessor(factClass, solutionDescriptor.getMemberAccessorFactory(),
-                            solutionDescriptor.getDomainAccessType()));
-        }
-        MemberAccessor planningIdAccessor = planningIdAccessorCacheMap.get(factClass);
+        Class<?> factClass = fact.getClass();
+        MemberAccessor planningIdAccessor = getSolutionDescriptor().getPlanningIdAccessor(factClass);
         if (planningIdAccessor == null) { // There is no planning ID annotation.
             return;
         }

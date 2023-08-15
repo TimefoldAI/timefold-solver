@@ -97,8 +97,10 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
      * @deprecated because {@link ConstraintStreamImplType#DROOLS} is deprecated.
      */
     @Deprecated(forRemoval = true)
-    ConstraintVerifier<ConstraintProvider_, Solution_> withDroolsAlphaNetworkCompilationEnabled(
-            boolean droolsAlphaNetworkCompilationEnabled);
+    default ConstraintVerifier<ConstraintProvider_, Solution_> withDroolsAlphaNetworkCompilationEnabled(
+            boolean droolsAlphaNetworkCompilationEnabled) {
+        return this;
+    }
 
     /**
      * Creates a constraint verifier for a given {@link Constraint} of the {@link ConstraintProvider}.

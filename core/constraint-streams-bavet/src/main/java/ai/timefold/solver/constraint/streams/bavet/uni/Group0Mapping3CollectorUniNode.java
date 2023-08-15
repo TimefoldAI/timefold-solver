@@ -1,15 +1,14 @@
 package ai.timefold.solver.constraint.streams.bavet.uni;
 
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTuple;
-import ai.timefold.solver.constraint.streams.bavet.tri.TriTupleImpl;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.util.Triple;
 
 final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainerA_, ResultContainerB_, ResultContainerC_>
-        extends AbstractGroupUniNode<OldA, TriTuple<A, B, C>, TriTupleImpl<A, B, C>, Void, Object, Triple<A, B, C>> {
+        extends AbstractGroupUniNode<OldA, TriTuple<A, B, C>, Void, Object, Triple<A, B, C>> {
 
     private final int outputStoreSize;
 
@@ -18,7 +17,8 @@ final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainerA_, Res
             UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
             UniConstraintCollector<OldA, ResultContainerC_, C> collectorC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, null, mergeCollectors(collectorA, collectorB, collectorC),
+        super(groupStoreIndex, undoStoreIndex,
+                null, mergeCollectors(collectorA, collectorB, collectorC),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }
@@ -33,12 +33,12 @@ final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainerA_, Res
     }
 
     @Override
-    protected TriTupleImpl<A, B, C> createOutTuple(Void groupKey) {
-        return new TriTupleImpl<>(null, null, null, outputStoreSize);
+    protected TriTuple<A, B, C> createOutTuple(Void groupKey) {
+        return new TriTuple<>(null, null, null, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTupleToResult(TriTupleImpl<A, B, C> outTuple, Triple<A, B, C> result) {
+    protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
         outTuple.factA = result.getA();
         outTuple.factB = result.getB();
         outTuple.factC = result.getC();

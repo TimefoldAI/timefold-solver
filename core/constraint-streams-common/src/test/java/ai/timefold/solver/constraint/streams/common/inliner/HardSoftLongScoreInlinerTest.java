@@ -2,7 +2,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.Map;
+
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftLongScoreSolution;
 
@@ -12,24 +16,21 @@ class HardSoftLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHard
 
     @Test
     void defaultScore() {
-        HardSoftLongScoreInliner scoreInliner =
-                new HardSoftLongScoreInliner(constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(HardSoftLongScore.ZERO);
     }
 
     @Test
     void impactHard() {
-        HardSoftLongScoreInliner scoreInliner =
-                new HardSoftLongScoreInliner(constraintMatchEnabled);
+        var constraintWeight = HardSoftLongScore.ofHard(90);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardSoftLongScore>) impacter.getContext().parent;
 
-        HardSoftLongScore constraintWeight = HardSoftLongScore.ofHard(90);
-        WeightedScoreImpacter<HardSoftLongScore, HardSoftLongScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardSoftLongScore.of(90, 0));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(2, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardSoftLongScore.of(270, 0));
 
@@ -44,17 +45,15 @@ class HardSoftLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHard
 
     @Test
     void impactSoft() {
-        HardSoftLongScoreInliner scoreInliner =
-                new HardSoftLongScoreInliner(constraintMatchEnabled);
+        var constraintWeight = HardSoftLongScore.ofSoft(90);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardSoftLongScore>) impacter.getContext().parent;
 
-        HardSoftLongScore constraintWeight = HardSoftLongScore.ofSoft(90);
-        WeightedScoreImpacter<HardSoftLongScore, HardSoftLongScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardSoftLongScore.of(0, 90));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(2, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardSoftLongScore.of(0, 270));
 
@@ -69,17 +68,15 @@ class HardSoftLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHard
 
     @Test
     void impactAll() {
-        HardSoftLongScoreInliner scoreInliner =
-                new HardSoftLongScoreInliner(constraintMatchEnabled);
+        var constraintWeight = HardSoftLongScore.of(10, 100);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<HardSoftLongScore>) impacter.getContext().parent;
 
-        HardSoftLongScore constraintWeight = HardSoftLongScore.of(10, 100);
-        WeightedScoreImpacter<HardSoftLongScore, HardSoftLongScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(10, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardSoftLongScore.of(100, 1_000));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(20, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(HardSoftLongScore.of(300, 3_000));
 
@@ -95,5 +92,11 @@ class HardSoftLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHard
     @Override
     protected SolutionDescriptor<TestdataHardSoftLongScoreSolution> buildSolutionDescriptor() {
         return TestdataHardSoftLongScoreSolution.buildSolutionDescriptor();
+    }
+
+    @Override
+    protected AbstractScoreInliner<HardSoftLongScore> buildScoreInliner(Map<Constraint, HardSoftLongScore> constraintWeightMap,
+            boolean constraintMatchEnabled) {
+        return new HardSoftLongScoreInliner(constraintWeightMap, constraintMatchEnabled);
     }
 }

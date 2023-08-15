@@ -2,11 +2,13 @@ package ai.timefold.solver.constraint.streams.bavet.common;
 
 import java.util.List;
 
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
-final class GroupNodeConstructorWithoutAccumulate<Tuple_ extends Tuple> implements GroupNodeConstructor<Tuple_> {
+final class GroupNodeConstructorWithoutAccumulate<Tuple_ extends AbstractTuple> implements GroupNodeConstructor<Tuple_> {
 
     private final NodeConstructorWithoutAccumulate<Tuple_> nodeConstructorFunction;
 
@@ -17,7 +19,7 @@ final class GroupNodeConstructorWithoutAccumulate<Tuple_ extends Tuple> implemen
     @Override
     public <Solution_, Score_ extends Score<Score_>> void build(NodeBuildHelper<Score_> buildHelper,
             BavetAbstractConstraintStream<Solution_> parentTupleSource,
-            BavetAbstractConstraintStream<Solution_> groupStream, List<? extends ConstraintStream> groupStreamChildList,
+            BavetAbstractConstraintStream<Solution_> aftStream, List<? extends ConstraintStream> aftStreamChildList,
             BavetAbstractConstraintStream<Solution_> bridgeStream, List<? extends ConstraintStream> bridgeStreamChildList,
             EnvironmentMode environmentMode) {
         if (!bridgeStreamChildList.isEmpty()) {
@@ -25,8 +27,8 @@ final class GroupNodeConstructorWithoutAccumulate<Tuple_ extends Tuple> implemen
                     + ") has an non-empty childStreamList (" + bridgeStreamChildList + ") but it's a groupBy bridge.");
         }
         int groupStoreIndex = buildHelper.reserveTupleStoreIndex(parentTupleSource);
-        TupleLifecycle<Tuple_> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(groupStreamChildList);
-        int outputStoreSize = buildHelper.extractTupleStoreSize(groupStream);
+        TupleLifecycle<Tuple_> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(aftStreamChildList);
+        int outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
         var node = nodeConstructorFunction.apply(groupStoreIndex, tupleLifecycle, outputStoreSize, environmentMode);
         buildHelper.addNode(node, bridgeStream);
     }

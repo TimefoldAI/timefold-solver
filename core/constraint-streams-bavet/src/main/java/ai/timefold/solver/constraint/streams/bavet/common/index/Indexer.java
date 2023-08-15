@@ -2,8 +2,8 @@ package ai.timefold.solver.constraint.streams.bavet.common.index;
 
 import java.util.function.Consumer;
 
-import ai.timefold.solver.constraint.streams.bavet.common.BavetTupleState;
-import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEntry;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * An indexer for entity or fact {@code X},
@@ -13,7 +13,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEn
  * For example for {@code {Lesson(id=1, room=A), Lesson(id=2, room=B), Lesson(id=3, room=A)}},
  * calling {@code visit(room=A)} would visit lesson 1 and 3.
  * <p>
- * The fact X is wrapped in a Tuple, because the {@link BavetTupleState} is needed by clients of
+ * The fact X is wrapped in a Tuple, because the {@link TupleState} is needed by clients of
  * {@link #forEach(IndexProperties, Consumer)}.
  *
  * @param <T> The element type. Often a tuple.
@@ -22,9 +22,9 @@ import ai.timefold.solver.constraint.streams.bavet.common.collection.TupleListEn
  */
 public interface Indexer<T> {
 
-    TupleListEntry<T> put(IndexProperties indexProperties, T tuple);
+    ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple);
 
-    void remove(IndexProperties indexProperties, TupleListEntry<T> entry);
+    void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry);
 
     int size(IndexProperties indexProperties);
 

@@ -3,8 +3,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataBendableBigDecimalScoreSolution;
 
@@ -15,23 +18,20 @@ class BendableBigDecimalScoreInlinerTest
 
     @Test
     void defaultScore() {
-        BendableBigDecimalScoreInliner scoreInliner =
-                new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(buildScore(0, 0, 0));
     }
 
     @Test
     void impactHard() {
-        BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
+        var impacter = buildScoreImpacter(buildScore(90, 0, 0));
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
 
-        BendableBigDecimalScore constraintWeight = buildScore(90, 0, 0);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(90, 0, 0));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(2), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(270, 0, 0));
 
@@ -46,16 +46,14 @@ class BendableBigDecimalScoreInlinerTest
 
     @Test
     void impactSoft1() {
-        BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
+        var impacter = buildScoreImpacter(buildScore(0, 90, 0));
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
 
-        BendableBigDecimalScore constraintWeight = buildScore(0, 90, 0);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 90, 0));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(2), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 270, 0));
 
@@ -70,16 +68,14 @@ class BendableBigDecimalScoreInlinerTest
 
     @Test
     void impactSoft2() {
-        BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
+        var impacter = buildScoreImpacter(buildScore(0, 0, 90));
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
 
-        BendableBigDecimalScore constraintWeight = buildScore(0, 0, 90);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.ONE, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 0, 90));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(2), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 0, 270));
 
@@ -94,16 +90,14 @@ class BendableBigDecimalScoreInlinerTest
 
     @Test
     void impactAll() {
-        BendableBigDecimalScoreInliner scoreInliner = new BendableBigDecimalScoreInliner(constraintMatchEnabled, 1, 2);
+        var impacter = buildScoreImpacter(buildScore(10, 100, 1_000));
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
 
-        BendableBigDecimalScore constraintWeight = buildScore(10, 100, 1_000);
-        WeightedScoreImpacter<BendableBigDecimalScore, BendableBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.TEN, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(100, 1_000, 10_000));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(20), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(300, 3_000, 30_000));
 
@@ -119,6 +113,12 @@ class BendableBigDecimalScoreInlinerTest
     @Override
     protected SolutionDescriptor<TestdataBendableBigDecimalScoreSolution> buildSolutionDescriptor() {
         return TestdataBendableBigDecimalScoreSolution.buildSolutionDescriptor();
+    }
+
+    @Override
+    protected AbstractScoreInliner<BendableBigDecimalScore>
+            buildScoreInliner(Map<Constraint, BendableBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
+        return new BendableBigDecimalScoreInliner(constraintWeightMap, constraintMatchEnabled, 1, 2);
     }
 
     private BendableBigDecimalScore buildScore(long hard, long soft1, long soft2) {

@@ -7,8 +7,6 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-import org.junit.jupiter.api.Assumptions;
-
 public final class BavetConstraintStreamImplSupport
         implements ConstraintStreamImplSupport {
 
@@ -16,16 +14,6 @@ public final class BavetConstraintStreamImplSupport
 
     public BavetConstraintStreamImplSupport(boolean constraintMatchEnabled) {
         this.constraintMatchEnabled = constraintMatchEnabled;
-    }
-
-    @Override
-    public void assumeBavet() {
-        // This is Bavet.
-    }
-
-    @Override
-    public void assumeDrools() {
-        Assumptions.assumeTrue(false, "This functionality is not supported in Bavet constraint streams.");
     }
 
     @Override

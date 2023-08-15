@@ -1,25 +1,28 @@
 package ai.timefold.solver.constraint.streams.common.inliner;
 
+import java.util.Map;
+
+import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 final class SimpleLongScoreInliner extends AbstractScoreInliner<SimpleLongScore> {
 
-    private long score;
+    long score;
 
-    SimpleLongScoreInliner(boolean constraintMatchEnabled) {
-        super(constraintMatchEnabled);
+    SimpleLongScoreInliner(Map<Constraint, SimpleLongScore> constraintWeightMap, boolean constraintMatchEnabled) {
+        super(constraintWeightMap, constraintMatchEnabled);
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleLongScore, SimpleLongScoreContext> buildWeightedScoreImpacter(Constraint constraint,
-            SimpleLongScore constraintWeight) {
-        validateConstraintWeight(constraint, constraintWeight);
-        SimpleLongScoreContext context = new SimpleLongScoreContext(this, constraint, constraintWeight,
-                impact -> this.score += impact);
+    public WeightedScoreImpacter<SimpleLongScore, ?> buildWeightedScoreImpacter(
+            AbstractConstraint<?, ?, ?> constraint) {
+        SimpleLongScore constraintWeight = constraintWeightMap.get(constraint);
+        SimpleLongScoreContext context = new SimpleLongScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context,
-                (SimpleLongScoreContext ctx, long matchWeight, JustificationsSupplier justificationsSupplier) -> ctx
-                        .changeScoreBy(matchWeight, justificationsSupplier));
+                (SimpleLongScoreContext ctx, long matchWeight,
+                        ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) -> ctx
+                                .changeScoreBy(matchWeight, constraintMatchSupplier));
     }
 
     @Override

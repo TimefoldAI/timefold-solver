@@ -2,7 +2,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.Map;
+
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataBendableScoreSolution;
 
@@ -12,23 +16,21 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
 
     @Test
     void defaultScore() {
-        BendableScoreInliner scoreInliner =
-                new BendableScoreInliner(constraintMatchEnabled, 1, 2);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(buildScore(0, 0, 0));
     }
 
     @Test
     void impactHard() {
-        BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
+        var constraintWeight = buildScore(90, 0, 0);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
 
-        BendableScore constraintWeight = buildScore(90, 0, 0);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(90, 0, 0));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(2, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(270, 0, 0));
 
@@ -43,16 +45,15 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
 
     @Test
     void impactSoft1() {
-        BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
+        var constraintWeight = buildScore(0, 90, 0);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
 
-        BendableScore constraintWeight = buildScore(0, 90, 0);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 90, 0));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(2, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 270, 0));
 
@@ -67,16 +68,15 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
 
     @Test
     void impactSoft2() {
-        BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
+        var constraintWeight = buildScore(0, 0, 90);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
 
-        BendableScore constraintWeight = buildScore(0, 0, 90);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(1, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 0, 90));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(2, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(0, 0, 270));
 
@@ -91,16 +91,15 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
 
     @Test
     void impactAll() {
-        BendableScoreInliner scoreInliner = new BendableScoreInliner(constraintMatchEnabled, 1, 2);
+        var constraintWeight = buildScore(10, 100, 1_000);
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
 
-        BendableScore constraintWeight = buildScore(10, 100, 1_000);
-        WeightedScoreImpacter<BendableScore, BendableScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(10, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(100, 1_000, 10_000));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(20, JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(buildScore(300, 3_000, 30_000));
 
@@ -116,6 +115,12 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
     @Override
     protected SolutionDescriptor<TestdataBendableScoreSolution> buildSolutionDescriptor() {
         return TestdataBendableScoreSolution.buildSolutionDescriptor();
+    }
+
+    @Override
+    protected AbstractScoreInliner<BendableScore> buildScoreInliner(Map<Constraint, BendableScore> constraintWeightMap,
+            boolean constraintMatchEnabled) {
+        return new BendableScoreInliner(constraintWeightMap, constraintMatchEnabled, 1, 2);
     }
 
     private BendableScore buildScore(int hard, int soft1, int soft2) {

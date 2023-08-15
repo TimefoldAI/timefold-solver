@@ -3,7 +3,8 @@ package ai.timefold.solver.constraint.streams.bavet.bi;
 import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractFlattenLastNode;
-import ai.timefold.solver.constraint.streams.bavet.common.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
 final class FlattenLastBiNode<A, B, NewB> extends AbstractFlattenLastNode<BiTuple<A, B>, BiTuple<A, NewB>, B, NewB> {
 
@@ -17,16 +18,16 @@ final class FlattenLastBiNode<A, B, NewB> extends AbstractFlattenLastNode<BiTupl
 
     @Override
     protected BiTuple<A, NewB> createTuple(BiTuple<A, B> originalTuple, NewB newB) {
-        return new BiTupleImpl<>(originalTuple.getFactA(), newB, outputStoreSize);
+        return new BiTuple<>(originalTuple.factA, newB, outputStoreSize);
     }
 
     @Override
     protected B getEffectiveFactIn(BiTuple<A, B> tuple) {
-        return tuple.getFactB();
+        return tuple.factB;
     }
 
     @Override
     protected NewB getEffectiveFactOut(BiTuple<A, NewB> outTuple) {
-        return outTuple.getFactB();
+        return outTuple.factB;
     }
 }

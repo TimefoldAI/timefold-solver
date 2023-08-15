@@ -1712,7 +1712,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapWithDuplicates() {
+    public void mapToUniWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 2);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
@@ -1740,7 +1740,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapWithoutDuplicates() {
+    public void mapToUniWithoutDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
@@ -1769,7 +1769,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapAndDistinctWithDuplicates() {
+    public void mapToUniAndDistinctWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 2);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
@@ -1797,7 +1797,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void mapAndDistinctWithoutDuplicates() {
+    public void mapToUniAndDistinctWithoutDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
@@ -2603,12 +2603,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void zeroConstraintWeightDisabled() {
-        assumeBavet();
-        /*
-         * This may never be possible for Drools. If implemented, please remember that some rules may be shared by
-         * different scoring streams, and therefore the rules can only be disabled when all the relevant scoring streams
-         * have their weights set to zero.
-         */
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
         TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
@@ -2653,7 +2647,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void nodeSharing() {
-        assumeBavet();
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
         TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
                 solution.getFirstValue());

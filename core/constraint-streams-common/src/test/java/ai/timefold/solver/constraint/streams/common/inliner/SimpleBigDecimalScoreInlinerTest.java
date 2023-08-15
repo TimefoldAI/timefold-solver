@@ -3,8 +3,11 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
 
@@ -15,24 +18,21 @@ class SimpleBigDecimalScoreInlinerTest
 
     @Test
     void defaultScore() {
-        SimpleBigDecimalScoreInliner scoreInliner =
-                new SimpleBigDecimalScoreInliner(constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(SimpleBigDecimalScore.ZERO);
     }
 
     @Test
     void impact() {
-        SimpleBigDecimalScoreInliner scoreInliner =
-                new SimpleBigDecimalScoreInliner(constraintMatchEnabled);
+        var constraintWeight = SimpleBigDecimalScore.of(BigDecimal.valueOf(10));
+        var impacter = buildScoreImpacter(constraintWeight);
+        var scoreInliner = (AbstractScoreInliner<SimpleBigDecimalScore>) impacter.getContext().parent;
 
-        SimpleBigDecimalScore constraintWeight = SimpleBigDecimalScore.of(BigDecimal.valueOf(10));
-        WeightedScoreImpacter<SimpleBigDecimalScore, SimpleBigDecimalScoreContext> hardImpacter =
-                scoreInliner.buildWeightedScoreImpacter(buildConstraint(constraintWeight), constraintWeight);
-        UndoScoreImpacter undo1 = hardImpacter.impactScore(BigDecimal.TEN, JustificationsSupplier.empty());
+        var undo1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(100)));
 
-        UndoScoreImpacter undo2 = hardImpacter.impactScore(BigDecimal.valueOf(20), JustificationsSupplier.empty());
+        var undo2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore(0))
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(300)));
 
@@ -48,5 +48,11 @@ class SimpleBigDecimalScoreInlinerTest
     @Override
     protected SolutionDescriptor<TestdataSimpleBigDecimalScoreSolution> buildSolutionDescriptor() {
         return TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor();
+    }
+
+    @Override
+    protected AbstractScoreInliner<SimpleBigDecimalScore>
+            buildScoreInliner(Map<Constraint, SimpleBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
+        return new SimpleBigDecimalScoreInliner(constraintWeightMap, constraintMatchEnabled);
     }
 }

@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -331,16 +332,15 @@ public final class ConstraintCollectors {
         MutableLong valueCountContainer = resultContainer.computeIfAbsent(value, k -> new MutableLong());
         valueCountContainer.increment();
         return () -> {
-            MutableLong valueCountContainer2 = resultContainer.get(value);
-            if (valueCountContainer2 == null) {
+            long valueCount = valueCountContainer.longValue();
+            if (valueCount < 1L) {
                 throw new IllegalStateException("Impossible state: the value (" + value +
                         ") is removed more times than it was added.");
             }
-            long valueCount = valueCountContainer2.longValue();
             if (valueCount == 1L) {
                 resultContainer.remove(value);
             } else {
-                valueCountContainer2.setValue(valueCount - 1L);
+                valueCountContainer.setValue(valueCount - 1L);
             }
         };
     }
@@ -677,7 +677,7 @@ public final class ConstraintCollectors {
      * Returns a collector that finds a minimum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -694,14 +694,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> min() {
-        return min(Comparator.naturalOrder());
+        return minOrMax(a -> a, Comparator.naturalOrder(), true);
     }
 
     /**
      * Returns a collector that finds a minimum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -718,19 +718,130 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> min(
             Function<A, Mapped> groupValueMapping) {
-        return min(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+    }
+
+    /**
+     * Returns a collector that finds a minimum value in a group of {@link Comparable} elements.
+     * The elements will be compared according to the value returned by the comparable function.
+     * <p>
+     * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
+     * In other words, if two elements compare to zero, any of them can be returned by the collector.
+     * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
+     * incremental score calculation.
+     * <p>
+     * For example, {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 20)]} with
+     * {@code .groupBy(min(Person::name, Person::age))} returns {@code Ann} or {@code Eric},
+     * as both have the same age.
+     * <p>
+     * The default result of the collector (e.g. when never called) is {@code null}.
+     *
+     * @param <A> type of the matched fact
+     * @param <Mapped> type of the result
+     * @param <Comparable_> type of the comparable property
+     * @param groupValueMapping never null, maps facts from the matched type to the result type
+     * @param comparableFunction never null, maps facts from the matched type to the comparable property
+     * @return never null
+     */
+    public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped> min(
+            Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, true);
+    }
+
+    private static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped>
+            minOrMax(Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction, boolean min) {
+        return new DefaultUniConstraintCollector<>(
+                getMinOrMaxSupplier(min),
+                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a) -> {
+                    Mapped value = groupValueMapping.apply(a);
+                    return innerMinOrMax(resultContainer, value, comparableFunction);
+                },
+                getMinOrMaxFinisherForComparable(min));
+    }
+
+    private static <Value_, Comparable_ extends Comparable<? super Comparable_>>
+            Supplier<NavigableMap<Comparable_, Map<Value_, MutableLong>>> getMinOrMaxSupplier(boolean returnMinimum) {
+        if (returnMinimum) {
+            return () -> {
+                Comparator<Comparable_> comparator = Comparator.nullsLast(Comparator.naturalOrder());
+                return new TreeMap<>(comparator);
+            };
+        } else {
+            return () -> {
+                Comparator<Comparable_> comparator = Comparator.nullsFirst(Comparator.naturalOrder());
+                return new TreeMap<>(comparator);
+            };
+        }
+    }
+
+    private static <Value_, Comparable_ extends Comparable<? super Comparable_>> Runnable innerMinOrMax(
+            SortedMap<Comparable_, Map<Value_, MutableLong>> resultContainer, Value_ value,
+            Function<Value_, Comparable_> comparableFunction) {
+        Comparable_ comparable = comparableFunction.apply(value);
+        Map<Value_, MutableLong> valueCountMap = resultContainer.computeIfAbsent(comparable, k -> new LinkedHashMap<>());
+        MutableLong valueCounter = valueCountMap.computeIfAbsent(value, k -> new MutableLong(0L));
+        valueCounter.increment();
+        return () -> {
+            long valueCount = valueCounter.longValue();
+            if (valueCount < 1L) {
+                throw new IllegalStateException("Impossible state: the value (" + value +
+                        ") is removed more times than it was added.");
+            }
+            if (valueCounter.longValue() == 1L) {
+                if (valueCountMap.remove(value) == null) {
+                    throw new IllegalStateException("Impossible state: the value (" + value +
+                            ") is removed more times than it was added.");
+                }
+                if (valueCountMap.isEmpty()) {
+                    resultContainer.remove(comparable);
+                }
+            } else {
+                valueCounter.decrement();
+            }
+        };
+    }
+
+    private static <Value_, Comparable_ extends Comparable<? super Comparable_>>
+            Function<NavigableMap<Comparable_, Map<Value_, MutableLong>>, Value_>
+            getMinOrMaxFinisherForComparable(boolean returnMinimum) {
+        if (returnMinimum) {
+            return resultContainer -> {
+                if (resultContainer.isEmpty()) {
+                    return null;
+                }
+                Map.Entry<Comparable_, Map<Value_, MutableLong>> entry = resultContainer.firstEntry();
+                return entry.getValue().keySet().iterator().next();
+            };
+        } else {
+            return resultContainer -> {
+                if (resultContainer.isEmpty()) {
+                    return null;
+                }
+                Map.Entry<Comparable_, Map<Value_, MutableLong>> entry = resultContainer.lastEntry();
+                return entry.getValue().keySet().iterator().next();
+            };
+        }
     }
 
     /**
      * As defined by {@link #min()}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #min(Function, Function)},
+     *             as this method can lead to unavoidable score corruptions.
      */
+    @Deprecated(forRemoval = true)
     public static <A> UniConstraintCollector<A, ?, A> min(Comparator<? super A> comparator) {
         return min(Function.identity(), comparator);
     }
 
     /**
      * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #min(Function, Function)},
+     *             as this method can lead to unavoidable score corruptions.
      */
+    @Deprecated(forRemoval = true)
     public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> min(Function<A, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, true);
@@ -741,12 +852,36 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> min(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return min(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+    }
+
+    /**
+     * As defined by {@link #min(Function, Function)}.
+     */
+    public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
+            min(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, true);
+    }
+
+    private static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
+            minOrMax(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction,
+                    boolean min) {
+        return new DefaultBiConstraintCollector<>(
+                getMinOrMaxSupplier(min),
+                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a, B b) -> {
+                    Mapped value = groupValueMapping.apply(a, b);
+                    return innerMinOrMax(resultContainer, value, comparableFunction);
+                },
+                getMinOrMaxFinisherForComparable(min));
     }
 
     /**
      * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #min(BiFunction, Function)},
+     *             as this method can lead to unavoidable score corruptions.
      */
+    @Deprecated(forRemoval = true)
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> min(BiFunction<A, B, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, true);
@@ -757,12 +892,38 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> min(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return min(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+    }
+
+    /**
+     * As defined by {@link #min(Function, Function)}.
+     */
+    public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            TriConstraintCollector<A, B, C, ?, Mapped>
+            min(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, true);
+    }
+
+    private static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            TriConstraintCollector<A, B, C, ?, Mapped> minOrMax(
+                    TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction,
+                    boolean min) {
+        return new DefaultTriConstraintCollector<>(
+                getMinOrMaxSupplier(min),
+                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a, B b, C c) -> {
+                    Mapped value = groupValueMapping.apply(a, b, c);
+                    return innerMinOrMax(resultContainer, value, comparableFunction);
+                },
+                getMinOrMaxFinisherForComparable(min));
     }
 
     /**
      * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #min(TriFunction, Function)},
+     *             as this method can lead to unavoidable score corruptions.
      */
+    @Deprecated(forRemoval = true)
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> min(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, true);
@@ -773,12 +934,38 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return min(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+    }
+
+    /**
+     * As defined by {@link #min(Function, Function)}.
+     */
+    public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            QuadConstraintCollector<A, B, C, D, ?, Mapped>
+            min(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, true);
+    }
+
+    private static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            QuadConstraintCollector<A, B, C, D, ?, Mapped> minOrMax(
+                    QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction,
+                    boolean min) {
+        return new DefaultQuadConstraintCollector<>(
+                getMinOrMaxSupplier(min),
+                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a, B b, C c, D d) -> {
+                    Mapped value = groupValueMapping.apply(a, b, c, d);
+                    return innerMinOrMax(resultContainer, value, comparableFunction);
+                },
+                getMinOrMaxFinisherForComparable(min));
     }
 
     /**
      * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #min(QuadFunction, Function)},
+     *             as this method can lead to unavoidable score corruptions.
      */
+    @Deprecated(forRemoval = true)
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, true);
@@ -792,7 +979,7 @@ public final class ConstraintCollectors {
      * Returns a collector that finds a maximum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -809,14 +996,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> max() {
-        return max(Comparator.naturalOrder());
+        return minOrMax(a -> a, Comparator.naturalOrder(), false);
     }
 
     /**
      * Returns a collector that finds a maximum value in a group of {@link Comparable} elements.
      * <p>
      * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
-     * such that <tt>e1.compareTo(e2) == 0</tt> has the same boolean value as <tt>e1.equals(e2)</tt>.
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
      * In other words, if two elements compare to zero, any of them can be returned by the collector.
      * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
      * incremental score calculation.
@@ -833,19 +1020,55 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> max(
             Function<A, Mapped> groupValueMapping) {
-        return max(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
     }
 
     /**
      * As defined by {@link #max()}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #max(Function, Function)},
+     *             as this method can lead to unavoidable score corruptions.
      */
+    @Deprecated(forRemoval = true)
     public static <A> UniConstraintCollector<A, ?, A> max(Comparator<? super A> comparator) {
         return max(Function.identity(), comparator);
     }
 
     /**
-     * As defined by {@link #max(Function)}, only with a custom {@link Comparator}.
+     * Returns a collector that finds a maximum value in a group of elements.
+     * The elements will be compared according to the value returned by the comparable function.
+     * <p>
+     * Important: The {@link Comparable}'s {@link Comparable#compareTo(Object)} must be <i>consistent with equals</i>,
+     * such that {@code e1.compareTo(e2) == 0} has the same boolean value as {@code e1.equals(e2)}.
+     * In other words, if two elements compare to zero, any of them can be returned by the collector.
+     * It can even differ between 2 score calculations on the exact same {@link PlanningSolution} state, due to
+     * incremental score calculation.
+     * <p>
+     * For example, {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 20)]} with
+     * {@code .groupBy(max(Person::name, Person::age))} returns {@code Cathy} or {@code David},
+     * as both have the same age.
+     * <p>
+     * The default result of the collector (e.g. when never called) is {@code null}.
+     *
+     * @param <A> type of the matched fact
+     * @param <Mapped> type of the result
+     * @param <Comparable_> type of the comparable property
+     * @param groupValueMapping never null, maps facts from the matched type to the result type
+     * @param comparableFunction never null, maps facts from the matched type to the comparable property
+     * @return never null
      */
+    public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped>
+            max(Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, false);
+    }
+
+    /**
+     * As defined by {@link #max(Function)}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #max(Function, Function)},
+     *             as this method can lead to unavoidable score corruptions.
+     */
+    @Deprecated(forRemoval = true)
     public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> max(Function<A, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, false);
@@ -859,10 +1082,11 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisher(min));
+                getMinOrMaxFinisherForComparator(min));
     }
 
-    private static <Value_> Function<SortedMap<Value_, MutableLong>, Value_> getMinOrMaxFinisher(boolean returnMinimum) {
+    private static <Value_> Function<SortedMap<Value_, MutableLong>, Value_>
+            getMinOrMaxFinisherForComparator(boolean returnMinimum) {
         if (returnMinimum) {
             return resultContainer -> resultContainer.isEmpty() ? null : resultContainer.firstKey();
         } else {
@@ -875,12 +1099,24 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> max(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return max(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
     }
 
     /**
-     * As defined by {@link #max(Function)}, only with a custom {@link Comparator}.
+     * As defined by {@link #max(Function, Function)}, only with a custom {@link Comparator}.
      */
+    public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
+            max(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, false);
+    }
+
+    /**
+     * As defined by {@link #max()}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #max(BiFunction, Function)},
+     *             as this method can lead to unavoidable score corruptions.
+     */
+    @Deprecated(forRemoval = true)
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> max(BiFunction<A, B, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, false);
@@ -894,7 +1130,7 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisher(min));
+                getMinOrMaxFinisherForComparator(min));
     }
 
     /**
@@ -902,12 +1138,25 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> max(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return max(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
     }
 
     /**
-     * As defined by {@link #max(Function)}, only with a custom {@link Comparator}.
+     * As defined by {@link #max(Function, Function)}, only with a custom {@link Comparator}.
      */
+    public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            TriConstraintCollector<A, B, C, ?, Mapped>
+            max(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, false);
+    }
+
+    /**
+     * As defined by {@link #max()}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #max(TriFunction, Function)},
+     *             as this method can lead to unavoidable score corruptions.
+     */
+    @Deprecated(forRemoval = true)
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> max(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, false);
@@ -921,7 +1170,7 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisher(min));
+                getMinOrMaxFinisherForComparator(min));
     }
 
     /**
@@ -929,12 +1178,25 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return max(groupValueMapping, Comparator.naturalOrder());
+        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
     }
 
     /**
-     * As defined by {@link #max(Function)}, only with a custom {@link Comparator}.
+     * As defined by {@link #max(Function, Function)}, only with a custom {@link Comparator}.
      */
+    public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            QuadConstraintCollector<A, B, C, D, ?, Mapped>
+            max(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+        return minOrMax(groupValueMapping, comparableFunction, false);
+    }
+
+    /**
+     * As defined by {@link #max()}, only with a custom {@link Comparator}.
+     *
+     * @deprecated Deprecated in favor of {@link #max(QuadFunction, Function)},
+     *             as this method can lead to unavoidable score corruptions.
+     */
+    @Deprecated(forRemoval = true)
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
         return minOrMax(groupValueMapping, comparator, false);
@@ -948,7 +1210,7 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c, d);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisher(min));
+                getMinOrMaxFinisherForComparator(min));
     }
 
     /**
