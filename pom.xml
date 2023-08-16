@@ -13,7 +13,7 @@
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.8.40-SNAPSHOT</version>
+  <version>0.8.40</version>
 
   <name>Timefold Solver multiproject parent</name>
   <description>
