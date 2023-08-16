@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-quarkus-benchmark-parent</artifactId>
-    <version>0.8.40</version>
+    <version>0.8.41.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-quarkus-benchmark</artifactId>
