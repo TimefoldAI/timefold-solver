@@ -466,24 +466,24 @@ public class ProblemBenchmarkResult<Solution_> {
     /**
      * Used by {@link ai.timefold.solver.benchmark.impl.ProblemBenchmarksFactory#buildProblemBenchmarkList}.
      *
-     * @param o sometimes null
+     * @param other sometimes null
      * @return true if equal
      */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        } else if (o instanceof ProblemBenchmarkResult) {
-            ProblemBenchmarkResult other = (ProblemBenchmarkResult) o;
-            return problemProvider.equals(other.getProblemProvider());
-        } else {
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
+        ProblemBenchmarkResult<?> that = (ProblemBenchmarkResult<?>) other;
+        return Objects.equals(problemProvider, that.problemProvider);
     }
 
     @Override
     public int hashCode() {
-        return problemProvider.hashCode();
+        return Objects.hash(problemProvider);
     }
 
     // ************************************************************************

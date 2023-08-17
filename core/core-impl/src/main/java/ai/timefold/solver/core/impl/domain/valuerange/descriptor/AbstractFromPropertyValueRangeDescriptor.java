@@ -148,7 +148,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     + ") called on bean (" + bean
                     + ") must not return a null valueRangeObject (" + valueRangeObject + ").");
         }
-        int size = addNullInValueRange ? 1 : 0;
+        long size = addNullInValueRange ? 1 : 0;
         if (collectionWrapping) {
             return size + ((Collection<Object>) valueRangeObject).size();
         } else if (arrayWrapping) {

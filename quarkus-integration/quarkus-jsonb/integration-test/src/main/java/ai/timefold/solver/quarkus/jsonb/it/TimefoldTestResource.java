@@ -22,7 +22,10 @@ public class TimefoldTestResource {
         SolverJob<ITestdataPlanningSolution, Long> solverJob = solverManager.solve(1L, problem);
         try {
             return solverJob.getFinalBestSolution();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Solving was interrupted.", e);
+        } catch (ExecutionException e) {
             throw new IllegalStateException("Solving failed.", e);
         }
     }
