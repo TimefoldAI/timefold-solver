@@ -2,6 +2,7 @@ package ai.timefold.solver.benchmark.impl.result;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Arrays;
 import java.util.Locale;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -32,7 +33,7 @@ public record ScoreDifferencePercentage(double[] percentageLevels) {
             if (difference == 0.0) {
                 return 0.0;
             } else {
-                // percentageLevel will return Infinity or -Infinity
+                // will return Infinity or -Infinity
                 return difference / base;
             }
         } else {
@@ -84,6 +85,21 @@ public record ScoreDifferencePercentage(double[] percentageLevels) {
             newPercentageLevels[i] = percentageLevels[i] / divisor;
         }
         return new ScoreDifferencePercentage(newPercentageLevels);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ScoreDifferencePercentage that = (ScoreDifferencePercentage) o;
+        return Arrays.equals(percentageLevels, that.percentageLevels);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(percentageLevels);
     }
 
     @Override

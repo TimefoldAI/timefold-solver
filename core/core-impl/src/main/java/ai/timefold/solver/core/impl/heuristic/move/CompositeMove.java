@@ -19,7 +19,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see Move
  */
-public class CompositeMove<Solution_> implements Move<Solution_> {
+public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     /**
      * @param moves never null, sometimes empty. Do not modify this argument afterwards or the CompositeMove corrupts.
@@ -151,15 +151,15 @@ public class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        } else if (o instanceof CompositeMove) {
-            CompositeMove<Solution_> other = (CompositeMove<Solution_>) o;
-            return Arrays.equals(moves, other.moves);
-        } else {
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
+        CompositeMove<?> that = (CompositeMove<?>) other;
+        return Arrays.equals(moves, that.moves);
     }
 
     @Override

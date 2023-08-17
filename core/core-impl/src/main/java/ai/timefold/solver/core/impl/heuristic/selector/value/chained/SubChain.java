@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.chained;
 
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
@@ -11,7 +12,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * <p>
  * Never includes an anchor.
  */
-public class SubChain {
+public final class SubChain {
 
     private final List<Object> entityList;
 
@@ -58,20 +59,20 @@ public class SubChain {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        } else if (o instanceof SubChain) {
-            SubChain other = (SubChain) o;
-            return entityList.equals(other.entityList);
-        } else {
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
+        SubChain subChain = (SubChain) other;
+        return Objects.equals(entityList, subChain.entityList);
     }
 
     @Override
     public int hashCode() {
-        return entityList.hashCode();
+        return Objects.hash(entityList);
     }
 
     @Override

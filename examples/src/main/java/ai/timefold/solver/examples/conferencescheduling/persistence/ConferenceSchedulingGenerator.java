@@ -476,14 +476,20 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
         Talk pinnedTalk = talkList.get(labTalkCount + random.nextInt(talkListSize - labTalkCount));
         pinnedTalk.setPinnedByUser(true);
         pinnedTalk.setTimeslot(solution.getTimeslotList().stream()
-                .filter(timeslot -> timeslot.getTalkTypeSet().contains(breakoutTalkType)).findFirst().get());
+                .filter(timeslot -> timeslot.getTalkTypeSet().contains(breakoutTalkType))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("There is no breakout timeslot.")));
         pinnedTalk.setRoom(solution.getRoomList().get(0));
 
         Talk publishedTalk = talkList.get(random.nextInt(labTalkCount));
         publishedTalk.setTimeslot(solution.getTimeslotList().stream()
-                .filter(timeslot -> timeslot.getTalkTypeSet().contains(labTalkType)).findFirst().get());
+                .filter(timeslot -> timeslot.getTalkTypeSet().contains(labTalkType))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("There is no lab timeslot.")));
         publishedTalk.setRoom(solution.getRoomList().stream()
-                .filter(room -> room.getTalkTypeSet().contains(labTalkType)).findFirst().get()); // In this data set rooms has only one talkType
+                .filter(room -> room.getTalkTypeSet().contains(labTalkType))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("There is no lab."))); // In this data set rooms has only one talkType
         publishedTalk.setPublishedTimeslot(publishedTalk.getTimeslot());
         publishedTalk.setPublishedRoom(publishedTalk.getRoom());
 
