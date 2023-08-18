@@ -21,34 +21,7 @@
 
   <properties>
     <java.module.name>ai.timefold.solver.migration</java.module.name>
-    <version.org.antlr>4.13.0</version.org.antlr>
-    <version.jakarta.xml.bind.override>2.3.3</version.jakarta.xml.bind.override>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <!--
-        Only remove the override once certain that the version is compatible with both Quarkus and Quarkus LTS.
-        Keep the override up to date with OpenRewrite.
-      -->
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4</artifactId>
-        <version>${version.org.antlr}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-runtime</artifactId>
-        <version>${version.org.antlr}</version>
-      </dependency>
-      <!-- openrewrite-maven transitively depends on jakarta.xml.bind-api with the javax package. -->
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${version.jakarta.xml.bind.override}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -74,7 +47,7 @@
     </dependency>
     <dependency>
       <groupId>org.openrewrite</groupId>
-      <artifactId>rewrite-java-11</artifactId>
+      <artifactId>rewrite-java-17</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
