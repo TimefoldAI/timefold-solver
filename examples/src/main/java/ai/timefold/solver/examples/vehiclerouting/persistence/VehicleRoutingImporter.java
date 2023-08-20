@@ -241,14 +241,13 @@ public class VehicleRoutingImporter extends AbstractTxtSolutionImporter<VehicleR
                     for (int j = 1; j < lineTokens.length; j += 2) {
                         Location otherLocation = locationMap.get(Long.parseLong(lineTokens[j]));
                         double travelDistance = Double.parseDouble(lineTokens[j + 1]);
-                        if (otherLocation instanceof HubSegmentLocation) {
-                            hubTravelDistanceMap.put((HubSegmentLocation) otherLocation, travelDistance);
+                        if (otherLocation instanceof HubSegmentLocation segmentLocation) {
+                            hubTravelDistanceMap.put(segmentLocation, travelDistance);
                         } else {
                             nearbyTravelDistanceMap.put((RoadSegmentLocation) otherLocation, travelDistance);
                         }
                     }
-                    if (location instanceof HubSegmentLocation) {
-                        HubSegmentLocation hubSegmentLocation = (HubSegmentLocation) location;
+                    if (location instanceof HubSegmentLocation hubSegmentLocation) {
                         hubSegmentLocation.setHubTravelDistanceMap(hubTravelDistanceMap);
                         hubSegmentLocation.setNearbyTravelDistanceMap(nearbyTravelDistanceMap);
                     } else {

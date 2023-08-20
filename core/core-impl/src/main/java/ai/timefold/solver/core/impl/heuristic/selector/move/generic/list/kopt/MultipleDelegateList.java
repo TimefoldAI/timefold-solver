@@ -330,8 +330,7 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof List) {
-            List<?> other = (List<?>) o;
+        if (o instanceof List other) {
             if (other.size() != totalSize) {
                 return false;
             }

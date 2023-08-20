@@ -49,14 +49,14 @@ public final class GizmoMemberDescriptor {
                     ((member instanceof Field) ? "Maybe put the annotations onto the public getter of the field.\n" : "") +
                     "Maybe use domainAccessType REFLECTION instead of GIZMO.");
         }
-        if (member instanceof Field) {
-            FieldDescriptor fieldDescriptor = FieldDescriptor.of((Field) member);
+        if (member instanceof Field field) {
+            FieldDescriptor fieldDescriptor = FieldDescriptor.of(field);
             this.name = member.getName();
             this.memberHandler = GizmoMemberHandler.of(declaringClass, name, fieldDescriptor, false);
             this.setter = null;
-        } else if (member instanceof Method) {
-            MethodDescriptor methodDescriptor = MethodDescriptor.ofMethod((Method) member);
-            this.name = ReflectionHelper.isGetterMethod((Method) member) ? ReflectionHelper.getGetterPropertyName(member)
+        } else if (member instanceof Method method) {
+            MethodDescriptor methodDescriptor = MethodDescriptor.ofMethod(method);
+            this.name = ReflectionHelper.isGetterMethod(method) ? ReflectionHelper.getGetterPropertyName(member)
                     : member.getName();
             this.memberHandler = GizmoMemberHandler.of(declaringClass, methodDescriptor);
             this.setter = lookupSetter(methodDescriptor, declaringClass, name).orElse(null);

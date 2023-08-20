@@ -63,8 +63,7 @@ public class TestdataExtendedShadowedChildEntity extends TestdataExtendedShadowe
         private void updateShadow(ScoreDirector<TestdataExtendedShadowedSolution> scoreDirector,
                 TestdataExtendedShadowedParentEntity entity) {
             String firstShadow = entity.getFirstShadow();
-            if (entity instanceof TestdataExtendedShadowedChildEntity) {
-                TestdataExtendedShadowedChildEntity childEntity = (TestdataExtendedShadowedChildEntity) entity;
+            if (entity instanceof TestdataExtendedShadowedChildEntity childEntity) {
                 scoreDirector.beforeVariableChanged(childEntity, "secondShadow");
                 childEntity.setSecondShadow((firstShadow == null) ? null : firstShadow + "/secondShadow");
                 scoreDirector.afterVariableChanged(childEntity, "secondShadow");

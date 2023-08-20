@@ -46,11 +46,9 @@ public final class MemberAccessorFactory {
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
             Class<? extends Annotation> annotationClass) {
-        if (member instanceof Field) {
-            Field field = (Field) member;
+        if (member instanceof Field field) {
             return new ReflectionFieldMemberAccessor(field);
-        } else if (member instanceof Method) {
-            Method method = (Method) member;
+        } else if (member instanceof Method method) {
             MemberAccessor memberAccessor;
             switch (memberAccessorType) {
                 case FIELD_OR_READ_METHOD:

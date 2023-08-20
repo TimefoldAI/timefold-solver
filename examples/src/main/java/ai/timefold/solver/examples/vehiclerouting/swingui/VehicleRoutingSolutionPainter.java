@@ -87,8 +87,7 @@ public class VehicleRoutingSolutionPainter {
             g.fillRect(x - 1, y - 1, 3, 3);
             String demandString = Integer.toString(customer.getDemand());
             g.drawString(demandString, x - (g.getFontMetrics().stringWidth(demandString) / 2), y - TEXT_SIZE / 2);
-            if (customer instanceof TimeWindowedCustomer) {
-                TimeWindowedCustomer timeWindowedCustomer = (TimeWindowedCustomer) customer;
+            if (customer instanceof TimeWindowedCustomer timeWindowedCustomer) {
                 g.setColor(TangoColorFactory.ALUMINIUM_3);
                 int circleX = x - (TIME_WINDOW_DIAMETER / 2);
                 int circleY = y + 5;
@@ -218,8 +217,7 @@ public class VehicleRoutingSolutionPainter {
         minimumTimeWindowTime = Long.MAX_VALUE;
         maximumTimeWindowTime = Long.MIN_VALUE;
         for (Depot depot : solution.getDepotList()) {
-            if (depot instanceof TimeWindowedDepot) {
-                TimeWindowedDepot timeWindowedDepot = (TimeWindowedDepot) depot;
+            if (depot instanceof TimeWindowedDepot timeWindowedDepot) {
                 long readyTime = timeWindowedDepot.getReadyTime();
                 if (readyTime < minimumTimeWindowTime) {
                     minimumTimeWindowTime = readyTime;
@@ -231,8 +229,7 @@ public class VehicleRoutingSolutionPainter {
             }
         }
         for (Customer customer : solution.getCustomerList()) {
-            if (customer instanceof TimeWindowedCustomer) {
-                TimeWindowedCustomer timeWindowedCustomer = (TimeWindowedCustomer) customer;
+            if (customer instanceof TimeWindowedCustomer timeWindowedCustomer) {
                 long readyTime = timeWindowedCustomer.getReadyTime();
                 if (readyTime < minimumTimeWindowTime) {
                     minimumTimeWindowTime = readyTime;

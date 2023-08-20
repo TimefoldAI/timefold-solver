@@ -64,18 +64,15 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             return (ScoreInliner_) new HardMediumSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
         } else if (scoreDefinition instanceof HardMediumSoftBigDecimalScoreDefinition) {
             return (ScoreInliner_) new HardMediumSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchEnabled);
-        } else if (scoreDefinition instanceof BendableScoreDefinition) {
-            BendableScoreDefinition bendableScoreDefinition = (BendableScoreDefinition) scoreDefinition;
+        } else if (scoreDefinition instanceof BendableScoreDefinition bendableScoreDefinition) {
             return (ScoreInliner_) new BendableScoreInliner((Map) constraintWeightMap, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(),
                     bendableScoreDefinition.getSoftLevelsSize());
-        } else if (scoreDefinition instanceof BendableLongScoreDefinition) {
-            BendableLongScoreDefinition bendableScoreDefinition = (BendableLongScoreDefinition) scoreDefinition;
+        } else if (scoreDefinition instanceof BendableLongScoreDefinition bendableScoreDefinition) {
             return (ScoreInliner_) new BendableLongScoreInliner((Map) constraintWeightMap, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(),
                     bendableScoreDefinition.getSoftLevelsSize());
-        } else if (scoreDefinition instanceof BendableBigDecimalScoreDefinition) {
-            BendableBigDecimalScoreDefinition bendableScoreDefinition = (BendableBigDecimalScoreDefinition) scoreDefinition;
+        } else if (scoreDefinition instanceof BendableBigDecimalScoreDefinition bendableScoreDefinition) {
             return (ScoreInliner_) new BendableBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchEnabled,
                     bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
         } else {

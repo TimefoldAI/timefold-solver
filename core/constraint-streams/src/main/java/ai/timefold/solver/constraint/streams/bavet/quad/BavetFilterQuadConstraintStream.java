@@ -46,8 +46,7 @@ final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetFilterQuadConstraintStream) {
-            BavetFilterQuadConstraintStream<?, ?, ?, ?, ?> other = (BavetFilterQuadConstraintStream<?, ?, ?, ?, ?>) o;
+        } else if (o instanceof BavetFilterQuadConstraintStream other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {

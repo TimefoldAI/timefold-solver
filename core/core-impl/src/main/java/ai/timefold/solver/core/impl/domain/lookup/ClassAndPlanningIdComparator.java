@@ -52,8 +52,8 @@ public final class ClassAndPlanningIdComparator implements Comparator<Object> {
         } else {
             if (aMemberAccessor == null) {
                 if (bMemberAccessor == null) {
-                    if (a instanceof Comparable) {
-                        return ((Comparable) a).compareTo(b);
+                    if (a instanceof Comparable comparable) {
+                        return comparable.compareTo(b);
                     } else { // Return 0 to keep original order.
                         return 0;
                     }

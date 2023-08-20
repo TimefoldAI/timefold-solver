@@ -48,9 +48,9 @@ public final class GizmoCloningUtils {
         Set<Class<?>> deepClonedTypeArguments = new HashSet<>();
         ParameterizedType parameterizedType = (ParameterizedType) genericType;
         for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-            if (actualTypeArgument instanceof Class
-                    && DeepCloningUtils.isClassDeepCloned(solutionDescriptor, (Class) actualTypeArgument)) {
-                deepClonedTypeArguments.add((Class) actualTypeArgument);
+            if (actualTypeArgument instanceof Class class1
+                    && DeepCloningUtils.isClassDeepCloned(solutionDescriptor, class1)) {
+                deepClonedTypeArguments.add(class1);
             }
             deepClonedTypeArguments.addAll(getDeepClonedTypeArguments(solutionDescriptor, actualTypeArgument));
         }

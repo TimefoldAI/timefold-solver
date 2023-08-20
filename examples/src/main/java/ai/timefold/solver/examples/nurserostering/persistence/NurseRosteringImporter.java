@@ -363,8 +363,7 @@ public class NurseRosteringImporter extends AbstractXmlSolutionImporter<NurseRos
                                 }
                             }
                         }
-                        if (pattern instanceof FreeBefore2DaysWithAWorkDayPattern) {
-                            FreeBefore2DaysWithAWorkDayPattern castedPattern = (FreeBefore2DaysWithAWorkDayPattern) pattern;
+                        if (pattern instanceof FreeBefore2DaysWithAWorkDayPattern castedPattern) {
                             if (patternEntryIndex == 0) {
                                 if (dayOfWeek == null) {
                                     throw new UnsupportedOperationException("On patternEntryIndex (" + patternEntryIndex
@@ -387,8 +386,7 @@ public class NurseRosteringImporter extends AbstractXmlSolutionImporter<NurseRos
                                         + ") of FreeBeforeWorkSequence pattern (" + pattern.getCode()
                                         + ") the shiftType cannot be (None).");
                             }
-                        } else if (pattern instanceof WorkBeforeFreeSequencePattern) {
-                            WorkBeforeFreeSequencePattern castedPattern = (WorkBeforeFreeSequencePattern) pattern;
+                        } else if (pattern instanceof WorkBeforeFreeSequencePattern castedPattern) {
                             if (patternEntryIndex == 0) {
                                 castedPattern.setWorkDayOfWeek(dayOfWeek);
                                 castedPattern.setWorkShiftType(shiftType);
@@ -399,8 +397,7 @@ public class NurseRosteringImporter extends AbstractXmlSolutionImporter<NurseRos
                                         + ") of WorkBeforeFreeSequence pattern (" + pattern.getCode()
                                         + ") the shiftType should be (None).");
                             }
-                        } else if (pattern instanceof ShiftType2DaysPattern) {
-                            ShiftType2DaysPattern castedPattern = (ShiftType2DaysPattern) pattern;
+                        } else if (pattern instanceof ShiftType2DaysPattern castedPattern) {
                             if (patternEntryIndex == 0) {
                                 if (dayOfWeek != null) {
                                     throw new UnsupportedOperationException("On patternEntryIndex (" + patternEntryIndex
@@ -426,8 +423,7 @@ public class NurseRosteringImporter extends AbstractXmlSolutionImporter<NurseRos
                                     throw new IllegalArgumentException("The patternEntryIndex ("
                                             + patternEntryIndex + ") is not supported.");
                             }
-                        } else if (pattern instanceof ShiftType3DaysPattern) {
-                            ShiftType3DaysPattern castedPattern = (ShiftType3DaysPattern) pattern;
+                        } else if (pattern instanceof ShiftType3DaysPattern castedPattern) {
                             if (patternEntryIndex == 0) {
                                 if (dayOfWeek != null) {
                                     throw new UnsupportedOperationException("On patternEntryIndex (" + patternEntryIndex

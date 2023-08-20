@@ -385,8 +385,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BendableLongScore) {
-            BendableLongScore other = (BendableLongScore) o;
+        } else if (o instanceof BendableLongScore other) {
             if (hardLevelsSize() != other.hardLevelsSize()
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;

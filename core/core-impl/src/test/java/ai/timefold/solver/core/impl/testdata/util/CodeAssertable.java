@@ -22,49 +22,42 @@ public interface CodeAssertable {
 
     static CodeAssertable convert(Object o) {
         Objects.requireNonNull(o);
-        if (o instanceof CodeAssertable) {
-            return (CodeAssertable) o;
-        } else if (o instanceof ChangeMove) {
-            ChangeMove<?> changeMove = (ChangeMove) o;
+        if (o instanceof CodeAssertable assertable) {
+            return assertable;
+        } else if (o instanceof ChangeMove changeMove) {
             final String code = convert(changeMove.getEntity()).getCode()
                     + "->" + convert(changeMove.getToPlanningValue()).getCode();
             return () -> code;
-        } else if (o instanceof SwapMove) {
-            SwapMove<?> swapMove = (SwapMove) o;
+        } else if (o instanceof SwapMove swapMove) {
             final String code = convert(swapMove.getLeftEntity()).getCode()
                     + "<->" + convert(swapMove.getRightEntity()).getCode();
             return () -> code;
-        } else if (o instanceof CompositeMove) {
-            CompositeMove<?> compositeMove = (CompositeMove) o;
+        } else if (o instanceof CompositeMove compositeMove) {
             StringBuilder codeBuilder = new StringBuilder(compositeMove.getMoves().length * 80);
             for (Move<?> move : compositeMove.getMoves()) {
                 codeBuilder.append("+").append(convert(move).getCode());
             }
             final String code = codeBuilder.substring(1);
             return () -> code;
-        } else if (o instanceof ListAssignMove) {
-            ListAssignMove<?> listAssignMove = (ListAssignMove<?>) o;
+        } else if (o instanceof ListAssignMove listAssignMove) {
             return () -> convert(listAssignMove.getMovedValue())
                     + " {null->"
                     + convert(listAssignMove.getDestinationEntity())
                     + "[" + listAssignMove.getDestinationIndex() + "]}";
-        } else if (o instanceof ListChangeMove) {
-            ListChangeMove<?> listChangeMove = (ListChangeMove<?>) o;
+        } else if (o instanceof ListChangeMove listChangeMove) {
             return () -> convert(listChangeMove.getMovedValue())
                     + " {" + convert(listChangeMove.getSourceEntity())
                     + "[" + listChangeMove.getSourceIndex() + "]->"
                     + convert(listChangeMove.getDestinationEntity())
                     + "[" + listChangeMove.getDestinationIndex() + "]}";
-        } else if (o instanceof ListSwapMove) {
-            ListSwapMove<?> listSwapMove = (ListSwapMove<?>) o;
+        } else if (o instanceof ListSwapMove listSwapMove) {
             return () -> convert(listSwapMove.getLeftValue())
                     + " {" + convert(listSwapMove.getLeftEntity())
                     + "[" + listSwapMove.getLeftIndex() + "]} <-> "
                     + convert(listSwapMove.getRightValue())
                     + " {" + convert(listSwapMove.getRightEntity())
                     + "[" + listSwapMove.getRightIndex() + "]}";
-        } else if (o instanceof SubListChangeMove) {
-            SubListChangeMove<?> subListChangeMove = (SubListChangeMove<?>) o;
+        } else if (o instanceof SubListChangeMove subListChangeMove) {
             return () -> "|" + subListChangeMove.getSubListSize()
                     + "| {" + convert(subListChangeMove.getSourceEntity())
                     + "[" + subListChangeMove.getFromIndex()
@@ -72,13 +65,11 @@ public interface CodeAssertable {
                     + "]-" + (subListChangeMove.isReversing() ? "reversing->" : ">")
                     + convert(subListChangeMove.getDestinationEntity())
                     + "[" + subListChangeMove.getDestinationIndex() + "]}";
-        } else if (o instanceof SubListSwapMove) {
-            SubListSwapMove<?> subListSwapMove = (SubListSwapMove<?>) o;
+        } else if (o instanceof SubListSwapMove subListSwapMove) {
             return () -> "{" + convert(subListSwapMove.getLeftSubList()).getCode()
                     + "} <-" + (subListSwapMove.isReversing() ? "reversing-" : "")
                     + "> {" + convert(subListSwapMove.getRightSubList()).getCode() + "}";
-        } else if (o instanceof List) {
-            List<?> list = (List) o;
+        } else if (o instanceof List list) {
             StringBuilder codeBuilder = new StringBuilder("[");
             boolean firstElement = true;
             for (Object element : list) {
@@ -92,14 +83,11 @@ public interface CodeAssertable {
             codeBuilder.append("]");
             final String code = codeBuilder.toString();
             return () -> code;
-        } else if (o instanceof SubList) {
-            SubList subList = (SubList) o;
+        } else if (o instanceof SubList subList) {
             return () -> convert(subList.getEntity()) + "[" + subList.getFromIndex() + "+" + subList.getLength() + "]";
-        } else if (o instanceof ElementRef) {
-            ElementRef elementRef = (ElementRef) o;
+        } else if (o instanceof ElementRef elementRef) {
             return () -> convert(elementRef.getEntity()) + "[" + elementRef.getIndex() + "]";
-        } else if (o instanceof SubChain) {
-            SubChain subChain = (SubChain) o;
+        } else if (o instanceof SubChain subChain) {
             final String code = convert(subChain.getEntityList()).getCode();
             return () -> code;
         }

@@ -412,8 +412,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BendableBigDecimalScore) {
-            BendableBigDecimalScore other = (BendableBigDecimalScore) o;
+        } else if (o instanceof BendableBigDecimalScore other) {
             if (hardLevelsSize() != other.hardLevelsSize()
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;

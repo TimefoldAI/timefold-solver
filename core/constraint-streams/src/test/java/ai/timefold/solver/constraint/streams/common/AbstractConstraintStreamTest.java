@@ -135,8 +135,8 @@ public abstract class AbstractConstraintStreamTest {
                 return false;
             }
             ConstraintJustification justification = constraintMatch.getJustification();
-            if (justification instanceof DefaultConstraintJustification) {
-                List<?> actualJustificationList = ((DefaultConstraintJustification) justification).getFacts();
+            if (justification instanceof DefaultConstraintJustification constraintJustification) {
+                List<?> actualJustificationList = constraintJustification.getFacts();
                 if (actualJustificationList.size() != justificationList.size()) {
                     return false;
                 }

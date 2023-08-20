@@ -795,9 +795,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 Stream.Builder<Object> keyStream = Stream.builder()
                         .add(constraintId);
                 ConstraintJustification justification = constraintMatch.getJustification();
-                if (justification instanceof DefaultConstraintJustification) {
+                if (justification instanceof DefaultConstraintJustification constraintJustification) {
                     // The order of justificationLists for constraints that include accumulates isn't stable, so we make it.
-                    ((DefaultConstraintJustification) justification).getFacts()
+                    constraintJustification.getFacts()
                             .stream()
                             .sorted(solutionDescriptor.getClassAndPlanningIdComparator())
                             .forEach(keyStream);

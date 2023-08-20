@@ -308,8 +308,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof HardMediumSoftBigDecimalScore) {
-            HardMediumSoftBigDecimalScore other = (HardMediumSoftBigDecimalScore) o;
+        } else if (o instanceof HardMediumSoftBigDecimalScore other) {
             return initScore == other.initScore()
                     && hardScore.stripTrailingZeros().equals(other.hardScore().stripTrailingZeros())
                     && mediumScore.stripTrailingZeros().equals(other.mediumScore().stripTrailingZeros())

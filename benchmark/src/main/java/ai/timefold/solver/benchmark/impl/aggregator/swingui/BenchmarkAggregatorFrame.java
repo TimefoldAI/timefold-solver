@@ -416,15 +416,15 @@ public class BenchmarkAggregatorFrame extends JFrame {
                                 "New benchmark's name cannot be empty.",
                                 "Warning", JOptionPane.WARNING_MESSAGE);
                     } else {
-                        if (benchmarkResult instanceof PlannerBenchmarkResult) {
-                            ((PlannerBenchmarkResult) benchmarkResult).setName(newBenchmarkResultName);
+                        if (benchmarkResult instanceof PlannerBenchmarkResult result) {
+                            result.setName(newBenchmarkResultName);
                             mixedCheckBox.setText(newBenchmarkResultName);
                             ((DefaultTreeModel) checkBoxTree.getModel()).nodeChanged(treeNode);
-                        } else if (benchmarkResult instanceof SolverBenchmarkResult) {
+                        } else if (benchmarkResult instanceof SolverBenchmarkResult result) {
                             mixedCheckBox.setText(newBenchmarkResultName + " ("
-                                    + ((SolverBenchmarkResult) benchmarkResult).getRanking() + ")");
+                                    + result.getRanking() + ")");
                             ((DefaultTreeModel) checkBoxTree.getModel()).nodeChanged(treeNode);
-                            solverBenchmarkResultNameMapping.put((SolverBenchmarkResult) benchmarkResult,
+                            solverBenchmarkResultNameMapping.put(result,
                                     newBenchmarkResultName);
                         }
                         dispose();

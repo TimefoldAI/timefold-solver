@@ -284,8 +284,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof HardMediumSoftLongScore) {
-            HardMediumSoftLongScore other = (HardMediumSoftLongScore) o;
+        } else if (o instanceof HardMediumSoftLongScore other) {
             return initScore == other.initScore()
                     && hardScore == other.hardScore()
                     && mediumScore == other.mediumScore()

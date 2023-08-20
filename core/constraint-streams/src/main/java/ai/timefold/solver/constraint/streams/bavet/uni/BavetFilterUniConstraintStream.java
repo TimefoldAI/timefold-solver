@@ -45,8 +45,7 @@ final class BavetFilterUniConstraintStream<Solution_, A>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetFilterUniConstraintStream) {
-            BavetFilterUniConstraintStream<?, ?> other = (BavetFilterUniConstraintStream<?, ?>) o;
+        } else if (o instanceof BavetFilterUniConstraintStream other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {
