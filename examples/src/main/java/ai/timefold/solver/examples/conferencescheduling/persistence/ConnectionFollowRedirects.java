@@ -28,8 +28,8 @@ public class ConnectionFollowRedirects {
     public InputStream getInputStream() throws IOException {
         InputStream in = null;
         do {
-            if (connection instanceof HttpURLConnection) {
-                ((HttpURLConnection) connection).setInstanceFollowRedirects(false);
+            if (connection instanceof HttpURLConnection lConnection) {
+                lConnection.setInstanceFollowRedirects(false);
             }
             // We want to open the input stream before getting headers
             // because getHeaderField() et al swallow IOExceptions.
@@ -41,8 +41,7 @@ public class ConnectionFollowRedirects {
 
     private void followRedirects() throws IOException {
         isRedirect = false;
-        if (connection instanceof HttpURLConnection) {
-            HttpURLConnection http = (HttpURLConnection) connection;
+        if (connection instanceof HttpURLConnection http) {
             int stat = http.getResponseCode();
             if (stat >= 300 && stat <= 307 && stat != 306 &&
                     stat != HttpURLConnection.HTTP_NOT_MODIFIED) {

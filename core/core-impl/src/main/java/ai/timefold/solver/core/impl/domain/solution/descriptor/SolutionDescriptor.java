@@ -196,9 +196,9 @@ public class SolutionDescriptor<Solution_> {
         for (Class<?> lineageClass : ConfigUtils.getAllAnnotatedLineageClasses(solutionClass, PlanningSolution.class)) {
             List<Member> memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             for (Member member : memberList) {
-                if (member instanceof Method && potentiallyOverwritingMethodList.stream().anyMatch(
+                if (member instanceof Method method && potentiallyOverwritingMethodList.stream().anyMatch(
                         m -> member.getName().equals(m.getName()) // Shortcut to discard negatives faster
-                                && ReflectionHelper.isMethodOverwritten((Method) member, m.getDeclaringClass()))) {
+                                && ReflectionHelper.isMethodOverwritten(method, m.getDeclaringClass()))) {
                     // Ignore member because it is an overwritten method
                     continue;
                 }
@@ -288,12 +288,10 @@ public class SolutionDescriptor<Solution_> {
         if (annotationClass == null) {
             Class<?> type;
             if (autoDiscoverMemberType == AutoDiscoverMemberType.FIELD
-                    && member instanceof Field) {
-                Field field = (Field) member;
+                    && member instanceof Field field) {
                 type = field.getType();
             } else if (autoDiscoverMemberType == AutoDiscoverMemberType.GETTER
-                    && (member instanceof Method) && ReflectionHelper.isGetterMethod((Method) member)) {
-                Method method = (Method) member;
+                    && (member instanceof Method method) && ReflectionHelper.isGetterMethod(method)) {
                 type = method.getReturnType();
             } else {
                 type = null;
@@ -304,7 +302,7 @@ public class SolutionDescriptor<Solution_> {
                 } else if (Collection.class.isAssignableFrom(type) || type.isArray()) {
                     Class<?> elementType;
                     if (Collection.class.isAssignableFrom(type)) {
-                        Type genericType = (member instanceof Field) ? ((Field) member).getGenericType()
+                        Type genericType = (member instanceof Field f) ? f.getGenericType()
                                 : ((Method) member).getGenericReturnType();
                         String memberName = member.getName();
                         if (!(genericType instanceof ParameterizedType)) {
@@ -796,8 +794,7 @@ public class SolutionDescriptor<Solution_> {
                                     + constraintConfigurationDescriptor.getConstraintConfigurationClass()
                                     + ") for that constraint (" + constraintName + ")."));
         }
-        if (constraintWeight instanceof IBendableScore) {
-            IBendableScore bendableConstraintWeight = (IBendableScore) constraintWeight;
+        if (constraintWeight instanceof IBendableScore bendableConstraintWeight) {
             AbstractBendableScoreDefinition bendableScoreDefinition =
                     (AbstractBendableScoreDefinition) scoreDescriptor.getScoreDefinition();
             if (bendableConstraintWeight.hardLevelsSize() != bendableScoreDefinition.getHardLevelsSize()

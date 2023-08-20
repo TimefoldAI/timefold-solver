@@ -156,11 +156,10 @@ public final class DeepCloningUtils {
     private static boolean isTypeArgumentDeepCloned(SolutionDescriptor<?> solutionDescriptor, Type genericType) {
         // Check the generic type arguments of the field.
         // It is possible for fields and methods, but not instances.
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+        if (genericType instanceof ParameterizedType parameterizedType) {
             for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                if (actualTypeArgument instanceof Class
-                        && isClassDeepCloned(solutionDescriptor, (Class<?>) actualTypeArgument)) {
+                if (actualTypeArgument instanceof Class class1
+                        && isClassDeepCloned(solutionDescriptor, class1)) {
                     return true;
                 }
                 if (isTypeArgumentDeepCloned(solutionDescriptor, actualTypeArgument)) {

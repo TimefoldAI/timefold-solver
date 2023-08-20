@@ -13,12 +13,12 @@ public class AlphabeticMemberComparator implements Comparator<Member> {
         if (compareTo != 0) {
             return compareTo;
         }
-        if (a instanceof Method) {
+        if (a instanceof Method method) {
             if (!(b instanceof Method)) {
                 return 1;
             }
             int parameterNameCompareTo = compareParameterTypes(
-                    ((Method) a).getParameterTypes(),
+                    method.getParameterTypes(),
                     ((Method) b).getParameterTypes());
             if (parameterNameCompareTo != 0) {
                 return parameterNameCompareTo;
@@ -26,12 +26,12 @@ public class AlphabeticMemberComparator implements Comparator<Member> {
         } else if (b instanceof Method) {
             return -1;
         }
-        if (a instanceof Constructor) {
+        if (a instanceof Constructor constructor) {
             if (!(b instanceof Constructor)) {
                 return 1;
             }
             int parameterNameCompareTo = compareParameterTypes(
-                    ((Constructor) a).getParameterTypes(),
+                    constructor.getParameterTypes(),
                     ((Constructor) b).getParameterTypes());
             if (parameterNameCompareTo != 0) {
                 return parameterNameCompareTo;

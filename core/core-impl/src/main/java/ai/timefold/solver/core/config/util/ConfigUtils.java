@@ -420,12 +420,12 @@ public class ConfigUtils {
                     + typeArguments.length + ").");
         }
         Type typeArgument = typeArguments[0];
-        if (typeArgument instanceof ParameterizedType) {
+        if (typeArgument instanceof ParameterizedType parameterizedType1) {
             // Remove the type parameters so it can be cast to a Class
-            typeArgument = ((ParameterizedType) typeArgument).getRawType();
+            typeArgument = parameterizedType1.getRawType();
         }
-        if (typeArgument instanceof WildcardType) {
-            Type[] upperBounds = ((WildcardType) typeArgument).getUpperBounds();
+        if (typeArgument instanceof WildcardType wildcardType) {
+            Type[] upperBounds = wildcardType.getUpperBounds();
             if (upperBounds.length > 1) {
                 // Multiple upper bounds is impossible in traditional Java
                 // Other JVM languages or future java versions might enabling triggering this
@@ -443,11 +443,11 @@ public class ConfigUtils {
                 typeArgument = upperBounds[0];
             }
         }
-        if (typeArgument instanceof Class) {
-            return Optional.of((Class<?>) typeArgument);
-        } else if (typeArgument instanceof ParameterizedType) {
+        if (typeArgument instanceof Class class1) {
+            return Optional.of(class1);
+        } else if (typeArgument instanceof ParameterizedType parameterizedType1) {
             // Turns SomeGenericType<T> into SomeGenericType.
-            return Optional.of((Class<?>) ((ParameterizedType) typeArgument).getRawType());
+            return Optional.of((Class<?>) parameterizedType1.getRawType());
         } else {
             throw new IllegalArgumentException("The " + parentClassConcept + " (" + parentClass + ") has a "
                     + (annotationClass == null ? "auto discovered" : "@" + annotationClass.getSimpleName() + " annotated")

@@ -108,9 +108,9 @@ public class TspPanel extends SolutionPanel<TspSolution> {
             targetStandstill = sourceStandstill;
             sourceStandstill = lastStandstill;
         }
-        if (targetStandstill instanceof Visit
+        if (targetStandstill instanceof Visit visit
                 && (sourceStandstill instanceof Domicile || ((Visit) sourceStandstill).getPreviousStandstill() != null)) {
-            changePreviousStandstill((Visit) targetStandstill, sourceStandstill);
+            changePreviousStandstill(visit, sourceStandstill);
         }
         solverAndPersistenceFrame.resetScreen();
     }

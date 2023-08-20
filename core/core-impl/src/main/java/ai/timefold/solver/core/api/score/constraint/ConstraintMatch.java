@@ -109,8 +109,8 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      */
     @Deprecated(forRemoval = true)
     public List<Object> getJustificationList() {
-        if (justification instanceof DefaultConstraintJustification) { // No custom function provided.
-            return ((DefaultConstraintJustification) justification).getFacts();
+        if (justification instanceof DefaultConstraintJustification constraintJustification) { // No custom function provided.
+            return constraintJustification.getFacts();
         } else {
             throw new IllegalStateException("Cannot retrieve list of facts from a custom constraint justification ("
                     + justification + ").\n" +
@@ -174,8 +174,8 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
             return constraintId.compareTo(other.constraintId);
         } else if (!score.equals(other.score)) {
             return score.compareTo(other.score);
-        } else if (justification instanceof Comparable) {
-            return ((Comparable) justification).compareTo(other.justification);
+        } else if (justification instanceof Comparable comparable) {
+            return comparable.compareTo(other.justification);
         }
         return Integer.compare(System.identityHashCode(justification),
                 System.identityHashCode(other.justification));

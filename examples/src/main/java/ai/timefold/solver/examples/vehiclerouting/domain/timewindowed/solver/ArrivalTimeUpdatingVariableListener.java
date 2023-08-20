@@ -19,8 +19,8 @@ public class ArrivalTimeUpdatingVariableListener implements VariableListener<Veh
 
     @Override
     public void afterEntityAdded(ScoreDirector<VehicleRoutingSolution> scoreDirector, Customer customer) {
-        if (customer instanceof TimeWindowedCustomer) {
-            updateArrivalTime(scoreDirector, (TimeWindowedCustomer) customer);
+        if (customer instanceof TimeWindowedCustomer windowedCustomer) {
+            updateArrivalTime(scoreDirector, windowedCustomer);
         }
     }
 
@@ -31,8 +31,8 @@ public class ArrivalTimeUpdatingVariableListener implements VariableListener<Veh
 
     @Override
     public void afterVariableChanged(ScoreDirector<VehicleRoutingSolution> scoreDirector, Customer customer) {
-        if (customer instanceof TimeWindowedCustomer) {
-            updateArrivalTime(scoreDirector, (TimeWindowedCustomer) customer);
+        if (customer instanceof TimeWindowedCustomer windowedCustomer) {
+            updateArrivalTime(scoreDirector, windowedCustomer);
         }
     }
 
@@ -43,8 +43,8 @@ public class ArrivalTimeUpdatingVariableListener implements VariableListener<Veh
 
     @Override
     public void afterEntityRemoved(ScoreDirector<VehicleRoutingSolution> scoreDirector, Customer customer) {
-        if (customer instanceof TimeWindowedCustomer) {
-            updateArrivalTime(scoreDirector, (TimeWindowedCustomer) customer);
+        if (customer instanceof TimeWindowedCustomer windowedCustomer) {
+            updateArrivalTime(scoreDirector, windowedCustomer);
         }
     }
 

@@ -46,8 +46,7 @@ final class BavetFilterTriConstraintStream<Solution_, A, B, C>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetFilterTriConstraintStream) {
-            BavetFilterTriConstraintStream<?, ?, ?, ?> other = (BavetFilterTriConstraintStream<?, ?, ?, ?>) o;
+        } else if (o instanceof BavetFilterTriConstraintStream other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {

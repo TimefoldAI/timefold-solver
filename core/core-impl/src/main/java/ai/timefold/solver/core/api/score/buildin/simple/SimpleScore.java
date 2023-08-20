@@ -157,8 +157,7 @@ public final class SimpleScore implements Score<SimpleScore> {
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof SimpleScore) {
-            SimpleScore other = (SimpleScore) o;
+        } else if (o instanceof SimpleScore other) {
             return initScore == other.initScore()
                     && score == other.score();
         } else {

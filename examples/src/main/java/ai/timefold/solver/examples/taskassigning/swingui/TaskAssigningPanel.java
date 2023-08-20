@@ -81,8 +81,8 @@ public class TaskAssigningPanel extends SolutionPanel<TaskAssigningSolution> {
         // FIXME remove this when https://issues.redhat.com/browse/PLANNER-2633 is done.
         Arrays.stream(consumePanel.getComponents()).forEach(component -> {
             component.setEnabled(false);
-            if (component instanceof JComponent) {
-                ((JComponent) component).setToolTipText("This feature is currently disabled.");
+            if (component instanceof JComponent jComponent) {
+                jComponent.setToolTipText("This feature is currently disabled.");
             }
         });
         headerPanel.add(consumePanel);

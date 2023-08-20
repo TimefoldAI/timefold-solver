@@ -596,13 +596,13 @@ public class GizmoSolutionClonerImplementor {
 
         Class<?> elementClass;
         java.lang.reflect.Type elementClassType;
-        if (type instanceof ParameterizedType) {
+        if (type instanceof ParameterizedType parameterizedType) {
             // Assume Collection follow Collection<T> convention of first type argument = element class
-            elementClassType = ((ParameterizedType) type).getActualTypeArguments()[0];
-            if (elementClassType instanceof Class) {
-                elementClass = (Class<?>) elementClassType;
-            } else if (elementClassType instanceof ParameterizedType) {
-                elementClass = (Class<?>) ((ParameterizedType) elementClassType).getRawType();
+            elementClassType = parameterizedType.getActualTypeArguments()[0];
+            if (elementClassType instanceof Class class1) {
+                elementClass = class1;
+            } else if (elementClassType instanceof ParameterizedType parameterizedElementClassType) {
+                elementClass = (Class<?>) parameterizedElementClassType.getRawType();
             } else {
                 throw new IllegalStateException("Unhandled type " + elementClassType + ".");
             }
@@ -682,22 +682,22 @@ public class GizmoSolutionClonerImplementor {
         Class<?> elementClass;
         java.lang.reflect.Type keyType;
         java.lang.reflect.Type elementClassType;
-        if (type instanceof ParameterizedType) {
+        if (type instanceof ParameterizedType parameterizedType) {
             // Assume Map follow Map<K,V> convention of second type argument = value class
-            keyType = ((ParameterizedType) type).getActualTypeArguments()[0];
-            elementClassType = ((ParameterizedType) type).getActualTypeArguments()[1];
-            if (elementClassType instanceof Class) {
-                elementClass = (Class<?>) elementClassType;
-            } else if (elementClassType instanceof ParameterizedType) {
-                elementClass = (Class<?>) ((ParameterizedType) elementClassType).getRawType();
+            keyType = parameterizedType.getActualTypeArguments()[0];
+            elementClassType = parameterizedType.getActualTypeArguments()[1];
+            if (elementClassType instanceof Class class1) {
+                elementClass = class1;
+            } else if (elementClassType instanceof ParameterizedType parameterizedElementClassType) {
+                elementClass = (Class<?>) parameterizedElementClassType.getRawType();
             } else {
                 throw new IllegalStateException("Unhandled type " + elementClassType + ".");
             }
 
-            if (keyType instanceof Class) {
-                keyClass = (Class<?>) keyType;
-            } else if (keyType instanceof ParameterizedType) {
-                keyClass = (Class<?>) ((ParameterizedType) keyType).getRawType();
+            if (keyType instanceof Class class1) {
+                keyClass = class1;
+            } else if (keyType instanceof ParameterizedType parameterizedElementClassType) {
+                keyClass = (Class<?>) parameterizedElementClassType.getRawType();
             } else {
                 throw new IllegalStateException("Unhandled type " + keyType + ".");
             }

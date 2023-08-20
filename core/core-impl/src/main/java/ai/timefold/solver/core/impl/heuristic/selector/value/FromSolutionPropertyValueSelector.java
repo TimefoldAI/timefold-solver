@@ -130,8 +130,8 @@ public final class FromSolutionPropertyValueSelector<Solution_>
         if (randomSelection) {
             return cachedValueRange.createRandomIterator(workingRandom);
         }
-        if (cachedValueRange instanceof CountableValueRange) {
-            return ((CountableValueRange<Object>) cachedValueRange).createOriginalIterator();
+        if (cachedValueRange instanceof CountableValueRange range) {
+            return range.createOriginalIterator();
         }
         throw new IllegalStateException("Value range's class (" + cachedValueRange.getClass().getCanonicalName() + ") " +
                 "does not implement " + CountableValueRange.class + ", " +

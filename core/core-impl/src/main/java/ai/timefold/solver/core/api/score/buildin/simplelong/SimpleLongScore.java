@@ -160,8 +160,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof SimpleLongScore) {
-            SimpleLongScore other = (SimpleLongScore) o;
+        } else if (o instanceof SimpleLongScore other) {
             return initScore == other.initScore()
                     && score == other.score();
         } else {

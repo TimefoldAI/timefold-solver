@@ -46,8 +46,7 @@ final class BavetFilterBiConstraintStream<Solution_, A, B>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetFilterBiConstraintStream) {
-            BavetFilterBiConstraintStream<?, ?, ?> other = (BavetFilterBiConstraintStream<?, ?, ?>) o;
+        } else if (o instanceof BavetFilterBiConstraintStream other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {

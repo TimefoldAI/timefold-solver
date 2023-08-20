@@ -243,9 +243,7 @@ public class ExaminationPanel extends SolutionPanel<Examination> {
                 if (exam.getPeriod() != toPeriod) {
                     doProblemChange((workingSolution, problemChangeDirector) -> {
                         LeadingExam leadingExam;
-                        if (exam instanceof FollowingExam) {
-                            // FollowingExam has Period as a shadow var; therefore we update the source.
-                            FollowingExam followingExam = (FollowingExam) exam;
+                        if (exam instanceof FollowingExam followingExam) {
                             leadingExam = followingExam.getLeadingExam();
                         } else {
                             leadingExam = (LeadingExam) exam;

@@ -246,14 +246,14 @@ public final class ReflectionHelper {
      * @return true if it is a {@link Map}
      */
     public static boolean isMap(Type type) {
-        if (type instanceof Class && Map.class.isAssignableFrom((Class<?>) type)) {
+        if (type instanceof Class class1 && Map.class.isAssignableFrom(class1)) {
             return true;
         }
-        if (type instanceof ParameterizedType) {
-            return isMap(((ParameterizedType) type).getRawType());
+        if (type instanceof ParameterizedType parameterizedType) {
+            return isMap(parameterizedType.getRawType());
         }
-        if (type instanceof WildcardType) {
-            Type[] upperBounds = ((WildcardType) type).getUpperBounds();
+        if (type instanceof WildcardType wildcardType) {
+            Type[] upperBounds = wildcardType.getUpperBounds();
             return upperBounds.length != 0 && isMap(upperBounds[0]);
         }
         return false;
@@ -264,14 +264,14 @@ public final class ReflectionHelper {
      * @return true if it is a {@link List}
      */
     public static boolean isList(Type type) {
-        if (type instanceof Class && List.class.isAssignableFrom((Class<?>) type)) {
+        if (type instanceof Class class1 && List.class.isAssignableFrom(class1)) {
             return true;
         }
-        if (type instanceof ParameterizedType) {
-            return isList(((ParameterizedType) type).getRawType());
+        if (type instanceof ParameterizedType parameterizedType) {
+            return isList(parameterizedType.getRawType());
         }
-        if (type instanceof WildcardType) {
-            Type[] upperBounds = ((WildcardType) type).getUpperBounds();
+        if (type instanceof WildcardType wildcardType) {
+            Type[] upperBounds = wildcardType.getUpperBounds();
             return upperBounds.length != 0 && isList(upperBounds[0]);
         }
         return false;

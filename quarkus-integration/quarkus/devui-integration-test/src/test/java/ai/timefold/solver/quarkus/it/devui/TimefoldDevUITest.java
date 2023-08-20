@@ -95,8 +95,8 @@ public class TimefoldDevUITest {
             return node;
         }
         for (Object child : node.children()) {
-            if (child instanceof Node) {
-                Node maybeFoundNodeText = findById(id, (Node) child);
+            if (child instanceof Node node1) {
+                Node maybeFoundNodeText = findById(id, node1);
                 if (maybeFoundNodeText != null) {
                     return maybeFoundNodeText;
                 }

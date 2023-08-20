@@ -60,10 +60,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (VariableListenerWithSources<Solution_> listenerWithSources : shadowVariableDescriptor
                 .buildVariableListeners(this)) {
             AbstractVariableListener<Solution_, Object> variableListener = listenerWithSources.getVariableListener();
-            if (variableListener instanceof Supply) {
+            if (variableListener instanceof Supply supply) {
                 // Non-sourced variable listeners (ie. ones provided by the user) can never be a supply.
                 Demand<?> demand = shadowVariableDescriptor.getProvidedDemand();
-                supplyMap.put(demand, (Supply) variableListener);
+                supplyMap.put(demand, supply);
                 demandCounterMap.put(demand, 1L);
             }
             int globalOrder = shadowVariableDescriptor.getGlobalShadowOrder();

@@ -107,8 +107,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                                     .getActualTypeArguments()[0] : variableMemberAccessor.getType();
                     // We expect either ValueRange, Collection or an array.
                     Type valueRangeType = valueRangeProviderAccessor.getGenericType();
-                    if (valueRangeType instanceof ParameterizedType) {
-                        ParameterizedType parameterizedValueRangeType = (ParameterizedType) valueRangeType;
+                    if (valueRangeType instanceof ParameterizedType parameterizedValueRangeType) {
                         Class<?> rawType = (Class<?>) parameterizedValueRangeType.getRawType();
                         if (!ValueRange.class.isAssignableFrom(rawType) && !Collection.class.isAssignableFrom(rawType)) {
                             return false;

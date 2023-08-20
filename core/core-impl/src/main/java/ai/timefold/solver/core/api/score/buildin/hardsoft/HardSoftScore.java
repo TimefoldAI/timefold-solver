@@ -236,8 +236,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof HardSoftScore) {
-            HardSoftScore other = (HardSoftScore) o;
+        } else if (o instanceof HardSoftScore other) {
             return initScore == other.initScore()
                     && hardScore == other.hardScore()
                     && softScore == other.softScore();
