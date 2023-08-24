@@ -46,6 +46,11 @@ public @interface PlanningSolution {
      * {@link PlanningEntityProperty}, {@link ProblemFactCollectionProperty}, {@link ProblemFactProperty}
      * and {@link ConstraintConfigurationProvider} annotations based on the member type.
      *
+     * <p>
+     * This feature is not supported under Quarkus.
+     * When using Quarkus,
+     * setting this to anything other than {@link AutoDiscoverMemberType#NONE} will result in a build-time exception.
+     *
      * @return never null
      */
     AutoDiscoverMemberType autoDiscoverMemberType() default AutoDiscoverMemberType.NONE;

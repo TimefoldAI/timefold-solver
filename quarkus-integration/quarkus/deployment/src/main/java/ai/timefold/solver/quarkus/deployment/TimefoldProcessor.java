@@ -16,9 +16,13 @@ import java.util.stream.Stream;
 
 import jakarta.inject.Singleton;
 
+import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -525,14 +529,55 @@ class TimefoldProcessor {
         Set<String> generatedMemberAccessorsClassNameSet = new HashSet<>();
         Set<String> gizmoSolutionClonerClassNameSet = new HashSet<>();
 
+        /*
+         * TODO consistently change the name "entity" to something less confusing
+         * "entity" in this context means both "planning solution",
+         * "planning entity" and other things as well.
+         */
         GizmoMemberAccessorEntityEnhancer entityEnhancer = new GizmoMemberAccessorEntityEnhancer();
         if (solverConfig.getDomainAccessType() == DomainAccessType.GIZMO) {
             Collection<AnnotationInstance> membersToGeneratedAccessorsFor = new ArrayList<>();
 
+            // Every entity and solution gets scanned for annotations.
+            // Annotated members get their accessors generated.
             for (DotName dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
                 membersToGeneratedAccessorsFor.addAll(indexView.getAnnotations(dotName));
             }
             membersToGeneratedAccessorsFor.removeIf(this::shouldIgnoreMember);
+
+            // Fail fast on auto-discovery.
+            var planningSolutionAnnotationInstanceCollection =
+                    indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
+            if (planningSolutionAnnotationInstanceCollection.isEmpty()) {
+                throw new IllegalStateException(
+                        "No classes found with a @" + PlanningSolution.class.getSimpleName() + " annotation.");
+            } else if (planningSolutionAnnotationInstanceCollection.size() > 1) {
+                throw new IllegalStateException("Multiple classes (" + convertAnnotationInstancesToString(
+                        planningSolutionAnnotationInstanceCollection) + ") found with a @" +
+                        PlanningSolution.class.getSimpleName() + " annotation.");
+            }
+            var planningSolutionAnnotationInstance =
+                    planningSolutionAnnotationInstanceCollection.stream().findFirst().orElseThrow();
+            var autoDiscoverMemberType = planningSolutionAnnotationInstance.values().stream()
+                    .filter(v -> v.name().equals("autoDiscoverMemberType"))
+                    .findFirst()
+                    .map(AnnotationValue::asEnum)
+                    .map(AutoDiscoverMemberType::valueOf)
+                    .orElse(AutoDiscoverMemberType.NONE);
+
+            if (autoDiscoverMemberType != AutoDiscoverMemberType.NONE) {
+                throw new UnsupportedOperationException("""
+                        Auto-discovery of members using %s is not supported under Quarkus.
+                        Remove the autoDiscoverMemberType property from the @%s annotation
+                        and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s.
+                        """
+                        .formatted(
+                                AutoDiscoverMemberType.class.getSimpleName(),
+                                PlanningSolution.class.getSimpleName(),
+                                PlanningScore.class.getSimpleName(),
+                                PlanningEntityCollectionProperty.class.getSimpleName(),
+                                ProblemFactCollectionProperty.class.getSimpleName()));
+            }
 
             for (AnnotationInstance annotatedMember : membersToGeneratedAccessorsFor) {
                 switch (annotatedMember.target().kind()) {
