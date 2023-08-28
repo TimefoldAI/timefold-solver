@@ -45,13 +45,13 @@
     <version.assembly.plugin>3.6.0</version.assembly.plugin>
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
     <version.dependency.plugin>3.6.0</version.dependency.plugin>
+    <version.exec.plugin>3.1.0</version.exec.plugin>
     <version.enforcer.plugin>3.4.0</version.enforcer.plugin>
     <version.formatter.plugin>2.23.0</version.formatter.plugin>
     <version.impsort.plugin>1.9.0</version.impsort.plugin>
     <version.jacoco.plugin>0.8.10</version.jacoco.plugin>
     <version.jar.plugin>3.3.0</version.jar.plugin>
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
-    <version.resources.plugin>3.3.1</version.resources.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
     <version.surefire.plugin>3.1.2</version.surefire.plugin>
@@ -186,6 +186,11 @@
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>${version.dependency.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${version.exec.plugin}</version>
         </plugin>
         <plugin>
           <artifactId>maven-enforcer-plugin</artifactId>
@@ -329,17 +334,10 @@
             <newArtifacts>
               <artifact>${project.groupId}:${project.artifactId}:${project.version}</artifact>
             </newArtifacts>
-            <!-- By default revapi will check the oldArtifact against the currently executed build -->
             <analysisConfigurationFiles>
-              <configurationFile>
-                <path>src/build/revapi-config.json</path>
-                <roots>
-                  <root>filters</root>
-                  <root>ignores</root>
-                </roots>
-              </configurationFile>
+              <file>${project.basedir}/src/build/revapi-filter.json</file>
+              <file>${project.basedir}/src/build/revapi-differences.json</file>
             </analysisConfigurationFiles>
-            <failSeverity>potentiallyBreaking</failSeverity>
           </configuration>
           <executions>
             <execution>
@@ -351,13 +349,6 @@
           </executions>
         </plugin>
 
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>${version.resources.plugin}</version>
-          <configuration>
-            <encoding>UTF-8</encoding>
-          </configuration>
-        </plugin>
         <!-- Packaging -->
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>

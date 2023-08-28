@@ -30,6 +30,7 @@
     <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
     <version.rewrite.plugin>5.4.2</version.rewrite.plugin>
     <version.source.plugin>3.3.0</version.source.plugin>
+    <version.resources.plugin>3.3.1</version.resources.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
   </properties>
 
@@ -72,6 +73,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
           <version>${version.source.plugin}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${version.resources.plugin}</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
