@@ -1,7 +1,6 @@
-:projectKey: ai.timefold.solver:timefold
-// TODO Enable Sonar
-// :sonarBadge: image:https://sonarcloud.io/api/project_badges/measure?project={projectKey}
-// :sonarLink: link="https://sonarcloud.io/dashboard?id={projectKey}"
+:projectKey: ai.timefold:timefold-solver
+:sonarBadge: image:https://sonarcloud.io/api/project_badges/measure?project={projectKey}
+:sonarLink: link="https://sonarcloud.io/dashboard?id={projectKey}"
 
 :branch: main
 
@@ -19,10 +18,10 @@ image:https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=st
 image:https://img.shields.io/github/discussions/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Discussions", link="https://github.com/TimefoldAI/timefold-solver/discussions"]
 image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Issues", link="https://github.com/TimefoldAI/timefold-solver/issues"]
 
-// {sonarBadge}&style=for-the-badge&metric=reliability_rating["Reliability Rating", {sonarLink}]
-// {sonarBadge}&metric=security_rating["Security Rating", {sonarLink}]
-// {sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
-// {sonarBadge}&metric=coverage["Coverage", {sonarLink}]
+{sonarBadge}&style=for-the-badge&metric=reliability_rating["Reliability Rating", {sonarLink}]
+{sonarBadge}&metric=security_rating["Security Rating", {sonarLink}]
+{sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
+{sonarBadge}&metric=coverage["Coverage", {sonarLink}]
 
 == Get started with Timefold Solver
 
@@ -31,7 +30,7 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 
 == Build from source
 
-. Install JDK 17+ and Maven 3+, for example with https://sdkman.io[Sdkman]:
+. Install JDK 17+ and Maven 3.9+, for example with https://sdkman.io[Sdkman]:
 +
 ----
 $ sdk install java
