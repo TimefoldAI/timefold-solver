@@ -8,12 +8,12 @@
 [[findTheBestSolverConfiguration]]
 == Find the best solver configuration
 
-Timefold supports several optimization algorithms, so you're probably wondering which is the best one?
+Timefold Solver supports several optimization algorithms, so you're probably wondering which is the best one?
 Although some optimization algorithms generally perform better than others, it really depends on your problem domain.
 Most solver phases have parameters which can be tweaked.
 Those parameters can influence the results a lot, even though most solver phases work pretty well out-of-the-box.
 
-Luckily, Timefold includes a benchmarker, which allows you to play out different solver phases with different settings
+Luckily, Timefold Solver includes a benchmarker, which allows you to play out different solver phases with different settings
 against each other in development, so you can use the best configuration for your planning problem in production.
 
 image::benchmarking-and-tweaking/benchmarkOverview.png[align="center"]
@@ -152,7 +152,8 @@ This way the generated files are not bloating your source control and they aren'
 For example in git, it should be added to ``.gitignore``. Usually that directory is called ``local``.
 ====
 
-If an `Exception` or `Error` occurs in a single benchmark, the entire Benchmarker does not fail-fast (unlike everything else in Timefold).
+If an `Exception` or `Error` occurs in a single benchmark,
+the entire Benchmarker does not fail-fast (unlike everything else in Timefold Solver).
 Instead, the Benchmarker continues to run all other benchmarks, write the benchmark report and then fail (if there is at least one failing single benchmark).
 The failing benchmarks are clearly marked as such in the benchmark report.
 
@@ -686,7 +687,7 @@ On the other hand, for the Tabu Search and Late Acceptance, what you see is what
 ====
 
 *The best score over time statistic is very useful to detect abnormalities, such as a
-potential xref:score-calculation/score-calculation.adoc#scoreTrap[score trap] which gets the solver temporarily stuck in a local optima.*
+potential xref:constraints-and-score/constraints-and-score.adoc#scoreTrap[score trap] which gets the solver temporarily stuck in a local optima.*
 
 image::benchmarking-and-tweaking/letTheBestScoreStatisticGuideYou.png[align="center"]
 
@@ -713,8 +714,9 @@ But it shouldn't deteriorate too much either.
 [WARNING]
 ====
 The step score statistic has been seen to slow down the solver noticeably due to GC stress,
-especially for fast stepping algorithms
-(such as xref:local-search/local-search.adoc#simulatedAnnealing[Simulated Annealing] and xref:local-search/local-search.adoc#lateAcceptance[Late Acceptance]).
+especially for fast stepping algorithms,
+such as xref:optimization-algorithms/optimization-algorithms.adoc#simulatedAnnealing[Simulated Annealing]
+and xref:optimization-algorithms/optimization-algorithms.adoc#lateAcceptance[Late Acceptance].
 ====
 
 
@@ -870,9 +872,9 @@ To see which constraints are matched in the best score (and how much) over time,
 .Constraint Match Total Best Score Diff Over Time Statistic
 image::benchmarking-and-tweaking/constraintMatchTotalBestScoreStatistic.png[align="center"]
 
-Requires the score calculation to support xref:score-calculation/score-calculation.adoc#explainingTheScore[constraint matches].
-xref:constraint-streams/constraint-streams.adoc#constraintStreams[Constraint Streams] supports constraint matches automatically,
-but xref:score-calculation/score-calculation.adoc#incrementalJavaScoreCalculation[incremental Java score calculation] requires more work.
+Requires the score calculation to support xref:constraints-and-score/constraints-and-score.adoc#explainingTheScore[constraint matches].
+xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams] supports constraint matches automatically,
+but xref:constraints-and-score/constraints-and-score.adoc#incrementalJavaScoreCalculation[incremental Java score calculation] requires more work.
 
 [WARNING]
 ====
@@ -896,7 +898,7 @@ To see which constraints are matched in the step score (and how much) over time,
 .Constraint Match Total Step Score Diff Over Time Statistic
 image::benchmarking-and-tweaking/constraintMatchTotalStepScoreStatistic.png[align="center"]
 
-Also requires the score calculation to support xref:score-calculation/score-calculation.adoc#explainingTheScore[constraint matches].
+Also requires the score calculation to support xref:constraints-and-score/constraints-and-score.adoc#explainingTheScore[constraint matches].
 
 [WARNING]
 ====
@@ -970,7 +972,7 @@ Leave some processors unused for garbage collection and other processes.
 The following ``parallelBenchmarkCount``s are supported:
 
 * `1` (default): Run all benchmarks sequentially.
-* ``AUTO``: Let Timefold decide how many benchmarks to run in parallel. This formula is based on experience. It's recommended to prefer this over the other parallel enabling options.
+* ``AUTO``: Let Timefold Solver decide how many benchmarks to run in parallel. This formula is based on experience. It's recommended to prefer this over the other parallel enabling options.
 * Static number: The number of benchmarks to run in parallel.
 +
 [source,xml,options="nowrap"]
@@ -1167,7 +1169,7 @@ In the GUI, select the interesting benchmarks and click the button to generate t
 
 [NOTE]
 ====
-All the input reports which are being merged should have been generated with the same Timefold version (excluding hotfix differences) as the ``BenchmarkAggregator``.
-Using reports from different Timefold major or minor versions are not guaranteed to succeed and deliver correct information,
+All the input reports which are being merged should have been generated with the same Timefold Solver version (excluding hotfix differences) as the ``BenchmarkAggregator``.
+Using reports from different Timefold Solver major or minor versions are not guaranteed to succeed and deliver correct information,
 because the benchmark report data structure often changes.
 ====

@@ -8,7 +8,7 @@
 [[integrationOverview]]
 == Overview
 
-Timefold's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
+Timefold Solver's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
 For example:
 
 * To read a planning problem from the database (and store the best solution in it), annotate the domain POJOs with JPA annotations.
@@ -30,12 +30,12 @@ to store them in a database by calling `EntityManager.persist()`.
 
 [NOTE]
 ====
-Do not confuse JPA's `@Entity` annotation with Timefold's `@PlanningEntity` annotation.
+Do not confuse JPA's `@Entity` annotation with Timefold Solver's `@PlanningEntity` annotation.
 They can appear both on the same class:
 
 [source,java,options="nowrap"]
 ----
-@PlanningEntity // Timefold annotation
+@PlanningEntity // Timefold Solver annotation
 @Entity // JPA annotation
 public class Talk {...}
 ----
@@ -74,7 +74,7 @@ Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
 
 [source,java,options="nowrap"]
 ----
-@PlanningSolution // Timefold annotation
+@PlanningSolution // Timefold Solver annotation
 @Entity // JPA annotation
 public class Conference {
 
@@ -87,7 +87,7 @@ public class Conference {
 
 [source,java,options="nowrap"]
 ----
-@DeepPlanningClone // Timefold annotation: Force the default planning cloner to planning clone this class too
+@DeepPlanningClone // Timefold Solver annotation: Force the default planning cloner to planning clone this class too
 @Entity // JPA annotation
 public class Room {
 
@@ -327,7 +327,7 @@ This generates:
 [[integrationWithQuarkus]]
 == Quarkus
 
-To use Timefold with Quarkus, read the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusJavaQuickStart[Quarkus Java quick start].
+To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusJavaQuickStart[Quarkus Java quick start].
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
 the _Timefold AI constraint solver_ extension before generating your application.
 
@@ -339,7 +339,7 @@ include::config-properties.adoc[]
 [[integrationWithSpringBoot]]
 == Spring Boot
 
-To use Timefold on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
+To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
 and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[Spring Boot Java quick start].
 
 These properties are supported in Spring's `application.properties`:
@@ -355,7 +355,7 @@ include::config-properties.adoc[]
 [[integrationWithJPMS]]
 === Java platform module system (Jigsaw)
 
-When using Timefold from code on the modulepath (Java 9 and higher),
+When using Timefold Solver from code on the modulepath (Java 9 and higher),
 _open_ your packages that contain your domain objects, constraints and solver configuration
 _to all modules_ in your `module-info.java` file:
 
@@ -372,25 +372,26 @@ module ai.timefold.solver.cloudbalancing {
 }
 ----
 
-Otherwise Timefold can't reach those classes or files, even if they are exported.
+Otherwise Timefold Solver can't reach those classes or files, even if they are exported.
 
 
 [[integrationWithHumanPlanners]]
 == Integration with human planners (politics)
 
-A good Timefold implementation beats any good human planner for non-trivial datasets.
+A good Timefold Solver implementation beats any good human planner for non-trivial datasets.
 Many human planners fail to accept this, often because they feel threatened by an automated system.
 
-But despite that, both can benefit if the human planner becomes the supervisor of Timefold:
+But despite that, both can benefit if the human planner becomes the supervisor of Timefold Solver:
 
 * *The human planner defines, validates and tweaks the score function.*
-** The human planner tweaks the constraint weights of the xref:score-calculation/score-calculation.adoc#constraintConfiguration[constraint configuration] in a UI, as the business priorities change over time.
+** The human planner tweaks the constraint weights of the xref:constraints-and-score/constraints-and-score.adoc#constraintConfiguration[constraint configuration] in a UI, as the business priorities change over time.
 ** When the business changes, the score function often needs to change too.
 The human planner can notify the developers to add, change or remove score constraints.
-* *The human planner is always in control of Timefold.*
+* *The human planner is always in control of Timefold Solver.*
 ** As shown in the course scheduling example, the human planner can pin down one or more planning variables to a specific planning value.
-Because they are xref:repeated-planning/repeated-planning.adoc#pinnedPlanningEntities[pinned], Timefold does not change them: it optimizes the planning around the enforcements made by the human.
-If the human planner pins down all planning variables, he/she sidelines Timefold completely.
+Because they are xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned],
+Timefold Solver does not change them: it optimizes the planning around the enforcements made by the human.
+If the human planner pins down all planning variables, he/she sidelines Timefold Solver completely.
 ** In a prototype implementation, the human planner occasionally uses pinning to intervene, but as the implementation matures, this should become obsolete.
 The feature should be kept available as a reassurance for the humans, and in the event that the business changes dramatically before the score constraints are adjusted accordingly.
 
@@ -401,31 +402,33 @@ image::integration/keepTheUserInControl.png[align="center"]
 [[sizingHardwareAndSoftware]]
 == Sizing hardware and software
 
-Before sizing a Timefold service, first understand the typical behaviour of a `Solver.solve()` call:
+Before sizing a Timefold Solver service, first understand the typical behaviour of a `Solver.solve()` call:
 
 image::integration/sizingHardware.png[align="center"]
 
-Understand these guidelines to decide the hardware for a Timefold service:
+Understand these guidelines to decide the hardware for a Timefold Solver service:
 
 * **RAM memory**: Provision plenty, but no need to provide more.
-** The problem dataset, loaded before Timefold is called, often consumes the most memory. It depends on the problem scale.
+** The problem dataset, loaded before Timefold Solver is called, often consumes the most memory. It depends on the problem scale.
 *** For example, in the Machine Reassignment example some datasets use over 1GB in memory. But in most examples, they use just a few MB.
-*** If this is a problem, review the domain class structure: remove classes or fields that Timefold doesn't need during solving.
-*** Timefold usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:configuration/configuration.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
+*** If this is a problem, review the domain class structure: remove classes or fields that Timefold Solver doesn't need during solving.
+*** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:configuration/configuration.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
 ** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.
 ** The maximum size of the JVM heap space can be in three states:
 *** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
 *** **Narrow**: The heap buffer for those short-lived instances is too small, therefore the Garbage Collector needs to run more than it would like to, which causes a performance loss.
 **** Profiling shows that in the heap chart, the used heap space frequently touches the max heap space during solving. It also shows that the Garbage Collector has a significant CPU usage impact.
-**** Adding more heap space increases the xref:score-calculation/score-calculation.adoc#scoreCalculationSpeed[score calculation speed].
+**** Adding more heap space increases the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
 *** **Plenty**: There is enough heap space. The Garbage Collector is active, but its CPU usage is low.
 **** Adding more heap space does _not_ increase performance.
-**** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_ (except with xref:move-and-neighborhood-selection/move-and-neighborhood-selection.adoc#nearbySelection[nearby selection] and caching move selector, neither are used by default).
+**** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_,
+except with xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[nearby selection] and caching move selector,
+neither of which are used by default.
 * **CPU power**: More is better.
-** Improving CPU speed directly increases the xref:score-calculation/score-calculation.adoc#scoreCalculationSpeed[score calculation speed].
+** Improving CPU speed directly increases the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
 *** If the CPU power is twice as fast, it takes half the time to find the same result. However, this does not guarantee that it finds a better result in the same time, nor that it finds a similar result for a problem twice as big in the same time.
 *** Increasing CPU power usually does not resolve scaling issues, because planning problems scale exponentially. Power tweaking the solver configuration has far better results for scaling issues than throwing hardware at it.
-** During the `solve()` method, the CPU power will max out until it returns (except in xref:repeated-planning/repeated-planning.adoc#daemon[daemon mode] or if your xref:optimization-algorithms/optimization-algorithms.adoc#SolverEventListener[SolverEventListener] writes the best solution to disk or the network).
+** During the `solve()` method, the CPU power will max out until it returns (except in xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode] or if your xref:optimization-algorithms/optimization-algorithms.adoc#SolverEventListener[SolverEventListener] writes the best solution to disk or the network).
 * **Number of CPU cores**: one CPU core per active Solver, plus at least one one for the operating system.
 ** So in a multitenant application, which has one Solver per tenant, this means one CPU core per tenant, unless the number of solver threads is limited, as that limits the number of tenants being solved in parallel.
 ** With Partitioned Search, presume one CPU core per partition (per active tenant), unless the number of partition threads is limited.
@@ -435,9 +438,9 @@ Understand these guidelines to decide the hardware for a Timefold service:
 *** Distribute the Solver runs across the day (or night). This is especially an opportunity in SaaS that's used across the globe, due to timezones: UK and India can use the same CPU core when scheduling at night.
 ** The SolverManager will take care of the orchestration, especially in those underfunded environments in which solvers (and partitions) are forced to share CPU cores or wait in line.
 * **I/O (network, disk, ...)**: Not used during solving.
-** Timefold is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
+** Timefold Solver is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
 *** A web server can handle 24 active servlets threads with eight cores without performance loss, because most servlets threads are blocking on I/O.
-*** However, 24 active solver threads with eight cores will cause each solver's xref:score-calculation/score-calculation.adoc#scoreCalculationSpeed[score calculation speed] to be three times slower, causing a big performance loss.
+*** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed] to be three times slower, causing a big performance loss.
 ** Note that calling any I/O during solving, for example a remote service in your score calculation, causes a huge performance loss because it's called thousands of times per second, so it should complete in microseconds. So no good implementation does that.
 
 Keep these guidelines in mind when selecting and configuring the software.
@@ -447,8 +450,8 @@ Your mileage may vary.
 * Operating System
 ** No experimentally proven advice yet (but prefer Linux anyway).
 * JDK
-** Version: Our benchmarks have consistently shown improvements in performance when comparing new JDK releases with their predecessors. It is therefore recommended using the latest available JDK. If you're interested in the performance comparisons of Timefold running of different JDK releases, you can find them in the form of blog posts in https://timefold.ai/blog/[our blog archive].
-** Garbage Collector: ParallelGC can be potentially between 5% and 35% faster than G1GC (the default). Unlike web servers, Timefold needs a GC focused on throughput, not latency. Use `-XX:+UseParallelGC` to turn on ParallelGC.
+** Version: Our benchmarks have consistently shown improvements in performance when comparing new JDK releases with their predecessors. It is therefore recommended using the latest available JDK. If you're interested in the performance comparisons of Timefold Solver running of different JDK releases, you can find them in the form of blog posts in https://timefold.ai/blog/[our blog archive].
+** Garbage Collector: ParallelGC can be potentially between 5% and 35% faster than G1GC (the default). Unlike web servers, Timefold Solver needs a GC focused on throughput, not latency. Use `-XX:+UseParallelGC` to turn on ParallelGC.
 * Logging can have a severe impact on performance.
 ** Debug logging `ai.timefold.solver` can be between 0% and 15% slower than info logging. Trace logging can be between 5% and 70% slower than info logging.
 ** Synchronous logging to a file has an additional significant impact for debug and trace logging (but not for info logging).

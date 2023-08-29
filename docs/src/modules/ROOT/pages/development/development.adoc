@@ -7,7 +7,7 @@
 [[methodologyOverview]]
 == Methodology overview
 
-The diagram below explains the overall structure of the Timefold source code:
+The diagram below explains the overall structure of the Timefold Solver source code:
 
 image::development/methodologyOverview.png[align="center"]
 
@@ -73,7 +73,7 @@ The word _maybe_ is to indicate that the advice is not guaranteed to be right in
 
 === Lifecycle
 
-One of the biggest challenges in multi-algorithm implementations (such as Timefold)
+One of the biggest challenges in multi-algorithm implementations (such as Timefold Solver)
 is the lifecycle management of internal subsystems.
 These guidelines avoid lifecycle complexity:
 

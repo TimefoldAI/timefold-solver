@@ -18,9 +18,9 @@ If this property isn't specified, that file is optional.
 Enable runtime assertions to detect common bugs in your implementation during development.
 
 {property_prefix}timefold.solver.daemon::
-Enable xref:repeated-planning/repeated-planning.adoc#daemon[daemon mode].
+Enable xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode].
 In daemon mode, non-early termination pauses the solver instead of stopping it, until the next problem fact change arrives.
-This is often useful for xref:repeated-planning/repeated-planning.adoc#realTimePlanning[real-time planning].
+This is often useful for xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning].
 Defaults to `false`.
 
 {property_prefix}timefold.solver.move-thread-count::
@@ -29,7 +29,7 @@ Defaults to `NONE`.
 See xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedIncrementalSolving[multithreaded incremental solving].
 
 {property_prefix}timefold.solver.domain-access-type::
-How Timefold should access the domain model.
+How Timefold Solver should access the domain model.
 See xref:configuration/configuration.adoc#domainAccess[the domain access section] for more details.
 ifeval::["{property_prefix}" == "quarkus."]
 Defaults to `GIZMO`.
@@ -39,11 +39,6 @@ ifeval::["{property_prefix}" == ""]
 Defaults to `REFLECTION`.
 The other possible value is `GIZMO`.
 endif::[]
-
-{property_prefix}timefold.solver.constraint-stream-impl-type::
-What Constraint Stream implementation to use.
-See xref:constraint-streams/constraint-streams.adoc#constraintStreamsImplementations[the variant implementation types section] for more details.
-Defaults to `BAVET`.
 
 {property_prefix}timefold.solver.termination.spent-limit::
 How long the solver can run.

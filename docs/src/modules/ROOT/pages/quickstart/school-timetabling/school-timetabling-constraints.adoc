@@ -3,7 +3,7 @@
 
 A _score_ represents the quality of a specific solution.
 The higher the better.
-Timefold looks for the best solution, which is the solution with the highest score found in the available time.
+Timefold Solver looks for the best solution, which is the solution with the highest score found in the available time.
 It might be the _optimal_ solution.
 
 Because this use case has hard and soft constraints,
@@ -59,7 +59,8 @@ all lessons are re-evaluated to calculate the new score.
 
 Instead, create a `src/main/java/org/acme/schooltimetabling/solver/TimeTableConstraintProvider.java` class
 to perform incremental score calculation.
-It uses Timefold's ConstraintStream API which is inspired by Java Streams and SQL:
+It uses Timefold Solver's xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams API]
+which is inspired by Java Streams and SQL:
 
 [source,java]
 ----

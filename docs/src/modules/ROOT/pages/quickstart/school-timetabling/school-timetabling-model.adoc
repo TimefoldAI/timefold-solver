@@ -14,7 +14,7 @@ For simplicity's sake, all time slots have the same duration
 and there are no time slots during lunch or other breaks.
 
 A time slot has no date, because a high school schedule just repeats every week.
-So there is no need for xref:repeated-planning/repeated-planning.adoc#continuousPlanning[continuous planning].
+So there is no need for xref:responding-to-change/responding-to-change.adoc#continuousPlanning[continuous planning].
 
 Create the `src/main/java/org/acme/schooltimetabling/domain/Timeslot.java` class:
 
@@ -61,10 +61,10 @@ public class Timeslot {
 ----
 
 Because no `Timeslot` instances change during solving, a `Timeslot` is called a _problem fact_.
-Such classes do not require any Timefold specific annotations.
+Such classes do not require any Timefold Solver specific annotations.
 
 Notice the `toString()` method keeps the output short,
-so it is easier to read Timefold's `DEBUG` or `TRACE` log, as shown later.
+so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log, as shown later.
 
 == Room
 
@@ -113,18 +113,18 @@ If a subject is taught multiple times per week by the same teacher to the same s
 there are multiple `Lesson` instances that are only distinguishable by `id`.
 For example, the 9th grade has six math lessons a week.
 
-During solving, Timefold changes the `timeslot` and `room` fields of the `Lesson` class,
+During solving, Timefold Solver changes the `timeslot` and `room` fields of the `Lesson` class,
 to assign each lesson to a time slot and a room.
-Because Timefold changes these fields, `Lesson` is a _planning entity_:
+Because Timefold Solver changes these fields, `Lesson` is a _planning entity_:
 
 image::quickstart/school-timetabling/schoolTimetablingClassDiagramAnnotated.png[]
 
 Most of the fields in the previous diagram contain input data, except for the orange fields:
 A lesson's `timeslot` and `room` fields are unassigned (`null`) in the input data
 and assigned (not `null`) in the output data.
-Timefold changes these fields during solving.
+Timefold Solver changes these fields during solving.
 Such fields are called planning variables.
-In order for Timefold to recognize them,
+In order for Timefold Solver to recognize them,
 both the `timeslot` and `room` fields require an `@PlanningVariable` annotation.
 Their containing class, `Lesson`, requires an `@PlanningEntity` annotation.
 
@@ -204,13 +204,13 @@ public class Lesson {
 ----
 
 The `Lesson` class has an `@PlanningEntity` annotation,
-so Timefold knows that this class changes during solving
+so Timefold Solver knows that this class changes during solving
 because it contains one or more planning variables.
 
 The `timeslot` field has an `@PlanningVariable` annotation,
-so Timefold knows that it can change its value.
+so Timefold Solver knows that it can change its value.
 In order to find potential `Timeslot` instances to assign to this field,
-Timefold uses the variable type to connect to a xref:configuration/configuration.adoc#planningValueRangeProvider[value range provider]
+Timefold Solver uses the variable type to connect to a xref:configuration/configuration.adoc#planningValueRangeProvider[value range provider]
 that provides a `List<Timeslot>` to pick from.
 
 The `room` field also has an `@PlanningVariable` annotation, for the same reasons.

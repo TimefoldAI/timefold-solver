@@ -7,12 +7,13 @@
 :icons: font
 
 [[whatIsTimefold]]
-== What is Timefold?
+== What is Timefold Solver?
 
-Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time and money). Timefold optimizes such planning to do more business with less resources.
+Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time and money).
+Timefold Solver optimizes such planning to do more business with less resources.
 This is known as _Constraint Satisfaction Programming_ (which is part of the _Operations Research_ discipline).
 
-https://timefold.ai[Timefold] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems.
+https://timefold.ai[Timefold Solver] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems.
 It solves use cases such as:
 
 * **Employee shift rostering**: timetabling nurses, repairmen, ...
@@ -47,7 +48,8 @@ The ability to achieve these goals relies on the number of resources available, 
 
 Specific constraints related to these resources must also be taken into account, such as the number of hours a person works, their ability to use certain machines, or compatibility between pieces of equipment.
 
-Timefold helps Java^TM^ programmers solve constraint satisfaction problems efficiently. Under the hood, it combines optimization heuristics and metaheuristics with very efficient score calculation.
+Timefold Solver helps Java^TM^ programmers solve constraint satisfaction problems efficiently.
+Under the hood, it combines optimization heuristics and metaheuristics with very efficient score calculation.
 
 
 [[aPlanningProblemIsNPCompleteOrNPHard]]
@@ -73,7 +75,7 @@ The implication of this is pretty dire: solving your problem is probably harder 
 * A Brute Force algorithm (even a smarter variant) will take too long.
 * A quick algorithm, for example in bin packing, __putting in the largest items first__, will return a solution that is far from optimal.
 
-By using advanced optimization algorithms, *Timefold does find a near-optimal solution in reasonable time for such planning problems.*
+By using advanced optimization algorithms, *Timefold Solver does find a near-optimal solution in reasonable time for such planning problems.*
 
 
 [[aPlanningProblemHasConstraints]]
@@ -92,7 +94,8 @@ Some basic problems (such as xref:use-cases-and-examples/nqueens/nqueens.adoc#nQ
 Some problems have three or more levels of constraints, for example hard, medium and soft constraints.
 
 These constraints define the _score calculation_ (AKA __fitness function__) of a planning problem.
-Each solution of a planning problem can be graded with a score. **With Timefold, score constraints are written in an Object Oriented language, such as Java^TM^ code**.
+Each solution of a planning problem can be graded with a score.
+**With Timefold Solver, score constraints are written in an Object Oriented language, such as Java^TM^ code**.
 Such code is easy, flexible and scalable.
 
 
@@ -110,8 +113,9 @@ There are several categories of solutions:
 Counterintuitively, the number of possible solutions is huge (if calculated correctly), even with a small dataset.
 As you can see in the examples, most instances have a lot more possible solutions than the minimal number of atoms in the known universe (10^80). Because there is no silver bullet to find the optimal solution, any implementation is forced to evaluate at least a subset of all those possible solutions.
 
-Timefold supports several optimization algorithms to efficiently wade through that incredibly large number of possible solutions.
-Depending on the use case, some optimization algorithms perform better than others, but it's impossible to tell in advance. **With Timefold, it is easy to switch the optimization algorithm**, by changing the solver configuration in a few lines of XML or code.
+Timefold Solver supports several optimization algorithms to efficiently wade through that incredibly large number of possible solutions.
+Depending on the use case, some optimization algorithms perform better than others, but it's impossible to tell in advance.
+**With Timefold Solver, it is easy to switch the optimization algorithm**, by changing the solver configuration in a few lines of XML or code.
 
 [[timefoldSolverStatus]]
 == Status of Timefold Solver
@@ -145,7 +149,7 @@ Most users will be able to solve their planning problems with the Community Edit
 === Timefold Solver Enterprise Edition
 
 Timefold Solver Enterprise Edition is a commercial product that offers additional features,
-such as xref:move-and-neighborhood-selection/move-and-neighborhood-selection.adoc#nearbySelection[nearby selection]
+such as xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[nearby selection]
 and xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multi-threaded solving].
 These features are essential to scale out to very large datasets.
 
@@ -294,7 +298,7 @@ as shown in the table below.
 
 === Upgrade to the latest version
 
-Quickly upgrade your source code to the latest and greatest version of Timefold,
+Quickly upgrade your source code to the latest and greatest version of Timefold Solver,
 run this command:
 
 Maven:
