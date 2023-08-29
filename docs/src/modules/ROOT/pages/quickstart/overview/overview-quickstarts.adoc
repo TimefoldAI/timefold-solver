@@ -7,19 +7,19 @@
 IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository
 contains the source code for all these guides and more.
 
-Each _quick start guide_ gets you up and running with Timefold quickly.
+Each _quick start guide_ gets you up and running with Timefold Solver quickly.
 Pick one that aligns with your requirements:
 
 * xref:quickstart/hello-world/hello-world-quickstart.adoc#helloWorldJavaQuickStart[*Hello World Java*]
-** Build a simple Java application that uses Timefold to optimize a school timetable for students and teachers.
+** Build a simple Java application that uses Timefold Solver to optimize a school timetable for students and teachers.
 * xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusJavaQuickStart[*Quarkus Java*]
-** Build a REST application that uses Timefold to optimize a school timetable for students and teachers.
+** Build a REST application that uses Timefold Solver to optimize a school timetable for students and teachers.
 ** https://quarkus.io[Quarkus] is a popular platform in the Java ecosystem that supports native compilation.
 * xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[*Spring Boot Java*]
-** Build a REST application that uses Timefold to optimize a school timetable for students and teachers.
+** Build a REST application that uses Timefold Solver to optimize a school timetable for students and teachers.
 ** https://spring.io[Spring Boot] is a popular platform in the Java ecosystem that supports native compilation.
 
-All three quick starts use Timefold to optimize a school timetable for student and teachers:
+All three quick starts use Timefold Solver to optimize a school timetable for student and teachers:
 
 image::quickstart/school-timetabling/schoolTimetablingInputOutput.png[]
 

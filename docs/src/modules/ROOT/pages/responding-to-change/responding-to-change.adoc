@@ -1,13 +1,13 @@
-[[repeatedPlanning]]
-= Repeated planning
+[[respondingToChange]]
+= Responding to change
+:page-aliases: repeated-planning/repeated-planning.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
-[[introductionToRepeatedPlanning]]
-== Introduction to repeated planning
-
-The problem facts used to create a solution may change before or during the execution of that solution. Delaying planning in order to lower the risk of problem facts changing is not ideal, as an incomplete plan is preferable to no plan.
+The problem facts used to create a solution may change before or during the execution of that solution.
+Delaying planning in order to lower the risk of problem facts changing is not ideal,
+as an incomplete plan is preferable to no plan.
 
 The following examples demonstrate situations where planning solutions need to be altered due to unpredictable changes:
 
@@ -41,7 +41,9 @@ Use <<realTimePlanning,_real-time planning_>>.
 
 More CPU time results in a better planning solution.
 
-Timefold allows you to start planning earlier, despite unforeseen changes, as the optimization algorithms support planning a solution that has already been partially planned. This is known as repeated planning.
+Timefold Solver allows you to start planning earlier, despite unforeseen changes,
+as the optimization algorithms support planning a solution that has already been partially planned.
+This is known as repeated planning.
 
 
 [[backupPlanning]]
@@ -71,7 +73,7 @@ The construction heuristics fills in the newly created gaps (probably with the s
 When there is no feasible solution to assign all planning entities, it is preferable to assign as many entities as possible without breaking hard constraints.
 This is called overconstrained planning.
 
-By default, Timefold assigns all planning entities, overloads the planning values, and therefore breaks hard constraints.
+By default, Timefold Solver assigns all planning entities, overloads the planning values, and therefore breaks hard constraints.
 There are two ways to avoid this:
 
 * Use xref:configuration/configuration.adoc#nullablePlanningVariable[nullable] planning variables, so that some entities are unassigned.
@@ -83,11 +85,11 @@ There are two ways to avoid this:
 
 If we handle overconstrained planning with nullable variables, the overload entities will be left unassigned:
 
-image::repeated-planning/overconstrainedPlanning.png[align="center"]
+image::responding-to-change/overconstrainedPlanning.png[align="center"]
 
 To implement this:
 
-. Add a score level (usually a medium level between the hard and soft level) by switching xref:score-calculation/score-calculation.adoc#scoreType[`Score` type].
+. Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/constraints-and-score.adoc#scoreType[`Score` type].
 . Make the planning variable xref:configuration/configuration.adoc#nullablePlanningVariable[nullable].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
 
@@ -100,7 +102,7 @@ In overconstrained planning with virtual values, the solution indicates which re
 
 To implement this:
 
-. Add an additional score level (usually a medium level between the hard and soft level) by switching xref:score-calculation/score-calculation.adoc#scoreType[`Score` type].
+. Add an additional score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/constraints-and-score.adoc#scoreType[`Score` type].
 . Add a number of virtual values. It can be difficult to determine a good formula to calculate that number:
 ** Do not add too many, as that will decrease solver efficiency.
 ** Importantly, do not add too few as that will lead to an infeasible solution.
@@ -114,13 +116,13 @@ Continuous planning is the technique of planning one or more upcoming planning p
 and repeating that process monthly, weekly, daily, hourly, or even more frequently.
 However, as time is infinite, planning all future time periods is impossible.
 
-image::repeated-planning/continuousPlanningEmployeeRostering.png[align="center"]
+image::responding-to-change/continuousPlanningEmployeeRostering.png[align="center"]
 
 In the employee rostering example above, we re-plan every four days.
 Each time, we actually plan a window of 12 days, but we only publish the first four days,
 which is stable enough to share with the employees, so they can plan their social life accordingly.
 
-image::repeated-planning/continuousPlanningPatientAdmissionSchedule.png[align="center"]
+image::responding-to-change/continuousPlanningPatientAdmissionSchedule.png[align="center"]
 
 In the hospital bed planning example above, notice the difference between the original planning of November 1st and the new planning of November 5th:
 some problem facts (F, H, I, J, K) changed in the meantime, which results in unrelated planning entities (G) changing too.
@@ -173,13 +175,13 @@ Planning entities that are not in the current planning window.
 ** If xref:design-patterns/design-patterns.adoc#assigningTimeToPlanningEntities[time is a planning variable], the size of the planning window is determined dynamically,
 in which case the _unplanned_ stage is not applicable.
 
-image::repeated-planning/continuousPublishingWithRotation.png[align="center"]
+image::responding-to-change/continuousPublishingWithRotation.png[align="center"]
 
 [[pinnedPlanningEntities]]
 === Pinned planning entities
 
 A pinned planning entity doesn't change during solving.
-This is commonly used by users to pin down one or more specific assignments and force Timefold to schedule around those fixed assignments.
+This is commonly used by users to pin down one or more specific assignments and force Timefold Solver to schedule around those fixed assignments.
 
 [[pinDownPlanningEntities]]
 ==== Pin down planning entities with `@PlanningPin`
@@ -249,7 +251,7 @@ If the plan affects humans (such as employees, drivers, ...), very disruptive ch
 In such cases, nonvolatile replanning helps by restricting planning freedom: the gain of changing a plan must be higher than the disruption it causes.
 This is usually implemented by taxing all planning entities that change.
 
-image::repeated-planning/nonDisruptiveReplanning.png[align="center"]
+image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
 
 In the machine reassignment example, the entity has both the planning variable `machine` and its original value ``originalMachine``:
 
@@ -305,11 +307,11 @@ This lowers the burden of real-time planning.
 As time passes, the problem itself changes.
 Consider the vehicle routing use case:
 
-image::repeated-planning/realTimePlanningVehicleRouting.png[align="center"]
+image::responding-to-change/realTimePlanningVehicleRouting.png[align="center"]
 
 In the example above, three customers are added at different times (``07:56``, `08:02` and ``08:45``), after the original customer set finished solving at `07:55`, and in some cases, after the vehicles have already left.
 
-Timefold can handle such scenarios with `ProblemChange` (in combination with <<pinnedPlanningEntities,pinned planning entities>>).
+Timefold Solver can handle such scenarios with `ProblemChange` (in combination with <<pinnedPlanningEntities,pinned planning entities>>).
 
 [[problemChange]]
 === `ProblemChange`
@@ -451,7 +453,7 @@ Many types of changes can leave a planning entity uninitialized, resulting in a 
 
 All construction heuristics solver phases can handle a partially initialized solution, so it is recommended to configure such a solver phase as the first phase.
 
-image::repeated-planning/realTimePlanningConcurrencySequenceDiagram.png[align="center"]
+image::responding-to-change/realTimePlanningConcurrencySequenceDiagram.png[align="center"]
 
 The process occurs as follows:
 
@@ -527,14 +529,14 @@ and another department assigns the operators to the actual train cars or locomot
 
 Each stage has its own solver configuration (and therefore its own ``SolverFactory``):
 
-image::repeated-planning/multiStagePlanning.png[align="center"]
+image::responding-to-change/multiStagePlanning.png[align="center"]
 
 Planning problems with different publication deadlines must use multi-stage planning.
 But problems with the same publication deadline, solved by different organizational groups
 are also initially better off with multi-stage planning, because of Conway's law
 and the high risk associated with unifying such groups.
 
-Similarly to xref:partitioned-search/partitioned-search.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
+Similarly to xref:optimization-algorithms/optimization-algorithms.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
 Nevertheless, it might be beneficial in order to simplify the maintenance, ownership, and help to start a project.
 
 Do not confuse multi-stage planning with xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[multi-phase solving].

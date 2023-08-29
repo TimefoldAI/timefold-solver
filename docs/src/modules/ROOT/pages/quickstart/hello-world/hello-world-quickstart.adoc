@@ -49,7 +49,7 @@ Mathematically speaking, school timetabling is an _NP-hard_ problem.
 This means it is difficult to scale.
 Simply brute force iterating through all possible combinations takes millions of years
 for a non-trivial dataset, even on a supercomputer.
-Fortunately, AI constraint solvers such as Timefold have advanced algorithms
+Fortunately, AI constraint solvers such as Timefold Solver have advanced algorithms
 that deliver a near-optimal solution in a reasonable amount of time.
 
 == Solution source code
@@ -85,7 +85,7 @@ Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
 * `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
-* A xref:configuration/configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold is doing.
+* A xref:configuration/configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
 If you choose Maven, your `pom.xml` file has the following content:
 
@@ -419,7 +419,7 @@ After five seconds, the `main()` method loads the problem, solves it, and prints
 The `solve()` method doesn't return instantly.
 It runs for five seconds before returning the best solution.
 
-Timefold returns _the best solution_ found in the available termination time.
+Timefold Solver returns _the best solution_ found in the available termination time.
 Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[the nature of NP-hard problems],
 the best solution might not be optimal, especially for larger datasets.
 Increase the termination time to potentially find a better solution.
@@ -478,7 +478,7 @@ INFO  |            | 9th grade  | 10th grade |            |
 Verify the console output. Does it conform to all hard constraints?
 What happens if you comment out the `roomConflict` constraint in `TimeTableConstraintProvider`?
 
-The `info` log shows what Timefold did in those five seconds:
+The `info` log shows what Timefold Solver did in those five seconds:
 
 [source,options="nowrap"]
 ----
@@ -545,7 +545,7 @@ if those constraint weights are hard coded in the `ConstraintProvider` - because
 constraints weights change regularly before going into production.
 This way, constraint weight tweaking does not break the unit tests.
 
-For more, see xref:constraint-streams/constraint-streams.adoc#constraintStreamsTesting[Testing Constraint Streams].
+For more, see xref:constraints-and-score/constraints-and-score.adoc#constraintStreamsTesting[Testing Constraint Streams].
 
 === Logging
 
@@ -558,7 +558,7 @@ after solving for the same amount of time, to assess the performance impact:
 ... Solving ended: ..., score calculation speed (29455/sec), ...
 ----
 
-To understand how Timefold is solving your problem internally,
+To understand how Timefold Solver is solving your problem internally,
 change the logging in the `logback.xml` file:
 
 [source,xml]

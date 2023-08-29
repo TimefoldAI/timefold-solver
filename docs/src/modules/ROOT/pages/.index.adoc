@@ -1,4 +1,4 @@
-= Timefold User Guide
+= Timefold Solver User Guide
 The Timefold Team <https://timefold.ai/company/about/>
 :doctype: book
 :imagesdir: .
@@ -22,19 +22,10 @@ include::introduction/introduction.adoc[leveloffset=+1]
 include::quickstart/.quickstart.adoc[leveloffset=+1]
 include::use-cases-and-examples/use-cases-and-examples.adoc[leveloffset=+1]
 include::configuration/configuration.adoc[leveloffset=+1]
-include::score-calculation/score-calculation.adoc[leveloffset=+1]
-include::constraint-streams/constraint-streams.adoc[leveloffset=+1]
-include::shadow-variable/shadow-variable.adoc[leveloffset=+1]
+include::constraints-and-score/constraints-and-score.adoc[leveloffset=+1]
 include::optimization-algorithms/optimization-algorithms.adoc[leveloffset=+1]
-include::move-and-neighborhood-selection/move-and-neighborhood-selection.adoc[leveloffset=+1]
-include::exhaustive-search/exhaustive-search.adoc[leveloffset=+1]
-include::construction-heuristics/construction-heuristics.adoc[leveloffset=+1]
-include::local-search/local-search.adoc[leveloffset=+1]
-include::evolutionary-algorithms/evolutionary-algorithms.adoc[leveloffset=+1]
-include::hyperheuristics/hyperheuristic.adoc[leveloffset=+1]
-include::partitioned-search/partitioned-search.adoc[leveloffset=+1]
 include::benchmarking-and-tweaking/benchmarking-and-tweaking.adoc[leveloffset=+1]
-include::repeated-planning/repeated-planning.adoc[leveloffset=+1]
+include::responding-to-change/responding-to-change.adoc[leveloffset=+1]
 include::integration/integration.adoc[leveloffset=+1]
 include::design-patterns/design-patterns.adoc[leveloffset=+1]
 include::development/development.adoc[leveloffset=+1]

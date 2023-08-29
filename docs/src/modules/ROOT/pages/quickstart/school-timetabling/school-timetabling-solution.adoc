@@ -71,7 +71,7 @@ public class TimeTable {
 ----
 
 The `TimeTable` class has an `@PlanningSolution` annotation,
-so Timefold knows that this class contains all of the input and output data.
+so Timefold Solver knows that this class contains all of the input and output data.
 
 Specifically, this class is the input of the problem:
 
@@ -95,7 +95,7 @@ However, this class is also the output of the solution:
 == The value range providers
 
 The `timeslots` field is a value range provider.
-It holds the `Timeslot` instances which Timefold can pick from to assign to the `timeslot` field of `Lesson` instances.
+It holds the `Timeslot` instances which Timefold Solver can pick from to assign to the `timeslot` field of `Lesson` instances.
 The `timeslots` field has an `@ValueRangeProvider` annotation to connect the `@PlanningVariable` with the `@ValueRangeProvider`,
 by matching the type of the planning variable with the type returned by the xref:configuration/configuration.adoc#planningValueRangeProvider[value range provider].
 
@@ -103,7 +103,7 @@ Following the same logic, the `rooms` field also has an `@ValueRangeProvider` an
 
 == The problem fact and planning entity properties
 
-Furthermore, Timefold needs to know which `Lesson` instances it can change
+Furthermore, Timefold Solver needs to know which `Lesson` instances it can change
 as well as how to retrieve the `Timeslot` and `Room` instances used for score calculation
 by your `TimeTableConstraintProvider`.
 
@@ -111,5 +111,5 @@ The `timeslots` and `rooms` fields have an `@ProblemFactCollectionProperty` anno
 so your `TimeTableConstraintProvider` can select _from_ those instances.
 
 The `lessons` has an `@PlanningEntityCollectionProperty` annotation,
-so Timefold can change them during solving
+so Timefold Solver can change them during solving
 and your `TimeTableConstraintProvider` can select _from_ those too.
