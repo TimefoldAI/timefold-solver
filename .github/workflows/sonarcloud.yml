@@ -37,4 +37,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B -Psonarcloud-analysis validate org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=timefold -Dsonar.projectKey=ai.timefold:timefold_solver -Dsonar.host.url=https://sonarcloud.io
+        run: mvn -B -Psonarcloud-analysis validate org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=timefold -Dsonar.projectKey=ai.timefold:timefold-solver -Dsonar.host.url=https://sonarcloud.io
