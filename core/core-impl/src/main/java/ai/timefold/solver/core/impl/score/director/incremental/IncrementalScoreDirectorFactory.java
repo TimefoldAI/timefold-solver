@@ -33,10 +33,11 @@ public class IncrementalScoreDirectorFactory<Solution_, Score_ extends Score<Sco
     // ************************************************************************
 
     @Override
-    public IncrementalScoreDirector<Solution_, Score_> buildScoreDirector(
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
+    public IncrementalScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         return new IncrementalScoreDirector<>(this,
-                lookUpEnabled, constraintMatchEnabledPreference, incrementalScoreCalculatorSupplier.get());
+                lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState,
+                incrementalScoreCalculatorSupplier.get());
     }
 
 }

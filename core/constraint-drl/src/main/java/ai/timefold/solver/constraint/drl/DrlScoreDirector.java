@@ -36,9 +36,9 @@ public class DrlScoreDirector<Solution_, Score_ extends Score<Score_>>
     protected KieSession kieSession;
     protected AbstractScoreHolder<Score_> scoreHolder;
 
-    public DrlScoreDirector(DrlScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference);
+    public DrlScoreDirector(DrlScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
     }
 
     public KieSession getKieSession() {

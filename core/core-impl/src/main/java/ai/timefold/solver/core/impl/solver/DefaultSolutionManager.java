@@ -69,14 +69,15 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     private <Result_> Result_ callScoreDirector(Solution_ solution,
             SolutionUpdatePolicy solutionUpdatePolicy, Function<InnerScoreDirector<Solution_, Score_>, Result_> function,
             boolean enableConstraintMatch) {
+        boolean isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         Solution_ nonNullSolution = Objects.requireNonNull(solution);
         try (InnerScoreDirector<Solution_, Score_> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, enableConstraintMatch)) {
+                scoreDirectorFactory.buildScoreDirector(false, enableConstraintMatch, !isShadowVariableUpdateEnabled)) {
             scoreDirector.setWorkingSolution(nonNullSolution); // Init the ScoreDirector first, else NPEs may be thrown.
             if (enableConstraintMatch && !scoreDirector.isConstraintMatchEnabled()) {
                 throw new IllegalStateException("When constraintMatchEnabled is disabled, this method should not be called.");
             }
-            if (solutionUpdatePolicy.isShadowVariableUpdateEnabled()) {
+            if (isShadowVariableUpdateEnabled) {
                 scoreDirector.forceTriggerVariableListeners();
             }
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {

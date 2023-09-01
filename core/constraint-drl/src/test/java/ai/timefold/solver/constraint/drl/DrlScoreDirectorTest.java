@@ -18,7 +18,7 @@ class DrlScoreDirectorTest {
 
     @Test
     void illegalStateExceptionThrownWhenConstraintMatchNotEnabled() {
-        DrlScoreDirector<Object, ?> director = new DrlScoreDirector<>(mockDroolsScoreDirectorFactory(), false, false);
+        DrlScoreDirector<Object, ?> director = new DrlScoreDirector<>(mockDroolsScoreDirectorFactory(), false, false, true);
         director.setWorkingSolution(new Object());
         assertThatIllegalStateException()
                 .isThrownBy(director::getConstraintMatchTotalMap)
@@ -27,7 +27,7 @@ class DrlScoreDirectorTest {
 
     @Test
     void constraintMatchTotalsNeverNull() {
-        DrlScoreDirector<Object, ?> director = new DrlScoreDirector<>(mockDroolsScoreDirectorFactory(), false, true);
+        DrlScoreDirector<Object, ?> director = new DrlScoreDirector<>(mockDroolsScoreDirectorFactory(), false, true, true);
         director.setWorkingSolution(new Object());
         assertThat(director.getConstraintMatchTotalMap()).isNotNull();
         assertThat(director.getConstraintMatchTotalMap()).isNotNull();
@@ -35,7 +35,7 @@ class DrlScoreDirectorTest {
 
     @Test
     void indictmentMapNeverNull() {
-        DrlScoreDirector<Object, ?> director = new DrlScoreDirector<>(mockDroolsScoreDirectorFactory(), false, true);
+        DrlScoreDirector<Object, ?> director = new DrlScoreDirector<>(mockDroolsScoreDirectorFactory(), false, true, true);
         director.setWorkingSolution(new Object());
         assertThat(director.getIndictmentMap()).isNotNull();
     }

@@ -115,9 +115,10 @@ public class DrlScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
     // ************************************************************************
 
     @Override
-    public DrlScoreDirector<Solution_, Score_> buildScoreDirector(
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
-        return new DrlScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference);
+    public DrlScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        return new DrlScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
+                expectShadowVariablesInCorrectState);
     }
 
     public KieSession newKieSession() {

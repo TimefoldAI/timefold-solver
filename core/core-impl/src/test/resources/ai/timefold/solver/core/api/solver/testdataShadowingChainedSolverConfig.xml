@@ -1,0 +1,8 @@
+<solver>
+  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity</entityClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedObject</entityClass>
+  <scoreDirectorFactory>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+  </scoreDirectorFactory>
+</solver>

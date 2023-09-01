@@ -25,14 +25,14 @@ class EasyScoreDirectorFactoryTest {
         EasyScoreDirectorFactory<TestdataSolution, SimpleScore> directorFactory = new EasyScoreDirectorFactory<>(
                 solutionDescriptor, scoreCalculator);
 
-        EasyScoreDirector<TestdataSolution, SimpleScore> director =
-                directorFactory.buildScoreDirector(false, false);
-        TestdataSolution solution = new TestdataSolution();
-        solution.setValueList(Collections.emptyList());
-        solution.setEntityList(Collections.emptyList());
-        director.setWorkingSolution(solution);
-        assertThat(director.calculateScore())
-                .isEqualTo(SimpleScore.ofUninitialized(0, -10));
+        try (var director = directorFactory.buildScoreDirector(false, false)) {
+            TestdataSolution solution = new TestdataSolution();
+            solution.setValueList(Collections.emptyList());
+            solution.setEntityList(Collections.emptyList());
+            director.setWorkingSolution(solution);
+            assertThat(director.calculateScore())
+                    .isEqualTo(SimpleScore.ofUninitialized(0, -10));
+        }
     }
 
 }
