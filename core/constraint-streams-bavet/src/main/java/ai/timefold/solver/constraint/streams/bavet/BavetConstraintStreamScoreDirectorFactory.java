@@ -27,8 +27,9 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
 
     @Override
     public BavetConstraintStreamScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference) {
-        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference);
+            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
+                expectShadowVariablesInCorrectState);
     }
 
     public BavetConstraintSession<Score_> newSession(boolean constraintMatchEnabled, Solution_ workingSolution) {

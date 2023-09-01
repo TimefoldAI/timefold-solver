@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.solver;
 
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+
 /**
  * To fully de-normalize a planning solution freshly loaded from persistent storage,
  * two operations need to happen:
@@ -63,6 +65,12 @@ public enum SolutionUpdatePolicy {
         return scoreUpdateEnabled;
     }
 
+    /**
+     * If this is true, variable listeners will ignore certain fail-fasts.
+     * See {@link InnerScoreDirector#expectShadowVariablesInCorrectState()}.
+     *
+     * @return true if shadow variables should be updated
+     */
     public boolean isShadowVariableUpdateEnabled() {
         return shadowVariableUpdateEnabled;
     }

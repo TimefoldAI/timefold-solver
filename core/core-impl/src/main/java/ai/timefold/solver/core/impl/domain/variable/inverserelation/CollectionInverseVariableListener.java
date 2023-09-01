@@ -53,7 +53,7 @@ public class CollectionInverseVariableListener<Solution_>
         Object shadowEntity = sourceVariableDescriptor.getValue(entity);
         if (shadowEntity != null) {
             Collection shadowCollection = (Collection) shadowVariableDescriptor.getValue(shadowEntity);
-            if (shadowCollection == null) {
+            if (scoreDirector.expectShadowVariablesInCorrectState() && shadowCollection == null) {
                 throw new IllegalStateException("The entity (" + entity
                         + ") has a variable (" + sourceVariableDescriptor.getVariableName()
                         + ") with value (" + shadowEntity
@@ -65,7 +65,7 @@ public class CollectionInverseVariableListener<Solution_>
             }
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, shadowEntity);
             boolean added = shadowCollection.add(entity);
-            if (!added) {
+            if (scoreDirector.expectShadowVariablesInCorrectState() && !added) {
                 throw new IllegalStateException("The entity (" + entity
                         + ") has a variable (" + sourceVariableDescriptor.getVariableName()
                         + ") with value (" + shadowEntity
@@ -82,7 +82,7 @@ public class CollectionInverseVariableListener<Solution_>
         Object shadowEntity = sourceVariableDescriptor.getValue(entity);
         if (shadowEntity != null) {
             Collection shadowCollection = (Collection) shadowVariableDescriptor.getValue(shadowEntity);
-            if (shadowCollection == null) {
+            if (scoreDirector.expectShadowVariablesInCorrectState() && shadowCollection == null) {
                 throw new IllegalStateException("The entity (" + entity
                         + ") has a variable (" + sourceVariableDescriptor.getVariableName()
                         + ") with value (" + shadowEntity
@@ -94,7 +94,7 @@ public class CollectionInverseVariableListener<Solution_>
             }
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, shadowEntity);
             boolean removed = shadowCollection.remove(entity);
-            if (!removed) {
+            if (scoreDirector.expectShadowVariablesInCorrectState() && !removed) {
                 throw new IllegalStateException("The entity (" + entity
                         + ") has a variable (" + sourceVariableDescriptor.getVariableName()
                         + ") with value (" + shadowEntity
