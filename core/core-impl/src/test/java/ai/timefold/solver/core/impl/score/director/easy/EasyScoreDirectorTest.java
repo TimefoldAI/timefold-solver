@@ -22,7 +22,8 @@ class EasyScoreDirectorTest {
 
     @Test
     void constraintMatchTotalsUnsupported() {
-        EasyScoreDirector<Object, ?> director = new EasyScoreDirector<>(mockEasyScoreDirectorFactory(), false, true, null);
+        EasyScoreDirector<Object, ?> director =
+                new EasyScoreDirector<>(mockEasyScoreDirectorFactory(), false, true, true, null);
         assertThat(director.isConstraintMatchEnabled()).isFalse();
         assertThatIllegalStateException()
                 .isThrownBy(director::getConstraintMatchTotalMap)
@@ -44,7 +45,7 @@ class EasyScoreDirectorTest {
         scoreDirectorFactory.setInitializingScoreTrend(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
         EasyScoreDirector<TestdataCorruptedShadowedSolution, SimpleScore> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, false);
+                scoreDirectorFactory.buildScoreDirector(false, false, true);
 
         TestdataCorruptedShadowedSolution solution = new TestdataCorruptedShadowedSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");

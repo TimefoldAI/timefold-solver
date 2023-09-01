@@ -40,8 +40,27 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
      * @see InnerScoreDirector#isConstraintMatchEnabled()
      * @see InnerScoreDirector#getConstraintMatchTotalMap()
      */
-    InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference);
+    default InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference) {
+        return buildScoreDirector(lookUpEnabled, constraintMatchEnabledPreference, true);
+    }
+
+    /**
+     * Like {@link #buildScoreDirector()}, but optionally disables {@link ConstraintMatch} tracking and look up
+     * for more performance (presuming the {@link ScoreDirector} implementation actually supports it to begin with).
+     *
+     * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
+     *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
+     * @param constraintMatchEnabledPreference false if a {@link ScoreDirector} implementation
+     *        should not do {@link ConstraintMatch} tracking even if it supports it.
+     * @param expectShadowVariablesInCorrectState true, unless you have an exceptional reason.
+     *        See {@link InnerScoreDirector#expectShadowVariablesInCorrectState()} for details.
+     * @return never null
+     * @see InnerScoreDirector#isConstraintMatchEnabled()
+     * @see InnerScoreDirector#getConstraintMatchTotalMap()
+     */
+    InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled, boolean constraintMatchEnabledPreference,
+            boolean expectShadowVariablesInCorrectState);
 
     /**
      * @return never null
