@@ -26,10 +26,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     protected BavetConstraintSession<Score_> session;
 
-    public BavetConstraintStreamScoreDirector(
-            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference);
+    public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
     }
 
     // ************************************************************************

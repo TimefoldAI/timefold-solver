@@ -32,8 +32,10 @@ public class EasyScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
 
     @Override
     public EasyScoreDirector<Solution_, Score_> buildScoreDirector(
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
-        return new EasyScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference, easyScoreCalculator);
+            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        return new EasyScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
+                expectShadowVariablesInCorrectState,
+                easyScoreCalculator);
     }
 
 }
