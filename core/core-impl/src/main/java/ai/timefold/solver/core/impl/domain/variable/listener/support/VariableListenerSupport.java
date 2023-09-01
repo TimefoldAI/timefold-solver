@@ -237,11 +237,18 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     private void simulateGenuineVariableChange(Object entity) {
-        EntityDescriptor<Solution_> entityDescriptor = scoreDirector.getSolutionDescriptor()
+        var entityDescriptor = scoreDirector.getSolutionDescriptor()
                 .findEntityDescriptorOrFail(entity.getClass());
-        for (VariableDescriptor<Solution_> variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
-            // No change
-            beforeVariableChanged(variableDescriptor, entity);
+        for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+            if (variableDescriptor.isGenuineListVariable()) {
+                var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
+                int size = listVariableDescriptor.getListVariable(entity).size();
+                beforeListVariableChanged(listVariableDescriptor, entity, 0, size);
+                afterListVariableChanged(listVariableDescriptor, entity, 0, size);
+            } else {
+                // Triggering before...() is enough, as that will add the after...() call to the queue automatically.
+                beforeVariableChanged(variableDescriptor, entity);
+            }
         }
     }
 
