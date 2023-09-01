@@ -3,10 +3,14 @@ package ai.timefold.solver.core.api.solver;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
+import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
+import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedSolution;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +20,8 @@ public class SolutionManagerTest {
 
     public static final SolverFactory<TestdataShadowedSolution> SOLVER_FACTORY =
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowedSolverConfig.xml");
+    public static final SolverFactory<TestdataShadowingChainedSolution> SOLVER_FACTORY_CHAINED =
+            SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowingChainedSolverConfig.xml");
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -32,6 +38,51 @@ public class SolutionManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNotNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNotNull();
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateEverythingChained(SolutionManagerSource SolutionManagerSource) {
+        SolutionManager<TestdataShadowingChainedSolution, ?> SolutionManager =
+                SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_CHAINED);
+        assertThat(SolutionManager).isNotNull();
+
+        var a0 = new TestdataShadowingChainedAnchor("a0");
+        var a1 = new TestdataShadowingChainedEntity("a1", a0);
+        var b0 = new TestdataShadowingChainedAnchor("b0");
+        var b1 = new TestdataShadowingChainedEntity("b1", b0);
+        var b2 = new TestdataShadowingChainedEntity("b2", b1);
+        var c0 = new TestdataShadowingChainedAnchor("c0");
+        var solution = new TestdataShadowingChainedSolution("solution");
+        solution.setChainedAnchorList(Arrays.asList(a0, b0, c0));
+        solution.setChainedEntityList(Arrays.asList(a1, b1, b2));
+
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isNull();
+            softly.assertThat(a0.getNextEntity()).isNull();
+            softly.assertThat(a1.getAnchor()).isNull();
+            softly.assertThat(a1.getNextEntity()).isNull();
+            softly.assertThat(b0.getNextEntity()).isNull();
+            softly.assertThat(b1.getAnchor()).isNull();
+            softly.assertThat(b1.getNextEntity()).isNull();
+            softly.assertThat(b2.getAnchor()).isNull();
+            softly.assertThat(b2.getNextEntity()).isNull();
+            softly.assertThat(c0.getNextEntity()).isNull();
+        });
+
+        SolutionManager.update(solution);
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isNotNull();
+            softly.assertThat(a0.getNextEntity()).isEqualTo(a1);
+            softly.assertThat(a1.getAnchor()).isEqualTo(a0);
+            softly.assertThat(a1.getNextEntity()).isNull();
+            softly.assertThat(b0.getNextEntity()).isEqualTo(b1);
+            softly.assertThat(b1.getAnchor()).isEqualTo(b0);
+            softly.assertThat(b1.getNextEntity()).isEqualTo(b2);
+            softly.assertThat(b2.getAnchor()).isEqualTo(b0);
+            softly.assertThat(b2.getNextEntity()).isNull();
+            softly.assertThat(c0.getNextEntity()).isNull();
         });
     }
 
@@ -96,15 +147,15 @@ public class SolutionManagerTest {
         FROM_SOLVER_FACTORY(SolutionManager::create),
         FROM_SOLVER_MANAGER(solverFactory -> SolutionManager.create(SolverManager.create(solverFactory)));
 
-        private final Function<SolverFactory, SolutionManager> SolutionManagerConstructor;
+        private final Function<SolverFactory, SolutionManager> solutionManagerConstructor;
 
         SolutionManagerSource(Function<SolverFactory, SolutionManager> SolutionManagerConstructor) {
-            this.SolutionManagerConstructor = SolutionManagerConstructor;
+            this.solutionManagerConstructor = SolutionManagerConstructor;
         }
 
         public <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_>
                 createSolutionManager(SolverFactory<Solution_> solverFactory) {
-            return SolutionManagerConstructor.apply(solverFactory);
+            return solutionManagerConstructor.apply(solverFactory);
         }
 
     }

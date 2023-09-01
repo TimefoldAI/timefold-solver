@@ -59,8 +59,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected final Factory_ scoreDirectorFactory;
     protected final boolean lookUpEnabled;
     protected final LookUpManager lookUpManager;
-    protected boolean constraintMatchEnabledPreference;
+    protected final boolean expectShadowVariablesInCorrectState;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
+    protected boolean constraintMatchEnabledPreference;
 
     protected Solution_ workingSolution;
     protected long workingEntityListRevision = 0L;
@@ -70,16 +71,17 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected long calculationCount = 0L;
 
-    protected AbstractScoreDirector(Factory_ scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference) {
+    protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
                 : null;
-        this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
+        this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
+        this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
     }
 
     @Override
@@ -95,6 +97,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public ScoreDefinition<Score_> getScoreDefinition() {
         return scoreDirectorFactory.getScoreDefinition();
+    }
+
+    @Override
+    public boolean expectShadowVariablesInCorrectState() {
+        return expectShadowVariablesInCorrectState;
     }
 
     @Override
@@ -615,9 +622,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
-        try (InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector =
-                assertionScoreDirectorFactory.buildScoreDirector(false,
-                        true)) {
+        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.buildScoreDirector(false, true)) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {

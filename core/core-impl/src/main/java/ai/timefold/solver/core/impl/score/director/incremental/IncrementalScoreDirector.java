@@ -35,9 +35,9 @@ public class IncrementalScoreDirector<Solution_, Score_ extends Score<Score_>>
     private final IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
     public IncrementalScoreDirector(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference,
+            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState,
             IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference);
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
         this.incrementalScoreCalculator = incrementalScoreCalculator;
     }
 

@@ -126,6 +126,23 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     boolean requiresFlushing();
 
     /**
+     * Inverse shadow variables have a fail-fast for cases
+     * where the shadow variable doesn't actually point to its correct inverse.
+     * This is very useful to pinpoint improperly initialized solutions.
+     * <p>
+     * However, {@link SolutionManager#update(Object)} exists precisely for the purpose of initializing solutions.
+     * And when this API is used, the fail-fast must not be triggered as it is guaranteed and expected
+     * that the inverse relationships will be wrong.
+     * In fact, they will be null.
+     * <p>
+     * For this case and this case only, this method is allowed to return false.
+     * All other cases must return true, otherwise a very valuable fail-fast is lost.
+     *
+     * @return false if the fail-fast on shadow variables should not be triggered
+     */
+    boolean expectShadowVariablesInCorrectState();
+
+    /**
      * @return never null
      */
     InnerScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory();

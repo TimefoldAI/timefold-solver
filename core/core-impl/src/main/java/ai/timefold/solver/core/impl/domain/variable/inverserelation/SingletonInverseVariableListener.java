@@ -51,7 +51,7 @@ public class SingletonInverseVariableListener<Solution_>
         Object shadowEntity = sourceVariableDescriptor.getValue(entity);
         if (shadowEntity != null) {
             Object shadowValue = shadowVariableDescriptor.getValue(shadowEntity);
-            if (shadowValue != null) {
+            if (scoreDirector.expectShadowVariablesInCorrectState() && shadowValue != null) {
                 throw new IllegalStateException("The entity (" + entity
                         + ") has a variable (" + sourceVariableDescriptor.getVariableName()
                         + ") with value (" + shadowEntity
@@ -69,7 +69,7 @@ public class SingletonInverseVariableListener<Solution_>
         Object shadowEntity = sourceVariableDescriptor.getValue(entity);
         if (shadowEntity != null) {
             Object shadowValue = shadowVariableDescriptor.getValue(shadowEntity);
-            if (shadowValue != entity) {
+            if (scoreDirector.expectShadowVariablesInCorrectState() && shadowValue != entity) {
                 throw new IllegalStateException("The entity (" + entity
                         + ") has a variable (" + sourceVariableDescriptor.getVariableName()
                         + ") with value (" + shadowEntity

@@ -78,7 +78,7 @@ public class SingletonListInverseVariableListener<Solution_>
         if (oldInverseEntity == inverseEntity) {
             return;
         }
-        if (oldInverseEntity != expectedOldInverseEntity) {
+        if (scoreDirector.expectShadowVariablesInCorrectState() && oldInverseEntity != expectedOldInverseEntity) {
             throw new IllegalStateException("The entity (" + inverseEntity
                     + ") has a list variable (" + sourceVariableDescriptor.getVariableName()
                     + ") and one of its elements (" + element
