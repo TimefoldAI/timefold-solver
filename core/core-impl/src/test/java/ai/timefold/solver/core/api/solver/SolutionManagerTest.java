@@ -7,12 +7,15 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedSolution;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -22,19 +25,24 @@ public class SolutionManagerTest {
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowedSolverConfig.xml");
     public static final SolverFactory<TestdataShadowingChainedSolution> SOLVER_FACTORY_CHAINED =
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowingChainedSolverConfig.xml");
+    public static final SolverFactory<TestdataListSolutionWithShadowHistory> SOLVER_FACTORY_LIST =
+            SolverFactory
+                    .createFromXmlResource("ai/timefold/solver/core/api/solver/testdataListWithShadowHistorySolverConfig.xml");
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
     void updateEverything(SolutionManagerSource SolutionManagerSource) {
-        SolutionManager<TestdataShadowedSolution, ?> SolutionManager =
-                SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
-        assertThat(SolutionManager).isNotNull();
-        TestdataShadowedSolution solution = TestdataShadowedSolution.generateSolution();
+        var solution = TestdataShadowedSolution.generateSolution();
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
-        SolutionManager.update(solution);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
+        assertThat(solutionManager).isNotNull();
+        solutionManager.update(solution);
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNotNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNotNull();
@@ -44,10 +52,6 @@ public class SolutionManagerTest {
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
     void updateEverythingChained(SolutionManagerSource SolutionManagerSource) {
-        SolutionManager<TestdataShadowingChainedSolution, ?> SolutionManager =
-                SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_CHAINED);
-        assertThat(SolutionManager).isNotNull();
-
         var a0 = new TestdataShadowingChainedAnchor("a0");
         var a1 = new TestdataShadowingChainedEntity("a1", a0);
         var b0 = new TestdataShadowingChainedAnchor("b0");
@@ -71,7 +75,10 @@ public class SolutionManagerTest {
             softly.assertThat(c0.getNextEntity()).isNull();
         });
 
-        SolutionManager.update(solution);
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_CHAINED);
+        assertThat(solutionManager).isNotNull();
+        solutionManager.update(solution);
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNotNull();
             softly.assertThat(a0.getNextEntity()).isEqualTo(a1);
@@ -88,16 +95,76 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
+    void updateEverythingList(SolutionManagerSource SolutionManagerSource) {
+        var a0 = new TestdataListValueWithShadowHistory("a0");
+        var a1 = new TestdataListValueWithShadowHistory("a1");
+        var a = new TestdataListEntityWithShadowHistory("a", a0, a1);
+        var b0 = new TestdataListValueWithShadowHistory("b0");
+        var b1 = new TestdataListValueWithShadowHistory("b1");
+        var b2 = new TestdataListValueWithShadowHistory("b2");
+        var b = new TestdataListEntityWithShadowHistory("b", b0, b1, b2);
+        var c0 = new TestdataListValueWithShadowHistory("c0");
+        var c = new TestdataListEntityWithShadowHistory("c", c0);
+        var d = new TestdataListEntityWithShadowHistory("d");
+        var solution = new TestdataListSolutionWithShadowHistory();
+        solution.setEntityList(Arrays.asList(a, b, c, d));
+        solution.setValueList(Arrays.asList(a0, a1, b0, b1, b2, c0));
+
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isNull();
+            assertShadowedListValueAllNull(softly, a0);
+            assertShadowedListValueAllNull(softly, a1);
+            assertShadowedListValueAllNull(softly, b0);
+            assertShadowedListValueAllNull(softly, b1);
+            assertShadowedListValueAllNull(softly, b2);
+            assertShadowedListValueAllNull(softly, c0);
+        });
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST);
+        assertThat(solutionManager).isNotNull();
+        solutionManager.update(solution);
+
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isNotNull();
+            assertShadowedListValue(softly, a0, a, 0, null, a1);
+            assertShadowedListValue(softly, a1, a, 1, a0, null);
+            assertShadowedListValue(softly, b0, b, 0, null, b1);
+            assertShadowedListValue(softly, b1, b, 1, b0, b2);
+            assertShadowedListValue(softly, b2, b, 2, b1, null);
+            assertShadowedListValue(softly, c0, c, 0, null, null);
+        });
+    }
+
+    private void assertShadowedListValueAllNull(SoftAssertions softly, TestdataListValueWithShadowHistory current) {
+        softly.assertThat(current.getIndex()).isNull();
+        softly.assertThat(current.getEntity()).isNull();
+        softly.assertThat(current.getPrevious()).isNull();
+        softly.assertThat(current.getNext()).isNull();
+    }
+
+    private void assertShadowedListValue(SoftAssertions softly, TestdataListValueWithShadowHistory current,
+            TestdataListEntityWithShadowHistory entity, int index, TestdataListValueWithShadowHistory previous,
+            TestdataListValueWithShadowHistory next) {
+        softly.assertThat(current.getIndex()).isEqualTo(index);
+        softly.assertThat(current.getEntity()).isEqualTo(entity);
+        softly.assertThat(current.getPrevious()).isEqualTo(previous);
+        softly.assertThat(current.getNext()).isEqualTo(next);
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
     void updateOnlyShadowVariables(SolutionManagerSource SolutionManagerSource) {
-        SolutionManager<TestdataShadowedSolution, ?> SolutionManager =
-                SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
-        assertThat(SolutionManager).isNotNull();
-        TestdataShadowedSolution solution = TestdataShadowedSolution.generateSolution();
+        var solution = TestdataShadowedSolution.generateSolution();
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
-        SolutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
+        assertThat(solutionManager).isNotNull();
+        solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY);
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNotNull();
@@ -107,15 +174,17 @@ public class SolutionManagerTest {
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
     void updateOnlyScore(SolutionManagerSource SolutionManagerSource) {
-        SolutionManager<TestdataShadowedSolution, ?> SolutionManager =
-                SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
-        assertThat(SolutionManager).isNotNull();
-        TestdataShadowedSolution solution = TestdataShadowedSolution.generateSolution();
+        var solution = TestdataShadowedSolution.generateSolution();
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
-        SolutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
+        assertThat(solutionManager).isNotNull();
+        solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
+
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNotNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
@@ -125,11 +194,12 @@ public class SolutionManagerTest {
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
     void explain(SolutionManagerSource SolutionManagerSource) {
-        SolutionManager<TestdataShadowedSolution, ?> solutionManager =
-                SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
+        var solution = TestdataShadowedSolution.generateSolution();
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
         assertThat(solutionManager).isNotNull();
-        TestdataShadowedSolution solution = TestdataShadowedSolution.generateSolution();
-        ScoreExplanation<TestdataShadowedSolution, ?> scoreExplanation = solutionManager.explain(solution);
+
+        var scoreExplanation = solutionManager.explain(solution);
         assertThat(scoreExplanation).isNotNull();
         assertSoftly(softly -> {
             softly.assertThat(scoreExplanation.getScore()).isNotNull();

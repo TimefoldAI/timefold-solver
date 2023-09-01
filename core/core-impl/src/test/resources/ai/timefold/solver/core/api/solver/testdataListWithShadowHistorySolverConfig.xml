@@ -1,0 +1,8 @@
+<solver>
+  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory</solutionClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory</entityClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory</entityClass>
+  <scoreDirectorFactory>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListWithShadowHistoryIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+  </scoreDirectorFactory>
+</solver>
