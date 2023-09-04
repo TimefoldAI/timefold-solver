@@ -258,7 +258,7 @@ If you use Maven, add the following repository to your `pom.xml`:
     <repository>
       <id>timefold-solver-enterprise</id>
       <name>Timefold Solver Enterprise</name>
-      <url>https://maven.pkg.github.com/TimefoldAI/timefold-solver-enterprise</url>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
     </repository>
   </repositories>
   ...
@@ -272,7 +272,7 @@ If you use Gradle, add the following in your `build.gradle`:
 repositories {
   mavenCentral()
   maven {
-    url "https://maven.pkg.github.com/TimefoldAI/timefold-solver-enterprise"
+    url "https://timefold.jfrog.io/artifactory/releases/"
   }
 }
 ----
