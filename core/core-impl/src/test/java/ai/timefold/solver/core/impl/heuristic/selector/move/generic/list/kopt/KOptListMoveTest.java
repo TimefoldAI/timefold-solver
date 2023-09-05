@@ -3,9 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptUtils.getMultiEntityBetweenPredicate;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptUtils.getMultiEntitySuccessorFunction;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptUtils.getSuccessorFunction;
+import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.function.Function;
@@ -15,6 +17,7 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -23,6 +26,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class KOptListMoveTest {
 
@@ -44,6 +48,19 @@ class KOptListMoveTest {
     private final TestdataListValue v10 = new TestdataListValue("10");
     private final TestdataListValue v11 = new TestdataListValue("11");
     private final TestdataListValue v12 = new TestdataListValue("12");
+
+    private final TestdataListValue destinationV1 = new TestdataListValue("1");
+    private final TestdataListValue destinationV2 = new TestdataListValue("2");
+    private final TestdataListValue destinationV3 = new TestdataListValue("3");
+    private final TestdataListValue destinationV4 = new TestdataListValue("4");
+    private final TestdataListValue destinationV5 = new TestdataListValue("5");
+    private final TestdataListValue destinationV6 = new TestdataListValue("6");
+    private final TestdataListValue destinationV7 = new TestdataListValue("7");
+    private final TestdataListValue destinationV8 = new TestdataListValue("8");
+    private final TestdataListValue destinationV9 = new TestdataListValue("9");
+    private final TestdataListValue destinationV10 = new TestdataListValue("10");
+    private final TestdataListValue destinationV11 = new TestdataListValue("11");
+    private final TestdataListValue destinationV12 = new TestdataListValue("12");
 
     // TODO: It appears the multi-entity approach does not like kopt-affected-elements;
     // (in particular, I found index variable corruption causing a NPE due to incorrect after
@@ -77,6 +94,112 @@ class KOptListMoveTest {
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 6);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 6);
+    }
+
+    @Test
+    void test3OptRebase() {
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6);
+        TestdataListEntity destinationE1 = TestdataListEntity.createWithValues("e1", destinationV1, destinationV2,
+                destinationV3, destinationV4, destinationV5, destinationV6);
+
+        KOptListMove<TestdataListSolution> kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
+                variableDescriptor,
+                List.of(v6, v1,
+                        v2, v3,
+                        v4, v5),
+                List.of(v1, v3,
+                        v2, v5,
+                        v4, v6));
+
+        InnerScoreDirector<TestdataListSolution, ?> destinationScoreDirector = mockRebasingScoreDirector(
+                variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), new Object[][] {
+                        { v1, destinationV1 },
+                        { v2, destinationV2 },
+                        { v3, destinationV3 },
+                        { v4, destinationV4 },
+                        { v5, destinationV5 },
+                        { v6, destinationV6 },
+                        { e1, destinationE1 },
+                });
+        SupplyManager supplyManager = Mockito.mock(SupplyManager.class);
+        SingletonInverseVariableSupply inverseVariableSupply = Mockito.mock(SingletonInverseVariableSupply.class);
+
+        when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
+        when(supplyManager.demand(Mockito.any(SingletonListInverseVariableDemand.class))).thenReturn(inverseVariableSupply);
+        when(inverseVariableSupply.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
+
+        KOptListMove<TestdataListSolution> rebasedMove = kOptListMove.rebase(destinationScoreDirector);
+        assertThat(rebasedMove.isMoveDoable(destinationScoreDirector)).isTrue();
+        AbstractMove<TestdataListSolution> undoMove = rebasedMove.doMove(destinationScoreDirector);
+        assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV2, destinationV5, destinationV6,
+                destinationV4, destinationV3);
+        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 6);
+        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 6);
+
+        reset(destinationScoreDirector);
+        undoMove.doMoveOnly(destinationScoreDirector);
+        assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV2, destinationV3, destinationV4,
+                destinationV5, destinationV6);
+        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 6);
+        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 6);
+    }
+
+    @Test
+    void testMultiEntity3OptRebase() {
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v6);
+        TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v4, v5);
+
+        TestdataListEntity destinationE1 =
+                TestdataListEntity.createWithValues("e1", destinationV1, destinationV2, destinationV3, destinationV6);
+        TestdataListEntity destinationE2 = TestdataListEntity.createWithValues("e2", destinationV4, destinationV5);
+
+        KOptListMove<TestdataListSolution> kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
+                variableDescriptor,
+                List.of(v6, v1,
+                        v2, v3,
+                        v4, v5),
+                List.of(v1, v3,
+                        v2, v5,
+                        v4, v6));
+
+        InnerScoreDirector<TestdataListSolution, ?> destinationScoreDirector = mockRebasingScoreDirector(
+                variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), new Object[][] {
+                        { v1, destinationV1 },
+                        { v2, destinationV2 },
+                        { v3, destinationV3 },
+                        { v4, destinationV4 },
+                        { v5, destinationV5 },
+                        { v6, destinationV6 },
+                        { e1, destinationE1 },
+                        { e2, destinationE2 },
+                });
+        SupplyManager supplyManager = Mockito.mock(SupplyManager.class);
+        SingletonInverseVariableSupply inverseVariableSupply = Mockito.mock(SingletonInverseVariableSupply.class);
+
+        when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
+        when(supplyManager.demand(Mockito.any(SingletonListInverseVariableDemand.class))).thenReturn(inverseVariableSupply);
+        when(inverseVariableSupply.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
+        when(inverseVariableSupply.getInverseSingleton(destinationE2.getValueList().get(0))).thenReturn(destinationE2);
+
+        KOptListMove<TestdataListSolution> rebasedMove = kOptListMove.rebase(destinationScoreDirector);
+
+        assertThat(rebasedMove.isMoveDoable(destinationScoreDirector)).isTrue();
+        AbstractMove<TestdataListSolution> undoMove = rebasedMove.doMove(destinationScoreDirector);
+        assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV5);
+        assertThat(destinationE2.getValueList()).containsExactly(destinationV2, destinationV6, destinationV4, destinationV3);
+        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 4);
+        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE2, 0, 2);
+        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 2);
+        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE2, 0, 4);
+
+        reset(destinationScoreDirector);
+        undoMove.doMoveOnly(destinationScoreDirector);
+        assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV2, destinationV3, destinationV6);
+        assertThat(destinationE2.getValueList()).containsExactly(destinationV4, destinationV5);
+        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 2);
+        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE2, 0, 4);
+        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 4);
+        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE2, 0, 2);
     }
 
     @Test

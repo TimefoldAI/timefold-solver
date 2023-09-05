@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.Pair;
 
@@ -115,7 +114,7 @@ final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
+    public KOptListMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         List<FlipSublistAction> rebasedEquivalent2Opts = new ArrayList<>(equivalent2Opts.size());
         InnerScoreDirector<?, ?> innerScoreDirector = (InnerScoreDirector<?, ?>) destinationScoreDirector;
 
