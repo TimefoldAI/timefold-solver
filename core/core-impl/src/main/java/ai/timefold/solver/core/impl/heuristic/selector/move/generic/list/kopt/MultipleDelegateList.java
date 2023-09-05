@@ -27,6 +27,7 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     final int[] delegateSizes;
     final int[] offsets;
     final int totalSize;
+    MultipleDelegateList<T> cachedRebaseResult;
 
     @SafeVarargs
     public MultipleDelegateList(List<T>... delegates) {
@@ -42,6 +43,7 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         }
 
         this.totalSize = sizeSoFar;
+        this.cachedRebaseResult = null;
     }
 
     public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
@@ -59,6 +61,9 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
 
     public MultipleDelegateList<T> rebase(ListVariableDescriptor<?> variableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply, ScoreDirector<?> destinationScoreDirector) {
+        if (cachedRebaseResult != null) {
+            return cachedRebaseResult;
+        }
         @SuppressWarnings("unchecked")
         List<T>[] out = new List[delegates.length];
         for (int i = 0; i < delegates.length; i++) {
@@ -69,7 +74,8 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
                             inverseVariableSupply.getInverseSingleton(delegate.get(0))));
             out[i] = rebasedDelegate;
         }
-        return new MultipleDelegateList<>(out);
+        cachedRebaseResult = new MultipleDelegateList<>(out);
+        return cachedRebaseResult;
     }
 
     public void actOnAffectedElements(Object[] originalEntities, TriConsumer<Object, Integer, Integer> action) {
@@ -241,7 +247,7 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     }
 
     @Override
-    public List<T> subList(int startInclusive, int endExclusive) {
+    public MultipleDelegateList<T> subList(int startInclusive, int endExclusive) {
         if (startInclusive < 0) {
             throw new IndexOutOfBoundsException("Sublist start index (" + startInclusive + ") out of range");
         }
