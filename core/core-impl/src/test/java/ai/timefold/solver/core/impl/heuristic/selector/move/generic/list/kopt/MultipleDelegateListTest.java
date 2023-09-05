@@ -109,19 +109,12 @@ public class MultipleDelegateListTest {
 
         SingletonInverseVariableSupply inverseVariableSupply = object -> {
             String value = (String) object;
-            switch (value) {
-                case "a":
-                case "b":
-                case "c":
-                    return "e1";
-                case "d":
-                case "e":
-                    return "e2";
-                case "f":
-                    return "e3";
-                default:
-                    return null;
-            }
+            return switch (value) {
+                case "a", "b", "c" -> "e1";
+                case "d", "e" -> "e2";
+                case "f" -> "e3";
+                default -> null;
+            };
         };
 
         MultipleDelegateList<Object> rebasedCombined = combined.rebase(listVariableDescriptor,
@@ -135,9 +128,61 @@ public class MultipleDelegateListTest {
         assertThat(delegate1.get(0)).isEqualTo("a2");
         assertThat(rebasedDelegate1.get(0)).isEqualTo("a");
 
+        combined.set(5, "f2");
+        assertThat(delegate3.get(0)).isEqualTo("f2");
+        assertThat(rebasedDelegate3.get(0)).isEqualTo("f");
+
         rebasedCombined.set(0, "a3");
         assertThat(delegate1.get(0)).isEqualTo("a2");
         assertThat(rebasedDelegate1.get(0)).isEqualTo("a3");
+
+        rebasedCombined.set(5, "f3");
+        assertThat(delegate3.get(0)).isEqualTo("f2");
+        assertThat(rebasedDelegate3.get(0)).isEqualTo("f3");
+    }
+
+    @Test
+    void testMultipleRebaseReturnSameResult() {
+        List<Object> delegate1 = new ArrayList<>(List.of("a", "b", "c"));
+        List<Object> delegate2 = new ArrayList<>(List.of("d", "e"));
+        List<Object> delegate3 = new ArrayList<>(List.of("f"));
+        MultipleDelegateList<Object> combined = new MultipleDelegateList<>(delegate1, delegate2, delegate3);
+
+        List<Object> rebasedDelegate1 = new ArrayList<>(delegate1);
+        List<Object> rebasedDelegate2 = new ArrayList<>(delegate2);
+        List<Object> rebasedDelegate3 = new ArrayList<>(delegate3);
+
+        ListVariableDescriptor<?> listVariableDescriptor = Mockito.mock(ListVariableDescriptor.class);
+        Mockito.when(listVariableDescriptor.getListVariable("e1")).thenReturn(delegate1);
+        Mockito.when(listVariableDescriptor.getListVariable("e2")).thenReturn(delegate2);
+        Mockito.when(listVariableDescriptor.getListVariable("e3")).thenReturn(delegate3);
+        Mockito.when(listVariableDescriptor.getListVariable("rebasedE1")).thenReturn(rebasedDelegate1);
+        Mockito.when(listVariableDescriptor.getListVariable("rebasedE2")).thenReturn(rebasedDelegate2);
+        Mockito.when(listVariableDescriptor.getListVariable("rebasedE3")).thenReturn(rebasedDelegate3);
+
+        ScoreDirector<?> destinationScoreDirector = Mockito.mock(ScoreDirector.class);
+        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e1")).thenReturn("rebasedE1");
+        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e2")).thenReturn("rebasedE2");
+        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e3")).thenReturn("rebasedE3");
+
+        SingletonInverseVariableSupply inverseVariableSupply = object -> {
+            String value = (String) object;
+            return switch (value) {
+                case "a", "b", "c" -> "e1";
+                case "d", "e" -> "e2";
+                case "f" -> "e3";
+                default -> null;
+            };
+        };
+
+        MultipleDelegateList<Object> rebasedCombined1 = combined.rebase(listVariableDescriptor,
+                inverseVariableSupply,
+                destinationScoreDirector);
+        MultipleDelegateList<Object> rebasedCombined2 = combined.rebase(listVariableDescriptor,
+                inverseVariableSupply,
+                destinationScoreDirector);
+
+        assertThat(rebasedCombined1).isSameAs(rebasedCombined2);
     }
 
     @Test
