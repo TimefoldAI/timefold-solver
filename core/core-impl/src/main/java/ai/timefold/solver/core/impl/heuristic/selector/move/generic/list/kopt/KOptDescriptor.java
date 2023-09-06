@@ -254,7 +254,7 @@ final class KOptDescriptor<Node_> {
             }
             if (maximumOrientedPairCountAfterReversal >= 0) {
                 if ((bestOrientedPairFirstEndpoint & 1) == 1) {
-                    out.add(getListReversalMoveForEdgePair(listVariableDescriptor, inverseVariableSupply, indexVariableSupply,
+                    out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
                             combinedList, originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint + 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint]],
@@ -265,7 +265,7 @@ final class KOptDescriptor<Node_> {
                             bestOrientedPairFirstEndpoint + 1,
                             bestOrientedPairSecondEndpoint);
                 } else {
-                    out.add(getListReversalMoveForEdgePair(listVariableDescriptor, inverseVariableSupply, indexVariableSupply,
+                    out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
                             combinedList, originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint - 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint]],
@@ -286,7 +286,7 @@ final class KOptDescriptor<Node_> {
                 int secondEndpoint = currentInverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex];
 
                 if (secondEndpoint >= firstEndpoint + 2) {
-                    out.add(getListReversalMoveForEdgePair(listVariableDescriptor, inverseVariableSupply, indexVariableSupply,
+                    out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
                             combinedList, originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[firstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[firstEndpoint + 1]],
@@ -431,7 +431,6 @@ final class KOptDescriptor<Node_> {
     @SuppressWarnings("unchecked")
     private static <Node_> FlipSublistAction getListReversalMoveForEdgePair(
             ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
             IndexVariableSupply indexVariableSupply,
             MultipleDelegateList<Node_> combinedList,
             int[] originalToCurrentIndexList,
@@ -455,7 +454,7 @@ final class KOptDescriptor<Node_> {
 
         KOptUtils.flipSubarray(originalToCurrentIndexList, firstEndpoint, secondEndpoint);
 
-        return new FlipSublistAction(listVariableDescriptor, inverseVariableSupply, (MultipleDelegateList<Object>) combinedList,
+        return new FlipSublistAction(listVariableDescriptor, (MultipleDelegateList<Object>) combinedList,
                 firstEndpoint, secondEndpoint);
     }
 

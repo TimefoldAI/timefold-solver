@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -81,108 +80,6 @@ public class MultipleDelegateListTest {
                 "g"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Value (g) is not contained in any entity list");
-    }
-
-    @Test
-    void testRebase() {
-        List<Object> delegate1 = new ArrayList<>(List.of("a", "b", "c"));
-        List<Object> delegate2 = new ArrayList<>(List.of("d", "e"));
-        List<Object> delegate3 = new ArrayList<>(List.of("f"));
-        MultipleDelegateList<Object> combined = new MultipleDelegateList<>(delegate1, delegate2, delegate3);
-
-        List<Object> rebasedDelegate1 = new ArrayList<>(delegate1);
-        List<Object> rebasedDelegate2 = new ArrayList<>(delegate2);
-        List<Object> rebasedDelegate3 = new ArrayList<>(delegate3);
-
-        ListVariableDescriptor<?> listVariableDescriptor = Mockito.mock(ListVariableDescriptor.class);
-        Mockito.when(listVariableDescriptor.getListVariable("e1")).thenReturn(delegate1);
-        Mockito.when(listVariableDescriptor.getListVariable("e2")).thenReturn(delegate2);
-        Mockito.when(listVariableDescriptor.getListVariable("e3")).thenReturn(delegate3);
-        Mockito.when(listVariableDescriptor.getListVariable("rebasedE1")).thenReturn(rebasedDelegate1);
-        Mockito.when(listVariableDescriptor.getListVariable("rebasedE2")).thenReturn(rebasedDelegate2);
-        Mockito.when(listVariableDescriptor.getListVariable("rebasedE3")).thenReturn(rebasedDelegate3);
-
-        ScoreDirector<?> destinationScoreDirector = Mockito.mock(ScoreDirector.class);
-        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e1")).thenReturn("rebasedE1");
-        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e2")).thenReturn("rebasedE2");
-        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e3")).thenReturn("rebasedE3");
-
-        SingletonInverseVariableSupply inverseVariableSupply = object -> {
-            String value = (String) object;
-            return switch (value) {
-                case "a", "b", "c" -> "e1";
-                case "d", "e" -> "e2";
-                case "f" -> "e3";
-                default -> null;
-            };
-        };
-
-        MultipleDelegateList<Object> rebasedCombined = combined.rebase(listVariableDescriptor,
-                inverseVariableSupply,
-                destinationScoreDirector);
-
-        assertThat(combined.delegates).containsExactly(delegate1, delegate2, delegate3);
-        assertThat(rebasedCombined.delegates).containsExactly(rebasedDelegate1, rebasedDelegate2, rebasedDelegate3);
-
-        combined.set(0, "a2");
-        assertThat(delegate1.get(0)).isEqualTo("a2");
-        assertThat(rebasedDelegate1.get(0)).isEqualTo("a");
-
-        combined.set(5, "f2");
-        assertThat(delegate3.get(0)).isEqualTo("f2");
-        assertThat(rebasedDelegate3.get(0)).isEqualTo("f");
-
-        rebasedCombined.set(0, "a3");
-        assertThat(delegate1.get(0)).isEqualTo("a2");
-        assertThat(rebasedDelegate1.get(0)).isEqualTo("a3");
-
-        rebasedCombined.set(5, "f3");
-        assertThat(delegate3.get(0)).isEqualTo("f2");
-        assertThat(rebasedDelegate3.get(0)).isEqualTo("f3");
-    }
-
-    @Test
-    void testMultipleRebaseReturnSameResult() {
-        List<Object> delegate1 = new ArrayList<>(List.of("a", "b", "c"));
-        List<Object> delegate2 = new ArrayList<>(List.of("d", "e"));
-        List<Object> delegate3 = new ArrayList<>(List.of("f"));
-        MultipleDelegateList<Object> combined = new MultipleDelegateList<>(delegate1, delegate2, delegate3);
-
-        List<Object> rebasedDelegate1 = new ArrayList<>(delegate1);
-        List<Object> rebasedDelegate2 = new ArrayList<>(delegate2);
-        List<Object> rebasedDelegate3 = new ArrayList<>(delegate3);
-
-        ListVariableDescriptor<?> listVariableDescriptor = Mockito.mock(ListVariableDescriptor.class);
-        Mockito.when(listVariableDescriptor.getListVariable("e1")).thenReturn(delegate1);
-        Mockito.when(listVariableDescriptor.getListVariable("e2")).thenReturn(delegate2);
-        Mockito.when(listVariableDescriptor.getListVariable("e3")).thenReturn(delegate3);
-        Mockito.when(listVariableDescriptor.getListVariable("rebasedE1")).thenReturn(rebasedDelegate1);
-        Mockito.when(listVariableDescriptor.getListVariable("rebasedE2")).thenReturn(rebasedDelegate2);
-        Mockito.when(listVariableDescriptor.getListVariable("rebasedE3")).thenReturn(rebasedDelegate3);
-
-        ScoreDirector<?> destinationScoreDirector = Mockito.mock(ScoreDirector.class);
-        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e1")).thenReturn("rebasedE1");
-        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e2")).thenReturn("rebasedE2");
-        Mockito.when(destinationScoreDirector.lookUpWorkingObject("e3")).thenReturn("rebasedE3");
-
-        SingletonInverseVariableSupply inverseVariableSupply = object -> {
-            String value = (String) object;
-            return switch (value) {
-                case "a", "b", "c" -> "e1";
-                case "d", "e" -> "e2";
-                case "f" -> "e3";
-                default -> null;
-            };
-        };
-
-        MultipleDelegateList<Object> rebasedCombined1 = combined.rebase(listVariableDescriptor,
-                inverseVariableSupply,
-                destinationScoreDirector);
-        MultipleDelegateList<Object> rebasedCombined2 = combined.rebase(listVariableDescriptor,
-                inverseVariableSupply,
-                destinationScoreDirector);
-
-        assertThat(rebasedCombined1).isSameAs(rebasedCombined2);
     }
 
     @Test

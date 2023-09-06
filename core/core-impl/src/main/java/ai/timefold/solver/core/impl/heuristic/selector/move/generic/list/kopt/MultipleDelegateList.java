@@ -11,7 +11,6 @@ import java.util.RandomAccess;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.function.TriConsumer;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -27,7 +26,6 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     final int[] delegateSizes;
     final int[] offsets;
     final int totalSize;
-    MultipleDelegateList<T> cachedRebaseResult;
 
     @SafeVarargs
     public MultipleDelegateList(List<T>... delegates) {
@@ -43,7 +41,6 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         }
 
         this.totalSize = sizeSoFar;
-        this.cachedRebaseResult = null;
     }
 
     public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
@@ -57,25 +54,6 @@ public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             }
         }
         throw new IllegalArgumentException("Value (" + value + ") is not contained in any entity list");
-    }
-
-    public MultipleDelegateList<T> rebase(ListVariableDescriptor<?> variableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply, ScoreDirector<?> destinationScoreDirector) {
-        if (cachedRebaseResult != null) {
-            return cachedRebaseResult;
-        }
-        @SuppressWarnings("unchecked")
-        List<T>[] out = new List[delegates.length];
-        for (int i = 0; i < delegates.length; i++) {
-            List<T> delegate = delegates[i];
-            @SuppressWarnings("unchecked")
-            List<T> rebasedDelegate = (List<T>) variableDescriptor.getListVariable(
-                    destinationScoreDirector.lookUpWorkingObject(
-                            inverseVariableSupply.getInverseSingleton(delegate.get(0))));
-            out[i] = rebasedDelegate;
-        }
-        cachedRebaseResult = new MultipleDelegateList<>(out);
-        return cachedRebaseResult;
     }
 
     public void actOnAffectedElements(Object[] originalEntities, TriConsumer<Object, Integer, Integer> action) {
