@@ -4,9 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
  * Flips a sublist of a list variable, (the same thing as a {@link TwoOptListMove}, but no shift to restore the original
@@ -24,23 +21,20 @@ final class FlipSublistAction {
 
     private final MultipleDelegateList<Object> combinedList;
 
-    private final SingletonInverseVariableSupply inverseVariableSupply;
     private final int fromIndexInclusive;
     private final int toIndexExclusive;
 
     public FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
             MultipleDelegateList<Object> combinedList,
             int fromIndexInclusive, int toIndexExclusive) {
         this.variableDescriptor = variableDescriptor;
-        this.inverseVariableSupply = inverseVariableSupply;
         this.combinedList = combinedList;
         this.fromIndexInclusive = fromIndexInclusive;
         this.toIndexExclusive = toIndexExclusive;
     }
 
     FlipSublistAction createUndoMove() {
-        return new FlipSublistAction(variableDescriptor, inverseVariableSupply,
+        return new FlipSublistAction(variableDescriptor,
                 combinedList,
                 fromIndexInclusive,
                 toIndexExclusive);
@@ -62,12 +56,9 @@ final class FlipSublistAction {
         flipSublist(combinedList, fromIndexInclusive, toIndexExclusive);
     }
 
-    public FlipSublistAction rebase(InnerScoreDirector<?, ?> destinationScoreDirector) {
-        SingletonInverseVariableSupply newInverseVariableSupply = destinationScoreDirector.getSupplyManager()
-                .demand(new SingletonListInverseVariableDemand<>(variableDescriptor));
+    public FlipSublistAction rebase(MultipleDelegateList<Object> rebasedList) {
         return new FlipSublistAction(variableDescriptor,
-                newInverseVariableSupply,
-                combinedList.rebase(variableDescriptor, inverseVariableSupply, destinationScoreDirector),
+                rebasedList,
                 fromIndexInclusive,
                 toIndexExclusive);
     }
