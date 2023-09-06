@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -58,6 +57,34 @@ final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         for (int i = 0; i < originalEntities.length; i++) {
             originalEntities[i] = inverseVariableSupply.getInverseSingleton(combinedList.delegates[i].get(0));
         }
+    }
+
+    public KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            KOptDescriptor<?> descriptor,
+            List<FlipSublistAction> equivalent2Opts,
+            MultipleDelegateList<?> combinedList,
+            int postShiftAmount,
+            int[] newEndIndices,
+            Object[] originalEntities) {
+        this.listVariableDescriptor = listVariableDescriptor;
+        this.descriptor = descriptor;
+        this.equivalent2Opts = equivalent2Opts;
+        this.postShiftAmount = postShiftAmount;
+        this.newEndIndices = newEndIndices;
+        this.combinedList = combinedList;
+        if (equivalent2Opts.isEmpty()) {
+            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
+        } else if (postShiftAmount != 0) {
+            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).getCombinedList().size());
+        } else {
+            KOptAffectedElements currentAffectedElements = equivalent2Opts.get(0).getAffectedElements();
+            for (int i = 1; i < equivalent2Opts.size(); i++) {
+                currentAffectedElements = currentAffectedElements.merge(equivalent2Opts.get(i).getAffectedElements());
+            }
+            affectedElementsInfo = currentAffectedElements;
+        }
+
+        this.originalEntities = originalEntities;
     }
 
     KOptDescriptor<?> getDescriptor() {
@@ -117,14 +144,21 @@ final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     public KOptListMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         List<FlipSublistAction> rebasedEquivalent2Opts = new ArrayList<>(equivalent2Opts.size());
         InnerScoreDirector<?, ?> innerScoreDirector = (InnerScoreDirector<?, ?>) destinationScoreDirector;
+        Object[] newEntities = new Object[originalEntities.length];
+        @SuppressWarnings("unchecked")
+        List<Object>[] newDelegates = new List[originalEntities.length];
 
+        for (int i = 0; i < newEntities.length; i++) {
+            newEntities[i] = innerScoreDirector.lookUpWorkingObject(originalEntities[i]);
+            newDelegates[i] = listVariableDescriptor.getListVariable(newEntities[i]);
+        }
+        MultipleDelegateList<Object> rebasedList = new MultipleDelegateList<>(newDelegates);
         for (FlipSublistAction twoOpt : equivalent2Opts) {
-            rebasedEquivalent2Opts.add(twoOpt.rebase(innerScoreDirector));
+            rebasedEquivalent2Opts.add(twoOpt.rebase(rebasedList));
         }
 
         return new KOptListMove<>(listVariableDescriptor,
-                innerScoreDirector.getSupplyManager().demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor)),
-                descriptor, rebasedEquivalent2Opts, postShiftAmount, newEndIndices);
+                descriptor, rebasedEquivalent2Opts, rebasedList, postShiftAmount, newEndIndices, newEntities);
     }
 
     @Override
