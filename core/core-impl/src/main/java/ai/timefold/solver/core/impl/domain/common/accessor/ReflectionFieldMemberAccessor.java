@@ -65,7 +65,7 @@ public final class ReflectionFieldMemberAccessor extends AbstractMemberAccessor 
 
     @Override
     public String getSpeedNote() {
-        return "slow access with reflection";
+        return "reflection";
     }
 
     @Override

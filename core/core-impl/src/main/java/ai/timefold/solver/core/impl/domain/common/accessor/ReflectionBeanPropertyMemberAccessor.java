@@ -1,7 +1,8 @@
 package ai.timefold.solver.core.impl.domain.common.accessor;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -15,7 +16,9 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
     private final Class<?> propertyType;
     private final String propertyName;
     private final Method getterMethod;
+    private final MethodHandle getherMethodHandle;
     private final Method setterMethod;
+    private final MethodHandle setterMethodHandle;
 
     public ReflectionBeanPropertyMemberAccessor(Method getterMethod) {
         this(getterMethod, false);
@@ -23,7 +26,17 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
 
     public ReflectionBeanPropertyMemberAccessor(Method getterMethod, boolean getterOnly) {
         this.getterMethod = getterMethod;
-        getterMethod.setAccessible(true); // Performance hack by avoiding security checks
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            getterMethod.setAccessible(true); // Performance hack by avoiding security checks
+            this.getherMethodHandle = lookup.unreflect(getterMethod)
+                    .asFixedArity();
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("""
+                    Impossible state: method (%s) not accessible.
+                    %s
+                    """.formatted(getterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
+        }
         Class<?> declaringClass = getterMethod.getDeclaringClass();
         if (!ReflectionHelper.isGetterMethod(getterMethod)) {
             throw new IllegalArgumentException("The getterMethod (" + getterMethod + ") is not a valid getter.");
@@ -32,10 +45,22 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         propertyName = ReflectionHelper.getGetterPropertyName(getterMethod);
         if (getterOnly) {
             setterMethod = null;
+            setterMethodHandle = null;
         } else {
             setterMethod = ReflectionHelper.getSetterMethod(declaringClass, getterMethod.getReturnType(), propertyName);
             if (setterMethod != null) {
-                setterMethod.setAccessible(true); // Performance hack by avoiding security checks
+                try {
+                    setterMethod.setAccessible(true); // Performance hack by avoiding security checks
+                    this.setterMethodHandle = lookup.unreflect(setterMethod)
+                            .asFixedArity();
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("""
+                            Impossible state: method (%s) not accessible.
+                            %s
+                            """.formatted(setterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
+                }
+            } else {
+                setterMethodHandle = null;
             }
         }
     }
@@ -63,16 +88,11 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
     @Override
     public Object executeGetter(Object bean) {
         try {
-            return getterMethod.invoke(bean);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Cannot call property (" + propertyName
-                    + ") getterMethod (" + getterMethod + ") on bean of class (" + bean.getClass() + ").\n" +
-                    MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE, e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException("The property (" + propertyName
-                    + ") getterMethod (" + getterMethod + ") on bean of class (" + bean.getClass()
-                    + ") throws an exception.",
-                    e.getCause());
+            return getherMethodHandle.invoke(bean);
+        } catch (Throwable e) {
+            throw new IllegalStateException("""
+                    The property (%s) getterMethod (%s) on bean of class (%s) throws an exception.
+                    """.formatted(propertyName, getterMethod, bean.getClass()), e);
         }
     }
 
@@ -84,22 +104,17 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
     @Override
     public void executeSetter(Object bean, Object value) {
         try {
-            setterMethod.invoke(bean, value);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Cannot call property (" + propertyName
-                    + ") setterMethod (" + setterMethod + ") on bean of class (" + bean.getClass()
-                    + ") for value (" + value + ").", e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException("The property (" + propertyName
-                    + ") setterMethod (" + setterMethod + ") on bean of class (" + bean.getClass()
-                    + ") throws an exception for value (" + value + ").",
-                    e.getCause());
+            setterMethodHandle.invoke(bean, value);
+        } catch (Throwable e) {
+            throw new IllegalStateException("""
+                    The property (%s) setterMethod (%s) on bean of class (%s) throws an exception.
+                    """.formatted(propertyName, setterMethod, bean.getClass()), e);
         }
     }
 
     @Override
     public String getSpeedNote() {
-        return "slow access with reflection";
+        return "MethodHandle";
     }
 
     @Override

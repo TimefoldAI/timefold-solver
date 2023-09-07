@@ -1,6 +1,7 @@
 package ai.timefold.solver.benchmark.impl;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -8,7 +9,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 
-import ai.timefold.solver.benchmark.api.PlannerBenchmarkException;
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
@@ -84,6 +84,7 @@ class DefaultPlannerBenchmarkTest {
 
         DefaultPlannerBenchmark benchmark = (DefaultPlannerBenchmark) benchmarkFactory.buildPlannerBenchmark(solution);
 
-        assertThatExceptionOfType(PlannerBenchmarkException.class).isThrownBy(benchmark::benchmark).withCause(exception);
+        assertThatThrownBy(benchmark::benchmark)
+                .hasRootCause(exception);
     }
 }

@@ -1,7 +1,8 @@
 package ai.timefold.solver.core.impl.domain.common.accessor;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -15,12 +16,23 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
     private final Class<?> returnType;
     private final String methodName;
     private final Method readMethod;
+    private final MethodHandle methodHandle;
 
     public ReflectionMethodMemberAccessor(Method readMethod) {
         this.readMethod = readMethod;
-        readMethod.setAccessible(true); // Performance hack by avoiding security checks
-        returnType = readMethod.getReturnType();
-        methodName = readMethod.getName();
+        this.returnType = readMethod.getReturnType();
+        this.methodName = readMethod.getName();
+        try {
+            readMethod.setAccessible(true);
+            this.methodHandle = MethodHandles.lookup()
+                    .unreflect(readMethod)
+                    .asFixedArity();
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("""
+                    Impossible state: Method (%s) not accessible.
+                    %s
+                    """.formatted(readMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
+        }
         if (readMethod.getParameterTypes().length != 0) {
             throw new IllegalArgumentException("The readMethod (" + readMethod + ") must not have any parameters ("
                     + Arrays.toString(readMethod.getParameterTypes()) + ").");
@@ -54,22 +66,17 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
     @Override
     public Object executeGetter(Object bean) {
         try {
-            return readMethod.invoke(bean);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Cannot call property (" + methodName
-                    + ") getterMethod (" + readMethod + ") on bean of class (" + bean.getClass() + ").\n" +
-                    MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE, e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException("The property (" + methodName
-                    + ") getterMethod (" + readMethod + ") on bean of class (" + bean.getClass()
-                    + ") throws an exception.",
-                    e.getCause());
+            return methodHandle.invoke(bean);
+        } catch (Throwable e) {
+            throw new IllegalStateException("""
+                    The property (%s) getterMethod (%s) on bean of class (%s) throws an exception.
+                    """.formatted(methodName, readMethod, bean.getClass()), e);
         }
     }
 
     @Override
     public String getSpeedNote() {
-        return "slow access with reflection";
+        return "MethodHandle";
     }
 
     @Override

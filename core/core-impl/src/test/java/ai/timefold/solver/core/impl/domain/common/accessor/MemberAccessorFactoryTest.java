@@ -84,7 +84,7 @@ class MemberAccessorFactoryTest {
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER, ProblemFactProperty.class,
                 DomainAccessType.REFLECTION, null);
         assertThat(memberAccessor)
-                .isInstanceOf(LambdaBeanPropertyMemberAccessor.class);
+                .isInstanceOf(ReflectionBeanPropertyMemberAccessor.class);
         assertThat(memberAccessor.getName()).isEqualTo("publicProperty");
         assertThat(memberAccessor.getType()).isEqualTo(String.class);
 
