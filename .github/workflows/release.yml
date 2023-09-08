@@ -92,7 +92,7 @@ jobs:
             out/jreleaser/output.properties
 
       # Pull Request will be created with the changes and a summary of next steps.
-      - name: Set micro snapshot version on the release branch
+      - name: Put back the 999-SNAPSHOT version on the release branch
         run: |
           git checkout -B ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version
           mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
