@@ -97,7 +97,7 @@ jobs:
           git checkout -B ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot
           mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
           git commit -am "build: move back to 999-SNAPSHOT"
-          git push origin ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version
+          git push origin ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot
           gh pr create --reviewer triceo --base ${{ github.event.inputs.releaseBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version --title "build: move back to 999-SNAPSHOT" --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
