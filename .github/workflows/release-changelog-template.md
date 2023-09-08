@@ -1,3 +1,9 @@
+**!!! REMOVE THIS !!!**
+
+**!!! SUMMARIZE THE RELEASE HERE !!!**
+
+**!!! REMOVE THIS !!!**
+
 # Changelog
 
 {{changelogChanges}}

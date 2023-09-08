@@ -1,3 +1,14 @@
+# Axioms of the release pipeline:
+# - Each release starts from timefold-solver by running this Github Action.
+# - Each individual repository can only start its own release when its dependencies are fully released.
+#   timefold-solver-enterprise depends on timefold-solver
+#   timefold-quickstarts depends on timefold-solver
+#   timefold-website releases last
+# - Each individual repository uses 999-SNAPSHOT as its development version, even on micro branches.
+#
+# Should any of these axioms change, the release pipeline will need to be (significantly) refactored.
+# 0.8.x releases existed before this pipeline; they are done differently, similarities are coincidental.
+
 name: Release
 on:
   workflow_dispatch:
@@ -12,12 +23,6 @@ on:
       releaseBranch:
         description: 'Release branch to create (e.g. 1.0.x for version 1.0.0; once created, branch protection rules apply)'
         default: dry_run
-        required: true
-      nextVersion:
-        description: 'Next version after release (e.g. 1.1.0, -SNAPSHOT will be added automatically)'
-        required: true
-      nextMicroVersion:
-        description: 'Next version after release for release branch (e.g. 1.0.1, -SNAPSHOT will be added automatically)'
         required: true
       dryRun:
         description: 'Do a dry run? (true or false)'
@@ -62,7 +67,7 @@ jobs:
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
-          git commit -m "chore: release version ${{ github.event.inputs.version }}"
+          git commit -m "build: release version ${{ github.event.inputs.version }}"
           git push origin ${{ github.event.inputs.releaseBranch }}
 
       - name: Run JReleaser
@@ -86,25 +91,13 @@ jobs:
             out/jreleaser/trace.log
             out/jreleaser/output.properties
 
-      - name: Set micro snapshot version on the release branch
+      # Pull Request will be created with the changes and a summary of next steps.
+      - name: Put back the 999-SNAPSHOT version on the release branch
         run: |
-          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version
-          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT
-          git commit -am "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT"
-          git push origin ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version
-          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.releaseBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump-to-next-micro-version --title "chore: move to ${{ github.event.inputs.nextMicroVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body-stable.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-
-      - name: Switch back to source branch and set snapshot version
-        run: |
-          git checkout ${{ github.event.inputs.sourceBranch }}
-          git checkout -B ${{ github.event.inputs.releaseBranch }}-bump-to-next-minor-version
-          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          cp docs/target/antora-template.yml docs/src/antora.yml
-          git add docs/src/antora.yml
-          git commit -am "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT"
-          git push origin ${{ github.event.inputs.releaseBranch }}-bump-to-next-minor-version
-          gh pr create --reviewer triceo,ge0ffrey --base ${{ github.event.inputs.sourceBranch }} --head ${{ github.event.inputs.releaseBranch }}-bump-to-next-minor-version --title "chore: move to ${{ github.event.inputs.nextVersion }}-SNAPSHOT" --body-file .github/workflows/release-pr-body.md
+          git checkout -B ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot
+          mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
+          git commit -am "build: move back to 999-SNAPSHOT"
+          git push origin ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot
+          gh pr create --reviewer triceo --base ${{ github.event.inputs.releaseBranch }} --head ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot --title "build: move back to 999-SNAPSHOT" --body-file .github/workflows/release-pr-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}

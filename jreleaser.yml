@@ -12,10 +12,8 @@ release:
       name: "Timefold Release Bot"
       email: "release@timefold.ai"
     releaseName: "Timefold Solver Community Edition {{projectVersion}}"
-    # TODO Remove when previous tag follows the vX.Y.Z convention.
-    previousTagName: "0.9.39"
     draft: true
-    overwrite: true
+    overwrite: false
     sign: true
     milestone:
       close: true
