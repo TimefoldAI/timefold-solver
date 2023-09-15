@@ -53,7 +53,7 @@
     <version.jar.plugin>3.3.0</version.jar.plugin>
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
-    <version.sonar.plugin>3.9.1.2184</version.sonar.plugin>
+    <version.sonar.plugin>3.10.0.2594</version.sonar.plugin>
     <version.surefire.plugin>3.1.2</version.surefire.plugin>
     <version.versions.plugin>2.16.0</version.versions.plugin>
 
