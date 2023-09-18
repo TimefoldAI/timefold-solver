@@ -4,7 +4,7 @@
    height="600"
    id="svg2"
    version="1.1"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
    sodipodi:docname="constraintStreamJoinWithJoiners.svg"
    inkscape:export-filename="constraintStreamJoinWithJoiners_3.png"
    inkscape:export-xdpi="96"
@@ -171,25 +171,7 @@
      d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
      id="path5767" />
 </marker>
-
-
-
-
-
-
-
-
-
-
-
-    inkscape:perspective
-       sodipodi:type=&quot;inkscape:persp3d&quot;
-       inkscape:vp_x=&quot;0 : 526.18109 : 1&quot;
-       inkscape:vp_y=&quot;0 : 1000 : 0&quot;
-       inkscape:vp_z=&quot;744.09448 : 526.18109 : 1&quot;
-       inkscape:persp3d-origin=&quot;372.04724 : 350.78739 : 1&quot;
-       id=&quot;perspective10&quot; /&gt;
-    <inkscape:perspective
+&#10;&#10;&#10;&#10;&#10;&#10;&#10;&#10;&#10;&#10;&#10;&#10;    inkscape:perspective&#10;       sodipodi:type=&quot;inkscape:persp3d&quot;&#10;       inkscape:vp_x=&quot;0 : 526.18109 : 1&quot;&#10;       inkscape:vp_y=&quot;0 : 1000 : 0&quot;&#10;       inkscape:vp_z=&quot;744.09448 : 526.18109 : 1&quot;&#10;       inkscape:persp3d-origin=&quot;372.04724 : 350.78739 : 1&quot;&#10;       id=&quot;perspective10&quot; /&gt;&#10;    <inkscape:perspective
    id="perspective3633"
    inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
    inkscape:vp_z="1 : 0.5 : 1"
@@ -482,17 +464,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.8243355"
-     inkscape:cx="318.7462"
-     inkscape:cy="163.62122"
+     inkscape:zoom="1.13375"
+     inkscape:cx="400"
+     inkscape:cy="300.33076"
      inkscape:document-units="px"
-     inkscape:current-layer="layer5"
+     inkscape:current-layer="layer1"
      showgrid="true"
      width="800px"
      borderlayer="true"
      gridtolerance="10"
-     inkscape:window-width="2560"
-     inkscape:window-height="1363"
+     inkscape:window-width="1920"
+     inkscape:window-height="995"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -513,7 +495,9 @@
      inkscape:snap-object-midpoints="true"
      inkscape:snap-global="true"
      inkscape:document-rotation="0"
-     inkscape:pagecheckerboard="0">
+     inkscape:pagecheckerboard="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        empspacing="10"
        visible="true"
@@ -525,7 +509,8 @@
        type="xygrid"
        id="grid2845"
        originx="0"
-       originy="0" />
+       originy="0"
+       units="px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -542,7 +527,7 @@
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="from Shift"
+     inkscape:label="forEach Shift"
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-452.36218)"
@@ -855,7 +840,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="from DayOff"
+     inkscape:label="forEach DayOff"
      style="display:inline">
     <g
        id="g1790"
