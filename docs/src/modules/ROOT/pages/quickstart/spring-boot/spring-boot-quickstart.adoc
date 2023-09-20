@@ -16,7 +16,7 @@ with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence 
 
 You will build a REST application that optimizes a school timetable for students and teachers:
 
-image::quickstart/school-timetabling/schoolTimetablingScreenshot_legacy.png[]
+image::quickstart/school-timetabling/schoolTimetablingScreenshot.png[]
 
 Your service will assign `Lesson` instances to `Timeslot` and `Room` instances automatically
 by using AI to adhere to hard and soft scheduling _constraints_, such as the following examples:
