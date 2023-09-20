@@ -421,14 +421,6 @@
           <version>${version.versions.plugin}</version>
         </plugin>
         <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <author>false</author>
-            <failOnError>true</failOnError>
-            <quiet>true</quiet>
-          </configuration>
-        </plugin>
-        <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${version.compiler.plugin}</version>
           <configuration>
