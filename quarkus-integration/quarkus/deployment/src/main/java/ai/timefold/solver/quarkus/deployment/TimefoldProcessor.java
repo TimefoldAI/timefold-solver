@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
@@ -43,7 +44,9 @@ import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
-import ai.timefold.solver.quarkus.devui.TimefoldDevUIPropertiesSupplier;
+import ai.timefold.solver.quarkus.devui.SolverConfigText;
+import ai.timefold.solver.quarkus.devui.TimefoldDevUIPropertiesRPCService;
+import ai.timefold.solver.quarkus.devui.TimefoldDevUIRecorder;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 
 import org.jboss.jandex.AnnotationInstance;
@@ -76,11 +79,12 @@ import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
-import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.ServiceUtil;
-import io.quarkus.devconsole.spi.DevConsoleRuntimeTemplateInfoBuildItem;
+import io.quarkus.devui.spi.JsonRPCProvidersBuildItem;
+import io.quarkus.devui.spi.page.CardPageBuildItem;
+import io.quarkus.devui.spi.page.Page;
 import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
@@ -148,20 +152,48 @@ class TimefoldProcessor {
     }
 
     @BuildStep(onlyIf = IsDevelopment.class)
-    public DevConsoleRuntimeTemplateInfoBuildItem getSolverConfig(SolverConfigBuildItem solverConfigBuildItem,
-            CurateOutcomeBuildItem curateOutcomeBuildItem) {
+    @Record(STATIC_INIT)
+    public CardPageBuildItem registerDevUICard(
+            TimefoldDevUIRecorder devUIRecorder,
+            SolverConfigBuildItem solverConfigBuildItem,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+        CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
         SolverConfig solverConfig = solverConfigBuildItem.getSolverConfig();
         if (solverConfig != null) {
             StringWriter effectiveSolverConfigWriter = new StringWriter();
             SolverConfigIO solverConfigIO = new SolverConfigIO();
             solverConfigIO.write(solverConfig, effectiveSolverConfigWriter);
-            return new DevConsoleRuntimeTemplateInfoBuildItem("solverConfigProperties",
-                    new TimefoldDevUIPropertiesSupplier(effectiveSolverConfigWriter.toString()), this.getClass(),
-                    curateOutcomeBuildItem);
+            syntheticBeans.produce(SyntheticBeanBuildItem.configure(SolverConfigText.class)
+                    .scope(ApplicationScoped.class)
+                    .supplier(devUIRecorder.solverConfigTextSupplier(effectiveSolverConfigWriter.toString()))
+                    .done());
         } else {
-            return new DevConsoleRuntimeTemplateInfoBuildItem("solverConfigProperties",
-                    new TimefoldDevUIPropertiesSupplier(), this.getClass(), curateOutcomeBuildItem);
+            syntheticBeans.produce(SyntheticBeanBuildItem.configure(SolverConfigText.class)
+                    .scope(ApplicationScoped.class)
+                    .supplier(devUIRecorder.solverConfigTextSupplier(""))
+                    .done());
         }
+        cardPageBuildItem.addPage(Page.webComponentPageBuilder()
+                .title("Configuration")
+                .icon("font-awesome-solid:wrench")
+                .componentLink("config-component.js"));
+
+        cardPageBuildItem.addPage(Page.webComponentPageBuilder()
+                .title("Model")
+                .icon("font-awesome-solid:wrench")
+                .componentLink("model-component.js"));
+
+        cardPageBuildItem.addPage(Page.webComponentPageBuilder()
+                .title("Constraints")
+                .icon("font-awesome-solid:wrench")
+                .componentLink("constraints-component.js"));
+
+        return cardPageBuildItem;
+    }
+
+    @BuildStep(onlyIf = IsDevelopment.class)
+    public JsonRPCProvidersBuildItem registerRPCService() {
+        return new JsonRPCProvidersBuildItem("Timefold Solver", TimefoldDevUIPropertiesRPCService.class);
     }
 
     /**

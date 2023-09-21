@@ -6,8 +6,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -21,46 +24,66 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 import io.quarkus.arc.Arc;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
-public class TimefoldDevUIPropertiesSupplier implements Supplier<TimefoldDevUIProperties> {
-    private String effectiveSolverConfigXml;
+@ApplicationScoped
+public class TimefoldDevUIPropertiesRPCService {
 
-    public TimefoldDevUIPropertiesSupplier() {
-        this.effectiveSolverConfigXml = null;
+    private final String effectiveSolverConfigXml;
+
+    private TimefoldDevUIProperties devUIProperties;
+
+    @Inject
+    public TimefoldDevUIPropertiesRPCService(SolverConfigText solverConfigText) {
+        this.effectiveSolverConfigXml = solverConfigText.getSolverConfigText();
     }
 
-    public TimefoldDevUIPropertiesSupplier(String effectiveSolverConfigXml) {
-        this.effectiveSolverConfigXml = effectiveSolverConfigXml;
-    }
-
-    // Needed for Quarkus Dev UI serialization
-    public String getEffectiveSolverConfigXml() {
-        return effectiveSolverConfigXml;
-    }
-
-    public void setEffectiveSolverConfigXml(String effectiveSolverConfigXml) {
-        this.effectiveSolverConfigXml = effectiveSolverConfigXml;
-    }
-
-    @Override
-    public TimefoldDevUIProperties get() {
+    @PostConstruct
+    public void init() {
         if (effectiveSolverConfigXml != null) {
             // SolverConfigIO does not work at runtime,
             // but the build time SolverConfig does not have properties
             // that can be set at runtime (ex: termination), so the
             // effective solver config will be missing some properties
-            return new TimefoldDevUIProperties(getModelInfo(),
-                    getXmlContentWithComment("Properties that can be set at runtime are not included"),
-                    getConstraintList());
+            devUIProperties = new TimefoldDevUIProperties(buildModelInfo(),
+                    buildXmlContentWithComment("Properties that can be set at runtime are not included"),
+                    buildConstraintList());
         } else {
-            return new TimefoldDevUIProperties(getModelInfo(),
+            devUIProperties = new TimefoldDevUIProperties(buildModelInfo(),
                     "<!-- Plugin execution was skipped " + "because there are no @" + PlanningSolution.class.getSimpleName()
                             + " or @" + PlanningEntity.class.getSimpleName() + " annotated classes. -->\n<solver />",
                     Collections.emptyList());
         }
     }
 
-    private TimefoldModelProperties getModelInfo() {
+    public JsonObject getConfig() {
+        JsonObject out = new JsonObject();
+        out.put("config", devUIProperties.getEffectiveSolverConfig());
+        return out;
+    }
+
+    public JsonArray getConstraints() {
+        return JsonArray.of(devUIProperties.getConstraintList().toArray());
+    }
+
+    public JsonObject getModelInfo() {
+        TimefoldModelProperties modelProperties = devUIProperties.getTimefoldModelProperties();
+        JsonObject out = new JsonObject();
+        out.put("solutionClass", modelProperties.solutionClass);
+        out.put("entityClassList", JsonArray.of(modelProperties.entityClassList.toArray()));
+        out.put("entityClassToGenuineVariableListMap",
+                new JsonObject(modelProperties.entityClassToGenuineVariableListMap.entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> JsonArray.of(entry.getValue().toArray())))));
+        out.put("entityClassToShadowVariableListMap",
+                new JsonObject(modelProperties.entityClassToShadowVariableListMap.entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> JsonArray.of(entry.getValue().toArray())))));
+        return out;
+    }
+
+    private TimefoldModelProperties buildModelInfo() {
         if (effectiveSolverConfigXml != null) {
             DefaultSolverFactory<?> solverFactory =
                     (DefaultSolverFactory<?>) Arc.container().instance(SolverFactory.class).get();
@@ -95,7 +118,7 @@ public class TimefoldDevUIPropertiesSupplier implements Supplier<TimefoldDevUIPr
         }
     }
 
-    private List<String> getConstraintList() {
+    private List<String> buildConstraintList() {
         if (effectiveSolverConfigXml != null) {
             DefaultSolverFactory<?> solverFactory =
                     (DefaultSolverFactory<?>) Arc.container().instance(SolverFactory.class).get();
@@ -109,7 +132,7 @@ public class TimefoldDevUIPropertiesSupplier implements Supplier<TimefoldDevUIPr
         return Collections.emptyList();
     }
 
-    private String getXmlContentWithComment(String comment) {
+    private String buildXmlContentWithComment(String comment) {
         int indexOfPreambleEnd = effectiveSolverConfigXml.indexOf("?>");
         if (indexOfPreambleEnd != -1) {
             return effectiveSolverConfigXml.substring(0, indexOfPreambleEnd + 2) +
