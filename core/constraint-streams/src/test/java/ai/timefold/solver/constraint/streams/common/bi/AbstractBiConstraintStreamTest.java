@@ -1344,7 +1344,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
     }
 
     // ************************************************************************
-    // Map/flatten/distinct
+    // Map/flatten/distinct/concat
     // ************************************************************************
 
     @Override
@@ -1791,6 +1791,238 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
                 assertMatch(entity2, group1));
+    }
+
+    @Override
+    @TestTemplate
+    public void concatWithoutDuplicates() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value1)
+                        .join(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2))
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2)
+                                .join(factory.forEach(TestdataLavishEntity.class)
+                                        .filter(entity -> entity.getValue() == value3)))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity2, entity3));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3));
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity3, entity2),
+                assertMatch(entity2, entity1));
+    }
+
+    @Override
+    @TestTemplate
+    public void concatWithDuplicates() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value1 || entity.getValue() == value2)
+                        .join(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2 || entity.getValue() == value3))
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2)
+                                .join(factory.forEach(TestdataLavishEntity.class)
+                                        .filter(entity -> entity.getValue() == value3)))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3),
+                assertMatch(entity2, entity2),
+                assertMatch(entity2, entity3));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity2),
+                assertMatch(entity2, entity2),
+                assertMatch(entity3, entity3),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3));
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity3, entity2),
+                assertMatch(entity3, entity1),
+                assertMatch(entity2, entity1),
+                assertMatch(entity2, entity1),
+                assertMatch(entity2, entity2));
+    }
+
+    @Override
+    @TestTemplate
+    public void concatAndDistinctWithoutDuplicates() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value1)
+                        .join(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2))
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2)
+                                .join(factory.forEach(TestdataLavishEntity.class)
+                                        .filter(entity -> entity.getValue() == value3)))
+                        .distinct()
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity2, entity3));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3));
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity3, entity2),
+                assertMatch(entity2, entity1));
+    }
+
+    @Override
+    @TestTemplate
+    public void concatAndDistinctWithDuplicates() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value1 || entity.getValue() == value2)
+                        .join(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2 || entity.getValue() == value3))
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2)
+                                .join(factory.forEach(TestdataLavishEntity.class)
+                                        .filter(entity -> entity.getValue() == value3)))
+                        .distinct()
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity2),
+                assertMatch(entity2, entity3));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity2),
+                assertMatch(entity2, entity2),
+                assertMatch(entity3, entity3),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3));
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity3, entity2),
+                assertMatch(entity3, entity1),
+                assertMatch(entity2, entity1),
+                assertMatch(entity2, entity2));
     }
 
     // ************************************************************************

@@ -362,6 +362,19 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
+    public UniConstraintStream<A> concat(UniConstraintStream<A> otherStream) {
+        var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
+        var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
+        var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
+        var concatStream = new BavetConcatUniConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        return constraintFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream, as it is an actual new join.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
     public <ResultA_> UniConstraintStream<ResultA_> map(Function<A, ResultA_> mapping) {
         var stream = shareAndAddChild(new BavetUniMapUniConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
