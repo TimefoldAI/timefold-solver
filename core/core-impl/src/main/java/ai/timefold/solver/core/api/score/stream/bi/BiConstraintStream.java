@@ -1055,6 +1055,21 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      */
     BiConstraintStream<A, B> distinct();
 
+    /**
+     * Returns a new {@link BiConstraintStream} containing all the tuples of both this {@link BiConstraintStream} and the
+     * provided {@link BiConstraintStream}. Tuples in both this {@link BiConstraintStream} and the provided
+     * {@link BiConstraintStream} will appear at least twice.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A, 1), (B, 2), (C, 3)]} and the other stream consists of
+     * {@code [(C, 3), (D, 4), (E, 5)]}, {@code this.concat(other)} will consist of
+     * {@code [(A, 1), (B, 2), (C, 3), (C, 3), (D, 4), (E, 5)]}. This operation can be thought of as an or between streams.
+     *
+     * @param otherStream
+     * @return
+     */
+    BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream);
+
     // ************************************************************************
     // Other operations
     // ************************************************************************

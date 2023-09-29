@@ -99,7 +99,7 @@ public interface ConstraintStreamFunctionalTest {
     void groupBy_4Mapping0Collector();
 
     // ************************************************************************
-    // Map/expand/flatten/distinct
+    // Map/expand/flatten/distinct/concat
     // ************************************************************************
 
     void distinct();
@@ -117,6 +117,14 @@ public interface ConstraintStreamFunctionalTest {
     void mapToTri();
 
     void mapToQuad();
+
+    void concatWithoutDuplicates();
+
+    void concatAndDistinctWithoutDuplicates();
+
+    void concatWithDuplicates();
+
+    void concatAndDistinctWithDuplicates();
 
     default void expandToBi() {
         // Only Uni can be expanded to Bi, so don't force it.

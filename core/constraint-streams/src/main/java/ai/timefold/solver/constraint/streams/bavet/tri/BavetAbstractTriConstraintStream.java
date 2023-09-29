@@ -371,6 +371,19 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
+    public TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+        var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
+        var leftBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, this);
+        var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
+        var concatStream = new BavetConcatTriConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        return constraintFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream, as it is an actual new join.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
     public <ResultA_> UniConstraintStream<ResultA_> map(TriFunction<A, B, C, ResultA_> mapping) {
         var stream = shareAndAddChild(new BavetUniMapTriConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
