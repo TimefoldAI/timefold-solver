@@ -2666,7 +2666,7 @@
          id="flowPara4308-6"
          style="font-size:16px;line-height:1.25">First minimize overloaded truck axles,</flowPara><flowPara
          id="flowPara3347"
-         style="font-size:16px;line-height:1.25">then minimize fuel usage</flowPara></flowRoot>
+         style="font-size:16px;line-height:1.25">then minimize fuel stops</flowPara></flowRoot>
     <g
        id="g3709"
        transform="translate(0,19.999997)" />
@@ -3292,7 +3292,7 @@
          id="flowPara5509-8"
          style="font-size:16px;line-height:1.25">1 overloaded axle is worse</flowPara><flowPara
          id="flowPara4068"
-         style="font-size:16px;line-height:1.25">than any number of fuel usages</flowPara></flowRoot>
+         style="font-size:16px;line-height:1.25">than any number of fuel stops</flowPara></flowRoot>
     <g
        id="g4369"
        transform="matrix(2.3502951,0,0,1.6037632,-937.12392,371.66933)">
