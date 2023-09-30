@@ -1908,7 +1908,7 @@
          id="flowPara4308-6"
          style="font-size:16px;line-height:1.25">Minimize driver unhappiness</flowPara><flowPara
          id="flowPara3347"
-         style="font-size:16px;line-height:1.25">Minimize fuel usage</flowPara></flowRoot>
+         style="font-size:16px;line-height:1.25">Minimize fuel stops</flowPara></flowRoot>
     <g
        id="g3709"
        transform="translate(0,19.999997)" />
@@ -4215,7 +4215,7 @@
          id="flowPara5509-8"
          style="font-size:16px;line-height:1.25">1 unhappy driver is as bad</flowPara><flowPara
          id="flowPara4068"
-         style="font-size:16px;line-height:1.25">as 2 fuel usages</flowPara></flowRoot>
+         style="font-size:16px;line-height:1.25">as 2 fuel stops</flowPara></flowRoot>
     <g
        id="g3710"
        transform="matrix(0.44462681,0,0,0.44462681,-34.878574,290.38128)">
