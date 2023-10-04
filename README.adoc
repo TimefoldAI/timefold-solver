@@ -23,6 +23,9 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 {sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
 {sonarBadge}&metric=coverage["Coverage", {sonarLink}]
 
+Timefold Solver is an optimization engine evolved from OptaPlanner.
+Developed by the original OptaPlanner team, our aim is to free the world of wasteful planning.
+
 == Get started with Timefold Solver
 
 * https://timefold.ai/docs[Read a Getting Started guide.]
