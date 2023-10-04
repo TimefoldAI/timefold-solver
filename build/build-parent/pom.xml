@@ -197,11 +197,6 @@
           <version>${version.enforcer.plugin}</version>
           <dependencies>
             <dependency>
-              <groupId>org.ow2.asm</groupId>
-              <artifactId>asm-analysis</artifactId>
-              <version>9.5</version>
-            </dependency>
-            <dependency>
               <groupId>org.commonjava.maven.enforcer</groupId>
               <artifactId>enforce-managed-deps-rule</artifactId>
               <version>1.3</version>
@@ -560,31 +555,10 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
-        <configuration>
-          <systemPropertyVariables>
-            <!--
-              Temporary tweak to make Mockito work on JDK 21;
-              TODO Remove once Quarkus upgrades to a version of Mockito
-                   which upgrades to a ByteBuddy version which enables JDK 21 as non-experimental.
-            -->
-            <net.bytebuddy.experimental>true</net.bytebuddy.experimental>
-          </systemPropertyVariables>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
-        <configuration>
-          <systemPropertyVariables>
-            <!--
-              Temporary tweak to make Mockito work on JDK 21;
-              TODO Remove once Quarkus upgrades to a version of Mockito
-                   which upgrades to a ByteBuddy version which enables JDK 21 as non-experimental.
-            -->
-
-            <net.bytebuddy.experimental>true</net.bytebuddy.experimental>
-          </systemPropertyVariables>
-        </configuration>
       </plugin>
       <!-- Do not move to full profile. Otherwise upstream dependency changes can break our build without CI catching it. -->
       <plugin>
