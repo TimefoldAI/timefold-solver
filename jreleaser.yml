@@ -31,7 +31,6 @@ release:
           - ci
         contributors:
           - "GitHub"
-          - "dependabot"
           - "Timefold Release Bot"
 
 deploy:
