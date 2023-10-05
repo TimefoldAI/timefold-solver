@@ -4,7 +4,7 @@
 
 :branch: main
 
-image::docs/src/modules/ROOT/images/shared/timefold-logo.png[link="https://timefold.ai",Timefold,150,150,align="center"]
+image::docs/src/modules/ROOT/images/shared/timefold-logo.png[link="https://timefold.ai",Timefold,align="center"]
 
 _Planning optimization made easy._ +
 https://timefold.ai[timefold.ai]
