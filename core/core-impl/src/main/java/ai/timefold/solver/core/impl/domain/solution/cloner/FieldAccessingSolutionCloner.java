@@ -97,20 +97,25 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     }
 
     private <C> C constructClone(Class<C> clazz) {
+        var constructor = constructorMemoization.computeIfAbsent(clazz, key -> {
+            try {
+                var ctor = (Constructor<C>) key.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                return ctor;
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(
+                        "To create a planning clone, the class (%s) must have a no-arg constructor."
+                                .formatted(key.getCanonicalName()),
+                        e);
+            }
+        });
         try {
-            return (C) constructorMemoization.computeIfAbsent(clazz, key -> {
-                try {
-                    Constructor<C> constructor = (Constructor<C>) key.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    return constructor;
-                } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException("The class (" + key
-                            + ") should have a no-arg constructor to create a planning clone.", e);
-                }
-            }).newInstance();
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("The class (" + clazz
-                    + ") should have a no-arg constructor to create a planning clone.", e);
+            return (C) constructor.newInstance();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Can not create a new instance of class (%s) for a planning clone, using its no-arg constructor."
+                            .formatted(clazz.getCanonicalName()),
+                    e);
         }
     }
 
@@ -327,5 +332,6 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
 
     }
 
-    private record Unprocessed(Object bean, Field field, Object originalValue) { }
+    private record Unprocessed(Object bean, Field field, Object originalValue) {
+    }
 }
