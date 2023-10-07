@@ -8,7 +8,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +15,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -69,9 +67,9 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         Object originalValue = unprocessed.originalValue;
         Field field = unprocessed.field;
         Class<?> fieldType = field.getType();
-        if (originalValue instanceof Collection collection) {
+        if (originalValue instanceof Collection<?> collection) {
             return cloneCollection(fieldType, collection, originalToCloneMap, unprocessedQueue);
-        } else if (originalValue instanceof Map map) {
+        } else if (originalValue instanceof Map<?, ?> map) {
             return cloneMap(fieldType, map, originalToCloneMap, unprocessedQueue);
         } else if (originalValue.getClass().isArray()) {
             return cloneArray(fieldType, originalValue, originalToCloneMap, unprocessedQueue);
@@ -173,31 +171,24 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
 
     private static <E> Collection<E> constructCloneCollection(Collection<E> originalCollection) {
         // TODO Don't hardcode all standard collections
-        if (originalCollection instanceof List) {
-            if (originalCollection instanceof ArrayList) {
-                return new ArrayList<>(originalCollection.size());
-            } else if (originalCollection instanceof LinkedList) {
-                return new LinkedList<>();
-            } else { // Default List
-                return new ArrayList<>(originalCollection.size());
-            }
-        } else if (originalCollection instanceof Set) {
-            if (originalCollection instanceof SortedSet set) {
-                Comparator<E> setComparator = set.comparator();
+        if (originalCollection instanceof LinkedList) {
+            return new LinkedList<>();
+        }
+        var size = originalCollection.size();
+        if (originalCollection instanceof Set) {
+            if (originalCollection instanceof SortedSet<E> set) {
+                var setComparator = set.comparator();
                 return new TreeSet<>(setComparator);
-            } else if (originalCollection instanceof LinkedHashSet) {
-                return new LinkedHashSet<>(originalCollection.size());
-            } else if (originalCollection instanceof HashSet) {
-                return new HashSet<>(originalCollection.size());
-            } else { // Default Set
-                // Default to a LinkedHashSet to respect order
-                return new LinkedHashSet<>(originalCollection.size());
+            } else if (!(originalCollection instanceof LinkedHashSet)) {
+                return new HashSet<>(size);
+            } else { // Default to a LinkedHashSet to respect order.
+                return new LinkedHashSet<>(size);
             }
         } else if (originalCollection instanceof Deque) {
-            return new ArrayDeque<>(originalCollection.size());
-        } else { // Default collection
-            return new ArrayList<>(originalCollection.size());
+            return new ArrayDeque<>(size);
         }
+        // Default collection
+        return new ArrayList<>(size);
     }
 
     private <K, V> Map<K, V> cloneMap(Class<?> expectedType, Map<K, V> originalMap, Map<Object, Object> originalToCloneMap,
@@ -218,17 +209,16 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     }
 
     private static <K, V> Map<K, V> constructCloneMap(Map<K, V> originalMap) {
-        // Normally a Map will never be selected for cloning, but extending implementations might anyway
-        if (originalMap instanceof SortedMap map) {
-            Comparator<K> setComparator = map.comparator();
+        // Normally, a Map will never be selected for cloning, but extending implementations might anyway.
+        if (originalMap instanceof SortedMap<K, V> map) {
+            var setComparator = map.comparator();
             return new TreeMap<>(setComparator);
-        } else if (originalMap instanceof LinkedHashMap) {
-            return new LinkedHashMap<>(originalMap.size());
-        } else if (originalMap instanceof HashMap) {
-            return new HashMap<>(originalMap.size());
-        } else { // Default Map
-            // Default to a LinkedHashMap to respect order
-            return new LinkedHashMap<>(originalMap.size());
+        }
+        var originalMapSize = originalMap.size();
+        if (!(originalMap instanceof LinkedHashMap)) {
+            return new HashMap<>(originalMapSize);
+        } else { // Default to a LinkedHashMap to respect order.
+            return new LinkedHashMap<>(originalMapSize);
         }
     }
 
@@ -241,12 +231,15 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         if (original == null) {
             return null;
         }
-        // Because an element which is itself a Collection or Map might hold an entity, we clone it too
-        // Also, the List<Long> in Map<String, List<Long>> needs to be cloned
-        // if the List<Long> is a shadow, despite that Long never needs to be cloned (because it's immutable).
-        if (original instanceof Collection collection) {
+        /*
+         * Because an element which is itself a Collection or Map might hold an entity,
+         * we clone it too.
+         * The List<Long> in Map<String, List<Long>> needs to be cloned if the List<Long> is a shadow,
+         * despite that Long never needs to be cloned (because it's immutable).
+         */
+        if (original instanceof Collection<?> collection) {
             return (C) cloneCollection(Collection.class, collection, originalToCloneMap, unprocessedQueue);
-        } else if (original instanceof Map map) {
+        } else if (original instanceof Map<?, ?> map) {
             return (C) cloneMap(Map.class, map, originalToCloneMap, unprocessedQueue);
         } else if (original.getClass().isArray()) {
             return (C) cloneArray(original.getClass(), original, originalToCloneMap, unprocessedQueue);
