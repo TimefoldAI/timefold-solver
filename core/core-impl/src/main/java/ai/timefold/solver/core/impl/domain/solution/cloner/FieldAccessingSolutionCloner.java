@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 
+import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -311,7 +312,20 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
                 copiedFieldArray = Arrays.stream(declaringClass.getDeclaredFields())
                         .filter(f -> !Modifier.isStatic(f.getModifiers()))
                         .filter(field -> DeepCloningUtils.isImmutable(field.getType()))
-                        .peek(f -> f.setAccessible(true))
+                        .peek(f -> {
+                            if (DeepCloningUtils.needsDeepClone(solutionDescriptor, f, declaringClass)) {
+                                throw new IllegalStateException("""
+                                        The field (%s) of class (%s) needs to be deep-cloned,
+                                        but its type (%s) is immutable and can not be deep-cloned.
+                                        Maybe remove the @%s annotation from the field?
+                                        Maybe do not reference planning entities inside Java records?
+                                        """
+                                        .formatted(f.getName(), declaringClass.getCanonicalName(),
+                                                f.getType().getCanonicalName(), DeepPlanningClone.class.getSimpleName()));
+                            } else {
+                                f.setAccessible(true);
+                            }
+                        })
                         .map(ShallowCloningFieldCloner::of)
                         .toArray(ShallowCloningFieldCloner[]::new);
             }

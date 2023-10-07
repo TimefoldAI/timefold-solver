@@ -81,7 +81,13 @@ public final class DeepCloningUtils {
         Class<?> fieldType = field.getType();
         if (isImmutable(fieldType)) {
             return false;
+        } else {
+            return needsDeepClone(solutionDescriptor, field, owningClass);
         }
+
+    }
+
+    public static boolean needsDeepClone(SolutionDescriptor<?> solutionDescriptor, Field field, Class<?> owningClass) {
         return isFieldAnEntityPropertyOnSolution(solutionDescriptor, field, owningClass)
                 || isFieldAnEntityOrSolution(solutionDescriptor, field)
                 || isFieldAPlanningListVariable(field, owningClass)
@@ -89,14 +95,14 @@ public final class DeepCloningUtils {
     }
 
     static boolean isImmutable(Class<?> clz) {
-        if (clz.isPrimitive() || clz.isEnum() || Score.class.isAssignableFrom(clz)) {
+        if (clz.isPrimitive() || clz.isEnum() || clz.isRecord() || Score.class.isAssignableFrom(clz)) {
             return true;
         }
         return IMMUTABLE_CLASSES.contains(clz);
     }
 
     /**
-     * Return true only if a field represent an entity property on the solution class.
+     * Return true only if a field represents an entity property on the solution class.
      * An entity property is one who type is a PlanningEntity or a collection
      * of PlanningEntity.
      *

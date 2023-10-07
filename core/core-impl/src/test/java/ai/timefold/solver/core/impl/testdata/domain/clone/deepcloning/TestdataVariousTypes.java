@@ -35,16 +35,18 @@ public class TestdataVariousTypes {
     public String stringRef = uuidRef.toString();
 
     // Records.
-    public NonClonedRecord nonClonedRecord = new NonClonedRecord(17, "18");
-    public ClonedRecord clonedRecord = new ClonedRecord(19, "20", new TestdataDeepCloningEntity("21"));
+    public NonClonedRecord nonClonedRecord = new NonClonedRecord(19, "19");
+    public ClonedRecord clonedRecord = new ClonedRecord(20, "20", new TestdataDeepCloningEntity("20"));
 
     // And something mutable.
     public List<String> shallowClonedListRef = Collections.singletonList(stringRef);
     @DeepPlanningClone
     public List<String> deepClonedListRef = Collections.singletonList(stringRef);
 
-    public record NonClonedRecord(int a, String b) { }
+    public record NonClonedRecord(int a, String b) {
+    }
 
-    public record ClonedRecord(int a, String b, TestdataDeepCloningEntity entity) { }
+    public record ClonedRecord(int a, String b, TestdataDeepCloningEntity entity) {
+    }
 
 }
