@@ -82,15 +82,7 @@ final class DeepCloningFieldCloner {
         return fieldDeepCloneDecision.get() == 1;
     }
 
-    private static final class Metadata {
-
-        private final Class<?> clz;
-        private final boolean decision;
-
-        public Metadata(Class<?> clz, boolean decision) {
-            this.clz = clz;
-            this.decision = decision;
-        }
-
+    private record Metadata(Class<?> clz, boolean decision) {
     }
+
 }
