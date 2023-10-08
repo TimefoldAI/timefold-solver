@@ -487,7 +487,8 @@ public class ConfigUtils {
         if (memberList.isEmpty()) {
             return null;
         }
-        if (memberList.size() > 1) {
+        // Once a record field is annotated with @PlanningId, Java also adds the annotation on the getter.
+        if (memberList.size() > 1 && !clazz.isRecord()) {
             throw new IllegalArgumentException("The class (" + clazz
                     + ") has " + memberList.size() + " members (" + memberList + ") with a "
                     + annotationClass.getSimpleName() + " annotation.");
