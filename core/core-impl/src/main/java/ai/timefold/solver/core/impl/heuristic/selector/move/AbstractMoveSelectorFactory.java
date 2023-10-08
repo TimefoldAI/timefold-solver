@@ -134,7 +134,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
 
     private MoveSelector<Solution_> applyFiltering(MoveSelector<Solution_> moveSelector, boolean skipNonDoableMoves) {
         /*
-         * Do not filter out pointless moves in Construction Heuristics,
+         * Do not filter out pointless moves in Construction Heuristics and Exhaustive Search,
          * because the original value of the entity is irrelevant.
          * If the original value is null and the variable is nullable,
          * the change move to null must be done too.
