@@ -487,8 +487,16 @@ public class ConfigUtils {
         if (memberList.isEmpty()) {
             return null;
         }
-        // Once a record field is annotated with @PlanningId, Java also adds the annotation on the getter.
-        if (memberList.size() > 1 && !clazz.isRecord()) {
+        int size = memberList.size();
+        if (size == 2 && clazz.isRecord()) {
+            /*
+             * A record has a field and a getter for each record component.
+             * When the component is annotated with @PlanningId,
+             * the annotation ends up on both the field and the getter.
+             * The getter is the one that should be used.
+             */
+            return memberList.get(1);
+        } else if (size > 1) {
             throw new IllegalArgumentException("The class (" + clazz
                     + ") has " + memberList.size() + " members (" + memberList + ") with a "
                     + annotationClass.getSimpleName() + " annotation.");
