@@ -36,7 +36,6 @@ public class TestdataVariousTypes {
 
     // Records.
     public NonClonedRecord nonClonedRecord = new NonClonedRecord(19, "19");
-    public ClonedRecord clonedRecord = new ClonedRecord(20, "20", new TestdataDeepCloningEntity("20"));
 
     // And something mutable.
     public List<String> shallowClonedListRef = Collections.singletonList(stringRef);
@@ -44,9 +43,6 @@ public class TestdataVariousTypes {
     public List<String> deepClonedListRef = Collections.singletonList(stringRef);
 
     public record NonClonedRecord(int a, String b) {
-    }
-
-    public record ClonedRecord(int a, String b, TestdataDeepCloningEntity entity) {
     }
 
 }
