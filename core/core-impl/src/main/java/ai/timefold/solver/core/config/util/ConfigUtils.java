@@ -488,18 +488,27 @@ public class ConfigUtils {
             return null;
         }
         int size = memberList.size();
-        if (size == 2 && clazz.isRecord()) {
+        if (clazz.isRecord()) {
             /*
              * A record has a field and a getter for each record component.
              * When the component is annotated with @PlanningId,
-             * the annotation ends up on both the field and the getter.
-             * The getter is the one that should be used.
+             * the annotation ends up both on the field and on the getter.
              */
-            return memberList.get(1);
+            if (size == 2) { // The getter is used to retrieve the value of the record component.
+                return memberList.get(1);
+            } else { // There is more than one component annotated with @PlanningId; take the fields and fail.
+                var componentList = new ArrayList<String>(size / 2);
+                for (int i = 0; i < size; i += 2) { // Extracts the component names, which are the field names.
+                    componentList.add(memberList.get(i).getName());
+                }
+                throw new IllegalArgumentException("""
+                        The record (%s) has %s components (%s) with %s annotation.
+                        """.formatted(clazz, componentList.size(), componentList, annotationClass.getSimpleName()));
+            }
         } else if (size > 1) {
-            throw new IllegalArgumentException("The class (" + clazz
-                    + ") has " + memberList.size() + " members (" + memberList + ") with a "
-                    + annotationClass.getSimpleName() + " annotation.");
+            throw new IllegalArgumentException("""
+                    The class (%s) has %s members (%s) with %s annotation.
+                    """.formatted(clazz, memberList.size(), memberList, annotationClass.getSimpleName()));
         }
         return memberList.get(0);
     }

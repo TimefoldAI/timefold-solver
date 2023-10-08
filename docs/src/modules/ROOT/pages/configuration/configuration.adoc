@@ -385,7 +385,17 @@ If historic data needs to be considered too, then create problem fact to hold th
 
 [NOTE]
 ====
-Planning entity `hashCode()` implementations must remain constant. Therefore entity `hashCode()` must not depend on any planning variables. Pay special attention when using data structures with auto-generated `hashCode()` as entities, such as Java records or Kotlin data classes.
+Planning entity `hashCode()` implementations must remain constant.
+Therefore entity `hashCode()` must not depend on any planning variables.
+Pay special attention when using data structures with auto-generated `hashCode()` as entities,
+such as Kotlin data classes or Lombok's `@EqualsAndHashCode`.
+====
+
+[NOTE]
+====
+Planning entity implementations must not be of Java's `enum` or `record` types.
+Those are immutable by design and therefore cannot change during planning,
+whereas planning entities will.
 ====
 
 [[planningEntityDifficulty]]
@@ -1594,6 +1604,14 @@ The solver configuration needs to declare the planning solution class:
 </solver>
 ----
 
+[NOTE]
+====
+Solution class must not be of Java's `enum` or `record` types.
+Those are immutable by design and therefore cannot change during planning,
+whereas a planning solution will.
+====
+
+
 [[planningEntitiesOfASolution]]
 ==== Planning entities of a solution (`@PlanningEntityCollectionProperty`)
 
@@ -1876,6 +1894,11 @@ Alternatively, the `@DeepPlanningClone` annotation also works on a getter method
 If that property is a `Collection` or a `Map`, it will shallow clone it and deep planning clone
 any element thereof that is an instance of a class that has a `@DeepPlanningClone` annotation.
 
+[NOTE]
+====
+Values of Java's `enum` and `record` types are never deep-cloned.
+They are immutable by design and shouldn't be used to store mutable state, such as planning entities.
+====
 
 [[customCloning]]
 ===== Custom cloning with a `SolutionCloner`
