@@ -93,6 +93,7 @@ public class SolutionDescriptor<Solution_> {
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(DomainAccessType domainAccessType,
             Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap,
             Map<String, SolutionCloner> solutionClonerMap, List<Class<?>> entityClassList) {
+        assertMutable(solutionClass, "solutionClass");
         solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
         SolutionDescriptor<Solution_> solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
         DescriptorPolicy descriptorPolicy = new DescriptorPolicy();
@@ -108,6 +109,20 @@ public class SolutionDescriptor<Solution_> {
         }
         solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
         return solutionDescriptor;
+    }
+
+    public static void assertMutable(Class<?> clz, String classType) {
+        if (clz.isRecord()) {
+            throw new IllegalArgumentException("""
+                    The %s (%s) cannot be a record as it needs to be mutable.
+                    Use a regular class instead.
+                    """.formatted(classType, clz.getCanonicalName()));
+        } else if (clz.isEnum()) {
+            throw new IllegalArgumentException("""
+                    The %s (%s) cannot be an enum as it needs to be mutable.
+                    Use a regular class instead.
+                    """.formatted(classType, clz.getCanonicalName()));
+        }
     }
 
     private static List<Class<?>> sortEntityClassList(List<Class<?>> entityClassList) {

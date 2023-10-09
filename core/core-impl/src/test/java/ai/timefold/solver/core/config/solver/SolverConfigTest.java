@@ -15,12 +15,19 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
@@ -37,8 +44,11 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordEntity;
+import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordSolution;
 
 import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -175,6 +185,71 @@ class SolverConfigTest {
         verify(classVisitor, atLeastOnce()).accept(DummyMoveIteratorFactory.class);
         verify(classVisitor, atLeastOnce()).accept(DummyMoveListFactory.class);
         verify(classVisitor, atLeastOnce()).accept(CustomPhaseCommand.class);
+    }
+
+    @Test
+    void solutionIsARecord() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(DummyRecordSolution.class)
+                .withEntityClasses(TestdataEntity.class);
+        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+                .hasMessageContaining(DummyRecordSolution.class.getSimpleName())
+                .hasMessageContaining("record");
+    }
+
+    @Test
+    void entityIsARecord() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(DummySolutionWithRecordEntity.class)
+                .withEntityClasses(DummyRecordEntity.class);
+        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+                .hasMessageContaining(DummyRecordEntity.class.getSimpleName())
+                .hasMessageContaining("record");
+    }
+
+    @Test
+    void variableWithPlanningIdIsARecord() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataRecordSolution.class)
+                .withEntityClasses(TestdataRecordEntity.class)
+                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()); // Run CH and finish.
+        var solver = SolverFactory.create(solverConfig)
+                .buildSolver();
+
+        var solution = TestdataRecordSolution.generateSolution();
+        Assertions.assertThatNoException().isThrownBy(() -> solver.solve(solution));
+    }
+
+    @PlanningSolution
+    private record DummyRecordSolution(
+            @PlanningEntityCollectionProperty List<TestdataEntity> entities,
+            @PlanningScore SimpleScore score) {
+
+    }
+
+    @PlanningSolution
+    private class DummySolutionWithRecordEntity {
+
+        @PlanningEntityCollectionProperty
+        List<DummyRecordEntity> entities;
+        @PlanningScore
+        SimpleScore score;
+
+    }
+
+    @PlanningEntity
+    private record DummyRecordEntity(
+            @PlanningVariable String variable) {
+
+    }
+
+    public static class DummyRecordEasyScoreCalculator implements EasyScoreCalculator<TestdataRecordSolution, SimpleScore> {
+
+        @Override
+        public SimpleScore calculateScore(TestdataRecordSolution solution) {
+            return SimpleScore.of(solution.getEntityList().size());
+        }
     }
 
     /* Dummy classes below are referenced from the testSolverConfig.xml used in this test case. */

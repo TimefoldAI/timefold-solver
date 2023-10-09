@@ -458,6 +458,16 @@ public class ConfigUtils {
         }
     }
 
+    /**
+     * This method is heavy, and it is effectively a computed constant.
+     * It is recommended that its results are cached at call sites.
+     *
+     * @param clazz never null
+     * @param memberAccessorFactory never null
+     * @param domainAccessType never null
+     * @return null if no accessor found
+     * @param <C> the class type
+     */
     public static <C> MemberAccessor findPlanningIdMemberAccessor(Class<C> clazz,
             MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType) {
         Member member = getSingleMember(clazz, PlanningId.class);
@@ -487,12 +497,48 @@ public class ConfigUtils {
         if (memberList.isEmpty()) {
             return null;
         }
-        if (memberList.size() > 1) {
-            throw new IllegalArgumentException("The class (" + clazz
-                    + ") has " + memberList.size() + " members (" + memberList + ") with a "
-                    + annotationClass.getSimpleName() + " annotation.");
+        int size = memberList.size();
+        if (clazz.isRecord()) {
+            /*
+             * A record has a field and a getter for each record component.
+             * When the component is annotated with @PlanningId,
+             * the annotation ends up both on the field and on the getter.
+             */
+            if (size == 2) { // The getter is used to retrieve the value of the record component.
+                var methodMembers = getMembers(memberList, true);
+                if (methodMembers.isEmpty()) {
+                    throw new IllegalStateException("""
+                            Impossible state: record (%s) doesn't have any method members (%s).
+                            """.formatted(clazz.getCanonicalName(), memberList));
+                }
+                return methodMembers.get(0);
+            } else { // There is more than one component annotated with @PlanningId; take the fields and fail.
+                var componentList = getMembers(memberList, false)
+                        .stream()
+                        .map(Member::getName)
+                        .toList();
+                throw new IllegalArgumentException("""
+                        The record (%s) has %s components (%s) with %s annotation.
+                        """.formatted(clazz, componentList.size(), componentList, annotationClass.getSimpleName()));
+            }
+        } else if (size > 1) {
+            throw new IllegalArgumentException("""
+                    The class (%s) has %s members (%s) with %s annotation.
+                    """.formatted(clazz, memberList.size(), memberList, annotationClass.getSimpleName()));
         }
         return memberList.get(0);
+    }
+
+    private static List<Member> getMembers(List<Member> memberList, boolean needMethod) {
+        var filteredMemberList = new ArrayList<Member>(memberList.size());
+        for (var member : memberList) {
+            if (member instanceof Method && needMethod) {
+                filteredMemberList.add(member);
+            } else if (member instanceof Field && !needMethod) {
+                filteredMemberList.add(member);
+            }
+        }
+        return filteredMemberList;
     }
 
     public static String abbreviate(List<String> list, int limit) {

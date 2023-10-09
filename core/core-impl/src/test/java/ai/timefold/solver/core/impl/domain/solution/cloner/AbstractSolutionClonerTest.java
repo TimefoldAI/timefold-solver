@@ -887,6 +887,7 @@ public abstract class AbstractSolutionClonerTest {
             softly.assertThat(cloned.bigDecimal).isSameAs(original.bigDecimal);
             softly.assertThat(cloned.uuidRef).isSameAs(original.uuidRef);
             softly.assertThat(cloned.stringRef).isSameAs(original.stringRef);
+            softly.assertThat(cloned.nonClonedRecord).isSameAs(original.nonClonedRecord);
         });
         // Ensure that the rest is cloned properly too.
         assertSoftly(softly -> {

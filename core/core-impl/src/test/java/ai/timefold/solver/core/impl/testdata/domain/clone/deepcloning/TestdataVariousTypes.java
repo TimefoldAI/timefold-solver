@@ -34,9 +34,15 @@ public class TestdataVariousTypes {
     public UUID uuidRef = UUID.randomUUID();
     public String stringRef = uuidRef.toString();
 
+    // Records.
+    public NonClonedRecord nonClonedRecord = new NonClonedRecord(19, "19");
+
     // And something mutable.
     public List<String> shallowClonedListRef = Collections.singletonList(stringRef);
     @DeepPlanningClone
     public List<String> deepClonedListRef = Collections.singletonList(stringRef);
+
+    public record NonClonedRecord(int a, String b) {
+    }
 
 }

@@ -8,7 +8,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +15,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -26,6 +24,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 
+import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -68,9 +67,9 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         Object originalValue = unprocessed.originalValue;
         Field field = unprocessed.field;
         Class<?> fieldType = field.getType();
-        if (originalValue instanceof Collection collection) {
+        if (originalValue instanceof Collection<?> collection) {
             return cloneCollection(fieldType, collection, originalToCloneMap, unprocessedQueue);
-        } else if (originalValue instanceof Map map) {
+        } else if (originalValue instanceof Map<?, ?> map) {
             return cloneMap(fieldType, map, originalToCloneMap, unprocessedQueue);
         } else if (originalValue.getClass().isArray()) {
             return cloneArray(fieldType, originalValue, originalToCloneMap, unprocessedQueue);
@@ -97,20 +96,25 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     }
 
     private <C> C constructClone(Class<C> clazz) {
+        var constructor = constructorMemoization.computeIfAbsent(clazz, key -> {
+            try {
+                var ctor = (Constructor<C>) key.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                return ctor;
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(
+                        "To create a planning clone, the class (%s) must have a no-arg constructor."
+                                .formatted(key.getCanonicalName()),
+                        e);
+            }
+        });
         try {
-            return (C) constructorMemoization.computeIfAbsent(clazz, key -> {
-                try {
-                    Constructor<C> constructor = (Constructor<C>) key.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    return constructor;
-                } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException("The class (" + key
-                            + ") should have a no-arg constructor to create a planning clone.", e);
-                }
-            }).newInstance();
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("The class (" + clazz
-                    + ") should have a no-arg constructor to create a planning clone.", e);
+            return (C) constructor.newInstance();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Can not create a new instance of class (%s) for a planning clone, using its no-arg constructor."
+                            .formatted(clazz.getCanonicalName()),
+                    e);
         }
     }
 
@@ -167,31 +171,24 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
 
     private static <E> Collection<E> constructCloneCollection(Collection<E> originalCollection) {
         // TODO Don't hardcode all standard collections
-        if (originalCollection instanceof List) {
-            if (originalCollection instanceof ArrayList) {
-                return new ArrayList<>(originalCollection.size());
-            } else if (originalCollection instanceof LinkedList) {
-                return new LinkedList<>();
-            } else { // Default List
-                return new ArrayList<>(originalCollection.size());
-            }
-        } else if (originalCollection instanceof Set) {
-            if (originalCollection instanceof SortedSet set) {
-                Comparator<E> setComparator = set.comparator();
+        if (originalCollection instanceof LinkedList) {
+            return new LinkedList<>();
+        }
+        var size = originalCollection.size();
+        if (originalCollection instanceof Set) {
+            if (originalCollection instanceof SortedSet<E> set) {
+                var setComparator = set.comparator();
                 return new TreeSet<>(setComparator);
-            } else if (originalCollection instanceof LinkedHashSet) {
-                return new LinkedHashSet<>(originalCollection.size());
-            } else if (originalCollection instanceof HashSet) {
-                return new HashSet<>(originalCollection.size());
-            } else { // Default Set
-                // Default to a LinkedHashSet to respect order
-                return new LinkedHashSet<>(originalCollection.size());
+            } else if (!(originalCollection instanceof LinkedHashSet)) {
+                return new HashSet<>(size);
+            } else { // Default to a LinkedHashSet to respect order.
+                return new LinkedHashSet<>(size);
             }
         } else if (originalCollection instanceof Deque) {
-            return new ArrayDeque<>(originalCollection.size());
-        } else { // Default collection
-            return new ArrayList<>(originalCollection.size());
+            return new ArrayDeque<>(size);
         }
+        // Default collection
+        return new ArrayList<>(size);
     }
 
     private <K, V> Map<K, V> cloneMap(Class<?> expectedType, Map<K, V> originalMap, Map<Object, Object> originalToCloneMap,
@@ -212,17 +209,16 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     }
 
     private static <K, V> Map<K, V> constructCloneMap(Map<K, V> originalMap) {
-        // Normally a Map will never be selected for cloning, but extending implementations might anyway
-        if (originalMap instanceof SortedMap map) {
-            Comparator<K> setComparator = map.comparator();
+        // Normally, a Map will never be selected for cloning, but extending implementations might anyway.
+        if (originalMap instanceof SortedMap<K, V> map) {
+            var setComparator = map.comparator();
             return new TreeMap<>(setComparator);
-        } else if (originalMap instanceof LinkedHashMap) {
-            return new LinkedHashMap<>(originalMap.size());
-        } else if (originalMap instanceof HashMap) {
-            return new HashMap<>(originalMap.size());
-        } else { // Default Map
-            // Default to a LinkedHashMap to respect order
-            return new LinkedHashMap<>(originalMap.size());
+        }
+        var originalMapSize = originalMap.size();
+        if (!(originalMap instanceof LinkedHashMap)) {
+            return new HashMap<>(originalMapSize);
+        } else { // Default to a LinkedHashMap to respect order.
+            return new LinkedHashMap<>(originalMapSize);
         }
     }
 
@@ -235,12 +231,15 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         if (original == null) {
             return null;
         }
-        // Because an element which is itself a Collection or Map might hold an entity, we clone it too
-        // Also, the List<Long> in Map<String, List<Long>> needs to be cloned
-        // if the List<Long> is a shadow, despite that Long never needs to be cloned (because it's immutable).
-        if (original instanceof Collection collection) {
+        /*
+         * Because an element which is itself a Collection or Map might hold an entity,
+         * we clone it too.
+         * The List<Long> in Map<String, List<Long>> needs to be cloned if the List<Long> is a shadow,
+         * despite that Long never needs to be cloned (because it's immutable).
+         */
+        if (original instanceof Collection<?> collection) {
             return (C) cloneCollection(Collection.class, collection, originalToCloneMap, unprocessedQueue);
-        } else if (original instanceof Map map) {
+        } else if (original instanceof Map<?, ?> map) {
             return (C) cloneMap(Map.class, map, originalToCloneMap, unprocessedQueue);
         } else if (original.getClass().isArray()) {
             return (C) cloneArray(original.getClass(), original, originalToCloneMap, unprocessedQueue);
@@ -306,7 +305,20 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
                 copiedFieldArray = Arrays.stream(declaringClass.getDeclaredFields())
                         .filter(f -> !Modifier.isStatic(f.getModifiers()))
                         .filter(field -> DeepCloningUtils.isImmutable(field.getType()))
-                        .peek(f -> f.setAccessible(true))
+                        .peek(f -> {
+                            if (DeepCloningUtils.needsDeepClone(solutionDescriptor, f, declaringClass)) {
+                                throw new IllegalStateException("""
+                                        The field (%s) of class (%s) needs to be deep-cloned,
+                                        but its type (%s) is immutable and can not be deep-cloned.
+                                        Maybe remove the @%s annotation from the field?
+                                        Maybe do not reference planning entities inside Java records?
+                                        """
+                                        .formatted(f.getName(), declaringClass.getCanonicalName(),
+                                                f.getType().getCanonicalName(), DeepPlanningClone.class.getSimpleName()));
+                            } else {
+                                f.setAccessible(true);
+                            }
+                        })
                         .map(ShallowCloningFieldCloner::of)
                         .toArray(ShallowCloningFieldCloner[]::new);
             }
@@ -327,17 +339,6 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
 
     }
 
-    private static final class Unprocessed {
-
-        final Object bean;
-        final Field field;
-        final Object originalValue;
-
-        public Unprocessed(Object bean, Field field, Object originalValue) {
-            this.bean = bean;
-            this.field = field;
-            this.originalValue = originalValue;
-        }
-
+    private record Unprocessed(Object bean, Field field, Object originalValue) {
     }
 }
