@@ -458,6 +458,16 @@ public class ConfigUtils {
         }
     }
 
+    /**
+     * This method is heavy, and it is effectively a computed constant.
+     * It is recommended that its results are cached at call sites.
+     *
+     * @param clazz never null
+     * @param memberAccessorFactory never null
+     * @param domainAccessType never null
+     * @return null if no accessor found
+     * @param <C> the class type
+     */
     public static <C> MemberAccessor findPlanningIdMemberAccessor(Class<C> clazz,
             MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType) {
         Member member = getSingleMember(clazz, PlanningId.class);
@@ -495,12 +505,18 @@ public class ConfigUtils {
              * the annotation ends up both on the field and on the getter.
              */
             if (size == 2) { // The getter is used to retrieve the value of the record component.
-                return memberList.get(1);
-            } else { // There is more than one component annotated with @PlanningId; take the fields and fail.
-                var componentList = new ArrayList<String>(size / 2);
-                for (int i = 0; i < size; i += 2) { // Extracts the component names, which are the field names.
-                    componentList.add(memberList.get(i).getName());
+                var methodMembers = getMembers(memberList, true);
+                if (methodMembers.isEmpty()) {
+                    throw new IllegalStateException("""
+                            Impossible state: record (%s) doesn't have any method members (%s).
+                            """.formatted(clazz.getCanonicalName(), memberList));
                 }
+                return methodMembers.get(0);
+            } else { // There is more than one component annotated with @PlanningId; take the fields and fail.
+                var componentList = getMembers(memberList, false)
+                        .stream()
+                        .map(Member::getName)
+                        .toList();
                 throw new IllegalArgumentException("""
                         The record (%s) has %s components (%s) with %s annotation.
                         """.formatted(clazz, componentList.size(), componentList, annotationClass.getSimpleName()));
@@ -511,6 +527,18 @@ public class ConfigUtils {
                     """.formatted(clazz, memberList.size(), memberList, annotationClass.getSimpleName()));
         }
         return memberList.get(0);
+    }
+
+    private static List<Member> getMembers(List<Member> memberList, boolean needMethod) {
+        var filteredMemberList = new ArrayList<Member>(memberList.size());
+        for (var member : memberList) {
+            if (member instanceof Method && needMethod) {
+                filteredMemberList.add(member);
+            } else if (member instanceof Field && !needMethod) {
+                filteredMemberList.add(member);
+            }
+        }
+        return filteredMemberList;
     }
 
     public static String abbreviate(List<String> list, int limit) {
