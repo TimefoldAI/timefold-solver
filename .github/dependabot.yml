@@ -14,10 +14,13 @@ updates:
     schedule:
       interval: daily
       time: '06:00'
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 10
     target-branch: "0.8.x"
     commit-message:
       prefix: "deps: "
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major","version-update:semver-minor"]  
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
