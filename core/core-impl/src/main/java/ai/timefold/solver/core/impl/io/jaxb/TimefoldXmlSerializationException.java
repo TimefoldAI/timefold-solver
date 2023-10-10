@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.ai;
+package ai.timefold.solver.core.impl.io.jaxb;
 
 public class TimefoldXmlSerializationException extends RuntimeException {
 

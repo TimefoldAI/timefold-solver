@@ -12,7 +12,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 import ai.timefold.solver.benchmark.impl.io.PlannerBenchmarkConfigIO;
-import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
+import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 import ai.timefold.solver.persistence.common.api.domain.solution.RigidTestdataSolutionFileIO;

@@ -16,9 +16,9 @@ import java.util.List;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.io.jaxb.ElementNamespaceOverride;
 import ai.timefold.solver.core.impl.io.jaxb.GenericJaxbIO;
+import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 import org.slf4j.Logger;
