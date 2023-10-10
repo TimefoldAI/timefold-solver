@@ -13,8 +13,6 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlValue;
 
-import ai.timefold.solver.core.impl.ai.TimefoldXmlSerializationException;
-
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXParseException;
 
