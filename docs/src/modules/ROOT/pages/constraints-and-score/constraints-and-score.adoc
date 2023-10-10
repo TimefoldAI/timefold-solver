@@ -1511,6 +1511,47 @@ the tuple `(SomePerson, USER)` is sent downstream twice.
 See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
 
+[[constraintStreamsConcat]]
+==== Concat
+
+Concat allows you to create a constraint stream containing tuples of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
+If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists, concat acts like a concatenation of two lists.
+Unlike union of sets, concatenation of lists repeat duplicated elements.
+If the two constraint stream parents share tuples, they will be repeated downstream.
+If this is undesired, use <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,distinct>>.
+
+image::constraints-and-score/constraintStreamConcat.png[align="center"]
+
+For example, to count the total number of cats and dogs:
+
+[source,java,options="nowrap"]
+----
+    private Constraint countCatsAndDogs(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Employee.class)
+         .filter(employee -> employee.hasDog())
+         .concat(constraintFactory.forEach(Employee.class)
+                     .filter(employee -> employee.hasCat()))
+         .groupBy(ConstraintCollectors.count())
+         .penalize(HardSoftScore.ONE_SOFT, count -> count)
+         .asConstraint("Count cats and dogs");
+    }
+----
+
+This correctly count cats and dogs when an Employee has both a cat and a dog.
+If it was implemented with a filter like this:
+
+[source,java,options="nowrap"]
+----
+    private Constraint countCatsAndDogs(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Employee.class)
+         .filter(employee -> employee.hasDog() || employee.hasCat())
+         .groupBy(ConstraintCollectors.count())
+         .penalize(HardSoftScore.ONE_SOFT, count -> count)
+         .asConstraint("Count employees with a cat or dog");
+    }
+----
+
+An employee would only be counted once if they had both a cat and a dog.
 
 [[constraintStreamsTesting]]
 === Testing a constraint stream
