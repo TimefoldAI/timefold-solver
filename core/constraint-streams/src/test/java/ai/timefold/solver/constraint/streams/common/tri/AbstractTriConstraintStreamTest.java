@@ -1747,7 +1747,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatWithoutDuplicates() {
+    public void concatWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -1797,7 +1797,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatWithDuplicates() {
+    public void concatWithValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -1847,7 +1847,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatAndDistinctWithoutDuplicates() {
+    public void concatAndDistinctWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -1898,7 +1898,7 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatAndDistinctWithDuplicates() {
+    public void concatAndDistinctWithValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());

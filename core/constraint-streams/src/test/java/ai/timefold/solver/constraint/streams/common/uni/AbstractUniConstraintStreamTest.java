@@ -2151,7 +2151,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatWithoutDuplicates() {
+    public void concatWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -2201,7 +2201,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatWithDuplicates() {
+    public void concatWithValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -2218,6 +2218,7 @@ public abstract class AbstractUniConstraintStreamTest
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1 || entity.getValue() == value3)
                         .concat(factory.forEach(TestdataLavishEntity.class)
+                                .map(Function.identity()) // This map make the tuples not reference equal
                                 .filter(entity -> entity.getValue() == value2 || entity.getValue() == value3))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2253,9 +2254,110 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(entity3));
     }
 
+    @TestTemplate
+    public void concatWithReferenceDuplicates() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value1 || entity.getValue() == value3)
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                // The tuples are reference equal since filter is not a TupleSource
+                                .filter(entity -> entity.getValue() == value2 || entity.getValue() == value3))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity2),
+                assertMatch(entity3),
+                assertMatch(entity3));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity2),
+                assertMatch(entity3));
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity1),
+                assertMatch(entity2),
+                assertMatch(entity3));
+    }
+
+    @TestTemplate
+    public void concatWithReferenceDuplicatesGroupBy() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value1 || entity.getValue() == value3)
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                // The tuples are reference equal since filter is not a TupleSource
+                                .filter(entity -> entity.getValue() == value2 || entity.getValue() == value3))
+                        .groupBy(ConstraintCollectors.count())
+                        .penalize(SimpleScore.ONE, count -> count)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatchWithScore(-4, 4));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatchWithScore(-3, 3));
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatchWithScore(-4, 4));
+    }
+
     @Override
     @TestTemplate
-    public void concatAndDistinctWithoutDuplicates() {
+    public void concatAndDistinctWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -2306,7 +2408,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatAndDistinctWithDuplicates() {
+    public void concatAndDistinctWithValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
