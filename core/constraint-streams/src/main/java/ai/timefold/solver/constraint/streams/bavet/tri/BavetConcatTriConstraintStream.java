@@ -5,7 +5,7 @@ import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.score.Score;
 
 public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         extends BavetAbstractTriConstraintStream<Solution_, A, B, C>
-        implements BavetJoinConstraintStream<Solution_> {
+        implements BavetConcatConstraintStream<Solution_> {
 
     private final BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent;
     private final BavetForeBridgeTriConstraintStream<Solution_, A, B, C> rightParent;
@@ -46,10 +46,12 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
+        int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
+        int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var node = new BavetTriConcatNode<>(downstream,
-                buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
+                leftCloneStoreIndex,
+                rightCloneStoreIndex,
                 outputStoreSize);
         buildHelper.addNode(node, this, leftParent, rightParent);
     }
