@@ -12,6 +12,7 @@
   <artifactId>timefold-solver-quarkus-deployment</artifactId>
   <name>Timefold Solver Quarkus - Deployment</name>
   <description>Quarkus deployment module for timefold-solver-quarkus.</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.deployment</java.module.name>

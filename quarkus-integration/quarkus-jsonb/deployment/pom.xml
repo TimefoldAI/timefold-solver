@@ -12,6 +12,7 @@
   <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
   <name>Timefold Solver Quarkus JSON-B - Deployment</name>
   <description>Quarkus deployment module for timefold-solver-quarkus-jsonb.</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jsonb.deployment</java.module.name>

@@ -12,6 +12,7 @@
   <artifactId>timefold-solver-quarkus</artifactId>
   <name>Timefold Solver Quarkus - Runtime</name>
   <description>Solve planning and scheduling with AI constraint optimization of vehicle routes, employee rosters, maintenance, tasks, lessons, conferences, ...</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus</java.module.name>

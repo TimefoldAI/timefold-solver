@@ -12,6 +12,7 @@
   <artifactId>timefold-solver-quarkus-integration-test</artifactId>
   <name>Timefold Solver Quarkus - Integration tests</name>
   <description>Quarkus integration tests for Timefold</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus</java.module.name>

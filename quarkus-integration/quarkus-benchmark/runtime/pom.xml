@@ -12,6 +12,7 @@
   <artifactId>timefold-solver-quarkus-benchmark</artifactId>
   <name>Timefold Solver Quarkus Benchmark - Runtime</name>
   <description>Benchmark an Timefold project to power tweak the solver configuration for speed and scalability.</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.benchmark</java.module.name>

@@ -11,6 +11,7 @@
   <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
   <name>Timefold Solver Quarkus Benchmark - Deployment</name>
   <description>Quarkus deployment module for timefold-solver-quarkus-benchmark.</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.benchmark.deployment</java.module.name>

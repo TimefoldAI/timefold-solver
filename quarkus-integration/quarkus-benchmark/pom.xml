@@ -10,8 +10,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>timefold-solver-quarkus-benchmark-parent</artifactId>
-  <name>Timefold Solver Quarkus Benchmark</name>
   <packaging>pom</packaging>
+
+  <name>Timefold Solver Quarkus Benchmark</name>
+  <url>https://timefold.ai</url>
 
   <modules>
     <module>runtime</module>

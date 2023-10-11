@@ -10,8 +10,10 @@
   </parent>
 
   <artifactId>timefold-solver-quarkus-parent</artifactId>
-  <name>Timefold Solver Quarkus</name>
   <packaging>pom</packaging>
+
+  <name>Timefold Solver Quarkus</name>
+  <url>https://timefold.ai</url>
 
   <modules>
     <module>runtime</module>
