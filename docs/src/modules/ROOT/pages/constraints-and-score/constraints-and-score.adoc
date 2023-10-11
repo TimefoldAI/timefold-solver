@@ -1514,10 +1514,10 @@ See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> fo
 [[constraintStreamsConcat]]
 ==== Concat
 
-Concat allows you to create a constraint stream containing tuples of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
-If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists, concat acts like a concatenation of two lists.
+The `concat` building block allows you to create a constraint stream containing tuples of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
+If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists, `concat` acts like a concatenation of two lists.
 Unlike union of sets, concatenation of lists repeats duplicated elements.
-If the two constraint stream parents share tuples, they will be repeated downstream.
+If the two constraint stream parents share tuples, which happens eg. when the streams being concatenated come from the same source of data, the tuples will be repeated downstream.
 If this is undesired, use the <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct` building block>>.
 
 image::constraints-and-score/constraintStreamConcat.png[align="center"]
@@ -1544,8 +1544,8 @@ For example, to ensure each employee has a minimum number of assigned shifts:
     }
 ----
 
-This correctly count the number of shifts each Employee has, *even when the Employee has no shifts*.
-If it was implemented without concat like this:
+This correctly counts the number of shifts each Employee has, *even when the Employee has no shifts*.
+If it was implemented without `concat` like this:
 
 [source,java,options="nowrap"]
 ----
@@ -1561,7 +1561,7 @@ If it was implemented without concat like this:
     }
 ----
 
-An employee with no assigned shifts _will not be penalized because no tuples were passed to the group by_.
+An employee with no assigned shifts _will not be penalized because no tuples were passed to the `groupBy` building block_.
 
 [[constraintStreamsTesting]]
 === Testing a constraint stream
