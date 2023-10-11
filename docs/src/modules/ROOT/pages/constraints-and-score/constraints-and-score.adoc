@@ -1516,9 +1516,9 @@ See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> fo
 
 Concat allows you to create a constraint stream containing tuples of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
 If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists, concat acts like a concatenation of two lists.
-Unlike union of sets, concatenation of lists repeat duplicated elements.
+Unlike union of sets, concatenation of lists repeats duplicated elements.
 If the two constraint stream parents share tuples, they will be repeated downstream.
-If this is undesired, use <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,distinct>>.
+If this is undesired, use the <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct` building block>>.
 
 image::constraints-and-score/constraintStreamConcat.png[align="center"]
 
