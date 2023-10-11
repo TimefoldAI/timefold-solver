@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        java-version: [ 17, 20 ] #Latest two LTS + latest non-LTS.
+        java-version: [ 17, 21 ] #Latest two LTS + latest non-LTS.
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
