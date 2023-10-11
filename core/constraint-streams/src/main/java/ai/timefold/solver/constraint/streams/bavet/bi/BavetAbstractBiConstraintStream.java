@@ -366,7 +366,7 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
         var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
         var concatStream = new BavetConcatBiConstraintStream<>(constraintFactory, leftBridge, rightBridge);
         return constraintFactory.share(concatStream, concatStream_ -> {
-            // Connect the bridges upstream, as it is an actual new join.
+            // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
             other.getChildStreamList().add(rightBridge);
         });

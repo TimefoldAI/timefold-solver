@@ -80,7 +80,6 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
 
         TupleState state = outTuple.state;
         if (!state.isActive()) {
-            // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
                     + ") is in an unexpected state (" + outTuple.state + ").");
         }
@@ -117,7 +116,6 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
 
         TupleState state = outTuple.state;
         if (!state.isActive()) {
-            // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
                     + ") is in an unexpected state (" + outTuple.state + ").");
         }

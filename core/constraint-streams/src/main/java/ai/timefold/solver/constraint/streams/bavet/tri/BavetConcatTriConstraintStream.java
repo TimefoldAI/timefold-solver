@@ -72,7 +72,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         /*
          * Bridge streams do not implement equality because their equals() would have to point back to this stream,
          * resulting in StackOverflowError.
-         * Therefore we need to check bridge parents to see where this join node comes from.
+         * Therefore we need to check bridge parents to see where this concat node comes from.
          */
         return Objects.equals(leftParent.getParent(), other.leftParent.getParent())
                 && Objects.equals(rightParent.getParent(), other.rightParent.getParent());
