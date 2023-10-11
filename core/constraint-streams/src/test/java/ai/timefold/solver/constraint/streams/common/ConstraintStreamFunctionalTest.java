@@ -126,6 +126,8 @@ public interface ConstraintStreamFunctionalTest {
 
     void concatAndDistinctWithValueDuplicates();
 
+    void concatAfterGroupBy();
+
     default void expandToBi() {
         // Only Uni can be expanded to Bi, so don't force it.
     }

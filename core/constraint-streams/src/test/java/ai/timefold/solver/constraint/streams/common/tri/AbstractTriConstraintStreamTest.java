@@ -1945,6 +1945,65 @@ public abstract class AbstractTriConstraintStreamTest
                 assertMatch(entity1, entity3, entity2));
     }
 
+    @Override
+    @TestTemplate
+    public void concatAfterGroupBy() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        TestdataLavishValue value1 = solution.getFirstValue();
+        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value3);
+        solution.getEntityList().add(entity3);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class)
+                        .filter((e1, e2, e3) -> e1.getValue() == value1 && e2.getValue() == value2 && e3.getValue() == value3)
+                        .groupBy((e1, e2, e3) -> e1.getValue(),
+                                (e1, e2, e3) -> e2.getValue(),
+                                (e1, e2, e3) -> e3.getValue(),
+                                ConstraintCollectors.countTri())
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .join(TestdataLavishEntity.class)
+                                .join(TestdataLavishEntity.class)
+                                .filter((e1, e2, e3) -> e1.getValue() == value3 && e2.getValue() == value2 && e3.getValue() == value1)
+                                .groupBy((e1, e2, e3) -> e1.getValue(),
+                                        (e1, e2, e3) -> e2.getValue(),
+                                        (e1, e2, e3) -> e3.getValue(),
+                                        ConstraintCollectors.countTri()))
+                        .penalize(SimpleScore.ONE, (v1, v2, v3, count) -> count)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatchWithScore(-1, value1, value2, value3, 1),
+                assertMatchWithScore(-1, value3, value2, value1, 1));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value2);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector);
+
+        // Incremental for which the first change matches a join that doesn't survive the second change
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity3, "value");
+        entity3.setValue(value1);
+        scoreDirector.afterVariableChanged(entity3, "value");
+        assertScore(scoreDirector,
+                assertMatchWithScore(-1, value1, value2, value3, 1),
+                assertMatchWithScore(-1, value3, value2, value1, 1));
+    }
+
     // ************************************************************************
     // Penalize/reward
     // ************************************************************************

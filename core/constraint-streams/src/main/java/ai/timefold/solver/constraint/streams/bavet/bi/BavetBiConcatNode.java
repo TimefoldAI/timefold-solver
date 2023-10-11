@@ -16,4 +16,10 @@ public final class BavetBiConcatNode<A, B> extends AbstractConcatNode<BiTuple<A,
     protected BiTuple<A, B> getOutTuple(BiTuple<A, B> inTuple) {
         return new BiTuple<>(inTuple.factA, inTuple.factB, outputStoreSize);
     }
+
+    @Override
+    protected void updateOutTuple(BiTuple<A, B> inTuple, BiTuple<A, B> outTuple) {
+        outTuple.factA = inTuple.factA;
+        outTuple.factB = inTuple.factB;
+    }
 }
