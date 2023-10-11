@@ -1522,36 +1522,46 @@ If this is undesired, use <<constraintStreamsDealingWithDuplicateTuplesUsingDist
 
 image::constraints-and-score/constraintStreamConcat.png[align="center"]
 
-For example, to count the total number of cats and dogs:
+For example, to ensure each employee has a minimum number of assigned shifts:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint countCatsAndDogs(ConstraintFactory constraintFactory) {
+    private Constraint ensureEachEmployeeHasAtLeastTwoShifts(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Employee.class)
-         .filter(employee -> employee.hasDog())
-         .concat(constraintFactory.forEach(Employee.class)
-                     .filter(employee -> employee.hasCat()))
-         .groupBy(ConstraintCollectors.count())
-         .penalize(HardSoftScore.ONE_SOFT, count -> count)
-         .asConstraint("Count cats and dogs");
+         .join(Shift.class, equal(Function.identity(), Shift::getEmployee))
+         .concat(
+             constraintFactory.forEach(Employee.class)
+               .ifNotExists(Shift.class, equal(Function.identity(), Shift::getEmployee))
+               .expand(employee -> (Shift) null)
+         )
+         .groupBy((employee, shift) -> employee,
+                   conditionally((employee, shift) -> shift != null,
+                                 countBi())
+         )
+         .filter((employee, shiftCount) -> shiftCount < employee.minimumAssignedShifts)
+         .penalize(HardSoftScore.ONE_SOFT, (employee, shiftCount) -> employee.minimumAssignedShifts - shiftCount)
+         .asConstraint("Minimum number of assigned shifts");
     }
 ----
 
-This correctly count cats and dogs when an Employee has both a cat and a dog.
-If it was implemented with a filter like this:
+This correctly count the number of shifts each Employee has, *even when the Employee has no shifts*.
+If it was implemented without concat like this:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint countCatsAndDogs(ConstraintFactory constraintFactory) {
+    private Constraint incorrectEnsureEachEmployeeHasAtLeastTwoShifts(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Employee.class)
-         .filter(employee -> employee.hasDog() || employee.hasCat())
-         .groupBy(ConstraintCollectors.count())
-         .penalize(HardSoftScore.ONE_SOFT, count -> count)
-         .asConstraint("Count employees with a cat or dog");
+         .join(Shift.class, equal(Function.identity(), Shift::getEmployee))
+         .groupBy((employee, shift) -> employee,
+                  countBi())
+         )
+         .filter((employee, shiftCount) -> shiftCount < employee.minimumAssignedShifts)
+         .penalize(HardSoftScore.ONE_SOFT, (employee, shiftCount) -> employee.minimumAssignedShifts - shiftCount)
+         .asConstraint("Minimum number of assigned shifts (incorrect)");
     }
 ----
 
-An employee would only be counted once if they had both a cat and a dog.
+An employee with no assigned shifts _will not be penalized because no tuples were passed to the group by_.
 
 [[constraintStreamsTesting]]
 === Testing a constraint stream
