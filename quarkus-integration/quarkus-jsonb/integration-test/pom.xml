@@ -12,6 +12,7 @@
   <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
   <name>Timefold Solver Quarkus JSON-B - Integration tests</name>
   <description>Quarkus integration tests for Timefold with JSON-B</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.jsonb.integrationtest</java.module.name>

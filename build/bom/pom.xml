@@ -21,6 +21,7 @@
   <description>
     Import this BOM in your dependencyManagement if you want to depend on multiple Timefold artifacts.
   </description>
+  <url>https://timefold.ai</url>
 
   <dependencyManagement>
     <dependencies>

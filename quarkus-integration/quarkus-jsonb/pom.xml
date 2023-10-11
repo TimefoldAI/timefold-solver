@@ -10,8 +10,10 @@
   </parent>
 
   <artifactId>timefold-solver-quarkus-jsonb-parent</artifactId>
-  <name>Timefold Solver Quarkus JSON-B</name>
   <packaging>pom</packaging>
+
+  <name>Timefold Solver Quarkus JSON-B</name>
+  <url>https://timefold.ai</url>
 
   <modules>
     <module>runtime</module>
