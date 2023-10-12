@@ -39,15 +39,15 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             insert(tuple);
             return;
         }
-        boolean wasUpdated = remap(tuple, outTuple);
-        if (wasUpdated) { // Only propagate if the tuple actually changed.
-            TupleState previousState = outTuple.state;
-            if (previousState == TupleState.CREATING || previousState == TupleState.UPDATING) {
-                // Already in the queue in the correct state.
-                return;
-            }
-            propagationQueue.update(outTuple);
+        remap(tuple, outTuple);
+        // Update must be propagated even if outTuple did not change, since if it is a planning
+        // entity, the entity's planning variable might have changed.
+        TupleState previousState = outTuple.state;
+        if (previousState == TupleState.CREATING || previousState == TupleState.UPDATING) {
+            // Already in the queue in the correct state.
+            return;
         }
+        propagationQueue.update(outTuple);
     }
 
     /**
