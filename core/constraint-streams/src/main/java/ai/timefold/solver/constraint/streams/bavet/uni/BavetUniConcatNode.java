@@ -20,6 +20,6 @@ public final class BavetUniConcatNode<A> extends AbstractConcatNode<UniTuple<A>>
 
     @Override
     protected void updateOutTuple(UniTuple<A> inTuple, UniTuple<A> outTuple) {
-        outTuple.factA = inTuple.factA;
+        outTuple.updateIfDifferent(inTuple.factA);
     }
 }
