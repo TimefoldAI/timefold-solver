@@ -10,14 +10,6 @@ public final class UniTuple<A> extends AbstractTuple {
         this.factA = factA;
     }
 
-    public boolean updateIfDifferent(A newFactA) {
-        if (factA != newFactA) {
-            factA = newFactA;
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public String toString() {
         return "{" + factA + "}";

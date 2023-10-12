@@ -34,14 +34,15 @@ final class MapQuadToBiNode<A, B, C, D, NewA, NewB> extends AbstractMapNode<Quad
     }
 
     @Override
-    protected boolean remap(QuadTuple<A, B, C, D> inTuple, BiTuple<NewA, NewB> outTuple) {
+    protected void remap(QuadTuple<A, B, C, D> inTuple, BiTuple<NewA, NewB> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
         D factD = inTuple.factD;
         NewA newA = mappingFunctionA.apply(factA, factB, factC, factD);
         NewB newB = mappingFunctionB.apply(factA, factB, factC, factD);
-        return outTuple.updateIfDifferent(newA, newB);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
     }
 
 }

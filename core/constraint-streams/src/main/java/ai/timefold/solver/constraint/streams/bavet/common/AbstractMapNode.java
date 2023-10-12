@@ -55,7 +55,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
      * @param oldOutTuple never null; the tuple that was previously mapped to the inTuple
      * @return true if oldOutTuple changed during remapping
      */
-    protected abstract boolean remap(InTuple_ inTuple, OutTuple_ oldOutTuple);
+    protected abstract void remap(InTuple_ inTuple, OutTuple_ oldOutTuple);
 
     @Override
     public final void retract(InTuple_ tuple) {
