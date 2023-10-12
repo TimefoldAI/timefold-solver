@@ -1972,7 +1972,8 @@ public abstract class AbstractTriConstraintStreamTest
                         .concat(factory.forEach(TestdataLavishEntity.class)
                                 .join(TestdataLavishEntity.class)
                                 .join(TestdataLavishEntity.class)
-                                .filter((e1, e2, e3) -> e1.getValue() == value3 && e2.getValue() == value2 && e3.getValue() == value1)
+                                .filter((e1, e2, e3) -> e1.getValue() == value3 && e2.getValue() == value2
+                                        && e3.getValue() == value1)
                                 .groupBy((e1, e2, e3) -> e1.getValue(),
                                         (e1, e2, e3) -> e2.getValue(),
                                         (e1, e2, e3) -> e3.getValue(),

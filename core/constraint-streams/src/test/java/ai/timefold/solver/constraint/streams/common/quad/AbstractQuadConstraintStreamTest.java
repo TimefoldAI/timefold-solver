@@ -1659,7 +1659,8 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class)
-                        .filter((e1, e2, e3, e4) -> e1.getValue() == value1 && e2.getValue() == value2 && e3.getValue() == value3 && e4.getValue() == value1)
+                        .filter((e1, e2, e3, e4) -> e1.getValue() == value1 && e2.getValue() == value2
+                                && e3.getValue() == value3 && e4.getValue() == value1)
                         .groupBy((e1, e2, e3, e4) -> e1.getValue(),
                                 (e1, e2, e3, e4) -> e2.getValue(),
                                 (e1, e2, e3, e4) -> e3.getValue().getCode() + e4.getValue().getCode(),
@@ -1668,7 +1669,8 @@ public abstract class AbstractQuadConstraintStreamTest
                                 .join(TestdataLavishEntity.class)
                                 .join(TestdataLavishEntity.class)
                                 .join(TestdataLavishEntity.class)
-                                .filter((e1, e2, e3, e4) -> e1.getValue() == value3 && e2.getValue() == value2 && e3.getValue() == value1 && e4.getValue() == value3)
+                                .filter((e1, e2, e3, e4) -> e1.getValue() == value3 && e2.getValue() == value2
+                                        && e3.getValue() == value1 && e4.getValue() == value3)
                                 .groupBy((e1, e2, e3, e4) -> e1.getValue(),
                                         (e1, e2, e3, e4) -> e2.getValue(),
                                         (e1, e2, e3, e4) -> e3.getValue().getCode() + e4.getValue().getCode(),
