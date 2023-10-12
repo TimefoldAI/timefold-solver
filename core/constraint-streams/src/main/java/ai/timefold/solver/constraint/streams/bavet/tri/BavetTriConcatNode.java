@@ -19,6 +19,8 @@ public final class BavetTriConcatNode<A, B, C> extends AbstractConcatNode<TriTup
 
     @Override
     protected void updateOutTuple(TriTuple<A, B, C> inTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.updateIfDifferent(inTuple.factA, inTuple.factB, inTuple.factC);
+        outTuple.factA = inTuple.factA;
+        outTuple.factB = inTuple.factB;
+        outTuple.factC = inTuple.factC;
     }
 }
