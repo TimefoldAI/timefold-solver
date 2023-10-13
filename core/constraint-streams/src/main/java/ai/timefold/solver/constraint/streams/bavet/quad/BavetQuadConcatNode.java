@@ -15,12 +15,4 @@ public final class BavetQuadConcatNode<A, B, C, D> extends AbstractConcatNode<Qu
     protected QuadTuple<A, B, C, D> getOutTuple(QuadTuple<A, B, C, D> inTuple) {
         return new QuadTuple<>(inTuple.factA, inTuple.factB, inTuple.factC, inTuple.factD, outputStoreSize);
     }
-
-    @Override
-    protected void updateOutTuple(QuadTuple<A, B, C, D> inTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.factA = inTuple.factA;
-        outTuple.factB = inTuple.factB;
-        outTuple.factC = inTuple.factC;
-        outTuple.factD = inTuple.factD;
-    }
 }

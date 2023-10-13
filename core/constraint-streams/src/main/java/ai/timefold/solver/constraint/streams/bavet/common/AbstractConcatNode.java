@@ -50,8 +50,6 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
 
     protected abstract Tuple_ getOutTuple(Tuple_ inTuple);
 
-    protected abstract void updateOutTuple(Tuple_ inTuple, Tuple_ outTuple);
-
     @Override
     public final void insertLeft(Tuple_ tuple) {
         Tuple_ outTuple = getOutTuple(tuple);
@@ -63,7 +61,6 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
     public final void updateLeft(Tuple_ tuple) {
         Tuple_ outTuple = tuple.getStore(leftSourceTupleCloneStoreIndex);
         if (outTuple != null) {
-            updateOutTuple(tuple, outTuple);
             propagationQueue.update(outTuple);
         } else {
             // this can happen when left and right have the same TupleSource,
@@ -100,7 +97,6 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
     public final void updateRight(Tuple_ tuple) {
         Tuple_ outTuple = tuple.getStore(rightSourceTupleCloneStoreIndex);
         if (outTuple != null) {
-            updateOutTuple(tuple, outTuple);
             propagationQueue.update(outTuple);
         } else {
             // this can happen when left and right have the same TupleSource,
