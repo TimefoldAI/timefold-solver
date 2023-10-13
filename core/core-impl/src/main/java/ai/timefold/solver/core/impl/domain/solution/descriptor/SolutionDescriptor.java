@@ -569,8 +569,8 @@ public class SolutionDescriptor<Solution_> {
                     new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
             basicVariableDescriptors.remove(listVariableDescriptor);
             throw new UnsupportedOperationException(
-                    ("Combining basic variables (%s) with list variables (%s) on a single planning entity (%s)" +
-                            " is currently not supported.")
+                    "Combining basic variables (%s) with list variables (%s) on a single planning entity (%s)" +
+                            " is currently not supported."
                             .formatted(basicVariableDescriptors, listVariableDescriptor,
                                     listVariableDescriptor.getEntityDescriptor().getEntityClass().getName()));
         }
