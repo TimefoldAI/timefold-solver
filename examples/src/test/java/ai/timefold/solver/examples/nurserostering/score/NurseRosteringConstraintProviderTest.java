@@ -348,31 +348,15 @@ class NurseRosteringConstraintProviderTest
                 .penalizesBy(2);
 
         minimumAndMaximumNumberOfAssignmentsConstraint
+                .given(contract.getFirstConstractLine(), employee)
+                .penalizesBy(4);
+
+        minimumAndMaximumNumberOfAssignmentsConstraint
                 .given(contract.getFirstConstractLine(), employee, shift1, shift2, shift3)
                 .penalizesBy(0);
 
         minimumAndMaximumNumberOfAssignmentsConstraint.given(contract.getFirstConstractLine(), employee, shift1, shift2)
                 .penalizesBy(0);
-    }
-
-    @ConstraintProviderTest
-    void minimumNumberOfAssignmentsNoAssignments(
-            ConstraintVerifier<NurseRosteringConstraintProvider, NurseRoster> constraintVerifier) {
-        Contract contract = new MinMaxContractBuilder(ContractLineType.TOTAL_ASSIGNMENTS)
-                .withMinimum(2)
-                .withMinimumWeight(5)
-                .build();
-
-        Employee employeeNoShifts = getEmployee(contract);
-        Employee employeeWithShifts = getEmployee(contract);
-
-        ShiftAssignment shift = getShiftAssignment(0, employeeWithShifts);
-
-        constraintVerifier.verifyThat(NurseRosteringConstraintProvider::minimumNumberOfAssignmentsNoAssignments)
-                .given(contract.getFirstConstractLine(),
-                        employeeNoShifts, employeeWithShifts,
-                        shift)
-                .penalizesBy(10);
     }
 
     @ConstraintProviderTest

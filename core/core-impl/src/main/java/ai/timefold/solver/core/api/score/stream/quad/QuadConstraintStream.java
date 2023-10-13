@@ -837,6 +837,22 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      */
     QuadConstraintStream<A, B, C, D> distinct();
 
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream} and the
+     * provided {@link QuadConstraintStream}. Tuples in both this {@link QuadConstraintStream} and the provided
+     * {@link QuadConstraintStream} will appear at least twice.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c)]} and the other stream
+     * consists of {@code [(C, 3, -3, c), (D, 4, -4, d), (E, 5, -5, e)]}, {@code this.concat(other)} will consist of
+     * {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c), (C, 3, -3, c), (D, 4, -4, d), (E, 5, -5,e)]}. This operation can be
+     * thought of as an or between streams.
+     *
+     * @param otherStream
+     * @return
+     */
+    QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
+
     // ************************************************************************
     // Penalize/reward
     // ************************************************************************

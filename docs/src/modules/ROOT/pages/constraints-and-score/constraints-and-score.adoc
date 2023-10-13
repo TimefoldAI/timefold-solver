@@ -1511,6 +1511,57 @@ the tuple `(SomePerson, USER)` is sent downstream twice.
 See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
 
+[[constraintStreamsConcat]]
+==== Concat
+
+The `concat` building block allows you to create a constraint stream containing tuples of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
+If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists, `concat` acts like a concatenation of two lists.
+Unlike union of sets, concatenation of lists repeats duplicated elements.
+If the two constraint stream parents share tuples, which happens eg. when the streams being concatenated come from the same source of data, the tuples will be repeated downstream.
+If this is undesired, use the <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct` building block>>.
+
+image::constraints-and-score/constraintStreamConcat.png[align="center"]
+
+For example, to ensure each employee has a minimum number of assigned shifts:
+
+[source,java,options="nowrap"]
+----
+    private Constraint ensureEachEmployeeHasAtLeastTwoShifts(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Employee.class)
+         .join(Shift.class, equal(Function.identity(), Shift::getEmployee))
+         .concat(
+             constraintFactory.forEach(Employee.class)
+               .ifNotExists(Shift.class, equal(Function.identity(), Shift::getEmployee))
+               .expand(employee -> (Shift) null)
+         )
+         .groupBy((employee, shift) -> employee,
+                   conditionally((employee, shift) -> shift != null,
+                                 countBi())
+         )
+         .filter((employee, shiftCount) -> shiftCount < employee.minimumAssignedShifts)
+         .penalize(HardSoftScore.ONE_SOFT, (employee, shiftCount) -> employee.minimumAssignedShifts - shiftCount)
+         .asConstraint("Minimum number of assigned shifts");
+    }
+----
+
+This correctly counts the number of shifts each Employee has, *even when the Employee has no shifts*.
+If it was implemented without `concat` like this:
+
+[source,java,options="nowrap"]
+----
+    private Constraint incorrectEnsureEachEmployeeHasAtLeastTwoShifts(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Employee.class)
+         .join(Shift.class, equal(Function.identity(), Shift::getEmployee))
+         .groupBy((employee, shift) -> employee,
+                  countBi())
+         )
+         .filter((employee, shiftCount) -> shiftCount < employee.minimumAssignedShifts)
+         .penalize(HardSoftScore.ONE_SOFT, (employee, shiftCount) -> employee.minimumAssignedShifts - shiftCount)
+         .asConstraint("Minimum number of assigned shifts (incorrect)");
+    }
+----
+
+An employee with no assigned shifts _will not be penalized because no tuples were passed to the `groupBy` building block_.
 
 [[constraintStreamsTesting]]
 === Testing a constraint stream
