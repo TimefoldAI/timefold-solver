@@ -14,9 +14,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
-import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.examples.common.experimental.ExperimentalConstraintCollectors;
 import ai.timefold.solver.examples.common.experimental.api.ConsecutiveInfo;
 import ai.timefold.solver.examples.common.util.Pair;
@@ -46,6 +43,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 oneShiftPerDay(constraintFactory),
                 minimumAndMaximumNumberOfAssignments(constraintFactory),
+                minimumNumberOfAssignmentsNoAssignments(constraintFactory),
                 consecutiveWorkingDays(constraintFactory),
                 consecutiveFreeDays(constraintFactory),
                 maximumConsecutiveFreeDaysNoAssignments(constraintFactory),
@@ -80,27 +78,16 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
     // ############################################################################
     // Soft constraints
     // ############################################################################
-    @SafeVarargs
-    private static <A, B, C> TriConstraintStream<A, B, C> outerJoin(BiConstraintStream<A, B> source,
-            Class<C> joinedClass, TriJoiner<A, B, C>... joiners) {
-        return source.join(joinedClass, joiners).concat(
-                source.ifNotExists(joinedClass, joiners).expand((ingoredA, ingoredB) -> null));
-    }
-
     Constraint minimumAndMaximumNumberOfAssignments(ConstraintFactory constraintFactory) {
-        return outerJoin(
-                constraintFactory
-                        .forEach(MinMaxContractLine.class)
-                        .filter(minMaxContractLine -> minMaxContractLine
-                                .getContractLineType() == ContractLineType.TOTAL_ASSIGNMENTS && minMaxContractLine.isEnabled())
-                        .join(Employee.class, Joiners.equal(ContractLine::getContract, Employee::getContract)),
-                ShiftAssignment.class,
-                Joiners.equal((contractLine, employee) -> employee, ShiftAssignment::getEmployee))
-                .groupBy((line, employee, shift) -> employee,
-                        (line, employee, shift) -> line,
-                        ConstraintCollectors.conditionally(
-                                (line, employee, shift) -> shift != null,
-                                ConstraintCollectors.countTri()))
+        return constraintFactory.forEach(MinMaxContractLine.class)
+                .filter(minMaxContractLine -> minMaxContractLine.getContractLineType() == ContractLineType.TOTAL_ASSIGNMENTS &&
+                        minMaxContractLine.isEnabled())
+                .join(constraintFactory.forEach(ShiftAssignment.class)
+                        .filter(shift -> shift.getEmployee() != null),
+                        Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
+                .groupBy((line, shift) -> shift.getEmployee(),
+                        (line, shift) -> line,
+                        ConstraintCollectors.countBi())
                 .map((employee, contract, shiftCount) -> employee,
                         (employee, contract, shiftCount) -> contract,
                         (employee, contract, shiftCount) -> contract.getViolationAmount(shiftCount))
@@ -108,6 +95,21 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .penalize(HardSoftScore.ONE_SOFT, (employee, contract, violationAmount) -> violationAmount)
                 .indictWith((employee, contract, violationAmount) -> Arrays.asList(employee, contract))
                 .asConstraint("Minimum and maximum number of assignments");
+    }
+
+    Constraint minimumNumberOfAssignmentsNoAssignments(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(MinMaxContractLine.class)
+                .filter(minMaxContractLine -> minMaxContractLine.getContractLineType() == ContractLineType.TOTAL_ASSIGNMENTS &&
+                        minMaxContractLine.isEnabled())
+                .join(Employee.class,
+                        Joiners.equal(MinMaxContractLine::getContract, Employee::getContract))
+                .ifNotExists(ShiftAssignment.class,
+                        Joiners.equal((contractLine, employee) -> employee, ShiftAssignment::getEmployee))
+                .expand((contract, employee) -> contract.getViolationAmount(0))
+                .filter((contract, employee, violationAmount) -> violationAmount != 0)
+                .penalize(HardSoftScore.ONE_SOFT, (contract, employee, violationAmount) -> violationAmount)
+                .indictWith((contract, employee, violationAmount) -> Arrays.asList(employee, contract))
+                .asConstraint("Minimum and maximum number of assignments (no assignments)");
     }
 
     // Min/Max consecutive working days
