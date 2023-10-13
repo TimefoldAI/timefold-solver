@@ -32,13 +32,14 @@ final class MapTriToBiNode<A, B, C, NewA, NewB> extends AbstractMapNode<TriTuple
     }
 
     @Override
-    protected boolean remap(TriTuple<A, B, C> inTuple, BiTuple<NewA, NewB> outTuple) {
+    protected void remap(TriTuple<A, B, C> inTuple, BiTuple<NewA, NewB> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
         NewA newA = mappingFunctionA.apply(factA, factB, factC);
         NewB newB = mappingFunctionB.apply(factA, factB, factC);
-        return outTuple.updateIfDifferent(newA, newB);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
     }
 
 }

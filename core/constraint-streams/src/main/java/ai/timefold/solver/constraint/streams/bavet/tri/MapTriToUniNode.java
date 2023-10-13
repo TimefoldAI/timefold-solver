@@ -29,12 +29,12 @@ final class MapTriToUniNode<A, B, C, NewA> extends AbstractMapNode<TriTuple<A, B
     }
 
     @Override
-    protected boolean remap(TriTuple<A, B, C> inTuple, UniTuple<NewA> outTuple) {
+    protected void remap(TriTuple<A, B, C> inTuple, UniTuple<NewA> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
         NewA newA = mappingFunction.apply(factA, factB, factC);
-        return outTuple.updateIfDifferent(newA);
+        outTuple.factA = newA;
     }
 
 }

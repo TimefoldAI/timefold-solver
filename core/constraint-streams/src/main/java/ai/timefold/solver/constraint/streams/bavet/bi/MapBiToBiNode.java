@@ -30,12 +30,13 @@ final class MapBiToBiNode<A, B, NewA, NewB> extends AbstractMapNode<BiTuple<A, B
     }
 
     @Override
-    protected boolean remap(BiTuple<A, B> inTuple, BiTuple<NewA, NewB> outTuple) {
+    protected void remap(BiTuple<A, B> inTuple, BiTuple<NewA, NewB> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         NewA newA = mappingFunctionA.apply(factA, factB);
         NewB newB = mappingFunctionB.apply(factA, factB);
-        return outTuple.updateIfDifferent(newA, newB);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
     }
 
 }

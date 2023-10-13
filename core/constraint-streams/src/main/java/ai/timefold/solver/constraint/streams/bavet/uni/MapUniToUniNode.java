@@ -26,10 +26,10 @@ final class MapUniToUniNode<A, NewA> extends AbstractMapNode<UniTuple<A>, UniTup
     }
 
     @Override
-    protected boolean remap(UniTuple<A> inTuple, UniTuple<NewA> outTuple) {
+    protected void remap(UniTuple<A> inTuple, UniTuple<NewA> outTuple) {
         A factA = inTuple.factA;
         NewA newA = mappingFunction.apply(factA);
-        return outTuple.updateIfDifferent(newA);
+        outTuple.factA = newA;
     }
 
 }

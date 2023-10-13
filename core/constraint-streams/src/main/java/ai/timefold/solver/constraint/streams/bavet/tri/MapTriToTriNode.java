@@ -36,14 +36,16 @@ final class MapTriToTriNode<A, B, C, NewA, NewB, NewC>
     }
 
     @Override
-    protected boolean remap(TriTuple<A, B, C> inTuple, TriTuple<NewA, NewB, NewC> outTuple) {
+    protected void remap(TriTuple<A, B, C> inTuple, TriTuple<NewA, NewB, NewC> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
         NewA newA = mappingFunctionA.apply(factA, factB, factC);
         NewB newB = mappingFunctionB.apply(factA, factB, factC);
         NewC newC = mappingFunctionC.apply(factA, factB, factC);
-        return outTuple.updateIfDifferent(newA, newB, newC);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
+        outTuple.factC = newC;
     }
 
 }

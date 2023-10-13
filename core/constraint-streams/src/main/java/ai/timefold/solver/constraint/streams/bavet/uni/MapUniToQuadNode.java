@@ -38,13 +38,16 @@ final class MapUniToQuadNode<A, NewA, NewB, NewC, NewD>
     }
 
     @Override
-    protected boolean remap(UniTuple<A> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
+    protected void remap(UniTuple<A> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
         A factA = inTuple.factA;
         NewA newA = mappingFunctionA.apply(factA);
         NewB newB = mappingFunctionB.apply(factA);
         NewC newC = mappingFunctionC.apply(factA);
         NewD newD = mappingFunctionD.apply(factA);
-        return outTuple.updateIfDifferent(newA, newB, newC, newD);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
+        outTuple.factC = newC;
+        outTuple.factD = newD;
     }
 
 }
