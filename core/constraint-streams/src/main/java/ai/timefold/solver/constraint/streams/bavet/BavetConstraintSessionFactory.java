@@ -11,12 +11,15 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.BavetStreamBinaryOperation;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.PropagationQueue;
 import ai.timefold.solver.constraint.streams.bavet.common.Propagator;
@@ -134,24 +137,28 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
             return 0;
         } else if (node instanceof AbstractJoinNode<?, ?, ?> joinNode) {
-            var nodeCreator = (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(joinNode);
-            var leftParent = nodeCreator.getLeftParent();
-            var rightParent = nodeCreator.getRightParent();
-            var leftParentNode = buildHelper.findParentNode(leftParent);
-            var rightParentNode = buildHelper.findParentNode(rightParent);
-            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+            return determineLayerIndexOfBinaryOperation(
+                    (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(joinNode), buildHelper);
+        } else if (node instanceof AbstractConcatNode<?> concatNode) {
+            return determineLayerIndexOfBinaryOperation(
+                    (BavetConcatConstraintStream<?>) buildHelper.getNodeCreatingStream(concatNode), buildHelper);
         } else if (node instanceof AbstractIfExistsNode<?, ?> ifExistsNode) {
-            var nodeCreator = (BavetIfExistsConstraintStream<?>) buildHelper.getNodeCreatingStream(ifExistsNode);
-            var leftParent = nodeCreator.getLeftParent();
-            var rightParent = nodeCreator.getRightParent();
-            var leftParentNode = buildHelper.findParentNode(leftParent);
-            var rightParentNode = buildHelper.findParentNode(rightParent);
-            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+            return determineLayerIndexOfBinaryOperation(
+                    (BavetIfExistsConstraintStream<?>) buildHelper.getNodeCreatingStream(ifExistsNode), buildHelper);
         } else {
             var nodeCreator = (BavetAbstractConstraintStream<?>) buildHelper.getNodeCreatingStream(node);
             var parentNode = buildHelper.findParentNode(nodeCreator.getParent());
             return parentNode.getLayerIndex() + 1;
         }
+    }
+
+    private long determineLayerIndexOfBinaryOperation(BavetStreamBinaryOperation<?> nodeCreator,
+            NodeBuildHelper<Score_> buildHelper) {
+        var leftParent = nodeCreator.getLeftParent();
+        var rightParent = nodeCreator.getRightParent();
+        var leftParentNode = buildHelper.findParentNode(leftParent);
+        var rightParentNode = buildHelper.findParentNode(rightParent);
+        return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
     }
 
 }
