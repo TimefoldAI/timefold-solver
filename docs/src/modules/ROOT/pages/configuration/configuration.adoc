@@ -1030,8 +1030,13 @@ public class StartTimeUpdatingVariableListener implements VariableListener<TaskA
 ==== Planning value
 
 A planning value is a possible value for a genuine planning variable.
-Usually, a planning value is a problem fact, but it can also be any object, for example a ``double``.
+Usually, a planning value is a problem fact, but it can also be any object, for example an ``Integer``.
 It can even be another planning entity or even an interface implemented by both a planning entity and a problem fact.
+
+[NOTE]
+====
+Primitive types (such as ``int``) are not allowed.
+====
 
 A planning value range is the set of possible planning values for a planning variable.
 This set can be a countable (for example row ``1``, ``2``, `3` or ``4``) or uncountable (for example any `double` between `0.0` and ``1.0``).
