@@ -1425,7 +1425,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatWithoutValueDuplicates() {
+    public void concatWithoutDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -1479,7 +1479,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatWithValueDuplicates() {
+    public void concatWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -1533,7 +1533,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatAndDistinctWithoutValueDuplicates() {
+    public void concatAndDistinctWithoutDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
@@ -1588,7 +1588,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void concatAndDistinctWithValueDuplicates() {
+    public void concatAndDistinctWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());

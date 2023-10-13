@@ -118,13 +118,13 @@ public interface ConstraintStreamFunctionalTest {
 
     void mapToQuad();
 
-    void concatWithoutValueDuplicates();
+    void concatWithoutDuplicates();
 
-    void concatAndDistinctWithoutValueDuplicates();
+    void concatAndDistinctWithoutDuplicates();
 
-    void concatWithValueDuplicates();
+    void concatWithDuplicates();
 
-    void concatAndDistinctWithValueDuplicates();
+    void concatAndDistinctWithDuplicates();
 
     default void expandToBi() {
         // Only Uni can be expanded to Bi, so don't force it.
