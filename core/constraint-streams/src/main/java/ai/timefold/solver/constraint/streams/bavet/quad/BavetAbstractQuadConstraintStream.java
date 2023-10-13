@@ -355,7 +355,7 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
         var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
         return constraintFactory.share(concatStream, concatStream_ -> {
-            // Connect the bridges upstream
+            // Connect the bridges upstream, as it is an actual new join.
             getChildStreamList().add(leftBridge);
             other.getChildStreamList().add(rightBridge);
         });
