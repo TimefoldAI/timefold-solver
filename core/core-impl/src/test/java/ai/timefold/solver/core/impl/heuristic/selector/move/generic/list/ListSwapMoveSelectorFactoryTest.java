@@ -14,7 +14,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,18 +43,6 @@ class ListSwapMoveSelectorFactoryTest {
     }
 
     @Test
-    void unfoldingSkipsBasicVariablesGracefully() {
-        SolutionDescriptor<TestdataMixedVariablesSolution> solutionDescriptor =
-                TestdataMixedVariablesSolution.buildSolutionDescriptor();
-        ListSwapMoveSelectorConfig moveSelectorConfig = new ListSwapMoveSelectorConfig();
-        MoveSelector<TestdataMixedVariablesSolution> moveSelector =
-                MoveSelectorFactory.<TestdataMixedVariablesSolution> create(moveSelectorConfig).buildMoveSelector(
-                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
-                        false);
-        assertThat(moveSelector).isInstanceOf(ListSwapMoveSelector.class);
-    }
-
-    @Test
     void unfoldingFailsIfThereIsNoListVariable() {
         ListSwapMoveSelectorConfig config = new ListSwapMoveSelectorConfig();
         ListSwapMoveSelectorFactory<TestdataSolution> moveSelectorFactory = new ListSwapMoveSelectorFactory<>(config);
@@ -74,11 +61,11 @@ class ListSwapMoveSelectorFactoryTest {
         ListSwapMoveSelectorConfig config = new ListSwapMoveSelectorConfig()
                 .withValueSelectorConfig(new ValueSelectorConfig("value"));
 
-        ListSwapMoveSelectorFactory<TestdataMixedVariablesSolution> moveSelectorFactory =
+        ListSwapMoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new ListSwapMoveSelectorFactory<>(config);
 
-        HeuristicConfigPolicy<TestdataMixedVariablesSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataMixedVariablesSolution.buildSolutionDescriptor());
+        HeuristicConfigPolicy<TestdataSolution> heuristicConfigPolicy =
+                buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy,

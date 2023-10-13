@@ -18,8 +18,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwa
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesSolution;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEntitySolution;
@@ -138,29 +136,6 @@ class SwapMoveSelectorFactoryTest {
         assertThat(moveSelector)
                 .isInstanceOf(UnionMoveSelector.class);
         assertThat(((UnionMoveSelector) moveSelector).getChildMoveSelectorList()).hasSize(2);
-    }
-
-    @Test
-    void mixingBasicAndListVariablesUnsupported() {
-        SolutionDescriptor<TestdataMixedVariablesSolution> solutionDescriptor =
-                TestdataMixedVariablesSolution.buildSolutionDescriptor();
-
-        SwapMoveSelectorConfig moveSelectorConfig = new SwapMoveSelectorConfig();
-        assertThatIllegalArgumentException().isThrownBy(
-                () -> MoveSelectorFactory
-                        .<TestdataMixedVariablesSolution> create(moveSelectorConfig)
-                        .buildMoveSelector(buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME,
-                                SelectionOrder.RANDOM, false))
-                .withMessageContaining("variableDescriptorList");
-
-        SwapMoveSelectorConfig moveSelectorConfigWithEntitySelector = new SwapMoveSelectorConfig()
-                .withEntitySelectorConfig(new EntitySelectorConfig(TestdataMixedVariablesEntity.class));
-        assertThatIllegalArgumentException().isThrownBy(
-                () -> MoveSelectorFactory
-                        .<TestdataMixedVariablesSolution> create(moveSelectorConfigWithEntitySelector)
-                        .buildMoveSelector(buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME,
-                                SelectionOrder.RANDOM, false))
-                .withMessageContaining("variableDescriptorList");
     }
 
     // ************************************************************************

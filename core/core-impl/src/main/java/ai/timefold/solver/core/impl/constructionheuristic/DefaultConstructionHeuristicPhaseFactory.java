@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,9 +31,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFac
 import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacerFactory;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
@@ -129,26 +125,11 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     + listVariableDescriptors + ").");
         }
 
-        ListVariableDescriptor<Solution_> listVariableDescriptor = listVariableDescriptors.get(0);
-        failIfBasicAndListVariablesAreCombinedOnSingleEntity(listVariableDescriptor);
         failIfConfigured(phaseConfig.getConstructionHeuristicType(), "constructionHeuristicType");
         failIfConfigured(phaseConfig.getEntityPlacerConfig(), "entityPlacerConfig");
         failIfConfigured(phaseConfig.getMoveSelectorConfigList(), "moveSelectorConfigList");
 
-        return Optional.of(listVariableDescriptor);
-    }
-
-    private static void failIfBasicAndListVariablesAreCombinedOnSingleEntity(ListVariableDescriptor<?> listVariableDescriptor) {
-        EntityDescriptor<?> listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
-        if (listVariableEntityDescriptor.getDeclaredGenuineVariableDescriptors().size() > 1) {
-            Collection<GenuineVariableDescriptor<?>> basicVariableDescriptors =
-                    new ArrayList<>(listVariableEntityDescriptor.getDeclaredGenuineVariableDescriptors());
-            basicVariableDescriptors.remove(listVariableDescriptor);
-            throw new IllegalArgumentException(
-                    "Construction Heuristic phase does not support combination of basic variables ("
-                            + basicVariableDescriptors + ") and list variables (" + listVariableDescriptor
-                            + ") on a single planning entity (" + listVariableDescriptor.getEntityDescriptor() + ").");
-        }
+        return Optional.of(listVariableDescriptors.get(0));
     }
 
     private static void failIfConfigured(Object configValue, String configName) {

@@ -225,14 +225,26 @@ class SolverConfigTest {
     }
 
     @Test
-    void entityWithMixedBasicAndListPlanningVariables() {
+    void entityWithTwoPlanningListVariables() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(DummySolutionWithTwoListVariablesEntity.class)
+                .withEntityClasses(DummyEntityWithTwoListVariables.class)
+                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
+        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+                .isExactlyInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining(DummyEntityWithTwoListVariables.class.getSimpleName())
+                .hasMessageContaining("firstListVariable")
+                .hasMessageContaining("secondListVariable");
+    }
+
+    @Test
+    void entityWithMixedBasicAndPlanningListVariables() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(DummySolutionWithMixedSimpleAndListVariableEntity.class)
                 .withEntityClasses(DummyEntityWithMixedSimpleAndListVariable.class)
-                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig());
-        var solverFactory = SolverFactory.create(solverConfig);
-        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
+        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+                .isExactlyInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining(DummyEntityWithMixedSimpleAndListVariable.class.getSimpleName())
                 .hasMessageContaining("listVariable")
                 .hasMessageContaining("basicVariable");
@@ -255,6 +267,7 @@ class SolverConfigTest {
 
     }
 
+    @PlanningEntity
     private record DummyRecordEntity(
             @PlanningVariable String variable) {
 
@@ -285,6 +298,34 @@ class SolverConfigTest {
 
         @PlanningVariable(valueRangeProviderRefs = "basicValueRange")
         Integer basicVariable;
+
+    }
+
+    @PlanningSolution
+    private class DummySolutionWithTwoListVariablesEntity {
+
+        @PlanningEntityCollectionProperty
+        List<DummyEntityWithTwoListVariables> entities;
+
+        @ValueRangeProvider(id = "firstListValueRange")
+        ValueRange<DummyEntityForListVariable> firstListValueRange;
+
+        @ValueRangeProvider(id = "secondListValueRange")
+        ValueRange<DummyEntityForListVariable> secondListValueRange;
+
+        @PlanningScore
+        SimpleScore score;
+
+    }
+
+    @PlanningEntity
+    private class DummyEntityWithTwoListVariables {
+
+        @PlanningListVariable(valueRangeProviderRefs = "firstListValueRange")
+        private List<DummyEntityForListVariable> firstListVariable;
+
+        @PlanningListVariable(valueRangeProviderRefs = "secondListValueRange")
+        private List<DummyEntityForListVariable> secondListVariable;
 
     }
 
