@@ -154,6 +154,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         if (environmentMode.isAsserted()) {
             solutionDescriptor.setAssertModelForCloning(true);
         }
+
         return solutionDescriptor;
     }
 

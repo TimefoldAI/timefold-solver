@@ -16,10 +16,9 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesSolution;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -85,14 +84,14 @@ class SubListChangeMoveSelectorFactoryTest {
                 .withSubListSelectorConfig(new SubListSelectorConfig()
                         .withValueSelectorConfig(new ValueSelectorConfig("value")))
                 .withDestinationSelectorConfig(new DestinationSelectorConfig()
-                        .withEntitySelectorConfig(new EntitySelectorConfig(TestdataMixedVariablesEntity.class))
+                        .withEntitySelectorConfig(new EntitySelectorConfig(TestdataEntity.class))
                         .withValueSelectorConfig(new ValueSelectorConfig("value")));
 
-        SubListChangeMoveSelectorFactory<TestdataMixedVariablesSolution> moveSelectorFactory =
+        SubListChangeMoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new SubListChangeMoveSelectorFactory<>(config);
 
-        HeuristicConfigPolicy<TestdataMixedVariablesSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataMixedVariablesSolution.buildSolutionDescriptor());
+        HeuristicConfigPolicy<TestdataSolution> heuristicConfigPolicy =
+                buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,

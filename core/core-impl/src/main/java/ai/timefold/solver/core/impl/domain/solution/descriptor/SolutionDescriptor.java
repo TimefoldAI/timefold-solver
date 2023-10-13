@@ -486,6 +486,8 @@ public class SolutionDescriptor<Solution_> {
         determineGlobalShadowOrder();
         problemFactOrEntityClassSet = collectEntityAndProblemFactClasses();
         listVariableDescriptors = findListVariableDescriptors();
+        validateListVariableDescriptors();
+
         // And finally log the successful completion of processing.
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("    Model annotations parsed for solution {}:", solutionClass.getSimpleName());
@@ -546,6 +548,30 @@ public class SolutionDescriptor<Solution_> {
             }
             shadow.setGlobalShadowOrder(globalShadowOrder);
             globalShadowOrder++;
+        }
+    }
+
+    private void validateListVariableDescriptors() {
+        if (listVariableDescriptors.isEmpty()) {
+            return;
+        }
+
+        if (listVariableDescriptors.size() > 1) {
+            throw new UnsupportedOperationException(
+                    "Defining multiple list variables (%s) across the model is currently not supported."
+                            .formatted(listVariableDescriptors));
+        }
+
+        ListVariableDescriptor<Solution_> listVariableDescriptor = listVariableDescriptors.get(0);
+        EntityDescriptor<?> listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+        if (listVariableEntityDescriptor.getGenuineVariableDescriptorList().size() > 1) {
+            Collection<GenuineVariableDescriptor<?>> basicVariableDescriptors =
+                    new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
+            basicVariableDescriptors.remove(listVariableDescriptor);
+            throw new UnsupportedOperationException(
+                    "Combining basic variables (%s) with list variables (%s) on a single planning entity (%s) is not supported."
+                            .formatted(basicVariableDescriptors, listVariableDescriptor,
+                                    listVariableDescriptor.getEntityDescriptor().getEntityClass().getCanonicalName()));
         }
     }
 

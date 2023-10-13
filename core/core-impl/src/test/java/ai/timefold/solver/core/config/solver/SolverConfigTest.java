@@ -22,6 +22,9 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -221,6 +224,32 @@ class SolverConfigTest {
         Assertions.assertThatNoException().isThrownBy(() -> solver.solve(solution));
     }
 
+    @Test
+    void entityWithTwoPlanningListVariables() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(DummySolutionWithTwoListVariablesEntity.class)
+                .withEntityClasses(DummyEntityWithTwoListVariables.class)
+                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
+        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+                .isExactlyInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining(DummyEntityWithTwoListVariables.class.getSimpleName())
+                .hasMessageContaining("firstListVariable")
+                .hasMessageContaining("secondListVariable");
+    }
+
+    @Test
+    void entityWithMixedBasicAndPlanningListVariables() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(DummySolutionWithMixedSimpleAndListVariableEntity.class)
+                .withEntityClasses(DummyEntityWithMixedSimpleAndListVariable.class)
+                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
+        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+                .isExactlyInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining(DummyEntityWithMixedSimpleAndListVariable.class.getSimpleName())
+                .hasMessageContaining("listVariable")
+                .hasMessageContaining("basicVariable");
+    }
+
     @PlanningSolution
     private record DummyRecordSolution(
             @PlanningEntityCollectionProperty List<TestdataEntity> entities,
@@ -241,6 +270,67 @@ class SolverConfigTest {
     @PlanningEntity
     private record DummyRecordEntity(
             @PlanningVariable String variable) {
+
+    }
+
+    @PlanningSolution
+    private class DummySolutionWithMixedSimpleAndListVariableEntity {
+
+        @PlanningEntityCollectionProperty
+        List<DummyEntityWithMixedSimpleAndListVariable> entities;
+
+        @ValueRangeProvider(id = "listValueRange")
+        ValueRange<DummyEntityForListVariable> listValueRange;
+
+        @ValueRangeProvider(id = "basicValueRange")
+        ValueRange<Integer> basicValueRange;
+
+        @PlanningScore
+        SimpleScore score;
+
+    }
+
+    @PlanningEntity
+    private class DummyEntityWithMixedSimpleAndListVariable {
+
+        @PlanningListVariable(valueRangeProviderRefs = "listValueRange")
+        private List<DummyEntityForListVariable> listVariable;
+
+        @PlanningVariable(valueRangeProviderRefs = "basicValueRange")
+        Integer basicVariable;
+
+    }
+
+    @PlanningSolution
+    private class DummySolutionWithTwoListVariablesEntity {
+
+        @PlanningEntityCollectionProperty
+        List<DummyEntityWithTwoListVariables> entities;
+
+        @ValueRangeProvider(id = "firstListValueRange")
+        ValueRange<DummyEntityForListVariable> firstListValueRange;
+
+        @ValueRangeProvider(id = "secondListValueRange")
+        ValueRange<DummyEntityForListVariable> secondListValueRange;
+
+        @PlanningScore
+        SimpleScore score;
+
+    }
+
+    @PlanningEntity
+    private class DummyEntityWithTwoListVariables {
+
+        @PlanningListVariable(valueRangeProviderRefs = "firstListValueRange")
+        private List<DummyEntityForListVariable> firstListVariable;
+
+        @PlanningListVariable(valueRangeProviderRefs = "secondListValueRange")
+        private List<DummyEntityForListVariable> secondListVariable;
+
+    }
+
+    @PlanningEntity
+    private class DummyEntityForListVariable {
 
     }
 

@@ -15,11 +15,10 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.mixed.TestdataMixedVariablesSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -87,19 +86,6 @@ class ListChangeMoveSelectorFactoryTest {
     }
 
     @Test
-    void unfoldingSkipsBasicVariablesGracefully() {
-        // TODO is this supposed to fail because mixing is not yet supported?
-        SolutionDescriptor<TestdataMixedVariablesSolution> solutionDescriptor =
-                TestdataMixedVariablesSolution.buildSolutionDescriptor();
-        ListChangeMoveSelectorConfig moveSelectorConfig = new ListChangeMoveSelectorConfig();
-        MoveSelector<TestdataMixedVariablesSolution> moveSelector =
-                MoveSelectorFactory.<TestdataMixedVariablesSolution> create(moveSelectorConfig).buildMoveSelector(
-                        buildHeuristicConfigPolicy(solutionDescriptor), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
-                        false);
-        assertThat(moveSelector).isInstanceOf(ListChangeMoveSelector.class);
-    }
-
-    @Test
     void unfoldingFailsIfThereIsNoListVariable() {
         ListChangeMoveSelectorConfig config = new ListChangeMoveSelectorConfig();
         ListChangeMoveSelectorFactory<TestdataSolution> moveSelectorFactory = new ListChangeMoveSelectorFactory<>(config);
@@ -118,14 +104,14 @@ class ListChangeMoveSelectorFactoryTest {
         ListChangeMoveSelectorConfig config = new ListChangeMoveSelectorConfig()
                 .withValueSelectorConfig(new ValueSelectorConfig("value"))
                 .withDestinationSelectorConfig(new DestinationSelectorConfig()
-                        .withEntitySelectorConfig(new EntitySelectorConfig(TestdataMixedVariablesEntity.class))
+                        .withEntitySelectorConfig(new EntitySelectorConfig(TestdataEntity.class))
                         .withValueSelectorConfig(new ValueSelectorConfig("value")));
 
-        ListChangeMoveSelectorFactory<TestdataMixedVariablesSolution> moveSelectorFactory =
+        ListChangeMoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new ListChangeMoveSelectorFactory<>(config);
 
-        HeuristicConfigPolicy<TestdataMixedVariablesSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataMixedVariablesSolution.buildSolutionDescriptor());
+        HeuristicConfigPolicy<TestdataSolution> heuristicConfigPolicy =
+                buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
