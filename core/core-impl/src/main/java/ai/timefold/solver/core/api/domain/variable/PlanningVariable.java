@@ -16,6 +16,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 /**
  * Specifies that a bean property (or a field) can be changed and should be optimized by the optimization algorithms.
  * <p>
+ * The property must be an object type. Primitive types (such as int, double, long) are not allowed.
+ * <p>
  * It is specified on a getter of a java bean property (or directly on a field) of a {@link PlanningEntity} class.
  */
 @Target({ METHOD, FIELD })
