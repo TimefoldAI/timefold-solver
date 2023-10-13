@@ -1030,7 +1030,7 @@ public class StartTimeUpdatingVariableListener implements VariableListener<TaskA
 ==== Planning value
 
 A planning value is a possible value for a genuine planning variable.
-Usually, a planning value is a problem fact, but it can also be any object, for example a ``Double``.
+Usually, a planning value is a problem fact, but it can also be any object, for example an ``Integer``.
 It can even be another planning entity or even an interface implemented by both a planning entity and a problem fact.
 
 [NOTE]
