@@ -32,7 +32,7 @@
     <version.org.jfree.jfreechart>1.5.4</version.org.jfree.jfreechart>
     <version.org.openrewrite.recipe>2.3.1</version.org.openrewrite.recipe>
     <version.org.slf4j>2.0.9</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
-    <version.org.springframework>6.0.12</version.org.springframework>
+    <version.org.springframework>6.0.13</version.org.springframework>
     <version.org.springframework.boot>3.1.4</version.org.springframework.boot>
     <version.org.webjars.webjars-locator>0.47</version.org.webjars.webjars-locator>
     <version.org.webjars.bootstrap>5.2.3</version.org.webjars.bootstrap>
