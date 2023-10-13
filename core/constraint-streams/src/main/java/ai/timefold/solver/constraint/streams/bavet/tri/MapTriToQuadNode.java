@@ -41,7 +41,7 @@ final class MapTriToQuadNode<A, B, C, NewA, NewB, NewC, NewD>
     }
 
     @Override
-    protected boolean remap(TriTuple<A, B, C> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
+    protected void remap(TriTuple<A, B, C> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
@@ -49,7 +49,10 @@ final class MapTriToQuadNode<A, B, C, NewA, NewB, NewC, NewD>
         NewB newB = mappingFunctionB.apply(factA, factB, factC);
         NewC newC = mappingFunctionC.apply(factA, factB, factC);
         NewD newD = mappingFunctionD.apply(factA, factB, factC);
-        return outTuple.updateIfDifferent(newA, newB, newC, newD);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
+        outTuple.factC = newC;
+        outTuple.factD = newD;
     }
 
 }

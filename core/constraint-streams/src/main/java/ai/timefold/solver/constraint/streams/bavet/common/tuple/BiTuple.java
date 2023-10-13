@@ -12,19 +12,6 @@ public final class BiTuple<A, B> extends AbstractTuple {
         this.factB = factB;
     }
 
-    public boolean updateIfDifferent(A newFactA, B newFactB) {
-        boolean different = false;
-        if (factA != newFactA) {
-            factA = newFactA;
-            different = true;
-        }
-        if (factB != newFactB) {
-            factB = newFactB;
-            different = true;
-        }
-        return different;
-    }
-
     @Override
     public String toString() {
         return "{" + factA + ", " + factB + "}";

@@ -16,27 +16,6 @@ public final class QuadTuple<A, B, C, D> extends AbstractTuple {
         this.factD = factD;
     }
 
-    public boolean updateIfDifferent(A newFactA, B newFactB, C newFactC, D newFactD) {
-        boolean different = false;
-        if (factA != newFactA) {
-            factA = newFactA;
-            different = true;
-        }
-        if (factB != newFactB) {
-            factB = newFactB;
-            different = true;
-        }
-        if (factC != newFactC) {
-            factC = newFactC;
-            different = true;
-        }
-        if (factD != newFactD) {
-            factD = newFactD;
-            different = true;
-        }
-        return different;
-    }
-
     @Override
     public String toString() {
         return "{" + factA + ", " + factB + ", " + factC + ", " + factD + "}";

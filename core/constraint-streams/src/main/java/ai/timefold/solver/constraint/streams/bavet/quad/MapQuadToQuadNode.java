@@ -41,7 +41,7 @@ final class MapQuadToQuadNode<A, B, C, D, NewA, NewB, NewC, NewD>
     }
 
     @Override
-    protected boolean remap(QuadTuple<A, B, C, D> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
+    protected void remap(QuadTuple<A, B, C, D> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
@@ -50,7 +50,10 @@ final class MapQuadToQuadNode<A, B, C, D, NewA, NewB, NewC, NewD>
         NewB newB = mappingFunctionB.apply(factA, factB, factC, factD);
         NewC newC = mappingFunctionC.apply(factA, factB, factC, factD);
         NewD newD = mappingFunctionD.apply(factA, factB, factC, factD);
-        return outTuple.updateIfDifferent(newA, newB, newC, newD);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
+        outTuple.factC = newC;
+        outTuple.factD = newD;
     }
 
 }

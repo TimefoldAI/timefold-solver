@@ -39,14 +39,17 @@ final class MapBiToQuadNode<A, B, NewA, NewB, NewC, NewD>
     }
 
     @Override
-    protected boolean remap(BiTuple<A, B> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
+    protected void remap(BiTuple<A, B> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         NewA newA = mappingFunctionA.apply(factA, factB);
         NewB newB = mappingFunctionB.apply(factA, factB);
         NewC newC = mappingFunctionC.apply(factA, factB);
         NewD newD = mappingFunctionD.apply(factA, factB);
-        return outTuple.updateIfDifferent(newA, newB, newC, newD);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
+        outTuple.factC = newC;
+        outTuple.factD = newD;
     }
 
 }

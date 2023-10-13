@@ -34,12 +34,14 @@ final class MapUniToTriNode<A, NewA, NewB, NewC> extends AbstractMapNode<UniTupl
     }
 
     @Override
-    protected boolean remap(UniTuple<A> inTuple, TriTuple<NewA, NewB, NewC> outTuple) {
+    protected void remap(UniTuple<A> inTuple, TriTuple<NewA, NewB, NewC> outTuple) {
         A factA = inTuple.factA;
         NewA newA = mappingFunctionA.apply(factA);
         NewB newB = mappingFunctionB.apply(factA);
         NewC newC = mappingFunctionC.apply(factA);
-        return outTuple.updateIfDifferent(newA, newB, newC);
+        outTuple.factA = newA;
+        outTuple.factB = newB;
+        outTuple.factC = newC;
     }
 
 }

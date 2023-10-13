@@ -14,23 +14,6 @@ public final class TriTuple<A, B, C> extends AbstractTuple {
         this.factC = factC;
     }
 
-    public boolean updateIfDifferent(A newFactA, B newFactB, C newFactC) {
-        boolean different = false;
-        if (factA != newFactA) {
-            factA = newFactA;
-            different = true;
-        }
-        if (factB != newFactB) {
-            factB = newFactB;
-            different = true;
-        }
-        if (factC != newFactC) {
-            factC = newFactC;
-            different = true;
-        }
-        return different;
-    }
-
     @Override
     public String toString() {
         return "{" + factA + ", " + factB + ", " + factC + "}";

@@ -30,13 +30,13 @@ final class MapQuadToUniNode<A, B, C, D, NewA> extends AbstractMapNode<QuadTuple
     }
 
     @Override
-    protected boolean remap(QuadTuple<A, B, C, D> inTuple, UniTuple<NewA> outTuple) {
+    protected void remap(QuadTuple<A, B, C, D> inTuple, UniTuple<NewA> outTuple) {
         A factA = inTuple.factA;
         B factB = inTuple.factB;
         C factC = inTuple.factC;
         D factD = inTuple.factD;
         NewA newA = mappingFunction.apply(factA, factB, factC, factD);
-        return outTuple.updateIfDifferent(newA);
+        outTuple.factA = newA;
     }
 
 }
