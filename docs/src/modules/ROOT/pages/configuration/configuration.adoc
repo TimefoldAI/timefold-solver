@@ -1035,7 +1035,7 @@ It can even be another planning entity or even an interface implemented by both 
 
 [NOTE]
 ====
-Primitive types (such as ``double``) are not allowed.
+Primitive types (such as ``int``) are not allowed.
 ====
 
 A planning value range is the set of possible planning values for a planning variable.
