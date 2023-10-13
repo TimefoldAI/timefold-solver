@@ -1049,22 +1049,6 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      */
     TriConstraintStream<A, B, C> distinct();
 
-    /**
-     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream} and the
-     * provided {@link TriConstraintStream}. Tuples in both this {@link TriConstraintStream} and the provided
-     * {@link TriConstraintStream} will appear at least twice.
-     *
-     * <p>
-     * For instance, if this stream consists of {@code [(A, 1, -1), (B, 2, -2), (C, 3, -3)]} and the other stream consists of
-     * {@code [(C, 3, -3), (D, 4, -4), (E, 5, -5)]}, {@code this.concat(other)} will consist of
-     * {@code [(A, 1, -1), (B, 2, -2), (C, 3, -3), (C, 3, -3), (D, 4, -4), (E, 5, -5)]}. This operation can be thought of as an
-     * or between streams.
-     *
-     * @param otherStream
-     * @return
-     */
-    TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream);
-
     // ************************************************************************
     // Other operations
     // ************************************************************************

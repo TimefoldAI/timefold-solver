@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
@@ -136,13 +135,6 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             return 0;
         } else if (node instanceof AbstractJoinNode<?, ?, ?> joinNode) {
             var nodeCreator = (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(joinNode);
-            var leftParent = nodeCreator.getLeftParent();
-            var rightParent = nodeCreator.getRightParent();
-            var leftParentNode = buildHelper.findParentNode(leftParent);
-            var rightParentNode = buildHelper.findParentNode(rightParent);
-            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
-        } else if (node instanceof AbstractConcatNode<?> concatNode) {
-            var nodeCreator = (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(concatNode);
             var leftParent = nodeCreator.getLeftParent();
             var rightParent = nodeCreator.getRightParent();
             var leftParentNode = buildHelper.findParentNode(leftParent);

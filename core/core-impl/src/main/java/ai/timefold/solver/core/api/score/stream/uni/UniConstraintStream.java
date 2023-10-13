@@ -1482,21 +1482,6 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      */
     UniConstraintStream<A> distinct();
 
-    /**
-     * Returns a new {@link UniConstraintStream} containing all the tuples of both this {@link UniConstraintStream} and the
-     * provided {@link UniConstraintStream}. Tuples in both this {@link UniConstraintStream} and the provided
-     * {@link UniConstraintStream} will appear at least twice.
-     *
-     * <p>
-     * For instance, if this stream consists of {@code [A, B, C]} and the other stream consists of {@code [C, D, E]},
-     * {@code this.concat(other)} will consist of {@code [A, B, C, C, D, E]}. This operation can be thought of as an or between
-     * streams.
-     *
-     * @param otherStream
-     * @return
-     */
-    UniConstraintStream<A> concat(UniConstraintStream<A> otherStream);
-
     // ************************************************************************
     // Other operations
     // ************************************************************************
