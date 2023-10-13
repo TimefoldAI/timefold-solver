@@ -16,7 +16,6 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
@@ -143,7 +142,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             var rightParentNode = buildHelper.findParentNode(rightParent);
             return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
         } else if (node instanceof AbstractConcatNode<?> concatNode) {
-            var nodeCreator = (BavetConcatConstraintStream<?>) buildHelper.getNodeCreatingStream(concatNode);
+            var nodeCreator = (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(concatNode);
             var leftParent = nodeCreator.getLeftParent();
             var rightParent = nodeCreator.getRightParent();
             var leftParentNode = buildHelper.findParentNode(leftParent);
