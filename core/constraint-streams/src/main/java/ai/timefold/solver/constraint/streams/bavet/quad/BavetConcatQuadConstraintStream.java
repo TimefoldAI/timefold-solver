@@ -89,7 +89,17 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public boolean guaranteesDistinct() {
-        return false;
+        if (leftParent instanceof BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>
+                && rightParent instanceof BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>) {
+            // The two parents could have the same source; guarantee impossible.
+            return false;
+        }
+        /*
+         * Since one of the two parents is increasing in cardinality,
+         * it means its tuples must be distinct from the other parent's tuples.
+         * Therefore, the guarantee can be given is both of the parents give it.
+         */
+        return leftParent.guaranteesDistinct() && rightParent.guaranteesDistinct();
     }
 
     // ************************************************************************

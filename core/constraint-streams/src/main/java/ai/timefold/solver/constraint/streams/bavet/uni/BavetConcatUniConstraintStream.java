@@ -28,7 +28,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
 
     @Override
     public boolean guaranteesDistinct() {
-        return false;
+        return false; // The two parents could have the same source; guarantee impossible.
     }
 
     // ************************************************************************

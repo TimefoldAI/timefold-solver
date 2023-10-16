@@ -51,7 +51,17 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
 
     @Override
     public boolean guaranteesDistinct() {
-        return false;
+        if (leftParent instanceof BavetAbstractBiConstraintStream<?, ?, ?>
+                && rightParent instanceof BavetAbstractBiConstraintStream<?, ?, ?>) {
+            // The two parents could have the same source; guarantee impossible.
+            return false;
+        }
+        /*
+         * Since one of the two parents is increasing in cardinality,
+         * it means its tuples must be distinct from the other parent's tuples.
+         * Therefore, the guarantee can be given is both of the parents give it.
+         */
+        return leftParent.guaranteesDistinct() && rightParent.guaranteesDistinct();
     }
 
     // ************************************************************************
