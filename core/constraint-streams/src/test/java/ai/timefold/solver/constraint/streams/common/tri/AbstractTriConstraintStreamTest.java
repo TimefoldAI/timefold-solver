@@ -50,6 +50,7 @@ import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishS
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValueGroup;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestTemplate;
 
 public abstract class AbstractTriConstraintStreamTest
@@ -1775,8 +1776,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity2, null, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1787,54 +1788,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity3, null, null));
     }
 
     @Override
     @TestTemplate
+    @Disabled("Duplicates from concat are impossible here.")
     public void concatUniWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                value2);
-        solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
-                value3);
-        solution.getEntityList().add(entity3);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .filter(entity -> entity.getValue() == value1)
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value2))
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value3))
-                        .concat(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value1))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity1, entity2, entity3, entity1));
-
-        // Incremental
-        scoreDirector.beforeVariableChanged(entity3, "value");
-        entity3.setValue(value2);
-        scoreDirector.afterVariableChanged(entity3, "value");
-
-        scoreDirector.beforeVariableChanged(entity2, "value");
-        entity2.setValue(value3);
-        scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity1, entity3, entity2, entity1));
+        // Do nothing.
     }
 
     @Override
@@ -1868,8 +1830,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity2, null, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1880,53 +1842,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity3, null, null));
     }
 
     @Override
     @TestTemplate
+    @Disabled("Duplicates from concat are impossible here.")
     public void concatAndDistinctUniWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                value2);
-        solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
-                value3);
-        solution.getEntityList().add(entity3);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .filter(entity -> entity.getValue() == value1)
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value2))
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value3))
-                        .concat(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value1))
-                        .distinct()
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1));
-
-        // Incremental
-        scoreDirector.beforeVariableChanged(entity3, "value");
-        entity3.setValue(value2);
-        scoreDirector.afterVariableChanged(entity3, "value");
-
-        scoreDirector.beforeVariableChanged(entity2, "value");
-        entity2.setValue(value3);
-        scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1));
+        // Do nothing.
     }
 
     @Override
@@ -1961,8 +1885,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1973,56 +1897,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, null));
     }
 
     @Override
     @TestTemplate
+    @Disabled("Duplicates from concat are impossible here.")
     public void concatBiWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                value2);
-        solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
-                value3);
-        solution.getEntityList().add(entity3);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .filter(entity -> entity.getValue() == value1)
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value2))
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value3))
-                        .concat(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value1)
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value2)))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity1, entity2, entity3, entity1));
-
-        // Incremental
-        scoreDirector.beforeVariableChanged(entity3, "value");
-        entity3.setValue(value2);
-        scoreDirector.afterVariableChanged(entity3, "value");
-
-        scoreDirector.beforeVariableChanged(entity2, "value");
-        entity2.setValue(value3);
-        scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity1, entity3, entity2, entity1));
+        // Do nothing.
     }
 
     @Override
@@ -2058,8 +1941,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2070,55 +1953,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, null));
     }
 
     @Override
     @TestTemplate
+    @Disabled("Duplicates from concat are impossible here.")
     public void concatAndDistinctBiWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                value2);
-        solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
-                value3);
-        solution.getEntityList().add(entity3);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .filter(entity -> entity.getValue() == value1)
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value2))
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value3))
-                        .concat(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value1)
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value2)))
-                        .distinct()
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1));
-
-        // Incremental
-        scoreDirector.beforeVariableChanged(entity3, "value");
-        entity3.setValue(value2);
-        scoreDirector.afterVariableChanged(entity3, "value");
-
-        scoreDirector.beforeVariableChanged(entity2, "value");
-        entity2.setValue(value3);
-        scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1));
+        // Do nothing
     }
 
     @Override
@@ -2155,8 +1998,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2167,8 +2010,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, entity1));
     }
 
     @Override
@@ -2205,8 +2048,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity1, entity2, entity3, entity1));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2217,8 +2060,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity1, entity3, entity2, entity1));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2));
     }
 
     @Override
@@ -2256,8 +2099,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2268,8 +2111,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, entity1));
     }
 
     @Override
@@ -2307,7 +2150,7 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1));
+                assertMatch(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2318,7 +2161,7 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1));
+                assertMatch(entity1, entity3, entity2));
     }
 
     @Override
@@ -2357,7 +2200,7 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
+                assertMatch(entity1, entity2, entity3, null),
                 assertMatch(entity2, entity3, entity1, entity2));
 
         // Incremental
@@ -2369,60 +2212,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
+                assertMatch(entity1, entity3, entity2, null),
                 assertMatch(entity3, entity2, entity1, entity3));
     }
 
     @Override
     @TestTemplate
+    @Disabled("Duplicates from concat are impossible here.")
     public void concatQuadWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                value2);
-        solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
-                value3);
-        solution.getEntityList().add(entity3);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .filter(entity -> entity.getValue() == value1)
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value2))
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value3))
-                        .concat(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value1)
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value2))
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value3))
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value1)))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity1, entity2, entity3, entity1));
-
-        // Incremental
-        scoreDirector.beforeVariableChanged(entity3, "value");
-        entity3.setValue(value2);
-        scoreDirector.afterVariableChanged(entity3, "value");
-
-        scoreDirector.beforeVariableChanged(entity2, "value");
-        entity2.setValue(value3);
-        scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity1, entity3, entity2, entity1));
+        // Do nothing.
     }
 
     @Override
@@ -2462,7 +2260,7 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
+                assertMatch(entity1, entity2, entity3, null),
                 assertMatch(entity2, entity3, entity1, entity2));
 
         // Incremental
@@ -2474,59 +2272,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
+                assertMatch(entity1, entity3, entity2, null),
                 assertMatch(entity3, entity2, entity1, entity3));
     }
 
     @Override
     @TestTemplate
+    @Disabled("Duplicates from concat are impossible here.")
     public void concatAndDistinctQuadWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                value2);
-        solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
-                value3);
-        solution.getEntityList().add(entity3);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .filter(entity -> entity.getValue() == value1)
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value2))
-                        .join(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value3))
-                        .concat(factory.forEach(TestdataLavishEntity.class)
-                                .filter(entity -> entity.getValue() == value1)
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value2))
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value3))
-                                .join(factory.forEach(TestdataLavishEntity.class)
-                                        .filter(entity -> entity.getValue() == value1)))
-                        .distinct()
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1));
-
-        // Incremental
-        scoreDirector.beforeVariableChanged(entity3, "value");
-        entity3.setValue(value2);
-        scoreDirector.afterVariableChanged(entity3, "value");
-
-        scoreDirector.beforeVariableChanged(entity2, "value");
-        entity2.setValue(value3);
-        scoreDirector.afterVariableChanged(entity2, "value");
-        assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1));
+        // Do nothing
     }
 
     @Override
