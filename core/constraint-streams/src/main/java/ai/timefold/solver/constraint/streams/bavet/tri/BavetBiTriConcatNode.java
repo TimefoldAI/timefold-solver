@@ -1,15 +1,15 @@
-package ai.timefold.solver.constraint.streams.bavet.bi;
+package ai.timefold.solver.constraint.streams.bavet.tri;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetBiTriConcatNode<A, B, C>
+final class BavetBiTriConcatNode<A, B, C>
         extends AbstractConcatNode<BiTuple<A, B>, TriTuple<A, B, C>, TriTuple<A, B, C>> {
 
-    public BavetBiTriConcatNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightOutTupleList,
+    BavetBiTriConcatNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
+            int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
     }

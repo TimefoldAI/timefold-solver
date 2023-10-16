@@ -12,7 +12,6 @@ import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridge
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetUniBiConcatNode;
 import ai.timefold.solver.core.api.score.Score;
 
 public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>

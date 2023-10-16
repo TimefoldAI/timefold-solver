@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
-import ai.timefold.solver.constraint.streams.bavet.bi.BavetBiQuadConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
@@ -15,8 +14,6 @@ import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridge
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.tri.BavetTriQuadConcatNode;
-import ai.timefold.solver.constraint.streams.bavet.uni.BavetUniQuadConcatNode;
 import ai.timefold.solver.core.api.score.Score;
 
 public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>

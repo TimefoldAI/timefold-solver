@@ -1,23 +1,22 @@
-package ai.timefold.solver.constraint.streams.bavet.tri;
+package ai.timefold.solver.constraint.streams.bavet.quad;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
-import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetTriQuadConcatNode<A, B, C, D>
-        extends AbstractConcatNode<TriTuple<A, B, C>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
+final class BavetBiQuadConcatNode<A, B, C, D>
+        extends AbstractConcatNode<BiTuple<A, B>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
 
-    public BavetTriQuadConcatNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
-            int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightOutTupleList,
+    BavetBiQuadConcatNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
+            int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
     }
 
     @Override
-    protected QuadTuple<A, B, C, D> getOutTupleFromLeft(TriTuple<A, B, C> leftTuple) {
-        return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, null, outputStoreSize);
+    protected QuadTuple<A, B, C, D> getOutTupleFromLeft(BiTuple<A, B> leftTuple) {
+        return new QuadTuple<>(leftTuple.factA, leftTuple.factB, null, null, outputStoreSize);
     }
 
     @Override
@@ -26,10 +25,9 @@ public final class BavetTriQuadConcatNode<A, B, C, D>
     }
 
     @Override
-    protected void updateOutTupleFromLeft(TriTuple<A, B, C> leftTuple, QuadTuple<A, B, C, D> outTuple) {
+    protected void updateOutTupleFromLeft(BiTuple<A, B> leftTuple, QuadTuple<A, B, C, D> outTuple) {
         outTuple.factA = leftTuple.factA;
         outTuple.factB = leftTuple.factB;
-        outTuple.factC = leftTuple.factC;
     }
 
     @Override

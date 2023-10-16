@@ -4,11 +4,12 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetQuadQuadConcatNode<A, B, C, D>
+final class BavetQuadQuadConcatNode<A, B, C, D>
         extends AbstractConcatNode<QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
 
     BavetQuadQuadConcatNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
-            int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList, int outputStoreSize) {
+            int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
+                            int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
     }
 

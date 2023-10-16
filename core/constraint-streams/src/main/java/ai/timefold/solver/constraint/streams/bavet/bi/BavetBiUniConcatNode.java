@@ -5,10 +5,11 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-public final class BavetBiUniConcatNode<A, B> extends AbstractConcatNode<BiTuple<A, B>, UniTuple<A>, BiTuple<A, B>> {
+final class BavetBiUniConcatNode<A, B>
+        extends AbstractConcatNode<BiTuple<A, B>, UniTuple<A>, BiTuple<A, B>> {
 
-    BavetBiUniConcatNode(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightOutTupleList,
+    BavetBiUniConcatNode(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle,
+                         int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
     }

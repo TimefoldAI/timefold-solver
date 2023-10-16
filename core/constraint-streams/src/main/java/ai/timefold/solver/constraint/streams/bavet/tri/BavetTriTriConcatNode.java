@@ -4,7 +4,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetTriTriConcatNode<A, B, C>
+final class BavetTriTriConcatNode<A, B, C>
         extends AbstractConcatNode<TriTuple<A, B, C>, TriTuple<A, B, C>, TriTuple<A, B, C>> {
 
     BavetTriTriConcatNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
