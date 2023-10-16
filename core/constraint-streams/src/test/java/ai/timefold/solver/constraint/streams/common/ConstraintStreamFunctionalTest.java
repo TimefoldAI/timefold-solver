@@ -118,13 +118,37 @@ public interface ConstraintStreamFunctionalTest {
 
     void mapToQuad();
 
-    void concatWithoutValueDuplicates();
+    void concatUniWithoutValueDuplicates();
 
-    void concatAndDistinctWithoutValueDuplicates();
+    void concatAndDistinctUniWithoutValueDuplicates();
 
-    void concatWithValueDuplicates();
+    void concatUniWithValueDuplicates();
 
-    void concatAndDistinctWithValueDuplicates();
+    void concatAndDistinctUniWithValueDuplicates();
+
+    void concatBiWithoutValueDuplicates();
+
+    void concatAndDistinctBiWithoutValueDuplicates();
+
+    void concatBiWithValueDuplicates();
+
+    void concatAndDistinctBiWithValueDuplicates();
+
+    void concatTriWithoutValueDuplicates();
+
+    void concatAndDistinctTriWithoutValueDuplicates();
+
+    void concatTriWithValueDuplicates();
+
+    void concatAndDistinctTriWithValueDuplicates();
+
+    void concatQuadWithoutValueDuplicates();
+
+    void concatAndDistinctQuadWithoutValueDuplicates();
+
+    void concatQuadWithValueDuplicates();
+
+    void concatAndDistinctQuadWithValueDuplicates();
 
     void concatAfterGroupBy();
 
