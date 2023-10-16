@@ -838,18 +838,71 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
     QuadConstraintStream<A, B, C, D> distinct();
 
     /**
-     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream} and the
-     * provided {@link QuadConstraintStream}. Tuples in both this {@link QuadConstraintStream} and the provided
-     * {@link QuadConstraintStream} will appear at least twice.
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link UniConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by null.
      *
      * <p>
-     * For instance, if this stream consists of {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c)]} and the other stream
-     * consists of {@code [(C, 3, -3, c), (D, 4, -4, d), (E, 5, -5, e)]}, {@code this.concat(other)} will consist of
-     * {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c), (C, 3, -3, c), (D, 4, -4, d), (E, 5, -5,e)]}. This operation can be
-     * thought of as an or between streams.
+     * For instance, if this stream consists of {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4)]}
+     * and the other stream consists of {@code [C, D, E]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C, null, null, null), (D, null, null, null), (E, null, null, null)]}.
+     * This operation can be thought of as an or between streams.
      *
-     * @param otherStream
-     * @return
+     * @param otherStream never null
+     * @return never null
+     */
+    QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream);
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link BiConstraintStream}.
+     * The {@link BiConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4)]}
+     * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C1, C2, null, null), (D1, D2, null, null), (E1, E2, null, null)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream);
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link TriConstraintStream}.
+     * The {@link TriConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4)]}
+     * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C1, C2, C3, null), (D1, D2, D3, null), (E1, E2, E3, null)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream);
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link QuadConstraintStream}.
+     * Tuples in both this {@link QuadConstraintStream} and the provided {@link QuadConstraintStream}
+     * will appear at least twice.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c)]}
+     * and the other stream consists of {@code [(C, 3, -3, c), (D, 4, -4, d), (E, 5, -5, e)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c), (C, 3, -3, c), (D, 4, -4, d), (E, 5, -5,e)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
      */
     QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
 

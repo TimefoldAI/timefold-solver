@@ -21,7 +21,7 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
         implements BavetConcatConstraintStream<Solution_> {
 
     private final BavetAbstractConstraintStream<Solution_> leftParent;
-    private final BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent;
+    private final BavetAbstractConstraintStream<Solution_> rightParent;
     private final ConcatNodeConstructor<A, B, C, D> nodeConstructor;
 
     public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -45,6 +45,33 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
     public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
             BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetQuadTriConcatNode::new;
+    }
+
+    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
+            BavetForeBridgeUniConstraintStream<Solution_, A> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetQuadUniConcatNode::new;
+    }
+
+    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetQuadBiConcatNode::new;
+    }
+
+    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> rightParent) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
