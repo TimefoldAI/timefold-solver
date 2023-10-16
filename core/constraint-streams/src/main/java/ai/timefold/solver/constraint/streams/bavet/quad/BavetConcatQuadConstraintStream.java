@@ -49,7 +49,7 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
         int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new BavetQuadConcatNode<>(downstream,
+        var node = new BavetQuadQuadConcatNode<>(downstream,
                 leftCloneStoreIndex,
                 rightCloneStoreIndex,
                 outputStoreSize);

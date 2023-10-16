@@ -48,7 +48,7 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new BavetBiConcatNode<>(downstream,
+        var node = new BavetBiBiConcatNode<>(downstream,
                 leftCloneStoreIndex,
                 rightCloneStoreIndex,
                 outputStoreSize);

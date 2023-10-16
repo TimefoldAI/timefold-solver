@@ -3,11 +3,12 @@ package ai.timefold.solver.constraint.streams.bavet.tri;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-public final class BavetTriConcatNode<A, B, C>
-        extends AbstractConcatNode<TriTuple<A, B, C>, TriTuple<A, B, C>, TriTuple<A, B, C>> {
+public final class BavetTriUniConcatNode<A, B, C>
+        extends AbstractConcatNode<TriTuple<A, B, C>, UniTuple<A>, TriTuple<A, B, C>> {
 
-    BavetTriConcatNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
+    BavetTriUniConcatNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
             int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
@@ -19,8 +20,8 @@ public final class BavetTriConcatNode<A, B, C>
     }
 
     @Override
-    protected TriTuple<A, B, C> getOutTupleFromRight(TriTuple<A, B, C> rightTuple) {
-        return new TriTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, outputStoreSize);
+    protected TriTuple<A, B, C> getOutTupleFromRight(UniTuple<A> rightTuple) {
+        return new TriTuple<>(rightTuple.factA, null, null, outputStoreSize);
     }
 
     @Override
@@ -31,10 +32,8 @@ public final class BavetTriConcatNode<A, B, C>
     }
 
     @Override
-    protected void updateOutTupleFromRight(TriTuple<A, B, C> rightTuple, TriTuple<A, B, C> outTuple) {
+    protected void updateOutTupleFromRight(UniTuple<A> rightTuple, TriTuple<A, B, C> outTuple) {
         outTuple.factA = rightTuple.factA;
-        outTuple.factB = rightTuple.factB;
-        outTuple.factC = rightTuple.factC;
     }
 
 }
