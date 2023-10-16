@@ -1456,7 +1456,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity2, null, null, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1468,7 +1468,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity3, null, null, null));
     }
 
     @Override
@@ -1505,7 +1505,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity2, null, null, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1517,7 +1517,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity3, null, null, null));
     }
 
     @Override
@@ -1555,7 +1555,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity2, entity3, null, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1567,7 +1567,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity3, entity2, null, null));
     }
 
     @Override
@@ -1606,7 +1606,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity2, entity3, null, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1618,7 +1618,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity3, entity2, null, null));
     }
 
     @Override
@@ -1658,7 +1658,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity2, entity3, entity1, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1670,7 +1670,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity3, entity2, entity1, null));
     }
 
     @Override
@@ -1711,7 +1711,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity2, entity3, entity1, null));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1723,7 +1723,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity3, entity2, entity1, null));
     }
 
     @Override
