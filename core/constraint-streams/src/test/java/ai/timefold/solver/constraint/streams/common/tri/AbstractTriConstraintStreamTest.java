@@ -50,7 +50,6 @@ import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishS
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValueGroup;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestTemplate;
 
 public abstract class AbstractTriConstraintStreamTest
@@ -1794,13 +1793,6 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    @Disabled("Duplicates from concat are impossible here.")
-    public void concatUniWithValueDuplicates() {
-        // Do nothing.
-    }
-
-    @Override
-    @TestTemplate
     public void concatAndDistinctUniWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
@@ -1844,13 +1836,6 @@ public abstract class AbstractTriConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2),
                 assertMatch(entity3, null, null));
-    }
-
-    @Override
-    @TestTemplate
-    @Disabled("Duplicates from concat are impossible here.")
-    public void concatAndDistinctUniWithValueDuplicates() {
-        // Do nothing.
     }
 
     @Override
@@ -1903,13 +1888,6 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    @Disabled("Duplicates from concat are impossible here.")
-    public void concatBiWithValueDuplicates() {
-        // Do nothing.
-    }
-
-    @Override
-    @TestTemplate
     public void concatAndDistinctBiWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
@@ -1955,13 +1933,6 @@ public abstract class AbstractTriConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2),
                 assertMatch(entity3, entity2, null));
-    }
-
-    @Override
-    @TestTemplate
-    @Disabled("Duplicates from concat are impossible here.")
-    public void concatAndDistinctBiWithValueDuplicates() {
-        // Do nothing
     }
 
     @Override
@@ -2218,13 +2189,6 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
-    @Disabled("Duplicates from concat are impossible here.")
-    public void concatQuadWithValueDuplicates() {
-        // Do nothing.
-    }
-
-    @Override
-    @TestTemplate
     public void concatAndDistinctQuadWithoutValueDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         TestdataLavishValue value1 = solution.getFirstValue();
@@ -2274,13 +2238,6 @@ public abstract class AbstractTriConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatch(entity1, entity3, entity2, null),
                 assertMatch(entity3, entity2, entity1, entity3));
-    }
-
-    @Override
-    @TestTemplate
-    @Disabled("Duplicates from concat are impossible here.")
-    public void concatAndDistinctQuadWithValueDuplicates() {
-        // Do nothing
     }
 
     @Override

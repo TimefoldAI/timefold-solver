@@ -122,33 +122,49 @@ public interface ConstraintStreamFunctionalTest {
 
     void concatAndDistinctUniWithoutValueDuplicates();
 
-    void concatUniWithValueDuplicates();
+    default void concatUniWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
-    void concatAndDistinctUniWithValueDuplicates();
+    default void concatAndDistinctUniWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
     void concatBiWithoutValueDuplicates();
 
     void concatAndDistinctBiWithoutValueDuplicates();
 
-    void concatBiWithValueDuplicates();
+    default void concatBiWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
-    void concatAndDistinctBiWithValueDuplicates();
+    default void concatAndDistinctBiWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
     void concatTriWithoutValueDuplicates();
 
     void concatAndDistinctTriWithoutValueDuplicates();
 
-    void concatTriWithValueDuplicates();
+    default void concatTriWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
-    void concatAndDistinctTriWithValueDuplicates();
+    default void concatAndDistinctTriWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
     void concatQuadWithoutValueDuplicates();
 
     void concatAndDistinctQuadWithoutValueDuplicates();
 
-    void concatQuadWithValueDuplicates();
+    default void concatQuadWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
-    void concatAndDistinctQuadWithValueDuplicates();
+    default void concatAndDistinctQuadWithValueDuplicates() {
+        // Concat of two cardinalities will never produce duplicate tuples; allow to skip.
+    }
 
     void concatAfterGroupBy();
 
