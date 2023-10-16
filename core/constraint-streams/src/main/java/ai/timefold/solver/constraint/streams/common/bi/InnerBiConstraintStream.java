@@ -3,8 +3,8 @@ package ai.timefold.solver.constraint.streams.common.bi;
 import static ai.timefold.solver.constraint.streams.common.RetrievalSemantics.STANDARD;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.ToIntBiFunction;
 import java.util.function.ToLongBiFunction;
@@ -27,7 +27,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     static <A, B> BiFunction<A, B, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return List::of;
+        return Arrays::asList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

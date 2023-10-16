@@ -65,7 +65,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
 
     private static String factsToString(Object... facts) {
         return Arrays.stream(facts)
-                .map(Object::toString)
+                .map(s -> s == null ? null : s.toString())
                 .collect(Collectors.joining(", ", "{", "}"));
     }
 
