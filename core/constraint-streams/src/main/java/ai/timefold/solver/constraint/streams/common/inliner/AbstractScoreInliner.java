@@ -191,6 +191,9 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                 ConstraintMatch<Score_> constraintMatch = carrier.get();
                 constraintMatchTotal.addConstraintMatch(constraintMatch);
                 for (var indictedObject : constraintMatch.getIndictedObjectList()) {
+                    if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
+                        continue;
+                    }
                     var indictment =
                             (DefaultIndictment<Score_>) getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
                     /*

@@ -55,6 +55,10 @@ public final class DefaultConstraintJustification
         return (Score_) impact;
     }
 
+    /**
+     *
+     * @return never null; may contain null
+     */
     public List<Object> getFacts() {
         return facts;
     }
@@ -86,9 +90,11 @@ public final class DefaultConstraintJustification
                 for (int i = 0; i < justificationList.size(); i++) {
                     Object left = justificationList.get(i);
                     Object right = otherJustificationList.get(i);
-                    int comparison = comparator.compare(left, right);
-                    if (comparison != 0) {
-                        return comparison;
+                    if (left != right) {
+                        int comparison = comparator.compare(left, right);
+                        if (comparison != 0) {
+                            return comparison;
+                        }
                     }
                 }
             }

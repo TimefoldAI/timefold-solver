@@ -804,6 +804,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     // The order of justificationLists for constraints that include accumulates isn't stable, so we make it.
                     constraintJustification.getFacts()
                             .stream()
+                            .filter(Objects::nonNull)
                             .sorted(solutionDescriptor.getClassAndPlanningIdComparator())
                             .forEach(keyStream);
                 } else {
