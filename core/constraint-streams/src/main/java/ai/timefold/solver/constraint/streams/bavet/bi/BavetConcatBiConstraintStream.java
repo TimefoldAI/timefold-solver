@@ -27,7 +27,7 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetUniBiConcatNode::new;
+        this.nodeConstructor = ConcatUniBiNode::new;
     }
 
     public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -36,7 +36,7 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetBiBiConcatNode::new;
+        this.nodeConstructor = ConcatBiBiNode::new;
     }
 
     public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -45,7 +45,7 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetBiUniConcatNode::new;
+        this.nodeConstructor = ConcatBiUniNode::new;
     }
 
     @Override

@@ -3,14 +3,13 @@ package ai.timefold.solver.constraint.streams.bavet.quad;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-final class BavetQuadUniConcatNode<A, B, C, D>
-        extends AbstractConcatNode<QuadTuple<A, B, C, D>, UniTuple<A>, QuadTuple<A, B, C, D>> {
+final class ConcatQuadQuadNode<A, B, C, D>
+        extends AbstractConcatNode<QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
 
-    BavetQuadUniConcatNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
+    ConcatQuadQuadNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
-                           int outputStoreSize) {
+            int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
     }
 
@@ -20,8 +19,8 @@ final class BavetQuadUniConcatNode<A, B, C, D>
     }
 
     @Override
-    protected QuadTuple<A, B, C, D> getOutTupleFromRight(UniTuple<A> rightTuple) {
-        return new QuadTuple<>(rightTuple.factA, null, null, null, outputStoreSize);
+    protected QuadTuple<A, B, C, D> getOutTupleFromRight(QuadTuple<A, B, C, D> rightTuple) {
+        return new QuadTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, rightTuple.factD, outputStoreSize);
     }
 
     @Override
@@ -33,8 +32,11 @@ final class BavetQuadUniConcatNode<A, B, C, D>
     }
 
     @Override
-    protected void updateOutTupleFromRight(UniTuple<A> rightTuple, QuadTuple<A, B, C, D> outTuple) {
+    protected void updateOutTupleFromRight(QuadTuple<A, B, C, D> rightTuple, QuadTuple<A, B, C, D> outTuple) {
         outTuple.factA = rightTuple.factA;
+        outTuple.factB = rightTuple.factB;
+        outTuple.factC = rightTuple.factC;
+        outTuple.factD = rightTuple.factD;
     }
 
 }

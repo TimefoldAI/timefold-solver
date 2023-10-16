@@ -2,22 +2,21 @@ package ai.timefold.solver.constraint.streams.bavet.quad;
 
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-final class BavetUniQuadConcatNode<A, B, C, D>
-        extends AbstractConcatNode<UniTuple<A>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
+final class ConcatTriQuadNode<A, B, C, D>
+        extends AbstractConcatNode<TriTuple<A, B, C>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
 
-    BavetUniQuadConcatNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
+    ConcatTriQuadNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
-        super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList,
-                outputStoreSize);
+        super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
     }
 
     @Override
-    protected QuadTuple<A, B, C, D> getOutTupleFromLeft(UniTuple<A> leftTuple) {
-        return new QuadTuple<>(leftTuple.factA, null, null, null, outputStoreSize);
+    protected QuadTuple<A, B, C, D> getOutTupleFromLeft(TriTuple<A, B, C> leftTuple) {
+        return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, null, outputStoreSize);
     }
 
     @Override
@@ -26,8 +25,10 @@ final class BavetUniQuadConcatNode<A, B, C, D>
     }
 
     @Override
-    protected void updateOutTupleFromLeft(UniTuple<A> leftTuple, QuadTuple<A, B, C, D> outTuple) {
+    protected void updateOutTupleFromLeft(TriTuple<A, B, C> leftTuple, QuadTuple<A, B, C, D> outTuple) {
         outTuple.factA = leftTuple.factA;
+        outTuple.factB = leftTuple.factB;
+        outTuple.factC = leftTuple.factC;
     }
 
     @Override

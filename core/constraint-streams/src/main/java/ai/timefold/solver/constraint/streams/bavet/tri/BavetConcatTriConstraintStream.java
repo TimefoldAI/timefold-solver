@@ -29,7 +29,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetUniTriConcatNode::new;
+        this.nodeConstructor = ConcatUniTriNode::new;
     }
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -38,7 +38,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetBiTriConcatNode::new;
+        this.nodeConstructor = ConcatBiTriNode::new;
     }
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -47,7 +47,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetTriUniConcatNode::new;
+        this.nodeConstructor = ConcatTriUniNode::new;
     }
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -56,7 +56,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetTriBiConcatNode::new;
+        this.nodeConstructor = ConcatTriBiNode::new;
     }
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -65,7 +65,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetTriTriConcatNode::new;
+        this.nodeConstructor = ConcatTriTriNode::new;
     }
 
     @Override

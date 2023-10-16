@@ -48,7 +48,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
         int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new BavetUniUniConcatNode<>(downstream,
+        var node = new ConcatUniUniNode<>(downstream,
                 leftCloneStoreIndex,
                 rightCloneStoreIndex,
                 outputStoreSize);
