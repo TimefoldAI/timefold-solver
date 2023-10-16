@@ -11,6 +11,8 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
+import ai.timefold.solver.constraint.streams.bavet.bi.BavetAbstractBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.bi.BavetConcatBiConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.bi.BavetJoinBiConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetScoringConstraintStream;
@@ -19,11 +21,18 @@ import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeB
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeTriConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeQuadConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.constraint.streams.bavet.quad.BavetAbstractQuadConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.quad.BavetConcatQuadConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.tri.BavetAbstractTriConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.tri.BavetConcatTriConstraintStream;
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.constraint.streams.common.bi.BiJoinerComber;
@@ -367,6 +376,45 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
         var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
         var concatStream = new BavetConcatUniConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        return constraintFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
+    public <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream) {
+        var other = (BavetAbstractBiConstraintStream<Solution_, A, B>) otherStream;
+        var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
+        var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
+        var concatStream = new BavetConcatBiConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        return constraintFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
+    public <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+        var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
+        var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
+        var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
+        var concatStream = new BavetConcatTriConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        return constraintFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
+    public <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+        var other = (BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>) otherStream;
+        var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
+        var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
+        var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);

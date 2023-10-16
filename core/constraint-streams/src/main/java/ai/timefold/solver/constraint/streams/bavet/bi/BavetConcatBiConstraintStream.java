@@ -4,19 +4,23 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
+import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.constraint.streams.bavet.uni.BavetUniBiConcatNode;
 import ai.timefold.solver.core.api.score.Score;
 
 public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements BavetConcatConstraintStream<Solution_> {
 
-    private final BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent;
+    private final BavetAbstractConstraintStream<Solution_> leftParent;
     private final BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent;
+    private final ConcatNodeConstructor<A, B> nodeConstructor;
 
     public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent,
@@ -24,6 +28,16 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
+        this.nodeConstructor = BavetBiBiConcatNode::new;
+    }
+
+    public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeUniConstraintStream<Solution_, A> leftParent,
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetUniBiConcatNode::new;
     }
 
     @Override
@@ -48,10 +62,7 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new BavetBiBiConcatNode<>(downstream,
-                leftCloneStoreIndex,
-                rightCloneStoreIndex,
-                outputStoreSize);
+        var node = nodeConstructor.apply(downstream, leftCloneStoreIndex, rightCloneStoreIndex, outputStoreSize);
         buildHelper.addNode(node, this, leftParent, rightParent);
     }
 
@@ -99,6 +110,12 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
     @Override
     public BavetAbstractConstraintStream<Solution_> getRightParent() {
         return rightParent;
+    }
+
+    private interface ConcatNodeConstructor<A, B> {
+
+        AbstractConcatNode<?, ?, ?> apply(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int leftCloneStoreIndex, int rightCloneStoreIndex, int outputStoreSize);
+
     }
 
 }
