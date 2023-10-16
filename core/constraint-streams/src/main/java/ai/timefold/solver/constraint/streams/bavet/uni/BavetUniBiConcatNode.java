@@ -8,8 +8,8 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 public final class BavetUniBiConcatNode<A, B> extends AbstractConcatNode<UniTuple<A>, BiTuple<A, B>, BiTuple<A, B>> {
 
     public BavetUniBiConcatNode(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
-                                int inputStoreIndexRightOutTupleList,
-                                int outputStoreSize) {
+            int inputStoreIndexRightOutTupleList,
+            int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList,
                 outputStoreSize);
     }

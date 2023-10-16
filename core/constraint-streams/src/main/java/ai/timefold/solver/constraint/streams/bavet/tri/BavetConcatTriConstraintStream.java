@@ -21,7 +21,7 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         implements BavetConcatConstraintStream<Solution_> {
 
     private final BavetAbstractConstraintStream<Solution_> leftParent;
-    private final BavetForeBridgeTriConstraintStream<Solution_, A, B, C> rightParent;
+    private final BavetAbstractConstraintStream<Solution_> rightParent;
     private final ConcatNodeConstructor<A, B, C> nodeConstructor;
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -40,6 +40,24 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         this.leftParent = leftParent;
         this.rightParent = rightParent;
         this.nodeConstructor = BavetBiTriConcatNode::new;
+    }
+
+    public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
+            BavetForeBridgeUniConstraintStream<Solution_, A> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetTriUniConcatNode::new;
+    }
+
+    public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetTriBiConcatNode::new;
     }
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,

@@ -10,6 +10,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintS
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeQuadConstraintStream;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
@@ -39,6 +40,15 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
         this.leftParent = leftParent;
         this.rightParent = rightParent;
         this.nodeConstructor = BavetQuadBiConcatNode::new;
+    }
+
+    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
+            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetQuadTriConcatNode::new;
     }
 
     public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
