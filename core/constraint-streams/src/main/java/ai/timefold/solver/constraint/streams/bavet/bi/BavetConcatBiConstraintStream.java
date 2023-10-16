@@ -19,8 +19,17 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
         implements BavetConcatConstraintStream<Solution_> {
 
     private final BavetAbstractConstraintStream<Solution_> leftParent;
-    private final BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent;
+    private final BavetAbstractConstraintStream<Solution_> rightParent;
     private final ConcatNodeConstructor<A, B> nodeConstructor;
+
+    public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeUniConstraintStream<Solution_, A> leftParent,
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetUniBiConcatNode::new;
+    }
 
     public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent,
@@ -32,12 +41,12 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
     }
 
     public BavetConcatBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeUniConstraintStream<Solution_, A> leftParent,
-            BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent) {
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent,
+            BavetForeBridgeUniConstraintStream<Solution_, A> rightParent) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetUniBiConcatNode::new;
+        this.nodeConstructor = BavetBiUniConcatNode::new;
     }
 
     @Override
@@ -114,7 +123,8 @@ public final class BavetConcatBiConstraintStream<Solution_, A, B> extends BavetA
 
     private interface ConcatNodeConstructor<A, B> {
 
-        AbstractConcatNode<?, ?, ?> apply(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int leftCloneStoreIndex, int rightCloneStoreIndex, int outputStoreSize);
+        AbstractConcatNode<?, ?, ?> apply(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int leftCloneStoreIndex,
+                int rightCloneStoreIndex, int outputStoreSize);
 
     }
 

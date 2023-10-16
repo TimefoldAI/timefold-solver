@@ -4,10 +4,12 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
+import ai.timefold.solver.constraint.streams.bavet.bi.BavetBiTriConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
@@ -29,6 +31,15 @@ public final class BavetConcatTriConstraintStream<Solution_, A, B, C>
         this.leftParent = leftParent;
         this.rightParent = rightParent;
         this.nodeConstructor = BavetTriUniConcatNode::new;
+    }
+
+    public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> rightParent) {
+        super(constraintFactory, leftParent.getRetrievalSemantics());
+        this.leftParent = leftParent;
+        this.rightParent = rightParent;
+        this.nodeConstructor = BavetBiTriConcatNode::new;
     }
 
     public BavetConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
