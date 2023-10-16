@@ -51,6 +51,11 @@ import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotated
 import ai.timefold.solver.core.impl.testdata.domain.extended.thirdparty.TestdataExtendedThirdPartyEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.thirdparty.TestdataExtendedThirdPartySolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.thirdparty.TestdataThirdPartyEntityPojo;
+import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowExtendedShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowSolution;
+import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowVariable;
 import ai.timefold.solver.core.impl.testdata.domain.list.externalized.TestdataListEntityExternalized;
 import ai.timefold.solver.core.impl.testdata.domain.list.externalized.TestdataListSolutionExternalized;
 import ai.timefold.solver.core.impl.testdata.domain.list.externalized.TestdataListValueExternalized;
@@ -1089,6 +1094,29 @@ public abstract class AbstractSolutionClonerTest {
             }
         }
 
+    }
+
+    @Test
+    void cloneExtendedShadowEntities() {
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataExtendedShadowSolution.class,
+                TestdataExtendedShadowEntity.class, TestdataExtendedShadowShadowEntity.class);
+        var cloner = createSolutionCloner(solutionDescriptor);
+
+        var entity0 = new TestdataExtendedShadowEntity(0);
+        entity0.myPlanningVariable = new TestdataExtendedShadowVariable(0);
+        var shadowEntity = new TestdataExtendedShadowExtendedShadowEntity(entity0);
+
+        var original = new TestdataExtendedShadowSolution(shadowEntity);
+        var clone = cloner.cloneSolution(original);
+
+        assertThat(clone.shadowEntityList)
+                .hasSize(1)
+                .isNotSameAs(original.shadowEntityList)
+                .first()
+                .isNotNull();
+
+        assertThat(clone.shadowEntityList.get(0))
+                .isNotSameAs(original.shadowEntityList.get(0));
     }
 
 }
