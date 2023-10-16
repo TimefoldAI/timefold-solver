@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAcce
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberInfo;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoCloningUtils;
+import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerImplementor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionOrEntityDescriptor;
@@ -211,7 +212,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         try (ClassCreator classCreator = ClassCreator
                 .builder()
                 .className(generatedClassName)
-                .interfaces(SolutionCloner.class)
+                .interfaces(GizmoSolutionCloner.class)
                 .classOutput(classOutput)
                 .setFinal(true)
                 .build()) {
