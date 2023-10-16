@@ -1099,7 +1099,7 @@ public abstract class AbstractSolutionClonerTest {
     @Test
     void cloneExtendedShadowEntities() {
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataExtendedShadowSolution.class,
-                        TestdataExtendedShadowEntity.class, TestdataExtendedShadowShadowEntity.class);
+                TestdataExtendedShadowEntity.class, TestdataExtendedShadowShadowEntity.class);
         var cloner = createSolutionCloner(solutionDescriptor);
 
         var entity0 = new TestdataExtendedShadowEntity(0);
@@ -1111,9 +1111,12 @@ public abstract class AbstractSolutionClonerTest {
 
         assertThat(clone.shadowEntityList)
                 .hasSize(1)
-                .isNotEqualTo(original.shadowEntityList)
+                .isNotSameAs(original.shadowEntityList)
                 .first()
                 .isNotNull();
+
+        assertThat(clone.shadowEntityList.get(0))
+                .isNotSameAs(original.shadowEntityList.get(0));
     }
 
 }

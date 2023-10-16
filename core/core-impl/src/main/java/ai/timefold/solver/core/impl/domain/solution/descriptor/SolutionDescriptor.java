@@ -57,6 +57,7 @@ import ai.timefold.solver.core.impl.domain.lookup.LookUpStrategyResolver;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
+import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -613,6 +614,10 @@ public class SolutionDescriptor<Solution_> {
         solutionCloner = solutionCloner == null ? descriptorPolicy.getGeneratedSolutionClonerMap()
                 .get(GizmoSolutionClonerFactory.getGeneratedClassName(this))
                 : solutionCloner;
+
+        if (solutionCloner instanceof GizmoSolutionCloner<Solution_> gizmoSolutionCloner) {
+            gizmoSolutionCloner.setSolutionDescriptor(this);
+        }
         if (solutionCloner == null) {
             switch (descriptorPolicy.getDomainAccessType()) {
                 case GIZMO:

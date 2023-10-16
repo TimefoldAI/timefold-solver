@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 @PlanningEntity
 public abstract class TestdataExtendedShadowShadowEntity {
-
     @ShadowVariable(
             variableListenerClass = TestdataExtendedShadowVariableListener.class,
             sourceVariableName = "myPlanningVariable",

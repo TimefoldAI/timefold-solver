@@ -62,6 +62,27 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         return cloneSolution;
     }
 
+    /**
+     * Used by GIZMO when it encounters an undeclared entity class, such as when an abstract planning entity is extended.
+     */
+    public Object gizmoFallbackDeepClone(Object originalValue, Map<Object, Object> originalToCloneMap) {
+        if (originalValue == null) {
+            return null;
+        }
+        Queue<Unprocessed> unprocessedQueue = new ArrayDeque<>();
+        Class<?> fieldType = originalValue.getClass();
+        if (originalValue instanceof Collection<?> collection) {
+            return cloneCollection(fieldType, collection, originalToCloneMap, unprocessedQueue);
+        } else if (originalValue instanceof Map<?, ?> map) {
+            return cloneMap(fieldType, map, originalToCloneMap, unprocessedQueue);
+        } else if (originalValue.getClass().isArray()) {
+            return cloneArray(fieldType, originalValue, originalToCloneMap, unprocessedQueue);
+        } else {
+            return clone(originalValue, originalToCloneMap, unprocessedQueue,
+                    retrieveClassMetadata(originalValue.getClass()));
+        }
+    }
+
     private Object process(Unprocessed unprocessed, Map<Object, Object> originalToCloneMap,
             Queue<Unprocessed> unprocessedQueue) {
         Object originalValue = unprocessed.originalValue;
