@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
+import ai.timefold.solver.constraint.streams.bavet.bi.BavetBiQuadConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.BavetConcatConstraintStream;
@@ -40,7 +41,7 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
-        this.nodeConstructor = BavetQuadBiConcatNode::new;
+        this.nodeConstructor = BavetBiQuadConcatNode::new;
     }
 
     public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
