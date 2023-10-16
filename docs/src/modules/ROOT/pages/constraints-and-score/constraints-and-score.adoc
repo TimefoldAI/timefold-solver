@@ -1514,10 +1514,14 @@ See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> fo
 [[constraintStreamsConcat]]
 ==== Concat
 
-The `concat` building block allows you to create a constraint stream containing tuples of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
-If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists, `concat` acts like a concatenation of two lists.
+The `concat` building block allows you to create a constraint stream containing tuples
+of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
+If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists,
+`concat` acts like a concatenation of two lists.
 Unlike union of sets, concatenation of lists repeats duplicated elements.
-If the two constraint stream parents share tuples, which happens eg. when the streams being concatenated come from the same source of data, the tuples will be repeated downstream.
+If the two constraint stream parents share tuples, which happens eg.
+when the streams being concatenated come from the same source of data,
+the tuples will be repeated downstream.
 If this is undesired, use the <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct` building block>>.
 
 image::constraints-and-score/constraintStreamConcat.png[align="center"]
@@ -1532,7 +1536,6 @@ For example, to ensure each employee has a minimum number of assigned shifts:
          .concat(
              constraintFactory.forEach(Employee.class)
                .ifNotExists(Shift.class, equal(Function.identity(), Shift::getEmployee))
-               .expand(employee -> (Shift) null)
          )
          .groupBy((employee, shift) -> employee,
                    conditionally((employee, shift) -> shift != null,
