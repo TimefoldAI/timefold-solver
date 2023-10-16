@@ -52,7 +52,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                 GizmoSolutionClonerImplementor.createClassOutputWithDebuggingCapability(classBytecodeHolder);
         ClassCreator classCreator = ClassCreator.builder()
                 .className(className)
-                .interfaces(SolutionCloner.class)
+                .interfaces(GizmoSolutionCloner.class)
                 .superClass(Object.class)
                 .classOutput(classOutput)
                 .setFinal(true)
@@ -94,7 +94,11 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
         };
 
         try {
-            return (SolutionCloner<Solution_>) gizmoClassLoader.loadClass(className).getConstructor().newInstance();
+            @SuppressWarnings("unchecked")
+            GizmoSolutionCloner<Solution_> solutionCloner =
+                    (GizmoSolutionCloner<Solution_>) gizmoClassLoader.loadClass(className).getConstructor().newInstance();
+            solutionCloner.setSolutionDescriptor(solutionDescriptor);
+            return solutionCloner;
         } catch (Exception e) {
             throw new IllegalStateException("Failed creating generated Gizmo Class (" + className + ").", e);
         }
