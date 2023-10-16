@@ -31,15 +31,15 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleState;
  * the tuple's store. If the same tuple is inserted twice (i.e. when the left and right parent
  * have the same {@link TupleSource}), it creates another clone.
  */
-public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
+public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, RightTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple>
         extends AbstractNode
-        implements LeftTupleLifecycle<Tuple_>, RightTupleLifecycle<Tuple_> {
+        implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<RightTuple_> {
     private final int leftSourceTupleCloneStoreIndex;
     private final int rightSourceTupleCloneStoreIndex;
     protected final int outputStoreSize;
-    private final StaticPropagationQueue<Tuple_> propagationQueue;
+    private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
-    protected AbstractConcatNode(TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
+    protected AbstractConcatNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
             int leftSourceTupleCloneStoreIndex,
             int rightSourceTupleCloneStoreIndex,
             int outputStoreSize) {
@@ -49,31 +49,31 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
         this.outputStoreSize = outputStoreSize;
     }
 
-    /**
-     * Creates a copy of the inTuple with the same fact (and new store/state).
-     */
-    protected abstract Tuple_ getOutTuple(Tuple_ inTuple);
+    protected abstract OutTuple_ getOutTupleFromLeft(LeftTuple_ leftTuple);
 
-    /**
-     * Updates outTuple to contain the same facts as inTuple.
-     */
-    protected abstract void updateOutTuple(Tuple_ inTuple, Tuple_ outTuple);
+    protected abstract OutTuple_ getOutTupleFromRight(RightTuple_ rightTuple);
 
-    private void insert(Tuple_ tuple, int storeIndex) {
-        Tuple_ outTuple = getOutTuple(tuple);
-        tuple.setStore(storeIndex, outTuple);
+    protected abstract void updateOutTupleFromLeft(LeftTuple_ leftTuple, OutTuple_ outTuple);
+
+    protected abstract void updateOutTupleFromRight(RightTuple_ rightTuple, OutTuple_ outTuple);
+
+    @Override
+    public final void insertLeft(LeftTuple_ tuple) {
+        OutTuple_ outTuple = getOutTupleFromLeft(tuple);
+        tuple.setStore(leftSourceTupleCloneStoreIndex, outTuple);
         propagationQueue.insert(outTuple);
     }
 
-    private void update(Tuple_ tuple, int storeIndex) {
-        Tuple_ outTuple = tuple.getStore(storeIndex);
+    @Override
+    public final void updateLeft(LeftTuple_ tuple) {
+        OutTuple_ outTuple = tuple.getStore(leftSourceTupleCloneStoreIndex);
         if (outTuple == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
-            insert(tuple, storeIndex);
+            insertLeft(tuple);
             return;
         }
 
-        updateOutTuple(tuple, outTuple);
+        updateOutTupleFromLeft(tuple, outTuple);
         // Even if the facts of tuple do not change, an update MUST be done so
         // downstream nodes get notified of updates in planning variables.
         TupleState previousState = outTuple.state;
@@ -83,8 +83,9 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
         propagationQueue.update(outTuple);
     }
 
-    private void retract(Tuple_ tuple, int storeIndex) {
-        Tuple_ outTuple = tuple.getStore(storeIndex);
+    @Override
+    public final void retractLeft(LeftTuple_ tuple) {
+        OutTuple_ outTuple = tuple.getStore(leftSourceTupleCloneStoreIndex);
         if (outTuple == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -98,33 +99,44 @@ public abstract class AbstractConcatNode<Tuple_ extends AbstractTuple>
     }
 
     @Override
-    public final void insertLeft(Tuple_ tuple) {
-        insert(tuple, leftSourceTupleCloneStoreIndex);
+    public final void insertRight(RightTuple_ tuple) {
+        OutTuple_ outTuple = getOutTupleFromRight(tuple);
+        tuple.setStore(rightSourceTupleCloneStoreIndex, outTuple);
+        propagationQueue.insert(outTuple);
     }
 
     @Override
-    public final void updateLeft(Tuple_ tuple) {
-        update(tuple, leftSourceTupleCloneStoreIndex);
+    public final void updateRight(RightTuple_ tuple) {
+        OutTuple_ outTuple = tuple.getStore(rightSourceTupleCloneStoreIndex);
+        if (outTuple == null) {
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            insertRight(tuple);
+            return;
+        }
+
+        updateOutTupleFromRight(tuple, outTuple);
+        // Even if the facts of tuple do not change, an update MUST be done so
+        // downstream nodes get notified of updates in planning variables.
+        TupleState previousState = outTuple.state;
+        if (previousState == CREATING || previousState == UPDATING) {
+            return;
+        }
+        propagationQueue.update(outTuple);
     }
 
     @Override
-    public final void retractLeft(Tuple_ tuple) {
-        retract(tuple, leftSourceTupleCloneStoreIndex);
-    }
-
-    @Override
-    public final void insertRight(Tuple_ tuple) {
-        insert(tuple, rightSourceTupleCloneStoreIndex);
-    }
-
-    @Override
-    public final void updateRight(Tuple_ tuple) {
-        update(tuple, rightSourceTupleCloneStoreIndex);
-    }
-
-    @Override
-    public final void retractRight(Tuple_ tuple) {
-        retract(tuple, rightSourceTupleCloneStoreIndex);
+    public final void retractRight(RightTuple_ tuple) {
+        OutTuple_ outTuple = tuple.getStore(rightSourceTupleCloneStoreIndex);
+        if (outTuple == null) {
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            return;
+        }
+        TupleState state = outTuple.state;
+        if (!state.isActive()) {
+            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
+                    + ") is in an unexpected state (" + outTuple.state + ").");
+        }
+        propagationQueue.retract(outTuple, state == CREATING ? ABORTING : DYING);
     }
 
     @Override

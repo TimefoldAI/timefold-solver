@@ -139,7 +139,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         } else if (node instanceof AbstractJoinNode<?, ?, ?> joinNode) {
             return determineLayerIndexOfBinaryOperation(
                     (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(joinNode), buildHelper);
-        } else if (node instanceof AbstractConcatNode<?> concatNode) {
+        } else if (node instanceof AbstractConcatNode<?, ?, ?> concatNode) {
             return determineLayerIndexOfBinaryOperation(
                     (BavetConcatConstraintStream<?>) buildHelper.getNodeCreatingStream(concatNode), buildHelper);
         } else if (node instanceof AbstractIfExistsNode<?, ?> ifExistsNode) {

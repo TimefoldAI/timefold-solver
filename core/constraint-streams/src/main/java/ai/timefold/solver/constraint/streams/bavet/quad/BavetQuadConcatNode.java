@@ -4,7 +4,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetQuadConcatNode<A, B, C, D> extends AbstractConcatNode<QuadTuple<A, B, C, D>> {
+public final class BavetQuadConcatNode<A, B, C, D> extends AbstractConcatNode<QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>, QuadTuple<A, B, C, D>> {
 
     BavetQuadConcatNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList, int outputStoreSize) {
@@ -12,15 +12,29 @@ public final class BavetQuadConcatNode<A, B, C, D> extends AbstractConcatNode<Qu
     }
 
     @Override
-    protected QuadTuple<A, B, C, D> getOutTuple(QuadTuple<A, B, C, D> inTuple) {
-        return new QuadTuple<>(inTuple.factA, inTuple.factB, inTuple.factC, inTuple.factD, outputStoreSize);
+    protected QuadTuple<A, B, C, D> getOutTupleFromLeft(QuadTuple<A, B, C, D> leftTuple) {
+        return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, leftTuple.factD, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTuple(QuadTuple<A, B, C, D> inTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.factA = inTuple.factA;
-        outTuple.factB = inTuple.factB;
-        outTuple.factC = inTuple.factC;
-        outTuple.factD = inTuple.factD;
+    protected QuadTuple<A, B, C, D> getOutTupleFromRight(QuadTuple<A, B, C, D> rightTuple) {
+        return new QuadTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, rightTuple.factD, outputStoreSize);
     }
+
+    @Override
+    protected void updateOutTupleFromLeft(QuadTuple<A, B, C, D> leftTuple, QuadTuple<A, B, C, D> outTuple) {
+        outTuple.factA = leftTuple.factA;
+        outTuple.factB = leftTuple.factB;
+        outTuple.factC = leftTuple.factC;
+        outTuple.factD = leftTuple.factD;
+    }
+
+    @Override
+    protected void updateOutTupleFromRight(QuadTuple<A, B, C, D> rightTuple, QuadTuple<A, B, C, D> outTuple) {
+        outTuple.factA = rightTuple.factA;
+        outTuple.factB = rightTuple.factB;
+        outTuple.factC = rightTuple.factC;
+        outTuple.factD = rightTuple.factD;
+    }
+
 }

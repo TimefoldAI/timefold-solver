@@ -4,7 +4,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetTriConcatNode<A, B, C> extends AbstractConcatNode<TriTuple<A, B, C>> {
+public final class BavetTriConcatNode<A, B, C> extends AbstractConcatNode<TriTuple<A, B, C>, TriTuple<A, B, C>, TriTuple<A, B, C>> {
 
     BavetTriConcatNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
             int inputStoreIndexRightOutTupleList,
@@ -13,14 +13,27 @@ public final class BavetTriConcatNode<A, B, C> extends AbstractConcatNode<TriTup
     }
 
     @Override
-    protected TriTuple<A, B, C> getOutTuple(TriTuple<A, B, C> inTuple) {
-        return new TriTuple<>(inTuple.factA, inTuple.factB, inTuple.factC, outputStoreSize);
+    protected TriTuple<A, B, C> getOutTupleFromLeft(TriTuple<A, B, C> leftTuple) {
+        return new TriTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTuple(TriTuple<A, B, C> inTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.factA = inTuple.factA;
-        outTuple.factB = inTuple.factB;
-        outTuple.factC = inTuple.factC;
+    protected TriTuple<A, B, C> getOutTupleFromRight(TriTuple<A, B, C> rightTuple) {
+        return new TriTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, outputStoreSize);
     }
+
+    @Override
+    protected void updateOutTupleFromLeft(TriTuple<A, B, C> leftTuple, TriTuple<A, B, C> outTuple) {
+        outTuple.factA = leftTuple.factA;
+        outTuple.factB = leftTuple.factB;
+        outTuple.factC = leftTuple.factC;
+    }
+
+    @Override
+    protected void updateOutTupleFromRight(TriTuple<A, B, C> rightTuple, TriTuple<A, B, C> outTuple) {
+        outTuple.factA = rightTuple.factA;
+        outTuple.factB = rightTuple.factB;
+        outTuple.factC = rightTuple.factC;
+    }
+
 }

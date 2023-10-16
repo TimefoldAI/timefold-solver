@@ -4,7 +4,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-public final class BavetUniConcatNode<A> extends AbstractConcatNode<UniTuple<A>> {
+public final class BavetUniConcatNode<A> extends AbstractConcatNode<UniTuple<A>, UniTuple<A>, UniTuple<A>> {
 
     BavetUniConcatNode(TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
             int inputStoreIndexRightOutTupleList,
@@ -14,12 +14,23 @@ public final class BavetUniConcatNode<A> extends AbstractConcatNode<UniTuple<A>>
     }
 
     @Override
-    protected UniTuple<A> getOutTuple(UniTuple<A> inTuple) {
-        return new UniTuple<>(inTuple.factA, outputStoreSize);
+    protected UniTuple<A> getOutTupleFromLeft(UniTuple<A> leftTuple) {
+        return new UniTuple<>(leftTuple.factA, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTuple(UniTuple<A> inTuple, UniTuple<A> outTuple) {
-        outTuple.factA = inTuple.factA;
+    protected UniTuple<A> getOutTupleFromRight(UniTuple<A> rightTuple) {
+        return new UniTuple<>(rightTuple.factA, outputStoreSize);
     }
+
+    @Override
+    protected void updateOutTupleFromLeft(UniTuple<A> leftTuple, UniTuple<A> outTuple) {
+        outTuple.factA = leftTuple.factA;
+    }
+
+    @Override
+    protected void updateOutTupleFromRight(UniTuple<A> rightTuple, UniTuple<A> outTuple) {
+        outTuple.factA = rightTuple.factA;
+    }
+
 }

@@ -4,7 +4,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetBiConcatNode<A, B> extends AbstractConcatNode<BiTuple<A, B>> {
+public final class BavetBiConcatNode<A, B> extends AbstractConcatNode<BiTuple<A, B>, BiTuple<A, B>, BiTuple<A, B>> {
 
     BavetBiConcatNode(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int inputStoreIndexLeftOutTupleList,
             int inputStoreIndexRightOutTupleList,
@@ -13,13 +13,25 @@ public final class BavetBiConcatNode<A, B> extends AbstractConcatNode<BiTuple<A,
     }
 
     @Override
-    protected BiTuple<A, B> getOutTuple(BiTuple<A, B> inTuple) {
-        return new BiTuple<>(inTuple.factA, inTuple.factB, outputStoreSize);
+    protected BiTuple<A, B> getOutTupleFromLeft(BiTuple<A, B> leftTuple) {
+        return new BiTuple<>(leftTuple.factA, leftTuple.factB, outputStoreSize);
     }
 
     @Override
-    protected void updateOutTuple(BiTuple<A, B> inTuple, BiTuple<A, B> outTuple) {
-        outTuple.factA = inTuple.factA;
-        outTuple.factB = inTuple.factB;
+    protected BiTuple<A, B> getOutTupleFromRight(BiTuple<A, B> rightTuple) {
+        return new BiTuple<>(rightTuple.factA, rightTuple.factB, outputStoreSize);
     }
+
+    @Override
+    protected void updateOutTupleFromLeft(BiTuple<A, B> leftTuple, BiTuple<A, B> outTuple) {
+        outTuple.factA = leftTuple.factA;
+        outTuple.factB = leftTuple.factB;
+    }
+
+    @Override
+    protected void updateOutTupleFromRight(BiTuple<A, B> rightTuple, BiTuple<A, B> outTuple) {
+        outTuple.factA = rightTuple.factA;
+        outTuple.factB = rightTuple.factB;
+    }
+
 }
