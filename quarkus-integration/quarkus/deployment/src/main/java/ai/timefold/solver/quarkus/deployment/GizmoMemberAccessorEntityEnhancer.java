@@ -208,6 +208,7 @@ final class GizmoMemberAccessorEntityEnhancer {
 
     public String generateSolutionCloner(SolutionDescriptor solutionDescriptor, ClassOutput classOutput,
             IndexView indexView, BuildProducer<BytecodeTransformerBuildItem> transformers) {
+        GizmoSolutionClonerImplementor.IS_QUARKUS = true;
         String generatedClassName = GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor);
         try (ClassCreator classCreator = ClassCreator
                 .builder()

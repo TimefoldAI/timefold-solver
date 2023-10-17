@@ -52,7 +52,10 @@ public class GizmoSolutionClonerImplementor {
             Object.class);
     private static final MethodDescriptor PUT_METHOD = MethodDescriptor.ofMethod(Map.class, "put", Object.class,
             Object.class, Object.class);
+    private static final String FALLBACK_CLONER = "fallbackCloner";
     public static final boolean DEBUG = false;
+
+    public static boolean IS_QUARKUS = false;
 
     /**
      * Return a comparator that sorts classes into instanceof check order.
@@ -125,8 +128,10 @@ public class GizmoSolutionClonerImplementor {
         SortedSet<Class<?>> deepCloneClassesThatAreNotSolutionSortedSet = new TreeSet<>(instanceOfComparator);
         deepCloneClassesThatAreNotSolutionSortedSet.addAll(deepCloneClassesThatAreNotSolutionSet);
 
-        classCreator.getFieldCreator("fallbackCloner", FieldAccessingSolutionCloner.class)
-                .setModifiers(Modifier.PRIVATE | Modifier.STATIC);
+        if (!IS_QUARKUS) {
+            classCreator.getFieldCreator(FALLBACK_CLONER, FieldAccessingSolutionCloner.class)
+                    .setModifiers(Modifier.PRIVATE | Modifier.STATIC);
+        }
         createConstructor(classCreator);
         createSetSolutionDescriptor(classCreator, solutionDescriptor);
         createCloneSolution(classCreator, solutionDescriptor);
@@ -231,12 +236,14 @@ public class GizmoSolutionClonerImplementor {
                 MethodDescriptor.ofMethod(GizmoSolutionCloner.class, "setSolutionDescriptor", void.class,
                         SolutionDescriptor.class));
 
-        methodCreator.writeStaticField(FieldDescriptor.of(
-                GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor),
-                "fallbackCloner", FieldAccessingSolutionCloner.class),
-                methodCreator.newInstance(
-                        MethodDescriptor.ofConstructor(FieldAccessingSolutionCloner.class, SolutionDescriptor.class),
-                        methodCreator.getMethodParam(0)));
+        if (!IS_QUARKUS) {
+            methodCreator.writeStaticField(FieldDescriptor.of(
+                    GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor),
+                    FALLBACK_CLONER, FieldAccessingSolutionCloner.class),
+                    methodCreator.newInstance(
+                            MethodDescriptor.ofConstructor(FieldAccessingSolutionCloner.class, SolutionDescriptor.class),
+                            methodCreator.getMethodParam(0)));
+        }
 
         methodCreator.returnValue(null);
     }
@@ -892,6 +899,10 @@ public class GizmoSolutionClonerImplementor {
             Class<?> entityClass,
             ResultHandle toClone,
             ResultHandle cloneMap) {
+        if (IS_QUARKUS) {
+            return bytecodeCreator;
+        }
+
         ResultHandle actualClass =
                 bytecodeCreator.invokeVirtualMethod(MethodDescriptor.ofMethod(Object.class, "getClass", Class.class),
                         toClone);
@@ -903,7 +914,7 @@ public class GizmoSolutionClonerImplementor {
         ResultHandle fallbackCloner =
                 currentBranch.readStaticField(FieldDescriptor.of(
                         GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor),
-                        "fallbackCloner", FieldAccessingSolutionCloner.class));
+                        FALLBACK_CLONER, FieldAccessingSolutionCloner.class));
         ResultHandle cloneObj =
                 currentBranch.invokeVirtualMethod(MethodDescriptor.ofMethod(FieldAccessingSolutionCloner.class,
                         "gizmoFallbackDeepClone", Object.class, Object.class, Map.class),
@@ -990,15 +1001,37 @@ public class GizmoSolutionClonerImplementor {
         hasCloneBranch.returnValue(maybeClone);
 
         BytecodeCreator noCloneBranch = hasCloneBranchResult.falseBranch();
-        ResultHandle fallbackCloner =
-                noCloneBranch.readStaticField(FieldDescriptor.of(
-                        GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor),
-                        "fallbackCloner", FieldAccessingSolutionCloner.class));
-        ResultHandle cloneObj =
-                noCloneBranch.invokeVirtualMethod(MethodDescriptor.ofMethod(FieldAccessingSolutionCloner.class,
-                        "gizmoFallbackDeepClone", Object.class, Object.class, Map.class),
-                        fallbackCloner, toClone, cloneMap);
-        noCloneBranch.returnValue(cloneObj);
+        if (!IS_QUARKUS) {
+            ResultHandle fallbackCloner =
+                    noCloneBranch.readStaticField(FieldDescriptor.of(
+                            GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor),
+                            FALLBACK_CLONER, FieldAccessingSolutionCloner.class));
+            ResultHandle cloneObj =
+                    noCloneBranch.invokeVirtualMethod(MethodDescriptor.ofMethod(FieldAccessingSolutionCloner.class,
+                            "gizmoFallbackDeepClone", Object.class, Object.class, Map.class),
+                            fallbackCloner, toClone, cloneMap);
+            noCloneBranch.returnValue(cloneObj);
+        } else {
+            ResultHandle errorMessageBuilder = noCloneBranch.newInstance(MethodDescriptor.ofConstructor(StringBuilder.class));
+            noCloneBranch.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, String.class),
+                    errorMessageBuilder, noCloneBranch.load("Impossible state: encountered unknown subclass ("));
+            noCloneBranch.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, Object.class),
+                    errorMessageBuilder,
+                    noCloneBranch.invokeVirtualMethod(MethodDescriptor.ofMethod(Object.class, "getClass", Class.class),
+                            toClone));
+            noCloneBranch.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, String.class),
+                    errorMessageBuilder, noCloneBranch.load(") of (" + entityClass + ") in Quarkus."));
+
+            ResultHandle error =
+                    noCloneBranch.newInstance(MethodDescriptor.ofConstructor(IllegalStateException.class, String.class),
+                            noCloneBranch.invokeVirtualMethod(
+                                    MethodDescriptor.ofMethod(StringBuilder.class, "toString", String.class),
+                                    errorMessageBuilder));
+            noCloneBranch.throwException(error);
+        }
     }
 
     // ************************************************************************
