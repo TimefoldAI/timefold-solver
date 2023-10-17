@@ -287,7 +287,9 @@ final class GizmoMemberAccessorEntityEnhancer {
                 }
             }
 
-            GizmoSolutionClonerImplementor.defineClonerFor(classCreator, solutionDescriptor, solutionSubclassSet,
+            GizmoSolutionClonerImplementor.defineClonerFor(QuarkusGizmoSolutionClonerImplementor::new,
+                    classCreator,
+                    solutionDescriptor, solutionSubclassSet,
                     memoizedGizmoSolutionOrEntityDescriptorForClassMap, deepClonedClassSet);
         }
 
