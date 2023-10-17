@@ -69,7 +69,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                             generateGizmoSolutionOrEntityDescriptor(solutionDescriptor, clazz));
                 });
 
-        GizmoSolutionClonerImplementor.defineClonerFor(classCreator, solutionDescriptor,
+        new GizmoSolutionClonerImplementor().defineClonerFor(classCreator, solutionDescriptor,
                 Collections.singleton(solutionDescriptor.getSolutionClass()),
                 memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
         classCreator.close();
