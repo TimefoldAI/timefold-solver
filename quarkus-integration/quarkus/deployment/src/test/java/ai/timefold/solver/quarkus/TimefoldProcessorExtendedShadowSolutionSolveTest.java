@@ -8,10 +8,6 @@ import java.util.concurrent.ExecutionException;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.score.ScoreManager;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -21,6 +17,7 @@ import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExten
 import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowExtendedShadowEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowShadowEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowSolution;
+import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowVariable;
 import ai.timefold.solver.quarkus.testdata.extended.TestdataExtendedShadowSolutionConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,19 +36,14 @@ class TimefoldProcessorExtendedShadowSolutionSolveTest {
                     .addClasses(TestdataExtendedShadowSolution.class,
                             TestdataExtendedShadowEntity.class,
                             TestdataExtendedShadowShadowEntity.class,
+                            TestdataExtendedShadowExtendedShadowEntity.class,
+                            TestdataExtendedShadowVariable.class,
                             TestdataEntity.class,
                             TestdataObject.class,
                             TestdataValue.class,
                             TestdataExtendedShadowSolutionConstraintProvider.class));
-
-    @Inject
-    SolverFactory<TestdataExtendedShadowSolution> solverFactory;
     @Inject
     SolverManager<TestdataExtendedShadowSolution, Long> solverManager;
-    @Inject
-    ScoreManager<TestdataExtendedShadowSolution, SimpleScore> scoreManager;
-    @Inject
-    SolutionManager<TestdataExtendedShadowSolution, SimpleScore> solutionManager;
 
     @Test
     void solve() throws ExecutionException, InterruptedException {

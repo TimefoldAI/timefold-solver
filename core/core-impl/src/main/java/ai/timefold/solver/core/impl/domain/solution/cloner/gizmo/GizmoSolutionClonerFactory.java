@@ -28,7 +28,8 @@ public final class GizmoSolutionClonerFactory {
                     ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
                     "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
         }
-        return GizmoSolutionClonerImplementor.createClonerFor(solutionDescriptor, gizmoClassLoader);
+        return new GizmoSolutionClonerImplementor().createClonerFor(solutionDescriptor,
+                gizmoClassLoader);
     }
 
     // ************************************************************************
