@@ -1483,19 +1483,72 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     UniConstraintStream<A> distinct();
 
     /**
-     * Returns a new {@link UniConstraintStream} containing all the tuples of both this {@link UniConstraintStream} and the
-     * provided {@link UniConstraintStream}. Tuples in both this {@link UniConstraintStream} and the provided
-     * {@link UniConstraintStream} will appear at least twice.
+     * Returns a new {@link UniConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link UniConstraintStream}.
+     * Tuples in both this {@link UniConstraintStream} and the provided {@link UniConstraintStream}
+     * will appear at least twice.
      *
      * <p>
-     * For instance, if this stream consists of {@code [A, B, C]} and the other stream consists of {@code [C, D, E]},
-     * {@code this.concat(other)} will consist of {@code [A, B, C, C, D, E]}. This operation can be thought of as an or between
-     * streams.
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [C, D, E]},
+     * {@code this.concat(other)} will consist of {@code [A, B, C, C, D, E]}.
+     * This operation can be thought of as an or between streams.
      *
-     * @param otherStream
-     * @return
+     * @param otherStream never null
+     * @return never null
      */
     UniConstraintStream<A> concat(UniConstraintStream<A> otherStream);
+
+    /**
+     * Returns a new {@link BiConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link BiConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A, null), (B, null), (C, null), (C1, C2), (D1, D2), (E1, E2)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream);
+
+    /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link TriConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A, null), (B, null), (C, null), (C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream);
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link QuadConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A, null), (B, null), (C, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
 
     // ************************************************************************
     // Other operations

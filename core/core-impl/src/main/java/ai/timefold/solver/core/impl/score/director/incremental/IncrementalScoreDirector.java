@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -118,6 +119,7 @@ public class IncrementalScoreDirector<Solution_, Score_ extends Score<Score_>>
             for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                 constraintMatch.getIndictedObjectList()
                         .stream()
+                        .filter(Objects::nonNull)
                         .distinct() // One match might have the same indictment twice.
                         .forEach(fact -> {
                             DefaultIndictment<Score_> indictment =

@@ -1,8 +1,8 @@
 package ai.timefold.solver.constraint.streams.common.tri;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
@@ -25,7 +25,7 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     static <A, B, C> TriFunction<A, B, C, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return List::of;
+        return Arrays::asList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

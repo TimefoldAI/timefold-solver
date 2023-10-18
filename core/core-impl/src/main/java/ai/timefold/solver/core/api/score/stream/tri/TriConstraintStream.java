@@ -1050,8 +1050,43 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     TriConstraintStream<A, B, C> distinct();
 
     /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
+     * and the provided {@link UniConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3)]}
+     * and the other stream consists of {@code [C, D, E]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C, null), (D, null), (E, null)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream);
+
+    /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
+     * and the provided {@link BiConstraintStream}.
+     * The {@link BiConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3)]}
+     * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C1, C2, null), (D1, D2, null), (E1, E2, null)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream);
+
+    /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream} and the
-     * provided {@link TriConstraintStream}. Tuples in both this {@link TriConstraintStream} and the provided
+     * provided {@link TriConstraintStream}.
+     * Tuples in both this {@link TriConstraintStream} and the provided
      * {@link TriConstraintStream} will appear at least twice.
      *
      * <p>
@@ -1060,10 +1095,27 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * {@code [(A, 1, -1), (B, 2, -2), (C, 3, -3), (C, 3, -3), (D, 4, -4), (E, 5, -5)]}. This operation can be thought of as an
      * or between streams.
      *
-     * @param otherStream
-     * @return
+     * @param otherStream never null
+     * @return never null
      */
     TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream);
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
+     * and the provided {@link QuadConstraintStream}.
+     * The {@link TriConstraintStream} tuples will be padded from the right by null.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3)]}
+     * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A1, A2, A3, null), (B1, B2, B3, null), (C1, C2, C3, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @return never null
+     */
+    <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
 
     // ************************************************************************
     // Other operations

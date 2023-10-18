@@ -146,7 +146,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
-     * @return never null, may be empty
+     * @return never null, may be empty or contain null
      */
     public List<Object> getIndictedObjectList() {
         return indictedObjectList;

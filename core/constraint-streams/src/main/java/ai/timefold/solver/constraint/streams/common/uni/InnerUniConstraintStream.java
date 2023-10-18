@@ -2,7 +2,7 @@ package ai.timefold.solver.constraint.streams.common.uni;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
@@ -27,7 +27,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     static <A> Function<A, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return List::of;
+        return Collections::singletonList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

@@ -80,22 +80,23 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
     // ############################################################################
     // Soft constraints
     // ############################################################################
-    @SafeVarargs
+
     private static <A, B, C> TriConstraintStream<A, B, C> outerJoin(BiConstraintStream<A, B> source,
-            Class<C> joinedClass, TriJoiner<A, B, C>... joiners) {
-        return source.join(joinedClass, joiners).concat(
-                source.ifNotExists(joinedClass, joiners).expand((ingoredA, ingoredB) -> null));
+            Class<C> joinedClass, TriJoiner<A, B, C> joiner) {
+        return source.join(joinedClass, joiner)
+                .concat(source.ifNotExists(joinedClass, joiner));
     }
 
     Constraint minimumAndMaximumNumberOfAssignments(ConstraintFactory constraintFactory) {
-        return outerJoin(
-                constraintFactory
-                        .forEach(MinMaxContractLine.class)
-                        .filter(minMaxContractLine -> minMaxContractLine
-                                .getContractLineType() == ContractLineType.TOTAL_ASSIGNMENTS && minMaxContractLine.isEnabled())
-                        .join(Employee.class, Joiners.equal(ContractLine::getContract, Employee::getContract)),
-                ShiftAssignment.class,
-                Joiners.equal((contractLine, employee) -> employee, ShiftAssignment::getEmployee))
+        var assignmentLimitedEmployeeStream = constraintFactory
+                .forEach(MinMaxContractLine.class)
+                .filter(minMaxContractLine -> minMaxContractLine
+                        .getContractLineType() == ContractLineType.TOTAL_ASSIGNMENTS && minMaxContractLine.isEnabled())
+                .join(Employee.class, Joiners.equal(ContractLine::getContract, Employee::getContract));
+        var assignmentLimitedOrUnassignedEmployeeStream =
+                outerJoin(assignmentLimitedEmployeeStream, ShiftAssignment.class,
+                        Joiners.equal((contractLine, employee) -> employee, ShiftAssignment::getEmployee));
+        return assignmentLimitedOrUnassignedEmployeeStream
                 .groupBy((line, employee, shift) -> employee,
                         (line, employee, shift) -> line,
                         ConstraintCollectors.conditionally(

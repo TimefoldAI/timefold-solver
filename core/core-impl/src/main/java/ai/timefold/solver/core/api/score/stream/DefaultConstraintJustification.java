@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -17,23 +19,23 @@ public final class DefaultConstraintJustification
         implements ConstraintJustification, Comparable<DefaultConstraintJustification> {
 
     public static DefaultConstraintJustification of(Score<?> impact, Object fact) {
-        return new DefaultConstraintJustification(impact, List.of(fact));
+        return of(impact, Collections.singletonList(fact));
     }
 
     public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB) {
-        return new DefaultConstraintJustification(impact, List.of(factA, factB));
+        return of(impact, Arrays.asList(factA, factB));
     }
 
     public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC) {
-        return new DefaultConstraintJustification(impact, List.of(factA, factB, factC));
+        return of(impact, Arrays.asList(factA, factB, factC));
     }
 
     public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC, Object factD) {
-        return new DefaultConstraintJustification(impact, List.of(factA, factB, factC, factD));
+        return of(impact, Arrays.asList(factA, factB, factC, factD));
     }
 
     public static DefaultConstraintJustification of(Score<?> impact, Object... facts) {
-        return new DefaultConstraintJustification(impact, List.of(facts));
+        return of(impact, Arrays.asList(facts));
     }
 
     public static DefaultConstraintJustification of(Score<?> impact, List<Object> facts) {
@@ -53,6 +55,10 @@ public final class DefaultConstraintJustification
         return (Score_) impact;
     }
 
+    /**
+     *
+     * @return never null; may contain null
+     */
     public List<Object> getFacts() {
         return facts;
     }
@@ -84,9 +90,11 @@ public final class DefaultConstraintJustification
                 for (int i = 0; i < justificationList.size(); i++) {
                     Object left = justificationList.get(i);
                     Object right = otherJustificationList.get(i);
-                    int comparison = comparator.compare(left, right);
-                    if (comparison != 0) {
-                        return comparison;
+                    if (left != right) {
+                        int comparison = comparator.compare(left, right);
+                        if (comparison != 0) {
+                            return comparison;
+                        }
                     }
                 }
             }

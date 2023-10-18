@@ -28,7 +28,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
 
     @Override
     public boolean guaranteesDistinct() {
-        return false;
+        return false; // The two parents could have the same source; guarantee impossible.
     }
 
     // ************************************************************************
@@ -48,7 +48,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
         int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new BavetUniConcatNode<>(downstream,
+        var node = new ConcatUniUniNode<>(downstream,
                 leftCloneStoreIndex,
                 rightCloneStoreIndex,
                 outputStoreSize);
