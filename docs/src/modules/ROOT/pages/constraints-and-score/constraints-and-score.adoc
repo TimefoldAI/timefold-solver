@@ -1515,12 +1515,12 @@ See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> fo
 ==== Concat
 
 The `concat` building block allows you to create a constraint stream containing tuples
-of two constraint streams of the same <<constraintStreamsCardinality,cardinality>>.
+of two other constraint streams.
 If <<constraintStreamsJoin,join>> acts like a cartesian product of two lists,
 `concat` acts like a concatenation of two lists.
 Unlike union of sets, concatenation of lists repeats duplicated elements.
-If the two constraint stream parents share tuples, which happens eg.
-when the streams being concatenated come from the same source of data,
+If the two constraint concatenating streams share tuples, which happens eg.
+when they come from the same source of data,
 the tuples will be repeated downstream.
 If this is undesired, use the <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct` building block>>.
 
@@ -1548,7 +1548,7 @@ For example, to ensure each employee has a minimum number of assigned shifts:
 ----
 
 This correctly counts the number of shifts each Employee has, *even when the Employee has no shifts*.
-If it was implemented without `concat` like this:
+Consider the following naive implementation without `concat`:
 
 [source,java,options="nowrap"]
 ----
@@ -1564,7 +1564,8 @@ If it was implemented without `concat` like this:
     }
 ----
 
-An employee with no assigned shifts _will not be penalized because no tuples were passed to the `groupBy` building block_.
+An employee with no assigned shifts _wouldn't have been penalized_
+because no tuples were passed to the `groupBy` building block.
 
 [[constraintStreamsTesting]]
 === Testing a constraint stream

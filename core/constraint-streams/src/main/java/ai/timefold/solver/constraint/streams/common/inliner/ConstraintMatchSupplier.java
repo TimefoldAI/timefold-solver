@@ -3,6 +3,7 @@ package ai.timefold.solver.constraint.streams.common.inliner;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -65,7 +66,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
 
     private static String factsToString(Object... facts) {
         return Arrays.stream(facts)
-                .map(s -> s == null ? null : s.toString())
+                .map(Objects::toString)
                 .collect(Collectors.joining(", ", "{", "}"));
     }
 
