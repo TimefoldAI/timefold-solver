@@ -9,7 +9,6 @@ import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemBasedSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
@@ -42,7 +41,7 @@ public class ScoreCalculationSpeedSubSingleStatistic<Solution_>
     // ************************************************************************
 
     @Override
-    public void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
+    public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.SCORE_CALCULATION_COUNT, new Consumer<Long>() {
             long nextTimeMillisThreshold = timeMillisThresholdInterval;
             long lastTimeMillisSpent = 0;

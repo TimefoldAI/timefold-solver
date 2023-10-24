@@ -92,20 +92,23 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         subSingleBenchmarkTagMap.put("timefold.benchmark.run", runId);
         solverConfig = new SolverConfig(solverConfig);
         randomSeed = solverConfig.getRandomSeed();
+
         // Defensive copy of solverConfig for every SingleBenchmarkResult to reset Random, tabu lists, ...
         DefaultSolverFactory<Solution_> solverFactory = new DefaultSolverFactory<>(new SolverConfig(solverConfig));
+
+        // Register metrics
+        StatisticRegistry<Solution_> statisticRegistry =
+                new StatisticRegistry<>(solverFactory.getSolutionDescriptor().getScoreDefinition());
+        Metrics.addRegistry(statisticRegistry);
+        Tags runTag = Tags.of("timefold.benchmark.run", runId);
+        subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().forEach((statisticType, subSingleStatistic) -> {
+            subSingleStatistic.open(statisticRegistry, runTag);
+            subSingleStatistic.initPointList();
+        });
+
         DefaultSolver<Solution_> solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         solver.setMonitorTagMap(subSingleBenchmarkTagMap);
-        StatisticRegistry<Solution_> statisticRegistry = new StatisticRegistry<>(solver);
-        Metrics.addRegistry(statisticRegistry);
         solver.addPhaseLifecycleListener(statisticRegistry);
-
-        Tags runTag = Tags.of("timefold.benchmark.run", runId);
-        for (SubSingleStatistic<Solution_, ?> subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap()
-                .values()) {
-            subSingleStatistic.open(statisticRegistry, runTag, solver);
-            subSingleStatistic.initPointList();
-        }
         Solution_ solution = solver.solve(problem);
 
         solver.removePhaseLifecycleListener(statisticRegistry);
@@ -114,7 +117,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
 
         for (SubSingleStatistic<Solution_, ?> subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap()
                 .values()) {
-            subSingleStatistic.close(statisticRegistry, runTag, solver);
+            subSingleStatistic.close(statisticRegistry, runTag);
             subSingleStatistic.hibernatePointList();
         }
         if (!warmUp) {

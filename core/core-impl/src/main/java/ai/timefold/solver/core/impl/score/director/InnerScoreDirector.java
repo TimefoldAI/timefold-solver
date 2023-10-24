@@ -86,12 +86,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     Map<Object, Indictment<Score_>> getIndictmentMap();
 
     /**
-     * @param constraintMatchEnabledPreference false if a {@link ScoreDirector} implementation
-     *        should not do {@link ConstraintMatch} tracking even if it supports it.
-     */
-    void overwriteConstraintMatchEnabledPreference(boolean constraintMatchEnabledPreference);
-
-    /**
      * @return used to check {@link #isWorkingEntityListDirty(long)} later on
      */
     long getWorkingEntityListRevision();

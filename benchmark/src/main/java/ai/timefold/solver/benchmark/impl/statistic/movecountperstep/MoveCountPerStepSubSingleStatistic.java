@@ -7,7 +7,6 @@ import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemBasedSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
@@ -29,7 +28,7 @@ public class MoveCountPerStepSubSingleStatistic<Solution_>
     // ************************************************************************
 
     @Override
-    public void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
+    public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.MOVE_COUNT_PER_STEP,
                 timeMillisSpent -> registry.getGaugeValue(SolverMetric.MOVE_COUNT_PER_STEP.getMeterId() + ".accepted", runTag,
                         accepted -> registry.getGaugeValue(SolverMetric.MOVE_COUNT_PER_STEP.getMeterId() + ".selected", runTag,

@@ -61,7 +61,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected final LookUpManager lookUpManager;
     protected final boolean expectShadowVariablesInCorrectState;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
-    protected boolean constraintMatchEnabledPreference;
+    protected final boolean constraintMatchEnabledPreference;
 
     protected Solution_ workingSolution;
     protected long workingEntityListRevision = 0L;
@@ -102,11 +102,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public boolean expectShadowVariablesInCorrectState() {
         return expectShadowVariablesInCorrectState;
-    }
-
-    @Override
-    public void overwriteConstraintMatchEnabledPreference(boolean constraintMatchEnabledPreference) {
-        this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
     }
 
     @Override
