@@ -1,4 +1,4 @@
-[[examplesOverview]]
+[#examplesOverview]
 = Examples overview
 
 Timefold Solver has several examples.

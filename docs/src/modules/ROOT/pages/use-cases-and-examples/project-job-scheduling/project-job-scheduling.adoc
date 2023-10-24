@@ -1,9 +1,9 @@
-[[projectJobScheduling]]
+[#projectJobScheduling]
 = Project job scheduling
 :imagesdir: ../..
 
 
-[[projectJobSchedulingProblemDescription]]
+[#projectJobSchedulingProblemDescription]
 == Problem description
 
 Schedule all jobs in time and execution mode to minimize project delays.
@@ -31,7 +31,7 @@ Soft constraints:
 The problem is defined by http://gent.cs.kuleuven.be/mista2013challenge/[the MISTA 2013 challenge].
 
 
-[[projectJobSchedulingProblemSize]]
+[#projectJobSchedulingProblemSize]
 == Problem size
 
 [source,options="nowrap"]

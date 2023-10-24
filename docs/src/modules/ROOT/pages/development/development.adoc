@@ -1,10 +1,10 @@
-[[development]]
+[#development]
 = Development
 :doctype: book
 :sectnums:
 :icons: font
 
-[[methodologyOverview]]
+[#methodologyOverview]
 == Methodology overview
 
 The diagram below explains the overall structure of the Timefold Solver source code:
@@ -23,7 +23,7 @@ The development philosophy includes:
 * **Fail fast with an understandable error message**: Invalid states are checked as early as possible.
 
 
-[[developmentGuidelines]]
+[#developmentGuidelines]
 == Development guidelines
 
 === Fail fast

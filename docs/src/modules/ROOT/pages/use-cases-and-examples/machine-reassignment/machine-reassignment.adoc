@@ -1,9 +1,9 @@
-[[machineReassignment]]
+[#machineReassignment]
 = Machine reassignment (Google ROADEF 2012)
 :imagesdir: ../..
 
 
-[[machineReassignmentProblemDescription]]
+[#machineReassignmentProblemDescription]
 == Problem description
 
 Assign each process to a machine.
@@ -30,12 +30,12 @@ The problem is defined by http://challenge.roadef.org/2012/en/[the Google ROADEF
 
 image::use-cases-and-examples/machine-reassignment/cloudOptimizationIsLikeTetris.png[align="center"]
 
-[[machineReassignmentValueProposition]]
+[#machineReassignmentValueProposition]
 == Value proposition
 
 image::use-cases-and-examples/cloud-balancing/cloudOptimizationValueProposition.png[align="center"]
 
-[[machineReassignmentProblemSize]]
+[#machineReassignmentProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -63,7 +63,7 @@ model_b_10 has  3 resources,  5 neighborhoods, 100 locations, 5000 machines,  48
 ----
 
 
-[[machineReassignmentDomainModel]]
+[#machineReassignmentDomainModel]
 == Domain model
 
 image::use-cases-and-examples/machine-reassignment/machineReassignmentClassDiagram.png[align="center"]

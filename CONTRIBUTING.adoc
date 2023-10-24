@@ -50,7 +50,7 @@ mvn clean install
 ----
 For information about how to set up code style checks, see https://github.com/TimefoldAI/timefold-solver/blob/main/build/ide-config/ide-configuration.adoc[IDE Setup Instructions].
 
-[[commit-messages]]
+[#commit-messages]
 === Commit Messages
 
 * Use the present tense ("Add feature" not "Added feature")

@@ -1,12 +1,12 @@
-[[cloudBalancing]]
+[#cloudBalancing]
 = Cloud balancing
 :imagesdir: ../..
 
-[[cloudBalancingTutorial]]
+[#cloudBalancingTutorial]
 == Cloud balancing tutorial
 
 
-[[cloudBalancingProblemDescription]]
+[#cloudBalancingProblemDescription]
 === Problem description
 
 Suppose your company owns a number of cloud computers and needs to run a number of processes on those computers.
@@ -40,7 +40,7 @@ Here's an executive summary of this example and xref:use-cases-and-examples/mach
 
 image::use-cases-and-examples/cloud-balancing/cloudOptimizationValueProposition.png[align="center"]
 
-[[cloudBalancingProblemSize]]
+[#cloudBalancingProblemSize]
 === Problem size
 
 .Cloud Balancing Problem Size
@@ -58,11 +58,11 @@ image::use-cases-and-examples/cloud-balancing/cloudOptimizationValueProposition.
 |===
 
 
-[[cloudBalancingDomainModel]]
+[#cloudBalancingDomainModel]
 == Using the domain model
 
 
-[[cloudBalancingDomainModelDesign]]
+[#cloudBalancingDomainModelDesign]
 === Domain model design
 
 Using a xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain model] helps determine which classes are planning entities and which of their properties are planning variables. It also helps to simplify constraints, improve performance, and increase flexibility for future needs.
@@ -98,11 +98,11 @@ In the UML class diagram below, the Timefold Solver concepts are already annotat
 
 image::use-cases-and-examples/cloud-balancing/cloudBalanceClassDiagram.png[align="center"]
 
-[[cloudBalancingDomainModelImplementation]]
+[#cloudBalancingDomainModelImplementation]
 === Domain model implementation
 
 
-[[cloudBalancingClassComputer]]
+[#cloudBalancingClassComputer]
 ==== The `Computer` class
 
 The `Computer` class is a POJO (Plain Old Java Object). Usually, you will have more of this kind of classes with input data.
@@ -124,7 +124,7 @@ public class CloudComputer ... {
 ====
 
 
-[[cloudBalancingClassProcess]]
+[#cloudBalancingClassProcess]
 ==== The `Process` class
 
 The `Process` class is particularly important. It is the class that is modified during solving.
@@ -179,7 +179,7 @@ Instead of getter annotations, it is also possible to use xref:configuration/con
 ====
 
 
-[[cloudBalancingClassCloudBalance]]
+[#cloudBalancingClassCloudBalance]
 ==== The `CloudBalance` class
 
 The `CloudBalance` class has a [path]_@PlanningSolution_ annotation.
@@ -243,7 +243,7 @@ public class CloudBalance ... {
 ----
 ====
 
-[[cloudBalancingMainMethod]]
+[#cloudBalancingMainMethod]
 == Run the cloud balancing Hello World
 
 . xref:introduction/introduction.adoc#buildFromSource[Download and configure the examples in your preferred IDE.]
@@ -332,7 +332,7 @@ The solver configuration is explained in <<cloudBalancingSolverConfiguration,the
                 + toDisplayString(solvedCloudBalance));
 ----
 
-[[cloudBalancingSolverConfiguration]]
+[#cloudBalancingSolverConfiguration]
 == Solver configuration
 
 The solver configuration file determines how the solving process works; it is considered a part of the code.
@@ -409,7 +409,7 @@ Advanced use cases might use different xref:optimization-algorithms/optimization
 The default algorithms already easily surpass human planners and most in-house implementations.
 Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to xref:optimization-algorithms/optimization-algorithms.adoc#powerTweaking[power tweak] to get even better results.
 
-[[cloudBalancingScoreConfiguration]]
+[#cloudBalancingScoreConfiguration]
 == Score configuration
 
 Timefold Solver searches for the solution with the highest ``Score``.
@@ -425,7 +425,7 @@ There are several ways to implement such a score function:
 * <<cloudBalancingIncrementalJavaScoreConfiguration,Incremental Java>>
 
 
-[[cloudBalancingEasyJavaScoreConfiguration]]
+[#cloudBalancingEasyJavaScoreConfiguration]
 === Easy Java score configuration
 
 One way to define a score function is to implement the interface `EasyScoreCalculator` in plain Java.
@@ -500,7 +500,7 @@ Even if we optimize the code above to use ``Map``s to iterate through the `proce
 To fix that, either use constraint streams or incremental Java score calculation.
 
 
-[[cloudBalancingConstraintStreamsScoreConfiguration]]
+[#cloudBalancingConstraintStreamsScoreConfiguration]
 === Constraint streams score configuration
 
 Constraint Streams use incremental calculation.
@@ -572,7 +572,7 @@ public class CloudBalancingConstraintProvider implements ConstraintProvider {
 ====
 
 
-[[cloudBalancingIncrementalJavaScoreConfiguration]]
+[#cloudBalancingIncrementalJavaScoreConfiguration]
 === Incremental Java score configuration
 
 Another way to define a score function is to implement the interface `IncrementalScoreCalculator` in plain Java.
@@ -720,7 +720,7 @@ This score calculation is the fastest we can possibly make it.
 It reacts to every planning variable change, making the smallest possible adjustment to the score.
 
 
-[[cloudBalancingBeyondThisTutorial]]
+[#cloudBalancingBeyondThisTutorial]
 == Beyond this tutorial
 
 Now that this simple example works, you can try going further.

@@ -1,4 +1,4 @@
-[[helloWorldJavaQuickStart]]
+[#helloWorldJavaQuickStart]
 = Hello world Java quick start
 :doctype: book
 :imagesdir: ../..

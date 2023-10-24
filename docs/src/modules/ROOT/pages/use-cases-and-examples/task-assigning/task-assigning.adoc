@@ -1,9 +1,9 @@
-[[taskAssigning]]
+[#taskAssigning]
 = Task assigning
 :imagesdir: ../..
 
 
-[[taskAssigningProblemDescription]]
+[#taskAssigningProblemDescription]
 == Problem description
 
 Assign each task to a spot in an employee's queue.
@@ -31,13 +31,13 @@ Soft level 3 constraints:
 * Minor tasks: Complete minor tasks as soon as possible.
 
 
-[[taskAssigningValueProposition]]
+[#taskAssigningValueProposition]
 == Value proposition
 
 image::use-cases-and-examples/task-assigning/taskAssigningValueProposition.png[align="center"]
 
 
-[[taskAssigningProblemSize]]
+[#taskAssigningProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -49,7 +49,7 @@ image::use-cases-and-examples/task-assigning/taskAssigningValueProposition.png[a
 ----
 
 
-[[taskAssigningDomainModel]]
+[#taskAssigningDomainModel]
 == Domain model
 
 image::use-cases-and-examples/task-assigning/taskAssigningClassDiagram.png[align="center"]

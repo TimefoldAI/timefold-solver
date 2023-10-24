@@ -1,9 +1,9 @@
-[[nurseRostering]]
+[#nurseRostering]
 = Nurse rostering (INRC 2010)
 :imagesdir: ../..
 
 
-[[nurseRosteringProblemDescription]]
+[#nurseRosteringProblemDescription]
 == Problem description
 
 For each shift, assign a nurse to work that shift.
@@ -35,13 +35,13 @@ Soft constraints:
 The problem is defined by https://nrpcompetition.kuleuven-kulak.be[the International Nurse Rostering Competition 2010].
 
 
-[[nurseRosteringValueProposition]]
+[#nurseRosteringValueProposition]
 == Value proposition
 
 image::use-cases-and-examples/nurse-rostering/employeeRosteringValueProposition.png[align="center"]
 
 
-[[nurseRosteringProblemSize]]
+[#nurseRosteringProblemSize]
 == Problem size
 
 There are three dataset types:
@@ -110,7 +110,7 @@ long_late05   has 2 skills, 5 shiftTypes, 9 patterns, 3 contracts, 50 employees,
 ----
 
 
-[[nurseRosteringDomainModel]]
+[#nurseRosteringDomainModel]
 == Domain model
 
 image::use-cases-and-examples/nurse-rostering/nurseRosteringClassDiagram.png[align="center"]

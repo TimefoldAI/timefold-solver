@@ -1,4 +1,4 @@
-[[quickStart]]
+[#quickStart]
 = Quick start
 :doctype: book
 :sectnums:

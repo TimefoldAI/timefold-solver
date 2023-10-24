@@ -1,9 +1,9 @@
-[[vehicleRouting]]
+[#vehicleRouting]
 = Vehicle routing
 :imagesdir: ../..
 
 
-[[vehicleRoutingProblemDescription]]
+[#vehicleRoutingProblemDescription]
 == Problem description
 
 Using a fleet of vehicles, pick up the objects of each customer and bring them to the depot.
@@ -29,13 +29,13 @@ Soft constraints:
 The capacitated vehicle routing problem (CVRP) and its timewindowed variant (CVRPTW) are defined by https://neo.lcc.uma.es/vrp/[the VRP web].
 
 
-[[vehicleRoutingValueProposition]]
+[#vehicleRoutingValueProposition]
 == Value proposition
 
 image::use-cases-and-examples/vehicle-routing/vehicleRoutingValueProposition.png[align="center"]
 
 
-[[vehicleRoutingProblemSize]]
+[#vehicleRoutingProblemSize]
 == Problem size
 
 CVRP instances (without time windows):
@@ -155,7 +155,7 @@ Homberger_1000_RC210_1 has 1 depots, 250 vehicles and 1000 customers with a sear
 ----
 
 
-[[vehicleRoutingDomainModel]]
+[#vehicleRoutingDomainModel]
 == Domain model
 
 image::use-cases-and-examples/vehicle-routing/vehicleRoutingClassDiagram.png[align="center"]
@@ -164,7 +164,7 @@ The vehicle routing with timewindows domain model makes heavily use of xref:conf
 This allows it to express its constraints more naturally, because properties such as `arrivalTime` and ``departureTime``, are directly available on the domain model.
 
 
-[[roadDistancesInsteadOfAirDistances]]
+[#roadDistancesInsteadOfAirDistances]
 === Road distances instead of air distances
 
 In the real world, vehicles cannot follow a straight line from location to location: they have to use roads and highways.

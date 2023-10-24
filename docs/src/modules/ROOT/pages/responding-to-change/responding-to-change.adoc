@@ -1,4 +1,4 @@
-[[respondingToChange]]
+[#respondingToChange]
 = Responding to change
 :page-aliases: repeated-planning/repeated-planning.adoc
 :doctype: book
@@ -46,7 +46,7 @@ as the optimization algorithms support planning a solution that has already been
 This is known as repeated planning.
 
 
-[[backupPlanning]]
+[#backupPlanning]
 == Backup planning
 
 Backup planning adds extra score constraints to create space in the planning for when things go wrong. That creates a backup plan within the plan itself.
@@ -67,7 +67,7 @@ For example, if an employee calls in sick:
 The construction heuristics fills in the newly created gaps (probably with the spare employee) and the metaheuristics will improve it even further.
 
 
-[[overconstrainedPlanning]]
+[#overconstrainedPlanning]
 == Overconstrained planning
 
 When there is no feasible solution to assign all planning entities, it is preferable to assign as many entities as possible without breaking hard constraints.
@@ -80,7 +80,7 @@ There are two ways to avoid this:
 * Add virtual values to catch the unassigned entities.
 
 
-[[overconstrainedPlanningWithNullableVariables]]
+[#overconstrainedPlanningWithNullableVariables]
 === Overconstrained planning with nullable variables
 
 If we handle overconstrained planning with nullable variables, the overload entities will be left unassigned:
@@ -94,7 +94,7 @@ To implement this:
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
 
 
-[[overconstrainedPlanningWithVirtualValues]]
+[#overconstrainedPlanningWithVirtualValues]
 === Overconstrained planning with virtual values
 
 In overconstrained planning it is often useful to know which resources are lacking.
@@ -109,7 +109,7 @@ To implement this:
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of virtual assigned entities (or a weighted sum of them).
 . Optionally, change all soft constraints to ignore virtual assigned entities.
 
-[[continuousPlanning]]
+[#continuousPlanning]
 == Continuous planning (windowed planning)
 
 Continuous planning is the technique of planning one or more upcoming planning periods at the same time
@@ -177,13 +177,13 @@ in which case the _unplanned_ stage is not applicable.
 
 image::responding-to-change/continuousPublishingWithRotation.png[align="center"]
 
-[[pinnedPlanningEntities]]
+[#pinnedPlanningEntities]
 === Pinned planning entities
 
 A pinned planning entity doesn't change during solving.
 This is commonly used by users to pin down one or more specific assignments and force Timefold Solver to schedule around those fixed assignments.
 
-[[pinDownPlanningEntities]]
+[#pinDownPlanningEntities]
 ==== Pin down planning entities with `@PlanningPin`
 
 To pin some planning entities down, add an `@PlanningPin` annotation on a boolean getter or field of the planning entity class.
@@ -210,7 +210,7 @@ public class Lecture {
 
 In the example above, if `pinned` is `true`, the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
 
-[[configureAPinningFilter]]
+[#configureAPinningFilter]
 ==== Configure a `PinningFilter`
 
 Alternatively, to pin some planning entities down, add a `PinningFilter` that returns `true` if an entity is pinned, and `false` if it is movable.
@@ -243,7 +243,7 @@ public class ShiftAssignment {
 }
 ----
 
-[[nonvolatileReplanning]]
+[#nonvolatileReplanning]
 === Nonvolatile replanning to minimize disruption (semi-movable planning entities)
 
 Replanning an existing plan can be very disruptive.
@@ -293,7 +293,7 @@ end
 The soft penalty of `-1000` means that a better solution is only accepted if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
 
 
-[[realTimePlanning]]
+[#realTimePlanning]
 == Real-time planning
 
 To do real-time planning, combine the following planning techniques:
@@ -313,7 +313,7 @@ In the example above, three customers are added at different times (``07:56``, `
 
 Timefold Solver can handle such scenarios with `ProblemChange` (in combination with <<pinnedPlanningEntities,pinned planning entities>>).
 
-[[problemChange]]
+[#problemChange]
 === `ProblemChange`
 
 While the `Solver` is solving, one of the problem facts or planning entities may be changed by an outside event.
@@ -399,7 +399,7 @@ Usually it reuses the same instances of the problem facts and problem fact colle
 * The clone must use different, cloned instances of the entities and entity collections.
 Changes to an original Solution entity’s variables must not affect its clone.
 
-[[problemChangeExample]]
+[#problemChangeExample]
 ==== Cloud balancing `ProblemChange` example
 
 Consider the following example of a `ProblemChange` implementation in the cloud balancing use case:
@@ -446,7 +446,7 @@ _Therefore the ``__workingSolution__`` and the ``__bestSolution__`` share the sa
 Any problem fact or problem fact list changed by a `ProblemChange` must be problem cloned first (which can imply rerouting references in other problem facts and planning entities).
 Otherwise, if the `workingSolution` and `bestSolution` are used in different threads (for example a solver thread and a GUI event thread), a race condition can occur.
 
-[[cloningSolutionsToAvoidRaceConditions]]
+[#cloningSolutionsToAvoidRaceConditions]
 ==== Cloning solutions to avoid race conditions in real-time planning
 
 Many types of changes can leave a planning entity uninitialized, resulting in a partially initialized solution. This is acceptable, provided the first solver phase can handle it.
@@ -472,7 +472,7 @@ This implies the construction heuristic runs again, but because little or no pla
 `Termination` is not usually configured (except in daemon mode); instead, `Solver.terminateEarly()` is called when the results are needed. Alternatively, configure a `Termination` and use the daemon mode in combination with `xref:optimization-algorithms/optimization-algorithms.adoc#SolverEventListener[BestSolutionChangedEvent]` as described in the following section.
 
 
-[[daemon]]
+[#daemon]
 === Daemon: `solve()` does not return
 
 In real-time planning, it is often useful to have a solver thread wait when it runs out of work, and immediately resume solving a problem once new problem fact changes are added.
@@ -520,7 +520,7 @@ A `BestSolutionChangedEvent` does not guarantee that every `ProblemChange` has b
 
 . Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions, but do accept infeasible solutions too.
 
-[[multiStagePlanning]]
+[#multiStagePlanning]
 == Multi-stage planning
 
 In multi-stage planning, complex planning problems are broken down in multiple stages.

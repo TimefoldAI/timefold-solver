@@ -1,9 +1,9 @@
-[[travelingTournament]]
+[#travelingTournament]
 = Traveling tournament problem (TTP)
 :imagesdir: ../..
 
 
-[[travelingTournamentProblemDescription]]
+[#travelingTournamentProblemDescription]
 == Problem description
 
 Schedule matches between _n_ teams.
@@ -24,7 +24,7 @@ Soft constraints:
 The problem is defined on http://mat.tepper.cmu.edu/TOURN/[Michael Trick's website (which contains the world records too)].
 
 
-[[travelingTournamentProblemSize]]
+[#travelingTournamentProblemSize]
 == Problem size
 
 [source,options="nowrap"]
