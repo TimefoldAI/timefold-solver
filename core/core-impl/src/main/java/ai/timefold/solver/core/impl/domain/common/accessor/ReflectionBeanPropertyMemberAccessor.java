@@ -35,7 +35,9 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
             throw new IllegalStateException("""
                     Impossible state: method (%s) not accessible.
                     %s
-                    """.formatted(getterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
+                    """
+                    .strip()
+                    .formatted(getterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
         }
         Class<?> declaringClass = getterMethod.getDeclaringClass();
         if (!ReflectionHelper.isGetterMethod(getterMethod)) {
@@ -57,7 +59,9 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                     throw new IllegalStateException("""
                             Impossible state: method (%s) not accessible.
                             %s
-                            """.formatted(setterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
+                            """
+                            .strip()
+                            .formatted(setterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
                 }
             } else {
                 setterMethodHandle = null;
@@ -90,9 +94,8 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         try {
             return getherMethodHandle.invoke(bean);
         } catch (Throwable e) {
-            throw new IllegalStateException("""
-                    The property (%s) getterMethod (%s) on bean of class (%s) throws an exception.
-                    """.formatted(propertyName, getterMethod, bean.getClass()), e);
+            throw new IllegalStateException("The property (%s) getterMethod (%s) on bean of class (%s) throws an exception."
+                    .formatted(propertyName, getterMethod, bean.getClass()), e);
         }
     }
 
@@ -106,9 +109,8 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         try {
             setterMethodHandle.invoke(bean, value);
         } catch (Throwable e) {
-            throw new IllegalStateException("""
-                    The property (%s) setterMethod (%s) on bean of class (%s) throws an exception.
-                    """.formatted(propertyName, setterMethod, bean.getClass()), e);
+            throw new IllegalStateException("The property (%s) setterMethod (%s) on bean of class (%s) throws an exception."
+                    .formatted(propertyName, setterMethod, bean.getClass()), e);
         }
     }
 

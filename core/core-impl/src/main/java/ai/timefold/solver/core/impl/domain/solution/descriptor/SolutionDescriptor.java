@@ -117,12 +117,16 @@ public class SolutionDescriptor<Solution_> {
             throw new IllegalArgumentException("""
                     The %s (%s) cannot be a record as it needs to be mutable.
                     Use a regular class instead.
-                    """.formatted(classType, clz.getCanonicalName()));
+                    """
+                    .strip()
+                    .formatted(classType, clz.getCanonicalName()));
         } else if (clz.isEnum()) {
             throw new IllegalArgumentException("""
                     The %s (%s) cannot be an enum as it needs to be mutable.
                     Use a regular class instead.
-                    """.formatted(classType, clz.getCanonicalName()));
+                    """
+                    .strip()
+                    .formatted(classType, clz.getCanonicalName()));
         }
     }
 

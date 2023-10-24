@@ -603,6 +603,7 @@ class TimefoldProcessor {
                         Remove the autoDiscoverMemberType property from the @%s annotation
                         and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s.
                         """
+                        .strip()
                         .formatted(
                                 AutoDiscoverMemberType.class.getSimpleName(),
                                 PlanningSolution.class.getSimpleName(),

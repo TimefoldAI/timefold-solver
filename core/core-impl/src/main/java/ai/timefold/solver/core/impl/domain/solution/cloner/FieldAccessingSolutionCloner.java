@@ -334,6 +334,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
                                         Maybe remove the @%s annotation from the field?
                                         Maybe do not reference planning entities inside Java records?
                                         """
+                                        .strip()
                                         .formatted(f.getName(), declaringClass.getCanonicalName(),
                                                 f.getType().getCanonicalName(), DeepPlanningClone.class.getSimpleName()));
                             } else {

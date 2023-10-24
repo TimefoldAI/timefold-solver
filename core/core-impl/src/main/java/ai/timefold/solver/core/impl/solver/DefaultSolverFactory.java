@@ -100,10 +100,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var environmentMode = solverConfig.determineEnvironmentMode();
         var constraintMatchEnabled = !metricsRequiringConstraintMatchSet.isEmpty() || environmentMode.isAsserted();
         if (constraintMatchEnabled && !environmentMode.isAsserted()) {
-            LOGGER.info("""
-                    Enabling constraint matching as required by the enabled metrics ({}).
-                    This will impact solver performance.
-                    """.strip(), metricsRequiringConstraintMatchSet);
+            LOGGER.info(
+                    "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
+                    metricsRequiringConstraintMatchSet);
         }
 
         var innerScoreDirector = scoreDirectorFactory.buildScoreDirector(true, constraintMatchEnabled);
