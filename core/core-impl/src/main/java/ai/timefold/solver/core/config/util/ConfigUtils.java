@@ -507,9 +507,8 @@ public class ConfigUtils {
             if (size == 2) { // The getter is used to retrieve the value of the record component.
                 var methodMembers = getMembers(memberList, true);
                 if (methodMembers.isEmpty()) {
-                    throw new IllegalStateException("""
-                            Impossible state: record (%s) doesn't have any method members (%s).
-                            """.formatted(clazz.getCanonicalName(), memberList));
+                    throw new IllegalStateException("Impossible state: record (%s) doesn't have any method members (%s)."
+                            .formatted(clazz.getCanonicalName(), memberList));
                 }
                 return methodMembers.get(0);
             } else { // There is more than one component annotated with @PlanningId; take the fields and fail.
@@ -517,14 +516,12 @@ public class ConfigUtils {
                         .stream()
                         .map(Member::getName)
                         .toList();
-                throw new IllegalArgumentException("""
-                        The record (%s) has %s components (%s) with %s annotation.
-                        """.formatted(clazz, componentList.size(), componentList, annotationClass.getSimpleName()));
+                throw new IllegalArgumentException("The record (%s) has %s components (%s) with %s annotation."
+                        .formatted(clazz, componentList.size(), componentList, annotationClass.getSimpleName()));
             }
         } else if (size > 1) {
-            throw new IllegalArgumentException("""
-                    The class (%s) has %s members (%s) with %s annotation.
-                    """.formatted(clazz, memberList.size(), memberList, annotationClass.getSimpleName()));
+            throw new IllegalArgumentException("The class (%s) has %s members (%s) with %s annotation."
+                    .formatted(clazz, memberList.size(), memberList, annotationClass.getSimpleName()));
         }
         return memberList.get(0);
     }

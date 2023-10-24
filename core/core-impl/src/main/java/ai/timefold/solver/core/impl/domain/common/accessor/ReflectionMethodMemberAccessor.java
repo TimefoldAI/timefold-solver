@@ -68,9 +68,8 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
         try {
             return methodHandle.invoke(bean);
         } catch (Throwable e) {
-            throw new IllegalStateException("""
-                    The property (%s) getterMethod (%s) on bean of class (%s) throws an exception.
-                    """.formatted(methodName, readMethod, bean.getClass()), e);
+            throw new IllegalStateException("The property (%s) getterMethod (%s) on bean of class (%s) throws an exception."
+                    .formatted(methodName, readMethod, bean.getClass()), e);
         }
     }
 
