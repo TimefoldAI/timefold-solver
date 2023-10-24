@@ -9,10 +9,8 @@ import ai.timefold.solver.benchmark.impl.report.LineChart;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -28,9 +26,7 @@ public class ConstraintMatchTotalStepScoreSubSingleStatistic<Solution_>
     }
 
     @Override
-    public void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
-        DefaultSolver<Solution_> defaultSolver = (DefaultSolver<Solution_>) solver;
-        defaultSolver.getSolverScope().getScoreDirector().overwriteConstraintMatchEnabledPreference(true);
+    public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.CONSTRAINT_MATCH_TOTAL_STEP_SCORE,
                 timeMillisSpent -> registry.extractConstraintSummariesFromMeters(SolverMetric.CONSTRAINT_MATCH_TOTAL_STEP_SCORE,
                         runTag, constraintSummary -> pointList.add(new ConstraintMatchTotalStepScoreStatisticPoint(

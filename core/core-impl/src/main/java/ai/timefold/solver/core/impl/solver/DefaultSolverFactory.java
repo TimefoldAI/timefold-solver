@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,6 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -34,7 +34,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
@@ -82,54 +81,55 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     @Override
     public Solver<Solution_> buildSolver() {
-        boolean daemon_ = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
+        var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
-        SolverScope<Solution_> solverScope = new SolverScope<>();
-        MonitoringConfig monitoringConfig = solverConfig.determineMetricConfig();
+        var solverScope = new SolverScope<Solution_>();
+        var monitoringConfig = solverConfig.determineMetricConfig();
         solverScope.setMonitoringTags(Tags.empty());
+        var metricsRequiringConstraintMatchSet = Collections.<SolverMetric> emptyList();
         if (!monitoringConfig.getSolverMetricList().isEmpty()) {
             solverScope.setSolverMetricSet(EnumSet.copyOf(monitoringConfig.getSolverMetricList()));
+            metricsRequiringConstraintMatchSet = solverScope.getSolverMetricSet().stream()
+                    .filter(SolverMetric::isMetricConstraintMatchBased)
+                    .filter(solverScope::isMetricEnabled)
+                    .toList();
         } else {
             solverScope.setSolverMetricSet(EnumSet.noneOf(SolverMetric.class));
         }
 
-        EnvironmentMode environmentMode_ = solverConfig.determineEnvironmentMode();
-        InnerScoreDirector<Solution_, ?> innerScoreDirector =
-                scoreDirectorFactory.buildScoreDirector(true, environmentMode_.isAsserted());
+        var environmentMode = solverConfig.determineEnvironmentMode();
+        var constraintMatchEnabled = !metricsRequiringConstraintMatchSet.isEmpty() || environmentMode.isAsserted();
+        if (constraintMatchEnabled && !environmentMode.isAsserted()) {
+            LOGGER.info("""
+                    Enabling constraint matching as required by the enabled metrics ({}).
+                    This will impact solver performance.
+                    """.strip(), metricsRequiringConstraintMatchSet);
+        }
+
+        var innerScoreDirector = scoreDirectorFactory.buildScoreDirector(true, constraintMatchEnabled);
         solverScope.setScoreDirector(innerScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(innerScoreDirector));
 
-        if ((solverScope.isMetricEnabled(SolverMetric.CONSTRAINT_MATCH_TOTAL_STEP_SCORE)
-                || solverScope.isMetricEnabled(SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE)) &&
-                !solverScope.getScoreDirector().isConstraintMatchEnabled()) {
-            LOGGER.warn("The metrics [{}, {}] cannot function properly" +
-                    " because ConstraintMatches are not supported on the ScoreDirector.",
-                    SolverMetric.CONSTRAINT_MATCH_TOTAL_STEP_SCORE.getMeterId(),
-                    SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE.getMeterId());
-        }
-
-        Integer moveThreadCount_ = new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount());
-        BestSolutionRecaller<Solution_> bestSolutionRecaller =
-                BestSolutionRecallerFactory.create().buildBestSolutionRecaller(environmentMode_);
-        HeuristicConfigPolicy<Solution_> configPolicy = new HeuristicConfigPolicy.Builder<>(
-                environmentMode_,
-                moveThreadCount_,
+        var moveThreadCount = new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount());
+        var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
+        var configPolicy = new HeuristicConfigPolicy.Builder<>(
+                environmentMode,
+                moveThreadCount,
                 solverConfig.getMoveThreadBufferSize(),
                 solverConfig.getThreadFactoryClass(),
                 scoreDirectorFactory.getInitializingScoreTrend(),
                 solutionDescriptor,
                 ClassInstanceCache.create()).build();
-        TerminationConfig terminationConfig_ =
-                Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
-        BasicPlumbingTermination<Solution_> basicPlumbingTermination = new BasicPlumbingTermination<>(daemon_);
-        Termination<Solution_> termination = TerminationFactory.<Solution_> create(terminationConfig_)
+        var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
+        var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
+        var termination = TerminationFactory.<Solution_> create(terminationConfig)
                 .buildTermination(configPolicy, basicPlumbingTermination);
-        List<Phase<Solution_>> phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
+        var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
-        RandomFactory randomFactory = buildRandomFactory(environmentMode_);
-        return new DefaultSolver<>(environmentMode_, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
+        var randomFactory = buildRandomFactory(environmentMode);
+        return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
                 termination, phaseList, solverScope,
-                moveThreadCount_ == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount_));
+                moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {

@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.Pair;
 
@@ -39,8 +38,8 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     ScoreDefinition<?> scoreDefinition;
     final Function<Number, Number> scoreLevelNumberConverter;
 
-    public StatisticRegistry(DefaultSolver<Solution_> solver) {
-        scoreDefinition = solver.getSolverScope().getScoreDefinition();
+    public StatisticRegistry(ScoreDefinition<?> scoreDefinition) {
+        this.scoreDefinition = scoreDefinition;
         Number zeroScoreLevel0 = scoreDefinition.getZeroScore().toLevelNumbers()[0];
         if (zeroScoreLevel0 instanceof BigDecimal) {
             scoreLevelNumberConverter = number -> BigDecimal.valueOf(number.doubleValue());

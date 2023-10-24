@@ -9,7 +9,6 @@ import ai.timefold.solver.benchmark.impl.report.LineChart;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -29,7 +28,7 @@ public class PickedMoveTypeStepScoreDiffSubSingleStatistic<Solution_>
     }
 
     @Override
-    public void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
+    public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.PICKED_MOVE_TYPE_STEP_SCORE_DIFF, (timeMillisSpent, stepScope) -> {
             if (stepScope instanceof LocalSearchStepScope) {
                 String moveType = ((LocalSearchStepScope<Solution_>) stepScope).getStep().getSimpleMoveTypeDescription();
