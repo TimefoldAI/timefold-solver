@@ -1,4 +1,4 @@
-[[introduction]]
+[#introduction]
 = Introduction
 // Redirect to this page from .../docs/timefold/latest.
 :page-aliases: ../index.adoc
@@ -6,7 +6,7 @@
 :sectnums:
 :icons: font
 
-[[whatIsTimefold]]
+[#whatIsTimefold]
 == What is Timefold Solver?
 
 Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time and money).
@@ -28,7 +28,7 @@ It solves use cases such as:
 
 image::introduction/useCaseOverview.png[align="center"]
 
-[[whatIsAPlanningProblem]]
+[#whatIsAPlanningProblem]
 == What is a planning problem?
 
 image::introduction/whatIsAPlanningProblem.png[align="center"]
@@ -52,7 +52,7 @@ Timefold Solver helps Java^TM^ programmers solve constraint satisfaction problem
 Under the hood, it combines optimization heuristics and metaheuristics with very efficient score calculation.
 
 
-[[aPlanningProblemIsNPCompleteOrNPHard]]
+[#aPlanningProblemIsNPCompleteOrNPHard]
 === A planning problem is NP-complete or NP-hard
 
 All the use cases above are _probably_ https://en.wikipedia.org/wiki/NP-completeness[NP-complete/NP-hard],
@@ -78,7 +78,7 @@ The implication of this is pretty dire: solving your problem is probably harder 
 By using advanced optimization algorithms, *Timefold Solver does find a near-optimal solution in reasonable time for such planning problems.*
 
 
-[[aPlanningProblemHasConstraints]]
+[#aPlanningProblemHasConstraints]
 === A planning problem has (hard and soft) constraints
 
 Usually, a planning problem has at least two levels of constraints:
@@ -99,7 +99,7 @@ Each solution of a planning problem can be graded with a score.
 Such code is easy, flexible and scalable.
 
 
-[[aPlanningProblemHasAHugeSearchSpace]]
+[#aPlanningProblemHasAHugeSearchSpace]
 === A planning problem has a huge search space
 
 A planning problem has a number of __solutions__.
@@ -117,7 +117,7 @@ Timefold Solver supports several optimization algorithms to efficiently wade thr
 Depending on the use case, some optimization algorithms perform better than others, but it's impossible to tell in advance.
 **With Timefold Solver, it is easy to switch the optimization algorithm**, by changing the solver configuration in a few lines of XML or code.
 
-[[timefoldSolverStatus]]
+[#timefoldSolverStatus]
 == Status of Timefold Solver
 
 Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
@@ -132,7 +132,7 @@ One example handles over 50 000 variables with 5000 values each, multiple constr
 
 We offer two editions of Timefold Solver.
 
-[[communityEdition]]
+[#communityEdition]
 === Timefold Solver Community Edition
 
 Timefold Solver Community Edition is _open source_ software,
@@ -145,7 +145,7 @@ It is and will always be free.
 The overwhelming majority of solver features will always be available in the Community Edition.
 Most users will be able to solve their planning problems with the Community Edition.
 
-[[enterpriseEdition]]
+[#enterpriseEdition]
 === Timefold Solver Enterprise Edition
 
 Timefold Solver Enterprise Edition is a commercial product that offers additional features,
@@ -161,7 +161,7 @@ see <<switchToEnterpriseEdition,Switch To Enterprise Edition>>.
 For a high-level overview of the differences between the two editions,
 see http://timefold.ai/pricing[Timefold Pricing].
 
-[[backwardsCompatibility]]
+[#backwardsCompatibility]
 == Backwards compatibility
 
 Timefold Solver separates its API and implementation:
@@ -183,10 +183,10 @@ but we're just not entirely comfortable yet to write their signatures in stone.
 ====
 
 
-[[startUsingTimefoldSolver]]
+[#startUsingTimefoldSolver]
 == Start using Timefold Solver
 
-[[useWithMavenGradleEtc]]
+[#useWithMavenGradleEtc]
 === Use Timefold Solver with Maven or Gradle
 
 The Timefold Solver jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
@@ -243,7 +243,7 @@ dependencies {
 }
 ----
 
-[[switchToEnterpriseEdition]]
+[#switchToEnterpriseEdition]
 === Switch to Enterprise Edition
 
 In order to switch from Timefold Solver Community Edition to Enterprise Edition,
@@ -322,7 +322,7 @@ $ rm upgrade-timefold.gradle
 It automatically replaces deprecated methods with better alternatives.
 Run your tests and commit the changes.
 
-[[buildFromSource]]
+[#buildFromSource]
 === Build Timefold Solver from source
 
 *Prerequisites*

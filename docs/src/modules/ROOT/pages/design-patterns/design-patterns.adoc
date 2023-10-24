@@ -1,16 +1,16 @@
-[[designPatterns]]
+[#designPatterns]
 = Design patterns
 :doctype: book
 :sectnums:
 :icons: font
 
 
-[[designPatternsIntroduction]]
+[#designPatternsIntroduction]
 == Design patterns introduction
 
 Timefold Solver design patterns are generic reusable solutions to common challenges in the model or architecture of projects that perform constraint solving. The design patterns in this section list and solve common design challenges.
 
-[[domainModelingGuide]]
+[#domainModelingGuide]
 == Domain modeling guidelines
 
 Follow the guidelines listed in this section to create a well thought-out model that can contribute significantly to the success of your planning.
@@ -79,7 +79,7 @@ Vehicle routing is different because it uses a xref:configuration/configuration.
 Traveling salesman is different because it uses a xref:configuration/configuration.adoc#chainedPlanningVariable[chained planning variable].
 ====
 
-[[assigningTimeToPlanningEntities]]
+[#assigningTimeToPlanningEntities]
 == Assigning time to planning entities
 
 Dealing with time and dates in planning problems may be problematic because it is dependent on the needs of your use case.
@@ -137,7 +137,7 @@ image::design-patterns/assigningTimeToPlanningEntities.png[align="center"]
 image::design-patterns/assigningTimeToPlanningEntities2.png[align="center"]
 
 
-[[timeslotPattern]]
+[#timeslotPattern]
 === Timeslot pattern: assign to a fixed-length timeslot
 
 If all planning entities have *the same duration* (or can be inflated to the same duration), the Timeslot pattern is useful.
@@ -156,7 +156,7 @@ In course timetabling, two lectures are in conflict if they share the same room 
 However, in exam timetabling, that is allowed, if there is enough seating capacity in the room (although mixed exam durations in the same room do inflict a soft score penalty).
 
 
-[[timeGrainPattern]]
+[#timeGrainPattern]
 === TimeGrain pattern: assign to a starting TimeGrain
 
 Assigning humans to start a meeting at four seconds after 9 o'clock is pointless because most human activities have a time granularity of five minutes or 15 minutes.
@@ -174,7 +174,7 @@ With a finer time granularity (such as seconds, milliseconds, ...) and a long ti
 However, such a solution is not impossible.
 
 
-[[chainedThroughTimePattern]]
+[#chainedThroughTimePattern]
 === Chained through time pattern: assign in a chain that determines starting time
 
 If a person or a machine continuously works on **one task at a time in sequence**,
@@ -190,7 +190,7 @@ This pattern is implemented using either the xref:configuration/configuration.ad
 The two modeling approaches are equivalent because they both allow Timefold Solver to order elements in sequences of variable lengths.
 The planning list variable is easier to use than the chained planning variable, but it does not yet support all the advanced planning techniques.
 
-[[chainedThroughTimePatternChainedVariable]]
+[#chainedThroughTimePatternChainedVariable]
 ==== Chained through time pattern using chained planning variable
 
 Using the xref:configuration/configuration.adoc#chainedPlanningVariable[chained planning variable], planning entities are arranged in a recursive data structure, forming a chain, that ends with an anchor.
@@ -205,7 +205,7 @@ An anchor has only one chain.
 Although it is possible to split up the anchor into two separate anchors, for example split up Beth into Beth's left hand and Beth's right hand (because she can do two tasks at the same time), this model makes pooling resources difficult.
 Consequently, using this model in the exam scheduling example to allow two or more exams to use the same room at the same time is problematic.
 
-[[chainedThroughTimePatternListVariable]]
+[#chainedThroughTimePatternListVariable]
 ==== Chained through time pattern using planning list variable
 
 Timefold Solver distributes planning values into planning entities’ xref:configuration/configuration.adoc#planningListVariable[planning list variable].
@@ -216,7 +216,7 @@ For example, in task assignment, Beth (the entity) starts working at 8:00, thus 
 It lasts 52 minutes, therefore her second task starts at 8:52.
 The starting time of an element is usually a xref:configuration/configuration.adoc#shadowVariable[shadow variable].
 
-[[chainedThroughTimePatternGaps]]
+[#chainedThroughTimePatternGaps]
 ==== Chained through time pattern: creating gaps
 
 Between planning entities, there are three ways to create gaps:
@@ -228,7 +228,7 @@ Between planning entities, there are three ways to create gaps:
 (besides impacting the xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[search space] too).
 
 
-[[chainedThroughTimeAutomaticCollapse]]
+[#chainedThroughTimeAutomaticCollapse]
 ==== Chained through time: automatic collapse
 
 In some use case there is an overhead time for certain tasks,
@@ -245,7 +245,7 @@ Implement the automatic collapse in the xref:configuration/configuration.adoc#cu
 that calculates the start and end times of each task.
 
 
-[[chainedThroughTimeAutomaticDelayUntilLast]]
+[#chainedThroughTimeAutomaticDelayUntilLast]
 
 ==== Chained through time: automatic delay until last
 
@@ -265,7 +265,7 @@ Additionally, add loop detection to avoid an infinite loop:
 image::design-patterns/chainedThroughTimeAutomaticDelayUntilLastLoop.png[align="center"]
 
 
-[[timeBucketPattern]]
+[#timeBucketPattern]
 === Time bucket pattern: assign to a capacitated bucket per time period
 
 In this pattern, the time of each employee is divided into _buckets_.
@@ -279,7 +279,7 @@ _The tasks within one bucket are not ordered_: it's up to the employee to decide
 This gives the employee more autonomy, but makes it harder to do certain optimization,
 such as minimize travel time between task locations.
 
-[[cloudArchitecturePatterns]]
+[#cloudArchitecturePatterns]
 == Cloud architecture patterns
 
 There are two common usage patterns of Timefold Solver in the cloud:

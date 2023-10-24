@@ -1,9 +1,9 @@
-[[flightCrewScheduling]]
+[#flightCrewScheduling]
 = Flight crew scheduling
 :imagesdir: ../..
 
 
-[[flightCrewSchedulingProblemDescription]]
+[#flightCrewSchedulingProblemDescription]
 == Problem description
 
 Assign flights to pilots and flight attendants.
@@ -25,7 +25,7 @@ Soft constraints:
 * Load balance flight duration total per employee
 
 
-[[flightCrewSchedulingProblemSize]]
+[#flightCrewSchedulingProblemSize]
 == Problem size
 
 [source,options="nowrap"]

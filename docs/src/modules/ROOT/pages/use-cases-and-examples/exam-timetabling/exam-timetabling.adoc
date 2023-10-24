@@ -1,9 +1,9 @@
-[[examination]]
+[#examination]
 = Exam timetabling (ITC 2007 track 1 - Examination)
 :imagesdir: ../..
 
 
-[[examinationProblemDescription]]
+[#examinationProblemDescription]
 == Problem description
 
 Schedule each exam into a period and into a room.
@@ -40,7 +40,7 @@ Geoffrey De Smet finished 4th in that competition with a very early version of T
 Many improvements have been made since then.
 
 
-[[examinationProblemSize]]
+[#examinationProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -56,7 +56,7 @@ exam_comp_set8 has  7718 students,  598 exams, 80 periods,  8 rooms,  20 period 
 ----
 
 
-[[examinationDomainModel]]
+[#examinationDomainModel]
 == Domain model
 
 Below you can see the main examination domain classes:

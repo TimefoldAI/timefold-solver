@@ -1,4 +1,4 @@
-[[optimizationAlgorithms]]
+[#optimizationAlgorithms]
 = Optimization algorithms
 :page-aliases: move-and-neighborhood-selection/move-and-neighborhood-selection.adoc, \
     exhaustive-search/exhaustive-search.adoc, \
@@ -13,7 +13,7 @@
 
 == Introduction
 
-[[searchSpaceSize]]
+[#searchSpaceSize]
 === Search space size in the real world
 
 The number of possible solutions for a planning problem can be mind blowing.
@@ -52,7 +52,7 @@ Planning competitions (such as the International Timetabling Competition) show t
 usually perform best for real-world problems given real-world time limitations.
 
 
-[[doesTimefoldFindTheOptimalSolution]]
+[#doesTimefoldFindTheOptimalSolution]
 === Does Timefold Solver find the optimal solution?
 
 The business wants the optimal solution, but they also have other requirements:
@@ -78,7 +78,7 @@ Start testing with a production sized data set as soon as possible.
 Do not assess quality on small data sets (unless production encounters only such data sets). Instead, solve a production sized data set and compare the results of longer executions, different algorithms and - if available - the human planner.
 
 
-[[optimizationAlgorithmsOverview]]
+[#optimizationAlgorithmsOverview]
 === Supported optimization algorithms
 
 Timefold Solver supports three _families_ of optimization algorithms: Exhaustive Search, Construction Heuristics and Metaheuristics.
@@ -119,7 +119,7 @@ Each of these algorithm families have multiple optimization algorithms:
 To learn more about metaheuristics, see http://www.cs.gmu.edu/~sean/book/metaheuristics/[Essentials of Metaheuristics] or http://www.cleveralgorithms.com/[Clever Algorithms].
 
 
-[[whichOptimizationAlgorithmsShouldIUse]]
+[#whichOptimizationAlgorithmsShouldIUse]
 === Which optimization algorithms should I use?
 
 The best optimization algorithms configuration to use depends heavily on your use case.
@@ -150,7 +150,7 @@ Other experiments can also be run. For example, the following multiple algorithm
 . Late Acceptance (relatively long time)
 . Tabu Search (relatively short time)
 
-[[architectureOverview]]
+[#architectureOverview]
 == Architecture overview
 
 Timefold Solver combines optimization algorithms (metaheuristics, ...)
@@ -168,7 +168,7 @@ However, it needs to know the score of a solution and offers no support in calcu
 image::optimization-algorithms/architectureOverview.png[align="center"]
 
 
-[[powerTweaking]]
+[#powerTweaking]
 === Power tweaking or default parameter values
 
 Many optimization algorithms have parameters that affect results and scalability.
@@ -184,7 +184,7 @@ The default value of parameters will change between minor versions, to improve t
 ====
 
 
-[[solverPhase]]
+[#solverPhase]
 === Solver phase
 
 A `Solver` can use multiple optimization algorithms in sequence.
@@ -254,7 +254,7 @@ If the `Solver` terminates (before the last `Phase` terminates itself),
 the current phase is terminated and all subsequent phases will not run.
 
 
-[[scopeOverview]]
+[#scopeOverview]
 === Scope overview
 
 A solver will iteratively run phases. Each phase will usually iteratively run steps. Each step, in turn, usually iteratively runs moves.
@@ -270,7 +270,7 @@ image::optimization-algorithms/scopeOverview.png[align="center"]
 Configure xref:configuration/configuration.adoc#logging[logging] to display the log messages of each scope.
 
 
-[[termination]]
+[#termination]
 === Termination
 
 Not all phases terminate automatically and may take a significant amount of time.
@@ -294,7 +294,7 @@ Every `Termination` can calculate a _time gradient_ (needed for some optimizatio
 which is a ratio between the time already spent solving and the estimated entire solving time of the `Solver` or `Phase`.
 
 
-[[timeMillisSpentTermination]]
+[#timeMillisSpentTermination]
 ==== Time spent termination
 
 Terminates when an amount of time has been used.
@@ -384,7 +384,7 @@ which will send time gradient-based algorithms (such as Simulated Annealing) on 
 ====
 
 
-[[unimprovedTimeMillisSpentTermination]]
+[#unimprovedTimeMillisSpentTermination]
 ==== Unimproved time spent termination
 
 Terminates when the best score has not improved in a specified amount of time.
@@ -507,7 +507,7 @@ use a wildcard `*` for lower score levels that are allowed to deteriorate if a h
 This effectively implies a threshold of `1hard/-2147483648soft`, because it relies on `Integer.MIN_VALUE`.
 
 
-[[bestScoreTermination]]
+[#bestScoreTermination]
 ==== `BestScoreTermination`
 
 `BestScoreTermination` terminates when a certain score has been reached.
@@ -541,7 +541,7 @@ A planning problem with a xref:constraints-and-score/constraints-and-score.adoc#
 In this instance, `Termination` once a feasible solution has been reached is not practical because it requires a `bestScoreLimit` such as ``0hard/-2147483648soft``. Use the next termination instead.
 
 
-[[bestScoreFeasibleTermination]]
+[#bestScoreFeasibleTermination]
 ==== `BestScoreFeasibleTermination`
 
 Terminates as soon as a feasible solution has been discovered.
@@ -556,7 +556,7 @@ Terminates as soon as a feasible solution has been discovered.
 This `Termination` is usually combined with other terminations.
 
 
-[[stepCountTermination]]
+[#stepCountTermination]
 ==== `StepCountTermination`
 
 Terminates when a number of steps has been reached.
@@ -574,7 +574,7 @@ This is useful for hardware performance independent runs.
 This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
 
 
-[[unimprovedStepCountTermination]]
+[#unimprovedStepCountTermination]
 ==== `UnimprovedStepCountTermination`
 
 Terminates when the best score has not improved in a number of steps.
@@ -595,7 +595,7 @@ It has been observed that once a new best solution is found (even after a long t
 This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
 
 
-[[scoreCalculationCountTermination]]
+[#scoreCalculationCountTermination]
 ==== `ScoreCalculationCountTermination`
 
 `ScoreCalculationCountTermination` terminates when a number of score calculations have been reached.
@@ -612,7 +612,7 @@ This is useful for benchmarking.
 Switching xref:configuration/configuration.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 
-[[combiningMultipleTerminations]]
+[#combiningMultipleTerminations]
 ==== Combining multiple terminations
 
 Terminations can be combined, for example: terminate after `100` steps or if a score of `0` has been reached:
@@ -640,7 +640,7 @@ Alternatively you can use `AND`, for example: terminate after reaching a feasibl
 This example ensures it does not just terminate after finding a feasible solution, but also completes any obvious improvements on that solution before terminating.
 
 
-[[asynchronousTermination]]
+[#asynchronousTermination]
 ==== Asynchronous termination from another thread
 
 Asynchronous termination cannot be configured by a `Termination` as it is impossible to predict when and if it will occur.
@@ -666,7 +666,7 @@ an _interrupt_ of a solver thread has the same effect as calling `Solver.termina
 ====
 
 
-[[SolverEventListener]]
+[#SolverEventListener]
 === `SolverEventListener`
 
 Each time a new best solution is found, a new `BestSolutionChangedEvent` is fired in the `Solver` thread.
@@ -708,7 +708,7 @@ So it should return quickly to avoid slowing down the solving.
 ====
 
 
-[[customSolverPhase]]
+[#customSolverPhase]
 === Custom solver phase
 
 Run a custom optimization algorithm between phases or before the first phase to initialize the solution, or to get a better score quickly.
@@ -811,7 +811,7 @@ add the `customProperties` element and use xref:configuration/configuration.adoc
 ----
 
 
-[[noChangeSolverPhase]]
+[#noChangeSolverPhase]
 === No change solver phase
 
 In rare cases, it's useful not to run any solver phases.
@@ -828,18 +828,18 @@ To avoid those, configure a `NoChangePhase`:
 ----
 
 
-[[moveAndNeighborhoodSelection]]
+[#moveAndNeighborhoodSelection]
 == Move and neighborhood selection
 :doctype: book
 :sectnums:
 :icons: font
 
 
-[[moveAndNeighborhoodSelectionIntroduction]]
+[#moveAndNeighborhoodSelectionIntroduction]
 === Move and neighborhood introduction
 
 
-[[whatIsAMove]]
+[#whatIsAMove]
 ==== What is a `Move`?
 
 A `Move` is a change (or set of changes) from a solution A to a solution B.
@@ -876,7 +876,7 @@ All optimization algorithms use ``Move``s to transition from one solution to a n
 Therefore, all the optimization algorithms are confronted with `Move` selection: the craft of creating and iterating moves efficiently and the art of finding the most promising subset of random moves to evaluate first.
 
 
-[[whatIsAMoveSelector]]
+[#whatIsAMoveSelector]
 ==== What is a `MoveSelector`?
 
 A ``MoveSelector``'s main function is to create `Iterator<Move>` when needed.
@@ -896,7 +896,7 @@ Out of the box, this works and all properties of the `changeMoveSelector` are de
 For example: you might want to configure a <<filteredSelection,filter>> to discard pointless moves.
 
 
-[[subselectingOfEntitiesValuesAndOtherMoves]]
+[#subselectingOfEntitiesValuesAndOtherMoves]
 ==== Subselecting of entities, values, and other moves
 
 To create a ``Move``, a `MoveSelector` needs to select one or more planning entities and/or planning values to move.
@@ -929,11 +929,11 @@ image::optimization-algorithms/selectorTree.png[align="center"]
 The root of this tree is a `MoveSelector` which is injected into the optimization algorithm implementation to be (partially) iterated in every step.
 
 
-[[genericMoveSelectors]]
+[#genericMoveSelectors]
 === Generic `MoveSelectors`
 
 
-[[genericMoveSelectorsOverview]]
+[#genericMoveSelectorsOverview]
 ==== Generic `MoveSelectors` overview
 
 [cols="1,2a,2a",options="header"]
@@ -991,7 +991,7 @@ The root of this tree is a `MoveSelector` which is injected into the optimizatio
 |===
 
 
-[[changeMoveSelector]]
+[#changeMoveSelector]
 ==== `ChangeMoveSelector`
 
 For one planning variable, the `ChangeMove` selects one planning entity and one planning value and assigns the entity's variable to that value.
@@ -1036,7 +1036,7 @@ Of course, normally it is unioned with other, more coarse grained move selectors
 This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on a xref:configuration/configuration.adoc#chainedPlanningVariable[chained] variable.
 
 
-[[swapMoveSelector]]
+[#swapMoveSelector]
 ==== `SwapMoveSelector`
 
 The `SwapMove` selects two different planning entities and swaps the planning values of all their planning variables.
@@ -1086,12 +1086,12 @@ For example for course scheduling, specifying only `variableNameInclude` room wi
 
 This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on any xref:configuration/configuration.adoc#chainedPlanningVariable[chained] variables.
 
-[[pillarMoveSelectors]]
+[#pillarMoveSelectors]
 ==== Pillar-based move selectors
 
 A _pillar_ is a set of planning entities which have the same planning value(s) for their planning variable(s).
 
-[[pillarChangeMoveSelector]]
+[#pillarChangeMoveSelector]
 ===== `PillarChangeMoveSelector`
 
 The `PillarChangeMove` selects one entity pillar (or subset of those) and changes the value of one variable (which is the same for all entities) to another value.
@@ -1137,7 +1137,7 @@ This move selector does not support <<cacheType,phase or solver caching>>
 and step caching scales badly memory wise.
 
 
-[[pillarSwapMoveSelector]]
+[#pillarSwapMoveSelector]
 ===== `PillarSwapMoveSelector`
 
 The `PillarSwapMove` selects two different entity pillars and swaps the values of all their variables for all their entities.
@@ -1188,7 +1188,7 @@ The other properties are explained in <<swapMoveSelector,swapMoveSelector>> and 
 This move selector does not support <<cacheType,phase or solver caching>>
 and step caching scales badly memory wise.
 
-[[subPillars]]
+[#subPillars]
 ===== Sub pillars
 
 A sub pillar is a subset of entities that share the same value(s) for their variable(s). For example if queen A, B, C and D are all located on row 0, they are a pillar and `[A, D]` is one of the many sub pillars.
@@ -1208,7 +1208,7 @@ For example a pillar of size 32 has `(2^32 - 1)` subpillars.
 Therefore a `pillarSelector` only supports <<justInTimeRandomSelection,JIT random selection>> (which is the default).
 ====
 
-[[sequentialSubPillars]]
+[#sequentialSubPillars]
 ====== Sequential sub pillars
 
 Sub pillars can be sorted with a `Comparator`. A sequential sub pillar is a continuous subset of its sorted base pillar.
@@ -1247,10 +1247,10 @@ An advanced configuration looks like this:
 
 In this case, the entity being operated on need not be `Comparable`. The given `subPillarSequenceComparatorClass` is used to establish the sequence instead. Also, the size of the sub pillars is limited in length of up to 1000 entities.
 
-[[listMoveSelectors]]
+[#listMoveSelectors]
 ==== Move selectors for list variables
 
-[[listChangeMoveSelector]]
+[#listChangeMoveSelector]
 ===== `ListChangeMoveSelector`
 
 The `ListChangeMoveSelector` selects an element from a list variable's value range and moves it from its current position to a new one.
@@ -1286,7 +1286,7 @@ Advanced configuration:
     </listChangeMoveSelector>
 ----
 
-[[listSwapMoveSelector]]
+[#listSwapMoveSelector]
 ===== `ListSwapMoveSelector`
 
 The `ListSwapMoveSelector` selects two elements from the same list variable value range and swaps their positions.
@@ -1316,7 +1316,7 @@ Advanced configuration:
     </listSwapMoveSelector>
 ----
 
-[[subListChangeMoveSelector]]
+[#subListChangeMoveSelector]
 ===== `SubListChangeMoveSelector`
 
 A _subList_ is a sequence of elements in a specific entity's list variable between `fromIndex` and `toIndex`.
@@ -1360,7 +1360,7 @@ Advanced configuration:
     </subListChangeMoveSelector>
 ----
 
-[[subListSwapMoveSelector]]
+[#subListSwapMoveSelector]
 ===== `SubListSwapMoveSelector`
 
 A _subList_ is a sequence of elements in a specific entity's list variable between `fromIndex` and `toIndex`.
@@ -1403,7 +1403,7 @@ Advanced configuration:
     </subListSwapMoveSelector>
 ----
 
-[[kOptListMoveSelector]]
+[#kOptListMoveSelector]
 ===== `KOptListMoveSelector`
 
 The `KOptListMoveSelector` considers the list variable to be
@@ -1432,10 +1432,10 @@ Advanced configuration:
     </kOptListMoveSelector>
 ----
 
-[[chainMoveSelectors]]
+[#chainMoveSelectors]
 ==== Move selectors for chained variables
 
-[[tailChainSwapMoveSelector]]
+[#tailChainSwapMoveSelector]
 ===== `TailChainSwapMoveSelector` or 2-opt
 
 A _tailChain_ is a set of planning entities with a chained planning variable which form the last part of a chain.
@@ -1478,7 +1478,7 @@ Although `subChainChangeMoveSelector` and `subChainSwapMoveSelector` include alm
 
 This move selector does not support <<cacheType,phase or solver caching>>.
 
-[[subChainChangeMoveSelector]]
+[#subChainChangeMoveSelector]
 ===== `SubChainChangeMoveSelector`
 
 A _subChain_ is a set of planning entities with a chained planning variable which form part of a chain.
@@ -1527,7 +1527,7 @@ This move selector does not support <<cacheType,phase or solver caching>>
 and step caching scales badly memory wise.
 
 
-[[subChainSwapMoveSelector]]
+[#subChainSwapMoveSelector]
 ===== `SubChainSwapMoveSelector`
 
 The `subChainSwapMoveSelector` selects two different subChains and moves them to another place in a different or the same anchor chain.
@@ -1571,11 +1571,11 @@ This move selector does not support <<cacheType,phase or solver caching>>
 and step caching scales badly memory wise.
 
 
-[[combiningMultipleMoveSelectors]]
+[#combiningMultipleMoveSelectors]
 === Combining multiple ``MoveSelector``s
 
 
-[[unionMoveSelector]]
+[#unionMoveSelector]
 ==== `unionMoveSelector`
 
 A `unionMoveSelector` selects a `Move` by selecting one of its `MoveSelector` children to supply the next ``Move``.
@@ -1650,7 +1650,7 @@ To give each individual `Move` the same selection chance (as opposed to each ``M
 ----
 
 
-[[cartesianProductMoveSelector]]
+[#cartesianProductMoveSelector]
 ==== `cartesianProductMoveSelector`
 
 A `cartesianProductMoveSelector` selects a new ``CompositeMove``.
@@ -1694,7 +1694,7 @@ For example: a cartesian product of `changeMoveSelector` A and B, for which B is
 To enforce that two child selectors use the same entity or value efficiently, use <<mimicSelection,mimic selection>>, not move filtering.
 
 
-[[entitySelector]]
+[#entitySelector]
 === `EntitySelector`
 
 Simplest configuration:
@@ -1717,7 +1717,7 @@ Advanced configuration:
 The `entityClass` property is only required if it cannot be deduced automatically because there are multiple entity classes.
 
 
-[[valueSelector]]
+[#valueSelector]
 === `ValueSelector`
 
 Simplest configuration:
@@ -1750,11 +1750,11 @@ In exotic Construction Heuristic configurations, the `entityClass` from the `Ent
 If a selected entity cannot be downcasted, the `ValueSelector` is empty for that entity.
 
 
-[[generalSelectorFeatures]]
+[#generalSelectorFeatures]
 === General `Selector` features
 
 
-[[cacheType]]
+[#cacheType]
 ==== `CacheType`: create moves ahead of time or just in time
 
 A ``Selector``'s `cacheType` determines when a selection (such as a ``Move``, an entity, a value, ...)
@@ -1798,7 +1798,7 @@ For example: a `STEP` cached `unionMoveSelector` can contain a `PHASE` cached ``
 but it cannot contain a `STEP` cached ``changeMoveSelector``.
 
 
-[[selectionOrder]]
+[#selectionOrder]
 ==== `SelectionOrder`: original, sorted, random, shuffled, or probabilistic
 
 A ``Selector``'s `selectionOrder` determines the order in which the selections (such as ``Move``s, entities, values, ...) are iterated.
@@ -1837,11 +1837,11 @@ Avoid overwriting the `selectionOrder` of those nested ``Selector``s.
 ====
 
 
-[[recommendedCombinationsOfCacheTypeAndSelectionOrder]]
+[#recommendedCombinationsOfCacheTypeAndSelectionOrder]
 ==== Recommended combinations of `CacheType` and `SelectionOrder`
 
 
-[[justInTimeRandomSelection]]
+[#justInTimeRandomSelection]
 ===== Just in time random selection (default)
 
 This combination is great for big use cases (10 000 entities or more), as it scales up well in memory footprint and performance.
@@ -1868,7 +1868,7 @@ image::optimization-algorithms/jitRandomSelection.png[align="center"]
 Notice that *it never creates a list of ``**Move**``s* and it generates random numbers only for ``Move``s that are actually selected.
 
 
-[[cachedShuffledSelection]]
+[#cachedShuffledSelection]
 ===== Cached shuffled selection
 
 This combination often wins for small use cases (1000 entities or less).
@@ -1911,7 +1911,7 @@ Otherwise, do something like this:
 ----
 
 
-[[cachedRandomSelection]]
+[#cachedRandomSelection]
 ===== Cached random selection
 
 This combination is often a worthy competitor for medium use cases, especially with fast stepping optimization algorithms (such as Simulated Annealing). Unlike cached shuffled selection, it doesn't waste time shuffling the moves list at the beginning of every step.
@@ -1928,7 +1928,7 @@ This combination is often a worthy competitor for medium use cases, especially w
 ----
 
 
-[[filteredSelection]]
+[#filteredSelection]
 ==== Filtered selection
 
 There can be certain moves that you don't want to select, because:
@@ -1980,7 +1980,7 @@ In most cases, you'll need to know both the entity and the value involved so you
 The solver may choose to reuse them in different contexts.
 ====
 
-[[filteredMoveSelection]]
+[#filteredMoveSelection]
 ===== Filtered move selection
 
 Unaccepted moves will not be selected and will therefore never have their `doMove()` method called:
@@ -2009,7 +2009,7 @@ Configure the `filterClass` on every targeted `moveSelector` (potentially both i
 ----
 
 
-[[filteredEntitySelection]]
+[#filteredEntitySelection]
 ===== Filtered entity selection
 
 Unaccepted entities will not be selected and will therefore never be used to create a move.
@@ -2039,7 +2039,7 @@ Configure the `filterClass` on every targeted `entitySelector` (potentially both
 
 If that filter should apply on all entities, configure it as a xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[global pinningFilter] instead.
 
-[[filteredValueSelection]]
+[#filteredValueSelection]
 ===== Filtered value selection
 
 Unaccepted values will not be selected and will therefore never be used to create a move.
@@ -2068,7 +2068,7 @@ Configure the `filterClass` on every targeted `valueSelector` (potentially both 
 ----
 
 
-[[sortedSelection]]
+[#sortedSelection]
 ==== Sorted selection
 
 Sorted selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector` or ``ValueSelector``.
@@ -2083,7 +2083,7 @@ If you do explicitly configure the ``Selector``, it overwrites the default setti
 ====
 
 
-[[sortedSelectionBySorterManner]]
+[#sortedSelectionBySorterManner]
 ===== Sorted selection by `SorterManner`
 
 Some `Selector` types implement a `SorterManner` out of the box:
@@ -2112,7 +2112,7 @@ Some `Selector` types implement a `SorterManner` out of the box:
 ----
 
 
-[[sortedSelectionByComparator]]
+[#sortedSelectionByComparator]
 ===== Sorted selection by `Comparator`
 
 An easy way to sort a `Selector` is with a plain old ``Comparator``:
@@ -2150,7 +2150,7 @@ The solver may choose to reuse them in different contexts.
 ====
 
 
-[[sortedSelectionBySelectionSorterWeightFactory]]
+[#sortedSelectionBySelectionSorterWeightFactory]
 ===== Sorted selection by `SelectionSorterWeightFactory`
 
 If you need the entire solution to sort a ``Selector``, use a `SelectionSorterWeightFactory` instead:
@@ -2218,7 +2218,7 @@ The solver may choose to reuse them in different contexts.
 ====
 
 
-[[sortedSelectionBySelectionSorter]]
+[#sortedSelectionBySelectionSorter]
 ===== Sorted selection by `SelectionSorter`
 
 Alternatively, you can also use the interface `SelectionSorter` directly:
@@ -2250,7 +2250,7 @@ The solver may choose to reuse them in different contexts.
 ====
 
 
-[[probabilisticSelection]]
+[#probabilisticSelection]
 ==== Probabilistic selection
 
 Probabilistic selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector` or ``ValueSelector``.
@@ -2287,7 +2287,7 @@ The solver may choose to reuse them in different contexts.
 ====
 
 
-[[limitedSelection]]
+[#limitedSelection]
 ==== Limited selection
 
 Selecting all possible moves sometimes does not scale well enough, especially for construction heuristics,
@@ -2309,7 +2309,7 @@ setting <<acceptedCountLimit,acceptedCountLimit>> is usually better than using `
 ====
 
 
-[[mimicSelection]]
+[#mimicSelection]
 ==== Mimic selection (record/replay)
 
 During mimic selection, one normal selector records its selection and one or multiple other special selectors replay that selection.
@@ -2336,7 +2336,7 @@ A replaying selector must reference a recorder's id with a ``mimicSelectorRef``:
 Mimic selection is useful to create <<cartesianProductMoveSelector,a composite move>> from two moves that affect the same entity.
 
 
-[[nearbySelection]]
+[#nearbySelection]
 ==== Nearby selection
 
 [NOTE]
@@ -2528,11 +2528,11 @@ The following ``NearbySelectionDistributionType``s are supported:
 As always, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak values if desired.
 
 
-[[customMoves]]
+[#customMoves]
 === Custom moves
 
 
-[[whichMoveTypesMightBeMissing]]
+[#whichMoveTypesMightBeMissing]
 ==== Which move types might be missing in my implementation?
 
 To determine which move types might be missing in your implementation,
@@ -2545,7 +2545,7 @@ If you find one, implement that coarse-grained move, mix it with the existing mo
 and benchmark it against the previous configurations to see if you want to keep it.
 
 
-[[customMovesIntroduction]]
+[#customMovesIntroduction]
 ==== Custom moves introduction
 
 Instead of using the generic ``Move``s (such as ``ChangeMove``) you can also implement your own ``Move``.
@@ -2559,7 +2559,7 @@ A custom `Move` is far more work to implement and much harder to avoid bugs than
 After implementing a custom ``Move``, turn on `environmentMode` ``FULL_ASSERT`` to check for score corruptions.
 
 
-[[theInterfaceMove]]
+[#theInterfaceMove]
 ==== The `Move` interface
 
 All moves implement the `Move` interface:
@@ -2712,7 +2712,7 @@ Internally it often uses a mapping technique based on the xref:optimization-algo
 To rebase lists or arrays in bulk, use `rebaseList()` and `rebaseArray()` on `AbstractMove`.
 
 
-[[customMoveGetPlanningEntitiesAndGetPlanningValues]]
+[#customMoveGetPlanningEntitiesAndGetPlanningValues]
 ===== Custom move: `getPlanningEntities()` and `getPlanningValues()`
 
 A custom move should also implement the `getPlanningEntities()` and `getPlanningValues()` methods.
@@ -2750,7 +2750,7 @@ and return all their values (to which they are changing) in ``getPlanningValues(
 ----
 
 
-[[customMoveEqualsAndHashCode]]
+[#customMoveEqualsAndHashCode]
 ===== Custom move: `equals()` and `hashCode()`
 
 A `Move` must implement the `equals()` and `hashCode()` methods for <<tabuSearch,move tabu>>.
@@ -2786,13 +2786,13 @@ Notice that it checks if the other move is an instance of the same move type.
 This `instanceof` check is important because a move are compared to a move of another move type.
 For example a `ChangeMove` and `SwapMove` are compared.
 
-[[generatingCustomMoves]]
+[#generatingCustomMoves]
 ==== Generating custom moves
 
 Now, let's generate instances of this custom ``Move`` class.
 There are 2 ways:
 
-[[moveListFactory]]
+[#moveListFactory]
 ===== `MoveListFactory`: the easy way to generate custom moves
 
 The easiest way to generate custom moves is by implementing the interface ``MoveListFactory``:
@@ -2863,7 +2863,7 @@ A custom `MoveListFactory` implementation must ensure that it does not move xref
 ====
 
 
-[[moveIteratorFactory]]
+[#moveIteratorFactory]
 ===== ``MoveIteratorFactory``: generate Custom moves just in time
 
 Use this advanced form to generate custom moves Just In Time
@@ -2925,21 +2925,21 @@ add the `moveIteratorFactoryCustomProperties` element and use xref:configuration
 A custom `MoveIteratorFactory` implementation must ensure that it does not move xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned entities].
 ====
 
-[[exhaustiveSearch]]
+[#exhaustiveSearch]
 == Exhaustive search
 
-[[exhaustiveSearchOverview]]
+[#exhaustiveSearchOverview]
 === Overview
 
 Exhaustive Search will always find the global optimum and recognize it too.
 That being said, it doesn't scale (not even beyond toy data sets) and is therefore mostly useless.
 
 
-[[bruteForce]]
+[#bruteForce]
 === Brute force
 
 
-[[bruteForceAlgorithm]]
+[#bruteForceAlgorithm]
 ==== Algorithm description
 
 The Brute Force algorithm creates and evaluates every possible solution.
@@ -2955,7 +2955,7 @@ as shown in <<scalabilityOfExhaustiveSearch,scalability of Exhaustive Search>>.
 ====
 
 
-[[bruteForceConfiguration]]
+[#bruteForceConfiguration]
 ==== Configuration
 
 Simplest configuration of Brute Force:
@@ -2972,11 +2972,11 @@ Simplest configuration of Brute Force:
 ----
 
 
-[[branchAndBound]]
+[#branchAndBound]
 === Branch and bound
 
 
-[[branchAndBoundAlgorithm]]
+[#branchAndBoundAlgorithm]
 ==== Algorithm description
 
 Branch And Bound also explores nodes in an exponential search tree, but it investigates more promising nodes first and prunes away worthless nodes.
@@ -3006,7 +3006,7 @@ as shown in <<scalabilityOfExhaustiveSearch,scalability of Exhaustive Search>>.
 ====
 
 
-[[branchAndBoundConfiguration]]
+[#branchAndBoundConfiguration]
 ==== Configuration
 
 Simplest configuration of Branch And Bound:
@@ -3095,7 +3095,7 @@ The `valueSorterManner` options are:
 * ``NONE``: Try the planning values in original order.
 
 
-[[scalabilityOfExhaustiveSearch]]
+[#scalabilityOfExhaustiveSearch]
 === Scalability of exhaustive search
 
 Exhaustive Search variants suffer from two big scalability issues:
@@ -3120,11 +3120,11 @@ Throwing hardware at these scalability issues has no noticeable impact.
 Moore's law cannot win against the onslaught of a few more planning entities in the dataset.
 ====
 
-[[constructionHeuristics]]
+[#constructionHeuristics]
 == Construction heuristics
 
 
-[[constructionHeuristicsOverview]]
+[#constructionHeuristicsOverview]
 === Overview
 
 A construction heuristic builds a pretty good initial solution in a finite length of time.
@@ -3133,11 +3133,11 @@ Its solution isn't always feasible, but it finds it fast so metaheuristics can f
 Construction heuristics terminate automatically, so there's usually no need to configure a `Termination` on the construction heuristic phase specifically.
 
 
-[[firstFit]]
+[#firstFit]
 === First fit
 
 
-[[firstFitAlgorithm]]
+[#firstFitAlgorithm]
 ==== Algorithm description
 
 The First Fit algorithm cycles through all the planning entities (in default order), initializing one planning entity at a time.
@@ -3151,7 +3151,7 @@ Notice that it starts with putting `Queen` A into row 0 (and never moving it lat
 Suffixing this construction heuristic with metaheuristics can remedy that.
 
 
-[[firstFitConfiguration]]
+[#firstFitConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3179,11 +3179,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity From Queue>>.
 
 
-[[firstFitDecreasing]]
+[#firstFitDecreasing]
 === First fit decreasing
 
 
-[[firstFitDecreasingAlgorithm]]
+[#firstFitDecreasingAlgorithm]
 ==== Algorithm description
 
 Like <<firstFit,First Fit>>, but assigns the more difficult planning entities first, because they are less likely to fit in the leftovers.
@@ -3200,7 +3200,7 @@ That's usually the case, but not always.
 ====
 
 
-[[firstFitDecreasingConfiguration]]
+[#firstFitDecreasingConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3228,11 +3228,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity From Queue>>.
 
 
-[[weakestFit]]
+[#weakestFit]
 === Weakest fit
 
 
-[[weakestFitAlgorithm]]
+[#weakestFitAlgorithm]
 ==== Algorithm description
 
 Like First Fit, but uses the weaker planning values first, because the strong planning values are more likely to be able to accommodate later planning entities.
@@ -3247,7 +3247,7 @@ That's often not the case.
 ====
 
 
-[[weakestFitConfiguration]]
+[#weakestFitConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3275,11 +3275,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity From Queue>>.
 
 
-[[weakestFitDecreasing]]
+[#weakestFitDecreasing]
 === Weakest fit decreasing
 
 
-[[weakestFitDecreasingAlgorithm]]
+[#weakestFitDecreasingAlgorithm]
 ==== Algorithm description
 
 Combines First Fit Decreasing and Weakest Fit.
@@ -3296,7 +3296,7 @@ However, it is usually better than Weakest Fit.
 ====
 
 
-[[weakestFitDecreasingConfiguration]]
+[#weakestFitDecreasingConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3324,11 +3324,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity From Queue>>.
 
 
-[[strongestFit]]
+[#strongestFit]
 === Strongest fit
 
 
-[[strongestFitAlgorithm]]
+[#strongestFitAlgorithm]
 ==== Algorithm description
 
 Like First Fit, but uses the strong planning values first, because the strong planning values are more likely to have a lower soft cost to use.
@@ -3343,7 +3343,7 @@ That's often not the case.
 ====
 
 
-[[strongestFitConfiguration]]
+[#strongestFitConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3371,11 +3371,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity From Queue>>.
 
 
-[[strongestFitDecreasing]]
+[#strongestFitDecreasing]
 === Strongest fit decreasing
 
 
-[[strongestFitDecreasingAlgorithm]]
+[#strongestFitDecreasingAlgorithm]
 ==== Algorithm description
 
 Combines First Fit Decreasing and Strongest Fit.
@@ -3392,7 +3392,7 @@ However, it is usually better than Strongest Fit.
 ====
 
 
-[[strongestFitDecreasingConfiguration]]
+[#strongestFitDecreasingConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3420,11 +3420,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity From Queue>>.
 
 
-[[allocateEntityFromQueue]]
+[#allocateEntityFromQueue]
 === Allocate entity from queue
 
 
-[[allocateEntityFromQueueAlgorithm]]
+[#allocateEntityFromQueueAlgorithm]
 ==== Algorithm description
 
 Allocate Entity From Queue is a versatile, generic form of <<firstFit,First Fit>>, <<firstFitDecreasing,First Fit Decreasing>>,
@@ -3437,7 +3437,7 @@ It works like this:
 . Repeat until all entities are assigned.
 
 
-[[allocateEntityFromQueueConfiguration]]
+[#allocateEntityFromQueueConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3514,7 +3514,7 @@ which are either in a cartesian product or in sequential steps,
 similar to <<scalingMultiplePlanningVariablesInConstructionHeuristics,the less verbose configuration>>.
 
 
-[[allocateEntityFromQueueMultipleEntityClasses]]
+[#allocateEntityFromQueueMultipleEntityClasses]
 ==== Multiple entity classes
 
 The easiest way to deal with multiple entity classes is to run a separate Construction Heuristic for each entity class:
@@ -3548,7 +3548,7 @@ The easiest way to deal with multiple entity classes is to run a separate Constr
 ----
 
 
-[[constructionHeuristicsPickEarlyType]]
+[#constructionHeuristicsPickEarlyType]
 ==== Pick early type
 
 There are several pick early types for Construction Heuristics:
@@ -3610,11 +3610,11 @@ If the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTr
 ----
 
 
-[[allocateToValueFromQueue]]
+[#allocateToValueFromQueue]
 === Allocate to value from queue
 
 
-[[allocateToValueFromQueueAlgorithm]]
+[#allocateToValueFromQueueAlgorithm]
 ==== Algorithm description
 
 Allocate To Value From Queue works like this:
@@ -3624,7 +3624,7 @@ Allocate To Value From Queue works like this:
 . Repeat until all entities are assigned.
 
 
-[[allocateToValueFromQueueConfiguration]]
+[#allocateToValueFromQueueConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3673,11 +3673,11 @@ Advanced configuration for a single entity class with a single variable:
 For scaling out, see <<scalingConstructionHeuristics,scaling construction heuristics>>.
 
 
-[[cheapestInsertion]]
+[#cheapestInsertion]
 === Cheapest insertion
 
 
-[[cheapestInsertionAlgorithm]]
+[#cheapestInsertionAlgorithm]
 ==== Algorithm description
 
 The Cheapest Insertion algorithm cycles through all the planning values for all the planning entities, initializing one planning entity at a time.
@@ -3694,7 +3694,7 @@ Cheapest Insertion scales considerably worse than First Fit, etc.
 ====
 
 
-[[cheapestInsertionConfiguration]]
+[#cheapestInsertionConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3722,11 +3722,11 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 For a very advanced configuration, see <<allocateFromPool,Allocate from pool>>.
 
 
-[[regretInsertion]]
+[#regretInsertion]
 === Regret insertion
 
 
-[[regretInsertionAlgorithm]]
+[#regretInsertionAlgorithm]
 ==== Algorithm description
 
 The Regret Insertion algorithm behaves like the Cheapest Insertion algorithm.
@@ -3735,17 +3735,17 @@ But instead of picking the entity-value combination with the best score, it pick
 It then assigns that entity to its best value, to avoid regretting not having done that.
 
 
-[[regretInsertionConfiguration]]
+[#regretInsertionConfiguration]
 ==== Configuration
 
 This algorithm has not been implemented yet.
 
 
-[[allocateFromPool]]
+[#allocateFromPool]
 === Allocate from pool
 
 
-[[allocateFromPoolAlgorithm]]
+[#allocateFromPoolAlgorithm]
 ==== Algorithm description
 
 Allocate From Pool is a versatile, generic form of <<cheapestInsertion,Cheapest Insertion>> and <<regretInsertion,Regret Insertion>>.
@@ -3756,7 +3756,7 @@ It works like this:
 . Repeat until all entities are assigned.
 
 
-[[allocateFromPoolConfiguration]]
+[#allocateFromPoolConfiguration]
 ==== Configuration
 
 Simple configuration:
@@ -3815,7 +3815,7 @@ is supported too.
 For scaling out, see <<scalingConstructionHeuristics,scaling construction heuristics>>.
 
 
-[[scalingConstructionHeuristics]]
+[#scalingConstructionHeuristics]
 === Scaling construction heuristics
 
 If the Construction Heuristic takes a long time to solve and create an initial solution,
@@ -3827,7 +3827,7 @@ so there is plenty of time left for <<localSearch,Local Search>>.
 If the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
 
 
-[[initializingScoreTrendShortcuts]]
+[#initializingScoreTrendShortcuts]
 ==== InitializingScoreTrend shortcuts
 
 If the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``, a Construction Heuristic algorithm (such as First Fit) is faster:
@@ -3838,7 +3838,7 @@ because a down trend guarantees that initializing any additional planning variab
 So if a move has the same score as before the planning variable was initialized, then no other move can have a better score.
 
 
-[[scalingMultiplePlanningVariablesInConstructionHeuristics]]
+[#scalingMultiplePlanningVariablesInConstructionHeuristics]
 ==== Scaling multiple planning variables in construction heuristics
 
 There are two ways to deal with multiple planning variables,
@@ -3920,7 +3920,7 @@ With three or more variables, it's possible to combine the cartesian product and
 ----
 
 
-[[otherScalingTechniquesInConstructionHeuristics]]
+[#otherScalingTechniquesInConstructionHeuristics]
 ==== Other scaling techniques in construction heuristics
 
 <<partitionedSearch,Partitioned Search>> reduces the number of moves per step.
@@ -3933,11 +3933,11 @@ Other `Selector` customizations can also reduce the number of moves generated by
 * xref:optimization-algorithms/optimization-algorithms.adoc#limitedSelection[Limited selection]
 
 
-[[localSearch]]
+[#localSearch]
 == Local search
 
 
-[[localSearchOverview]]
+[#localSearchOverview]
 === Overview
 
 Local Search starts from an initial solution and evolves that single solution into a mostly better and better solution.
@@ -3951,11 +3951,11 @@ Therefore it's pretty natural to implement.
 **Local Search needs to start from an initialized solution**, therefore it's usually required to configure a Construction Heuristic phase before it.
 
 
-[[localSearchConcepts]]
+[#localSearchConcepts]
 === Local search concepts
 
 
-[[localSearchStepByStep]]
+[#localSearchStepByStep]
 ==== Step by step
 
 A step is the winning ``Move``.
@@ -4006,7 +4006,7 @@ By using a xref:optimization-algorithms/optimization-algorithms.adoc#constructio
 it's even a lot more efficient.
 
 
-[[localSearchConceptsDecideTheNextStep]]
+[#localSearchConceptsDecideTheNextStep]
 ==== Decide the next step
 
 Local Search decides the next step with the aid of three configurable components:
@@ -4061,7 +4061,7 @@ Each time the current solution is better than the last best solution, the curren
 image::optimization-algorithms/localSearchScoreOverTime.png[align="center"]
 
 
-[[localSearchAcceptor]]
+[#localSearchAcceptor]
 ==== Acceptor
 
 Use an `Acceptor` (together with a `Forager`) to activate Tabu Search, Simulated Annealing, Late Acceptance, ... For each move it checks whether it is accepted or not.
@@ -4072,7 +4072,7 @@ You can implement your own ``Acceptor``, but the built-in acceptors should suffi
 You can also combine multiple acceptors.
 
 
-[[localSearchForager]]
+[#localSearchForager]
 ==== Forager
 
 A `Forager` gathers all accepted moves and picks the move which is the next step.
@@ -4089,7 +4089,7 @@ It is possible to disable breaking ties randomly by explicitly setting `breakTie
 ====
 
 
-[[acceptedCountLimit]]
+[#acceptedCountLimit]
 ===== Accepted count limit
 
 When there are many possible moves, it becomes inefficient to evaluate all of them at every step.
@@ -4114,7 +4114,7 @@ With a low `acceptedCountLimit` (so a fast stepping algorithm), it is recommende
 ====
 
 
-[[localSearchPickEarlyType]]
+[#localSearchPickEarlyType]
 ===== Pick early type
 
 A forager can pick a move early during a step, ignoring subsequent selected moves.
@@ -4146,11 +4146,11 @@ There are three pick early types for Local Search:
 ----
 
 
-[[hillClimbing]]
+[#hillClimbing]
 === Hill climbing (simple local search)
 
 
-[[hillClimbingAlgorithm]]
+[#hillClimbingAlgorithm]
 ==== Algorithm description
 
 Hill Climbing tries all selected moves and then takes the best move, which is the move which leads to the solution with the highest score.
@@ -4164,7 +4164,7 @@ Notice that once a queen has moved, it can be moved again later.
 This is a good thing, because in an NP-complete problem it's impossible to predict what will be the optimal final value for a planning variable.
 
 
-[[hillClimbingStuckInLocalOptima]]
+[#hillClimbingStuckInLocalOptima]
 ==== Stuck in local optima
 
 Hill climbing always takes improving moves.
@@ -4177,7 +4177,7 @@ Improvements upon Hill Climbing (such as Tabu Search, Simulated Annealing and La
 Therefore, it's recommended to never use Hill Climbing, unless you're absolutely sure there are no local optima in your planning problem.
 
 
-[[hillClimbingConfigure]]
+[#hillClimbingConfigure]
 ==== Configuration
 
 Simplest configuration:
@@ -4205,11 +4205,11 @@ Advanced configuration:
 ----
 
 
-[[tabuSearch]]
+[#tabuSearch]
 === Tabu search
 
 
-[[tabuSearchAlgorithm]]
+[#tabuSearchAlgorithm]
 ==== Algorithm description
 
 Tabu Search is a Local Search that maintains a tabu list to avoid getting stuck in local optima.
@@ -4230,7 +4230,7 @@ There is no spelling error.
 Scientific paper: _Tabu Search - Part 1 and Part 2_ by Fred Glover (1989 - 1990)
 
 
-[[tabuSearchConfiguration]]
+[#tabuSearchConfiguration]
 ==== Configuration
 
 Simplest configuration:
@@ -4341,11 +4341,11 @@ On the other hand, if the tabu size is too large, the solver can be inefficient 
 Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to fine tweak your configuration.
 
 
-[[simulatedAnnealing]]
+[#simulatedAnnealing]
 === Simulated annealing
 
 
-[[simulatedAnnealingAlgorithm]]
+[#simulatedAnnealingAlgorithm]
 ==== Algorithm description
 
 Simulated Annealing evaluates only a few moves per step, so it steps quickly.
@@ -4361,7 +4361,7 @@ Instead, it gives non improving moves also a chance to be picked, depending on i
 In the end, it gradually turns into Hill Climbing, only accepting improving moves.
 
 
-[[simulatedAnnealingConfiguration]]
+[#simulatedAnnealingConfiguration]
 ==== Configuration
 
 Start with a `simulatedAnnealingStartingTemperature` set to the maximum score delta a single move can cause.
@@ -4403,11 +4403,11 @@ Use a lower tabu size than in a pure Tabu Search configuration.
 ----
 
 
-[[lateAcceptance]]
+[#lateAcceptance]
 === Late acceptance
 
 
-[[lateAcceptanceAlgorithm]]
+[#lateAcceptanceAlgorithm]
 ==== Algorithm description
 
 Late Acceptance (also known as Late Acceptance Hill Climbing) also evaluates only a few moves per step.
@@ -4418,7 +4418,7 @@ image::optimization-algorithms/lateAcceptance.png[align="center"]
 Scientific paper: http://www.cs.stir.ac.uk/~kjt/techreps/pdf/TR192.pdf[The Late Acceptance Hill-Climbing Heuristic by Edmund K. Burke, Yuri Bykov (2012)]
 
 
-[[lateAcceptanceConfiguration]]
+[#lateAcceptanceConfiguration]
 ==== Configuration
 
 Simplest configuration:
@@ -4468,11 +4468,11 @@ Use a lower tabu size than in a pure Tabu Search configuration.
 ----
 
 
-[[greatDeluge]]
+[#greatDeluge]
 === Great Deluge
 
 
-[[greatDelugeAlgorithm]]
+[#greatDelugeAlgorithm]
 ==== Algorithm description
 
 Great Deluge algorithm is similar to the  <<simulatedAnnealing,Simulated Annealing>> algorithm, it evaluates only a few moves per steps,
@@ -4483,7 +4483,7 @@ or by percentual value.
 A gradual increase in water level gives Great Deluge more time to escape from local maxima.
 
 
-[[greatDelugeConfiguration]]
+[#greatDelugeConfiguration]
 ==== Configuration
 
 Simplest configuration:
@@ -4530,11 +4530,11 @@ To avoid hard coding the water level increment, configure a `greatDelugeWaterLev
 The algorithm takes as starting value the best score from the construction heuristic.
 Use the Benchmarker to fine-tune tweak your configuration.
 
-[[stepCountingHillClimbing]]
+[#stepCountingHillClimbing]
 === Step counting hill climbing
 
 
-[[stepCountingHillClimbingAlgorithm]]
+[#stepCountingHillClimbingAlgorithm]
 ==== Algorithm description
 
 Step Counting Hill Climbing also evaluates only a few moves per step.
@@ -4544,7 +4544,7 @@ A move is accepted if it does not decrease the score, or if it leads to a score 
 Scientific paper: https://www.researchgate.net/profile/Sanja_Petrovic2/publication/299593956_A_Step_Counting_Hill_Climbing_Algorithm_applied_to_University_Examination_Timetabling/links/5729d02a08aef7c7e2c4103a/A-Step-Counting-Hill-Climbing-Algorithm-applied-to-University-Examination-Timetabling.pdf[An initial study of a novel Step Counting Hill Climbing heuristic applied to timetabling problems by Yuri Bykov, Sanja Petrovic (2013)]
 
 
-[[stepCountingHillClimbingConfiguration]]
+[#stepCountingHillClimbingConfiguration]
 ==== Configuration
 
 Step Counting Hill Climbing accepts any move that has a score which is higher than a threshold score.
@@ -4568,11 +4568,11 @@ Step Counting Hill Climbing should use a low ``acceptedCountLimit``.
 Step Counting Hill Climbing can be combined with a tabu acceptor at the same time, similar as shown in <<lateAcceptance,the Late Acceptance section>>.
 
 
-[[strategicOscillation]]
+[#strategicOscillation]
 === Strategic oscillation
 
 
-[[strategicOscillationAlgorithm]]
+[#strategicOscillationAlgorithm]
 ==== Algorithm description
 
 Strategic Oscillation is an add-on, which works especially well with <<tabuSearch,Tabu Search>>.
@@ -4580,7 +4580,7 @@ Instead of picking the accepted move with the highest score, it employs a differ
 If there's no improving move however, it prefers moves which improve a softer score level, over moves which break a harder score level less.
 
 
-[[strategicOscillationConfiguration]]
+[#strategicOscillationConfiguration]
 ==== Configuration
 
 Configure a ``finalistPodiumType``, for example in a Tabu Search configuration:
@@ -4607,11 +4607,11 @@ The following ``finalistPodiumType``s are supported:
 * ``STRATEGIC_OSCILLATION_BY_LEVEL_ON_BEST_SCORE``: Like ``STRATEGIC_OSCILLATION_BY_LEVEL``, but define improving as better than the best score (instead of the last completed step score).
 
 
-[[variableNeighborhoodDescent]]
+[#variableNeighborhoodDescent]
 === Variable neighborhood descent
 
 
-[[variableNeighborhoodDescentAlgorithm]]
+[#variableNeighborhoodDescentAlgorithm]
 ==== Algorithm description
 
 Variable Neighborhood Descent iteratively tries multiple move selectors
@@ -4625,7 +4625,7 @@ the implementation will ascend to a higher score (which is a better score).
 ====
 
 
-[[variableNeighborhoodDescentConfiguration]]
+[#variableNeighborhoodDescentConfiguration]
 ==== Configuration
 
 Simplest configuration:
@@ -4661,7 +4661,7 @@ Variable Neighborhood Descent doesn't scale well,
 but it is useful in some use cases with a very erratic score landscape.
 
 
-[[multithreadedSolving]]
+[#multithreadedSolving]
 == Multithreaded solving
 
 [NOTE]
@@ -4693,7 +4693,7 @@ A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `tr
 and slow down the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
-[[planningId]]
+[#planningId]
 === `@PlanningId`
 
 For some functionality (such as multithreaded solving and real-time planning),
@@ -4737,7 +4737,7 @@ A `@PlanningId` property must be:
 * Never `null` by the time `Solver.solve()` is called.
 
 
-[[customThreadFactory]]
+[#customThreadFactory]
 === Custom thread factory (WildFly, GAE, ...)
 
 The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
@@ -4756,7 +4756,7 @@ and the <<partitionedSearch,Partition Search threads>> with it:
 </solver>
 ----
 
-[[multithreadedIncrementalSolving]]
+[#multithreadedIncrementalSolving]
 === Multithreaded incremental solving
 
 Enable multithreaded incremental solving by <<planningId,adding a @PlanningId annotation>>
@@ -4827,7 +4827,7 @@ To run in an environment that doesn't like arbitrary thread creation,
 use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factory>>.
 
 
-[[partitionedSearch]]
+[#partitionedSearch]
 == Partitioned search
 
 [NOTE]
@@ -4837,7 +4837,7 @@ It is not open source, and it is free for development use only.
 https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
 ====
 
-[[partitionedSearchAlgorithm]]
+[#partitionedSearchAlgorithm]
 === Algorithm description
 
 It is often more efficient to partition large data sets (usually above 5000 planning entities)
@@ -4863,7 +4863,7 @@ without any of the constraints crossing boundaries between partitions.
 ====
 
 
-[[partitionedSearchConfiguration]]
+[#partitionedSearchConfiguration]
 === Configuration
 
 Simplest configuration:
@@ -4926,11 +4926,11 @@ followed by a non-partitioned Local Search phase:
 ----
 
 
-[[partitioningASolution]]
+[#partitioningASolution]
 === Partitioning a solution
 
 
-[[customSolutionPartitioner]]
+[#customSolutionPartitioner]
 ==== Custom `SolutionPartitioner`
 
 To use a custom `SolutionPartitioner`, configure one on the Partitioned Search phase:
@@ -5044,7 +5044,7 @@ add the `solutionPartitionerCustomProperties` element and use xref:configuration
 ----
 
 
-[[runnablePartThreadLimit]]
+[#runnablePartThreadLimit]
 === Runnable part thread limit
 
 When running a multithreaded solver, such as Partitioned Search, CPU power can quickly become a scarce resource,

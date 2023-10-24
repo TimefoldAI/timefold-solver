@@ -1,9 +1,9 @@
-[[curriculumCourse]]
+[#curriculumCourse]
 = Course timetabling (ITC 2007 Track 3 - Curriculum Course Scheduling)
 :imagesdir: ../..
 
 
-[[curriculumCourseProblemDescription]]
+[#curriculumCourseProblemDescription]
 == Problem description
 
 Schedule each lecture into a timeslot and into a room.
@@ -25,7 +25,7 @@ Soft constraints:
 The problem is defined by http://www.cs.qub.ac.uk/itc2007/curriculmcourse/course_curriculm_index.htm[the International Timetabling Competition 2007 track 3].
 
 
-[[curriculumCourseProblemSize]]
+[#curriculumCourseProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -47,7 +47,7 @@ comp14 has 68 teachers,  60 curricula,  85 courses, 275 lectures, 25 periods, 17
 ----
 
 
-[[curriculumCourseDomainModel]]
+[#curriculumCourseDomainModel]
 == Domain model
 
 image::use-cases-and-examples/course-timetabling/curriculumCourseClassDiagram.png[align="center"]

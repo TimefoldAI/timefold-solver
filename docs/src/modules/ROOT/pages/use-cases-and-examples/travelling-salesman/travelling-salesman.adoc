@@ -1,9 +1,9 @@
-[[tsp]]
+[#tsp]
 = Traveling salesman (TSP - traveling salesman problem)
 :imagesdir: ../..
 
 
-[[tspProblemDescription]]
+[#tspProblemDescription]
 == Problem description
 
 Given a list of cities, find the shortest tour for a salesman that visits each city exactly once.
@@ -13,7 +13,7 @@ It is http://www.math.uwaterloo.ca/tsp/[one of the most intensively studied prob
 Yet, in the real world, it is often only part of a planning problem, along with other constraints, such as employee shift rostering constraints.
 
 
-[[tspProblemSize]]
+[#tspProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -26,7 +26,7 @@ lu980    has 980 cities with a search space of 10^2504.
 ----
 
 
-[[tspProblemDifficulty]]
+[#tspProblemDifficulty]
 == Problem difficulty
 
 Despite TSP's simple definition, the problem is surprisingly hard to solve.

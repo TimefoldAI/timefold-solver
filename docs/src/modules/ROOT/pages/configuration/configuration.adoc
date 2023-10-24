@@ -1,4 +1,4 @@
-[[configuration]]
+[#configuration]
 = Configuring Timefold Solver
 :page-aliases: shadow-variable/shadow-variable.adoc
 :doctype: book
@@ -6,7 +6,7 @@
 :icons: font
 
 
-[[configurationOverview]]
+[#configurationOverview]
 == Overview
 
 Solving a planning problem with Timefold Solver consists of the following steps:
@@ -19,11 +19,11 @@ Solving a planning problem with Timefold Solver consists of the following steps:
 image::configuration/inputOutputOverview.png[align="center"]
 
 
-[[solverConfiguration]]
+[#solverConfiguration]
 == Solver configuration
 
 
-[[solverConfigurationByXML]]
+[#solverConfigurationByXML]
 === Solver configuration by XML
 
 Build a `Solver` instance with the ``SolverFactory``.
@@ -83,7 +83,7 @@ These various parts of a configuration are explained further in this manual.
 *Timefold Solver makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
 
 
-[[solverConfigurationByJavaAPI]]
+[#solverConfigurationByJavaAPI]
 === Solver configuration by Java API
 
 A solver configuration can also be configured with the `SolverConfig` API.
@@ -134,7 +134,7 @@ and copy it with the copy constructor for each user request:
 ----
 ====
 
-[[annotationAlternatives]]
+[#annotationAlternatives]
 === Annotation alternatives
 
 Timefold Solver needs to be told which classes in your domain model are planning entities, which properties are planning variables, etc.
@@ -150,7 +150,7 @@ This is https://issues.redhat.com/browse/PLANNER-151[not yet supported].
 
 This manual focuses on the first manner, but every feature supports all three manners, even if it's not explicitly mentioned.
 
-[[domainAccess]]
+[#domainAccess]
 === Domain access
 
 Timefold Solver by default accesses your domain using reflection, which
@@ -177,7 +177,7 @@ Solver Configuration:
   </solver>
 ----
 
-[[customPropertiesConfiguration]]
+[#customPropertiesConfiguration]
 === Custom properties configuration
 
 Solver configuration elements, that instantiate classes and explicitly mention it, support custom properties.
@@ -215,11 +215,11 @@ public class MyEasyScoreCalculator extends EasyScoreCalculator<MySolution, Simpl
 Most value types are supported (including `boolean`, `int`, `double`, `BigDecimal`, `String` and enums).
 
 
-[[modelAPlanningProblem]]
+[#modelAPlanningProblem]
 == Model a planning problem
 
 
-[[isThisClassAProblemFactOrPlanningEntity]]
+[#isThisClassAProblemFactOrPlanningEntity]
 === Is this class a problem fact or planning entity?
 
 Look at a dataset of your planning problem.
@@ -246,7 +246,7 @@ To create a good domain model, read the xref:design-patterns/design-patterns.ado
 
 *In Timefold Solver, all problem facts and planning entities are plain old JavaBeans (POJOs).* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
 
-[[problemFact]]
+[#problemFact]
 === Problem fact
 
 A problem fact is any JavaBean (POJO) with getters that does not change during planning.
@@ -304,11 +304,11 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 ====
 
 
-[[planningEntity]]
+[#planningEntity]
 === Planning entity
 
 
-[[planningEntityAnnotation]]
+[#planningEntityAnnotation]
 ==== Planning entity annotation
 
 A planning entity is a JavaBean (POJO) that changes during solving, for example a `Queen` that changes to another row.
@@ -398,7 +398,7 @@ Those are immutable by design and therefore cannot change during planning,
 whereas planning entities will.
 ====
 
-[[planningEntityDifficulty]]
+[#planningEntityDifficulty]
 ==== Planning entity difficulty
 
 Some optimization algorithms work more efficiently if they have an estimation of which planning entities are more difficult to plan.
@@ -462,11 +462,11 @@ _None of the current planning variable states should be used to compare planning
 For example, a ``Queen``'s `row` variable should not be used.
 
 
-[[planningVariable]]
+[#planningVariable]
 === Planning variable (genuine)
 
 
-[[planningVariableAnnotation]]
+[#planningVariableAnnotation]
 ==== Planning variable annotation
 
 A planning variable is a JavaBean property (so a getter and setter) on a planning entity.
@@ -527,7 +527,7 @@ For more advanced planning variables used to model precedence relationships, see
 ====
 
 
-[[nullablePlanningVariable]]
+[#nullablePlanningVariable]
 ==== Nullable planning variable
 
 By default, an initialized planning variable cannot be ``null``, so an initialized solution will never use `null` for any of its planning variables.
@@ -590,7 +590,7 @@ One way to deal with this is to filter the entity selector of the placer in the 
 </solver>
 ----
 
-[[whenIsAPlanningVariableInitialized]]
+[#whenIsAPlanningVariableInitialized]
 ==== When is a planning variable considered initialized?
 
 A planning variable is considered initialized if its value is not `null` or if the variable is ``nullable``.
@@ -600,7 +600,7 @@ A planning entity is initialized if all of its planning variables are initialize
 
 A solution is initialized if all of its planning entities are initialized.
 
-[[shadowVariable]]
+[#shadowVariable]
 === Planning variable (shadow)
 
 A shadow variable is a planning variable whose correct value can be deduced from the state of the xref:configuration/configuration.adoc#planningVariable[genuine planning variables].
@@ -627,7 +627,7 @@ A shadow planning entity class has no genuine planning variables and at least on
 There are several built-in shadow variables:
 
 
-[[bidirectionalVariable]]
+[#bidirectionalVariable]
 ==== Bi-directional variable (inverse relation shadow variable)
 
 Two variables are bi-directional if their instances always point to each other (unless one side points to `null` and the other side does not exist).
@@ -724,7 +724,7 @@ Timefold Solver will not violate that principle during planning, but the input m
 ====
 
 
-[[anchorShadowVariable]]
+[#anchorShadowVariable]
 ==== Anchor shadow variable
 
 An anchor shadow variable is the anchor of xref:configuration/configuration.adoc#chainedPlanningVariable[a chained variable].
@@ -747,7 +747,7 @@ public class Customer {
 The `sourceVariableName` property is the name of the chained variable on the same entity class.
 
 
-[[listVariableShadowVariables]]
+[#listVariableShadowVariables]
 ==== List variable shadow variables
 
 When the planning entity uses a xref:configuration/configuration.adoc#planningListVariable[list variable], its elements can use a number of built-in shadow variables.
@@ -842,7 +842,7 @@ public class Customer {
     public void setNextCustomer(Customer nextCustomer) {...}
 ----
 
-[[customVariableListener]]
+[#customVariableListener]
 ==== Custom `VariableListener`
 
 To update a shadow variable, Timefold Solver uses a ``VariableListener``.
@@ -983,7 +983,7 @@ To planning clone a shadow variable, add `@DeepPlanningClone` annotation:
 ----
 
 
-[[variableListenerTriggeringOrder]]
+[#variableListenerTriggeringOrder]
 ==== VariableListener triggering order
 
 All shadow variables are triggered by a ``VariableListener``, regardless if it's a built-in or a custom shadow variable.
@@ -1022,11 +1022,11 @@ public class StartTimeUpdatingVariableListener implements VariableListener<TaskA
 ----
 
 
-[[planningValueAndPlanningValueRange]]
+[#planningValueAndPlanningValueRange]
 === Planning value and planning value range
 
 
-[[planningValue]]
+[#planningValue]
 ==== Planning value
 
 A planning value is a possible value for a genuine planning variable.
@@ -1042,11 +1042,11 @@ A planning value range is the set of possible planning values for a planning var
 This set can be a countable (for example row ``1``, ``2``, `3` or ``4``) or uncountable (for example any `double` between `0.0` and ``1.0``).
 
 
-[[planningValueRangeProvider]]
+[#planningValueRangeProvider]
 ==== Planning value range provider
 
 
-[[planningValueRangeProviderOverview]]
+[#planningValueRangeProviderOverview]
 ===== Overview
 
 The value range of a planning variable is defined with the `@ValueRangeProvider` annotation.
@@ -1070,7 +1070,7 @@ The return type of that method can be three types:
 * Array: The value range is defined by an array of its possible values.
 * ``ValueRange``: The value range is defined by its bounds. This is less common.
 
-[[valueRangeProviderOnSolution]]
+[#valueRangeProviderOnSolution]
 ===== `ValueRangeProvider` on the solution
 
 All instances of the same planning entity class share the same set of possible planning values for that planning variable.
@@ -1121,7 +1121,7 @@ public class NQueens {
 ----
 
 
-[[valueRangeProviderOnPlanningEntity]]
+[#valueRangeProviderOnPlanningEntity]
 ===== `ValueRangeProvider` on the Planning Entity
 
 Each planning entity has its own value range (a set of possible planning values) for the planning variable.
@@ -1172,14 +1172,14 @@ A `ValueRangeProvider` on the planning entity is not compatible with a <<plannin
 ====
 
 
-[[referencingValueRangeProviders]]
+[#referencingValueRangeProviders]
 ===== Referencing ``ValueRangeProvider``s
 
 There are two ways how to match a planning variable to a value range provider.
 The simplest way is to have value range provider auto-detected.
 Another way is to explicitly reference the value range provider.
 
-[[anonymousValueRangeProviders]]
+[#anonymousValueRangeProviders]
 ====== Anonymous ``ValueRangeProvider``s
 
 We already described the first approach.
@@ -1241,7 +1241,7 @@ as an ``Airplane`` is not a ``Car``.
     }
 ----
 
-[[explicitlyReferencingValueRangeProviders]]
+[#explicitlyReferencingValueRangeProviders]
 ====== Explicitly referenced ``ValueRangeProvider``s
 
 In more complicated cases where auto-detection is not sufficient or where clarity is preferred over simplicity,
@@ -1289,7 +1289,7 @@ Explicitly referenced value range providers can also be combined, for example:
 ----
 
 
-[[valueRangeFactory]]
+[#valueRangeFactory]
 ===== `ValueRangeFactory`
 
 Instead of a ``Collection``, you can also return a `ValueRange` or ``CountableValueRange``, built by the ``ValueRangeFactory``:
@@ -1332,7 +1332,7 @@ The `ValueRangeFactory` has creation methods for several value class types:
 * `Temporal` (such as ``LocalDate``, ``LocalDateTime``, ...): A time range.
 
 
-[[planningValueStrength]]
+[#planningValueStrength]
 ==== Planning value strength
 
 Some optimization algorithms work a bit more efficiently if they have an estimation of which planning values are stronger, which means they are more likely to satisfy a planning entity.
@@ -1400,7 +1400,7 @@ _None of the current planning variable state in any of the planning entities sho
 For example, none of the `row` variables of any `Queen` may be used to determine the strength of a ``Row``.
 
 
-[[planningListVariable]]
+[#planningListVariable]
 === Planning list variable (VRP, Task assigning, ...)
 
 Use the planning list variable to model problems where the goal is to distribute a number of workload elements among limited resources in a specific order.
@@ -1452,7 +1452,7 @@ Planning list variable can be used if the domain meets the following criteria:
 No planning value may appear in multiple entities.
 
 
-[[chainedPlanningVariable]]
+[#chainedPlanningVariable]
 === Chained planning variable (TSP, VRP, ...)
 
 Chained planning variable is one way to implement the xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
@@ -1553,11 +1553,11 @@ Notice how two value range providers are usually combined:
 * The value range provider that holds the initialized planning entities, for example ``visitList``.
 
 
-[[planningProblemAndPlanningSolution]]
+[#planningProblemAndPlanningSolution]
 === Planning problem and planning solution
 
 
-[[planningProblemInstance]]
+[#planningProblemInstance]
 ==== Planning problem instance
 
 A dataset for a planning problem needs to be wrapped in a class for the `Solver` to solve.
@@ -1571,7 +1571,7 @@ It's not even a possible solution.
 It's an uninitialized solution.
 
 
-[[solutionClass]]
+[#solutionClass]
 ==== Solution class
 
 A solution class holds all problem facts, planning entities and a score.
@@ -1617,7 +1617,7 @@ whereas a planning solution will.
 ====
 
 
-[[planningEntitiesOfASolution]]
+[#planningEntitiesOfASolution]
 ==== Planning entities of a solution (`@PlanningEntityCollectionProperty`)
 
 Timefold Solver needs to extract the entity instances from the solution instance.
@@ -1654,7 +1654,7 @@ In rare cases, a planning entity might be a singleton: use `@PlanningEntityPrope
 Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
 
 
-[[scoreOfASolution]]
+[#scoreOfASolution]
 ==== `Score` of a Solution (`@PlanningScore`)
 
 A `@PlanningSolution` class requires a score property (or field), which is annotated with a `@PlanningScore` annotation.
@@ -1708,7 +1708,7 @@ Some use cases use xref:constraints-and-score/constraints-and-score.adoc#scoreTy
 This annotation can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
 
 
-[[problemFacts]]
+[#problemFacts]
 ==== Problem facts of a solution (`@ProblemFactCollectionProperty`)
 
 For xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams],
@@ -1762,7 +1762,7 @@ In rare cases, a problem fact might be a singleton: use `@ProblemFactProperty` o
 Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
 
 
-[[cachedProblemFact]]
+[#cachedProblemFact]
 ===== Cached problem fact
 
 A cached problem fact is a problem fact that does not exist in the real domain model, but is calculated before the `Solver` really starts solving.
@@ -1797,7 +1797,7 @@ For example in examination, a cached problem fact `TopicConflict` is created for
 Where a score constraint needs to check that no two exams with a topic that shares a student are scheduled close together (depending on the constraint: at the same time, in a row, or in the same day), the `TopicConflict` instance can be used as a problem fact, rather than having to combine every two `Student` instances.
 
 
-[[autoDiscoverSolutionProperties]]
+[#autoDiscoverSolutionProperties]
 ==== Auto discover solution properties
 
 Instead of configuring each property (or field) annotation explicitly,
@@ -1842,7 +1842,7 @@ Specifically, a xref:constraints-and-score/constraints-and-score.adoc#bendableSc
 with an explicit `@PlanningScore` annotation to define the number of hard and soft levels.
 
 
-[[cloningASolution]]
+[#cloningASolution]
 ==== Cloning a solution
 
 Most (if not all) optimization algorithms clone the solution each time they encounter a new best solution (so they can recall it later) or to work with multiple solutions in parallel.
@@ -1863,7 +1863,7 @@ image::configuration/solutionCloning.png[align="center"]
 *Implementing a planning clone method is hard, therefore you do not need to implement it.*
 
 
-[[fieldAccessingSolutionCloner]]
+[#fieldAccessingSolutionCloner]
 ===== `FieldAccessingSolutionCloner`
 
 This `SolutionCloner` is used by default.
@@ -1905,7 +1905,7 @@ Values of Java's `enum` and `record` types are never deep-cloned.
 They are immutable by design and shouldn't be used to store mutable state, such as planning entities.
 ====
 
-[[customCloning]]
+[#customCloning]
 ===== Custom cloning with a `SolutionCloner`
 
 To use a custom cloner, configure it on the planning solution:
@@ -1964,7 +1964,7 @@ If A is cloned, then its variable must point to the clone of B, not the original
 ====
 
 
-[[createAnUninitializedSolution]]
+[#createAnUninitializedSolution]
 ==== Create an uninitialized solution
 
 Create a `@PlanningSolution` instance to represent your planning problem's dataset, so it can be set on the `Solver` as the planning problem to solve.
@@ -2025,11 +2025,11 @@ Usually, most of this data comes from your data layer, and your solution impleme
 ----
 
 
-[[useTheSolver]]
+[#useTheSolver]
 == Use the `Solver`
 
 
-[[theSolverInterface]]
+[#theSolverInterface]
 === The `Solver` interface
 
 A `Solver` solves your planning problem.
@@ -2053,7 +2053,7 @@ This can cause HTTP timeouts for REST services and it requires extra code to sol
 To avoid such issues, use a <<solverManager,`SolverManager`>> instead.
 
 
-[[solvingAProblem]]
+[#solvingAProblem]
 === Solving a problem
 
 Solving a problem is quite easy once you have:
@@ -2092,7 +2092,7 @@ It can be partially or fully initialized, which is often the case in xref:respon
 ====
 
 
-[[environmentMode]]
+[#environmentMode]
 === Environment mode: are there bugs in my code?
 
 The environment mode allows you to detect common bugs in your implementation.
@@ -2117,7 +2117,7 @@ The environment mode influences the seed of that `Random` instance.
 These are the environment modes:
 
 
-[[environmentModeFullAssert]]
+[#environmentModeFullAssert]
 ==== `FULL_ASSERT`
 
 The FULL_ASSERT mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
@@ -2127,7 +2127,7 @@ This mode is reproducible (see the reproducible mode). It is also intrusive beca
 The FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
 
 
-[[environmentModeNonIntrusiveFullAssert]]
+[#environmentModeNonIntrusiveFullAssert]
 ==== `NON_INTRUSIVE_FULL_ASSERT`
 
 The NON_INTRUSIVE_FULL_ASSERT turns on several assertions to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
@@ -2137,7 +2137,7 @@ This mode is reproducible (see the reproducible mode). It is non-intrusive becau
 The NON_INTRUSIVE_FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
 
 
-[[environmentModeFastAssert]]
+[#environmentModeFastAssert]
 ==== `FAST_ASSERT`
 
 The FAST_ASSERT mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
@@ -2149,7 +2149,7 @@ The FAST_ASSERT mode is slow.
 It is recommended to write a test case that does a short run of your planning problem with the FAST_ASSERT mode on.
 
 
-[[environmentModeReproducible]]
+[#environmentModeReproducible]
 ==== `REPRODUCIBLE` (default)
 
 The reproducible mode is the default mode because it is recommended during development.
@@ -2173,7 +2173,7 @@ If your production environment can benefit from reproducibility, use this mode i
 In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified, and it also disables certain concurrency optimizations (such as work stealing).
 
 
-[[environmentModeProduction]]
+[#environmentModeProduction]
 ==== `NON_REPRODUCIBLE`
 
 The non-reproducible mode can be slightly faster than the reproducible mode.
@@ -2183,7 +2183,7 @@ If your production environment doesn't care about reproducibility, use this mode
 In practice, this mode uses no fixed <<randomNumberGenerator,random seed>> if no seed is specified.
 
 
-[[logging]]
+[#logging]
 === Logging level: what is the `Solver` doing?
 
 The best way to illuminate the black box that is a ``Solver``, is to play with the logging level:
@@ -2329,7 +2329,7 @@ For example in Logback, use a `SiftingAppender` in ``logback.xml``:
 ----
 ====
 
-[[monitoring]]
+[#monitoring]
 === Monitoring the solver
 
 Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver. Timefold automatically connects to configured registries when it is used in Quarkus or Spring Boot. If you use Timefold with plain Java, you must add the metrics registry to the global registry.
@@ -2430,7 +2430,7 @@ There are separate meters for each level of the score, with tags for each constr
 
 - `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
 
-[[randomNumberGenerator]]
+[#randomNumberGenerator]
 === Random number generator
 
 Many heuristics and metaheuristics depend on a pseudorandom number generator for move selection, to resolve score ties, probability based move acceptance, ... During solving, the same `Random` instance is reused to improve reproducibility, performance and uniform distribution of random values.
@@ -2467,7 +2467,7 @@ For most use cases, the randomType has no significant impact on the average qual
 If you want to confirm this on your use case, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[benchmarker].
 
 
-[[solverManager]]
+[#solverManager]
 == `SolverManager`
 
 A `SolverManager` is a facade for one or more `Solver` instances
@@ -2529,7 +2529,7 @@ The current `SolverManager` implementation runs on a single computer node,
 but future work aims to distribute solver loads across a cloud.
 
 
-[[solverManagerSolveBatch]]
+[#solverManagerSolveBatch]
 === Solve batch problems
 
 At night, batch solving is a great approach to deliver solid plans by breakfast, because:
@@ -2567,7 +2567,7 @@ A solid plan delivered by breakfast is great,
 even if you need to react on problem changes during the day.
 
 
-[[solverManagerSolveAndListen]]
+[#solverManagerSolveAndListen]
 === Solve and listen to show progress to the end-user
 
 When a solver is running while an end-user is waiting for that solution,

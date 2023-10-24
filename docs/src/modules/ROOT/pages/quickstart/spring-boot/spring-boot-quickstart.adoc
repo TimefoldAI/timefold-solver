@@ -1,4 +1,4 @@
-[[springBootJavaQuickStart]]
+[#springBootJavaQuickStart]
 = Spring Boot Java quick start
 :doctype: book
 :imagesdir: ../..

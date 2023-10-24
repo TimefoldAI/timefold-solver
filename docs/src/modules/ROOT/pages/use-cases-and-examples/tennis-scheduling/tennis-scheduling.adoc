@@ -1,9 +1,9 @@
-[[tennis]]
+[#tennis]
 = Tennis club scheduling
 :imagesdir: ../..
 
 
-[[tennisProblemDescription]]
+[#tennisProblemDescription]
 == Problem description
 
 Every week the tennis club has four teams playing round robin against each other.
@@ -23,7 +23,7 @@ Soft constraints:
 * Evenly confrontation: Each team should play against every other team an equal number of times.
 
 
-[[tennisProblemSize]]
+[#tennisProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -32,7 +32,7 @@ munich-7teams has 7 teams, 18 days, 12 unavailabilityPenalties and 72 teamAssign
 ----
 
 
-[[tennisDomainModel]]
+[#tennisDomainModel]
 == Domain model
 
 image::use-cases-and-examples/tennis-scheduling/tennisClassDiagram.png[align="center"]

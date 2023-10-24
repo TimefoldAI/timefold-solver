@@ -1,9 +1,9 @@
-[[conferenceScheduling]]
+[#conferenceScheduling]
 = Conference scheduling
 :imagesdir: ../..
 
 
-[[conferenceSchedulingProblemDescription]]
+[#conferenceSchedulingProblemDescription]
 == Problem description
 
 Assign each conference talk to a timeslot and a room, after the talks have been accepted.
@@ -73,13 +73,13 @@ Every constraint can be configured to use a different score level (hard/medium/s
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingConstraints.png[align="center"]
 
 
-[[conferenceSchedulingValueProposition]]
+[#conferenceSchedulingValueProposition]
 == Value proposition
 
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingValueProposition.png[align="center"]
 
 
-[[conferenceSchedulingProblemSize]]
+[#conferenceSchedulingProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -92,19 +92,19 @@ image::use-cases-and-examples/conference-scheduling/conferenceSchedulingValuePro
 ----
 
 
-[[conferenceSchedulingArchitecture]]
+[#conferenceSchedulingArchitecture]
 == Architecture
 
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingArchitecture.png[align="center"]
 
 
-[[conferenceSchedulingDomainModel]]
+[#conferenceSchedulingDomainModel]
 == Domain model
 
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingClassDiagram.png[align="center"]
 
 
-[[conferenceSchedulingSearchSpace]]
+[#conferenceSchedulingSearchSpace]
 == Search space
 
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingOptimalIsImperfect.png[align="center"]

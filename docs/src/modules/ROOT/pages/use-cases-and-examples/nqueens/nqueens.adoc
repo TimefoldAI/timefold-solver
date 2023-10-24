@@ -1,9 +1,9 @@
-[[nQueens]]
+[#nQueens]
 = N queens
 :imagesdir: ../..
 
 
-[[nQueensProblemDescription]]
+[#nQueensProblemDescription]
 == Problem description
 
 Place _n_ queens on a _n_ sized chessboard so that no two queens can attack each other.
@@ -37,7 +37,7 @@ Note that most _n_ queens puzzles have multiple correct solutions.
 We will focus on finding a single correct solution for a given _n_, not on finding the number of possible correct solutions for a given _n_.
 
 
-[[nQueensProblemSize]]
+[#nQueensProblemSize]
 == Problem size
 
 [source,options="nowrap"]
@@ -54,7 +54,7 @@ The implementation of the _n_ queens example has not been optimized because it f
 With a few changes it has been shown to easily handle 5000 queens and more.
 
 
-[[nQueensDomainModel]]
+[#nQueensDomainModel]
 == Domain model
 
 This example uses the domain model to solve the four queens problem.

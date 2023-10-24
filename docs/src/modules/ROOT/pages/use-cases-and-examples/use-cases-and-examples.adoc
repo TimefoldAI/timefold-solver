@@ -1,4 +1,4 @@
-[[useCasesAndExamples]]
+[#useCasesAndExamples]
 = Use cases and examples
 :doctype: book
 :sectnums:

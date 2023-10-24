@@ -1,4 +1,4 @@
-[[quarkusJavaQuickStart]]
+[#quarkusJavaQuickStart]
 = Quarkus Java quick start
 :doctype: book
 :imagesdir: ../..

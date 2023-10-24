@@ -1,9 +1,9 @@
-[[meetingScheduling]]
+[#meetingScheduling]
 = Meeting scheduling
 :imagesdir: ../..
 
 
-[[meetingSchedulingProblemDescription]]
+[#meetingSchedulingProblemDescription]
 == Problem description
 
 Assign each meeting to a starting time and a room.
@@ -30,7 +30,7 @@ Soft constraints:
 * Room stability: If a person has two consecutive meetings with two or less time grains break between them they better be in the same room.
 
 
-[[meetingSchedulingProblemSize]]
+[#meetingSchedulingProblemSize]
 == Problem size
 
 [source,options="nowrap"]

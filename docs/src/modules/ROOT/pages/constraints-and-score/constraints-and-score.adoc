@@ -1,4 +1,4 @@
-[[constraintsAndScore]]
+[#constraintsAndScore]
 = Constraints and Score
 :page-aliases: score-calculation/score-calculation.adoc, \
     constraint-streams/constraint-streams.adoc
@@ -7,11 +7,11 @@
 :icons: font
 
 
-[[scoreTerminology]]
+[#scoreTerminology]
 == Score terminology
 
 
-[[whatIsAScore]]
+[#whatIsAScore]
 === What is a score?
 
 Every `@PlanningSolution` class has a score.
@@ -28,7 +28,7 @@ If you forget or are unable to implement an important business constraint, the s
 image::constraints-and-score/optimalWithIncompleteConstraints.png[align="center"]
 
 
-[[formalizeTheBusinessConstraints]]
+[#formalizeTheBusinessConstraints]
 === Formalize the business constraints
 
 To implement a verbal business constraint, it needs to be formalized as a score constraint.
@@ -49,7 +49,7 @@ Expect score constraints to be added, changed or removed after the first release
 ====
 
 
-[[scoreConstraintSignum]]
+[#scoreConstraintSignum]
 === Score constraint signum (positive or negative)
 
 All score techniques are based on constraints.
@@ -72,7 +72,7 @@ When a constraint activates (because the negative constraint is broken or the po
 on a certain planning entity set, it is called a __constraint match__.
 
 
-[[scoreConstraintWeight]]
+[#scoreConstraintWeight]
 === Score constraint weight
 
 Not all score constraints are equally important.
@@ -105,7 +105,7 @@ image::constraints-and-score/scoreTradeoffInPerspective.png[align="center"]
 Most use cases use a `Score` with `int` weights, such as <<hardSoftScore,HardSoftScore>>.
 
 
-[[scoreLevel]]
+[#scoreLevel]
 === Score constraint level (hard, soft, ...)
 
 Sometimes a score constraint outranks another score constraint, no matter how many times the latter is broken.
@@ -163,7 +163,7 @@ Most use cases use a `Score` with two or three weights,
 such as <<hardSoftScore,HardSoftScore>> and <<hardMediumSoftScore,HardMediumSoftScore>>.
 
 
-[[paretoScoring]]
+[#paretoScoring]
 === Pareto scoring (AKA multi-objective optimization scoring)
 
 Far less common is the use case of pareto optimization, which is also known as _multi-objective optimization_.
@@ -198,7 +198,7 @@ but Timefold Solver's systems are __pareto comparison safe__, unless explicitly 
 ====
 
 
-[[combiningScoreTechniques]]
+[#combiningScoreTechniques]
 === Combining score techniques
 
 All the score techniques mentioned above, can be combined seamlessly:
@@ -206,7 +206,7 @@ All the score techniques mentioned above, can be combined seamlessly:
 image::constraints-and-score/scoreComposition.png[align="center"]
 
 
-[[scoreInterface]]
+[#scoreInterface]
 === `Score` interface
 
 A score is represented by the `Score` interface, which naturally extends ``Comparable``:
@@ -244,7 +244,7 @@ public class CloudBalance {
 }
 ----
 
-[[avoidFloatingPointNumbersInScoreCalculation]]
+[#avoidFloatingPointNumbersInScoreCalculation]
 === Avoid floating point numbers in score calculation
 
 Avoid the use of `float` or `double` in score calculation.
@@ -278,7 +278,7 @@ For example, if we multiply all weights by ``1000``, a fuelCost of `0.07` become
 ====
 
 
-[[scoreType]]
+[#scoreType]
 == Choose a score type
 
 Depending on the number of score levels and type of score weights you need, choose a `Score` type.
@@ -291,7 +291,7 @@ see xref:integration/integration.adoc#integration[the integration chapter].
 ====
 
 
-[[simpleScore]]
+[#simpleScore]
 === `SimpleScore`
 
 A `SimpleScore` has a single `int` value, for example ``-123``.
@@ -309,7 +309,7 @@ Variants of this `Score` type:
 * `SimpleBigDecimalScore` uses a `BigDecimal` value instead of an `int` value.
 
 
-[[hardSoftScore]]
+[#hardSoftScore]
 === `HardSoftScore` (Recommended)
 
 A `HardSoftScore` has a hard `int` value and a soft `int` value, for example ``-123hard/-456soft``.
@@ -327,7 +327,7 @@ Variants of this `Score` type:
 * `HardSoftBigDecimalScore` uses `BigDecimal` values instead of `int` values.
 
 
-[[hardMediumSoftScore]]
+[#hardMediumSoftScore]
 === `HardMediumSoftScore`
 
 A `HardMediumSoftScore` which has a hard `int` value, a medium `int` value and a soft `int` value, for example ``-123hard/-456medium/-789soft``.
@@ -349,7 +349,7 @@ Variants of this `Score` type:
 * `HardMediumSoftBigDecimalScore` uses `BigDecimal` values instead of `int` values.
 
 
-[[bendableScore]]
+[#bendableScore]
 === `BendableScore`
 
 A `BendableScore` has a configurable number of score levels.
@@ -385,11 +385,11 @@ Variants of this `Score` type:
 * `BendableBigDecimalScore` uses `BigDecimal` values instead of `int` values.
 
 
-[[calculateTheScore]]
+[#calculateTheScore]
 == Calculate the `Score`
 
 
-[[scoreCalculationTypes]]
+[#scoreCalculationTypes]
 === Score calculation types
 
 There are several ways to calculate the `Score` of a solution in Hava or another JVM language:
@@ -424,7 +424,7 @@ To update planning entities when the planning variable change, use xref:configur
 ====
 
 
-[[initializingScoreTrend]]
+[#initializingScoreTrend]
 === `InitializingScoreTrend`
 
 The `InitializingScoreTrend` specifies how the Score will change as more and more variables are initialized (while the already initialized variables do not change). Some optimization algorithms (such Construction Heuristics and Exhaustive Search) run faster if they have such information.
@@ -461,7 +461,7 @@ Alternatively, you can also specify the trend for each score level separately:
 ----
 
 
-[[invalidScoreDetection]]
+[#invalidScoreDetection]
 === Invalid score detection
 
 When you put the xref:configuration/configuration.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``FAST_ASSERT``),
@@ -491,7 +491,7 @@ but to verify that the constraint implement the real business needs,
 <<constraintStreamsTesting,a unit test with a ConstraintVerifier>> is usually better.
 ====
 
-[[constraintStreams]]
+[#constraintStreams]
 == Constraint streams
 
 Constraint streams are a Functional Programming form of incremental score calculation in plain Java that is easy to
@@ -550,7 +550,7 @@ Constraint Streams API also has advanced support for xref:constraints-and-score/
 image::constraints-and-score/constraintStreamJustification.png[align="center"]
 
 
-[[constraintStreamsConfiguration]]
+[#constraintStreamsConfiguration]
 === Creating a constraint stream
 
 To use the Constraint Streams API in your project, first write a pure Java `ConstraintProvider` implementation similar
@@ -596,7 +596,7 @@ Add the following code to your solver configuration:
 ----
 
 
-[[constraintStreamsCardinality]]
+[#constraintStreamsCardinality]
 === Constraint stream cardinality
 
 Constraint stream cardinality is a measure of how many objects a single constraint match consists of.
@@ -648,7 +648,7 @@ The following constraint stream cardinalities are currently supported:
 |4          |  Quad|`QuadConstraintStream<A, B, C, D>`
 |===
 
-[[constraintStreamsHigherCardinalities]]
+[#constraintStreamsHigherCardinalities]
 ==== Achieving higher cardinalities
 
 Timefold Solver currently does not support constraint stream cardinalities higher than 4.
@@ -674,7 +674,7 @@ It's recommended to use one of the freely available 3rd party implementations.
 Should a custom implementation be necessary, see <<constraintStreamsDesigningMappingFunction,guidelines for mapping functions>>.
 ====
 
-[[constraintStreamsBuildingBlocks]]
+[#constraintStreamsBuildingBlocks]
 === Building blocks
 
 Constraint streams are chains of different operations, called building blocks.
@@ -692,8 +692,8 @@ The following example shows the simplest possible constraint stream:
 
 This constraint stream penalizes each known and initialized instance of `Shift`.
 
-[[constraintStreamsFrom]]
-[[constraintStreamsForEach]]
+[#constraintStreamsFrom]
+[#constraintStreamsForEach]
 ==== ForEach
 
 The `.forEach(T)` building block selects every `T` instance that
@@ -724,7 +724,7 @@ and therefore this legacy method could still return entities with `null` variabl
 `from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in a future major version of Timefold Solver.
 ====
 
-[[constraintStreamsPenaltiesRewards]]
+[#constraintStreamsPenaltiesRewards]
 ==== Penalties and rewards
 
 The purpose of constraint streams is to build up a xref:constraints-and-score/constraints-and-score.adoc#whatIsAScore[score] for a xref:configuration/configuration.adoc#planningProblemAndPlanningSolution[solution].
@@ -771,7 +771,7 @@ By replacing the keyword `penalize` by `reward` in the name of these building bl
 affect score in the opposite direction.
 
 
-[[constraintStreamsCustomizingJustificationsAndIndictments]]
+[#constraintStreamsCustomizingJustificationsAndIndictments]
 ===== Customizing justifications and indictments
 
 One of important Timefold Solver features is its ability to xref:constraints-and-score/constraints-and-score.adoc#explainingTheScore[explain the score] of solutions it produced through the use of justifications and indictments.
@@ -834,7 +834,7 @@ you will be able to send it over HTTP or store it in a database.
 The only limitation is that it must implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` marker interface.
 
 
-[[constraintStreamsFilter]]
+[#constraintStreamsFilter]
 ==== Filtering
 
 Filtering enables you to reduce the number of constraint matches in your stream.
@@ -890,7 +890,7 @@ The following functions are required for filtering constraint streams of differe
 |===
 
 
-[[constraintStreamsJoin]]
+[#constraintStreamsJoin]
 ==== Joining
 
 Joining is a way to increase <<constraintStreamsCardinality,stream cardinality>> and it is similar to the inner join
@@ -994,7 +994,7 @@ which is processed differently and does not suffer from this issue:
         ))
 ----
 
-[[constraintStreamsGroupingAndCollectors]]
+[#constraintStreamsGroupingAndCollectors]
 ==== Grouping and collectors
 
 Grouping collects items in a stream according to user-provider criteria (also called "group key"), similar to what a
@@ -1044,7 +1044,7 @@ There are several collectors available out of the box. You can also provide your
 `ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector` interface, or its `Bi...`, `Tri...` and `Quad...` counterparts.
 
 
-[[collectorsOutOfTheBox]]
+[#collectorsOutOfTheBox]
 ===== Out-of-the-box collectors
 
 The following collectors are provided out of the box:
@@ -1057,7 +1057,7 @@ The following collectors are provided out of the box:
 * <<collectorsCollection,`toList()`, `toSet()` and `toMap()`>>
 
 
-[[collectorsCount]]
+[#collectorsCount]
 ===== `count()` collector
 
 The `ConstraintCollectors.count(...)` counts all elements per group. For example, the following use of the collector
@@ -1082,7 +1082,7 @@ The count is collected in an `int`. Variants of this collector:
 To count a bi, tri or quad stream, use `countBi()`, `countTri()` or `countQuad()` respectively,
 because - unlike the other built-in collectors - they aren't overloaded methods due to Java's generics erasure.
 
-[[collectorsCountDistinct]]
+[#collectorsCountDistinct]
 ====== `countDistinct()` collector
 
 The `ConstraintCollectors.countDistinct(...)` counts any element per group once, regardless of how many times it
@@ -1104,7 +1104,7 @@ The distinct count is collected in an `int`. Variants of this collector:
 * `countDistinctLong()` collects a `long` value instead of an `int` value.
 
 
-[[collectorsSum]]
+[#collectorsSum]
 ====== `sum()` collector
 
 To sum the values of a particular property of all elements per group, use the `ConstraintCollectors.sum(...)`
@@ -1132,7 +1132,7 @@ The sum is collected in an `int`. Variants of this collector:
 * a generic `sum()` variant for summing up custom types
 
 
-[[collectorsAverage]]
+[#collectorsAverage]
 ====== `average()` collector
 
 To calculate the average of a particular property of all elements per group, use the `ConstraintCollectors.average(...)`
@@ -1160,7 +1160,7 @@ Variants of this collector:
 * `averageDuration()` collects a `java.time.Duration` value instead of an `int` value, resulting in a `Duration` average.
 
 
-[[collectorsMinMax]]
+[#collectorsMinMax]
 ====== `min()` and `max()` collectors
 
 To extract the minimum or maximum per group, use the `ConstraintCollectors.min(...)` and
@@ -1190,7 +1190,7 @@ See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Compa
 ====
 
 
-[[collectorsCollection]]
+[#collectorsCollection]
 ====== `toList()`, `toSet()` and `toMap()` collectors
 
 To extract all elements per group into a collection, use the `ConstraintCollectors.toList(...)`.
@@ -1223,7 +1223,7 @@ unless it is a sorted collector such as `toSortedSet` or `toSortedMap`.
 ====
 
 
-[[collectorsConditional]]
+[#collectorsConditional]
 ===== Conditional collectors
 
 The constraint collector framework enables you to create constraint collectors which will only collect in certain circumstances.
@@ -1252,7 +1252,7 @@ If all of them needed to be restricted in the same way,
 then applying a <<constraintStreamsFilter,`filter()`>> before the grouping is preferable.
 
 
-[[collectorsComposition]]
+[#collectorsComposition]
 ===== Composing collectors
 
 The constraint collector framework enables you to create complex collectors utilizing simpler ones.
@@ -1299,7 +1299,7 @@ Timefold Solver does not provide any `Pair`, `Triple` or `Quadruple` implementat
 ====
 
 
-[[constraintStreamsConditionalPropagation]]
+[#constraintStreamsConditionalPropagation]
 ==== Conditional propagation
 
 Conditional propagation enables you to exclude constraint matches from the constraint stream based on the presence or
@@ -1355,7 +1355,7 @@ Joining should only be used in cases where the other fact is actually required f
 the stream.
 ====
 
-[[constraintStreamsMappingTuples]]
+[#constraintStreamsMappingTuples]
 ==== Mapping tuples
 
 Mapping enables you to transform each tuple in a constraint stream by applying a mapping function to it.
@@ -1389,7 +1389,7 @@ The following example maps a pair of `CloudProcess` instances to a pair of `Clou
     }
 ----
 
-[[constraintStreamsDesigningMappingFunction]]
+[#constraintStreamsDesigningMappingFunction]
 ===== Designing the mapping function
 
 When designing the mapping function, follow these guidelines for optimal performance:
@@ -1406,7 +1406,7 @@ The tuples returned by the mapping function should be immutable and identified b
 If two tuples carry objects which equal one another,
 those two tuples should likewise equal and preferably be the same instance.
 
-[[constraintStreamsDealingWithDuplicateTuplesUsingDistinct]]
+[#constraintStreamsDealingWithDuplicateTuplesUsingDistinct]
 ===== Dealing with duplicate tuples using `distinct()`
 
 As a general rule, tuples in constraint streams are distinct.
@@ -1433,7 +1433,7 @@ There is a performance cost to `distinct()`.
 For optimal performance, don't use constraint stream operations that produce duplicate tuples, to avoid the need to call `distinct()`.
 ====
 
-[[constraintStreamsExpandingTuples]]
+[#constraintStreamsExpandingTuples]
 ===== Expanding tuples
 
 Tuple expansion is a special case of <<constraintStreamsMappingTuples,tuple mapping>>
@@ -1482,7 +1482,7 @@ There is a performance cost to `expand()`.
 Always check your solver's score calculation speed to see if the cost is offset by the gains.
 ====
 
-[[constraintStreamsFlattening]]
+[#constraintStreamsFlattening]
 ==== Flattening
 
 Flattening enables you to transform any Java `Iterable` (such as `List` or `Set`)
@@ -1511,7 +1511,7 @@ the tuple `(SomePerson, USER)` is sent downstream twice.
 See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
 
-[[constraintStreamsConcat]]
+[#constraintStreamsConcat]
 ==== Concat
 
 The `concat` building block allows you to create a constraint stream containing tuples
@@ -1567,7 +1567,7 @@ Consider the following naive implementation without `concat`:
 An employee with no assigned shifts _wouldn't have been penalized_
 because no tuples were passed to the `groupBy` building block.
 
-[[constraintStreamsTesting]]
+[#constraintStreamsTesting]
 === Testing a constraint stream
 
 We recommend that you test your constraints to ensure that they behave as expected.
@@ -1575,7 +1575,7 @@ Constraint streams include the Constraint Verifier unit testing harness.
 To use it, first add a test scoped dependency to the `timefold-solver-test` JAR.
 
 
-[[constraintStreamsTestingIsolatedConstraints]]
+[#constraintStreamsTestingIsolatedConstraints]
 ==== Testing constraints in isolation
 
 Consider the following constraint stream:
@@ -1670,7 +1670,7 @@ If the tested constraints depend on shadow variables,
 it is your responsibility to assign the correct values beforehand.
 ====
 
-[[constraintStreamsTestingAllConstraints]]
+[#constraintStreamsTestingAllConstraints]
 ==== Testing all constraints together
 
 In addition to testing individual constraints, you can test the entire `ConstraintProvider` instance.
@@ -1709,7 +1709,7 @@ If the tested constraints depend on shadow variables,
 it is your responsibility to assign the correct values beforehand.
 ====
 
-[[constraintStreamsTestingQuarkus]]
+[#constraintStreamsTestingQuarkus]
 ==== Testing in Quarkus
 
 If you are using the `timefold-solver-quarkus` extension, inject the `ConstraintVerifier` in your tests:
@@ -1723,7 +1723,7 @@ public class MyConstraintProviderTest {
 }
 ----
 
-[[constraintStreamsTestingSpringBoot]]
+[#constraintStreamsTestingSpringBoot]
 ==== Testing in Spring Boot
 
 If you are using the `timefold-solver-spring-boot-starter` module, autowire the `ConstraintVerifier` in your tests:
@@ -1737,10 +1737,10 @@ public class MyConstraintProviderTest {
 }
 ----
 
-[[otherTypesOfScoreCalculation]]
+[#otherTypesOfScoreCalculation]
 === Other types of score calculation
 
-[[easyJavaScoreCalculation]]
+[#easyJavaScoreCalculation]
 ==== Easy Java score calculation
 
 An easy way to implement your score calculation in Java.
@@ -1823,7 +1823,7 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:configuration
 ----
 
 
-[[incrementalJavaScoreCalculation]]
+[#incrementalJavaScoreCalculation]
 ==== Incremental Java score calculation
 
 A way to implement your score calculation incrementally in Java.
@@ -1991,7 +1991,7 @@ add the `incrementalScoreCalculatorCustomProperties` element and use xref:config
 ----
 
 
-[[constraintMatchAwareIncrementalScoreCalculator]]
+[#constraintMatchAwareIncrementalScoreCalculator]
 ===== `ConstraintMatchAwareIncrementalScoreCalculator`
 
 Optionally, also implement the `ConstraintMatchAwareIncrementalScoreCalculator` interface to:
@@ -2059,11 +2059,11 @@ Constraint Streams doesn't have this disadvantage, because they are constraint m
 without any extra domain-specific code.
 
 
-[[scoreCalculationPerformanceTricks]]
+[#scoreCalculationPerformanceTricks]
 == Score calculation performance tricks
 
 
-[[scoreCalculationPerformanceTricksOverview]]
+[#scoreCalculationPerformanceTricksOverview]
 === Overview
 
 The `Solver` will normally spend most of its execution time running the score calculation
@@ -2072,7 +2072,7 @@ Faster score calculation will return the same solution in less time with the sam
 which normally means a better solution in equal time.
 
 
-[[scoreCalculationSpeed]]
+[#scoreCalculationSpeed]
 === Score calculation speed
 
 After solving a problem, the `Solver` will log the __score calculation speed per second__.
@@ -2093,7 +2093,7 @@ Comparing the best score with the original's best score is pointless: it's compa
 ====
 
 
-[[incrementalScoreCalculation]]
+[#incrementalScoreCalculation]
 === Incremental score calculation (with deltas)
 
 When a solution changes, incremental score calculation (AKA delta based score calculation)
@@ -2116,7 +2116,7 @@ Just let the rule engine do the hard work.
 Notice that the speedup is relative to the size of your planning problem (your __n__), making incremental score calculation far more scalable.
 
 
-[[avoidCallingRemoteServicesDuringScoreCalculation]]
+[#avoidCallingRemoteServicesDuringScoreCalculation]
 === Avoid calling remote services during score calculation
 
 Do not call remote services in your score calculation (except if you are bridging `EasyScoreCalculator` to a legacy system). The network latency will kill your score calculation performance.
@@ -2126,7 +2126,7 @@ If some parts of a constraint can be calculated once, when the `Solver` starts, 
 then turn them into xref:configuration/configuration.adoc#cachedProblemFact[cached problem facts].
 
 
-[[pointlessConstraints]]
+[#pointlessConstraints]
 === Pointless constraints
 
 If you know a certain constraint can never be broken (or it is always broken), do not write a score constraint for it.
@@ -2141,7 +2141,7 @@ There is no need to dynamically change your score calculation based on the datas
 ====
 
 
-[[buildInHardConstraint]]
+[#buildInHardConstraint]
 === Built-in hard constraint
 
 Instead of implementing a hard constraint, it can sometimes be built in.
@@ -2159,7 +2159,7 @@ to get out of local optima.
 as explained in their documentation.
 
 
-[[otherScoreCalculationPerformanceTricks]]
+[#otherScoreCalculationPerformanceTricks]
 === Other score calculation performance tricks
 
 * Verify that your score calculation happens in the correct `Number` type.
@@ -2172,7 +2172,7 @@ For example, in the past we have seen performance increases of 30% by switching 
 Make sure your design is flexible enough to allow configuration based tweaking.
 
 
-[[scoreTrap]]
+[#scoreTrap]
 === Score trap
 
 Make sure that none of your score constraints cause a score trap.
@@ -2214,7 +2214,7 @@ There are several ways to deal with a score trap:
 * Add coarse-grained moves and union select them with the existing fine-grained moves. A coarse-grained move effectively does multiple moves to directly get out of a score trap with a single move. For example, move multiple items from the same container to another container.
 
 
-[[stepLimitBenchmark]]
+[#stepLimitBenchmark]
 === `stepLimit` benchmark
 
 Not all score constraints have the same performance cost.
@@ -2222,7 +2222,7 @@ Sometimes one score constraint can kill the score calculation performance outrig
 Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to do a one minute run and check what happens to the score calculation speed if you comment out all but one of the score constraints.
 
 
-[[fairnessScoreConstraints]]
+[#fairnessScoreConstraints]
 === Fairness score constraints
 
 Some use cases have a business requirement to provide a fair schedule (usually as a soft score constraint), for example:
@@ -2253,7 +2253,7 @@ It is just more work to implement (because the average needs to be known) and tr
 When the workload is perfectly balanced, the user often likes to see a `0` score, instead of the distracting `-34soft` in the image above (for the last solution which is almost perfectly balanced).
 To nullify this, either add the average multiplied by the number of entities to the score or instead show the variance or standard deviation in the UI.
 
-[[constraintConfiguration]]
+[#constraintConfiguration]
 == Constraint configuration: adjust constraint weights dynamically
 
 Deciding the correct <<scoreConstraintWeight,weight>> and <<scoreLevel,level>> for each constraint is not easy.
@@ -2265,7 +2265,7 @@ Provide a UI to adjust the constraint weights and visualize the resulting soluti
 
 image::constraints-and-score/parameterizeTheScoreWeights.png[align="center"]
 
-[[createAConstraintConfiguration]]
+[#createAConstraintConfiguration]
 === Create a constraint configuration
 
 First, create a new class to hold the constraint weights and other constraint parameters.
@@ -2312,7 +2312,7 @@ in some big conferences 20 minutes isn't enough to go from one room to the other
 That pause length is a field in the constraint configuration without a `@ConstraintWeight` annotation.
 
 
-[[constraintWeight]]
+[#constraintWeight]
 === Add a constraint weight for each constraint
 
 In the constraint configuration class, add a `@ConstraintWeight` field or property for each constraint:
@@ -2427,7 +2427,7 @@ Constraint contentConflict(ConstraintFactory factory) {
 So when 2 overlapping talks share only 1 content tag and overlap by 60 minutes, the score is impacted by `-6000soft`.
 But when 2 overlapping talks share 3 content tags, the match weight is 180, so the score is impacted by `-18000soft`.
 
-[[explainingTheScore]]
+[#explainingTheScore]
 == Explaining the score: which constraints are broken?
 
 The easiest way to explain the score during development is to print the return value of `getSummary()`, but only use that method for diagnostic purposes:
@@ -2470,7 +2470,7 @@ which carry meaningful information about a constraint match, such as its package
 
 On the other hand, _indicted objects_ are objects which were directly involved in causing a constraint to match. For example, if your constraints penalize each vehicle, then there will be one `ai.timefold.solver.core.api.score.constraint.Indictment` instance per vehicle, carrying the vehicle as an indicted object. Indictments are typically used for xref:indictmentHeatMap[heat map visualization].
 
-[[usingScoreCalculationOutsideTheSolver]]
+[#usingScoreCalculationOutsideTheSolver]
 === Using score calculation outside the `Solver`
 
 If other parts of your application, for example your webUI, need to calculate the score of a solution, use the `SolutionManager` API:
@@ -2493,7 +2493,7 @@ Furthermore, the `ScoreExplanation` can help explain the score through constrain
 image::constraints-and-score/scoreVisualization.png[align="center"]
 
 
-[[constraintJustification]]
+[#constraintJustification]
 === Break down the score by constraint justification
 
 Each constraint may be justified by a different `ConstraintJustification` implementation, but you can also choose to share them among constraints.
@@ -2517,7 +2517,7 @@ List<MyConstraintJustification> constraintJustificationlist = scoreExplanation.g
 ----
 
 
-[[constraintMatchTotal]]
+[#constraintMatchTotal]
 === Break down the score by constraint
 
 To break down the score per constraint, get the ``ConstraintMatchTotal``s from the ``ScoreExplanation``:
@@ -2548,7 +2548,7 @@ but <<incrementalJavaScoreCalculation,incremental Java score calculation>> requi
 <<constraintMatchAwareIncrementalScoreCalculator,implementing an extra interface>>.
 ====
 
-[[indictmentHeatMap]]
+[#indictmentHeatMap]
 === Indictment heat map: visualize the hot planning entities
 
 To show a heat map in the UI that highlights the planning entities and problem facts have an impact on the ``Score``, get the `Indictment` map from the ``ScoreExplanation``:

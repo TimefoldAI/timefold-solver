@@ -1,4 +1,4 @@
-[[quickStartOverview]]
+[#quickStartOverview]
 = Overview
 // Redirect to this page from .../docs/timefold/latest/quickstart/quickstart.html.
 :page-aliases: quickstart/quickstart.adoc
