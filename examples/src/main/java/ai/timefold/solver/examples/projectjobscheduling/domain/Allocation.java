@@ -131,8 +131,7 @@ public class Allocation extends AbstractPersistable implements Labeled {
         if (predecessorsDoneDate == null) {
             return null;
         }
-        return predecessorsDoneDate + (delay == null ? 0 : delay)
-                + (executionMode == null ? 0 : executionMode.getDuration());
+        return getStartDate() + (executionMode == null ? 0 : executionMode.getDuration());
     }
 
     @JsonIgnore
