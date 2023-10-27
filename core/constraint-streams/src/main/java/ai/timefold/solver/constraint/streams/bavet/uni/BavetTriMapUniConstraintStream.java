@@ -1,5 +1,6 @@
 package ai.timefold.solver.constraint.streams.bavet.uni;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
@@ -54,7 +55,24 @@ final class BavetTriMapUniConstraintStream<Solution_, A, NewA, NewB, NewC>
     // Equality for node sharing
     // ************************************************************************
 
-    // TODO
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        BavetTriMapUniConstraintStream<?, ?, ?, ?, ?> that = (BavetTriMapUniConstraintStream<?, ?, ?, ?, ?>) object;
+        return Objects.equals(parent, that.parent) && guaranteesDistinct == that.guaranteesDistinct && Objects.equals(
+                mappingFunctionA,
+                that.mappingFunctionA) && Objects.equals(mappingFunctionB,
+                        that.mappingFunctionB)
+                && Objects.equals(mappingFunctionC, that.mappingFunctionC);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parent, mappingFunctionA, mappingFunctionB, mappingFunctionC, guaranteesDistinct);
+    }
 
     // ************************************************************************
     // Getters/setters
