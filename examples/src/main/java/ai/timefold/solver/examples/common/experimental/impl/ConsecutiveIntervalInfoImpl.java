@@ -24,8 +24,8 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
             BiFunction<Point_, Point_, Difference_> differenceFunction) {
         this.clusterStartSplitPointToCluster = new TreeMap<>();
         this.clusterStartSplitPointToNextBreak = new TreeMap<>();
-        this.intervalClusterIterable = new MapValuesIterable<>(clusterStartSplitPointToCluster);
-        this.breaksIterable = new MapValuesIterable<>(clusterStartSplitPointToNextBreak);
+        this.intervalClusterIterable = (Iterable<IntervalCluster<Interval_, Point_, Difference_>>) clusterStartSplitPointToCluster.values().iterator();
+        this.breaksIterable = (Iterable<IntervalBreak<Interval_, Point_, Difference_>>) clusterStartSplitPointToNextBreak.values().iterator();
         this.splitPointSet = splitPointSet;
         this.differenceFunction = differenceFunction;
     }
