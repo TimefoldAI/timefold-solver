@@ -11,13 +11,13 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 public interface GroupNodeConstructor<Tuple_ extends AbstractTuple> {
 
     static <Tuple_ extends AbstractTuple> GroupNodeConstructor<Tuple_>
-            of(NodeConstructorWithAccumulate<Tuple_> nodeConstructorWithAccumulate) {
-        return new GroupNodeConstructorWithAccumulate<>(nodeConstructorWithAccumulate);
+            of(NodeConstructorWithAccumulate<Tuple_> nodeConstructorWithAccumulate, Object... equalityArgs) {
+        return new GroupNodeConstructorWithAccumulate<>(nodeConstructorWithAccumulate, equalityArgs);
     }
 
     static <Tuple_ extends AbstractTuple> GroupNodeConstructor<Tuple_>
-            of(NodeConstructorWithoutAccumulate<Tuple_> nodeConstructorWithoutAccumulate) {
-        return new GroupNodeConstructorWithoutAccumulate<>(nodeConstructorWithoutAccumulate);
+            of(NodeConstructorWithoutAccumulate<Tuple_> nodeConstructorWithoutAccumulate, Object... equalityArgs) {
+        return new GroupNodeConstructorWithoutAccumulate<>(nodeConstructorWithoutAccumulate, equalityArgs);
     }
 
     @FunctionalInterface
