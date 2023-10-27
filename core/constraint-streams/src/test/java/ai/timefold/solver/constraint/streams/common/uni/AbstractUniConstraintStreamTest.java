@@ -3693,6 +3693,11 @@ public abstract class AbstractUniConstraintStreamTest
 
                     if (base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
                             ConstraintCollectors.countDistinct(f2))) {
+                        failureList.add("groupby(different-collector-function)");
+                    }
+
+                    if ((UniConstraintStream) base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
+                            ConstraintCollectors.countDistinctLong(f1))) {
                         failureList.add("groupby(different-collector)");
                     }
 

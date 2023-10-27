@@ -42,6 +42,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
@@ -3198,6 +3199,11 @@ public abstract class AbstractTriConstraintStreamTest
 
                     if (base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
                             ConstraintCollectors.countDistinct(f2))) {
+                        failureList.add("groupby(different-collector-function)");
+                    }
+
+                    if ((UniConstraintStream) base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
+                            ConstraintCollectors.countDistinctLong(f1))) {
                         failureList.add("groupby(different-collector)");
                     }
 
