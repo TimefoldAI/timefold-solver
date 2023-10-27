@@ -1,5 +1,7 @@
 package ai.timefold.solver.examples.projectjobscheduling.domain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -36,6 +38,9 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     // Shadow variables
     private Integer predecessorsDoneDate;
+
+    // Computed on-demand
+    private List<Integer> busyDates;
 
     public Allocation() {
     }
@@ -92,6 +97,7 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setExecutionMode(ExecutionMode executionMode) {
         this.executionMode = executionMode;
+        this.busyDates = null;
     }
 
     @PlanningVariable(strengthComparatorClass = DelayStrengthComparator.class)
@@ -101,10 +107,11 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setDelay(Integer delay) {
         this.delay = delay;
+        this.busyDates = null;
     }
 
-    @ShadowVariable(
-            variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class, sourceVariableName = "executionMode")
+    @ShadowVariable(variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
+            sourceVariableName = "executionMode")
     @ShadowVariable(variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class, sourceVariableName = "delay")
     public Integer getPredecessorsDoneDate() {
         return predecessorsDoneDate;
@@ -112,6 +119,7 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setPredecessorsDoneDate(Integer predecessorsDoneDate) {
         this.predecessorsDoneDate = predecessorsDoneDate;
+        this.busyDates = null;
     }
 
     // ************************************************************************
@@ -132,6 +140,24 @@ public class Allocation extends AbstractPersistable implements Labeled {
             return null;
         }
         return getStartDate() + (executionMode == null ? 0 : executionMode.getDuration());
+    }
+
+    @JsonIgnore
+    public List<Integer> getBusyDates() {
+        if (busyDates == null) {
+            if (predecessorsDoneDate == null) {
+                this.busyDates = Collections.emptyList();
+            } else {
+                var startDate = getStartDate();
+                var endDate = getEndDate();
+                var busyDates = new ArrayList<Integer>(endDate - startDate);
+                for (int i = startDate; i < endDate; i++) {
+                    busyDates.add(i);
+                }
+                this.busyDates = busyDates;
+            }
+        }
+        return busyDates;
     }
 
     @JsonIgnore
