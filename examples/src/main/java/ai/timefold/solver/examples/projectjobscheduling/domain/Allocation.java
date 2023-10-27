@@ -1,8 +1,9 @@
 package ai.timefold.solver.examples.projectjobscheduling.domain;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -39,7 +40,9 @@ public class Allocation extends AbstractPersistable implements Labeled {
     // Shadow variables
     private Integer predecessorsDoneDate;
 
-    // Computed on-demand
+    // Filled from shadow variables
+    private Integer startDate;
+    private Integer endDate;
     private List<Integer> busyDates;
 
     public Allocation() {
@@ -97,6 +100,12 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setExecutionMode(ExecutionMode executionMode) {
         this.executionMode = executionMode;
+        invalidateComputedVariables();
+    }
+
+    private void invalidateComputedVariables() {
+        this.startDate = null;
+        this.endDate = null;
         this.busyDates = null;
     }
 
@@ -107,7 +116,7 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setDelay(Integer delay) {
         this.delay = delay;
-        this.busyDates = null;
+        invalidateComputedVariables();
     }
 
     @ShadowVariable(variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
@@ -119,7 +128,7 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     public void setPredecessorsDoneDate(Integer predecessorsDoneDate) {
         this.predecessorsDoneDate = predecessorsDoneDate;
-        this.busyDates = null;
+        invalidateComputedVariables();
     }
 
     // ************************************************************************
@@ -128,33 +137,33 @@ public class Allocation extends AbstractPersistable implements Labeled {
 
     @JsonIgnore
     public Integer getStartDate() {
-        if (predecessorsDoneDate == null) {
-            return null;
+        if (startDate == null && predecessorsDoneDate != null) {
+            startDate = predecessorsDoneDate + Objects.requireNonNullElse(delay, 0);
         }
-        return predecessorsDoneDate + (delay == null ? 0 : delay);
+        return startDate;
     }
 
     @JsonIgnore
     public Integer getEndDate() {
-        if (predecessorsDoneDate == null) {
-            return null;
+        if (endDate == null && predecessorsDoneDate != null) {
+            endDate = getStartDate() + (executionMode == null ? 0 : executionMode.getDuration());
         }
-        return getStartDate() + (executionMode == null ? 0 : executionMode.getDuration());
+        return endDate;
     }
 
     @JsonIgnore
     public List<Integer> getBusyDates() {
         if (busyDates == null) {
             if (predecessorsDoneDate == null) {
-                this.busyDates = Collections.emptyList();
+                busyDates = Collections.emptyList();
             } else {
                 var startDate = getStartDate();
                 var endDate = getEndDate();
-                var busyDates = new ArrayList<Integer>(endDate - startDate);
-                for (int i = startDate; i < endDate; i++) {
-                    busyDates.add(i);
+                var dates = new Integer[endDate - startDate];
+                for (int i = 0; i < dates.length; i++) {
+                    dates[i] = startDate + i;
                 }
-                this.busyDates = busyDates;
+                busyDates = Arrays.asList(dates);
             }
         }
         return busyDates;
