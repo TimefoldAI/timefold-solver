@@ -47,6 +47,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends BavetAbstractConstraintStream<Solution_>
         implements InnerUniConstraintStream<A> {
@@ -366,7 +367,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy(a -> a);
+            return groupBy(ConstantLambdaUtils.identity());
         }
     }
 
@@ -470,7 +471,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     @Override
     public <ResultB_> BiConstraintStream<A, ResultB_> expand(Function<A, ResultB_> mapping) {
         var stream =
-                shareAndAddChild(new BavetBiMapUniConstraintStream<>(constraintFactory, this, a -> a, mapping, true));
+                shareAndAddChild(
+                        new BavetBiMapUniConstraintStream<>(constraintFactory, this,
+                                ConstantLambdaUtils.identity(), mapping, true));
         return constraintFactory.share(new BavetAftBridgeBiConstraintStream<>(constraintFactory, stream), stream::setAftBridge);
     }
 
@@ -478,7 +481,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     public <ResultB_, ResultC_> TriConstraintStream<A, ResultB_, ResultC_> expand(Function<A, ResultB_> mappingB,
             Function<A, ResultC_> mappingC) {
         var stream = shareAndAddChild(
-                new BavetTriMapUniConstraintStream<>(constraintFactory, this, a -> a, mappingB, mappingC, true));
+                new BavetTriMapUniConstraintStream<>(constraintFactory, this, ConstantLambdaUtils.identity(),
+                        mappingB, mappingC,
+                        true));
         return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }
@@ -486,8 +491,10 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     @Override
     public <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_>
             expand(Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC, Function<A, ResultD_> mappingD) {
-        var stream = shareAndAddChild(new BavetQuadMapUniConstraintStream<>(constraintFactory, this, a -> a, mappingB,
-                mappingC, mappingD, true));
+        var stream = shareAndAddChild(
+                new BavetQuadMapUniConstraintStream<>(constraintFactory, this, ConstantLambdaUtils.identity(),
+                        mappingB,
+                        mappingC, mappingD, true));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }

@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches one fact.
@@ -31,7 +32,6 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
  * @see ConstraintStream
  */
 public interface UniConstraintStream<A> extends ConstraintStream {
-
     // ************************************************************************
     // Filter
     // ************************************************************************
@@ -453,7 +453,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists
      */
     default UniConstraintStream<A> ifExistsOther(Class<A> otherClass) {
-        return ifExists(otherClass, Joiners.filtering((a, b) -> !Objects.equals(a, b)));
+        return ifExists(otherClass, Joiners.filtering(ConstantLambdaUtils.notEquals()));
     }
 
     /**
@@ -537,7 +537,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         are true
      */
     default UniConstraintStream<A> ifExistsOther(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering((a, b) -> !Objects.equals(a, b));
+        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+
+        @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
         return ifExists(otherClass, allJoiners);
@@ -636,7 +638,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         are true
      */
     default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering((a, b) -> !Objects.equals(a, b));
+        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+
+        @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
         return ifExistsIncludingNullVars(otherClass, allJoiners);
@@ -826,7 +830,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist
      */
     default UniConstraintStream<A> ifNotExistsOther(Class<A> otherClass) {
-        return ifNotExists(otherClass, Joiners.filtering((a, b) -> !Objects.equals(a, b)));
+        return ifNotExists(otherClass, Joiners.filtering(ConstantLambdaUtils.notEquals()));
     }
 
     /**
@@ -911,7 +915,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         {@link BiJoiner}s are true
      */
     default UniConstraintStream<A> ifNotExistsOther(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering((a, b) -> !Objects.equals(a, b));
+        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+
+        @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
         return ifNotExists(otherClass, allJoiners);
@@ -1010,7 +1016,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         {@link BiJoiner}s are true
      */
     default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering((a, b) -> !Objects.equals(a, b));
+        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+
+        @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
         return ifNotExistsIncludingNullVars(otherClass, allJoiners);
@@ -1621,7 +1629,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, a -> 1);
+        return penalize(constraintWeight, ConstantLambdaUtils.uniConstantOne());
     }
 
     /**
@@ -1664,7 +1672,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default UniConstraintBuilder<A, ?> penalizeConfigurable() {
-        return penalizeConfigurable(a -> 1);
+        return penalizeConfigurable(ConstantLambdaUtils.uniConstantOne());
     }
 
     /**
@@ -1702,7 +1710,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, a -> 1);
+        return reward(constraintWeight, ConstantLambdaUtils.uniConstantOne());
     }
 
     /**
@@ -1745,7 +1753,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default UniConstraintBuilder<A, ?> rewardConfigurable() {
-        return rewardConfigurable(a -> 1);
+        return rewardConfigurable(ConstantLambdaUtils.uniConstantOne());
     }
 
     /**
@@ -1788,7 +1796,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, a -> 1);
+        return impact(constraintWeight, ConstantLambdaUtils.uniConstantOne());
     }
 
     /**
@@ -1829,7 +1837,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default UniConstraintBuilder<A, ?> impactConfigurable() {
-        return impactConfigurable(a -> 1);
+        return impactConfigurable(ConstantLambdaUtils.uniConstantOne());
     }
 
     /**

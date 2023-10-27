@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches two facts.
@@ -1170,7 +1171,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, (a, b) -> 1);
+        return penalize(constraintWeight, ConstantLambdaUtils.biConstantOne());
     }
 
     /**
@@ -1213,7 +1214,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default BiConstraintBuilder<A, B, ?> penalizeConfigurable() {
-        return penalizeConfigurable((a, b) -> 1);
+        return penalizeConfigurable(ConstantLambdaUtils.biConstantOne());
     }
 
     /**
@@ -1251,7 +1252,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, (a, b) -> 1);
+        return reward(constraintWeight, ConstantLambdaUtils.biConstantOne());
     }
 
     /**
@@ -1294,7 +1295,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default BiConstraintBuilder<A, B, ?> rewardConfigurable() {
-        return rewardConfigurable((a, b) -> 1);
+        return rewardConfigurable(ConstantLambdaUtils.biConstantOne());
     }
 
     /**
@@ -1337,7 +1338,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, (a, b) -> 1);
+        return impact(constraintWeight, ConstantLambdaUtils.biConstantOne());
     }
 
     /**
@@ -1378,7 +1379,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default BiConstraintBuilder<A, B, ?> impactConfigurable() {
-        return impactConfigurable((a, b) -> 1);
+        return impactConfigurable(ConstantLambdaUtils.biConstantOne());
     }
 
     /**

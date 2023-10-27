@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches three facts.
@@ -1146,7 +1147,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, (a, b, c) -> 1);
+        return penalize(constraintWeight, ConstantLambdaUtils.triConstantOne());
     }
 
     /**
@@ -1189,7 +1190,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default TriConstraintBuilder<A, B, C, ?> penalizeConfigurable() {
-        return penalizeConfigurable((a, b, c) -> 1);
+        return penalizeConfigurable(ConstantLambdaUtils.triConstantOne());
     }
 
     /**
@@ -1227,7 +1228,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, (a, b, c) -> 1);
+        return reward(constraintWeight, ConstantLambdaUtils.triConstantOne());
     }
 
     /**
@@ -1270,7 +1271,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default TriConstraintBuilder<A, B, C, ?> rewardConfigurable() {
-        return rewardConfigurable((a, b, c) -> 1);
+        return rewardConfigurable(ConstantLambdaUtils.triConstantOne());
     }
 
     /**
@@ -1313,7 +1314,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, (a, b, c) -> 1);
+        return impact(constraintWeight, ConstantLambdaUtils.triConstantOne());
     }
 
     /**
@@ -1354,7 +1355,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default TriConstraintBuilder<A, B, C, ?> impactConfigurable() {
-        return impactConfigurable((a, b, c) -> 1);
+        return impactConfigurable(ConstantLambdaUtils.triConstantOne());
     }
 
     /**

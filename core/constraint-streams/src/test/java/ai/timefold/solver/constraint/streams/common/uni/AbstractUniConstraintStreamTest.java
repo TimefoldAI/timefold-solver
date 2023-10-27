@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -39,6 +40,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -3342,6 +3344,10 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(oneWeightMonitorCount.get()).isEqualTo(1);
     }
 
+    // ************************************************************************
+    // Node Sharing
+    // ************************************************************************
+
     @TestTemplate
     public void nodeSharing() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
@@ -3435,6 +3441,220 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch("myConstraint2", entityGroup2));
     }
 
+    @Override
+    @TestTemplate
+    public void shareNodesWithSameInput() {
+        final List<String> failureList = new ArrayList<>();
+        buildScoreDirector(
+                TestdataSolution.buildSolutionDescriptor(),
+                factory -> {
+                    UniConstraintStream<TestdataEntity> base = factory.forEach(TestdataEntity.class);
+                    Function<TestdataEntity, TestdataEntity> function = Function.identity();
+                    Function<TestdataEntity, Iterable<String>> iterableFunction = entity -> Collections.emptyList();
+                    Predicate<TestdataEntity> predicate = entity -> true;
+                    BiPredicate<TestdataEntity, TestdataEntity> bipredicate = (e1, e2) -> true;
+
+                    if (base.join(TestdataEntity.class) != base.join(TestdataEntity.class)) {
+                        failureList.add("join(no-joiners)");
+                    }
+
+                    if (base.join(TestdataEntity.class, Joiners.equal(function)) != base.join(TestdataEntity.class,
+                            Joiners.equal(function))) {
+                        failureList.add("join(indexed)");
+                    }
+
+                    if (base.join(TestdataEntity.class, Joiners.filtering(bipredicate)) != base.join(TestdataEntity.class,
+                            Joiners.filtering(bipredicate))) {
+                        failureList.add("join(filtered)");
+                    }
+
+                    if (base.filter(predicate) != base.filter(predicate)) {
+                        failureList.add("filter");
+                    }
+
+                    if (base.distinct() != base.distinct()) {
+                        failureList.add("distinct");
+                    }
+
+                    if (base.concat(base) != base.concat(base)) {
+                        failureList.add("concat");
+                    }
+
+                    // ifExistsOther(filtering) will create a new Predicate (as it combines
+                    // the predicate with a notEquals predicate), and thus cannot be node shared
+                    //if (base.ifExistsOther(TestdataEntity.class, Joiners.filtering(bipredicate)) != base.ifExistsOther(
+                    //        TestdataEntity.class,
+                    //        Joiners.filtering(bipredicate))) {
+                    //    failureList.add("ifExistsOther(filtered)");
+                    //}
+                    //
+                    //if (base.ifNotExistsOther(TestdataEntity.class, Joiners.filtering(bipredicate)) != base.ifNotExistsOther(
+                    //        TestdataEntity.class,
+                    //        Joiners.filtering(bipredicate))) {
+                    //    failureList.add("ifNotExistsOther(filtered)");
+                    //}
+
+                    return new Constraint[] {};
+                });
+
+        assertThat(failureList).isEmpty();
+    }
+
+    @Override
+    @TestTemplate
+    public void differentNodesForDistinctInput() {
+        final List<String> failureList = new ArrayList<>();
+        buildScoreDirector(
+                TestdataSolution.buildSolutionDescriptor(),
+                factory -> {
+                    UniConstraintStream<TestdataEntity> base = factory.forEach(TestdataEntity.class);
+                    Function<TestdataEntity, TestdataEntity> f1 = a -> a;
+                    Function<TestdataEntity, TestdataEntity> f2 = a -> null;
+                    Function<TestdataEntity, Iterable<String>> iterableFunction1 = entity -> Collections.emptyList();
+                    Function<TestdataEntity, Iterable<String>> iterableFunction2 = entity -> List.of();
+                    Predicate<TestdataEntity> p1 = entity -> true;
+                    Predicate<TestdataEntity> p2 = entity -> false;
+                    BiPredicate<TestdataEntity, TestdataEntity> jp1 = (e1, e2) -> true;
+                    BiPredicate<TestdataEntity, TestdataEntity> jp2 = (e1, e2) -> false;
+
+                    // Make sure different parents result in a different stream
+                    if (base.filter(p1).join(TestdataEntity.class) == base.filter(p2).join(TestdataEntity.class)) {
+                        failureList.add("join(different-parent)");
+                    }
+
+                    if (base.filter(p1).ifExists(TestdataEntity.class, Joiners.equal(f1)) == base.filter(p2)
+                            .ifExists(TestdataEntity.class,
+                                    Joiners.equal(f1))) {
+                        failureList.add("ifExists(different-parent)");
+                    }
+
+                    if (base.filter(p1).ifNotExists(TestdataEntity.class, Joiners.equal(f1)) == base.filter(p2).ifNotExists(
+                            TestdataEntity.class,
+                            Joiners.equal(f1))) {
+                        failureList.add("ifNotExists(different-parent)");
+                    }
+
+                    if (base.filter(p1).filter(p1) == base.filter(p2).filter(p1)) {
+                        failureList.add("filter(different-parent)");
+                    }
+
+                    if (base.filter(p1).expand(f1) == base.filter(p2).expand(f1)) {
+                        failureList.add("expand(different-parent)");
+                    }
+
+                    if (base.filter(p1).map(f1) == base.filter(p2).map(f1)) {
+                        failureList.add("map(different-parent)");
+                    }
+
+                    if (base.filter(p1).distinct() == base.filter(p2).distinct()) {
+                        failureList.add("distinct(different-parent)");
+                    }
+
+                    if (base.filter(p1).concat(base) == base.filter(p2).concat(base)) {
+                        failureList.add("concat(different-parent)");
+                    }
+
+                    if (base.filter(p1).groupBy(f1) == base.filter(p2).groupBy(f1)) {
+                        failureList.add("groupby(different-parent)");
+                    }
+
+                    if (base.filter(p1).flattenLast(iterableFunction1) == base.filter(p2).flattenLast(iterableFunction1)) {
+                        failureList.add("flattenLast(different-parent)");
+                    }
+                    // *********************************************************************
+                    if (base.join(TestdataEntity.class, Joiners.equal(f1)) == base.join(TestdataEntity.class,
+                            Joiners.equal(f2))) {
+                        failureList.add("join(different-indexed)");
+                    }
+
+                    if (base.join(TestdataEntity.class, Joiners.filtering(jp1)) == base.join(TestdataEntity.class,
+                            Joiners.filtering(jp2))) {
+                        failureList.add("join(different-filtered)");
+                    }
+
+                    if (base.ifExists(TestdataEntity.class, Joiners.equal(f1)) == base.ifExists(TestdataEntity.class,
+                            Joiners.equal(f2))) {
+                        failureList.add("ifExists(different-indexed)");
+                    }
+
+                    if (base.ifExists(TestdataEntity.class, Joiners.filtering(jp1)) == base.ifExists(
+                            TestdataEntity.class,
+                            Joiners.filtering(jp2))) {
+                        failureList.add("ifExists(different-filtered)");
+                    }
+
+                    if (base.ifNotExists(TestdataEntity.class, Joiners.equal(f1)) == base.ifNotExists(
+                            TestdataEntity.class,
+                            Joiners.equal(f2))) {
+                        failureList.add("ifNotExists(different-indexed)");
+                    }
+
+                    if (base.ifNotExists(TestdataEntity.class, Joiners.filtering(jp1)) == base.ifNotExists(
+                            TestdataEntity.class,
+                            Joiners.filtering(jp2))) {
+                        failureList.add("ifNotExists(different-filtered)");
+                    }
+
+                    if (base.ifExistsOther(TestdataEntity.class, Joiners.equal(f1)) == base.ifExistsOther(
+                            TestdataEntity.class,
+                            Joiners.equal(f2))) {
+                        failureList.add("ifExistsOther(different-indexed)");
+                    }
+
+                    if (base.ifExistsOther(TestdataEntity.class, Joiners.filtering(jp1)) == base.ifExistsOther(
+                            TestdataEntity.class,
+                            Joiners.filtering(jp2))) {
+                        failureList.add("ifExistsOther(different-filtered)");
+                    }
+
+                    if (base.ifNotExistsOther(TestdataEntity.class, Joiners.equal(f1)) == base.ifNotExistsOther(
+                            TestdataEntity.class,
+                            Joiners.equal(f2))) {
+                        failureList.add("ifNotExistsOther(different-indexed)");
+                    }
+
+                    if (base.ifNotExistsOther(TestdataEntity.class, Joiners.filtering(jp1)) == base.ifNotExistsOther(
+                            TestdataEntity.class,
+                            Joiners.filtering(jp2))) {
+                        failureList.add("ifNotExistsOther(different-filtered)");
+                    }
+
+                    if (base.filter(p1) == base.filter(p2)) {
+                        failureList.add("filter(different-predicate)");
+                    }
+
+                    if (base.expand(f1) == base.expand(f2)) {
+                        failureList.add("expand(different-function)");
+                    }
+
+                    if (base.map(f1) == base.map(f2)) {
+                        failureList.add("map(different-function)");
+                    }
+
+                    if (base.groupBy(f1) == base.groupBy(f2)) {
+                        failureList.add("groupby(different-mapping)");
+                    }
+
+                    if (base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
+                            ConstraintCollectors.countDistinct(f2))) {
+                        failureList.add("groupby(different-collector-function)");
+                    }
+
+                    if ((UniConstraintStream) base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
+                            ConstraintCollectors.countDistinctLong(f1))) {
+                        failureList.add("groupby(different-collector)");
+                    }
+
+                    if (base.flattenLast(iterableFunction1) == base.flattenLast(iterableFunction2)) {
+                        failureList.add("flattenLast(different-function)");
+                    }
+
+                    return new Constraint[] {};
+                });
+
+        assertThat(failureList).isEmpty();
+    }
+
     // ************************************************************************
     // from() (deprecated)
     // ************************************************************************
@@ -3459,5 +3679,4 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(entityWithNull),
                 assertMatch(entityWithValue));
     }
-
 }

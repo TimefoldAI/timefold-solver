@@ -47,6 +47,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends BavetAbstractConstraintStream<Solution_>
         implements InnerBiConstraintStream<A, B> {
@@ -361,7 +362,8 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b) -> a, (a, b) -> b);
+            return groupBy(ConstantLambdaUtils.biPickFirst(),
+                    ConstantLambdaUtils.biPickSecond());
         }
     }
 
@@ -463,7 +465,9 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     @Override
     public <ResultC_> TriConstraintStream<A, B, ResultC_> expand(BiFunction<A, B, ResultC_> mapping) {
         var stream = shareAndAddChild(
-                new BavetTriMapBiConstraintStream<>(constraintFactory, this, (a, b) -> a, (a, b) -> b, mapping, true));
+                new BavetTriMapBiConstraintStream<>(constraintFactory, this,
+                        ConstantLambdaUtils.biPickFirst(),
+                        ConstantLambdaUtils.biPickSecond(), mapping, true));
         return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }
@@ -471,8 +475,9 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     @Override
     public <ResultC_, ResultD_> QuadConstraintStream<A, B, ResultC_, ResultD_> expand(BiFunction<A, B, ResultC_> mappingC,
             BiFunction<A, B, ResultD_> mappingD) {
-        var stream = shareAndAddChild(new BavetQuadMapBiConstraintStream<>(constraintFactory, this, (a, b) -> a,
-                (a, b) -> b, mappingC, mappingD, true));
+        var stream = shareAndAddChild(new BavetQuadMapBiConstraintStream<>(constraintFactory, this,
+                ConstantLambdaUtils.biPickFirst(),
+                ConstantLambdaUtils.biPickSecond(), mappingC, mappingD, true));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }

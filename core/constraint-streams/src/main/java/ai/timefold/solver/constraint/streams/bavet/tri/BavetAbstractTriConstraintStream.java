@@ -46,6 +46,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> extends BavetAbstractConstraintStream<Solution_>
         implements InnerTriConstraintStream<A, B, C> {
@@ -371,7 +372,9 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b, c) -> a, (a, b, c) -> b, (a, b, c) -> c);
+            return groupBy(ConstantLambdaUtils.triPickFirst(),
+                    ConstantLambdaUtils.triPickSecond(),
+                    ConstantLambdaUtils.triPickThird());
         }
     }
 
@@ -474,8 +477,10 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @Override
     public <ResultD_> QuadConstraintStream<A, B, C, ResultD_> expand(TriFunction<A, B, C, ResultD_> mapping) {
-        var stream = shareAndAddChild(new BavetQuadMapTriConstraintStream<>(constraintFactory, this, (a, b, c) -> a,
-                (a, b, c) -> b, (a, b, c) -> c, mapping, true));
+        var stream = shareAndAddChild(new BavetQuadMapTriConstraintStream<>(constraintFactory, this,
+                ConstantLambdaUtils.triPickFirst(),
+                ConstantLambdaUtils.triPickSecond(),
+                ConstantLambdaUtils.triPickThird(), mapping, true));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }

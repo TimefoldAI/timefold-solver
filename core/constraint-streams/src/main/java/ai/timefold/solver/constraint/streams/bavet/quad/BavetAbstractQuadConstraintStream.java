@@ -44,6 +44,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractConstraintStream<Solution_>
@@ -348,7 +349,10 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b, c, d) -> a, (a, b, c, d) -> b, (a, b, c, d) -> c, (a, b, c, d) -> d);
+            return groupBy(ConstantLambdaUtils.quadPickFirst(),
+                    ConstantLambdaUtils.quadPickSecond(),
+                    ConstantLambdaUtils.quadPickThird(),
+                    ConstantLambdaUtils.quadPickFourth());
         }
     }
 
