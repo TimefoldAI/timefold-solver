@@ -196,7 +196,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a);
                     return innerCountDistinct(resultContainer, value);
                 },
-                Map::size);
+                Map::size,
+                groupValueMapping);
     }
 
     /**
@@ -209,7 +210,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a);
                     return innerCountDistinctLong(resultContainer, value);
                 },
-                resultContainer -> (long) resultContainer.size());
+                resultContainer -> (long) resultContainer.size(),
+                groupValueMapping);
     }
 
     /**
@@ -223,7 +225,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a, b);
                     return innerCountDistinct(resultContainer, value);
                 },
-                Map::size);
+                Map::size,
+                groupValueMapping);
     }
 
     /**
@@ -237,7 +240,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a, b);
                     return innerCountDistinctLong(resultContainer, value);
                 },
-                resultContainer -> (long) resultContainer.size());
+                resultContainer -> (long) resultContainer.size(),
+                groupValueMapping);
     }
 
     /**
@@ -251,7 +255,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a, b, c);
                     return innerCountDistinct(resultContainer, value);
                 },
-                Map::size);
+                Map::size,
+                groupValueMapping);
     }
 
     /**
@@ -265,7 +270,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a, b, c);
                     return innerCountDistinctLong(resultContainer, value);
                 },
-                resultContainer -> (long) resultContainer.size());
+                resultContainer -> (long) resultContainer.size(),
+                groupValueMapping);
     }
 
     /**
@@ -279,7 +285,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a, b, c, d);
                     return innerCountDistinct(resultContainer, value);
                 },
-                Map::size);
+                Map::size,
+                groupValueMapping);
     }
 
     /**
@@ -293,7 +300,8 @@ public final class ConstraintCollectors {
                     Object value = groupValueMapping.apply(a, b, c, d);
                     return innerCountDistinctLong(resultContainer, value);
                 },
-                resultContainer -> (long) resultContainer.size());
+                resultContainer -> (long) resultContainer.size(),
+                groupValueMapping);
     }
 
     /**
@@ -367,7 +375,8 @@ public final class ConstraintCollectors {
                     int value = groupValueMapping.applyAsInt(a);
                     return innerSum(resultContainer, value);
                 },
-                MutableInt::intValue);
+                MutableInt::intValue,
+                groupValueMapping);
     }
 
     private static Runnable innerSum(MutableInt resultContainer, int value) {
@@ -385,7 +394,8 @@ public final class ConstraintCollectors {
                     long value = groupValueMapping.applyAsLong(a);
                     return innerSum(resultContainer, value);
                 },
-                MutableLong::longValue);
+                MutableLong::longValue,
+                groupValueMapping);
     }
 
     private static Runnable innerSum(MutableLong resultContainer, long value) {
@@ -404,7 +414,10 @@ public final class ConstraintCollectors {
                     Result value = groupValueMapping.apply(a);
                     return innerSum(resultContainer, value, adder, subtractor);
                 },
-                MutableReference::getValue);
+                MutableReference::getValue,
+                zero,
+                adder,
+                subtractor);
     }
 
     private static <Result> Runnable innerSum(MutableReference<Result> resultContainer, Result value,
@@ -455,7 +468,8 @@ public final class ConstraintCollectors {
                     int value = groupValueMapping.applyAsInt(a, b);
                     return innerSum(resultContainer, value);
                 },
-                MutableInt::intValue);
+                MutableInt::intValue,
+                groupValueMapping);
     }
 
     /**
@@ -469,7 +483,8 @@ public final class ConstraintCollectors {
                     long value = groupValueMapping.applyAsLong(a, b);
                     return innerSum(resultContainer, value);
                 },
-                MutableLong::longValue);
+                MutableLong::longValue,
+                groupValueMapping);
     }
 
     /**
@@ -484,7 +499,8 @@ public final class ConstraintCollectors {
                     Result value = groupValueMapping.apply(a, b);
                     return innerSum(resultContainer, value, adder, subtractor);
                 },
-                MutableReference::getValue);
+                MutableReference::getValue,
+                groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -530,7 +546,8 @@ public final class ConstraintCollectors {
                     int value = groupValueMapping.applyAsInt(a, b, c);
                     return innerSum(resultContainer, value);
                 },
-                MutableInt::intValue);
+                MutableInt::intValue,
+                groupValueMapping);
     }
 
     /**
@@ -544,7 +561,8 @@ public final class ConstraintCollectors {
                     long value = groupValueMapping.applyAsLong(a, b, c);
                     return innerSum(resultContainer, value);
                 },
-                MutableLong::longValue);
+                MutableLong::longValue,
+                groupValueMapping);
     }
 
     /**
@@ -559,7 +577,8 @@ public final class ConstraintCollectors {
                     Result value = groupValueMapping.apply(a, b, c);
                     return innerSum(resultContainer, value, adder, subtractor);
                 },
-                MutableReference::getValue);
+                MutableReference::getValue,
+                groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -605,7 +624,8 @@ public final class ConstraintCollectors {
                     int value = groupValueMapping.applyAsInt(a, b, c, d);
                     return innerSum(resultContainer, value);
                 },
-                MutableInt::intValue);
+                MutableInt::intValue,
+                groupValueMapping);
     }
 
     /**
@@ -619,7 +639,8 @@ public final class ConstraintCollectors {
                     long value = groupValueMapping.applyAsLong(a, b, c, d);
                     return innerSum(resultContainer, value);
                 },
-                MutableLong::longValue);
+                MutableLong::longValue,
+                groupValueMapping);
     }
 
     /**
@@ -634,7 +655,11 @@ public final class ConstraintCollectors {
                     Result value = groupValueMapping.apply(a, b, c, d);
                     return innerSum(resultContainer, value, adder, subtractor);
                 },
-                MutableReference::getValue);
+                MutableReference::getValue,
+                groupValueMapping,
+                zero,
+                adder,
+                subtractor);
     }
 
     /**
@@ -757,7 +782,10 @@ public final class ConstraintCollectors {
                     Mapped value = groupValueMapping.apply(a);
                     return innerMinOrMax(resultContainer, value, comparableFunction);
                 },
-                getMinOrMaxFinisherForComparable(min));
+                getMinOrMaxFinisherForComparable(min),
+                groupValueMapping,
+                comparableFunction,
+                min);
     }
 
     private static <Value_, Comparable_ extends Comparable<? super Comparable_>>
@@ -872,7 +900,8 @@ public final class ConstraintCollectors {
                     Mapped value = groupValueMapping.apply(a, b);
                     return innerMinOrMax(resultContainer, value, comparableFunction);
                 },
-                getMinOrMaxFinisherForComparable(min));
+                getMinOrMaxFinisherForComparable(min),
+                groupValueMapping, comparableFunction, min);
     }
 
     /**
@@ -914,7 +943,10 @@ public final class ConstraintCollectors {
                     Mapped value = groupValueMapping.apply(a, b, c);
                     return innerMinOrMax(resultContainer, value, comparableFunction);
                 },
-                getMinOrMaxFinisherForComparable(min));
+                getMinOrMaxFinisherForComparable(min),
+                groupValueMapping,
+                comparableFunction,
+                min);
     }
 
     /**
@@ -956,7 +988,10 @@ public final class ConstraintCollectors {
                     Mapped value = groupValueMapping.apply(a, b, c, d);
                     return innerMinOrMax(resultContainer, value, comparableFunction);
                 },
-                getMinOrMaxFinisherForComparable(min));
+                getMinOrMaxFinisherForComparable(min),
+                groupValueMapping,
+                comparableFunction,
+                min);
     }
 
     /**
@@ -1082,7 +1117,10 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisherForComparator(min));
+                getMinOrMaxFinisherForComparator(min),
+                groupValueMapping,
+                comparator,
+                min);
     }
 
     private static <Value_> Function<SortedMap<Value_, MutableLong>, Value_>
@@ -1130,7 +1168,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisherForComparator(min));
+                getMinOrMaxFinisherForComparator(min),
+                groupValueMapping, comparator, min);
     }
 
     /**
@@ -1170,7 +1209,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisherForComparator(min));
+                getMinOrMaxFinisherForComparator(min),
+                groupValueMapping, comparator, min);
     }
 
     /**
@@ -1210,7 +1250,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c, d);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                getMinOrMaxFinisherForComparator(min));
+                getMinOrMaxFinisherForComparator(min),
+                groupValueMapping, comparator, min);
     }
 
     /**
@@ -1584,7 +1625,9 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer),
+                groupValueMapping,
+                collectionFunction);
     }
 
     private static <Mapped, Container extends List<Mapped>, Result extends Collection<Mapped>> Result toCollectionFinisher(
@@ -1616,7 +1659,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                HashMap::keySet);
+                HashMap::keySet,
+                groupValueMapping);
     }
 
     /**
@@ -1646,7 +1690,9 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                TreeMap::navigableKeySet);
+                TreeMap::navigableKeySet,
+                groupValueMapping,
+                comparator);
     }
 
     /**
@@ -1669,7 +1715,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                Function.identity());
+                Function.identity(),
+                groupValueMapping);
     }
 
     /**
@@ -1686,7 +1733,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer),
+                groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1700,7 +1748,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                HashMap::keySet);
+                HashMap::keySet,
+                groupValueMapping);
     }
 
     /**
@@ -1723,7 +1772,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                TreeMap::navigableKeySet);
+                TreeMap::navigableKeySet,
+                groupValueMapping, comparator);
     }
 
     /**
@@ -1738,7 +1788,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                Function.identity());
+                Function.identity(),
+                groupValueMapping);
     }
 
     /**
@@ -1755,7 +1806,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer),
+                groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1769,7 +1821,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                HashMap::keySet);
+                HashMap::keySet,
+                groupValueMapping);
     }
 
     /**
@@ -1791,7 +1844,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                TreeMap::navigableKeySet);
+                TreeMap::navigableKeySet,
+                groupValueMapping, comparator);
     }
 
     /**
@@ -1806,7 +1860,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                Function.identity());
+                Function.identity(),
+                groupValueMapping);
     }
 
     /**
@@ -1823,7 +1878,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer),
+                groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1837,7 +1893,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c, d);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                HashMap::keySet);
+                HashMap::keySet,
+                groupValueMapping);
     }
 
     /**
@@ -1860,7 +1917,8 @@ public final class ConstraintCollectors {
                     Mapped mapped = groupValueMapping.apply(a, b, c, d);
                     return innerCountDistinctLong(resultContainer, mapped);
                 },
-                TreeMap::navigableKeySet);
+                TreeMap::navigableKeySet,
+                groupValueMapping, comparator);
     }
 
     /**
@@ -1875,7 +1933,8 @@ public final class ConstraintCollectors {
                     resultContainer.add(mapped);
                     return () -> resultContainer.remove(mapped);
                 },
-                Function.identity());
+                Function.identity(),
+                groupValueMapping);
     }
 
     // ************************************************************************
@@ -1936,7 +1995,10 @@ public final class ConstraintCollectors {
         return new DefaultUniConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
                 (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper,
+                valueMapper,
+                valueSetFunction);
     }
 
     private static final class ToMapPerKeyCounter<Value> {
@@ -2126,7 +2188,10 @@ public final class ConstraintCollectors {
         return new DefaultUniConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
                 (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToMapResultContainer::getResult);
+                ToMapResultContainer::getResult,
+                keyMapper,
+                valueMapper,
+                mergeFunction);
     }
 
     /**
@@ -2183,7 +2248,10 @@ public final class ConstraintCollectors {
         return new DefaultUniConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
                 (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper,
+                valueMapper,
+                valueSetFunction);
     }
 
     /**
@@ -2210,7 +2278,10 @@ public final class ConstraintCollectors {
         return new DefaultUniConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
                 (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper,
+                valueMapper,
+                mergeFunction);
     }
 
     /**
@@ -2231,7 +2302,8 @@ public final class ConstraintCollectors {
         return new DefaultBiConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
                 (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper, valueMapper, valueSetFunction);
     }
 
     private static <A, B, Key, Value> Runnable toMapAccumulator(
@@ -2252,7 +2324,8 @@ public final class ConstraintCollectors {
         return new DefaultBiConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
                 (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper, valueMapper, mergeFunction);
     }
 
     /**
@@ -2274,7 +2347,8 @@ public final class ConstraintCollectors {
         return new DefaultBiConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
                 (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper, valueMapper, valueSetFunction);
     }
 
     /**
@@ -2287,7 +2361,8 @@ public final class ConstraintCollectors {
         return new DefaultBiConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
                 (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper, valueMapper, mergeFunction);
     }
 
     /**
@@ -2309,7 +2384,8 @@ public final class ConstraintCollectors {
         return new DefaultTriConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
                 (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper, valueMapper, valueSetFunction);
     }
 
     private static <A, B, C, Key, Value> Runnable toMapAccumulator(
@@ -2331,7 +2407,8 @@ public final class ConstraintCollectors {
         return new DefaultTriConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
                 (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper, valueMapper, mergeFunction);
     }
 
     /**
@@ -2355,7 +2432,8 @@ public final class ConstraintCollectors {
         return new DefaultTriConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
                 (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper, valueMapper, valueSetFunction);
     }
 
     /**
@@ -2369,7 +2447,8 @@ public final class ConstraintCollectors {
         return new DefaultTriConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
                 (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper, valueMapper, mergeFunction);
     }
 
     /**
@@ -2392,7 +2471,8 @@ public final class ConstraintCollectors {
         return new DefaultQuadConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
                 (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper, valueMapper, valueSetFunction);
     }
 
     private static <A, B, C, D, Key, Value> Runnable toMapAccumulator(
@@ -2414,7 +2494,8 @@ public final class ConstraintCollectors {
         return new DefaultQuadConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
                 (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper, valueMapper, mergeFunction);
     }
 
     /**
@@ -2438,7 +2519,8 @@ public final class ConstraintCollectors {
         return new DefaultQuadConstraintCollector<>(
                 () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
                 (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToMultiMapResultContainer::getResult);
+                ToMultiMapResultContainer::getResult,
+                keyMapper, valueMapper, valueSetFunction);
     }
 
     /**
@@ -2452,7 +2534,8 @@ public final class ConstraintCollectors {
         return new DefaultQuadConstraintCollector<>(
                 () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
                 (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToSimpleMapResultContainer::getResult);
+                ToSimpleMapResultContainer::getResult,
+                keyMapper, valueMapper, mergeFunction);
     }
 
     // ************************************************************************
@@ -2486,7 +2569,9 @@ public final class ConstraintCollectors {
                         return NOOP;
                     }
                 },
-                delegate.finisher());
+                delegate.finisher(),
+                condition,
+                delegate);
     }
 
     /**
@@ -2505,7 +2590,8 @@ public final class ConstraintCollectors {
                         return NOOP;
                     }
                 },
-                delegate.finisher());
+                delegate.finisher(),
+                condition, delegate);
     }
 
     /**
@@ -2524,7 +2610,8 @@ public final class ConstraintCollectors {
                         return NOOP;
                     }
                 },
-                delegate.finisher());
+                delegate.finisher(),
+                condition, delegate);
     }
 
     /**
@@ -2543,7 +2630,8 @@ public final class ConstraintCollectors {
                         return NOOP;
                     }
                 },
-                delegate.finisher());
+                delegate.finisher(),
+                condition, delegate);
     }
 
     // ************************************************************************
@@ -2581,7 +2669,8 @@ public final class ConstraintCollectors {
                     Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a);
                     return compose(undo1, undo2);
                 },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction),
+                subCollector1, subCollector2, composeFunction);
     }
 
     private static <Result_, SubResultContainer1_, SubResultContainer2_, SubResult1_, SubResult2_>
@@ -2643,7 +2732,11 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+                        composeFunction),
+                subCollector1,
+                subCollector2,
+                subCollector3,
+                composeFunction);
     }
 
     private static <Result_, SubResultContainer1_, SubResultContainer2_, SubResultContainer3_, SubResult1_, SubResult2_, SubResult3_>
@@ -2715,7 +2808,12 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3, undo4);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+                        subCollector4.finisher(), composeFunction),
+                subCollector1,
+                subCollector2,
+                subCollector3,
+                subCollector4,
+                composeFunction);
     }
 
     private static <Result_, SubResultContainer1_, SubResultContainer2_, SubResultContainer3_, SubResultContainer4_, SubResult1_, SubResult2_, SubResult3_, SubResult4_>
@@ -2762,7 +2860,8 @@ public final class ConstraintCollectors {
                     Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a, b);
                     return compose(undo1, undo2);
                 },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction),
+                subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2790,7 +2889,8 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+                        composeFunction),
+                subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2823,7 +2923,8 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3, undo4);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+                        subCollector4.finisher(), composeFunction),
+                subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
     }
 
     /**
@@ -2845,7 +2946,8 @@ public final class ConstraintCollectors {
                     Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a, b, c);
                     return compose(undo1, undo2);
                 },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction),
+                subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2873,7 +2975,8 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+                        composeFunction),
+                subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2906,7 +3009,8 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3, undo4);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+                        subCollector4.finisher(), composeFunction),
+                subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
     }
 
     /**
@@ -2928,7 +3032,8 @@ public final class ConstraintCollectors {
                     Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a, b, c, d);
                     return compose(undo1, undo2);
                 },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction),
+                subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2956,7 +3061,8 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+                        composeFunction),
+                subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2989,7 +3095,8 @@ public final class ConstraintCollectors {
                     return compose(undo1, undo2, undo3, undo4);
                 },
                 createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+                        subCollector4.finisher(), composeFunction),
+                subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
     }
 
     private ConstraintCollectors() {

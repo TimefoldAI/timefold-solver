@@ -1,5 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.quad;
 
+import java.util.Objects;
+
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
@@ -45,7 +47,20 @@ final class BavetUniMapQuadConstraintStream<Solution_, A, B, C, D, NewA>
     // Equality for node sharing
     // ************************************************************************
 
-    // TODO
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        BavetUniMapQuadConstraintStream<?, ?, ?, ?, ?, ?> that = (BavetUniMapQuadConstraintStream<?, ?, ?, ?, ?, ?>) object;
+        return Objects.equals(parent, that.parent) && Objects.equals(mappingFunction, that.mappingFunction);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parent, mappingFunction);
+    }
 
     // ************************************************************************
     // Getters/setters

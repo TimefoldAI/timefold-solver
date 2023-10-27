@@ -252,4 +252,12 @@ public interface ConstraintStreamFunctionalTest {
 
     void impactNegativeBigDecimalCustomJustifications();
 
+    // ************************************************************************
+    // Node sharing
+    // ************************************************************************
+
+    void shareNodesWithSameInput();
+
+    void differentNodesForDistinctInput();
+
 }
