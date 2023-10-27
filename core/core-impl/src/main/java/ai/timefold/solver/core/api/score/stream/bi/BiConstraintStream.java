@@ -1031,8 +1031,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * calling {@code flattenLast(Person::getRoles)} on such stream will produce a stream of
      * {@code [(Ann, USER), (Ann, ADMIN), (Beth, USER), (Cathy, ADMIN), (Cathy, AUDITOR)]}.
      *
-     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}.
-     *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
+     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}
      * @param <ResultB_> the type of the last fact in the resulting tuples.
      *        It is recommended that this type be deeply immutable.
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,

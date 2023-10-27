@@ -1027,8 +1027,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *        It is recommended that this type be deeply immutable.
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
-     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}.
-     *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
+     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}
      * @return never null
      */
     <ResultC_> TriConstraintStream<A, B, ResultC_> flattenLast(Function<C, Iterable<ResultC_>> mapping);
