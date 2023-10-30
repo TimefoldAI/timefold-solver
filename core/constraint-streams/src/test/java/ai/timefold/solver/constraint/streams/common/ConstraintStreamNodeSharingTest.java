@@ -49,8 +49,113 @@ public interface ConstraintStreamNodeSharingTest {
     // ************************************************************************
     // If (not) exists
     // ************************************************************************
+    default void ifExistsOtherDifferentParent() {
+        // Only Unis have this variant, so don't force it.
+    }
 
-    // TODO
+    default void ifNotExistsOtherDifferentParent() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifExistsOtherSameParentDifferentIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherSameParentDifferentIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifExistsOtherSameParentDifferentFilter() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherSameParentDifferentFilter() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    // if(Not)ExistsOtherSameFilter cannot use node sharing, since it
+    // combines its own filter with the user provided filter, creating
+    // a new predicate
+
+    default void ifExistsOtherSameParentSameIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherSameParentSameIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifExistsOtherIncludingNullVarsDifferentParent() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherIncludingNullVarsDifferentParent() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifExistsOtherIncludingNullVarsSameParentDifferentIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherIncludingNullVarsSameParentDifferentIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifExistsOtherIncludingNullVarsSameParentDifferentFilter() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherIncludingNullVarsSameParentDifferentFilter() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifExistsOtherIncludingNullVarsSameParentSameIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    default void ifNotExistsOtherIncludingNullVarsSameParentSameIndexer() {
+        // Only Unis have this variant, so don't force it.
+    }
+
+    void ifExistsDifferentParent();
+
+    void ifNotExistsDifferentParent();
+
+    void ifExistsIncludingNullVarsDifferentParent();
+
+    void ifNotExistsIncludingNullVarsDifferentParent();
+
+    void ifExistsSameParentDifferentIndexer();
+
+    void ifExistsSameParentDifferentFilter();
+
+    void ifNotExistsSameParentDifferentIndexer();
+
+    void ifNotExistsSameParentDifferentFilter();
+
+    void ifExistsIncludingNullVarsSameParentDifferentIndexer();
+
+    void ifExistsIncludingNullVarsSameParentDifferentFilter();
+
+    void ifNotExistsIncludingNullVarsSameParentDifferentIndexer();
+
+    void ifNotExistsIncludingNullVarsSameParentDifferentFilter();
+
+    void ifExistsSameParentSameIndexer();
+
+    void ifExistsSameParentSameFilter();
+
+    void ifNotExistsSameParentSameIndexer();
+
+    void ifNotExistsSameParentSameFilter();
+
+    void ifExistsIncludingNullVarsSameParentSameIndexer();
+
+    void ifExistsIncludingNullVarsSameParentSameFilter();
+
+    void ifNotExistsIncludingNullVarsSameParentSameIndexer();
+
+    void ifNotExistsIncludingNullVarsSameParentSameFilter();
 
     // ************************************************************************
     // Group by

@@ -1,5 +1,6 @@
 package ai.timefold.solver.constraint.streams.bavet.quad;
 
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
@@ -98,7 +99,31 @@ final class BavetIfExistsQuadConstraintStream<Solution_, A, B, C, D, E>
     // Equality for node sharing
     // ************************************************************************
 
-    // TODO
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        BavetIfExistsQuadConstraintStream<?, ?, ?, ?, ?, ?> that = (BavetIfExistsQuadConstraintStream<?, ?, ?, ?, ?, ?>) object;
+        /*
+         * Bridge streams do not implement equality because their equals() would have to point back to this stream,
+         * resulting in StackOverflowError.
+         * Therefore we need to check bridge parents to see where this ifExists node comes from.
+         */
+        return shouldExist == that.shouldExist && Objects.equals(parentABCD,
+                that.parentABCD) && Objects.equals(
+                        parentBridgeE.getParent(), that.parentBridgeE.getParent())
+                && Objects.equals(joiner,
+                        that.joiner)
+                && Objects.equals(
+                        filtering, that.filtering);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parentABCD, parentBridgeE.getParent(), shouldExist, joiner, filtering);
+    }
 
     @Override
     public String toString() {
