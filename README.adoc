@@ -76,7 +76,7 @@ There are 2 editions of Timefold Solver:
 === Key Features of Timefold Enterprise Edition (EE)
 
 - **Multi-threaded Solving:** Experience enhanced performance with multi-threaded solving capabilities.
-- **Nearby Selection:** Get better solution quicker, especially with spatial problems.
+- **Nearby Selection:** Get better solutions quicker, especially with spatial problems.
 - **Dedicated Support:** Get direct support from the Timefold team for all your questions and requirements.
 
 === Licensing and Usage
