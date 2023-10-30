@@ -73,7 +73,7 @@ There are 2 editions of Timefold Solver:
 - Timefold Solver Community Edition (CE) (this repo).
 - Timefold Solver Enterprise Edition (EE), a licensed version of Timefold Solver.
 
-=== Key Features of Timefold Enterprise Edition (EE)
+=== Key Features of Timefold Solver Enterprise Edition (EE)
 
 - **Multi-threaded Solving:** Experience enhanced performance with multi-threaded solving capabilities.
 - **Nearby Selection:** Get better solutions quicker, especially with spatial problems.
