@@ -79,7 +79,7 @@ There are 2 editions of Timefold Solver:
 - **Nearby Selection:** Get better solution quicker, especially with spatial problems.
 - **Dedicated Support:** Get direct support from the Timefold team for all your questions and requirements.
 
-Licensing and Usage
+=== Licensing and Usage
 
 While the source code for the community edition is available here, please note that the Enterprise Edition is **not open source**. If you wish to use the Enterprise Edition in a production environment, please https://timefold.ai/company/contact/[contact Timefold] to obtain the appropriate license.
 
