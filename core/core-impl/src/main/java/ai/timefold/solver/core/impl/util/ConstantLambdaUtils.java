@@ -13,7 +13,8 @@ import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 
 /**
- * A class that holds common lambdas that are guaranteed to be the same across method calls. In most JDK's, stateless lambdas are
+ * A class that holds common lambdas that are guaranteed to be the same across method calls. In most JDK's, stateless lambdas
+ * are
  * bound to a {@link java.lang.invoke.ConstantCallSite} inside the method that define them, but that
  * {@link java.lang.invoke.ConstantCallSite} is not shared across methods (even for methods in the same class). Thus, when
  * lambda reference equality is important (such as for node sharing in Constraint Streams), the lambdas in this class should be
@@ -55,8 +56,10 @@ public final class ConstantLambdaUtils {
 
     @SuppressWarnings("rawtypes")
     private static final ToIntFunction UNI_CONSTANT_ONE = (a) -> 1;
+
     @SuppressWarnings("rawtypes")
     private static final ToIntBiFunction BI_CONSTANT_ONE = (a, b) -> 1;
+
     @SuppressWarnings("rawtypes")
     private static final ToIntTriFunction TRI_CONSTANT_ONE = (a, b, c) -> 1;
 
@@ -212,5 +215,9 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A, B, C, D> ToIntQuadFunction<A, B, C, D> quadConstantOne() {
         return QUAD_CONSTANT_ONE;
+    }
+
+    private ConstantLambdaUtils() {
+        // No external instances.
     }
 }

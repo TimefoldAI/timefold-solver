@@ -16,7 +16,6 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,9 +24,6 @@ import java.util.function.Function;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
-import ai.timefold.solver.core.api.function.PentaPredicate;
-import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -39,11 +35,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleLongScoreSolution;
@@ -2722,166 +2715,6 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.calculateScore();
         assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    // ************************************************************************
-    // Node Sharing
-    // ************************************************************************
-
-    @Override
-    @TestTemplate
-    public void shareNodesWithSameInput() {
-        final List<String> failureList = new ArrayList<>();
-        buildScoreDirector(
-                TestdataSolution.buildSolutionDescriptor(),
-                factory -> {
-                    QuadConstraintStream<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> base =
-                            factory.forEach(TestdataEntity.class).join(TestdataEntity.class)
-                                    .join(TestdataEntity.class).join(TestdataEntity.class);
-                    Function<TestdataEntity, TestdataEntity> function = a -> a;
-                    QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> quadfunction =
-                            (a, b, c, d) -> a;
-                    Function<TestdataEntity, Iterable<String>> iterableFunction = a -> Collections.emptyList();
-                    QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> quadpredicate =
-                            (a, b, c, d) -> true;
-                    PentaPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> pentapredicate =
-                            (a, b, c, d, e) -> true;
-
-                    if (base.filter(quadpredicate) != base.filter(quadpredicate)) {
-                        failureList.add("filter");
-                    }
-
-                    if (base.distinct() != base.distinct()) {
-                        failureList.add("distinct");
-                    }
-
-                    if (base.concat(base) != base.concat(base)) {
-                        failureList.add("concat");
-                    }
-
-                    return new Constraint[] {};
-                });
-
-        assertThat(failureList).isEmpty();
-    }
-
-    @Override
-    @TestTemplate
-    public void differentNodesForDistinctInput() {
-        final List<String> failureList = new ArrayList<>();
-        buildScoreDirector(
-                TestdataSolution.buildSolutionDescriptor(),
-                factory -> {
-                    QuadConstraintStream<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> base =
-                            factory.forEach(TestdataEntity.class).join(TestdataEntity.class).join(TestdataEntity.class)
-                                    .join(TestdataEntity.class);
-                    Function<TestdataEntity, TestdataEntity> otherJoiner = a -> a;
-                    QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> f1 =
-                            (a, b, c, d) -> a;
-                    QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> f2 =
-                            (a, b, c, d) -> null;
-                    Function<TestdataEntity, Iterable<String>> iterableFunction1 = (a) -> Collections.emptyList();
-                    Function<TestdataEntity, Iterable<String>> iterableFunction2 = (a) -> List.of();
-                    QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> p1 = (a, b, c, d) -> true;
-                    QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> p2 = (a, b, c, d) -> false;
-                    PentaPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> jp1 =
-                            (a, b, c, d, e) -> true;
-                    PentaPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> jp2 =
-                            (a, b, c, d, e) -> false;
-
-                    // Make sure different parents result in a different stream
-                    if (base.filter(p1).ifExists(TestdataEntity.class, Joiners.equal(f1, otherJoiner)) == base.filter(p2)
-                            .ifExists(TestdataEntity.class,
-                                    Joiners.equal(f1, otherJoiner))) {
-                        failureList.add("ifExists(different-parent)");
-                    }
-
-                    if (base.filter(p1).ifNotExists(TestdataEntity.class, Joiners.equal(f1, otherJoiner)) == base.filter(p2)
-                            .ifNotExists(
-                                    TestdataEntity.class,
-                                    Joiners.equal(f1, otherJoiner))) {
-                        failureList.add("ifNotExists(different-parent)");
-                    }
-
-                    if (base.filter(p1).filter(p1) == base.filter(p2).filter(p1)) {
-                        failureList.add("filter(different-parent)");
-                    }
-
-                    if (base.filter(p1).map(f1) == base.filter(p2).map(f1)) {
-                        failureList.add("map(different-parent)");
-                    }
-
-                    if (base.filter(p1).distinct() == base.filter(p2).distinct()) {
-                        failureList.add("distinct(different-parent)");
-                    }
-
-                    if (base.filter(p1).concat(base) == base.filter(p2).concat(base)) {
-                        failureList.add("concat(different-parent)");
-                    }
-
-                    if (base.filter(p1).groupBy(f1) == base.filter(p2).groupBy(f1)) {
-                        failureList.add("groupby(different-parent)");
-                    }
-
-                    if (base.filter(p1).flattenLast(iterableFunction1) == base.filter(p2).flattenLast(iterableFunction1)) {
-                        failureList.add("flattenLast(different-parent)");
-                    }
-                    // *********************************************************************
-
-                    if (base.ifExists(TestdataEntity.class, Joiners.equal(f1, otherJoiner)) == base.ifExists(
-                            TestdataEntity.class,
-                            Joiners.equal(f2, otherJoiner))) {
-                        failureList.add("ifExists(different-indexed)");
-                    }
-
-                    if (base.ifExists(TestdataEntity.class, Joiners.filtering(jp1)) == base.ifExists(
-                            TestdataEntity.class,
-                            Joiners.filtering(jp2))) {
-                        failureList.add("ifExists(different-filtered)");
-                    }
-
-                    if (base.ifNotExists(TestdataEntity.class, Joiners.equal(f1, otherJoiner)) == base.ifNotExists(
-                            TestdataEntity.class,
-                            Joiners.equal(f2, otherJoiner))) {
-                        failureList.add("ifNotExists(different-indexed)");
-                    }
-
-                    if (base.ifNotExists(TestdataEntity.class, Joiners.filtering(jp1)) == base.ifNotExists(
-                            TestdataEntity.class,
-                            Joiners.filtering(jp2))) {
-                        failureList.add("ifNotExists(different-filtered)");
-                    }
-
-                    if (base.filter(p1) == base.filter(p2)) {
-                        failureList.add("filter(different-predicate)");
-                    }
-
-                    if (base.map(f1) == base.map(f2)) {
-                        failureList.add("map(different-function)");
-                    }
-
-                    if (base.groupBy(f1) == base.groupBy(f2)) {
-                        failureList.add("groupby(different-mapping)");
-                    }
-
-                    if (base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
-                            ConstraintCollectors.countDistinct(f2))) {
-                        failureList.add("groupby(different-collector-function)");
-                    }
-
-                    if ((UniConstraintStream) base.groupBy(ConstraintCollectors.countDistinct(f1)) == base.groupBy(
-                            ConstraintCollectors.countDistinctLong(f1))) {
-                        failureList.add("groupby(different-collector)");
-                    }
-
-                    if (base.flattenLast(iterableFunction1) == base.flattenLast(iterableFunction2)) {
-                        failureList.add("flattenLast(different-function)");
-                    }
-
-                    return new Constraint[] {};
-                });
-
-        assertThat(failureList).isEmpty();
     }
 
 }

@@ -45,6 +45,9 @@ public abstract class AbstractConstraintStreamTest {
     // ************************************************************************
     // SimpleScore creation and assertion methods
     // ************************************************************************
+    protected <Solution_> ConstraintFactory buildConstraintFactory(SolutionDescriptor<Solution_> solutionDescriptorSupplier) {
+        return implSupport.buildConstraintFactory(solutionDescriptorSupplier);
+    }
 
     protected InnerScoreDirector<TestdataLavishSolution, SimpleScore> buildScoreDirector(
             Function<ConstraintFactory, Constraint> function) {
