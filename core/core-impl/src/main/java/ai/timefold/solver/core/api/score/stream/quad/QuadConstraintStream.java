@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches four facts.
@@ -916,7 +917,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, (a, b, c, d) -> 1);
+        return penalize(constraintWeight, ConstantLambdaUtils.quadConstantOne());
     }
 
     /**
@@ -959,7 +960,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default QuadConstraintBuilder<A, B, C, D, ?> penalizeConfigurable() {
-        return penalizeConfigurable((a, b, c, d) -> 1);
+        return penalizeConfigurable(ConstantLambdaUtils.quadConstantOne());
     }
 
     /**
@@ -997,7 +998,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, (a, b, c, d) -> 1);
+        return reward(constraintWeight, ConstantLambdaUtils.quadConstantOne());
     }
 
     /**
@@ -1040,7 +1041,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default QuadConstraintBuilder<A, B, C, D, ?> rewardConfigurable() {
-        return rewardConfigurable((a, b, c, d) -> 1);
+        return rewardConfigurable(ConstantLambdaUtils.quadConstantOne());
     }
 
     /**
@@ -1083,7 +1084,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, (a, b, c, d) -> 1);
+        return impact(constraintWeight, ConstantLambdaUtils.quadConstantOne());
     }
 
     /**
@@ -1124,7 +1125,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default QuadConstraintBuilder<A, B, C, D, ?> impactConfigurable() {
-        return impactConfigurable((a, b, c, d) -> 1);
+        return impactConfigurable(ConstantLambdaUtils.quadConstantOne());
     }
 
     /**

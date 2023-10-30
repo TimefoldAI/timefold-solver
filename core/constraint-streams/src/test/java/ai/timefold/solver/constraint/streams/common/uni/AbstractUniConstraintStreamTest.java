@@ -3342,6 +3342,10 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(oneWeightMonitorCount.get()).isEqualTo(1);
     }
 
+    // ************************************************************************
+    // Node Sharing
+    // ************************************************************************
+
     @TestTemplate
     public void nodeSharing() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
@@ -3459,5 +3463,4 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(entityWithNull),
                 assertMatch(entityWithValue));
     }
-
 }
