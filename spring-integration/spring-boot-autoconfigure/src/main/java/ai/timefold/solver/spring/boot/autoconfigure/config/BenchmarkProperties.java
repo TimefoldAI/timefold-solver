@@ -4,13 +4,13 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 public class BenchmarkProperties {
 
-    public static final String DEFAULT_SOLVER_BENCHMARK_CONFIG_URL = "solverBenchmarkConfig.xml";
+    public static final String DEFAULT_SOLVER_BENCHMARK_CONFIG_URL = TimefoldProperties.DEFAULT_SOLVER_BENCHMARK_CONFIG_URL;
     public static final String DEFAULT_BENCHMARK_RESULT_DIRECTORY = "target/benchmarks";
 
     /**
      * A classpath resource to read the benchmark configuration XML.
-     * Defaults to {@value #DEFAULT_SOLVER_BENCHMARK_CONFIG_URL}.
-     * If this property isn't specified, that {@value #DEFAULT_SOLVER_BENCHMARK_CONFIG_URL} file is optional.
+     * Defaults to solverBenchmarkConfig.xml.
+     * If this property isn't specified, the file is optional.
      */
     private String solverBenchmarkConfigXml;
 

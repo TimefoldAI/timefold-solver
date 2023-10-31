@@ -201,18 +201,6 @@ class TimefoldAutoConfigurationTest {
     }
 
     @Test
-    void solverPropertiesBavet() {
-        contextRunner
-                .withPropertyValues("timefold.solver.constraint-stream-impl-type=BAVET")
-                .run(context -> {
-                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType())
-                            .isEqualTo(ConstraintStreamImplType.BAVET);
-                    assertThat(context.getBean(SolverFactory.class)).isNotNull();
-                });
-    }
-
-    @Test
     void terminationProperties() {
         contextRunner
                 .withPropertyValues("timefold.solver.termination.spent-limit=4h")

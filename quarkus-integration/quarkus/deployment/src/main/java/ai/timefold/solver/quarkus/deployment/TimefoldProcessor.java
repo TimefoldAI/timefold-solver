@@ -27,7 +27,6 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -307,8 +306,6 @@ class TimefoldProcessor {
             final Class<?> planningSolutionClass = solverConfig.getSolutionClass();
             final List<Class<?>> planningEntityClasses = solverConfig.getEntityClassList();
             // TODO Don't duplicate defaults by using ConstraintVerifier.create(solverConfig) instead
-            final ConstraintStreamImplType constraintStreamImplType =
-                    solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType();
             syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
                     .scope(Singleton.class)
                     .creator(methodCreator -> {
@@ -337,16 +334,6 @@ class TimefoldProcessor {
                                         ConstraintProvider.class, SolutionDescriptor.class),
                                 constraintProviderResultHandle, solutionDescriptorResultHandle);
 
-                        if (constraintStreamImplType != null) { // Use the default if not specified.
-                            constraintVerifierResultHandle = methodCreator.invokeInterfaceMethod(
-                                    MethodDescriptor.ofMethod(constraintVerifierClassName,
-                                            "withConstraintStreamImplType",
-                                            constraintVerifierClassName,
-                                            ConstraintStreamImplType.class),
-                                    constraintVerifierResultHandle,
-                                    methodCreator.load(constraintStreamImplType));
-                        }
-
                         methodCreator.returnValue(constraintVerifierResultHandle);
                     })
                     .addType(ParameterizedType.create(DotNames.CONSTRAINT_VERIFIER,
@@ -371,7 +358,6 @@ class TimefoldProcessor {
         timefoldBuildTimeConfig.solver.environmentMode.ifPresent(solverConfig::setEnvironmentMode);
         timefoldBuildTimeConfig.solver.daemon.ifPresent(solverConfig::setDaemon);
         timefoldBuildTimeConfig.solver.domainAccessType.ifPresent(solverConfig::setDomainAccessType);
-        timefoldBuildTimeConfig.solver.constraintStreamImplType.ifPresent(solverConfig::withConstraintStreamImplType);
 
         if (solverConfig.getDomainAccessType() == null) {
             solverConfig.setDomainAccessType(DomainAccessType.GIZMO);
