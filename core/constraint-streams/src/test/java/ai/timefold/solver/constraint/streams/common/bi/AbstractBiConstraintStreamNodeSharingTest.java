@@ -2,7 +2,10 @@ package ai.timefold.solver.constraint.streams.common.bi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
@@ -346,7 +349,92 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     // Map/expand/flatten/distinct/concat
     // ************************************************************************
 
-    // TODO Map/expand/flatten
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionExpand() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> expander = (a, b) -> a;
+
+        assertThat(baseStream.expand(expander))
+                .isNotSameAs(baseStream.filter(filter1).expand(expander));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionExpand() {
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> expander1 = (a, b) -> a;
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> expander2 = (a, b) -> b;
+
+        assertThat(baseStream.expand(expander1))
+                .isNotSameAs(baseStream.expand(expander2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionExpand() {
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> expander = (a, b) -> a;
+
+        assertThat(baseStream.expand(expander))
+                .isSameAs(baseStream.expand(expander));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionMap() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> mapper = (a, b) -> a;
+
+        assertThat(baseStream.map(mapper))
+                .isNotSameAs(baseStream.filter(filter1).map(mapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionMap() {
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> mapper1 = (a, b) -> a;
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> mapper2 = (a, b) -> b;
+
+        assertThat(baseStream.map(mapper1))
+                .isNotSameAs(baseStream.map(mapper2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionMap() {
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> mapper = (a, b) -> a;
+
+        assertThat(baseStream.map(mapper))
+                .isSameAs(baseStream.map(mapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionFlattenLast() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flattenLast(flattener))
+                .isNotSameAs(baseStream.filter(filter1).flattenLast(flattener));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionFlattenLast() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener1 = a -> Collections.emptyList();
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener2 = a -> Collections.emptySet();
+
+        assertThat(baseStream.flattenLast(flattener1))
+                .isNotSameAs(baseStream.flattenLast(flattener2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionFlattenLast() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flattenLast(flattener))
+                .isSameAs(baseStream.flattenLast(flattener));
+    }
 
     @Override
     @TestTemplate
