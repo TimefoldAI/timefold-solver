@@ -44,8 +44,11 @@ public class SolverBuildTimeConfig {
 
     /**
      * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
+     *
+     * @deprecated Not used anymore.
      */
     @ConfigItem
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public Optional<ConstraintStreamImplType> constraintStreamImplType;
 
 }

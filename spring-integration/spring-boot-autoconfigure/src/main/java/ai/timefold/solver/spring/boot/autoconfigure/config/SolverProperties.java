@@ -29,16 +29,19 @@ public class SolverProperties {
 
     /**
      * Determines how to access the fields and methods of domain classes.
-     * Defaults to {@link DomainAccessType#REFLECTION}.
+     * Defaults to REFLECTION.
      * <p>
-     * To use {@link DomainAccessType#GIZMO}, {@code io.quarkus.gizmo:gizmo} must be in your classpath,
+     * To use GIZMO, io.quarkus.gizmo:gizmo must be in your classpath,
      * and all planning annotations must be on public members.
      */
     private DomainAccessType domainAccessType;
 
     /**
-     * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
+     * What constraint stream implementation to use. Defaults to BAVET.
+     *
+     * @deprecated No longer used.
      */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     private ConstraintStreamImplType constraintStreamImplType;
 
     @NestedConfigurationProperty
@@ -80,10 +83,18 @@ public class SolverProperties {
         this.domainAccessType = domainAccessType;
     }
 
+    /**
+     * @deprecated No longer used.
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public ConstraintStreamImplType getConstraintStreamImplType() {
         return constraintStreamImplType;
     }
 
+    /**
+     * @deprecated No longer used.
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public void setConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;
     }

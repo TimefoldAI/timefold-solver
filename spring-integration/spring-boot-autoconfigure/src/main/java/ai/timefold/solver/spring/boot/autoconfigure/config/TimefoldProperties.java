@@ -14,8 +14,8 @@ public class TimefoldProperties {
 
     /**
      * A classpath resource to read the solver configuration XML.
-     * Defaults to {@value #DEFAULT_SOLVER_CONFIG_URL}.
-     * If this property isn't specified, that {@value #DEFAULT_SOLVER_CONFIG_URL} file is optional.
+     * Defaults to solverConfig.xml.
+     * If this property isn't specified, that file is optional.
      */
     private String solverConfigXml;
 

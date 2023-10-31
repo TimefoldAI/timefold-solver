@@ -202,9 +202,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
             if (solverProperties.getDomainAccessType() != null) {
                 solverConfig.setDomainAccessType(solverProperties.getDomainAccessType());
             }
-            if (solverProperties.getConstraintStreamImplType() != null) {
-                solverConfig.withConstraintStreamImplType(solverProperties.getConstraintStreamImplType());
-            }
             if (solverProperties.getDaemon() != null) {
                 solverConfig.setDaemon(solverProperties.getDaemon());
             }
