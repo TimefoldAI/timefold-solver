@@ -498,6 +498,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     // ************************************************************************
 
     @Override
+    @TestTemplate
     public void differentParentGroupBy() {
         Predicate<TestdataEntity> filter1 = a -> true;
         Function<TestdataEntity, TestdataEntity> keyMapper = a -> a;
@@ -507,6 +508,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void differentKeyMapperGroupBy() {
         Function<TestdataEntity, Integer> keyMapper1 = a -> 0;
         Function<TestdataEntity, Integer> keyMapper2 = a -> 1;
@@ -516,12 +518,14 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorGroupBy() {
         assertThat(baseStream.groupBy(ConstraintCollectors.count()))
                 .isNotSameAs(baseStream.groupBy(ConstraintCollectors.countDistinct()));
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorFunctionGroupBy() {
         ToIntFunction<TestdataEntity> sumFunction1 = a -> 0;
         ToIntFunction<TestdataEntity> sumFunction2 = a -> 1;
@@ -531,6 +535,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameKeyMapperGroupBy() {
         Function<TestdataEntity, Integer> keyMapper = a -> 0;
 
@@ -539,6 +544,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameCollectorGroupBy() {
         ToIntFunction<TestdataEntity> sumFunction = a -> 0;
 

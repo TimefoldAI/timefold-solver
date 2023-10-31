@@ -297,6 +297,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     // ************************************************************************
 
     @Override
+    @TestTemplate
     public void differentParentGroupBy() {
         QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c, d) -> true;
         QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper =
@@ -307,6 +308,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     }
 
     @Override
+    @TestTemplate
     public void differentKeyMapperGroupBy() {
         QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper1 =
                 (a, b, c, d) -> a;
@@ -318,6 +320,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorGroupBy() {
         QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper =
                 (a, b, c, d) -> a;
@@ -327,6 +330,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorFunctionGroupBy() {
         ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction1 = (a, b, c, d) -> 0;
         ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction2 = (a, b, c, d) -> 0;
@@ -336,6 +340,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameKeyMapperGroupBy() {
         QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper =
                 (a, b, c, d) -> a;
@@ -345,6 +350,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameCollectorGroupBy() {
         ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction = (a, b, c, d) -> 0;
 

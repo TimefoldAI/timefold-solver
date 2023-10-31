@@ -344,6 +344,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     // ************************************************************************
 
     @Override
+    @TestTemplate
     public void differentParentGroupBy() {
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
         BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b) -> a;
@@ -353,6 +354,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     }
 
     @Override
+    @TestTemplate
     public void differentKeyMapperGroupBy() {
         BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper1 = (a, b) -> a;
         BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper2 = (a, b) -> b;
@@ -362,6 +364,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorGroupBy() {
         BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b) -> a;
 
@@ -370,6 +373,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorFunctionGroupBy() {
         ToIntBiFunction<TestdataEntity, TestdataEntity> sumFunction1 = (a, b) -> 0;
         ToIntBiFunction<TestdataEntity, TestdataEntity> sumFunction2 = (a, b) -> 1;
@@ -379,6 +383,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameKeyMapperGroupBy() {
         BiFunction<TestdataEntity, TestdataEntity, Integer> keyMapper = (a, b) -> 0;
 
@@ -387,6 +392,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameCollectorGroupBy() {
         ToIntBiFunction<TestdataEntity, TestdataEntity> sumFunction = (a, b) -> 0;
 

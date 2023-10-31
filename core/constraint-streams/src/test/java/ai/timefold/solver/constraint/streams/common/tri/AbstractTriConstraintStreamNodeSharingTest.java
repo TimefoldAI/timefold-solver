@@ -373,6 +373,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     // ************************************************************************
 
     @Override
+    @TestTemplate
     public void differentParentGroupBy() {
         TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
         TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b, c) -> a;
@@ -382,6 +383,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void differentKeyMapperGroupBy() {
         TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper1 = (a, b, c) -> a;
         TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper2 = (a, b, c) -> b;
@@ -391,6 +393,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorGroupBy() {
         TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b, c) -> a;
 
@@ -399,6 +402,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentDifferentCollectorFunctionGroupBy() {
         ToIntTriFunction<TestdataEntity, TestdataEntity, TestdataEntity> sumFunction1 = (a, b, c) -> 0;
         ToIntTriFunction<TestdataEntity, TestdataEntity, TestdataEntity> sumFunction2 = (a, b, c) -> 1;
@@ -408,6 +412,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameKeyMapperGroupBy() {
         TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b, c) -> a;
 
@@ -416,6 +421,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    @TestTemplate
     public void sameParentSameCollectorGroupBy() {
         ToIntTriFunction<TestdataEntity, TestdataEntity, TestdataEntity> sumFunction = (a, b, c) -> 0;
 
