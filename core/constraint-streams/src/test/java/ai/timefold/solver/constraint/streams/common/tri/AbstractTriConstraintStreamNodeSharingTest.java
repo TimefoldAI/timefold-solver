@@ -2,11 +2,14 @@ package ai.timefold.solver.constraint.streams.common.tri;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamNodeSharingTest;
+import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -375,7 +378,92 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     // Map/expand/flatten/distinct/concat
     // ************************************************************************
 
-    // TODO Map/expand/flatten
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionExpand() {
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> expander = (a, b, c) -> a;
+
+        assertThat(baseStream.expand(expander))
+                .isNotSameAs(baseStream.filter(filter1).expand(expander));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionExpand() {
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> expander1 = (a, b, c) -> a;
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> expander2 = (a, b, c) -> b;
+
+        assertThat(baseStream.expand(expander1))
+                .isNotSameAs(baseStream.expand(expander2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionExpand() {
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> expander = (a, b, c) -> a;
+
+        assertThat(baseStream.expand(expander))
+                .isSameAs(baseStream.expand(expander));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionMap() {
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper = (a, b, c) -> a;
+
+        assertThat(baseStream.map(mapper))
+                .isNotSameAs(baseStream.filter(filter1).map(mapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionMap() {
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper1 = (a, b, c) -> a;
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper2 = (a, b, c) -> a;
+
+        assertThat(baseStream.map(mapper1))
+                .isNotSameAs(baseStream.map(mapper2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionMap() {
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper = (a, b, c) -> a;
+
+        assertThat(baseStream.map(mapper))
+                .isSameAs(baseStream.map(mapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionFlattenLast() {
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flattenLast(flattener))
+                .isNotSameAs(baseStream.filter(filter1).flattenLast(flattener));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionFlattenLast() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener1 = a -> Collections.emptyList();
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener2 = a -> Collections.emptySet();
+
+        assertThat(baseStream.flattenLast(flattener1))
+                .isNotSameAs(baseStream.flattenLast(flattener2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionFlattenLast() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flattenLast(flattener))
+                .isSameAs(baseStream.flattenLast(flattener));
+    }
 
     @Override
     @TestTemplate

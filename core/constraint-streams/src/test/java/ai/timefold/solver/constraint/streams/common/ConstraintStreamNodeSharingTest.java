@@ -167,7 +167,29 @@ public interface ConstraintStreamNodeSharingTest {
     // Map/expand/flatten/distinct/concat
     // ************************************************************************
 
-    // TODO Map/expand/flatten
+    default void differentParentSameFunctionExpand() {
+        // Quads don't have expand, so don't force it.
+    }
+
+    default void sameParentDifferentFunctionExpand() {
+        // Quads don't have expand, so don't force it.
+    }
+
+    default void sameParentSameFunctionExpand() {
+        // Quads don't have expand, so don't force it.
+    }
+
+    void differentParentSameFunctionMap();
+
+    void sameParentDifferentFunctionMap();
+
+    void sameParentSameFunctionMap();
+
+    void differentParentSameFunctionFlattenLast();
+
+    void sameParentDifferentFunctionFlattenLast();
+
+    void sameParentSameFunctionFlattenLast();
 
     void differentParentDistinct();
 

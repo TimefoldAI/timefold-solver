@@ -2,9 +2,13 @@ package ai.timefold.solver.constraint.streams.common.quad;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.function.Function;
+
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamNodeSharingTest;
+import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -299,7 +303,65 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     // Map/expand/flatten/distinct/concat
     // ************************************************************************
 
-    // TODO Map/expand/flatten
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionMap() {
+        QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c, d) -> true;
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper = (a, b, c, d) -> a;
+
+        assertThat(baseStream.map(mapper))
+                .isNotSameAs(baseStream.filter(filter1).map(mapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionMap() {
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper1 =
+                (a, b, c, d) -> a;
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper2 =
+                (a, b, c, d) -> b;
+
+        assertThat(baseStream.map(mapper1))
+                .isNotSameAs(baseStream.map(mapper2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionMap() {
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> mapper = (a, b, c, d) -> a;
+
+        assertThat(baseStream.map(mapper))
+                .isSameAs(baseStream.map(mapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentParentSameFunctionFlattenLast() {
+        QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c, d) -> true;
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flattenLast(flattener))
+                .isNotSameAs(baseStream.filter(filter1).flattenLast(flattener));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionFlattenLast() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener1 = a -> Collections.emptyList();
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener2 = a -> Collections.emptySet();
+
+        assertThat(baseStream.flattenLast(flattener1))
+                .isNotSameAs(baseStream.flattenLast(flattener2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionFlattenLast() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flattenLast(flattener))
+                .isSameAs(baseStream.flattenLast(flattener));
+    }
 
     @Override
     @TestTemplate
