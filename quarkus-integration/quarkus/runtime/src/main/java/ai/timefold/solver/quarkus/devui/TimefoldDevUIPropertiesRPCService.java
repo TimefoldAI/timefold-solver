@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -64,7 +65,10 @@ public class TimefoldDevUIPropertiesRPCService {
     }
 
     public JsonArray getConstraints() {
-        return JsonArray.of(devUIProperties.getConstraintList().toArray());
+        return JsonArray.of(devUIProperties.getConstraintList()
+                .stream()
+                .map(ConstraintRef::constraintId)
+                .toArray());
     }
 
     public JsonObject getModelInfo() {
@@ -118,14 +122,15 @@ public class TimefoldDevUIPropertiesRPCService {
         }
     }
 
-    private List<String> buildConstraintList() {
+    private List<ConstraintRef> buildConstraintList() {
         if (effectiveSolverConfigXml != null) {
             DefaultSolverFactory<?> solverFactory =
                     (DefaultSolverFactory<?>) Arc.container().instance(SolverFactory.class).get();
             if (solverFactory.getScoreDirectorFactory() instanceof AbstractConstraintStreamScoreDirectorFactory) {
                 AbstractConstraintStreamScoreDirectorFactory<?, ?> scoreDirectorFactory =
                         (AbstractConstraintStreamScoreDirectorFactory<?, ?>) solverFactory.getScoreDirectorFactory();
-                return Arrays.stream(scoreDirectorFactory.getConstraints()).map(Constraint::getConstraintId)
+                return Arrays.stream(scoreDirectorFactory.getConstraints())
+                        .map(Constraint::getConstraintRef)
                         .collect(Collectors.toList());
             }
         }

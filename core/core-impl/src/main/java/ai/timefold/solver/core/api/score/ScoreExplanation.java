@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -19,6 +21,8 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 /**
  * Build by {@link SolutionManager#explain(Object)} to hold {@link ConstraintMatchTotal}s and {@link Indictment}s
  * necessary to explain the quality of a particular {@link Score}.
+ * <p>
+ * For a simplified, faster and JSON-friendly alternative, see {@link ScoreAnalysis}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the actual score type
@@ -62,8 +66,8 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * <p>
      * The sum of {@link ConstraintMatchTotal#getScore()} equals {@link #getScore()}.
      *
-     * @return never null, the key is the {@link ConstraintMatchTotal#getConstraintId() constraintId}
-     *         (to create one, use {@link ConstraintMatchTotal#composeConstraintId(String, String)}).
+     * @return never null, the key is the constraintId
+     *         (to create one, use {@link ConstraintRef#composeConstraintId(String, String)}).
      * @see #getIndictmentMap()
      */
     Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();

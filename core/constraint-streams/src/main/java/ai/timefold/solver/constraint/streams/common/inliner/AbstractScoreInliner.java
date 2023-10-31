@@ -107,7 +107,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     protected final boolean constraintMatchEnabled;
     protected final Map<Constraint, Score_> constraintWeightMap;
     private final Map<Constraint, ElementAwareList<ConstraintMatchCarrier<Score_>>> constraintMatchMap;
-    private Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = null;
+    private Map<String, ConstraintMatchTotal<Score_>> constraintIdToConstraintMatchTotalMap = null;
     private Map<Object, Indictment<Score_>> indictmentMap = null;
 
     protected AbstractScoreInliner(Map<Constraint, Score_> constraintWeightMap, boolean constraintMatchEnabled) {
@@ -116,6 +116,12 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         this.constraintWeightMap = constraintWeightMap;
         this.constraintMatchMap =
                 constraintMatchEnabled ? CollectionUtils.newIdentityHashMap(constraintWeightMap.size()) : null;
+        if (constraintMatchEnabled) {
+            for (var constraint : constraintWeightMap.keySet()) {
+                // Ensure that even constraints without matches have their entry.
+                constraintMatchMap.put(constraint, new ElementAwareList<>());
+            }
+        }
     }
 
     private void validateConstraintWeight(Constraint constraint, Score_ constraintWeight) {
@@ -157,14 +163,15 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         // Optimization: computeIfAbsent() would have created a lambda on the hot path.
         ElementAwareList<ConstraintMatchCarrier<Score_>> constraintMatchList = constraintMatchMap.get(constraint);
         if (constraintMatchList == null) {
-            constraintMatchList = new ElementAwareList<>();
-            constraintMatchMap.put(constraint, constraintMatchList);
+            throw new IllegalStateException(
+                    "Impossible state: Unknown constraint (%s)."
+                            .formatted(constraint.getConstraintRef()));
         }
         return constraintMatchList;
     }
 
     private void clearMaps() {
-        constraintMatchTotalMap = null;
+        constraintIdToConstraintMatchTotalMap = null;
         indictmentMap = null;
     }
 
@@ -172,24 +179,42 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         return constraintMatchEnabled;
     }
 
-    public final Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        if (constraintMatchTotalMap == null) {
-            rebuildConstraintMatchTotalsAndIndictments();
+    public final Map<String, ConstraintMatchTotal<Score_>> getConstraintIdToConstraintMatchTotalMap() {
+        if (constraintIdToConstraintMatchTotalMap == null) {
+            rebuildConstraintMatchTotals();
         }
-        return constraintMatchTotalMap;
+        return constraintIdToConstraintMatchTotalMap;
     }
 
-    private void rebuildConstraintMatchTotalsAndIndictments() {
-        Map<String, ConstraintMatchTotal<Score_>> workingConstraintMatchTotalMap = new TreeMap<>();
-        Map<Object, Indictment<Score_>> workingIndictmentMap = new LinkedHashMap<>();
-        for (Map.Entry<Constraint, ElementAwareList<ConstraintMatchCarrier<Score_>>> entry : constraintMatchMap.entrySet()) {
+    private void rebuildConstraintMatchTotals() {
+        var constraintIdToConstraintMatchTotalMap = new TreeMap<String, ConstraintMatchTotal<Score_>>();
+        for (var entry : constraintMatchMap.entrySet()) {
             var constraint = entry.getKey();
-            DefaultConstraintMatchTotal<Score_> constraintMatchTotal =
-                    new DefaultConstraintMatchTotal<>(constraint, constraintWeightMap.get(constraint));
-            for (ConstraintMatchCarrier<Score_> carrier : entry.getValue()) {
+            var constraintMatchTotal =
+                    new DefaultConstraintMatchTotal<>(constraint.getConstraintRef(), constraintWeightMap.get(constraint));
+            for (var carrier : entry.getValue()) {
                 // Constraint match instances are only created here when we actually need them.
-                ConstraintMatch<Score_> constraintMatch = carrier.get();
+                var constraintMatch = carrier.get();
                 constraintMatchTotal.addConstraintMatch(constraintMatch);
+            }
+            constraintIdToConstraintMatchTotalMap.put(constraint.getConstraintRef().constraintId(), constraintMatchTotal);
+        }
+        this.constraintIdToConstraintMatchTotalMap = constraintIdToConstraintMatchTotalMap;
+    }
+
+    public final Map<Object, Indictment<Score_>> getIndictmentMap() {
+        if (indictmentMap == null) {
+            rebuildIndictments();
+        }
+        return indictmentMap;
+    }
+
+    private void rebuildIndictments() {
+        var workingIndictmentMap = new LinkedHashMap<Object, Indictment<Score_>>();
+        for (var entry : constraintMatchMap.entrySet()) {
+            for (var carrier : entry.getValue()) {
+                // Constraint match instances are only created here when we actually need them.
+                var constraintMatch = carrier.get();
                 for (var indictedObject : constraintMatch.getIndictedObjectList()) {
                     if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
                         continue;
@@ -204,9 +229,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                     indictment.addConstraintMatchWithoutFail(constraintMatch);
                 }
             }
-            workingConstraintMatchTotalMap.put(constraint.getConstraintId(), constraintMatchTotal);
         }
-        constraintMatchTotalMap = workingConstraintMatchTotalMap;
         indictmentMap = workingIndictmentMap;
     }
 
@@ -219,13 +242,6 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             indictmentMap.put(indictedObject, indictment);
         }
         return indictment;
-    }
-
-    public final Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (indictmentMap == null) {
-            rebuildConstraintMatchTotalsAndIndictments();
-        }
-        return indictmentMap;
     }
 
     private static final class ConstraintMatchCarrier<Score_ extends Score<Score_>>

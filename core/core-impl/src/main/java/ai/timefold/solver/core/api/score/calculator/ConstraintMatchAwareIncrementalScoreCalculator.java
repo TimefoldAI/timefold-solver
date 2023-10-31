@@ -32,9 +32,10 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
     void resetWorkingSolution(Solution_ workingSolution, boolean constraintMatchEnabled);
 
     /**
-     * @return never null
+     * @return never null;
+     *         if a constraint is present in the problem but resulted in no matches,
+     *         it should still be present with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #resetWorkingSolution}'s constraintMatchEnabled parameter was false
-     * @see ScoreExplanation#getConstraintMatchTotalMap()
      */
     Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
 

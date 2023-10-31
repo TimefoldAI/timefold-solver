@@ -89,7 +89,7 @@ image::responding-to-change/overconstrainedPlanning.png[align="center"]
 
 To implement this:
 
-. Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/constraints-and-score.adoc#scoreType[`Score` type].
+. Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
 . Make the planning variable xref:configuration/configuration.adoc#nullablePlanningVariable[nullable].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
 
@@ -102,7 +102,7 @@ In overconstrained planning with virtual values, the solution indicates which re
 
 To implement this:
 
-. Add an additional score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/constraints-and-score.adoc#scoreType[`Score` type].
+. Add an additional score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
 . Add a number of virtual values. It can be difficult to determine a good formula to calculate that number:
 ** Do not add too many, as that will decrease solver efficiency.
 ** Importantly, do not add too few as that will lead to an infeasible solution.

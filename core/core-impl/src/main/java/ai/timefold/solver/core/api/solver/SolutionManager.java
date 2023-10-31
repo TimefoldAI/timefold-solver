@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.api.solver;
 
+import static ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy.FETCH_ALL;
 import static ai.timefold.solver.core.api.solver.SolutionUpdatePolicy.UPDATE_ALL;
 
 import java.util.UUID;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
@@ -80,7 +82,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
-     * As defined by {@link #explain(Object)},
+     * As defined by {@link #explain(Object, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      */
     default ScoreExplanation<Solution_, Score_> explain(Solution_ solution) {
@@ -90,6 +92,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     /**
      * Calculates and retrieves {@link ConstraintMatchTotal}s and {@link Indictment}s necessary for describing the
      * quality of a particular solution.
+     * For a simplified, faster and JSON-friendly alternative, see {@link #analyze(Object)}}.
      *
      * @param solution never null
      * @param solutionUpdatePolicy never null; if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
@@ -99,5 +102,36 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
      */
     ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
+
+    /**
+     * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
+     * using {@link SolutionUpdatePolicy#UPDATE_ALL} and {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
+     */
+    default ScoreAnalysis<Score_> analyze(Solution_ solution) {
+        return analyze(solution, FETCH_ALL, UPDATE_ALL);
+    }
+
+    /**
+     * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
+     * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
+     */
+    default ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy) {
+        return analyze(solution, fetchPolicy, UPDATE_ALL);
+    }
+
+    /**
+     * Calculates and retrieves information about which constraints contributed to the solution's score.
+     * This is a faster, JSON-friendly version of {@link #explain(Object)}.
+     *
+     * @param solution never null, must be fully initialized otherwise an exception is thrown
+     * @param fetchPolicy never null; if unsure, pick {@link ScoreAnalysisFetchPolicy#FETCH_ALL}
+     * @param solutionUpdatePolicy never null; if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
+     * @return never null
+     * @throws IllegalStateException when constraint matching is disabled or not supported by the underlying score
+     *         calculator, such as {@link EasyScoreCalculator}.
+     * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
+     */
+    ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
+            SolutionUpdatePolicy solutionUpdatePolicy);
 
 }

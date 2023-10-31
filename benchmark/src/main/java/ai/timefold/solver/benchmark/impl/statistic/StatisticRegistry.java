@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -117,7 +118,8 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                     score -> getGaugeValue(metric.getMeterId() + ".count",
                             constraintMatchTotalRunId,
                             count -> constraintMatchTotalConsumer.accept(
-                                    new ConstraintSummary(constraintPackage, constraintName, score, count.intValue()))));
+                                    new ConstraintSummary(ConstraintRef.of(constraintPackage, constraintName), score,
+                                            count.intValue()))));
         });
     }
 

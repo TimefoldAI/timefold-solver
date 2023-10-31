@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -8,6 +9,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfiguration;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractScoreDirectorSemanticsTest {
@@ -114,6 +116,39 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         scoreDirector.afterProblemPropertyChanged(constraintConfiguration);
         SimpleScore score2 = scoreDirector.calculateScore();
         assertThat(score2).isEqualTo(SimpleScore.of(2));
+    }
+
+    @Test
+    void constraintPresentEvenIfNoMatches() {
+        var scoreDirectorFactory = buildInnerScoreDirectorFactory(solutionDescriptor);
+        // Need constraint match support for this.
+        Assumptions.assumeTrue(scoreDirectorFactory.supportsConstraintMatching());
+
+        // Create score director, calculate score with a given constraint configuration.
+        var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, true)) {
+            scoreDirector.setWorkingSolution(solution);
+            var score1 = scoreDirector.calculateScore();
+            assertSoftly(softly -> {
+                softly.assertThat(score1.isSolutionInitialized()).isTrue();
+                softly.assertThat(score1.score()).isEqualTo(1);
+                softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
+                        .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
+            });
+
+            // Make sure nothing matches, but the constraint is still present.
+            var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
+            scoreDirector.beforeVariableChanged(entity, "value");
+            entity.setValue(null);
+            scoreDirector.afterVariableChanged(entity, "value");
+            var score2 = scoreDirector.calculateScore();
+            assertSoftly(softly -> {
+                softly.assertThat(score2.isSolutionInitialized()).isFalse();
+                softly.assertThat(score2.score()).isZero();
+                softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
+                        .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
+            });
+        }
     }
 
 }

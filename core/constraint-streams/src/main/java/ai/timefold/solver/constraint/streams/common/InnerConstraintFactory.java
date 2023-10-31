@@ -16,6 +16,7 @@ import ai.timefold.solver.constraint.streams.common.bi.BiJoinerComber;
 import ai.timefold.solver.constraint.streams.common.bi.DefaultBiJoiner;
 import ai.timefold.solver.constraint.streams.common.uni.InnerUniConstraintStream;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -93,11 +94,11 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
                     + "Maybe don't include any null elements in the " + Constraint.class.getSimpleName() + " array.");
         }
         // Fail fast on duplicate constraint IDs.
-        Map<String, List<Constraint>> constraintsPerIdMap =
-                Arrays.stream(constraints).collect(groupingBy(Constraint::getConstraintId));
-        constraintsPerIdMap.forEach((constraintId, duplicateConstraintList) -> {
+        Map<ConstraintRef, List<Constraint>> constraintsPerIdMap =
+                Arrays.stream(constraints).collect(groupingBy(Constraint::getConstraintRef));
+        constraintsPerIdMap.forEach((constraintRef, duplicateConstraintList) -> {
             if (duplicateConstraintList.size() > 1) {
-                throw new IllegalStateException("There are multiple constraints with the same ID (" + constraintId + ").");
+                throw new IllegalStateException("There are multiple constraints with the same ID (" + constraintRef + ").");
             }
         });
         return Arrays.stream(constraints)

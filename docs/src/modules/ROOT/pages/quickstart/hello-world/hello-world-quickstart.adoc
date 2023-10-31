@@ -545,7 +545,7 @@ if those constraint weights are hard coded in the `ConstraintProvider` - because
 constraints weights change regularly before going into production.
 This way, constraint weight tweaking does not break the unit tests.
 
-For more, see xref:constraints-and-score/constraints-and-score.adoc#constraintStreamsTesting[Testing Constraint Streams].
+For more, see xref:constraints-and-score/score-calculation.adoc#constraintStreamsTesting[Testing Constraint Streams].
 
 === Logging
 

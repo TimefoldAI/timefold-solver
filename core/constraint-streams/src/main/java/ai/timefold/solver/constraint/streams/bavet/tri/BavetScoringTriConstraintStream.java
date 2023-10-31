@@ -152,7 +152,7 @@ final class BavetScoringTriConstraintStream<Solution_, A, B, C>
 
     @Override
     public String toString() {
-        return "Scoring(" + constraint.getConstraintName() + ")";
+        return "Scoring(" + constraint.getConstraintRef() + ")";
     }
 
     // ************************************************************************

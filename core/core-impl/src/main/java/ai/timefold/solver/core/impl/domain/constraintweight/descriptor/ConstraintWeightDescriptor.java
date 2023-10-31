@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurati
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
@@ -17,8 +18,7 @@ public class ConstraintWeightDescriptor<Solution_> {
 
     private final ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor;
 
-    private final String constraintPackage;
-    private final String constraintName;
+    private final ConstraintRef constraintRef;
     private final MemberAccessor memberAccessor;
 
     // ************************************************************************
@@ -45,17 +45,12 @@ public class ConstraintWeightDescriptor<Solution_> {
                 constraintPackage = (pack == null) ? "" : pack.getName();
             }
         }
-        this.constraintPackage = constraintPackage;
-        this.constraintName = constraintWeightAnnotation.value();
+        this.constraintRef = ConstraintRef.of(constraintPackage, constraintWeightAnnotation.value());
         this.memberAccessor = memberAccessor;
     }
 
-    public String getConstraintPackage() {
-        return constraintPackage;
-    }
-
-    public String getConstraintName() {
-        return constraintName;
+    public ConstraintRef getConstraintRef() {
+        return constraintRef;
     }
 
     public MemberAccessor getMemberAccessor() {
@@ -76,7 +71,7 @@ public class ConstraintWeightDescriptor<Solution_> {
 
     @Override
     public String toString() {
-        return constraintPackage + ":" + constraintName;
+        return constraintRef.toString();
     }
 
 }

@@ -53,7 +53,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
                     Set<ConstraintMatch<Score_>> constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
                     scoreExplanation
                             .append("        ").append(constraintMatchTotal.getScore().toShortString())
-                            .append(": constraint (").append(constraintMatchTotal.getConstraintName())
+                            .append(": constraint (").append(constraintMatchTotal.getConstraintRef().constraintName())
                             .append(") has ").append(constraintMatchSet.size()).append(" matches:\n");
                     constraintMatchSet.stream()
                             .sorted(constraintMatchComparator)
@@ -105,9 +105,16 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
     }
 
     public DefaultScoreExplanation(InnerScoreDirector<Solution_, Score_> scoreDirector) {
-        this.solution = scoreDirector.getWorkingSolution();
-        this.score = scoreDirector.calculateScore();
-        this.constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
+        this(scoreDirector.getWorkingSolution(), scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
+                scoreDirector.getIndictmentMap());
+    }
+
+    public DefaultScoreExplanation(Solution_ solution, Score_ score,
+            Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+            Map<Object, Indictment<Score_>> indictmentMap) {
+        this.solution = solution;
+        this.score = score;
+        this.constraintMatchTotalMap = constraintMatchTotalMap;
         List<ConstraintJustification> workingConstraintJustificationList = new ArrayList<>();
         for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotalMap.values()) {
             for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
@@ -116,7 +123,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
             }
         }
         this.constraintJustificationList = workingConstraintJustificationList;
-        this.indictmentMap = scoreDirector.getIndictmentMap();
+        this.indictmentMap = indictmentMap;
     }
 
     @Override

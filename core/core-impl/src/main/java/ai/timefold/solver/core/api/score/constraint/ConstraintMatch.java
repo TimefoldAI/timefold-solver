@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 
 /**
  * Retrievable from {@link ConstraintMatchTotal#getConstraintMatchSet()}
@@ -18,20 +19,20 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
  * This class implements {@link Comparable} for consistent ordering of constraint matches in visualizations.
  * The details of this ordering are unspecified and are subject to change.
  *
+ * <p>
+ * If possible, prefer using {@link SolutionManager#analyze(Object)} instead.
+ *
  * @param <Score_> the actual score type
  */
 public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comparable<ConstraintMatch<Score_>> {
 
-    private final String constraintId;
-    private final String constraintPackage;
-    private final String constraintName;
-
+    private final ConstraintRef constraintRef;
     private final ConstraintJustification justification;
     private final List<Object> indictedObjectList;
     private final Score_ score;
 
     /**
-     * @deprecated Prefer {@link ConstraintMatch#ConstraintMatch(String, String, ConstraintJustification, Collection, Score)}.
+     * @deprecated Prefer {@link ConstraintMatch#ConstraintMatch(ConstraintRef, ConstraintJustification, Collection, Score)}.
      * @param constraintPackage never null
      * @param constraintName never null
      * @param justificationList never null, sometimes empty
@@ -44,52 +45,87 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     }
 
     /**
+     * @deprecated Prefer {@link ConstraintMatch#ConstraintMatch(ConstraintRef, ConstraintJustification, Collection, Score)}.
      * @param constraintPackage never null
      * @param constraintName never null
      * @param justification never null
      * @param score never null
      */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public ConstraintMatch(String constraintPackage, String constraintName, ConstraintJustification justification,
             Collection<Object> indictedObjectList, Score_ score) {
-        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName,
-                justification, indictedObjectList, score);
+        this(ConstraintRef.of(constraintPackage, constraintName), justification, indictedObjectList, score);
     }
 
     /**
+     * @deprecated Prefer {@link ConstraintMatch#ConstraintMatch(ConstraintRef, ConstraintJustification, Collection, Score)}.
      * @param constraint never null
      * @param justification never null
      * @param score never null
      */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public ConstraintMatch(Constraint constraint, ConstraintJustification justification, Collection<Object> indictedObjectList,
             Score_ score) {
-        this(constraint.getConstraintId(), constraint.getConstraintPackage(), constraint.getConstraintName(), justification,
-                indictedObjectList, score);
+        this(constraint.getConstraintRef(), justification, indictedObjectList, score);
     }
 
     /**
+     * @deprecated Prefer {@link ConstraintMatch#ConstraintMatch(ConstraintRef, ConstraintJustification, Collection, Score)}.
      * @param constraintId never null
      * @param constraintPackage never null
      * @param constraintName never null
      * @param justification never null
      * @param score never null
      */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public ConstraintMatch(String constraintId, String constraintPackage, String constraintName,
             ConstraintJustification justification, Collection<Object> indictedObjectList, Score_ score) {
-        this.constraintId = requireNonNull(constraintId);
-        this.constraintPackage = requireNonNull(constraintPackage);
-        this.constraintName = requireNonNull(constraintName);
+        this(new ConstraintRef(constraintPackage, constraintName, constraintId), justification, indictedObjectList, score);
+    }
+
+    /**
+     * @param constraintRef never null
+     * @param justification never null
+     * @param score never null
+     */
+    public ConstraintMatch(ConstraintRef constraintRef, ConstraintJustification justification,
+            Collection<Object> indictedObjectList, Score_ score) {
+        this.constraintRef = requireNonNull(constraintRef);
         this.justification = requireNonNull(justification);
         this.indictedObjectList =
                 requireNonNull(indictedObjectList) instanceof List<Object> list ? list : List.copyOf(indictedObjectList);
         this.score = requireNonNull(score);
     }
 
-    public String getConstraintPackage() {
-        return constraintPackage;
+    public ConstraintRef getConstraintRef() {
+        return constraintRef;
     }
 
+    /**
+     * @deprecated Prefer {@link #getConstraintRef()} instead.
+     * @return maybe null
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
+    public String getConstraintPackage() {
+        return constraintRef.packageName();
+    }
+
+    /**
+     * @deprecated Prefer {@link #getConstraintRef()} instead.
+     * @return never null
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public String getConstraintName() {
-        return constraintName;
+        return constraintRef.constraintName();
+    }
+
+    /**
+     * @deprecated Prefer {@link #getConstraintRef()} instead.
+     * @return never null
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
+    public String getConstraintId() {
+        return constraintRef.constraintId();
     }
 
     /**
@@ -160,18 +196,14 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     // Worker methods
     // ************************************************************************
 
-    public String getConstraintId() {
-        return constraintId;
-    }
-
     public String getIdentificationString() {
         return getConstraintId() + "/" + justification;
     }
 
     @Override
     public int compareTo(ConstraintMatch<Score_> other) {
-        if (!constraintId.equals(other.constraintId)) {
-            return constraintId.compareTo(other.constraintId);
+        if (!constraintRef.equals(other.constraintRef)) {
+            return constraintRef.compareTo(other.constraintRef);
         } else if (!score.equals(other.score)) {
             return score.compareTo(other.score);
         } else if (justification instanceof Comparable comparable) {

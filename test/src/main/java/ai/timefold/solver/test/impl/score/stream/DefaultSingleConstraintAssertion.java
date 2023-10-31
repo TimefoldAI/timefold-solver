@@ -129,7 +129,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        String constraintId = constraint.getConstraintId();
+        String constraintId = constraint.getConstraintRef().constraintId();
         String assertionMessage = buildAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
         throw new AssertionError(assertionMessage);
@@ -186,7 +186,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         if (actualMatchCount == expectedMatchCount) {
             return;
         }
-        String constraintId = constraint.getConstraintId();
+        String constraintId = constraint.getConstraintRef().constraintId();
         String assertionMessage =
                 buildAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount, constraintId, message);
         throw new AssertionError(assertionMessage);
@@ -196,7 +196,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         if (determineMatchCount(scoreImpactType) > 0) {
             return;
         }
-        String constraintId = constraint.getConstraintId();
+        String constraintId = constraint.getConstraintRef().constraintId();
         String assertionMessage = buildAssertionErrorMessage(scoreImpactType, constraintId, message);
         throw new AssertionError(assertionMessage);
     }

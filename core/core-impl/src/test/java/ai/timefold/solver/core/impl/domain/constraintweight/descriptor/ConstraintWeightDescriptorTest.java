@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.domain.constraintweight.descriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfiguration;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.extended.TestdataExtendedConstraintConfiguration;
@@ -15,25 +15,20 @@ class ConstraintWeightDescriptorTest {
 
     @Test
     void extractionFunction() {
-        SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor = TestdataConstraintConfigurationSolution
-                .buildSolutionDescriptor();
-        ConstraintConfigurationDescriptor<TestdataConstraintConfigurationSolution> constraintConfigurationDescriptor =
-                solutionDescriptor.getConstraintConfigurationDescriptor();
+        var solutionDescriptor = TestdataConstraintConfigurationSolution.buildSolutionDescriptor();
+        var constraintConfigurationDescriptor = solutionDescriptor.getConstraintConfigurationDescriptor();
 
-        ConstraintWeightDescriptor<TestdataConstraintConfigurationSolution> firstWeightDescriptor =
-                constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
-        assertThat(firstWeightDescriptor.getConstraintPackage())
-                .isEqualTo(TestdataConstraintConfigurationSolution.class.getPackage().getName());
-        assertThat(firstWeightDescriptor.getConstraintName()).isEqualTo("First weight");
+        var firstWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
+        assertThat(firstWeightDescriptor.getConstraintRef())
+                .isEqualTo(
+                        ConstraintRef.of(TestdataConstraintConfigurationSolution.class.getPackage().getName(), "First weight"));
 
-        ConstraintWeightDescriptor<TestdataConstraintConfigurationSolution> secondWeightDescriptor =
-                constraintConfigurationDescriptor.getConstraintWeightDescriptor("secondWeight");
-        assertThat(secondWeightDescriptor.getConstraintPackage()).isEqualTo("packageOverwrittenOnField");
-        assertThat(secondWeightDescriptor.getConstraintName()).isEqualTo("Second weight");
+        var secondWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("secondWeight");
+        assertThat(secondWeightDescriptor.getConstraintRef())
+                .isEqualTo(ConstraintRef.of("packageOverwrittenOnField", "Second weight"));
 
-        TestdataConstraintConfigurationSolution solution = new TestdataConstraintConfigurationSolution("solution");
-        TestdataConstraintConfiguration constraintConfiguration = new TestdataConstraintConfiguration(
-                "constraintConfiguration");
+        var solution = new TestdataConstraintConfigurationSolution("solution");
+        var constraintConfiguration = new TestdataConstraintConfiguration("constraintConfiguration");
         constraintConfiguration.setFirstWeight(SimpleScore.ZERO);
         constraintConfiguration.setSecondWeight(SimpleScore.of(7));
         solution.setConstraintConfiguration(constraintConfiguration);
@@ -46,32 +41,25 @@ class ConstraintWeightDescriptorTest {
 
     @Test
     void extractionFunctionExtended() {
-        SolutionDescriptor<TestdataExtendedConstraintConfigurationSolution> solutionDescriptor =
-                TestdataExtendedConstraintConfigurationSolution.buildExtendedSolutionDescriptor();
-        ConstraintConfigurationDescriptor<TestdataExtendedConstraintConfigurationSolution> constraintConfigurationDescriptor =
-                solutionDescriptor.getConstraintConfigurationDescriptor();
+        var solutionDescriptor = TestdataExtendedConstraintConfigurationSolution.buildExtendedSolutionDescriptor();
+        var constraintConfigurationDescriptor = solutionDescriptor.getConstraintConfigurationDescriptor();
 
-        ConstraintWeightDescriptor<TestdataExtendedConstraintConfigurationSolution> firstWeightDescriptor =
-                constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
-        assertThat(firstWeightDescriptor.getConstraintPackage())
-                .isEqualTo(TestdataConstraintConfigurationSolution.class.getPackage().getName());
-        assertThat(firstWeightDescriptor.getConstraintName()).isEqualTo("First weight");
+        var firstWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
+        assertThat(firstWeightDescriptor.getConstraintRef())
+                .isEqualTo(
+                        ConstraintRef.of(TestdataConstraintConfigurationSolution.class.getPackage().getName(), "First weight"));
 
-        ConstraintWeightDescriptor<TestdataExtendedConstraintConfigurationSolution> secondWeightDescriptor =
-                constraintConfigurationDescriptor.getConstraintWeightDescriptor("secondWeight");
-        assertThat(secondWeightDescriptor.getConstraintPackage()).isEqualTo("packageOverwrittenOnField");
-        assertThat(secondWeightDescriptor.getConstraintName()).isEqualTo("Second weight");
+        var secondWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("secondWeight");
+        assertThat(secondWeightDescriptor.getConstraintRef())
+                .isEqualTo(ConstraintRef.of("packageOverwrittenOnField", "Second weight"));
 
-        ConstraintWeightDescriptor<TestdataExtendedConstraintConfigurationSolution> thirdWeightDescriptor =
-                constraintConfigurationDescriptor.getConstraintWeightDescriptor("thirdWeight");
-        assertThat(thirdWeightDescriptor.getConstraintPackage())
-                .isEqualTo(TestdataExtendedConstraintConfigurationSolution.class.getPackage().getName());
-        assertThat(thirdWeightDescriptor.getConstraintName()).isEqualTo("Third weight");
+        var thirdWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("thirdWeight");
+        assertThat(thirdWeightDescriptor.getConstraintRef())
+                .isEqualTo(ConstraintRef.of(TestdataExtendedConstraintConfigurationSolution.class.getPackage().getName(),
+                        "Third weight"));
 
-        TestdataExtendedConstraintConfigurationSolution solution = new TestdataExtendedConstraintConfigurationSolution(
-                "solution");
-        TestdataExtendedConstraintConfiguration constraintConfiguration = new TestdataExtendedConstraintConfiguration(
-                "constraintConfiguration");
+        var solution = new TestdataExtendedConstraintConfigurationSolution("solution");
+        var constraintConfiguration = new TestdataExtendedConstraintConfiguration("constraintConfiguration");
         constraintConfiguration.setFirstWeight(SimpleScore.ZERO);
         constraintConfiguration.setSecondWeight(SimpleScore.of(7));
         constraintConfiguration.setThirdWeight(SimpleScore.of(9));

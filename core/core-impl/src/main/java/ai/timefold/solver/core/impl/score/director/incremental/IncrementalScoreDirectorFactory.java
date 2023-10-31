@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
@@ -28,9 +29,10 @@ public class IncrementalScoreDirectorFactory<Solution_, Score_ extends Score<Sco
         this.incrementalScoreCalculatorSupplier = incrementalScoreCalculatorSupplier;
     }
 
-    // ************************************************************************
-    // Complex methods
-    // ************************************************************************
+    @Override
+    public boolean supportsConstraintMatching() {
+        return incrementalScoreCalculatorSupplier.get() instanceof ConstraintMatchAwareIncrementalScoreCalculator;
+    }
 
     @Override
     public IncrementalScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,

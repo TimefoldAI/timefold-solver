@@ -34,7 +34,8 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {
 
     static <Score_ extends Score<Score_>> ConstraintMatchSupplier<Score_> empty() {
-        return (constraint, impact) -> new ConstraintMatch<>(constraint, DefaultConstraintJustification.of(impact),
+        return (constraint, impact) -> new ConstraintMatch<>(constraint.getConstraintRef(),
+                DefaultConstraintJustification.of(impact),
                 Collections.emptyList(), impact);
     }
 
@@ -55,12 +56,12 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
             } catch (Exception e) {
                 throw createIndictmentException(constraint, e, a);
             }
-            return new ConstraintMatch<>(constraint, justification, indictedObjectCollection, impact);
+            return new ConstraintMatch<>(constraint.getConstraintRef(), justification, indictedObjectCollection, impact);
         };
     }
 
     private static RuntimeException createJustificationException(Constraint constraint, Exception cause, Object... facts) {
-        throw new IllegalStateException("Consequence of a constraint (" + constraint.getConstraintId()
+        throw new IllegalStateException("Consequence of a constraint (" + constraint.getConstraintRef()
                 + ") threw an exception creating constraint justification from a tuple (" + factsToString(facts) + ").", cause);
     }
 
@@ -71,7 +72,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
     }
 
     private static RuntimeException createIndictmentException(Constraint constraint, Exception cause, Object... facts) {
-        throw new IllegalStateException("Consequence of a constraint (" + constraint.getConstraintId()
+        throw new IllegalStateException("Consequence of a constraint (" + constraint.getConstraintRef()
                 + ") threw an exception collecting indicted objects from a tuple (" + factsToString(facts) + ").", cause);
     }
 
@@ -92,7 +93,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
             } catch (Exception e) {
                 throw createIndictmentException(constraint, e, a, b);
             }
-            return new ConstraintMatch<>(constraint, justification, indictedObjectCollection, impact);
+            return new ConstraintMatch<>(constraint.getConstraintRef(), justification, indictedObjectCollection, impact);
         };
     }
 
@@ -113,7 +114,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
             } catch (Exception e) {
                 throw createIndictmentException(constraint, e, a, b, c);
             }
-            return new ConstraintMatch<>(constraint, justification, indictedObjectCollection, impact);
+            return new ConstraintMatch<>(constraint.getConstraintRef(), justification, indictedObjectCollection, impact);
         };
     }
 
@@ -134,7 +135,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
             } catch (Exception e) {
                 throw createIndictmentException(constraint, e, a, b, c, d);
             }
-            return new ConstraintMatch<>(constraint, justification, indictedObjectCollection, impact);
+            return new ConstraintMatch<>(constraint.getConstraintRef(), justification, indictedObjectCollection, impact);
         };
     }
 

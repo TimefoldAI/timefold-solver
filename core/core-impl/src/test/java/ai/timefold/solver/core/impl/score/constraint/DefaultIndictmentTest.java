@@ -8,6 +8,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -109,7 +110,8 @@ class DefaultIndictmentTest {
 
     private <Score_ extends Score<Score_>> ConstraintMatch<Score_> buildConstraintMatch(String constraintPackage,
             String constraintName, Score_ score, ConstraintJustification justification, Object... indictments) {
-        return new ConstraintMatch<>(constraintPackage, constraintName, justification, Arrays.asList(indictments), score);
+        return new ConstraintMatch<>(ConstraintRef.of(constraintPackage, constraintName), justification,
+                Arrays.asList(indictments), score);
     }
 
     @Test

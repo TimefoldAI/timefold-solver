@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShado
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedSolution;
 
 import org.assertj.core.api.SoftAssertions;
@@ -28,6 +30,8 @@ public class SolutionManagerTest {
     public static final SolverFactory<TestdataListSolutionWithShadowHistory> SOLVER_FACTORY_LIST =
             SolverFactory
                     .createFromXmlResource("ai/timefold/solver/core/api/solver/testdataListWithShadowHistorySolverConfig.xml");
+    public static final SolverFactory<TestdataNullableSolution> SOLVER_FACTORY_OVERCONSTRAINED =
+            SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataOverconstrainedSolverConfig.xml");
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -209,6 +213,52 @@ public class SolutionManagerTest {
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .containsOnlyKeys(solution.getEntityList().toArray());
 
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void analyze(SolutionManagerSource SolutionManagerSource) {
+        var solution = TestdataShadowedSolution.generateSolution();
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
+        assertThat(solutionManager).isNotNull();
+
+        var scoreAnalysis = solutionManager.analyze(solution);
+        assertThat(scoreAnalysis).isNotNull();
+        assertSoftly(softly -> {
+            softly.assertThat(scoreAnalysis.score()).isNotNull();
+            softly.assertThat(scoreAnalysis.constraintMap()).isNotEmpty();
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void analyzeNonNullableWithNullValue(SolutionManagerSource SolutionManagerSource) {
+        var solution = TestdataShadowedSolution.generateSolution();
+        solution.getEntityList().get(0).setValue(null);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY);
+        assertThat(solutionManager).isNotNull();
+
+        assertThatThrownBy(() -> solutionManager.analyze(solution))
+                .hasMessageContaining("not initialized");
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void analyzeNullableWithNullValue(SolutionManagerSource SolutionManagerSource) {
+        var solution = TestdataNullableSolution.generateSolution();
+        solution.getEntityList().get(0).setValue(null);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_OVERCONSTRAINED);
+        assertThat(solutionManager).isNotNull();
+
+        var scoreAnalysis = solutionManager.analyze(solution);
+        assertThat(scoreAnalysis).isNotNull();
+        assertSoftly(softly -> {
+            softly.assertThat(scoreAnalysis.score()).isNotNull();
+            softly.assertThat(scoreAnalysis.constraintMap()).isNotEmpty();
         });
     }
 

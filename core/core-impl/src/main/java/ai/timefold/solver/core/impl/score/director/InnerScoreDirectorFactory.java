@@ -76,4 +76,8 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
      */
     void assertScoreFromScratch(Solution_ solution);
 
+    default boolean supportsConstraintMatching() {
+        return false;
+    }
+
 }

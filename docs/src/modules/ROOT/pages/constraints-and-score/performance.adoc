@@ -1,0 +1,193 @@
+[#scoreCalculationPerformanceTricks]
+= Performance tips and tricks
+
+[#scoreCalculationPerformanceTricksOverview]
+== Overview
+
+The `Solver` will normally spend most of its execution time running the score calculation
+(which is called in its deepest loops).
+Faster score calculation will return the same solution in less time with the same algorithm,
+which normally means a better solution in equal time.
+
+
+[#scoreCalculationSpeed]
+== Score calculation speed
+
+After solving a problem, the `Solver` will log the __score calculation speed per second__.
+This is a good measurement of Score calculation performance,
+despite that it is affected by non score calculation execution time.
+It depends on the problem scale of the problem dataset.
+Normally, even for high scale problems, it is higher than ``1000``, except if you are using an ``EasyScoreCalculator``.
+
+[IMPORTANT]
+====
+When improving your score calculation, focus on maximizing the score calculation speed, instead of maximizing the best score.
+A big improvement in score calculation can sometimes yield little or no best score improvement, for example when the algorithm is stuck in a local or global optima.
+If you are watching the calculation speed instead, score calculation improvements are far more visible.
+
+Furthermore, watching the calculation speed allows you to remove or add score constraints,
+and still compare it with the original's calculation speed.
+Comparing the best score with the original's best score is pointless: it's comparing apples and oranges.
+====
+
+
+[#incrementalScoreCalculation]
+== Incremental score calculation (with deltas)
+
+When a solution changes, incremental score calculation (AKA delta based score calculation)
+calculates the delta with the previous state to find the new ``Score``,
+instead of recalculating the entire score on every solution evaluation.
+
+For example, when a single queen A moves from row `1` to ``2``,
+it will not bother to check if queen B and C can attack each other, since neither of them changed:
+
+image::constraints-and-score/performance/incrementalScoreCalculationNQueens04.png[align="center"]
+
+Similarly in employee rostering:
+
+image::constraints-and-score/performance/incrementalScoreCalculationEmployeeRostering.png[align="center"]
+
+This is a huge performance and scalability gain.
+xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] gives you this huge scalability gain
+without forcing you to write a complicated incremental score calculation algorithm.
+
+Note that the speedup is relative to the size of your planning problem (your __n__),
+making incremental score calculation far more scalable.
+
+
+[#avoidCallingRemoteServicesDuringScoreCalculation]
+== Avoid calling remote services during score calculation
+
+Do not call remote services in your score calculation (except if you are bridging `EasyScoreCalculator` to a legacy system). The network latency will kill your score calculation performance.
+Cache the results of those remote services if possible.
+
+If some parts of a constraint can be calculated once, when the `Solver` starts, and never change during solving,
+then turn them into xref:configuration/configuration.adoc#cachedProblemFact[cached problem facts].
+
+
+[#pointlessConstraints]
+== Pointless constraints
+
+If you know a certain constraint can never be broken (or it is always broken), do not write a score constraint for it.
+For example in n queens, the score calculation does not check if multiple queens occupy the same column,
+because a ``Queen``'s `column` never changes and every solution starts with each `Queen` on a different ``column``.
+
+[NOTE]
+====
+Do not go overboard with this.
+If some datasets do not use a specific constraint but others do, just return out of the constraint as soon as you can.
+There is no need to dynamically change your score calculation based on the dataset.
+====
+
+
+[#buildInHardConstraint]
+== Built-in hard constraint
+
+Instead of implementing a hard constraint, it can sometimes be built in.
+For example, if `Lecture` A should never be assigned to `Room` X, but it uses `ValueRangeProvider` on Solution,
+so the `Solver` will often try to assign it to `Room` X too (only to find out that it breaks a hard constraint).
+Use xref:configuration/configuration.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity] or xref:optimization-algorithms/optimization-algorithms.adoc#filteredSelection[filtered selection] to define that Course A should only be assigned a `Room` different than X.
+
+This can give a good performance gain in some use cases, not just because the score calculation is faster,
+but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
+However, usually this is not a good idea because there is a real risk of trading short term benefits for long term harm:
+
+* Many optimization algorithms rely on the freedom to break hard constraints when changing planning entities,
+to get out of local optima.
+* Both implementation approaches have limitations (feature compatibility, disabling automatic performance optimizations),
+as explained in their documentation.
+
+
+[#otherScoreCalculationPerformanceTricks]
+== Other score calculation performance tricks
+
+* Verify that your score calculation happens in the correct `Number` type.
+If you are making the sum of `int` values, do not sum it in a `double` which takes longer.
+* For optimal performance, always use server mode (``java -server``).
+We have seen performance increases of 50% by turning on server mode.
+* For optimal performance, use the latest Java version.
+For example, in the past we have seen performance increases of 30% by switching from java 1.5 to 1.6.
+* Always remember that premature optimization is the root of all evil.
+Make sure your design is flexible enough to allow configuration based tweaking.
+
+
+[#scoreTrap]
+== Score trap
+
+Make sure that none of your score constraints cause a score trap.
+A trapped score constraint uses the same weight for different constraint matches, when it could just as easily use a different weight.
+It effectively lumps its constraint matches together, which creates a flatlined score function for that constraint.
+This can cause a solution state in which several moves need to be done to resolve or lower the weight of that single constraint.
+Some examples of score traps:
+
+* You need two doctors at each table, but you are only moving one doctor at a time. So the solver has no incentive to move a doctor to a table with no doctors. Punish a table with no doctors more than a table with only one doctor in that score constraint in the score function.
+* Two exams need to be conducted at the same time, but you are only moving one exam at a time. So the solver has to move one of those exams to another timeslot without moving the other in the same move. Add a coarse-grained move that moves both exams at the same time.
+
+For example, consider this score trap.
+If the blue item moves from an overloaded computer to an empty computer, the hard score should improve.
+The trapped score implementation fails to do that:
+
+image::constraints-and-score/performance/scoreTrap.png[align="center"]
+
+The Solver should eventually get out of this trap, but it will take a lot of effort (especially if there are even more processes on the overloaded computer). Before they do that, they might actually start moving more processes into that overloaded computer, as there is no penalty for doing so.
+
+[NOTE]
+====
+Avoiding score traps does not mean that your score function should be smart enough to avoid local optima.
+Leave it to the optimization algorithms to deal with the local optima.
+
+Avoiding score traps means to avoid, for each score constraint individually, a flatlined score function.
+====
+
+[IMPORTANT]
+====
+Always specify the degree of infeasibility.
+The business will often say "if the solution is infeasible, it does not matter how infeasible it is." While that is true for the business, it is not true for score calculation as it benefits from knowing how infeasible it is.
+In practice, soft constraints usually do this naturally and it is just a matter of doing it for the hard constraints too.
+====
+
+There are several ways to deal with a score trap:
+
+* Improve the score constraint to make a distinction in the score weight. For example, penalize `-1hard` for every missing CPU, instead of just `-1hard` if any CPU is missing.
+* If changing the score constraint is not allowed from the business perspective, add a lower score level with a score constraint that makes such a distinction. For example, penalize `-1subsoft` for every missing CPU, on top of `-1hard` if any CPU is missing. The business ignores the subsoft score level.
+* Add coarse-grained moves and union select them with the existing fine-grained moves. A coarse-grained move effectively does multiple moves to directly get out of a score trap with a single move. For example, move multiple items from the same container to another container.
+
+
+[#stepLimitBenchmark]
+== `stepLimit` benchmark
+
+Not all score constraints have the same performance cost.
+Sometimes one score constraint can kill the score calculation performance outright.
+Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to do a one minute run and check what happens to the score calculation speed if you comment out all but one of the score constraints.
+
+
+[#fairnessScoreConstraints]
+== Fairness score constraints
+
+Some use cases have a business requirement to provide a fair schedule (usually as a soft score constraint), for example:
+
+* Fairly distribute the workload amongst the employees, to avoid envy.
+* Evenly distribute the workload amongst assets, to improve reliability.
+
+Implementing such a constraint can seem difficult (especially because there are different ways to formalize fairness), but usually the _squared workload_ implementation behaves most desirable.
+For each employee/asset, count the workload `w` and subtract `w²` from the score.
+
+image::constraints-and-score/performance/fairnessScoreConstraint.png[align="center"]
+
+As shown above, the _squared workload_ implementation guarantees that if you select two employees from a given solution and make their distribution between those two employees fairer, then the resulting new solution will have a better overall score.
+Do not just use the difference from the average workload, as that can lead to unfairness, as demonstrated below.
+
+image::constraints-and-score/performance/fairnessScoreConstraintPitfall.png[align="center"]
+
+
+[NOTE]
+====
+Instead of the _squared workload_, it is also possible to use the https://en.wikipedia.org/wiki/Variance[variance]
+(squared difference to the average) or the http://en.wikipedia.org/wiki/Standard_deviation[standard deviation]
+(square root of the variance).
+This has no effect on the score comparison, because the average will not change during planning.
+It is just more work to implement (because the average needs to be known) and trivially slower (because the calculation is a bit longer).
+====
+
+When the workload is perfectly balanced, the user often likes to see a `0` score, instead of the distracting `-34soft` in the image above (for the last solution which is almost perfectly balanced).
+To nullify this, either add the average multiplied by the number of entities to the score or instead show the variance or standard deviation in the UI.

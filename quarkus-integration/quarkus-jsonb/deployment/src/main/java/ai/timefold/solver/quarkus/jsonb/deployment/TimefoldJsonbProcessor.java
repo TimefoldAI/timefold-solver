@@ -7,6 +7,10 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 
+/**
+ * @deprecated Prefer Jackson integration instead.
+ */
+@Deprecated(forRemoval = true, since = "1.4.0")
 class TimefoldJsonbProcessor {
 
     @BuildStep

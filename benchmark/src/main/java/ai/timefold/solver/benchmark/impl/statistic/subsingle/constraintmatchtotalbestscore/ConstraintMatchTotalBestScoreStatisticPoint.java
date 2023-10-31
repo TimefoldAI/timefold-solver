@@ -2,21 +2,19 @@ package ai.timefold.solver.benchmark.impl.statistic.subsingle.constraintmatchtot
 
 import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
 public class ConstraintMatchTotalBestScoreStatisticPoint extends StatisticPoint {
 
     private final long timeMillisSpent;
-    private final String constraintPackage;
-    private final String constraintName;
+    private final ConstraintRef constraintRef;
     private final int constraintMatchCount;
     private final Score scoreTotal;
 
-    public ConstraintMatchTotalBestScoreStatisticPoint(long timeMillisSpent,
-            String constraintPackage, String constraintName,
+    public ConstraintMatchTotalBestScoreStatisticPoint(long timeMillisSpent, ConstraintRef constraintRef,
             int constraintMatchCount, Score scoreTotal) {
         this.timeMillisSpent = timeMillisSpent;
-        this.constraintPackage = constraintPackage;
-        this.constraintName = constraintName;
+        this.constraintRef = constraintRef;
         this.constraintMatchCount = constraintMatchCount;
         this.scoreTotal = scoreTotal;
     }
@@ -26,11 +24,11 @@ public class ConstraintMatchTotalBestScoreStatisticPoint extends StatisticPoint 
     }
 
     public String getConstraintPackage() {
-        return constraintPackage;
+        return constraintRef.packageName();
     }
 
     public String getConstraintName() {
-        return constraintName;
+        return constraintRef.constraintName();
     }
 
     public int getConstraintMatchCount() {
@@ -42,12 +40,12 @@ public class ConstraintMatchTotalBestScoreStatisticPoint extends StatisticPoint 
     }
 
     public String getConstraintId() {
-        return constraintPackage + "/" + constraintName;
+        return constraintRef.constraintId();
     }
 
     @Override
     public String toCsvLine() {
-        return buildCsvLineWithStrings(timeMillisSpent, constraintPackage, constraintName,
+        return buildCsvLineWithStrings(timeMillisSpent, getConstraintPackage(), getConstraintName(),
                 Integer.toString(constraintMatchCount), scoreTotal.toString());
     }
 

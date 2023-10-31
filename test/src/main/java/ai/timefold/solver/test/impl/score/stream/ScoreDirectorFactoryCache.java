@@ -11,6 +11,7 @@ import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScor
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactoryService;
 import ai.timefold.solver.constraint.streams.common.InnerConstraintFactory;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -33,16 +34,13 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
      * Score director factory creation is expensive; we cache it.
      * The cache needs to be recomputed every time that the parent's configuration changes.
      */
-    private final Map<String, AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_>> scoreDirectorFactoryMap =
+    private final Map<ConstraintRef, AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_>> scoreDirectorFactoryMap =
             new HashMap<>();
 
-    private final ConfiguredConstraintVerifier<ConstraintProvider_, Solution_, Score_> parent;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ServiceLoader<ScoreDirectorFactoryService<Solution_, Score_>> serviceLoader;
 
-    public ScoreDirectorFactoryCache(ConfiguredConstraintVerifier<ConstraintProvider_, Solution_, Score_> parent,
-            SolutionDescriptor<Solution_> solutionDescriptor) {
-        this.parent = Objects.requireNonNull(parent);
+    public ScoreDirectorFactoryCache(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.serviceLoader = (ServiceLoader) ServiceLoader.load(ScoreDirectorFactoryService.class);
     }
@@ -84,12 +82,11 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
         List<Constraint> constraints = (List<Constraint>) fullConstraintFactory.buildConstraints(constraintProvider);
         Constraint expectedConstraint = constraintFunction.apply(constraintProvider, fullConstraintFactory);
         Constraint result = constraints.stream()
-                .filter(c -> Objects.equals(c.getConstraintId(), expectedConstraint.getConstraintId()))
+                .filter(c -> Objects.equals(c.getConstraintRef(), expectedConstraint.getConstraintRef()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Impossible state: Constraint provider (" + constraintProvider
                         + ") has no constraint (" + expectedConstraint + ")."));
-        var constraintId = result.getConstraintId();
-        return getScoreDirectorFactory(constraintId,
+        return getScoreDirectorFactory(result.getConstraintRef(),
                 constraintFactory -> new Constraint[] {
                         result
                 }, environmentMode);
@@ -99,13 +96,13 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
      * Retrieve {@link AbstractConstraintStreamScoreDirectorFactory} from the cache,
      * or create and cache a new instance using the {@link AbstractConstraintStreamScoreDirectorFactoryService}.
      *
-     * @param key never null, unique identifier of the factory in the cache
+     * @param constraintRef never null, unique identifier of the factory in the cache
      * @param constraintProvider never null, constraint provider to create the factory from; ignored on cache hit
      * @return never null
      */
-    public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory(String key,
+    public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory(ConstraintRef constraintRef,
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
-        return scoreDirectorFactoryMap.computeIfAbsent(key,
+        return scoreDirectorFactoryMap.computeIfAbsent(constraintRef,
                 k -> createScoreDirectorFactory(getScoreDirectorFactoryService(), constraintProvider, environmentMode));
     }
 

@@ -1,23 +1,22 @@
-# TODO refactor this https://github.com/TimefoldAI/timefold-solver/issues/5
 type: specs.openrewrite.org/v1beta/recipe
 name: ai.timefold.solver.migration.ToLatest9
-displayName: Upgrade to the latest Timefold 9
-description: 'Upgrade to the latest Timefold 9 and migrate to Jakarta packages.'
+displayName: Upgrade to the latest Timefold Solver
+description: 'Upgrade to the latest Timefold Solver and migrate to Jakarta packages.'
 recipeList:
   - ai.timefold.solver.migration.ToLatest
   - io.quarkus.updates.core.quarkus30.Quarkus3
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: ai.timefold.solver
       artifactId: timefold-solver-bom
-      newVersion: 9.x
+      newVersion: 1.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: ai.timefold.solver
       artifactId: timefold-solver-quarkus
-      newVersion: 9.x
+      newVersion: 1.x
   - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: ai.timefold.solver
       artifactId: timefold-solver-core
-      newVersion: 9.x
+      newVersion: 1.x
 #####
 # Rules coming from https://github.com/quarkusio/jbang-catalog/blob/main/quarkus3.yml
 #####

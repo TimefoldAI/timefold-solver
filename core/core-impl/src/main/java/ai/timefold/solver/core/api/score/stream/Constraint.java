@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.api.score.stream;
 
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
 /**
  * This represents a single constraint in the {@link ConstraintStream} API
@@ -22,36 +20,33 @@ public interface Constraint {
     @Deprecated(forRemoval = true)
     ConstraintFactory getConstraintFactory();
 
-    /**
-     * The constraint package is the namespace of the constraint.
-     * <p>
-     * When using a {@link ConstraintConfiguration},
-     * it is equal to the {@link ConstraintWeight#constraintPackage()}.
-     *
-     * @return never null
-     */
-    String getConstraintPackage();
+    ConstraintRef getConstraintRef();
 
     /**
-     * The constraint name.
-     * It might not be unique, but {@link #getConstraintId()} is unique.
-     * <p>
-     * When using a {@link ConstraintConfiguration},
-     * it is equal to the {@link ConstraintWeight#value()}.
-     *
+     * @deprecated Prefer {@link #getConstraintRef()}.
      * @return never null
      */
-    String getConstraintName();
+    @Deprecated(forRemoval = true, since = "1.4.0")
+    default String getConstraintPackage() {
+        return getConstraintRef().packageName();
+    }
 
     /**
-     * The constraint id is {@link #getConstraintPackage() the constraint package}
-     * concatenated with "/" and {@link #getConstraintName() the constraint name}.
-     * It is unique.
-     *
+     * @deprecated Prefer {@link #getConstraintRef()}.
      * @return never null
      */
+    @Deprecated(forRemoval = true, since = "1.4.0")
+    default String getConstraintName() {
+        return getConstraintRef().constraintName();
+    }
+
+    /**
+     * @deprecated Prefer {@link #getConstraintRef()}.
+     * @return never null
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     default String getConstraintId() {
-        return ConstraintMatchTotal.composeConstraintId(getConstraintPackage(), getConstraintName());
+        return getConstraintRef().constraintId();
     }
 
 }

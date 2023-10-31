@@ -1,39 +1,8 @@
 package ai.timefold.solver.benchmark.impl.statistic;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
-public class ConstraintSummary<Score_ extends Score<Score_>> {
+public record ConstraintSummary<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score, int count) {
 
-    private final String constraintPackage;
-    private final String constraintName;
-    private final Score_ score;
-    private final int count;
-
-    public ConstraintSummary(String constraintPackage, String constraintName, Score_ score, int count) {
-        this.constraintPackage = constraintPackage;
-        this.constraintName = constraintName;
-        this.score = score;
-        this.count = count;
-    }
-
-    public String getConstraintPackage() {
-        return constraintPackage;
-    }
-
-    public String getConstraintName() {
-        return constraintName;
-    }
-
-    public Score_ getScore() {
-        return score;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public String getConstraintId() {
-        return ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
-    }
 }

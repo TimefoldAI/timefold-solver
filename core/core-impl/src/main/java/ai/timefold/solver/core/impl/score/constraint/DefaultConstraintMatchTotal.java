@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.constraint;
 
-import static java.util.Objects.hash;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
@@ -11,58 +10,64 @@ import java.util.Set;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 
+/**
+ * If possible, prefer using {@link SolutionManager#analyze(Object)} instead.
+ *
+ * @param <Score_>
+ */
 public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> implements ConstraintMatchTotal<Score_>,
         Comparable<DefaultConstraintMatchTotal<Score_>> {
 
-    private final String constraintId;
-    private final String constraintPackage;
-    private final String constraintName;
+    private final ConstraintRef constraintRef;
     private final Score_ constraintWeight;
 
     private final Set<ConstraintMatch<Score_>> constraintMatchSet = new LinkedHashSet<>();
     private Score_ score;
 
+    /**
+     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public DefaultConstraintMatchTotal(String constraintPackage, String constraintName) {
-        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName);
+        this(ConstraintRef.of(constraintPackage, constraintName));
     }
 
-    private DefaultConstraintMatchTotal(String constraintId, String constraintPackage, String constraintName) {
-        this.constraintPackage = requireNonNull(constraintPackage);
-        this.constraintName = requireNonNull(constraintName);
-        this.constraintId = requireNonNull(constraintId);
+    public DefaultConstraintMatchTotal(ConstraintRef constraintRef) {
+        this.constraintRef = requireNonNull(constraintRef);
         this.constraintWeight = null;
     }
 
+    /**
+     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public DefaultConstraintMatchTotal(Constraint constraint, Score_ constraintWeight) {
-        this(constraint.getConstraintId(), constraint.getConstraintPackage(), constraint.getConstraintName(), constraintWeight);
+        this(constraint.getConstraintRef(), constraintWeight);
     }
 
+    /**
+     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.4.0")
     public DefaultConstraintMatchTotal(String constraintPackage, String constraintName, Score_ constraintWeight) {
-        this(ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName), constraintPackage, constraintName,
-                constraintWeight);
+        this(ConstraintRef.of(constraintPackage, constraintName), constraintWeight);
     }
 
-    private DefaultConstraintMatchTotal(String constraintId, String constraintPackage, String constraintName,
-            Score_ constraintWeight) {
-        this.constraintPackage = requireNonNull(constraintPackage);
-        this.constraintName = requireNonNull(constraintName);
-        this.constraintId = requireNonNull(constraintId);
+    public DefaultConstraintMatchTotal(ConstraintRef constraintRef, Score_ constraintWeight) {
+        this.constraintRef = requireNonNull(constraintRef);
         this.constraintWeight = requireNonNull(constraintWeight);
         this.score = constraintWeight.zero();
     }
 
     @Override
-    public String getConstraintPackage() {
-        return constraintPackage;
-    }
-
-    @Override
-    public String getConstraintName() {
-        return constraintName;
+    public ConstraintRef getConstraintRef() {
+        return constraintRef;
     }
 
     @Override
@@ -100,7 +105,7 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
 
     /**
      * Creates a {@link ConstraintMatch} and adds it to the collection returned by {@link #getConstraintMatchSet()}.
-     * It will the provided {@link ConstraintJustification}.
+     * It will be justified with the provided {@link ConstraintJustification}.
      * Additionally, the constraint match will indict the objects in the given list of indicted objects.
      *
      * @param indictedObjects never null, may be empty
@@ -109,8 +114,7 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
      */
     public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, Collection<Object> indictedObjects,
             Score_ score) {
-        ConstraintMatch<Score_> constraintMatch =
-                new ConstraintMatch<>(constraintId, constraintPackage, constraintName, justification, indictedObjects, score);
+        ConstraintMatch<Score_> constraintMatch = new ConstraintMatch<>(constraintRef, justification, indictedObjects, score);
         addConstraintMatch(constraintMatch);
         return constraintMatch;
     }
@@ -136,23 +140,16 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
     // ************************************************************************
 
     @Override
-    public String getConstraintId() {
-        return constraintId;
-    }
-
-    @Override
     public int compareTo(DefaultConstraintMatchTotal<Score_> other) {
-        return constraintId.compareTo(other.constraintId);
+        return constraintRef.compareTo(other.constraintRef);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof DefaultConstraintMatchTotal) {
-            DefaultConstraintMatchTotal<Score_> other = (DefaultConstraintMatchTotal<Score_>) o;
-            return constraintPackage.equals(other.constraintPackage)
-                    && constraintName.equals(other.constraintName);
+        } else if (o instanceof DefaultConstraintMatchTotal<?> other) {
+            return constraintRef.equals(other.constraintRef);
         } else {
             return false;
         }
@@ -160,12 +157,12 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
 
     @Override
     public int hashCode() {
-        return hash(constraintPackage, constraintName);
+        return constraintRef.hashCode();
     }
 
     @Override
     public String toString() {
-        return getConstraintId() + "=" + score;
+        return constraintRef + "=" + score;
     }
 
 }

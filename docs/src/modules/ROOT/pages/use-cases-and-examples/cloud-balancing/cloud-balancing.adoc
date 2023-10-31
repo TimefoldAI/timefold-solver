@@ -196,7 +196,7 @@ We annotate the getter `getProcessList()` with ``@PlanningEntityCollectionProper
 . The `computerList` property holds a list of computers.
 Timefold Solver cannot change the computers.
 Therefore, a computer is a problem fact.
-Especially for xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams],
+Especially for xref:constraints-and-score/score-calculation.adoc[Constraint Streams],
 the property `computerList` needs to be annotated with a `@ProblemFactCollectionProperty`
 so that Timefold Solver can retrieve the list of computers (problem facts) and make it available for scoring.
 
@@ -496,7 +496,8 @@ public class CloudBalancingEasyScoreCalculator
 ----
 ====
 
-Even if we optimize the code above to use ``Map``s to iterate through the `processList` only once, _it is still slow_ because it does not do xref:constraints-and-score/constraints-and-score.adoc#incrementalScoreCalculation[incremental score calculation].
+Even if we optimize the code above to use ``Map``s to iterate through the `processList` only once,
+_it is still slow_ because it does not do xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
 To fix that, either use constraint streams or incremental Java score calculation.
 
 

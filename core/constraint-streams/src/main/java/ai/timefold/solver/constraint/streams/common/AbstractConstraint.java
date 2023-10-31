@@ -4,16 +4,14 @@ import java.math.BigDecimal;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
         implements Constraint {
 
     private final ConstraintFactory_ constraintFactory;
-    private final String constraintPackage;
-    private final String constraintName;
-    private final String constraintId;
+    private final ConstraintRef constraintRef;
     private final Function<Solution_, Score<?>> constraintWeightExtractor;
     private final ScoreImpactType scoreImpactType;
     private final boolean isConstraintWeightConfigurable;
@@ -21,13 +19,11 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     private final Object justificationMapping;
     private final Object indictedObjectsMapping;
 
-    protected AbstractConstraint(ConstraintFactory_ constraintFactory, String constraintPackage, String constraintName,
+    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef,
             Function<Solution_, Score<?>> constraintWeightExtractor, ScoreImpactType scoreImpactType,
             boolean isConstraintWeightConfigurable, Object justificationMapping, Object indictedObjectsMapping) {
         this.constraintFactory = constraintFactory;
-        this.constraintPackage = constraintPackage;
-        this.constraintName = constraintName;
-        this.constraintId = ConstraintMatchTotal.composeConstraintId(constraintPackage, constraintName);
+        this.constraintRef = constraintRef;
         this.constraintWeightExtractor = constraintWeightExtractor;
         this.scoreImpactType = scoreImpactType;
         this.isConstraintWeightConfigurable = isConstraintWeightConfigurable;
@@ -48,7 +44,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
             return (Score_) constraintFactory.getSolutionDescriptor().getScoreDefinition().getOneSoftestScore();
         }
         var constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
-        constraintFactory.getSolutionDescriptor().validateConstraintWeight(constraintPackage, constraintName, constraintWeight);
+        constraintFactory.getSolutionDescriptor().validateConstraintWeight(constraintRef, constraintWeight);
         return switch (scoreImpactType) {
             case PENALTY -> constraintWeight.negate();
             case REWARD, MIXED -> constraintWeight;
@@ -61,7 +57,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         }
         if (scoreImpactType != ScoreImpactType.MIXED) {
             throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
-                    + getConstraintId() + "). " +
+                    + constraintRef + "). " +
                     "Check constraint provider implementation.");
         }
     }
@@ -72,7 +68,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         }
         if (scoreImpactType != ScoreImpactType.MIXED) {
             throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
-                    + getConstraintId() + "). " +
+                    + getConstraintRef() + "). " +
                     "Check constraint provider implementation.");
         }
     }
@@ -83,7 +79,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         }
         if (scoreImpactType != ScoreImpactType.MIXED) {
             throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
-                    + getConstraintId() + "). " +
+                    + getConstraintRef() + "). " +
                     "Check constraint provider implementation.");
         }
     }
@@ -94,18 +90,8 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     }
 
     @Override
-    public final String getConstraintPackage() {
-        return constraintPackage;
-    }
-
-    @Override
-    public final String getConstraintName() {
-        return constraintName;
-    }
-
-    @Override
-    public final String getConstraintId() { // Overridden in order to cache the string concatenation.
-        return constraintId;
+    public ConstraintRef getConstraintRef() {
+        return constraintRef;
     }
 
     public final ScoreImpactType getScoreImpactType() {
