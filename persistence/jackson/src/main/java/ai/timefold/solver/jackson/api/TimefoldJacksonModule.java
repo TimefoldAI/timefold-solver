@@ -1,6 +1,7 @@
 package ai.timefold.solver.jackson.api;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.analysis.ScoreAnalysisJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.buildin.bendable.BendableScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.buildin.bendable.BendableScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.buildin.bendablebigdecimal.BendableBigDecimalScoreJacksonDeserializer;
@@ -97,6 +99,9 @@ public class TimefoldJacksonModule extends SimpleModule {
         addDeserializer(BendableLongScore.class, new BendableLongScoreJacksonDeserializer());
         addSerializer(BendableBigDecimalScore.class, new BendableBigDecimalScoreJacksonSerializer());
         addDeserializer(BendableBigDecimalScore.class, new BendableBigDecimalScoreJacksonDeserializer());
+
+        // Score analysis
+        addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
     }
 
 }

@@ -790,7 +790,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         Map<Object, Set<ConstraintMatch<Score_>>> constraintMatchMap =
                 new LinkedHashMap<>(constraintMatchTotals.size() * 16);
         for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotals) {
-            String constraintId = constraintMatchTotal.getConstraintId();
+            String constraintId = constraintMatchTotal.getConstraintRef().constraintId();
             for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                 Stream.Builder<Object> keyStream = Stream.builder()
                         .add(constraintId);

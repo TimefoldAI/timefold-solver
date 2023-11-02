@@ -264,66 +264,6 @@ For example, this generates:
 ----
 
 
-[#integrationWithJsonb]
-=== JSON: JSON-B
-
-Enrich domain POJOs (solution, entities and problem facts) with JSON-B annotations to serialize them to/from JSON.
-
-Add a dependency to the `timefold-solver-jsonb` jar and use `TimefoldJsonbConfig` to create a `Jsonb` instance:
-
-[source,java,options="nowrap"]
-----
-JsonbConfig config = TimefoldJsonbConfig.createConfig();
-Jsonb jsonb = JsonbBuilder.create(config);
-----
-
-
-[#jsonbMarshallingAScore]
-==== JSON-B: marshalling a `Score`
-
-When a `Score` is marshalled to/from JSON by the default JSON-B configuration, it fails.
-The `TimefoldJsonbConfig` fixes that, by using adapters including `BendableScoreJsonbAdapter`, `HardSoftScoreJsonbAdapter`, etc.
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class CloudBalance {
-
-    @PlanningScore
-    private HardSoftScore score;
-
-    ...
-}
-----
-
-For example, this generates:
-
-[source,json]
-----
-{"hardSoftScore":"0hard/-200soft"}
-----
-
-The same applies for a bendable score:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class CloudBalance {
-
-    @PlanningScore
-    private BendableScore score;
-
-    ...
-}
-----
-
-This generates:
-
-[source,json]
-----
-{"bendableScore":"[0/0]hard/[-200/-20/0]soft"}
-----
-
 [#integrationWithQuarkus]
 == Quarkus
 
@@ -384,7 +324,7 @@ Many human planners fail to accept this, often because they feel threatened by a
 But despite that, both can benefit if the human planner becomes the supervisor of Timefold Solver:
 
 * *The human planner defines, validates and tweaks the score function.*
-** The human planner tweaks the constraint weights of the xref:constraints-and-score/constraints-and-score.adoc#constraintConfiguration[constraint configuration] in a UI, as the business priorities change over time.
+** The human planner tweaks the constraint weights of the xref:constraints-and-score/constraint-configuration.adoc[constraint configuration] in a UI, as the business priorities change over time.
 ** When the business changes, the score function often needs to change too.
 The human planner can notify the developers to add, change or remove score constraints.
 * *The human planner is always in control of Timefold Solver.*
@@ -418,14 +358,14 @@ Understand these guidelines to decide the hardware for a Timefold Solver service
 *** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
 *** **Narrow**: The heap buffer for those short-lived instances is too small, therefore the Garbage Collector needs to run more than it would like to, which causes a performance loss.
 **** Profiling shows that in the heap chart, the used heap space frequently touches the max heap space during solving. It also shows that the Garbage Collector has a significant CPU usage impact.
-**** Adding more heap space increases the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
+**** Adding more heap space increases the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 *** **Plenty**: There is enough heap space. The Garbage Collector is active, but its CPU usage is low.
 **** Adding more heap space does _not_ increase performance.
 **** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_,
 except with xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[nearby selection] and caching move selector,
 neither of which are used by default.
 * **CPU power**: More is better.
-** Improving CPU speed directly increases the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
+** Improving CPU speed directly increases the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 *** If the CPU power is twice as fast, it takes half the time to find the same result. However, this does not guarantee that it finds a better result in the same time, nor that it finds a similar result for a problem twice as big in the same time.
 *** Increasing CPU power usually does not resolve scaling issues, because planning problems scale exponentially. Power tweaking the solver configuration has far better results for scaling issues than throwing hardware at it.
 ** During the `solve()` method, the CPU power will max out until it returns (except in xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode] or if your xref:optimization-algorithms/optimization-algorithms.adoc#SolverEventListener[SolverEventListener] writes the best solution to disk or the network).
@@ -440,7 +380,7 @@ neither of which are used by default.
 * **I/O (network, disk, ...)**: Not used during solving.
 ** Timefold Solver is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
 *** A web server can handle 24 active servlets threads with eight cores without performance loss, because most servlets threads are blocking on I/O.
-*** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed] to be three times slower, causing a big performance loss.
+*** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed] to be three times slower, causing a big performance loss.
 ** Note that calling any I/O during solving, for example a remote service in your score calculation, causes a huge performance loss because it's called thousands of times per second, so it should complete in microseconds. So no good implementation does that.
 
 Keep these guidelines in mind when selecting and configuring the software.

@@ -11,13 +11,14 @@
 
   <artifactId>timefold-solver-jsonb</artifactId>
 
-  <name>Timefold Solver JSON-B</name>
+  <name>(Deprecated) Timefold Solver JSON-B</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
     This module contains the JSON-B integration.
+    This module is deprecated and will be removed in a future major version of Timefold Solver.
   </description>
   <url>https://timefold.ai</url>
 

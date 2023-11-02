@@ -10,8 +10,16 @@
   </parent>
 
   <artifactId>timefold-solver-quarkus-jsonb</artifactId>
-  <name>Timefold Solver Quarkus JSON-B - Runtime</name>
-  <description>Activate JSON-B bindings for Timefold's Score classes</description>
+  <name>(Deprecated) Timefold Solver Quarkus JSON-B - Runtime</name>
+  <description>
+    Timefold solves planning problems.
+    This lightweight, embeddable planning engine implements powerful and scalable algorithms
+    to optimize business resource scheduling and planning.
+
+    Activate JSON-B bindings for Timefold's Score classes.
+    This module is deprecated and will be removed in a future major version of Timefold Solver.
+    Please use the Jackson integration instead.
+  </description>
   <url>https://timefold.ai</url>
 
   <properties>

@@ -159,7 +159,7 @@ This combination is very efficient, because:
 
 * A score calculation engine, is *great for calculating the score* of a solution of a planning problem.
 It makes it easy and scalable to add additional soft or hard constraints.
-It does xref:constraints-and-score/constraints-and-score.adoc#incrementalScoreCalculation[incremental score calculation (deltas)] without any extra code.
+It does xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation (deltas)] without any extra code.
 However it tends to be not suitable to actually find new solutions.
 * An optimization algorithm is *great at finding new improving solutions* for a planning problem,
 without necessarily brute-forcing every possibility.
@@ -511,7 +511,8 @@ This effectively implies a threshold of `1hard/-2147483648soft`, because it reli
 ==== `BestScoreTermination`
 
 `BestScoreTermination` terminates when a certain score has been reached.
-Use this `Termination` where the perfect score is known, for example for four queens (which uses a xref:constraints-and-score/constraints-and-score.adoc#simpleScore[SimpleScore]):
+Use this `Termination` where the perfect score is known,
+for example for four queens (which uses a xref:constraints-and-score/overview.adoc#simpleScore[SimpleScore]):
 
 [source,xml,options="nowrap"]
 ----
@@ -520,7 +521,7 @@ Use this `Termination` where the perfect score is known, for example for four qu
   </termination>
 ----
 
-A planning problem with a xref:constraints-and-score/constraints-and-score.adoc#hardSoftScore[HardSoftScore] may look like this:
+A planning problem with a xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore] may look like this:
 
 [source,xml,options="nowrap"]
 ----
@@ -529,7 +530,7 @@ A planning problem with a xref:constraints-and-score/constraints-and-score.adoc#
   </termination>
 ----
 
-A planning problem with a xref:constraints-and-score/constraints-and-score.adoc#bendableScore[BendableScore] with three hard levels and one soft level may look like this:
+A planning problem with a xref:constraints-and-score/overview.adoc#bendableScore[BendableScore] with three hard levels and one soft level may look like this:
 
 [source,xml,options="nowrap"]
 ----
@@ -1935,7 +1936,7 @@ There can be certain moves that you don't want to select, because:
 
 * The move is pointless and would only waste CPU time.
 For example, swapping two lectures of the same course will result in the same score and the same schedule because all lectures of one course are interchangeable (same teacher, same students, same topic).
-* Doing the move would break xref:constraints-and-score/constraints-and-score.adoc#buildInHardConstraint[a built-in hard constraint],
+* Doing the move would break xref:constraints-and-score/performance.adoc#buildInHardConstraint[a built-in hard constraint],
 so the solution would be infeasible but the score function doesn't check built-in hard constraints for performance reasons.
 For example, don't change a gym lecture to a room which is not a gym room.
 It's usually better to not use move filtering for such cases,
@@ -3024,8 +3025,10 @@ Simplest configuration of Branch And Bound:
 
 [IMPORTANT]
 ====
-For the pruning to work with the default ``ScoreBounder``, the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] should be set.
-Especially an xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] of `ONLY_DOWN` (or at least has `ONLY_DOWN` in the leading score levels) prunes a lot.
+For the pruning to work with the default ``ScoreBounder``,
+the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] should be set.
+Especially an xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] of `ONLY_DOWN`
+(or at least has `ONLY_DOWN` in the leading score levels) prunes a lot.
 ====
 
 Advanced configuration:
@@ -3554,7 +3557,7 @@ The easiest way to deal with multiple entity classes is to run a separate Constr
 There are several pick early types for Construction Heuristics:
 
 * ``NEVER``: Evaluate all the selected moves to initialize the variable(s).
-This is the default if the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] is not ``ONLY_DOWN``.
+This is the default if the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is not ``ONLY_DOWN``.
 +
 [source,xml,options="nowrap"]
 ----
@@ -3566,7 +3569,7 @@ This is the default if the xref:constraints-and-score/constraints-and-score.adoc
   </constructionHeuristic>
 ----
 * ``FIRST_NON_DETERIORATING_SCORE``: Initialize the variable(s) with the first move that doesn't deteriorate the score, ignore the remaining selected moves.
-This is the default if the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``.
+This is the default if the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``.
 +
 [source,xml,options="nowrap"]
 ----
@@ -3580,9 +3583,11 @@ This is the default if the xref:constraints-and-score/constraints-and-score.adoc
 +
 [NOTE]
 ====
-If there are only negative constraints, but the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] is strictly not ``ONLY_DOWN``,
+If there are only negative constraints,
+but the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is strictly not ``ONLY_DOWN``,
 it can sometimes make sense to apply FIRST_NON_DETERIORATING_SCORE.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to decide if the score quality loss is worth the time gain.
+Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+to decide if the score quality loss is worth the time gain.
 ====
 * ``FIRST_FEASIBLE_SCORE``: Initialize the variable(s) with the first move that has a feasible score.
 +
@@ -3596,7 +3601,9 @@ Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarke
   </constructionHeuristic>
 ----
 +
-If the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``, use `FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD` instead, because that's faster without any disadvantages.
+If the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``,
+use `FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD` instead,
+because that's faster without any disadvantages.
 * ``FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD``: Initialize the variable(s) with the first move that doesn't deteriorate the feasibility of the score any further.
 +
 [source,xml,options="nowrap"]
@@ -3830,7 +3837,7 @@ If the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker
 [#initializingScoreTrendShortcuts]
 ==== InitializingScoreTrend shortcuts
 
-If the xref:constraints-and-score/constraints-and-score.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``, a Construction Heuristic algorithm (such as First Fit) is faster:
+If the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is ``ONLY_DOWN``, a Construction Heuristic algorithm (such as First Fit) is faster:
 for an entity, it picks the first move for which the score does not deteriorate the last step score, ignoring all subsequent moves in that step.
 
 It can take that shortcut without reducing solution quality,
@@ -4084,7 +4091,10 @@ Breaking ties randomly leads to better results.
 ====
 It is possible to disable breaking ties randomly by explicitly setting `breakTieRandomly` to ``false``, but that's almost never a good idea:
 
-* If an earlier move is better than a later move with the same score, the score calculator should add an extra softer xref:constraints-and-score/constraints-and-score.adoc#scoreLevel[score level] to score the first move as slightly better. Don't rely on move selection order to enforce that.
+* If an earlier move is better than a later move with the same score,
+the score calculator should add an extra softer xref:constraints-and-score/overview#scoreLevel[score level]
+to score the first move as slightly better.
+Don't rely on move selection order to enforce that.
 * Random tie breaking does not affect xref:configuration/configuration.adoc#environmentMode[reproducibility].
 ====
 
@@ -4681,7 +4691,7 @@ There are several ways of doing multithreaded solving:
 ** Use multithreaded incremental solving instead.
 * *Partitioned Search*: Split 1 dataset in multiple parts and solve them independently.
 ** Configure a <<partitionedSearch,Partitioned Search>>.
-* *Multithreaded incremental solving*: solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/constraints-and-score.adoc#incrementalScoreCalculation[incremental score calculation].
+* *Multithreaded incremental solving*: solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
 ** Donate a portion of your CPU cores to Timefold Solver to scale up the score calculation speed and get the same results in fraction of the time.
 ** Configure <<multithreadedIncrementalSolving,multithreaded incremental solving>>.
 
@@ -4690,7 +4700,7 @@ image::optimization-algorithms/multiThreadingStrategies.png[align="center"]
 [NOTE]
 ====
 A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` might cause congestion multithreaded solving
-and slow down the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
+and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
 [#planningId]
@@ -4900,7 +4910,7 @@ plug in a xref:optimization-algorithms/optimization-algorithms.adoc#customThread
 [IMPORTANT]
 ====
 A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` causes congestion in multithreaded Partitioned Search
-and slows down the xref:constraints-and-score/constraints-and-score.adoc#scoreCalculationSpeed[score calculation speed].
+and slows down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
 Just like a `<solver>` element, the `<partitionedSearch>` element can contain one or more xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[phases].

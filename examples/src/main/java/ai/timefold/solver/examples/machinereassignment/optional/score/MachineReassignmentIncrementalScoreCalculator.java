@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.examples.machinereassignment.domain.MachineReassignment;
@@ -439,23 +440,23 @@ public class MachineReassignmentIncrementalScoreCalculator
     @Override
     public Collection<ConstraintMatchTotal<HardSoftLongScore>> getConstraintMatchTotals() {
         DefaultConstraintMatchTotal<HardSoftLongScore> maximumCapacityMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.MAXIMUM_CAPACITY);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.MAXIMUM_CAPACITY));
         DefaultConstraintMatchTotal<HardSoftLongScore> serviceConflictMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_CONFLICT);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_CONFLICT));
         DefaultConstraintMatchTotal<HardSoftLongScore> serviceLocationSpreadMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_LOCATION_SPREAD);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_LOCATION_SPREAD));
         DefaultConstraintMatchTotal<HardSoftLongScore> serviceDependencyMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_DEPENDENCY);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_DEPENDENCY));
         DefaultConstraintMatchTotal<HardSoftLongScore> loadCostMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.LOAD_COST);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.LOAD_COST));
         DefaultConstraintMatchTotal<HardSoftLongScore> balanceCostMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.BALANCE_COST);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.BALANCE_COST));
         DefaultConstraintMatchTotal<HardSoftLongScore> processMoveCostMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.PROCESS_MOVE_COST);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.PROCESS_MOVE_COST));
         DefaultConstraintMatchTotal<HardSoftLongScore> serviceMoveCostMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_MOVE_COST);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.SERVICE_MOVE_COST));
         DefaultConstraintMatchTotal<HardSoftLongScore> machineMoveCostMatchTotal =
-                new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE, MrConstraints.MACHINE_MOVE_COST);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of(CONSTRAINT_PACKAGE, MrConstraints.MACHINE_MOVE_COST));
 
         for (MrServiceScorePart serviceScorePart : serviceScorePartMap.values()) {
             MrService service = serviceScorePart.service;

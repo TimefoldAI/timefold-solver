@@ -1,0 +1,177 @@
+[#constraintConfiguration]
+= Constraint configuration: adjust constraint weights dynamically
+:doctype: book
+:sectnums:
+:icons: font
+
+Deciding the correct xref:constraints-and-score/overview.adoc#scoreConstraintWeight[weight] and
+xref:constraints-and-score/overview.adoc#scoreLevel[level] for each constraint is not easy.
+It often involves negotiating with different stakeholders and their priorities.
+Furthermore, quantifying the impact of soft constraints is often a new experience for business managers, so they'll need a number of iterations to get it right.
+
+Don't get stuck between a rock and a hard place.
+Provide a UI to adjust the constraint weights and visualize the resulting solution, so the business managers can tweak the constraint weights themselves:
+
+image::constraints-and-score/constraint-configuration/parameterizeTheScoreWeights.png[align="center"]
+
+[#createAConstraintConfiguration]
+== Create a constraint configuration
+
+First, create a new class to hold the constraint weights and other constraint parameters.
+Annotate it with `@ConstraintConfiguration`:
+
+[source,java,options="nowrap"]
+----
+@ConstraintConfiguration
+public class ConferenceConstraintConfiguration {
+    ...
+}
+----
+
+There will be exactly one instance of this class per planning solution.
+The planning solution and the constraint configuration have a one-to-one relationship,
+but they serve a different purpose, so they aren't merged into a single class.
+A `@ConstraintConfiguration` class can extend a parent `@ConstraintConfiguration` class,
+which can be useful in international use cases with many regional constraints.
+
+Add the constraint configuration on the planning solution
+and annotate that field or property with `@ConstraintConfigurationProvider`:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class ConferenceSolution {
+
+    @ConstraintConfigurationProvider
+    private ConferenceConstraintConfiguration constraintConfiguration;
+
+    ...
+}
+----
+
+The `@ConstraintConfigurationProvider` annotation automatically exposes the constraint configuration
+as a xref:configuration/configuration.adoc#problemFacts[problem fact], there is no need to add a `@ProblemFactProperty` annotation.
+
+The constraint configuration class holds the <<constraintWeight,constraint weights>>,
+but it can also hold constraint parameters.
+For example in conference scheduling, the minimum pause constraint has a constraint weight (like any other constraint),
+but it also has a constraint parameter that defines the length of the minimum pause between two talks of the same speaker.
+That pause length depends on the conference (= the planning problem):
+in some big conferences 20 minutes isn't enough to go from one room to the other.
+That pause length is a field in the constraint configuration without a `@ConstraintWeight` annotation.
+
+
+[#constraintWeight]
+== Add a constraint weight for each constraint
+
+In the constraint configuration class, add a `@ConstraintWeight` field or property for each constraint:
+
+[source,java,options="nowrap"]
+----
+@ConstraintConfiguration(constraintPackage = "...conferencescheduling.score")
+public class ConferenceConstraintConfiguration {
+
+    @ConstraintWeight("Speaker conflict")
+    private HardMediumSoftScore speakerConflict = HardMediumSoftScore.ofHard(10);
+
+    @ConstraintWeight("Theme track conflict")
+    private HardMediumSoftScore themeTrackConflict = HardMediumSoftScore.ofSoft(10);
+    @ConstraintWeight("Content conflict")
+    private HardMediumSoftScore contentConflict = HardMediumSoftScore.ofSoft(100);
+
+    ...
+}
+----
+
+The type of the constraint weights must be the same score class as xref:configuration/configuration.adoc#scoreOfASolution[the planning solution's score member].
+For example in conference scheduling, `ConferenceSolution.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
+both return a `HardMediumSoftScore`.
+
+A constraint weight cannot be null.
+Give each constraint weight a default value, but expose them in a UI so the business users can tweak them.
+The example above uses the `ofHard()`, `ofMedium()` and `ofSoft()` methods to do that.
+Notice how it defaults the _content conflict_ constraint as ten times more important than the _theme track conflict_ constraint.
+Normally, a constraint weight only uses one score level,
+but it's possible to use multiple score levels (at a small performance cost).
+
+Each constraint has a constraint package and a constraint name, together they form the constraint id.
+These connect the constraint weight with the constraint implementation.
+*For each constraint weight, there must be a constraint implementation with the same package and the same name.*
+
+* The `@ConstraintConfiguration` annotation has a `constraintPackage` property that defaults to the package of the constraint configuration class.
+Cases with xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] normally don't need to specify it.
+
+* The `@ConstraintWeight` annotation has a `value` which is the constraint name (for example "Speaker conflict").
+It inherits the constraint package from the `@ConstraintConfiguration`,
+but it can override that, for example `@ConstraintWeight(constraintPackage = "...region.france", ...)`
+to use a different constraint package than some other weights.
+
+So every constraint weight ends up with a constraint package and a constraint name.
+Each constraint weight links with a constraint implementation,
+for example in xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]:
+
+[source,java,options="nowrap"]
+----
+public final class ConferenceSchedulingConstraintProvider implements ConstraintProvider {
+
+    @Override
+    public Constraint[] defineConstraints(ConstraintFactory factory) {
+        return new Constraint[] {
+                speakerConflict(factory),
+                themeTrackConflict(factory),
+                contentConflict(factory),
+                ...
+        };
+    }
+
+    protected Constraint speakerConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(...)
+                ...
+                .penalizeConfigurable("Speaker conflict", ...);
+    }
+
+    protected Constraint themeTrackConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(...)
+                ...
+                .penalizeConfigurable("Theme track conflict", ...);
+    }
+
+    protected Constraint contentConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(...)
+                ...
+                .penalizeConfigurable("Content conflict", ...);
+    }
+
+    ...
+
+}
+----
+
+Each of the constraint weights defines the score level and score weight of their constraint.
+The constraint implementation calls `rewardConfigurable()` or `penalizeConfigurable()` and the constraint weight is automatically applied.
+
+If the constraint implementation provides a match weight, that *match weight is multiplied with the constraint weight*.
+For example, the _content conflict_ constraint weight defaults to `100soft`
+and the constraint implementation penalizes each match based on the number of shared content tags and the overlapping duration of the two talks:
+
+[source,java,options="nowrap"]
+----
+    @ConstraintWeight("Content conflict")
+    private HardMediumSoftScore contentConflict = HardMediumSoftScore.ofSoft(100);
+----
+
+[source,java,options="nowrap"]
+----
+Constraint contentConflict(ConstraintFactory factory) {
+    return factory.forEachUniquePair(Talk.class,
+        overlapping(t -> t.getTimeslot().getStartDateTime(),
+            t -> t.getTimeslot().getEndDateTime()),
+        filtering((talk1, talk2) -> talk1.overlappingContentCount(talk2) > 0))
+        .penalizeConfigurable("Content conflict",
+                (talk1, talk2) -> talk1.overlappingContentCount(talk2)
+                        * talk1.overlappingDurationInMinutes(talk2));
+}
+----
+
+So when 2 overlapping talks share only 1 content tag and overlap by 60 minutes, the score is impacted by `-6000soft`.
+But when 2 overlapping talks share 3 content tags, the match weight is 180, so the score is impacted by `-18000soft`.

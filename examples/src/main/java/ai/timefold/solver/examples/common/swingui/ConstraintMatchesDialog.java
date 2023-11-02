@@ -162,7 +162,7 @@ final class ConstraintMatchesDialog extends JDialog {
             ConstraintMatchTotal<?> constraintMatchTotal = constraintMatchTotalList.get(rowIndex);
             switch (columnIndex) {
                 case 0:
-                    return constraintMatchTotal.getConstraintName();
+                    return constraintMatchTotal.getConstraintRef().constraintName();
                 case 1:
                     Score<?> constraintWeight = constraintMatchTotal.getConstraintWeight();
                     return constraintWeight == null ? "N/A" : constraintWeight.toShortString();

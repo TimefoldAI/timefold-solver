@@ -8,6 +8,7 @@ import java.util.function.Function;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.AbstractSubSingleStatisticTest;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;
@@ -24,8 +25,10 @@ public final class ConstraintMatchTotalBestScoreSubSingleStatisticTest
 
     @Override
     protected List<ConstraintMatchTotalBestScoreStatisticPoint> getInputPoints() {
-        return Collections.singletonList(new ConstraintMatchTotalBestScoreStatisticPoint(Long.MAX_VALUE, "CN", "CP",
-                Integer.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE)));
+        return Collections
+                .singletonList(new ConstraintMatchTotalBestScoreStatisticPoint(Long.MAX_VALUE,
+                        ConstraintRef.of("CN", "CP"),
+                        Integer.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE)));
     }
 
     @Override

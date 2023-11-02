@@ -1,6 +1,5 @@
 package ai.timefold.solver.constraint.streams.common;
 
-import static ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal.composeConstraintId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -16,6 +15,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -73,7 +73,7 @@ public abstract class AbstractConstraintStreamTest {
             for (AssertableMatch assertableMatch : assertableMatches) {
                 Map<String, ConstraintMatchTotal<SimpleScore>> constraintMatchTotals =
                         scoreDirector.getConstraintMatchTotalMap();
-                String constraintId = composeConstraintId(constraintPackage, assertableMatch.constraintName);
+                String constraintId = ConstraintRef.composeConstraintId(constraintPackage, assertableMatch.constraintName);
                 ConstraintMatchTotal<SimpleScore> constraintMatchTotal = constraintMatchTotals.get(constraintId);
                 if (constraintMatchTotal == null) {
                     throw new IllegalStateException("Requested constraint matches for unknown constraint (" +

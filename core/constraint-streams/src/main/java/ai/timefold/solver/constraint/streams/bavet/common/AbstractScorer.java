@@ -45,7 +45,7 @@ public abstract class AbstractScorer<Tuple_ extends AbstractTuple> implements Tu
      */
     protected RuntimeException createExceptionOnImpact(Tuple_ tuple, Exception cause) {
         return new IllegalStateException(
-                "Consequence of a constraint (" + weightedScoreImpacter.getContext().getConstraint().getConstraintId()
+                "Consequence of a constraint (" + weightedScoreImpacter.getContext().getConstraint().getConstraintRef()
                         + ") threw an exception processing a tuple (" + tuple + ").",
                 cause);
     }
@@ -62,7 +62,7 @@ public abstract class AbstractScorer<Tuple_ extends AbstractTuple> implements Tu
 
     @Override
     public final String toString() {
-        return getClass().getSimpleName() + "(" + weightedScoreImpacter.getContext().getConstraint().getConstraintId()
+        return getClass().getSimpleName() + "(" + weightedScoreImpacter.getContext().getConstraint().getConstraintRef()
                 + ") with constraintWeight (" + weightedScoreImpacter.getContext().getConstraintWeight() + ")";
     }
 

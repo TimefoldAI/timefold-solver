@@ -2,13 +2,16 @@ package ai.timefold.solver.quarkus.devui;
 
 import java.util.List;
 
-public class TimefoldDevUIProperties {
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+
+public class TimefoldDevUIProperties { // TODO make record?
+
     private final TimefoldModelProperties timefoldModelProperties;
     private final String effectiveSolverConfigXML;
-    private final List<String> constraintList;
+    private final List<ConstraintRef> constraintList;
 
     public TimefoldDevUIProperties(TimefoldModelProperties timefoldModelProperties, String effectiveSolverConfigXML,
-            List<String> constraintList) {
+            List<ConstraintRef> constraintList) {
         this.timefoldModelProperties = timefoldModelProperties;
         this.effectiveSolverConfigXML = effectiveSolverConfigXML;
         this.constraintList = constraintList;
@@ -22,7 +25,7 @@ public class TimefoldDevUIProperties {
         return effectiveSolverConfigXML;
     }
 
-    public List<String> getConstraintList() {
+    public List<ConstraintRef> getConstraintList() {
         return constraintList;
     }
 }

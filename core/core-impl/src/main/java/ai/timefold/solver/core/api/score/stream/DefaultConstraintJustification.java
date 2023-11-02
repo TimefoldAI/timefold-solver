@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.Score;
@@ -69,17 +70,22 @@ public final class DefaultConstraintJustification
     }
 
     @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+        DefaultConstraintJustification that = (DefaultConstraintJustification) other;
+        return this.compareTo(that) == 0; // Ensure consistency with compareTo().
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(facts);
+    }
+
+    @Override
     public int compareTo(DefaultConstraintJustification other) {
-        String impactClassName = impact.getClass().getCanonicalName();
-        String otherImpactClassName = other.impact.getClass().getCanonicalName();
-        int scoreClassComparison = impactClassName.compareTo(otherImpactClassName);
-        if (scoreClassComparison != 0) { // Don't fail on two different score types.
-            return scoreClassComparison;
-        }
-        int scoreComparison = ((Score) impact).compareTo(other.impact);
-        if (scoreComparison != 0) {
-            return scoreComparison;
-        }
         List<?> justificationList = this.getFacts();
         List<?> otherJustificationList = other.getFacts();
         if (justificationList != otherJustificationList) {
@@ -99,7 +105,7 @@ public final class DefaultConstraintJustification
                 }
             }
         }
-        return Integer.compare(System.identityHashCode(this), System.identityHashCode(other));
+        return 0;
     }
 
     private Comparator<Object> getClassAndIdPlanningComparator(DefaultConstraintJustification other) {

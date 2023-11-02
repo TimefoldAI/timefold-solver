@@ -31,6 +31,7 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -2349,7 +2350,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 .containsOnlyKeys(entityList);
 
         String constraintFqn =
-                ConstraintMatchTotal.composeConstraintId(scoreDirector.getSolutionDescriptor()
+                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
                         .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
@@ -2653,7 +2654,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 .containsOnlyKeys(entityList);
 
         String constraintFqn =
-                ConstraintMatchTotal.composeConstraintId(scoreDirector.getSolutionDescriptor()
+                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
                         .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)

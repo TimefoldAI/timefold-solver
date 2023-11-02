@@ -6,6 +6,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
 
@@ -19,7 +20,7 @@ class DefaultConstraintMatchTotalTest {
         TestdataEntity e2 = new TestdataEntity("e2");
         TestdataEntity e3 = new TestdataEntity("e3");
         DefaultConstraintMatchTotal<SimpleScore> constraintMatchTotal =
-                new DefaultConstraintMatchTotal<>("package1", "constraint1", SimpleScore.ZERO);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("package1", "constraint1"), SimpleScore.ZERO);
         assertThat(constraintMatchTotal.getScore()).isEqualTo(SimpleScore.ZERO);
 
         ConstraintMatch<SimpleScore> match1 =
@@ -44,26 +45,26 @@ class DefaultConstraintMatchTotalTest {
     @Test
     void equalsAndHashCode() {
         PlannerAssert.assertObjectsAreEqual(
-                new DefaultConstraintMatchTotal<>("a.b", "c", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "c", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "c", SimpleScore.of(-7)));
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.of(-7)));
         PlannerAssert.assertObjectsAreNotEqual(
-                new DefaultConstraintMatchTotal<>("a.b", "c", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "d", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.c", "d", SimpleScore.ZERO));
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "d"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "d"), SimpleScore.ZERO));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
-                new DefaultConstraintMatchTotal<>("a.b", "aa", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "ab", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "ca", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "cb", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.b", "d", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.c", "a", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.c", "b", SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>("a.c", "c", SimpleScore.ZERO));
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "aa"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "ab"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "ca"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "cb"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "d"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "a"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "b"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "c"), SimpleScore.ZERO));
     }
 
 }

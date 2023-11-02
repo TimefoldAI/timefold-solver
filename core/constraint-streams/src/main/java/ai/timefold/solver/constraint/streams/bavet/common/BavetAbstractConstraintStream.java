@@ -11,6 +11,7 @@ import ai.timefold.solver.constraint.streams.common.AbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractConstraintStream<Solution_> {
@@ -62,13 +63,13 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
         var resolvedIndictedObjectsMapping =
                 Objects.requireNonNullElseGet(indictedObjectsMapping, this::getDefaultIndictedObjectsMapping);
         var isConstraintWeightConfigurable = constraintWeight == null;
+        var constraintRef = ConstraintRef.of(resolvedConstraintPackage, constraintName);
         var constraintWeightExtractor = isConstraintWeightConfigurable
-                ? buildConstraintWeightExtractor(resolvedConstraintPackage, constraintName)
-                : buildConstraintWeightExtractor(resolvedConstraintPackage, constraintName, constraintWeight);
+                ? buildConstraintWeightExtractor(constraintRef)
+                : buildConstraintWeightExtractor(constraintRef, constraintWeight);
         var constraint =
-                new BavetConstraint<>(constraintFactory, resolvedConstraintPackage, constraintName, constraintWeightExtractor,
-                        impactType, resolvedJustificationMapping, resolvedIndictedObjectsMapping,
-                        isConstraintWeightConfigurable, stream);
+                new BavetConstraint<>(constraintFactory, constraintRef, constraintWeightExtractor, impactType,
+                        resolvedJustificationMapping, resolvedIndictedObjectsMapping, isConstraintWeightConfigurable, stream);
         stream.setConstraint(constraint);
         return constraint;
     }

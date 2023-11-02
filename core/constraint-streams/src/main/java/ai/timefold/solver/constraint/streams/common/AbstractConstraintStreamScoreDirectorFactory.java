@@ -32,4 +32,8 @@ public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Sc
 
     public abstract Constraint[] getConstraints();
 
+    @Override
+    public boolean supportsConstraintMatching() {
+        return true;
+    }
 }

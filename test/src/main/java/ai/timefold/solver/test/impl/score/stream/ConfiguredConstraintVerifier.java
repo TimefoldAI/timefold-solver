@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -31,7 +32,8 @@ final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintP
     /**
      * Exists so that people can not, even by accident, pick the same constraint ID as the default cache key.
      */
-    private final String defaultScoreDirectorFactoryMapKey = UUID.randomUUID().toString();
+    private final ConstraintRef defaultScoreDirectorFactoryMapKey =
+            ConstraintRef.of(UUID.randomUUID().toString(), UUID.randomUUID().toString());
 
     private final ConstraintProvider_ constraintProvider;
     /**
@@ -48,7 +50,7 @@ final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintP
             SolutionDescriptor<Solution_> solutionDescriptor, ConstraintStreamImplType constraintStreamImplType) {
         this.constraintProvider = constraintProvider;
         this.scoreDirectorFactoryContainerThreadLocal =
-                ThreadLocal.withInitial(() -> new ScoreDirectorFactoryCache<>(this, solutionDescriptor));
+                ThreadLocal.withInitial(() -> new ScoreDirectorFactoryCache<>(solutionDescriptor));
         this.constraintStreamImplType = constraintStreamImplType;
     }
 

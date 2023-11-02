@@ -6,7 +6,12 @@
 ** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[leveloffset=+1]
 * xref:use-cases-and-examples/use-cases-and-examples.adoc[leveloffset=+1]
 * xref:configuration/configuration.adoc[leveloffset=+1]
-* xref:constraints-and-score/constraints-and-score.adoc[leveloffset=+1]
+* Constraints and Score
+** xref:constraints-and-score/overview.adoc[leveloffset=+1]
+** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
+** xref:constraints-and-score/understanding-the-score.adoc[leveloffset=+1]
+** xref:constraints-and-score/constraint-configuration.adoc[leveloffset=+1]
+** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 * xref:optimization-algorithms/optimization-algorithms.adoc[leveloffset=+1]
 * xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]

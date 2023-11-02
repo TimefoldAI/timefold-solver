@@ -1,0 +1,228 @@
+[#understandingTheScore]
+= Understanding the score
+:doctype: book
+:sectnums:
+:icons: font
+
+The score in its pure form is just a number,
+and does not help us understand the make-up of the solution it represents.
+It doesn't say which constraints are broken, or what caused them to break.
+To understand the score, it needs to be broken down.
+
+The easiest way to do that during development is to print the score summary:
+
+[source,java,options="nowrap"]
+----
+SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+System.out.println(solutionManager.getSummary(solution));
+----
+
+For example in conference scheduling,
+this prints that talk `S51` is responsible for breaking the hard constraint `Speaker required room tag`:
+
+----
+Explanation of score (-1hard/-806soft):
+    Constraint match totals:
+        -1hard: constraint (Speaker required room tag) has 1 matches:
+            -1hard: justifications ([S51])
+        -340soft: constraint (Theme track conflict) has 32 matches:
+            -20soft: justifications ([S68, S66])
+            -20soft: justifications ([S61, S44])
+            ...
+        ...
+    Indictments (top 5 of 72):
+        -1hard/-22soft: justification (S51) has 12 matches:
+            -1hard: constraint (Speaker required room tag)
+            -10soft: constraint (Theme track conflict)
+            ...
+        ...
+----
+
+[IMPORTANT]
+====
+Do not attempt to parse this string or expose it in services.
+It serves for debugging purposes only.
+Use <<scoreAnalysis,score analysis>> instead.
+====
+
+In the string above, there are some previously unexplained concepts.
+
+* A _Constraint match_ is created every time a constraint causes a change to the score.
+* _Justifications_ are user-defined objects that implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` interface,
+which carry meaningful information about a constraint match,
+such as its package, name and any metadata that the user chooses to expose.
+Justifications are most easily available via <<scoreAnalysis,score analysis>>.
+* _Indicted objects_ are objects which were directly involved in causing a constraint to match.
+For example, if your constraints penalize each vehicle,
+then there will be one `ai.timefold.solver.core.api.score.constraint.Indictment` instance per vehicle,
+carrying the vehicle as an indicted object.
+Indictments are typically used for xref:indictmentHeatMap[heat map visualization].
+
+[NOTE]
+====
+xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] can analyze the score natively.
+xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[Incremental Java score calculation] requires
+xref:constraints-and-score/score-calculation.adoc#constraintMatchAwareIncrementalScoreCalculator[implementing an extra interface].
+xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy Java score calculation] does not support score explanation.
+====
+
+
+[#scoreAnalysis]
+== Score Analysis: Which constraints are broken?
+
+If other parts of your application, such as your web interface,
+need to describe the solution to the user, use the `SolutionManager` API:
+
+[source,java,options="nowrap"]
+----
+SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(cloudBalance);
+----
+
+`ScoreAnalysis` is a JSON-friendly representation of the score,
+breaking down the score into individual constraints.
+Using score analysis, you can find out:
+
+* What's the total score.
+* Which constraints are broken, and how many times.
+* Which planning entities and problem facts are responsible for breaking which constraints.
+
+
+[#scoreAnalysisBrokenConstraints]
+=== Finding the broken constraints
+
+When you have the `ScoreAnalysis` instance, you can find out which constraints are broken:
+
+[source,java,options="nowrap"]
+----
+scoreAnalysis.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
+   String constraintId = constraintRef.constraintId();
+   HardSoftScore scorePerConstraint = constraintAnalysis.score();
+   ...
+});
+----
+
+If you wish to go further
+and find out which planning entities and problem facts are responsible for breaking the constraint,
+you can further explore the `ConstraintAnalysis` instance you received from `ScoreAnalysis.constraintMap()`:
+
+[source,java,options="nowrap"]
+----
+int matchCount = constraintAnalysis.matchCount();
+constraintAnalysis.matches().forEach(matchAnalysis -> {
+    HardSoftScore scorePerMatch = matchAnalysis.score();
+    Object justification = matchAnalysis.justification();
+    ...
+});
+----
+
+Each match is accompanied by the score difference it caused, and a justification object (see above).
+Typically, the scoring engine creates justification objects automatically
+by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustificationsAndIndictments[Constraint Streams' `justifyWith(...)` call].
+
+
+[#scoreAnalysisDiff]
+=== Identifying changes between two solutions
+
+If you have two different solutions from the Solver,
+you can compare them using `ScoreAnalysis`
+and find out what changed between them:
+
+[source,java,options="nowrap"]
+----
+ScoreAnalysis<HardSoftScore>  firstAnalysis = solutionManager.analyze(firstSolution);
+ScoreAnalysis<HardSoftScore> secondAnalysis = solutionManager.analyze(secondSolution);
+ScoreAnalysis<HardSoftScore>           diff = firstAnalysis.diff(secondAnalysis);
+
+// Score difference only carries the constraints whose matches changed from first to second solution.
+diff.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
+   String constraintId = constraintRef.constraintId();
+   HardSoftScore scoreDiff = constraintAnalysis.score();
+   // Matches only include constraint matches that:
+   //   - the second solution either added to or removed from the first solution.
+   //   - had their score changed.
+   // Two matches are considered equal if their justification objects are equal.
+   constraintAnalysis.matches().forEach(matchAnalysis -> {
+       ...
+   });
+});
+----
+
+Think of `diff(...)` as a subtraction operation,
+where the second solution is subtracted from the first solution.
+For example, if the first solution has score of `2hard/3soft`
+and the second solution has score of `1hard/2soft`,
+then the score difference will be `1hard/1soft`,
+indicating that the second solution is better than the first solution.
+
+The same applies to constraints and constraint matches.
+If a constraint did not match in the first solution but did match in the second,
+then the constraint match will be included in the diff as negative.
+If instead the constraint did match in the first solution but did not match in the second,
+then the constraint match will be included in the diff as positive.
+
+
+[#scoreAnalysisSerialization]
+=== Sending score analysis over the wire
+
+The purpose of `ScoreAnalysis` is to break down the score so that the end user can understand it.
+To succeed at this, `ScoreAnalysis` is JSON-friendly and can be easily sent over the wire
+from the backend to the frontend.
+
+`ScoreAnalysis` instances will serialize into JSON automatically (using Jackson):
+
+* If you use Timefold Solver's xref:integration/integration.adoc#integrationWithQuarkus[Quarkus integration],
+* or if you use Timefold Solver's xref:integration/integration.adoc#integrationWithSpringBoot[Spring Boot integration],
+* or if you directly included the `timefold-solver-jackson` module in your project.
+
+If you implemented `ConstraintJustication` to provide custom justification objects,
+you are responsible for making them JSON-friendly yourself.
+
+[NOTE]
+====
+`ScoreAnalysis` doesn't natively deserialize from JSON back to Java objects.
+This is because we have no way of knowing which `Score` or `ConstraintJustification` implementations you may be using.
+However, deserialization is easy to implement yourself by extending `AbstractScoreAnalysisJacksonDeserializer`
+and registering it with Jackson's `ObjectMapper`.
+====
+
+
+[#indictmentHeatMap]
+== Heat map: Visualize the hot planning entities
+
+To show a heat map in the UI that highlights the planning entities and problem facts have an impact on the ``Score``,
+get the `Indictment` map from the ``ScoreExplanation``:
+
+[source,java,options="nowrap"]
+----
+SolutionManager<CloudBalance, HardSoftScore> scoreManager = SolutionManager.create(solverFactory);
+ScoreExplanation<CloudBalance, HardSoftScore> scoreExplanation = solutionManager.explainScore(cloudBalance);
+Map<Object, Indictment<HardSoftScore>> indictmentMap = scoreExplanation.getIndictmentMap();
+for (CloudProcess process : cloudBalance.getProcessList()) {
+    Indictment<HardSoftScore> indictment = indictmentMap.get(process);
+    if (indictment == null) {
+        continue;
+    }
+    // The score impact of that planning entity
+    HardSoftScore totalScore = indictment.getScore();
+
+    for (ConstraintMatch<HardSoftScore> constraintMatch : indictment.getConstraintMatchSet()) {
+        String constraintName = constraintMatch.getConstraintName();
+        HardSoftScore score = constraintMatch.getScore();
+        ...
+    }
+}
+----
+
+[NOTE]
+====
+`ScoreExplanation` should only be used for processing indictments.
+For analyzing the score and processing constraint matches,
+use <<scoreAnalysis,score analysis>> instead, which is faster and JSON-friendly.
+====
+
+Each `Indictment` is the sum of all constraints where that justification object is involved with.
+The sum of all the `Indictment.getScoreTotal()` differs from the overall score,
+because multiple ``Indictment``s can share the same `ConstraintMatch`.
+
+image::constraints-and-score/understanding-the-score/scoreVisualization.png[align="center"]

@@ -59,7 +59,7 @@ all lessons are re-evaluated to calculate the new score.
 
 Instead, create a `src/main/java/org/acme/schooltimetabling/solver/TimeTableConstraintProvider.java` class
 to perform incremental score calculation.
-It uses Timefold Solver's xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams API]
+It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
 which is inspired by Java Streams and SQL:
 
 [source,java]

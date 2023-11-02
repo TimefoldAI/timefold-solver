@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurati
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintWeightDescriptor;
@@ -28,14 +29,12 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
     // Penalize/reward
     // ************************************************************************
 
-    protected Function<Solution_, Score<?>> buildConstraintWeightExtractor(String constraintPackage, String constraintName) {
-        validateConstraintId(constraintPackage, constraintName);
+    protected Function<Solution_, Score<?>> buildConstraintWeightExtractor(ConstraintRef constraintRef) {
         SolutionDescriptor<Solution_> solutionDescriptor = getConstraintFactory().getSolutionDescriptor();
         ConstraintConfigurationDescriptor<Solution_> configurationDescriptor = solutionDescriptor
                 .getConstraintConfigurationDescriptor();
         if (configurationDescriptor == null) {
-            throw new IllegalStateException("The constraint (" + constraintName + ") of package (" + constraintPackage
-                    + ") does not hard-code a constraint weight"
+            throw new IllegalStateException("The constraint (" + constraintRef + ") does not hard-code a constraint weight"
                     + " and there is no @" + ConstraintConfigurationProvider.class.getSimpleName()
                     + " on the solution class (" + solutionDescriptor.getSolutionClass() + ").\n"
                     + "Maybe add a @" + ConstraintConfiguration.class.getSimpleName() + " class"
@@ -43,10 +42,9 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
                     + " instead of penalizeConfigurable()/rewardConfigurable.");
         }
         ConstraintWeightDescriptor<Solution_> weightDescriptor = configurationDescriptor
-                .findConstraintWeightDescriptor(constraintPackage, constraintName);
+                .findConstraintWeightDescriptor(constraintRef);
         if (weightDescriptor == null) {
-            throw new IllegalStateException("The constraint (" + constraintName + ") of package (" + constraintPackage
-                    + ") does not hard-code a constraint weight"
+            throw new IllegalStateException("The constraint (" + constraintRef + ") does not hard-code a constraint weight"
                     + " and there is no such @" + ConstraintWeight.class.getSimpleName()
                     + " on the constraintConfigurationClass (" + configurationDescriptor.getConstraintConfigurationClass()
                     + ").\n"
@@ -57,24 +55,11 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
         return weightDescriptor.createExtractor();
     }
 
-    protected Function<Solution_, Score<?>> buildConstraintWeightExtractor(String constraintPackage, String constraintName,
+    protected Function<Solution_, Score<?>> buildConstraintWeightExtractor(ConstraintRef constraintRef,
             Score<?> constraintWeight) {
-        validateConstraintId(constraintPackage, constraintName);
         // Duplicates validation when the session is built, but this fails fast when weights are hard coded
-        getConstraintFactory().getSolutionDescriptor().validateConstraintWeight(constraintPackage, constraintName,
-                constraintWeight);
+        getConstraintFactory().getSolutionDescriptor().validateConstraintWeight(constraintRef, constraintWeight);
         return solution -> constraintWeight;
-    }
-
-    private static void validateConstraintId(String constraintPackage, String constraintName) {
-        if (constraintPackage == null) {
-            throw new IllegalStateException("The constraint (" + constraintName
-                    + ") cannot have a null package (" + constraintPackage + ").");
-        }
-        if (constraintName == null) {
-            throw new IllegalStateException("The constraint of package (" + constraintPackage
-                    + ") cannot have a null name (" + constraintName + ").");
-        }
     }
 
     // ************************************************************************

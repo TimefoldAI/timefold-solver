@@ -62,7 +62,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * Search space <= `10^60`
 |* No
 * Defined by us
-|* xref:constraints-and-score/constraints-and-score.adoc#fairnessScoreConstraints[Fairness score constraints]
+|* xref:constraints-and-score/performance.adoc#fairnessScoreConstraints[Fairness score constraints]
 * xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[Pinned entities]
 
 |xref:use-cases-and-examples/meeting-scheduling/meeting-scheduling.adoc#meetingScheduling[Meeting scheduling]
@@ -130,7 +130,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * Search space <= `?`
 |* Nearly realistic
 * http://gent.cs.kuleuven.be/mista2013challenge/[MISTA 2013]
-|* xref:constraints-and-score/constraints-and-score.adoc#bendableScore[Bendable score]
+|* xref:constraints-and-score/overview.adoc#bendableScore[Bendable score]
 * Custom xref:configuration/configuration.adoc#customVariableListener[VariableListener]
 * xref:configuration/configuration.adoc#valueRangeFactory[ValueRangeFactory]
 
@@ -155,7 +155,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * Search space <= `10^1168`
 |* No
 * Defined by us
-|* xref:constraints-and-score/constraints-and-score.adoc#bendableScore[Bendable score]
+|* xref:constraints-and-score/overview.adoc#bendableScore[Bendable score]
 * xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained through time pattern]
 * Custom xref:configuration/configuration.adoc#customVariableListener[VariableListener]
 * xref:responding-to-change/responding-to-change.adoc#continuousPlanning[Continuous planning]

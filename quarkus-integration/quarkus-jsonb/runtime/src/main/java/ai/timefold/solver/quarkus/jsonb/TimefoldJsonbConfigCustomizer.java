@@ -10,8 +10,11 @@ import io.quarkus.jsonb.JsonbConfigCustomizer;
 
 /**
  * Timefold doesn't use JSON-B, but it does have optional JSON-B support for {@link Score}, etc.
+ *
+ * @deprecated Prefer Jackson integration instead.
  */
 @Singleton
+@Deprecated(forRemoval = true, since = "1.4.0")
 public class TimefoldJsonbConfigCustomizer implements JsonbConfigCustomizer {
 
     @Override

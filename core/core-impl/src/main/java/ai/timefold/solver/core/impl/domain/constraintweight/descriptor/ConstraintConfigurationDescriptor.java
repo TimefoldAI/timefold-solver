@@ -6,7 +6,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +14,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurati
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -47,10 +47,6 @@ public class ConstraintConfigurationDescriptor<Solution_> {
 
     public String getConstraintPackage() {
         return constraintPackage;
-    }
-
-    public Collection<ConstraintWeightDescriptor<Solution_>> getConstraintWeightDescriptors() {
-        return constraintWeightDescriptorMap.values();
     }
 
     public ConstraintWeightDescriptor<Solution_> getConstraintWeightDescriptor(String propertyName) {
@@ -147,12 +143,11 @@ public class ConstraintConfigurationDescriptor<Solution_> {
         return constraintConfigurationClass;
     }
 
-    public ConstraintWeightDescriptor<Solution_> findConstraintWeightDescriptor(String constraintPackage,
-            String constraintName) {
-        return constraintWeightDescriptorMap.values().stream().filter(
-                constraintWeightDescriptor -> constraintWeightDescriptor.getConstraintPackage().equals(constraintPackage)
-                        && constraintWeightDescriptor.getConstraintName().equals(constraintName))
-                .findFirst().orElse(null);
+    public ConstraintWeightDescriptor<Solution_> findConstraintWeightDescriptor(ConstraintRef constraintRef) {
+        return constraintWeightDescriptorMap.values().stream()
+                .filter(constraintWeightDescriptor -> constraintWeightDescriptor.getConstraintRef().equals(constraintRef))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override

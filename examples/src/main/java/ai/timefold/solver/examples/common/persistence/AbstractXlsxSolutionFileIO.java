@@ -477,11 +477,10 @@ public abstract class AbstractXlsxSolutionFileIO<Solution_> implements SolutionF
                     ConstraintMatchTotal::getConstraintWeight, Comparator.nullsLast(Comparator.reverseOrder()));
             constraintMatchTotalsMap.values().stream()
                     .sorted(constraintWeightComparator
-                            .thenComparing(ConstraintMatchTotal::getConstraintPackage)
-                            .thenComparing(ConstraintMatchTotal::getConstraintName))
+                            .thenComparing(ConstraintMatchTotal::getConstraintRef))
                     .forEach(constraintMatchTotal -> {
                         nextRow();
-                        nextHeaderCell(constraintMatchTotal.getConstraintName());
+                        nextHeaderCell(constraintMatchTotal.getConstraintRef().constraintName());
                         Score_ constraintWeight = constraintMatchTotal.getConstraintWeight();
                         nextCell(scoreStyle).setCellValue(constraintWeight == null ? "N/A" : constraintWeight.toShortString());
                         nextCell().setCellValue(constraintMatchTotal.getConstraintMatchSet().size());
@@ -493,15 +492,14 @@ public abstract class AbstractXlsxSolutionFileIO<Solution_> implements SolutionF
             Comparator<ConstraintMatchTotal<Score_>> constraintMatchTotalComparator = Comparator
                     .comparing(ConstraintMatchTotal::getScore);
             constraintMatchTotalComparator = constraintMatchTotalComparator
-                    .thenComparing(ConstraintMatchTotal::getConstraintPackage)
-                    .thenComparing(ConstraintMatchTotal::getConstraintName);
+                    .thenComparing(ConstraintMatchTotal::getConstraintRef);
             Comparator<ConstraintMatch<Score_>> constraintMatchComparator = Comparator
                     .comparing(ConstraintMatch::getScore);
             constraintMatchTotalsMap.values().stream()
                     .sorted(constraintMatchTotalComparator)
                     .forEach(constraintMatchTotal -> {
                         nextRow();
-                        nextHeaderCell(constraintMatchTotal.getConstraintName());
+                        nextHeaderCell(constraintMatchTotal.getConstraintRef().constraintName());
                         Score_ constraintWeight = constraintMatchTotal.getConstraintWeight();
                         nextCell(scoreStyle).setCellValue(constraintWeight == null ? "N/A" : constraintWeight.toShortString());
                         nextCell().setCellValue(constraintMatchTotal.getConstraintMatchSet().size());

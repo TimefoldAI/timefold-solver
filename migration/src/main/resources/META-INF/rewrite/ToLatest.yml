@@ -1,7 +1,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: ai.timefold.solver.migration.ToLatest
-displayName: Upgrade to the latest Timefold
-description: 'Replace all your calls to deleted/deprecated types and methods of Timefold with their proper alternatives.'
+displayName: Upgrade to the latest Timefold Solver
+description: 'Replace all your calls to deleted/deprecated types and methods of Timefold Solver with their proper alternatives.'
 recipeList:
   - ai.timefold.solver.migration.FromOptaPlannerToTimefoldSolver
   - org.openrewrite.properties.ChangePropertyKey:
@@ -19,5 +19,6 @@ recipeList:
       ignoreDefinition: true
   - ai.timefold.solver.migration.v8.AsConstraintRecipe
   - ai.timefold.solver.migration.v8.ScoreGettersRecipe
+  - ai.timefold.solver.migration.v8.ConstraintRefRecipe
   - org.openrewrite.java.RemoveUnusedImports
   - ai.timefold.solver.migration.ChangeVersion

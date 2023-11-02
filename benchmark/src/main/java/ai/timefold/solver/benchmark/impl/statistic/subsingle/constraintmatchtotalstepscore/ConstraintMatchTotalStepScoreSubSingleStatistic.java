@@ -9,6 +9,7 @@ import ai.timefold.solver.benchmark.impl.report.LineChart;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
@@ -31,10 +32,9 @@ public class ConstraintMatchTotalStepScoreSubSingleStatistic<Solution_>
                 timeMillisSpent -> registry.extractConstraintSummariesFromMeters(SolverMetric.CONSTRAINT_MATCH_TOTAL_STEP_SCORE,
                         runTag, constraintSummary -> pointList.add(new ConstraintMatchTotalStepScoreStatisticPoint(
                                 timeMillisSpent,
-                                constraintSummary.getConstraintPackage(),
-                                constraintSummary.getConstraintName(),
-                                constraintSummary.getCount(),
-                                constraintSummary.getScore()))));
+                                constraintSummary.constraintRef(),
+                                constraintSummary.count(),
+                                constraintSummary.score()))));
     }
 
     @Override
@@ -46,8 +46,9 @@ public class ConstraintMatchTotalStepScoreSubSingleStatistic<Solution_>
     @Override
     protected ConstraintMatchTotalStepScoreStatisticPoint createPointFromCsvLine(ScoreDefinition<?> scoreDefinition,
             List<String> csvLine) {
-        return new ConstraintMatchTotalStepScoreStatisticPoint(Long.parseLong(csvLine.get(0)), csvLine.get(1), csvLine.get(2),
-                Integer.parseInt(csvLine.get(3)), scoreDefinition.parseScore(csvLine.get(4)));
+        return new ConstraintMatchTotalStepScoreStatisticPoint(Long.parseLong(csvLine.get(0)),
+                ConstraintRef.of(csvLine.get(1), csvLine.get(2)), Integer.parseInt(csvLine.get(3)),
+                scoreDefinition.parseScore(csvLine.get(4)));
     }
 
     @Override

@@ -151,7 +151,7 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
 
     @Override
     public String toString() {
-        return "Scoring(" + constraint.getConstraintName() + ")";
+        return "Scoring(" + constraint.getConstraintRef() + ")";
     }
 
     // ************************************************************************

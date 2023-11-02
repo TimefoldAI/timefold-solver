@@ -107,7 +107,7 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>> {
     }
 
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        return scoreInliner.getConstraintMatchTotalMap();
+        return scoreInliner.getConstraintIdToConstraintMatchTotalMap();
     }
 
     public Map<Object, Indictment<Score_>> getIndictmentMap() {

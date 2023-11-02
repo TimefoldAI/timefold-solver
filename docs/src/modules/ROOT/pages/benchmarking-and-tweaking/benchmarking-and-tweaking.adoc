@@ -687,7 +687,7 @@ On the other hand, for the Tabu Search and Late Acceptance, what you see is what
 ====
 
 *The best score over time statistic is very useful to detect abnormalities, such as a
-potential xref:constraints-and-score/constraints-and-score.adoc#scoreTrap[score trap] which gets the solver temporarily stuck in a local optima.*
+potential xref:constraints-and-score/performance.adoc#scoreTrap[score trap] which gets the solver temporarily stuck in a local optima.*
 
 image::benchmarking-and-tweaking/letTheBestScoreStatisticGuideYou.png[align="center"]
 
@@ -872,9 +872,9 @@ To see which constraints are matched in the best score (and how much) over time,
 .Constraint Match Total Best Score Diff Over Time Statistic
 image::benchmarking-and-tweaking/constraintMatchTotalBestScoreStatistic.png[align="center"]
 
-Requires the score calculation to support xref:constraints-and-score/constraints-and-score.adoc#explainingTheScore[constraint matches].
-xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams] supports constraint matches automatically,
-but xref:constraints-and-score/constraints-and-score.adoc#incrementalJavaScoreCalculation[incremental Java score calculation] requires more work.
+Requires the score calculation to support xref:constraints-and-score/understanding-the-score.adoc[score explanation].
+xref:constraints-and-score/score-calculation.adoc[Constraint Streams] supports constraint matches automatically,
+but xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[incremental Java score calculation] requires more work.
 
 [WARNING]
 ====
@@ -898,7 +898,7 @@ To see which constraints are matched in the step score (and how much) over time,
 .Constraint Match Total Step Score Diff Over Time Statistic
 image::benchmarking-and-tweaking/constraintMatchTotalStepScoreStatistic.png[align="center"]
 
-Also requires the score calculation to support xref:constraints-and-score/constraints-and-score.adoc#explainingTheScore[constraint matches].
+Also requires the score calculation to support xref:constraints-and-score/understanding-the-score.adoc[score explanation].
 
 [WARNING]
 ====

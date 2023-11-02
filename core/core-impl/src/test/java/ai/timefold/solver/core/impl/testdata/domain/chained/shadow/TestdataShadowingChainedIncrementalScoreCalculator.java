@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
@@ -26,9 +27,8 @@ public class TestdataShadowingChainedIncrementalScoreCalculator
     @Override
     public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution) {
         score = 0;
-        constraintMatchTotal =
-                new DefaultConstraintMatchTotal<>("ai.timefold.solver.core.impl.testdata.domain.chained.shadow",
-                        "testConstraint");
+        constraintMatchTotal = new DefaultConstraintMatchTotal<>(
+                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.chained.shadow", "testConstraint"));
         indictmentMap = new HashMap<>();
         for (TestdataShadowingChainedEntity left : workingSolution.getChainedEntityList()) {
             String code = left.getCode();

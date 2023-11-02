@@ -1,0 +1,494 @@
+[#constraintsAndScoreOverview]
+= Constraints and Score
+:page-aliases: score-calculation/score-calculation.adoc, \
+    constraints-and-score/constraints-and-score.adoc
+:doctype: book
+:sectnums:
+:icons: font
+
+
+[#scoreTerminology]
+== Score terminology
+
+
+[#whatIsAScore]
+=== What is a score?
+
+Every `@PlanningSolution` class has a score.
+The score is an objective way to compare two solutions.
+The solution with the higher score is better.
+The `Solver` aims to find the solution with the highest `Score` of all possible solutions.
+The _best solution_ is the solution with the highest `Score` that `Solver` has encountered during solving,
+which might be the __optimal solution__.
+
+Timefold Solver cannot automatically know which solution is best for your business,
+so you need to tell it how to calculate the score of a given `@PlanningSolution` instance according to your business needs.
+If you forget or are unable to implement an important business constraint, the solution is probably useless:
+
+image::constraints-and-score/overview/optimalWithIncompleteConstraints.png[align="center"]
+
+
+[#formalizeTheBusinessConstraints]
+=== Formalize the business constraints
+
+To implement a verbal business constraint, it needs to be formalized as a score constraint.
+Luckily, defining constraints in Timefold Solver is very flexible through the following score techniques:
+
+* **Score signum (positive or negative)**: maximize or minimize a constraint type
+* **Score weight**: put a cost/profit on a constraint type
+* **Score level (hard, soft, ...)**: prioritize a group of constraint types
+* *Pareto scoring* (rarely used)
+
+Take the time to acquaint yourself with the first three techniques.
+Once you understand them, formalizing most business constraints becomes straightforward.
+
+[NOTE]
+====
+Do not presume that your business knows all its score constraints in advance.
+Expect score constraints to be added, changed or removed after the first releases.
+====
+
+
+[#scoreConstraintSignum]
+=== Score constraint signum (positive or negative)
+
+All score techniques are based on constraints.
+A constraint can be a simple pattern (such as __Maximize the apple harvest in the solution__) or a more complex pattern.
+A positive constraint is a constraint you want to maximize.
+A negative constraint is a constraint you want to minimize
+
+image::constraints-and-score/overview/positiveAndNegativeConstraints.png[align="center"]
+
+The image above illustrates that **the optimal solution always has the highest score**,
+regardless if the constraints are positive or negative.
+
+Most planning problems have only negative constraints and therefore have a negative score.
+In that case, the score is the sum of the weight of the negative constraints being broken, with a perfect score of 0.
+For example in n queens, the score is the negative of the number of queen pairs which can attack each other.
+
+Negative and positive constraints can be combined, even in the same score level.
+
+When a constraint activates (because the negative constraint is broken or the positive constraint is fulfilled)
+on a certain planning entity set, it is called a __constraint match__.
+
+
+[#scoreConstraintWeight]
+=== Score constraint weight
+
+Not all score constraints are equally important.
+If breaking one constraint is equally bad as breaking another constraint x times,
+then those two constraints have a different weight (but they are in the same score level).
+For example in vehicle routing, you can make one _unhappy driver_ constraint match count
+as much as two _fuel tank usage_ constraint matches:
+
+image::constraints-and-score/overview/scoreWeighting.png[align="center"]
+
+Score weighting is easy in use cases where you can __put a price tag on everything__.
+In that case, the positive constraints maximize revenue and the negative constraints minimize expenses, so together they maximize profit.
+Alternatively, score weighting is also often used to create social xref:constraints-and-score/performance.adoc#fairnessScoreConstraints[fairness].
+For example, a nurse, who requests a free day, pays a higher weight on New Years eve than on a normal day.
+
+The weight of a constraint match can depend on the planning entities involved.
+For example in cloud balancing, the weight of the soft constraint match for an active `Computer`
+is the maintenance `cost` of that `Computer` (which differs per computer).
+
+Putting a good weight on a constraint is often a difficult analytical decision,
+because it is about making choices and trade-offs against other constraints.
+Different stakeholders have different priorities.
+*Don't waste time with constraint weight discussions at the start of an implementation,
+instead add a xref:constraints-and-score/constraint-configuration.adoc[constraint configuration]
+and allow users to change them through a UI.*
+A non-accurate weight is less damaging than mediocre algorithms:
+
+image::constraints-and-score/overview/scoreTradeoffInPerspective.png[align="center"]
+
+Most use cases use a `Score` with `int` weights, such as xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore].
+
+
+[#scoreLevel]
+=== Score constraint level (hard, soft, ...)
+
+Sometimes a score constraint outranks another score constraint, no matter how many times the latter is broken.
+In that case, those score constraints are in different levels.
+For example, a nurse cannot do two shifts at the same time (due to the constraints of physical reality),
+so this outranks all nurse happiness constraints.
+
+Most use cases have only two score levels, hard and soft.
+The levels of two scores are compared lexicographically.
+The first score level gets compared first.
+If those differ, the remaining score levels are ignored.
+For example, a score that breaks `0` hard constraints and `1000000` soft constraints is better
+than a score that breaks `1` hard constraint and `0` soft constraints.
+
+image::constraints-and-score/overview/scoreLevels.png[align="center"]
+
+If there are two (or more) score levels, for example xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore],
+then a score is _feasible_ if no hard constraints are broken.
+
+[NOTE]
+====
+By default, Timefold Solver will always assign all planning variables a planning value.
+If there is no feasible solution, this means the best solution will be infeasible.
+To instead leave some of the planning entities unassigned, apply xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[overconstrained planning].
+====
+
+For each constraint, you need to pick a score level, a score weight and a score signum.
+For example: `-1soft` which has score level of ``soft``, a weight of `1` and a negative signum.
+Do not use a big constraint weight when your business actually wants different score levels.
+That hack, known as __score folding__, is broken:
+
+image::constraints-and-score/overview/scoreFoldingIsBroken.png[align="center"]
+
+
+[NOTE]
+====
+Your business might tell you that your hard constraints all have the same weight, because they cannot be broken (so the weight does not matter). This is not true because if no feasible solution exists for a specific dataset, the least infeasible solution allows the business to estimate how many business resources they are lacking.
+For example in cloud balancing, how many new computers to buy.
+
+Furthermore, it will likely create a xref:constraints-and-score/performance.adoc#scoreTrap[score trap].
+For example in cloud balance if a `Computer` has seven CPU too little for its ``Process``es, then it must be weighted seven times as much as if it had only one CPU too little.
+====
+
+Three or more score levels are also supported.
+For example: a company might decide that profit outranks employee satisfaction (or vice versa),
+while both are outranked by the constraints of physical reality.
+
+[NOTE]
+====
+To model xref:constraints-and-score/performance.adoc#fairnessScoreConstraints[fairness or load balancing],
+there is no need to use lots of score levels,
+even though Timefold Solver can handle many score levels.
+====
+
+Most use cases use a `Score` with two or three weights,
+such as xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore]
+and xref:constraints-and-score/overview.adoc#hardMediumSoftScore[HardMediumSoftScore].
+
+
+[#paretoScoring]
+=== Pareto scoring (AKA multi-objective optimization scoring)
+
+Far less common is the use case of pareto optimization, which is also known as _multi-objective optimization_.
+In pareto scoring, score constraints are in the same score level, yet they are not weighted against each other.
+When two scores are compared, each of the score constraints are compared individually and the score with the most dominating score constraints wins.
+Pareto scoring can even be combined with score levels and score constraint weighting.
+
+Consider this example with positive constraints, where we want to get the most apples and oranges.
+Since it is impossible to compare apples and oranges, we cannot weigh them against each other.
+Yet, despite that we cannot compare them, we can state that two apples are better than one apple.
+Similarly, we can state that two apples and one orange are better than just one orange.
+So despite our inability to compare some Scores conclusively (at which point we declare them equal), we can find a set of optimal scores.
+Those are called pareto optimal.
+
+image::constraints-and-score/overview/paretoOptimizationScoring.png[align="center"]
+
+Scores are considered equal far more often.
+It is left up to a human to choose the better out of a set of best solutions (with equal scores) found by Timefold Solver.
+In the example above, the user must choose between solution A (three apples and one orange) and solution B (one apple and six oranges).
+It is guaranteed that Timefold Solver has not found another solution which has more apples or more oranges or even a better combination of both (such as two apples and three oranges).
+
+Pareto scoring is currently not supported in Timefold Solver.
+
+[NOTE]
+====
+A pareto ``Score``'s `compareTo` method is not transitive because it does a pareto comparison.
+For example: having two apples is greater than one apple.
+One apple is equal to One orange.
+Yet, two apples are not greater than one orange (but actually equal).
+Pareto comparison violates the contract of the interface ``java.lang.Comparable``'s `compareTo` method,
+but Timefold Solver's systems are __pareto comparison safe__, unless explicitly stated otherwise in this documentation.
+====
+
+
+[#combiningScoreTechniques]
+=== Combining score techniques
+
+All the score techniques mentioned above, can be combined seamlessly:
+
+image::constraints-and-score/overview/scoreComposition.png[align="center"]
+
+
+[#scoreInterface]
+=== `Score` interface
+
+A score is represented by the `Score` interface, which naturally extends ``Comparable``:
+
+[source,java,options="nowrap"]
+----
+public interface Score<...> extends Comparable<...> {
+    ...
+}
+----
+
+The `Score` implementation to use depends on your use case.
+Your score might not efficiently fit in a single `long` value.
+Timefold Solver has several built-in `Score` implementations.
+Most use cases tend to use ``HardSoftScore``.
+
+image::constraints-and-score/overview/scoreClassDiagram.png[align="center"]
+
+All Score implementations also have an `initScore` (which is an ``int``).
+It is mostly intended for internal use in Timefold Solver: it is the negative number of uninitialized planning variables.
+From a user's perspective this is ``0``, unless a Construction Heuristic is terminated before it could initialize all planning variables (in which case `Score.isSolutionInitialized()` returns ``false``).
+
+The `Score` implementation (for example ``HardSoftScore``) must be the same throughout a `Solver` runtime.
+The `Score` implementation is configured in the solution domain class:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class CloudBalance {
+    ...
+
+    @PlanningScore
+    private HardSoftScore score;
+
+}
+----
+
+[#avoidFloatingPointNumbersInScoreCalculation]
+=== Avoid floating point numbers in score calculation
+
+Avoid the use of `float` or `double` in score calculation.
+Use `BigDecimal` or scaled `long` instead.
+
+Floating point numbers (``float`` and ``double``) cannot represent a decimal number correctly.
+For example: a `double` cannot hold the value `0.05` correctly.
+Instead, it holds the nearest representable value.
+Arithmetic (including addition and subtraction) with floating point numbers, especially for planning problems, leads to incorrect decisions:
+
+image::constraints-and-score/overview/scoreWeightType.png[align="center"]
+
+Additionally, floating point number addition is not associative:
+
+[source,java,options="nowrap"]
+----
+System.out.println( ((0.01 + 0.02) + 0.03) == (0.01 + (0.02 + 0.03)) ); // returns false
+----
+
+This leads to __score corruption__.
+
+Decimal numbers (``BigDecimal``) have none of these problems.
+
+[NOTE]
+====
+BigDecimal arithmetic is considerably slower than ``int``, `long` or `double` arithmetic.
+In experiments we have seen the score calculation take five times longer.
+
+Therefore, in many cases, it can be worthwhile to multiply _all_ numbers for a single score weight by a plural of ten, so the score weight fits in a scaled `int` or ``long``.
+For example, if we multiply all weights by ``1000``, a fuelCost of `0.07` becomes a fuelCostMillis of `70` and no longer uses a decimal score weight.
+====
+
+
+[#scoreType]
+== Choose a score type
+
+Depending on the number of score levels and type of score weights you need, choose a `Score` type.
+Most use cases use a ``HardSoftScore``.
+
+[NOTE]
+====
+To properly write a `Score` to a database (with JPA/Hibernate) or to XML/JSON (with JAXB/Jackson),
+see xref:integration/integration.adoc#integration[the integration chapter].
+====
+
+
+[#simpleScore]
+=== `SimpleScore`
+
+A `SimpleScore` has a single `int` value, for example ``-123``.
+It has a single score level.
+
+[source,java,options="nowrap"]
+----
+    @PlanningScore
+    private SimpleScore score;
+----
+
+Variants of this `Score` type:
+
+* `SimpleLongScore` uses a `long` value instead of an `int` value.
+* `SimpleBigDecimalScore` uses a `BigDecimal` value instead of an `int` value.
+
+
+[#hardSoftScore]
+=== `HardSoftScore` (Recommended)
+
+A `HardSoftScore` has a hard `int` value and a soft `int` value, for example ``-123hard/-456soft``.
+It has two score levels (hard and soft).
+
+[source,java,options="nowrap"]
+----
+    @PlanningScore
+    private HardSoftScore score;
+----
+
+Variants of this `Score` type:
+
+* `HardSoftLongScore` uses `long` values instead of `int` values.
+* `HardSoftBigDecimalScore` uses `BigDecimal` values instead of `int` values.
+
+
+[#hardMediumSoftScore]
+=== `HardMediumSoftScore`
+
+A `HardMediumSoftScore` which has a hard `int` value, a medium `int` value and a soft `int` value, for example ``-123hard/-456medium/-789soft``.
+It has three score levels (hard, medium and soft).
+The hard level determines if the solution is feasible,
+and the medium level and soft level score values determine
+how well the solution meets business goals.
+Higher medium values take precedence over soft values irrespective of the soft value.
+
+[source,java,options="nowrap"]
+----
+    @PlanningScore
+    private HardMediumSoftScore score;
+----
+
+Variants of this `Score` type:
+
+* `HardMediumSoftLongScore` uses `long` values instead of `int` values.
+* `HardMediumSoftBigDecimalScore` uses `BigDecimal` values instead of `int` values.
+
+
+[#bendableScore]
+=== `BendableScore`
+
+A `BendableScore` has a configurable number of score levels.
+It has an array of hard `int` values and an array of soft `int` values,
+for example with two hard levels and three soft levels, the score can be ``[-123/-456]hard/[-789/-012/-345]soft``.
+In that case, it has five score levels.
+A solution is feasible if all hard levels are at least zero.
+
+A BendableScore with one hard level and one soft level is equivalent to a HardSoftScore,
+while a BendableScore with one hard level and two soft levels is equivalent to a HardMediumSoftScore.
+
+[source,java,options="nowrap"]
+----
+    @PlanningScore(bendableHardLevelsSize = 2, bendableSoftLevelsSize = 3)
+    private BendableScore score;
+----
+
+The number of hard and soft score levels need to be set at compilation time.
+It is not flexible to change during solving.
+
+[NOTE]
+====
+Do not use a `BendableScore` with seven levels just because you have seven constraints.
+It is extremely rare to use a different score level for each constraint, because that means one constraint match on soft 0 outweighs even a million constraint matches of soft 1.
+
+Usually, multiple constraints share the same level and are weighted against each other.
+Use xref:constraints-and-score/understanding-the-score.adoc[score explanations] to get the weight of individual constraints in the same level.
+====
+
+Variants of this `Score` type:
+
+* `BendableLongScore` uses `long` values instead of `int` values.
+* `BendableBigDecimalScore` uses `BigDecimal` values instead of `int` values.
+
+
+[#calculateTheScore]
+== Calculate the `Score`
+
+
+[#scoreCalculationTypes]
+=== Score calculation types
+
+There are several ways to calculate the `Score` of a solution in Hava or another JVM language:
+
+* **xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]**:
+Implement each constraint as a separate Constraint Stream.
+Fast and scalable.
+* **xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[Incremental Java score calculation]** (not recommended):
+Implement multiple low-level methods.
+Fast and scalable.
+Very difficult to implement and maintain.
+Supports xref:constraints-and-score/understanding-the-score.adoc[score explanations] with extra effort.
+* **xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy Java score calculation]** (not recommended):
+Implement all constraints together in a single method.
+Does not scale.
+Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
+
+Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
+All score calculation types are Object Oriented and can reuse existing Java code.
+
+[IMPORTANT]
+====
+The score calculation must be read-only.
+It must not change the planning entities or the problem facts in any way.
+For example, it must not call a setter method on a planning entity in the score calculation.
+
+Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:configuration/configuration.adoc#environmentMode[environmentMode assertion] is enabled).
+For example, after a winning step is done, there is no need to calculate the score because that move was done and undone earlier.
+As a result, there is no guarantee that changes applied during score calculation actually happen.
+
+To update planning entities when the planning variable change, use xref:configuration/configuration.adoc#shadowVariable[shadow variables] instead.
+====
+
+
+[#initializingScoreTrend]
+=== `InitializingScoreTrend`
+
+The `InitializingScoreTrend` specifies how the Score will change as more and more variables are initialized (while the already initialized variables do not change). Some optimization algorithms (such Construction Heuristics and Exhaustive Search) run faster if they have such information.
+
+For the score (or each xref:constraints-and-score/overview.adoc#scoreLevel[score level] separately), specify a trend:
+
+* `ANY` (default): Initializing an extra variable can change the score positively or negatively. Gives no performance gain.
+* `ONLY_UP` (rare): Initializing an extra variable can only change the score positively. Implies that:
+** There are only positive constraints
+** And initializing the next variable cannot unmatch a positive constraint that was matched by a previous initialized variable.
+* ``ONLY_DOWN``: Initializing an extra variable can only change the score negatively. Implies that:
+** There are only negative constraints
+** And initializing the next variable cannot unmatch a negative constraint that was matched by a previous initialized variable.
+
+Most use cases only have negative constraints.
+Many of those have an `InitializingScoreTrend` that only goes down:
+
+[source,xml,options="nowrap"]
+----
+  <scoreDirectorFactory>
+    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+  </scoreDirectorFactory>
+----
+
+Alternatively, you can also specify the trend for each score level separately:
+
+[source,xml,options="nowrap"]
+----
+  <scoreDirectorFactory>
+    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <initializingScoreTrend>ONLY_DOWN/ONLY_DOWN</initializingScoreTrend>
+  </scoreDirectorFactory>
+----
+
+
+[#invalidScoreDetection]
+=== Invalid score detection
+
+When you put the xref:configuration/configuration.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``FAST_ASSERT``),
+it will detect score corruption in the xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
+However, that will not verify that your score calculator actually implements your score constraints as your business desires.
+For example, one constraint might consistently match the wrong pattern.
+To verify the constraints against an independent implementation, configure a ``assertionScoreDirectorFactory``:
+
+[source,xml,options="nowrap"]
+----
+  <environmentMode>FAST_ASSERT</environmentMode>
+  ...
+  <scoreDirectorFactory>
+    <constraintProviderClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensConstraintProvider</constraintProviderClass>
+    <assertionScoreDirectorFactory>
+      <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+    </assertionScoreDirectorFactory>
+  </scoreDirectorFactory>
+----
+
+This way, the `NQueensConstraintProvider` implementation is validated by the ``EasyScoreCalculator``.
+
+[NOTE]
+====
+This works well to isolate score corruption,
+but to verify that the constraint implement the real business needs,
+xref:constraints-and-score/score-calculation.adoc#constraintStreamsTesting[a unit test with a ConstraintVerifier] is usually better.
+====

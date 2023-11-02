@@ -8,6 +8,7 @@ import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.constraint.streams.common.InnerConstraintFactory;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -79,7 +80,7 @@ public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<S
 
         protected TestConstraint(TestConstraintFactory<Solution_, Score_> constraintFactory, String constraintName,
                 Score_ constraintWeight) {
-            super(constraintFactory, constraintFactory.getDefaultConstraintPackage(), constraintName,
+            super(constraintFactory, ConstraintRef.of(constraintFactory.getDefaultConstraintPackage(), constraintName),
                     solution -> constraintWeight, ScoreImpactType.REWARD, false, null, null);
         }
     }

@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -10,11 +13,16 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
+import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -23,6 +31,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -30,6 +39,35 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  */
 public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends ScoreDirector<Solution_>, AutoCloseable {
+
+    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> getConstraintAnalysis(
+            ConstraintMatchTotal<Score_> constraintMatchTotal, boolean analyzeConstraintMatches) {
+        Score_ zero = constraintMatchTotal.getScore().zero();
+        if (analyzeConstraintMatches) {
+            // Marge all constraint matches with the same justification.
+            Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap =
+                    CollectionUtils.newLinkedHashMap(constraintMatchTotal.getConstraintMatchCount());
+            for (var constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+                var constraintJustification = constraintMatch.getJustification();
+                var constraintMatchList = deduplicatedConstraintMatchMap.computeIfAbsent(constraintJustification,
+                        k -> new ArrayList<>(1));
+                constraintMatchList.add(constraintMatch);
+            }
+            // Sum scores for each duplicate justification; this is the total score for the match.
+            var matchAnalyses = deduplicatedConstraintMatchMap.entrySet().stream()
+                    .map(entry -> {
+                        var score = entry.getValue().stream()
+                                .map(ConstraintMatch::getScore)
+                                .reduce(zero, Score::add);
+                        return new MatchAnalysis<>(score, entry.getKey());
+                    })
+                    .toList();
+            return new ConstraintAnalysis<>(constraintMatchTotal.getScore(),
+                    matchAnalyses);
+        } else {
+            return new ConstraintAnalysis<>(constraintMatchTotal.getScore(), null);
+        }
+    }
 
     /**
      * The {@link PlanningSolution working solution} must never be the same instance as the
@@ -59,8 +97,10 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * Call {@link #calculateScore()} before calling this method,
      * unless that method has already been called since the last {@link PlanningVariable} changes.
      *
-     * @return never null, the key is the {@link ConstraintMatchTotal#getConstraintId() constraintId}
-     *         (to create one, use {@link ConstraintMatchTotal#composeConstraintId(String, String)}).
+     * @return never null, the key is the constraintId
+     *         (to create one, use {@link ConstraintRef#composeConstraintId(String, String)}).
+     *         If a constraint is present in the problem but resulted in no matches,
+     *         it will still be in the map with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #isConstraintMatchEnabled()} returns false
      * @see #getIndictmentMap()
      */
@@ -410,5 +450,21 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * This is useful in {@link SolutionManager#update(Object)} to fill in shadow variable values.
      */
     void forceTriggerVariableListeners();
+
+    default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches) {
+        var score = calculateScore();
+        if (!score.isSolutionInitialized()) {
+            throw new IllegalArgumentException("""
+                    Cannot analyze solution (%s) as it is not initialized (%s).
+                    Maybe run the solver first?"""
+                    .formatted(getWorkingSolution(), score));
+        }
+        var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
+        for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
+            var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, analyzeConstraintMatches);
+            constraintAnalysisMap.put(constraintMatchTotal.getConstraintRef(), constraintAnalysis);
+        }
+        return new ScoreAnalysis<>(score, constraintAnalysisMap);
+    }
 
 }

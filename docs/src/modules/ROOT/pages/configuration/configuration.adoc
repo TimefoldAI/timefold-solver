@@ -409,7 +409,7 @@ For example: in bin packing bigger items are harder to fit, in course scheduling
 *Do not try to use planning entity difficulty to implement a business constraint.*
 It will not affect the score function: if we have infinite solving time, the returned solution will be the same.
 
-To attain a schedule in which certain entities are scheduled earlier in the schedule, xref:constraints-and-score/constraints-and-score.adoc#formalizeTheBusinessConstraints[add a score constraint] to change the score function so it prefers such solutions.
+To attain a schedule in which certain entities are scheduled earlier in the schedule, xref:constraints-and-score/overview.adoc#formalizeTheBusinessConstraints[add a score constraint] to change the score function so it prefers such solutions.
 Only consider adding planning entity difficulty too if it can make the solver more efficient.
 ====
 
@@ -547,7 +547,7 @@ To allow an initialized planning variable to be ``null``, set `nullable` to ``tr
 [NOTE]
 ====
 Constraint Streams filter out planning entities with a `null` planning variable by default.
-Use xref:constraints-and-score/constraints-and-score.adoc#constraintStreamsForEach[forEachIncludingNullVars()] to avoid such unwanted behaviour.
+Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[forEachIncludingNullVars()] to avoid such unwanted behaviour.
 ====
 
 Timefold Solver will automatically add the value `null` to the value range.
@@ -1344,7 +1344,7 @@ Usually, the efficiency gain of planning value strength is far less than that of
 *Do not try to use planning value strength to implement a business constraint.*
 It will not affect the score function: if we have infinite solving time, the returned solution will be the same.
 
-To affect the score function, xref:constraints-and-score/constraints-and-score.adoc#formalizeTheBusinessConstraints[add a score constraint].
+To affect the score function, xref:constraints-and-score/overview.adoc#formalizeTheBusinessConstraints[add a score constraint].
 Only consider adding planning value strength too if it can make the solver more efficient.
 ====
 
@@ -1660,7 +1660,7 @@ Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> 
 A `@PlanningSolution` class requires a score property (or field), which is annotated with a `@PlanningScore` annotation.
 The score property is `null` if the score hasn't been calculated yet.
 The `score` property is typed to the specific `Score` implementation of your use case.
-For example, `NQueens` uses a xref:constraints-and-score/constraints-and-score.adoc#simpleScore[SimpleScore]:
+For example, `NQueens` uses a xref:constraints-and-score/overview.adoc#simpleScore[SimpleScore]:
 
 [source,java,options="nowrap"]
 ----
@@ -1681,7 +1681,7 @@ public class NQueens {
 }
 ----
 
-Most use cases use a xref:constraints-and-score/constraints-and-score.adoc#hardSoftScore[HardSoftScore] instead:
+Most use cases use a xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore] instead:
 
 [source,java,options="nowrap"]
 ----
@@ -1703,7 +1703,7 @@ public class CloudBalance {
 }
 ----
 
-Some use cases use xref:constraints-and-score/constraints-and-score.adoc#scoreType[other score types].
+Some use cases use xref:constraints-and-score/overview.adoc#scoreType[other score types].
 
 This annotation can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
 
@@ -1711,7 +1711,7 @@ This annotation can also be <<autoDiscoverSolutionProperties,auto discovered>> i
 [#problemFacts]
 ==== Problem facts of a solution (`@ProblemFactCollectionProperty`)
 
-For xref:constraints-and-score/constraints-and-score.adoc#constraintStreams[Constraint Streams],
+For xref:constraints-and-score/score-calculation.adoc[Constraint Streams],
 Timefold Solver needs to extract the problem fact instances from the solution instance.
 It gets those collection(s) by calling every method (or field) that is annotated with ``@ProblemFactCollectionProperty``.
 All objects returned by those methods are available to use by Constraint Streams.
@@ -1838,7 +1838,7 @@ The automatic annotation is based on the field type (or getter return type):
 * `@PlanningScore`: when it is a `Score` or subclass
 
 These automatic annotations can still be overwritten per field (or getter).
-Specifically, a xref:constraints-and-score/constraints-and-score.adoc#bendableScore[BendableScore] always needs to override
+Specifically, a xref:constraints-and-score/overview.adoc#bendableScore[BendableScore] always needs to override
 with an explicit `@PlanningScore` annotation to define the number of hard and soft levels.
 
 
