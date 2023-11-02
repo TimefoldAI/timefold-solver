@@ -15,7 +15,7 @@ public final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
     private final BiConstraintCollector<A, B, ResultContainer_, Result_> delegate;
     private final TriFunction<ResultContainer_, A, B, Runnable> innerAccumulator;
 
-    public ConditionalBiCollector(BiPredicate<A, B> predicate,
+    ConditionalBiCollector(BiPredicate<A, B> predicate,
             BiConstraintCollector<A, B, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;

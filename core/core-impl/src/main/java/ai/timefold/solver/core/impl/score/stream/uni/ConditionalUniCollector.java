@@ -15,7 +15,7 @@ public final class ConditionalUniCollector<A, ResultContainer_, Result_>
     private final UniConstraintCollector<A, ResultContainer_, Result_> delegate;
     private final BiFunction<ResultContainer_, A, Runnable> innerAccumulator;
 
-    public ConditionalUniCollector(Predicate<A> predicate, UniConstraintCollector<A, ResultContainer_, Result_> delegate) {
+    ConditionalUniCollector(Predicate<A> predicate, UniConstraintCollector<A, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;
         this.innerAccumulator = delegate.accumulator();

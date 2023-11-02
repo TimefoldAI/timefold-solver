@@ -40,110 +40,11 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bi.BiComposeFourCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.BiComposeThreeCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.BiComposeTwoCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ComparableMaxBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ComparableMinBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ComparatorMaxBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ComparatorMinBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ComparatorSortedSetBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ConditionalBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.CustomCollectionBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.IntAverageBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.IntCountBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.IntDistinctCountBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.IntSumBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ListBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.LongAverageBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.LongCountBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.LongDistinctCountBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.LongSumBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.MultiMapBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.PropertyMaxBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.PropertyMinBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ReferenceAverageBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.ReferenceSumBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.SetBiCollector;
-import ai.timefold.solver.core.impl.score.stream.bi.SimpleMapBiCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ComparableMaxQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ComparableMinQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ComparatorMaxQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ComparatorMinQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ComparatorSortedSetQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ConditionalQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.CustomCollectionQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.IntAverageQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.IntCountQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.IntDistinctCountQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.IntSumQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ListQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.LongAverageQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.LongCountQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.LongDistinctCountQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.LongSumQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.MultiMapQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.PropertyMaxQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.PropertyMinQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.QuadComposeFourCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.QuadComposeThreeCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.QuadComposeTwoCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ReferenceAverageQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.ReferenceSumQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.SetQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.quad.SimpleMapQuadCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ComparableMaxTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ComparableMinTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ComparatorMaxTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ComparatorMinTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ComparatorSortedSetTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ConditionalTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.CustomCollectionTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.IntAverageTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.IntCountTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.IntDistinctCountTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.IntSumTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ListTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.LongAverageTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.LongCountTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.LongDistinctCountTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.LongSumTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.MultiMapTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.PropertyMaxTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.PropertyMinTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ReferenceAverageTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.ReferenceSumTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.SetTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.SimpleMapTriCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.TriComposeFourCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.TriComposeThreeCollector;
-import ai.timefold.solver.core.impl.score.stream.tri.TriComposeTwoCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ComparableMaxUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ComparableMinUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ComparatorMaxUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ComparatorMinUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ComparatorSortedSetUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ConditionalUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.CustomCollectionUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.IntAverageUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.IntCountUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.IntDistinctCountUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.IntSumUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ListUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.LongAverageUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.LongCountUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.LongDistinctCountUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.LongSumUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.MultiMapUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.PropertyMaxUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.PropertyMinUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ReferenceAverageUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.ReferenceSumUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.SetUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.SimpleMapUniCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.UniComposeFourCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.UniComposeThreeCollector;
-import ai.timefold.solver.core.impl.score.stream.uni.UniComposeTwoCollector;
+import ai.timefold.solver.core.impl.score.stream.bi.InnerBiConstraintCollectors;
+import ai.timefold.solver.core.impl.score.stream.quad.InnerQuadConstraintCollectors;
+import ai.timefold.solver.core.impl.score.stream.tri.InnerTriConstraintCollectors;
+import ai.timefold.solver.core.impl.score.stream.tri.SumLongTriCollector;
+import ai.timefold.solver.core.impl.score.stream.uni.InnerUniConstraintCollectors;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
@@ -167,56 +68,56 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Integer> count() {
-        return new IntCountUniCollector<>();
+        return InnerUniConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A> UniConstraintCollector<A, ?, Long> countLong() {
-        return new LongCountUniCollector<>();
+        return InnerUniConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> countBi() {
-        return new IntCountBiCollector<>();
+        return InnerBiConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Long> countLongBi() {
-        return new LongCountBiCollector<>();
+        return InnerBiConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> countTri() {
-        return new IntCountTriCollector<>();
+        return InnerTriConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countLongTri() {
-        return new LongCountTriCollector<>();
+        return InnerTriConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> countQuad() {
-        return new IntCountQuadCollector<>();
+        return InnerQuadConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countLongQuad() {
-        return new LongCountQuadCollector<>();
+        return InnerQuadConstraintCollectors.countLong();
     }
 
     // ************************************************************************
@@ -243,14 +144,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Integer> countDistinct(Function<A, ?> groupValueMapping) {
-        return new IntDistinctCountUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
     public static <A> UniConstraintCollector<A, ?, Long> countDistinctLong(Function<A, ?> groupValueMapping) {
-        return new LongDistinctCountUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
@@ -258,7 +159,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> countDistinct(
             BiFunction<A, B, ?> groupValueMapping) {
-        return new IntDistinctCountBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
@@ -266,7 +167,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Long> countDistinctLong(
             BiFunction<A, B, ?> groupValueMapping) {
-        return new LongDistinctCountBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
@@ -274,7 +175,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> countDistinct(
             TriFunction<A, B, C, ?> groupValueMapping) {
-        return new IntDistinctCountTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
@@ -282,7 +183,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countDistinctLong(
             TriFunction<A, B, C, ?> groupValueMapping) {
-        return new LongDistinctCountTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
@@ -290,7 +191,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> countDistinct(
             QuadFunction<A, B, C, D, ?> groupValueMapping) {
-        return new IntDistinctCountQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
@@ -298,7 +199,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countDistinctLong(
             QuadFunction<A, B, C, D, ?> groupValueMapping) {
-        return new LongDistinctCountQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     // ************************************************************************
@@ -317,14 +218,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Integer> sum(ToIntFunction<? super A> groupValueMapping) {
-        return new IntSumUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
     public static <A> UniConstraintCollector<A, ?, Long> sumLong(ToLongFunction<? super A> groupValueMapping) {
-        return new LongSumUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -332,7 +233,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Result> UniConstraintCollector<A, ?, Result> sum(Function<? super A, Result> groupValueMapping,
             Result zero, BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        return new ReferenceSumUniCollector<>(groupValueMapping, zero, adder, subtractor);
+        return InnerUniConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -371,7 +272,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> sum(
             ToIntBiFunction<? super A, ? super B> groupValueMapping) {
-        return new IntSumBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -379,7 +280,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Long> sumLong(
             ToLongBiFunction<? super A, ? super B> groupValueMapping) {
-        return new LongSumBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -388,7 +289,7 @@ public final class ConstraintCollectors {
     public static <A, B, Result> BiConstraintCollector<A, B, ?, Result> sum(
             BiFunction<? super A, ? super B, Result> groupValueMapping, Result zero, BinaryOperator<Result> adder,
             BinaryOperator<Result> subtractor) {
-        return new ReferenceSumBiCollector<>(groupValueMapping, zero, adder, subtractor);
+        return InnerBiConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -428,7 +329,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> sum(
             ToIntTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
-        return new IntSumTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -436,7 +337,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> sumLong(
             ToLongTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
-        return new LongSumTriCollector<>(groupValueMapping);
+        return SumLongTriCollector.sum(groupValueMapping);
     }
 
     /**
@@ -445,7 +346,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, Result> TriConstraintCollector<A, B, C, ?, Result> sum(
             TriFunction<? super A, ? super B, ? super C, Result> groupValueMapping, Result zero,
             BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        return new ReferenceSumTriCollector<>(groupValueMapping, zero, adder, subtractor);
+        return InnerTriConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -485,7 +386,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> sum(
             ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
-        return new IntSumQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -493,7 +394,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> sumLong(
             ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
-        return new LongSumQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -502,7 +403,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Result> QuadConstraintCollector<A, B, C, D, ?, Result> sum(
             QuadFunction<? super A, ? super B, ? super C, ? super D, Result> groupValueMapping, Result zero,
             BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        return new ReferenceSumQuadCollector<>(groupValueMapping, zero, adder, subtractor);
+        return InnerQuadConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -562,7 +463,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> min() {
-        return new ComparableMinUniCollector<>(ConstantLambdaUtils.identity());
+        return InnerUniConstraintCollectors.min(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -586,7 +487,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> min(
             Function<A, Mapped> groupValueMapping) {
-        return new ComparableMinUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -614,7 +515,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped> min(
             Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMinUniCollector<>(groupValueMapping, comparableFunction);
+        return InnerUniConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -637,7 +538,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> min(Function<A, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return new ComparatorMinUniCollector<>(groupValueMapping, comparator);
+        return InnerUniConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -645,7 +546,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> min(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return new ComparableMinBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -653,7 +554,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
             min(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMinBiCollector<>(groupValueMapping, comparableFunction);
+        return InnerBiConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -665,7 +566,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> min(BiFunction<A, B, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return new ComparatorMinBiCollector<>(groupValueMapping, comparator);
+        return InnerBiConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -673,7 +574,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> min(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return new ComparableMinTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -682,7 +583,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             TriConstraintCollector<A, B, C, ?, Mapped>
             min(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMinTriCollector<>(groupValueMapping, comparableFunction);
+        return InnerTriConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -694,7 +595,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> min(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorMinTriCollector<>(groupValueMapping, comparator);
+        return InnerTriConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -702,7 +603,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return new ComparableMinQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -711,7 +612,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             QuadConstraintCollector<A, B, C, D, ?, Mapped>
             min(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMinQuadCollector<>(groupValueMapping, comparableFunction);
+        return InnerQuadConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -723,7 +624,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorMinQuadCollector<>(groupValueMapping, comparator);
+        return InnerQuadConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     // ************************************************************************
@@ -751,7 +652,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> max() {
-        return new ComparableMaxUniCollector<>(ConstantLambdaUtils.identity());
+        return InnerUniConstraintCollectors.max(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -775,7 +676,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> max(
             Function<A, Mapped> groupValueMapping) {
-        return new ComparableMaxUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -786,7 +687,7 @@ public final class ConstraintCollectors {
      */
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A> UniConstraintCollector<A, ?, A> max(Comparator<? super A> comparator) {
-        return new ComparatorMaxUniCollector<>(ConstantLambdaUtils.identity(), comparator);
+        return InnerUniConstraintCollectors.max(ConstantLambdaUtils.identity(), comparator);
     }
 
     /**
@@ -814,7 +715,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped>
             max(Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMaxUniCollector<>(groupValueMapping, comparableFunction);
+        return InnerUniConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -826,7 +727,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> max(Function<A, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return new ComparatorMaxUniCollector<>(groupValueMapping, comparator);
+        return InnerUniConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -834,7 +735,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> max(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return new ComparableMaxBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -842,7 +743,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
             max(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMaxBiCollector<>(groupValueMapping, comparableFunction);
+        return InnerBiConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -854,7 +755,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> max(BiFunction<A, B, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return new ComparatorMaxBiCollector<>(groupValueMapping, comparator);
+        return InnerBiConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -862,7 +763,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> max(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return new ComparableMaxTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -871,7 +772,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             TriConstraintCollector<A, B, C, ?, Mapped>
             max(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMaxTriCollector<>(groupValueMapping, comparableFunction);
+        return InnerTriConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -883,7 +784,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> max(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorMaxTriCollector<>(groupValueMapping, comparator);
+        return InnerTriConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -891,7 +792,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return new ComparableMaxQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -900,7 +801,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             QuadConstraintCollector<A, B, C, D, ?, Mapped>
             max(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return new PropertyMaxQuadCollector<>(groupValueMapping, comparableFunction);
+        return InnerQuadConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -912,7 +813,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorMaxQuadCollector<>(groupValueMapping, comparator);
+        return InnerQuadConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -940,14 +841,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Double> average(ToIntFunction<A> groupValueMapping) {
-        return new IntAverageUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.average(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A> UniConstraintCollector<A, ?, Double> averageLong(ToLongFunction<A> groupValueMapping) {
-        return new LongAverageUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -957,7 +858,7 @@ public final class ConstraintCollectors {
      */
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigDecimal(
             Function<A, BigDecimal> groupValueMapping) {
-        return ReferenceAverageUniCollector.bigDecimal(groupValueMapping);
+        return InnerUniConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -966,28 +867,28 @@ public final class ConstraintCollectors {
      * with rounding mode {@link RoundingMode#HALF_EVEN}.
      */
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigInteger(Function<A, BigInteger> groupValueMapping) {
-        return ReferenceAverageUniCollector.bigInteger(groupValueMapping);
+        return InnerUniConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A> UniConstraintCollector<A, ?, Duration> averageDuration(Function<A, Duration> groupValueMapping) {
-        return ReferenceAverageUniCollector.duration(groupValueMapping);
+        return InnerUniConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToIntBiFunction<A, B> groupValueMapping) {
-        return new IntAverageBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.average(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Double> averageLong(ToLongBiFunction<A, B> groupValueMapping) {
-        return new LongAverageBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -995,7 +896,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal>
             averageBigDecimal(BiFunction<A, B, BigDecimal> groupValueMapping) {
-        return ReferenceAverageBiCollector.bigDecimal(groupValueMapping);
+        return InnerBiConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1003,7 +904,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal>
             averageBigInteger(BiFunction<A, B, BigInteger> groupValueMapping) {
-        return ReferenceAverageBiCollector.bigInteger(groupValueMapping);
+        return InnerBiConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
@@ -1011,14 +912,14 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Duration>
             averageDuration(BiFunction<A, B, Duration> groupValueMapping) {
-        return ReferenceAverageBiCollector.duration(groupValueMapping);
+        return InnerBiConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double> average(ToIntTriFunction<A, B, C> groupValueMapping) {
-        return new IntAverageTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1026,7 +927,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double>
             averageLong(ToLongTriFunction<A, B, C> groupValueMapping) {
-        return new LongAverageTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1034,7 +935,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal>
             averageBigDecimal(TriFunction<A, B, C, BigDecimal> groupValueMapping) {
-        return ReferenceAverageTriCollector.bigDecimal(groupValueMapping);
+        return InnerTriConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1042,7 +943,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal>
             averageBigInteger(TriFunction<A, B, C, BigInteger> groupValueMapping) {
-        return ReferenceAverageTriCollector.bigInteger(groupValueMapping);
+        return InnerTriConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
@@ -1050,7 +951,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Duration>
             averageDuration(TriFunction<A, B, C, Duration> groupValueMapping) {
-        return ReferenceAverageTriCollector.duration(groupValueMapping);
+        return InnerTriConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     /**
@@ -1058,7 +959,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double>
             average(ToIntQuadFunction<A, B, C, D> groupValueMapping) {
-        return new IntAverageQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1066,7 +967,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double>
             averageLong(ToLongQuadFunction<A, B, C, D> groupValueMapping) {
-        return new LongAverageQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1074,7 +975,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal>
             averageBigDecimal(QuadFunction<A, B, C, D, BigDecimal> groupValueMapping) {
-        return ReferenceAverageQuadCollector.bigDecimal(groupValueMapping);
+        return InnerQuadConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1082,7 +983,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal>
             averageBigInteger(QuadFunction<A, B, C, D, BigInteger> groupValueMapping) {
-        return ReferenceAverageQuadCollector.bigInteger(groupValueMapping);
+        return InnerQuadConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
@@ -1090,7 +991,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Duration>
             averageDuration(QuadFunction<A, B, C, D, Duration> groupValueMapping) {
-        return ReferenceAverageQuadCollector.duration(groupValueMapping);
+        return InnerQuadConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     // ************************************************************************
@@ -1151,7 +1052,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, Mapped, Result extends Collection<Mapped>> UniConstraintCollector<A, ?, Result> toCollection(
             Function<A, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new CustomCollectionUniCollector<>(groupValueMapping, collectionFunction);
+        return InnerUniConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1167,7 +1068,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, Mapped> UniConstraintCollector<A, ?, Set<Mapped>> toSet(Function<A, Mapped> groupValueMapping) {
-        return new SetUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1191,7 +1092,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped> UniConstraintCollector<A, ?, SortedSet<Mapped>> toSortedSet(
             Function<A, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorSortedSetUniCollector<>(groupValueMapping, comparator);
+        return InnerUniConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1207,7 +1108,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, Mapped> UniConstraintCollector<A, ?, List<Mapped>> toList(Function<A, Mapped> groupValueMapping) {
-        return new ListUniCollector<>(groupValueMapping);
+        return InnerUniConstraintCollectors.toList(groupValueMapping);
     }
 
     /**
@@ -1217,7 +1118,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, B, Mapped, Result extends Collection<Mapped>> BiConstraintCollector<A, B, ?, Result> toCollection(
             BiFunction<A, B, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new CustomCollectionBiCollector<>(groupValueMapping, collectionFunction);
+        return InnerBiConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1225,7 +1126,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Set<Mapped>> toSet(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return new SetBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1242,7 +1143,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, SortedSet<Mapped>> toSortedSet(
             BiFunction<A, B, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorSortedSetBiCollector<>(groupValueMapping, comparator);
+        return InnerBiConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1250,7 +1151,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, List<Mapped>> toList(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return new ListBiCollector<>(groupValueMapping);
+        return InnerBiConstraintCollectors.toList(groupValueMapping);
     }
 
     /**
@@ -1260,7 +1161,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, B, C, Mapped, Result extends Collection<Mapped>> TriConstraintCollector<A, B, C, ?, Result> toCollection(
             TriFunction<A, B, C, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new CustomCollectionTriCollector<>(groupValueMapping, collectionFunction);
+        return InnerTriConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1268,7 +1169,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Set<Mapped>> toSet(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return new SetTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1284,7 +1185,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, SortedSet<Mapped>> toSortedSet(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorSortedSetTriCollector<>(groupValueMapping, comparator);
+        return InnerTriConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1292,7 +1193,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, List<Mapped>> toList(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return new ListTriCollector<>(groupValueMapping);
+        return InnerTriConstraintCollectors.toList(groupValueMapping);
     }
 
     /**
@@ -1302,7 +1203,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, B, C, D, Mapped, Result extends Collection<Mapped>> QuadConstraintCollector<A, B, C, D, ?, Result>
             toCollection(QuadFunction<A, B, C, D, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new CustomCollectionQuadCollector<>(groupValueMapping, collectionFunction);
+        return InnerQuadConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1310,7 +1211,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Set<Mapped>> toSet(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return new SetQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1327,7 +1228,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, SortedSet<Mapped>> toSortedSet(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new ComparatorSortedSetQuadCollector<>(groupValueMapping, comparator);
+        return InnerQuadConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1335,7 +1236,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, List<Mapped>> toList(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return new ListQuadCollector<>(groupValueMapping);
+        return InnerQuadConstraintCollectors.toList(groupValueMapping);
     }
 
     // ************************************************************************
@@ -1393,7 +1294,7 @@ public final class ConstraintCollectors {
     public static <A, Key, Value, ValueSet extends Set<Value>> UniConstraintCollector<A, ?, Map<Key, ValueSet>> toMap(
             Function<? super A, ? extends Key> keyMapper, Function<? super A, ? extends Value> valueMapper,
             IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapUniCollector<>(keyMapper, valueMapper, HashMap::new, valueSetFunction);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -1419,7 +1320,7 @@ public final class ConstraintCollectors {
     public static <A, Key, Value> UniConstraintCollector<A, ?, Map<Key, Value>> toMap(
             Function<? super A, ? extends Key> keyMapper, Function<? super A, ? extends Value> valueMapper,
             BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapUniCollector<>(keyMapper, valueMapper, HashMap::new, mergeFunction);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -1473,7 +1374,7 @@ public final class ConstraintCollectors {
             UniConstraintCollector<A, ?, SortedMap<Key, ValueSet>> toSortedMap(
                     Function<? super A, ? extends Key> keyMapper,
                     Function<? super A, ? extends Value> valueMapper, IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapUniCollector<>(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -1497,7 +1398,7 @@ public final class ConstraintCollectors {
             toSortedMap(
                     Function<? super A, ? extends Key> keyMapper, Function<? super A, ? extends Value> valueMapper,
                     BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapUniCollector<>(keyMapper, valueMapper, TreeMap::new, mergeFunction);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     /**
@@ -1515,7 +1416,7 @@ public final class ConstraintCollectors {
     public static <A, B, Key, Value, ValueSet extends Set<Value>> BiConstraintCollector<A, B, ?, Map<Key, ValueSet>> toMap(
             BiFunction<? super A, ? super B, ? extends Key> keyMapper,
             BiFunction<? super A, ? super B, ? extends Value> valueMapper, IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapBiCollector<>(keyMapper, valueMapper, HashMap::new, valueSetFunction);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -1524,7 +1425,7 @@ public final class ConstraintCollectors {
     public static <A, B, Key, Value> BiConstraintCollector<A, B, ?, Map<Key, Value>> toMap(
             BiFunction<? super A, ? super B, ? extends Key> keyMapper,
             BiFunction<? super A, ? super B, ? extends Value> valueMapper, BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapBiCollector<>(keyMapper, valueMapper, HashMap::new, mergeFunction);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -1543,7 +1444,7 @@ public final class ConstraintCollectors {
             BiConstraintCollector<A, B, ?, SortedMap<Key, ValueSet>> toSortedMap(
                     BiFunction<? super A, ? super B, ? extends Key> keyMapper,
                     BiFunction<? super A, ? super B, ? extends Value> valueMapper, IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapBiCollector<>(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -1553,7 +1454,7 @@ public final class ConstraintCollectors {
             toSortedMap(
                     BiFunction<? super A, ? super B, ? extends Key> keyMapper,
                     BiFunction<? super A, ? super B, ? extends Value> valueMapper, BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapBiCollector<>(keyMapper, valueMapper, TreeMap::new, mergeFunction);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     /**
@@ -1572,7 +1473,7 @@ public final class ConstraintCollectors {
             toMap(TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
                     TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapTriCollector<>(keyMapper, valueMapper, HashMap::new, valueSetFunction);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -1582,7 +1483,7 @@ public final class ConstraintCollectors {
             TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
             TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
             BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapTriCollector<>(keyMapper, valueMapper, HashMap::new, mergeFunction);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -1603,7 +1504,7 @@ public final class ConstraintCollectors {
                     TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
                     TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapTriCollector<>(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -1614,7 +1515,7 @@ public final class ConstraintCollectors {
             toSortedMap(TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
                     TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
                     BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapTriCollector<>(keyMapper, valueMapper, TreeMap::new, mergeFunction);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     /**
@@ -1634,7 +1535,7 @@ public final class ConstraintCollectors {
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapQuadCollector<>(keyMapper, valueMapper, HashMap::new, valueSetFunction);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -1644,7 +1545,7 @@ public final class ConstraintCollectors {
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
             BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapQuadCollector<>(keyMapper, valueMapper, HashMap::new, mergeFunction);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -1665,7 +1566,7 @@ public final class ConstraintCollectors {
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new MultiMapQuadCollector<>(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -1676,7 +1577,7 @@ public final class ConstraintCollectors {
             toSortedMap(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
                     BinaryOperator<Value> mergeFunction) {
-        return new SimpleMapQuadCollector<>(keyMapper, valueMapper, TreeMap::new, mergeFunction);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     // ************************************************************************
@@ -1700,7 +1601,7 @@ public final class ConstraintCollectors {
      */
     public static <A, ResultContainer_, Result_> UniConstraintCollector<A, ResultContainer_, Result_> conditionally(
             Predicate<A> condition, UniConstraintCollector<A, ResultContainer_, Result_> delegate) {
-        return new ConditionalUniCollector<>(condition, delegate);
+        return InnerUniConstraintCollectors.conditionally(condition, delegate);
     }
 
     /**
@@ -1709,7 +1610,7 @@ public final class ConstraintCollectors {
     public static <A, B, ResultContainer_, Result_> BiConstraintCollector<A, B, ResultContainer_, Result_>
             conditionally(BiPredicate<A, B> condition,
                     BiConstraintCollector<A, B, ResultContainer_, Result_> delegate) {
-        return new ConditionalBiCollector<>(condition, delegate);
+        return InnerBiConstraintCollectors.conditionally(condition, delegate);
     }
 
     /**
@@ -1718,7 +1619,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, ResultContainer_, Result_> TriConstraintCollector<A, B, C, ResultContainer_, Result_>
             conditionally(TriPredicate<A, B, C> condition,
                     TriConstraintCollector<A, B, C, ResultContainer_, Result_> delegate) {
-        return new ConditionalTriCollector<>(condition, delegate);
+        return InnerTriConstraintCollectors.conditionally(condition, delegate);
     }
 
     /**
@@ -1727,7 +1628,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, ResultContainer_, Result_> QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_>
             conditionally(QuadPredicate<A, B, C, D> condition,
                     QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> delegate) {
-        return new ConditionalQuadCollector<>(condition, delegate);
+        return InnerQuadConstraintCollectors.conditionally(condition, delegate);
     }
 
     // ************************************************************************
@@ -1754,7 +1655,7 @@ public final class ConstraintCollectors {
                     UniConstraintCollector<A, SubResultContainer1_, SubResult1_> subCollector1,
                     UniConstraintCollector<A, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        return new UniComposeTwoCollector<>(subCollector1, subCollector2, composeFunction);
+        return InnerUniConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -1781,7 +1682,7 @@ public final class ConstraintCollectors {
                     UniConstraintCollector<A, SubResultContainer2_, SubResult2_> subCollector2,
                     UniConstraintCollector<A, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        return new UniComposeThreeCollector<>(subCollector1, subCollector2, subCollector3, composeFunction);
+        return InnerUniConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -1812,7 +1713,8 @@ public final class ConstraintCollectors {
                     UniConstraintCollector<A, SubResultContainer3_, SubResult3_> subCollector3,
                     UniConstraintCollector<A, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        return new UniComposeFourCollector<>(subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
+        return InnerUniConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
+                composeFunction);
     }
 
     /**
@@ -1823,7 +1725,7 @@ public final class ConstraintCollectors {
                     BiConstraintCollector<A, B, SubResultContainer1_, SubResult1_> subCollector1,
                     BiConstraintCollector<A, B, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        return new BiComposeTwoCollector<>(subCollector1, subCollector2, composeFunction);
+        return InnerBiConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -1835,7 +1737,7 @@ public final class ConstraintCollectors {
                     BiConstraintCollector<A, B, SubResultContainer2_, SubResult2_> subCollector2,
                     BiConstraintCollector<A, B, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        return new BiComposeThreeCollector<>(subCollector1, subCollector2, subCollector3, composeFunction);
+        return InnerBiConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -1849,7 +1751,7 @@ public final class ConstraintCollectors {
                     BiConstraintCollector<A, B, SubResultContainer3_, SubResult3_> subCollector3,
                     BiConstraintCollector<A, B, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        return new BiComposeFourCollector<>(subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
+        return InnerBiConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
     }
 
     /**
@@ -1860,7 +1762,7 @@ public final class ConstraintCollectors {
                     TriConstraintCollector<A, B, C, SubResultContainer1_, SubResult1_> subCollector1,
                     TriConstraintCollector<A, B, C, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        return new TriComposeTwoCollector<>(subCollector1, subCollector2, composeFunction);
+        return InnerTriConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -1872,7 +1774,7 @@ public final class ConstraintCollectors {
                     TriConstraintCollector<A, B, C, SubResultContainer2_, SubResult2_> subCollector2,
                     TriConstraintCollector<A, B, C, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        return new TriComposeThreeCollector<>(subCollector1, subCollector2, subCollector3, composeFunction);
+        return InnerTriConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -1886,7 +1788,8 @@ public final class ConstraintCollectors {
                     TriConstraintCollector<A, B, C, SubResultContainer3_, SubResult3_> subCollector3,
                     TriConstraintCollector<A, B, C, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        return new TriComposeFourCollector<>(subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
+        return InnerTriConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
+                composeFunction);
     }
 
     /**
@@ -1897,7 +1800,7 @@ public final class ConstraintCollectors {
                     QuadConstraintCollector<A, B, C, D, SubResultContainer1_, SubResult1_> subCollector1,
                     QuadConstraintCollector<A, B, C, D, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        return new QuadComposeTwoCollector<>(subCollector1, subCollector2, composeFunction);
+        return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -1909,7 +1812,7 @@ public final class ConstraintCollectors {
                     QuadConstraintCollector<A, B, C, D, SubResultContainer2_, SubResult2_> subCollector2,
                     QuadConstraintCollector<A, B, C, D, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        return new QuadComposeThreeCollector<>(subCollector1, subCollector2, subCollector3, composeFunction);
+        return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -1923,7 +1826,8 @@ public final class ConstraintCollectors {
                     QuadConstraintCollector<A, B, C, D, SubResultContainer3_, SubResult3_> subCollector3,
                     QuadConstraintCollector<A, B, C, D, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        return new QuadComposeFourCollector<>(subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
+        return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
+                composeFunction);
     }
 
     private ConstraintCollectors() {

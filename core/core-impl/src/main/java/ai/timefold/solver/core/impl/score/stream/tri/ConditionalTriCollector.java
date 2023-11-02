@@ -15,7 +15,7 @@ public final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
     private final TriConstraintCollector<A, B, C, ResultContainer_, Result_> delegate;
     private final QuadFunction<ResultContainer_, A, B, C, Runnable> innerAccumulator;
 
-    public ConditionalTriCollector(TriPredicate<A, B, C> predicate,
+    ConditionalTriCollector(TriPredicate<A, B, C> predicate,
             TriConstraintCollector<A, B, C, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;

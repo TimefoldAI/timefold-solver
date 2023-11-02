@@ -15,7 +15,7 @@ public final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result
     private final QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> delegate;
     private final PentaFunction<ResultContainer_, A, B, C, D, Runnable> innerAccumulator;
 
-    public ConditionalQuadCollector(QuadPredicate<A, B, C, D> predicate,
+    ConditionalQuadCollector(QuadPredicate<A, B, C, D> predicate,
             QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;
