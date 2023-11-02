@@ -7,8 +7,11 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.UndoableActionable;
 
-abstract class UndoableActionableUniCollector<A, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_> {
+abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
+        implements UniConstraintCollector<A, Calculator_, Output_>
+        permits MaxComparableUniCollector, MaxComparatorUniCollector, MaxPropertyUniCollector, MinComparableUniCollector,
+        MinComparatorUniCollector, MinPropertyUniCollector, ToCollectionUniCollector, ToListUniCollector,
+        ToMultiMapUniCollector, ToSetUniCollector, ToSimpleMapUniCollector, ToSortedSetComparatorUniCollector {
     private final Function<? super A, ? extends Input_> mapper;
 
     public UndoableActionableUniCollector(Function<? super A, ? extends Input_> mapper) {

@@ -8,8 +8,11 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.UndoableActionable;
 
-abstract class UndoableActionableQuadCollector<A, B, C, D, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_> {
+abstract sealed class UndoableActionableQuadCollector<A, B, C, D, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
+        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
+        permits MaxComparableQuadCollector, MaxComparatorQuadCollector, MaxPropertyQuadCollector, MinComparableQuadCollector,
+        MinComparatorQuadCollector, MinPropertyQuadCollector, ToCollectionQuadCollector, ToListQuadCollector,
+        ToMultiMapQuadCollector, ToSetQuadCollector, ToSimpleMapQuadCollector, ToSortedSetComparatorQuadCollector {
     private final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper;
 
     public UndoableActionableQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper) {

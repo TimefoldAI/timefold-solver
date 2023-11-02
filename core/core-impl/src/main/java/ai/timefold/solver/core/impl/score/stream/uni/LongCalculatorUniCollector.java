@@ -8,8 +8,8 @@ import java.util.function.ToLongFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCalculator;
 
-abstract class LongCalculatorUniCollector<A, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_> {
+abstract sealed class LongCalculatorUniCollector<A, Output_, Calculator_ extends LongCalculator<Output_>>
+        implements UniConstraintCollector<A, Calculator_, Output_> permits AverageLongUniCollector, SumLongUniCollector {
     private final ToLongFunction<? super A> mapper;
 
     public LongCalculatorUniCollector(ToLongFunction<? super A> mapper) {

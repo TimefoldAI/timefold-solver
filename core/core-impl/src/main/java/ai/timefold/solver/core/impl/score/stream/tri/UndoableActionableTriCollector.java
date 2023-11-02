@@ -8,8 +8,11 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.UndoableActionable;
 
-abstract class UndoableActionableTriCollector<A, B, C, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_> {
+abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
+        implements TriConstraintCollector<A, B, C, Calculator_, Output_>
+        permits MaxComparableTriCollector, MaxComparatorTriCollector, MaxPropertyTriCollector, MinComparableTriCollector,
+        MinComparatorTriCollector, MinPropertyTriCollector, ToCollectionTriCollector, ToListTriCollector,
+        ToMultiMapTriCollector, ToSetTriCollector, ToSimpleMapTriCollector, ToSortedSetComparatorTriCollector {
     private final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 
     public UndoableActionableTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {

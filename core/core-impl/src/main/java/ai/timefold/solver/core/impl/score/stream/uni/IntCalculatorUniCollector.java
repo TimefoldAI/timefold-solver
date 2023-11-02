@@ -8,8 +8,8 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCalculator;
 
-abstract class IntCalculatorUniCollector<A, Output_, Calculator_ extends IntCalculator<Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_> {
+abstract sealed class IntCalculatorUniCollector<A, Output_, Calculator_ extends IntCalculator<Output_>>
+        implements UniConstraintCollector<A, Calculator_, Output_> permits AverageIntUniCollector, SumIntUniCollector {
     private final ToIntFunction<? super A> mapper;
 
     public IntCalculatorUniCollector(ToIntFunction<? super A> mapper) {

@@ -8,8 +8,11 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.UndoableActionable;
 
-abstract class UndoableActionableBiCollector<A, B, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements BiConstraintCollector<A, B, Calculator_, Output_> {
+abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
+        implements BiConstraintCollector<A, B, Calculator_, Output_>
+        permits MaxComparableBiCollector, MaxComparatorBiCollector, MaxPropertyBiCollector, MinComparableBiCollector,
+        MinComparatorBiCollector, MinPropertyBiCollector, ToCollectionBiCollector, ToListBiCollector, ToMultiMapBiCollector,
+        ToSetBiCollector, ToSimpleMapBiCollector, ToSortedSetComparatorBiCollector {
     private final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
     public UndoableActionableBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {

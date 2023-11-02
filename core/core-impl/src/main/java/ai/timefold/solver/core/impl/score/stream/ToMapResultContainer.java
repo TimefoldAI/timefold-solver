@@ -2,7 +2,8 @@ package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.Map;
 
-public interface ToMapResultContainer<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>> {
+public sealed interface ToMapResultContainer<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>>
+        permits ToMultiMapResultContainer, ToSimpleMapResultContainer {
 
     void add(Key_ key, Value_ value);
 

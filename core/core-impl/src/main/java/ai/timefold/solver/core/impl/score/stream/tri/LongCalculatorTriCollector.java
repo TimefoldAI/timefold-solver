@@ -8,8 +8,8 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCalculator;
 
-abstract class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_> {
+abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ extends LongCalculator<Output_>>
+        implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageLongTriCollector, SumLongTriCollector {
     private final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
 
     public LongCalculatorTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {

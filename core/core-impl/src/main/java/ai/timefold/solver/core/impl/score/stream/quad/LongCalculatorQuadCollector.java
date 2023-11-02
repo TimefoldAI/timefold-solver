@@ -8,8 +8,9 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCalculator;
 
-abstract class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_> {
+abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends LongCalculator<Output_>>
+        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
+        permits AverageLongQuadCollector, SumLongQuadCollector {
     private final ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
 
     public LongCalculatorQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {

@@ -7,8 +7,10 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ObjectCalculator;
 
-abstract class ObjectCalculatorUniCollector<A, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_> {
+abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
+        implements UniConstraintCollector<A, Calculator_, Output_>
+        permits AverageReferenceUniCollector, CountDistinctIntUniCollector, CountDistinctLongUniCollector,
+        SumReferenceUniCollector {
     private final Function<? super A, ? extends Input_> mapper;
 
     public ObjectCalculatorUniCollector(Function<? super A, ? extends Input_> mapper) {

@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.ReferenceSumCalculator;
 
-public class SumReferenceUniCollector<A, Result_>
+public final class SumReferenceUniCollector<A, Result_>
         extends ObjectCalculatorUniCollector<A, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;

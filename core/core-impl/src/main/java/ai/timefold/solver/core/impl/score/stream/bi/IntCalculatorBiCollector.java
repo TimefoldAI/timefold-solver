@@ -8,8 +8,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCalculator;
 
-abstract class IntCalculatorBiCollector<A, B, Output_, Calculator_ extends IntCalculator<Output_>>
-        implements BiConstraintCollector<A, B, Calculator_, Output_> {
+abstract sealed class IntCalculatorBiCollector<A, B, Output_, Calculator_ extends IntCalculator<Output_>>
+        implements BiConstraintCollector<A, B, Calculator_, Output_> permits AverageIntBiCollector, SumIntBiCollector {
     private final ToIntBiFunction<? super A, ? super B> mapper;
 
     public IntCalculatorBiCollector(ToIntBiFunction<? super A, ? super B> mapper) {

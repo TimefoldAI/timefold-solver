@@ -8,8 +8,10 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ObjectCalculator;
 
-abstract class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_> {
+abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
+        implements TriConstraintCollector<A, B, C, Calculator_, Output_>
+        permits AverageReferenceTriCollector, CountDistinctIntTriCollector, CountDistinctLongTriCollector,
+        SumReferenceTriCollector {
     private final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 
     public ObjectCalculatorTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {

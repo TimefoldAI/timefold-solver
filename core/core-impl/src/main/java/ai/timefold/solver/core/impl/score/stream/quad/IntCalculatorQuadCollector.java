@@ -8,8 +8,9 @@ import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCalculator;
 
-abstract class IntCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends IntCalculator<Output_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_> {
+abstract sealed class IntCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends IntCalculator<Output_>>
+        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
+        permits AverageIntQuadCollector, SumIntQuadCollector {
     private final ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
 
     public IntCalculatorQuadCollector(ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
