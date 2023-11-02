@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.ListUndoableActionable;
 
-public final class ToListTriCollector<A, B, C, Mapped_>
+final class ToListTriCollector<A, B, C, Mapped_>
         extends UndoableActionableTriCollector<A, B, C, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
         super(mapper);

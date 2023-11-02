@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class MaxPropertyUniCollector<A, Result_, Property_ extends Comparable<? super Property_>>
+final class MaxPropertyUniCollector<A, Result_, Property_ extends Comparable<? super Property_>>
         extends UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
 

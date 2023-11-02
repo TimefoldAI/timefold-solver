@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.impl.score.stream.LongAverageCalculator;
 
-public final class AverageLongTriCollector<A, B, C> extends LongCalculatorTriCollector<A, B, C, Double, LongAverageCalculator> {
+final class AverageLongTriCollector<A, B, C> extends LongCalculatorTriCollector<A, B, C, Double, LongAverageCalculator> {
     AverageLongTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         super(mapper);
     }

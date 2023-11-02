@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.SortedSetUndoableActionable;
 
-public final class ToSortedSetComparatorTriCollector<A, B, C, Mapped_>
+final class ToSortedSetComparatorTriCollector<A, B, C, Mapped_>
         extends UndoableActionableTriCollector<A, B, C, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 

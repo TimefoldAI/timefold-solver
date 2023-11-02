@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.ReferenceSumCalculator;
 
-public final class SumReferenceTriCollector<A, B, C, Result_>
+final class SumReferenceTriCollector<A, B, C, Result_>
         extends ObjectCalculatorTriCollector<A, B, C, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;

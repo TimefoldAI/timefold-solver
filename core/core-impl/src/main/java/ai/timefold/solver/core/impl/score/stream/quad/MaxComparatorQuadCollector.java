@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class MaxComparatorQuadCollector<A, B, C, D, Result_>
+final class MaxComparatorQuadCollector<A, B, C, D, Result_>
         extends UndoableActionableQuadCollector<A, B, C, D, Result_, Result_, MinMaxUndoableActionable<Result_, Result_>> {
     private final Comparator<? super Result_> comparator;
 

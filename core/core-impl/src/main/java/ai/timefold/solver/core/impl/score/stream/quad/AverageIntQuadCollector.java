@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.impl.score.stream.IntAverageCalculator;
 
-public final class AverageIntQuadCollector<A, B, C, D>
+final class AverageIntQuadCollector<A, B, C, D>
         extends IntCalculatorQuadCollector<A, B, C, D, Double, IntAverageCalculator> {
     AverageIntQuadCollector(ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         super(mapper);

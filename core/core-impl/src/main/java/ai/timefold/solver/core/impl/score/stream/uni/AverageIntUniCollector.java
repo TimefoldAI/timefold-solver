@@ -5,7 +5,7 @@ import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.score.stream.IntAverageCalculator;
 
-public final class AverageIntUniCollector<A> extends IntCalculatorUniCollector<A, Double, IntAverageCalculator> {
+final class AverageIntUniCollector<A> extends IntCalculatorUniCollector<A, Double, IntAverageCalculator> {
     AverageIntUniCollector(ToIntFunction<? super A> mapper) {
         super(mapper);
     }

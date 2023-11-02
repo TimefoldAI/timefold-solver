@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.ListUndoableActionable;
 
-public final class ToListUniCollector<A, Mapped_>
+final class ToListUniCollector<A, Mapped_>
         extends UndoableActionableUniCollector<A, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);

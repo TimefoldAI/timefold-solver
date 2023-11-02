@@ -5,7 +5,7 @@ import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.impl.score.stream.LongAverageCalculator;
 
-public final class AverageLongBiCollector<A, B> extends LongCalculatorBiCollector<A, B, Double, LongAverageCalculator> {
+final class AverageLongBiCollector<A, B> extends LongCalculatorBiCollector<A, B, Double, LongAverageCalculator> {
     AverageLongBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
         super(mapper);
     }

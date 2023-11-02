@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class MaxComparatorTriCollector<A, B, C, Result_>
+final class MaxComparatorTriCollector<A, B, C, Result_>
         extends UndoableActionableTriCollector<A, B, C, Result_, Result_, MinMaxUndoableActionable<Result_, Result_>> {
     private final Comparator<? super Result_> comparator;
 

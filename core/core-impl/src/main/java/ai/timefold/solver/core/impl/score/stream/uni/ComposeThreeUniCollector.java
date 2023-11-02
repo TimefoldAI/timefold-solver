@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Triple;
 
-public final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
+final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
         implements UniConstraintCollector<A, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
     private final UniConstraintCollector<A, ResultHolder1_, Result1_> first;
     private final UniConstraintCollector<A, ResultHolder2_, Result2_> second;

@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.SortedSetUndoableActionable;
 
-public final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
+final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
         extends UndoableActionableBiCollector<A, B, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 

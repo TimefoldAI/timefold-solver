@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.IntDistinctCountCalculator;
 
-public final class CountDistinctIntQuadCollector<A, B, C, D, Mapped_>
+final class CountDistinctIntQuadCollector<A, B, C, D, Mapped_>
         extends ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Integer, IntDistinctCountCalculator<Mapped_>> {
     CountDistinctIntQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);

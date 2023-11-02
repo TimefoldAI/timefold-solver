@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.MapUndoableActionable;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_, Value_>>
+final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
         UndoableActionableBiCollector<A, B, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
     private final BiFunction<? super A, ? super B, ? extends Key_> keyFunction;

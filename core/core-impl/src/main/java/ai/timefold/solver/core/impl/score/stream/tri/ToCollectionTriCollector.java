@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.CustomCollectionUndoableActionable;
 
-public final class ToCollectionTriCollector<A, B, C, Mapped_, Result_ extends Collection<Mapped_>>
+final class ToCollectionTriCollector<A, B, C, Mapped_, Result_ extends Collection<Mapped_>>
         extends
         UndoableActionableTriCollector<A, B, C, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;

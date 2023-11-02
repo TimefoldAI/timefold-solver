@@ -43,7 +43,6 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bi.InnerBiConstraintCollectors;
 import ai.timefold.solver.core.impl.score.stream.quad.InnerQuadConstraintCollectors;
 import ai.timefold.solver.core.impl.score.stream.tri.InnerTriConstraintCollectors;
-import ai.timefold.solver.core.impl.score.stream.tri.SumLongTriCollector;
 import ai.timefold.solver.core.impl.score.stream.uni.InnerUniConstraintCollectors;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
@@ -337,7 +336,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> sumLong(
             ToLongTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
-        return SumLongTriCollector.sum(groupValueMapping);
+        return InnerTriConstraintCollectors.sum(groupValueMapping);
     }
 
     /**

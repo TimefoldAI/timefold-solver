@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
-public final class ConditionalUniCollector<A, ResultContainer_, Result_>
+final class ConditionalUniCollector<A, ResultContainer_, Result_>
         implements UniConstraintCollector<A, ResultContainer_, Result_> {
     private final Predicate<A> predicate;
     private final UniConstraintCollector<A, ResultContainer_, Result_> delegate;

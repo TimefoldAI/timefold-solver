@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.IntDistinctCountCalculator;
 
-public final class CountDistinctIntBiCollector<A, B, Mapped_>
+final class CountDistinctIntBiCollector<A, B, Mapped_>
         extends ObjectCalculatorBiCollector<A, B, Mapped_, Integer, IntDistinctCountCalculator<Mapped_>> {
     CountDistinctIntBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
         super(mapper);

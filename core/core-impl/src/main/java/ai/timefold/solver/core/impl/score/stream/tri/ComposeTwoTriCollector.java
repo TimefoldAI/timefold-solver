@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements TriConstraintCollector<A, B, C, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final TriConstraintCollector<A, B, C, ResultHolder1_, Result1_> first;
     private final TriConstraintCollector<A, B, C, ResultHolder2_, Result2_> second;

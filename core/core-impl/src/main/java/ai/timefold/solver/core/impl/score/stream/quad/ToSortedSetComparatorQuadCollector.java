@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.SortedSetUndoableActionable;
 
-public final class ToSortedSetComparatorQuadCollector<A, B, C, D, Mapped_>
+final class ToSortedSetComparatorQuadCollector<A, B, C, D, Mapped_>
         extends UndoableActionableQuadCollector<A, B, C, D, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 

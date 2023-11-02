@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.Triple;
 
-public final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
+final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
         implements BiConstraintCollector<A, B, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
     private final BiConstraintCollector<A, B, ResultHolder1_, Result1_> first;
     private final BiConstraintCollector<A, B, ResultHolder2_, Result2_> second;

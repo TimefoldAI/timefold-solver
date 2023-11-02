@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.ListUndoableActionable;
 
-public final class ToListQuadCollector<A, B, C, D, Mapped_>
+final class ToListQuadCollector<A, B, C, D, Mapped_>
         extends UndoableActionableQuadCollector<A, B, C, D, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);

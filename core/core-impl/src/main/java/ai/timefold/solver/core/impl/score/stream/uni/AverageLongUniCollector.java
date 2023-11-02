@@ -5,7 +5,7 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.impl.score.stream.LongAverageCalculator;
 
-public final class AverageLongUniCollector<A> extends LongCalculatorUniCollector<A, Double, LongAverageCalculator> {
+final class AverageLongUniCollector<A> extends LongCalculatorUniCollector<A, Double, LongAverageCalculator> {
     AverageLongUniCollector(ToLongFunction<? super A> mapper) {
         super(mapper);
     }

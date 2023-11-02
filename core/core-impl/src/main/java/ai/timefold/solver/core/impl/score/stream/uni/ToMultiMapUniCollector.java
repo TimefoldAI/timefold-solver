@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.MapUndoableActionable;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
+final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         extends
         UndoableActionableUniCollector<A, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Set_, Result_>> {
     private final Function<? super A, ? extends Key_> keyFunction;

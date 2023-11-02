@@ -5,7 +5,7 @@ import java.util.function.ToIntBiFunction;
 
 import ai.timefold.solver.core.impl.score.stream.IntAverageCalculator;
 
-public final class AverageIntBiCollector<A, B> extends IntCalculatorBiCollector<A, B, Double, IntAverageCalculator> {
+final class AverageIntBiCollector<A, B> extends IntCalculatorBiCollector<A, B, Double, IntAverageCalculator> {
     AverageIntBiCollector(ToIntBiFunction<? super A, ? super B> mapper) {
         super(mapper);
     }

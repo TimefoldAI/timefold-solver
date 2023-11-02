@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements UniConstraintCollector<A, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final UniConstraintCollector<A, ResultHolder1_, Result1_> first;
     private final UniConstraintCollector<A, ResultHolder2_, Result2_> second;

@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
-public final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result_>
+final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result_>
         implements QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> {
     private final QuadPredicate<A, B, C, D> predicate;
     private final QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> delegate;

@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.CustomCollectionUndoableActionable;
 
-public final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Collection<Mapped_>>
+final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Collection<Mapped_>>
         extends
         UndoableActionableQuadCollector<A, B, C, D, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;

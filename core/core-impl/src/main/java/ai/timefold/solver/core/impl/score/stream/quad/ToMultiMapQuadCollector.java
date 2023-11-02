@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.MapUndoableActionable;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
+final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         extends
         UndoableActionableQuadCollector<A, B, C, D, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Set_, Result_>> {
     private final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key_> keyFunction;

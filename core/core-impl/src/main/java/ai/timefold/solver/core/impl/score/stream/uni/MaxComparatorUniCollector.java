@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class MaxComparatorUniCollector<A, Result_>
+final class MaxComparatorUniCollector<A, Result_>
         extends UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable<Result_, Result_>> {
     private final Comparator<? super Result_> comparator;
 

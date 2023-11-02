@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
-public final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
+final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
         implements BiConstraintCollector<A, B, ResultContainer_, Result_> {
     private final BiPredicate<A, B> predicate;
     private final BiConstraintCollector<A, B, ResultContainer_, Result_> delegate;

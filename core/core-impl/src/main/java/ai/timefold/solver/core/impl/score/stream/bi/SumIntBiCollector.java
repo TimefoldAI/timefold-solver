@@ -5,7 +5,7 @@ import java.util.function.ToIntBiFunction;
 
 import ai.timefold.solver.core.impl.score.stream.IntSumCalculator;
 
-public final class SumIntBiCollector<A, B> extends IntCalculatorBiCollector<A, B, Integer, IntSumCalculator> {
+final class SumIntBiCollector<A, B> extends IntCalculatorBiCollector<A, B, Integer, IntSumCalculator> {
     SumIntBiCollector(ToIntBiFunction<? super A, ? super B> mapper) {
         super(mapper);
     }

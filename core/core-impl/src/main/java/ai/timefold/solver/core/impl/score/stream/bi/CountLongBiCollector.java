@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCounter;
 
-public final class CountLongBiCollector<A, B> implements BiConstraintCollector<A, B, LongCounter, Long> {
+final class CountLongBiCollector<A, B> implements BiConstraintCollector<A, B, LongCounter, Long> {
 
     CountLongBiCollector() {
     }

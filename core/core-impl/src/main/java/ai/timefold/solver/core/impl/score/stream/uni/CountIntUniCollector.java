@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCounter;
 
-public final class CountIntUniCollector<A> implements UniConstraintCollector<A, IntCounter, Integer> {
+final class CountIntUniCollector<A> implements UniConstraintCollector<A, IntCounter, Integer> {
     CountIntUniCollector() {
     }
 

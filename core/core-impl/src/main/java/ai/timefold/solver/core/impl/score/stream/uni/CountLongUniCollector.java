@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCounter;
 
-public final class CountLongUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
+final class CountLongUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
     CountLongUniCollector() {
     }
 

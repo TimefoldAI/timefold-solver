@@ -5,7 +5,7 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.impl.score.stream.LongSumCalculator;
 
-public final class SumLongUniCollector<A> extends LongCalculatorUniCollector<A, Long, LongSumCalculator> {
+final class SumLongUniCollector<A> extends LongCalculatorUniCollector<A, Long, LongSumCalculator> {
     SumLongUniCollector(ToLongFunction<? super A> mapper) {
         super(mapper);
     }

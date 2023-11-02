@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
-public final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
+final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
         implements TriConstraintCollector<A, B, C, ResultContainer_, Result_> {
     private final TriPredicate<A, B, C> predicate;
     private final TriConstraintCollector<A, B, C, ResultContainer_, Result_> delegate;

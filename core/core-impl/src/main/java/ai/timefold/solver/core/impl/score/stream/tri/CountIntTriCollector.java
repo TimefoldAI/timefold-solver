@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCounter;
 
-public final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, IntCounter, Integer> {
+final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, IntCounter, Integer> {
     CountIntTriCollector() {
     }
 

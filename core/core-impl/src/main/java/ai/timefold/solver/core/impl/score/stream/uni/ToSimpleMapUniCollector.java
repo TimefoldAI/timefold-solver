@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.MapUndoableActionable;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, Value_>>
+final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
         UndoableActionableUniCollector<A, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
     private final Function<? super A, ? extends Key_> keyFunction;

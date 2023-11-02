@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.ListUndoableActionable;
 
-public final class ToListBiCollector<A, B, Mapped_>
+final class ToListBiCollector<A, B, Mapped_>
         extends UndoableActionableBiCollector<A, B, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
         super(mapper);

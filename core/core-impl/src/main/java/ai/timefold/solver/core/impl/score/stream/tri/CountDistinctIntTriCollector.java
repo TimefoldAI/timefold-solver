@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.IntDistinctCountCalculator;
 
-public final class CountDistinctIntTriCollector<A, B, C, Mapped_>
+final class CountDistinctIntTriCollector<A, B, C, Mapped_>
         extends ObjectCalculatorTriCollector<A, B, C, Mapped_, Integer, IntDistinctCountCalculator<Mapped_>> {
     CountDistinctIntTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
         super(mapper);

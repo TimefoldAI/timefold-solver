@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCounter;
 
-public final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
+final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
     CountLongQuadCollector() {
     }
 
