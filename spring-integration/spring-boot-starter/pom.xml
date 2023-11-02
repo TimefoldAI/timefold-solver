@@ -39,6 +39,11 @@
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-jackson</artifactId>
     </dependency>
+    <!-- Required by Spring Boot reference guide. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
