@@ -5,14 +5,14 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.LongDistinctCountCalculator;
 
-public final class LongDistinctCountUniCollector<A, Result>
-        extends ObjectCalculatorUniCollector<A, Result, Long, LongDistinctCountCalculator<Result>> {
-    public LongDistinctCountUniCollector(Function<? super A, ? extends Result> mapper) {
+public final class LongDistinctCountUniCollector<A, Mapped_>
+        extends ObjectCalculatorUniCollector<A, Mapped_, Long, LongDistinctCountCalculator<Mapped_>> {
+    public LongDistinctCountUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    public Supplier<LongDistinctCountCalculator<Result>> supplier() {
+    public Supplier<LongDistinctCountCalculator<Mapped_>> supplier() {
         return LongDistinctCountCalculator::new;
     }
 }

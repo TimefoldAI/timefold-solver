@@ -8,18 +8,18 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.CustomCollectionUndoableActionable;
 
-public final class CustomCollectionBiCollector<A, B, Mapped, Result extends Collection<Mapped>>
-        extends UndoableActionableBiCollector<A, B, Mapped, Result, CustomCollectionUndoableActionable<Mapped, Result>> {
-    private final IntFunction<Result> collectionFunction;
+public final class CustomCollectionBiCollector<A, B, Mapped_, Result_ extends Collection<Mapped_>>
+        extends UndoableActionableBiCollector<A, B, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
+    private final IntFunction<Result_> collectionFunction;
 
-    public CustomCollectionBiCollector(BiFunction<? super A, ? super B, ? extends Mapped> mapper,
-            IntFunction<Result> collectionFunction) {
+    public CustomCollectionBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,
+            IntFunction<Result_> collectionFunction) {
         super(mapper);
         this.collectionFunction = collectionFunction;
     }
 
     @Override
-    public Supplier<CustomCollectionUndoableActionable<Mapped, Result>> supplier() {
+    public Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
         return () -> new CustomCollectionUndoableActionable<>(collectionFunction);
     }
 

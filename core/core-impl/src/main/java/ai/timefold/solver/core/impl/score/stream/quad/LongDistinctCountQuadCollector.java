@@ -5,14 +5,14 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.LongDistinctCountCalculator;
 
-public final class LongDistinctCountQuadCollector<A, B, C, D, Result>
-        extends ObjectCalculatorQuadCollector<A, B, C, D, Result, Long, LongDistinctCountCalculator<Result>> {
-    public LongDistinctCountQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result> mapper) {
+public final class LongDistinctCountQuadCollector<A, B, C, D, Mapped_>
+        extends ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Long, LongDistinctCountCalculator<Mapped_>> {
+    public LongDistinctCountQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    public Supplier<LongDistinctCountCalculator<Result>> supplier() {
+    public Supplier<LongDistinctCountCalculator<Mapped_>> supplier() {
         return LongDistinctCountCalculator::new;
     }
 }

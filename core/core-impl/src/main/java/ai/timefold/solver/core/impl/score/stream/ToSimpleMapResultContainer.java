@@ -7,26 +7,26 @@ import java.util.function.BinaryOperator;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-public final class ToSimpleMapResultContainer<Key, Value, Result_ extends Map<Key, Value>>
-        implements ToMapResultContainer<Key, Value, Value, Result_> {
+public final class ToSimpleMapResultContainer<Key_, Value_, Result_ extends Map<Key_, Value_>>
+        implements ToMapResultContainer<Key_, Value_, Value_, Result_> {
 
-    private final BinaryOperator<Value> mergeFunction;
+    private final BinaryOperator<Value_> mergeFunction;
     private final Result_ result;
-    private final Map<Key, ToMapPerKeyCounter<Value>> valueCounts = new HashMap<>(0);
+    private final Map<Key_, ToMapPerKeyCounter<Value_>> valueCounts = new HashMap<>(0);
 
-    public ToSimpleMapResultContainer(Supplier<Result_> resultSupplier, BinaryOperator<Value> mergeFunction) {
+    public ToSimpleMapResultContainer(Supplier<Result_> resultSupplier, BinaryOperator<Value_> mergeFunction) {
         this.mergeFunction = Objects.requireNonNull(mergeFunction);
         this.result = Objects.requireNonNull(resultSupplier).get();
     }
 
-    public ToSimpleMapResultContainer(IntFunction<Result_> resultSupplier, BinaryOperator<Value> mergeFunction) {
+    public ToSimpleMapResultContainer(IntFunction<Result_> resultSupplier, BinaryOperator<Value_> mergeFunction) {
         this.mergeFunction = Objects.requireNonNull(mergeFunction);
         this.result = Objects.requireNonNull(resultSupplier).apply(0);
     }
 
     @Override
-    public void add(Key key, Value value) {
-        ToMapPerKeyCounter<Value> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
+    public void add(Key_ key, Value_ value) {
+        ToMapPerKeyCounter<Value_> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
         long newCount = counter.add(value);
         if (newCount == 1L) {
             result.put(key, value);
@@ -36,8 +36,8 @@ public final class ToSimpleMapResultContainer<Key, Value, Result_ extends Map<Ke
     }
 
     @Override
-    public void remove(Key key, Value value) {
-        ToMapPerKeyCounter<Value> counter = valueCounts.get(key);
+    public void remove(Key_ key, Value_ value) {
+        ToMapPerKeyCounter<Value_> counter = valueCounts.get(key);
         long newCount = counter.remove(value);
         if (newCount == 0L) {
             result.remove(key);

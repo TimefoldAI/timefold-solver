@@ -10,14 +10,14 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
-public final class MinMaxUndoableActionable<Result, Property> implements UndoableActionable<Result, Result> {
+public final class MinMaxUndoableActionable<Result_, Property_> implements UndoableActionable<Result_, Result_> {
     private final boolean isMin;
-    private final NavigableMap<Property, Map<Result, MutableInt>> propertyToItemCountMap;
-    private final Function<? super Result, ? extends Property> propertyFunction;
+    private final NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap;
+    private final Function<? super Result_, ? extends Property_> propertyFunction;
 
     private MinMaxUndoableActionable(boolean isMin,
-            NavigableMap<Property, Map<Result, MutableInt>> propertyToItemCountMap,
-            Function<? super Result, ? extends Property> propertyFunction) {
+            NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap,
+            Function<? super Result_, ? extends Property_> propertyFunction) {
         this.isMin = isMin;
         this.propertyToItemCountMap = propertyToItemCountMap;
         this.propertyFunction = propertyFunction;
@@ -52,9 +52,9 @@ public final class MinMaxUndoableActionable<Result, Property> implements Undoabl
     }
 
     @Override
-    public Runnable insert(Result item) {
-        Property key = propertyFunction.apply(item);
-        Map<Result, MutableInt> itemCountMap = propertyToItemCountMap.computeIfAbsent(key, ignored -> new LinkedHashMap<>());
+    public Runnable insert(Result_ item) {
+        Property_ key = propertyFunction.apply(item);
+        Map<Result_, MutableInt> itemCountMap = propertyToItemCountMap.computeIfAbsent(key, ignored -> new LinkedHashMap<>());
         MutableInt count = itemCountMap.computeIfAbsent(item, ignored -> new MutableInt());
         count.increment();
 
@@ -69,7 +69,7 @@ public final class MinMaxUndoableActionable<Result, Property> implements Undoabl
     }
 
     @Override
-    public Result result() {
+    public Result_ result() {
         if (propertyToItemCountMap.isEmpty()) {
             return null;
         }

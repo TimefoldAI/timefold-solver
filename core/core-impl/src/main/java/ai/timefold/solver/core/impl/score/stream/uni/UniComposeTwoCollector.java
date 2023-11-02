@@ -8,11 +8,11 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class UniComposeTwoCollector<A, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result>
-        implements UniConstraintCollector<A, Pair<ResultHolder1_, ResultHolder2_>, Result> {
+public final class UniComposeTwoCollector<A, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+        implements UniConstraintCollector<A, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final UniConstraintCollector<A, ResultHolder1_, Result1_> first;
     private final UniConstraintCollector<A, ResultHolder2_, Result2_> second;
-    private final BiFunction<Result1_, Result2_, Result> composeFunction;
+    private final BiFunction<Result1_, Result2_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -25,7 +25,7 @@ public final class UniComposeTwoCollector<A, ResultHolder1_, ResultHolder2_, Res
 
     public UniComposeTwoCollector(UniConstraintCollector<A, ResultHolder1_, Result1_> first,
             UniConstraintCollector<A, ResultHolder2_, Result2_> second,
-            BiFunction<Result1_, Result2_, Result> composeFunction) {
+            BiFunction<Result1_, Result2_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.composeFunction = composeFunction;
@@ -59,7 +59,7 @@ public final class UniComposeTwoCollector<A, ResultHolder1_, ResultHolder2_, Res
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result> finisher() {
+    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getKey()),
                 secondFinisher.apply(resultHolder.getValue()));
     }

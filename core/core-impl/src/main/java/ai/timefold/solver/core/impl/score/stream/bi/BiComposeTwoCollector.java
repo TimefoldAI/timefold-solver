@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class BiComposeTwoCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result>
-        implements BiConstraintCollector<A, B, Pair<ResultHolder1_, ResultHolder2_>, Result> {
+public final class BiComposeTwoCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+        implements BiConstraintCollector<A, B, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final BiConstraintCollector<A, B, ResultHolder1_, Result1_> first;
     private final BiConstraintCollector<A, B, ResultHolder2_, Result2_> second;
-    private final BiFunction<Result1_, Result2_, Result> composeFunction;
+    private final BiFunction<Result1_, Result2_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -26,7 +26,7 @@ public final class BiComposeTwoCollector<A, B, ResultHolder1_, ResultHolder2_, R
 
     public BiComposeTwoCollector(BiConstraintCollector<A, B, ResultHolder1_, Result1_> first,
             BiConstraintCollector<A, B, ResultHolder2_, Result2_> second,
-            BiFunction<Result1_, Result2_, Result> composeFunction) {
+            BiFunction<Result1_, Result2_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.composeFunction = composeFunction;
@@ -60,7 +60,7 @@ public final class BiComposeTwoCollector<A, B, ResultHolder1_, ResultHolder2_, R
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result> finisher() {
+    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getKey()),
                 secondFinisher.apply(resultHolder.getValue()));
     }

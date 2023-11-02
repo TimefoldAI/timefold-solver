@@ -5,11 +5,11 @@ import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
-public final class ToMapPerKeyCounter<Value> {
+public final class ToMapPerKeyCounter<Value_> {
 
-    private final Map<Value, Long> counts = new LinkedHashMap<>(0);
+    private final Map<Value_, Long> counts = new LinkedHashMap<>(0);
 
-    public long add(Value value) {
+    public long add(Value_ value) {
         return counts.compute(value, (k, currentCount) -> {
             if (currentCount == null) {
                 return 1L;
@@ -19,7 +19,7 @@ public final class ToMapPerKeyCounter<Value> {
         });
     }
 
-    public long remove(Value value) {
+    public long remove(Value_ value) {
         Long newCount = counts.compute(value, (k, currentCount) -> {
             if (currentCount > 1L) {
                 return currentCount - 1;
@@ -30,7 +30,7 @@ public final class ToMapPerKeyCounter<Value> {
         return newCount == null ? 0L : newCount;
     }
 
-    public Value merge(BinaryOperator<Value> mergeFunction) {
+    public Value_ merge(BinaryOperator<Value_> mergeFunction) {
         // Rebuilding the value from the collection is not incremental.
         // The impact is negligible, assuming there are not too many values for the same key.
         return counts.entrySet()

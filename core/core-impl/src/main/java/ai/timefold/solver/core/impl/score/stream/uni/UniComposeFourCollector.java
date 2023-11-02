@@ -9,14 +9,14 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
-public final class UniComposeFourCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result>
+public final class UniComposeFourCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
-        UniConstraintCollector<A, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> {
+        UniConstraintCollector<A, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> {
     private final UniConstraintCollector<A, ResultHolder1_, Result1_> first;
     private final UniConstraintCollector<A, ResultHolder2_, Result2_> second;
     private final UniConstraintCollector<A, ResultHolder3_, Result3_> third;
     private final UniConstraintCollector<A, ResultHolder4_, Result4_> fourth;
-    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction;
+    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -37,7 +37,7 @@ public final class UniComposeFourCollector<A, ResultHolder1_, ResultHolder2_, Re
             UniConstraintCollector<A, ResultHolder2_, Result2_> second,
             UniConstraintCollector<A, ResultHolder3_, Result3_> third,
             UniConstraintCollector<A, ResultHolder4_, Result4_> fourth,
-            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction) {
+            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -84,7 +84,7 @@ public final class UniComposeFourCollector<A, ResultHolder1_, ResultHolder2_, Re
     }
 
     @Override
-    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> finisher() {
+    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()),

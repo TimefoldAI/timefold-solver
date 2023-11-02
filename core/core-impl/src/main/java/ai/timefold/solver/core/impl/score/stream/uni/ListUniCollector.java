@@ -6,14 +6,14 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.ListUndoableActionable;
 
-public final class ListUniCollector<A, Result>
-        extends UndoableActionableUniCollector<A, Result, List<Result>, ListUndoableActionable<Result>> {
-    public ListUniCollector(Function<? super A, ? extends Result> mapper) {
+public final class ListUniCollector<A, Mapped_>
+        extends UndoableActionableUniCollector<A, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
+    public ListUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    public Supplier<ListUndoableActionable<Result>> supplier() {
+    public Supplier<ListUndoableActionable<Mapped_>> supplier() {
         return ListUndoableActionable::new;
     }
 }

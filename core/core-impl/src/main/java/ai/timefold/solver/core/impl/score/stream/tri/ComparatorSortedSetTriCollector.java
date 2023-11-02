@@ -8,18 +8,18 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.SortedSetUndoableActionable;
 
-public final class ComparatorSortedSetTriCollector<A, B, C, Result>
-        extends UndoableActionableTriCollector<A, B, C, Result, SortedSet<Result>, SortedSetUndoableActionable<Result>> {
-    private final Comparator<? super Result> comparator;
+public final class ComparatorSortedSetTriCollector<A, B, C, Mapped_>
+        extends UndoableActionableTriCollector<A, B, C, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
+    private final Comparator<? super Mapped_> comparator;
 
-    public ComparatorSortedSetTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Result> mapper,
-            Comparator<? super Result> comparator) {
+    public ComparatorSortedSetTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,
+            Comparator<? super Mapped_> comparator) {
         super(mapper);
         this.comparator = comparator;
     }
 
     @Override
-    public Supplier<SortedSetUndoableActionable<Result>> supplier() {
+    public Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
         return () -> SortedSetUndoableActionable.orderBy(comparator);
     }
 

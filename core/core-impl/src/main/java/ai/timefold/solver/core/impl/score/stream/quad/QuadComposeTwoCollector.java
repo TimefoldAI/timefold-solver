@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class QuadComposeTwoCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result>
-        implements QuadConstraintCollector<A, B, C, D, Pair<ResultHolder1_, ResultHolder2_>, Result> {
+public final class QuadComposeTwoCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+        implements QuadConstraintCollector<A, B, C, D, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final QuadConstraintCollector<A, B, C, D, ResultHolder1_, Result1_> first;
     private final QuadConstraintCollector<A, B, C, D, ResultHolder2_, Result2_> second;
-    private final BiFunction<Result1_, Result2_, Result> composeFunction;
+    private final BiFunction<Result1_, Result2_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -26,7 +26,7 @@ public final class QuadComposeTwoCollector<A, B, C, D, ResultHolder1_, ResultHol
 
     public QuadComposeTwoCollector(QuadConstraintCollector<A, B, C, D, ResultHolder1_, Result1_> first,
             QuadConstraintCollector<A, B, C, D, ResultHolder2_, Result2_> second,
-            BiFunction<Result1_, Result2_, Result> composeFunction) {
+            BiFunction<Result1_, Result2_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.composeFunction = composeFunction;
@@ -60,7 +60,7 @@ public final class QuadComposeTwoCollector<A, B, C, D, ResultHolder1_, ResultHol
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result> finisher() {
+    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getKey()),
                 secondFinisher.apply(resultHolder.getValue()));
     }

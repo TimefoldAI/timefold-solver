@@ -7,18 +7,18 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class PropertyMinQuadCollector<A, B, C, D, Result, Property extends Comparable<? super Property>>
-        extends UndoableActionableQuadCollector<A, B, C, D, Result, Result, MinMaxUndoableActionable<Result, Property>> {
-    private final Function<? super Result, ? extends Property> propertyMapper;
+public final class PropertyMinQuadCollector<A, B, C, D, Result_, Property_ extends Comparable<? super Property_>>
+        extends UndoableActionableQuadCollector<A, B, C, D, Result_, Result_, MinMaxUndoableActionable<Result_, Property_>> {
+    private final Function<? super Result_, ? extends Property_> propertyMapper;
 
-    public PropertyMinQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result> mapper,
-            Function<? super Result, ? extends Property> propertyMapper) {
+    public PropertyMinQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result_> mapper,
+            Function<? super Result_, ? extends Property_> propertyMapper) {
         super(mapper);
         this.propertyMapper = propertyMapper;
     }
 
     @Override
-    public Supplier<MinMaxUndoableActionable<Result, Property>> supplier() {
+    public Supplier<MinMaxUndoableActionable<Result_, Property_>> supplier() {
         return () -> MinMaxUndoableActionable.minCalculator(propertyMapper);
     }
 

@@ -9,12 +9,12 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Triple;
 
-public final class UniComposeThreeCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result>
-        implements UniConstraintCollector<A, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result> {
+public final class UniComposeThreeCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
+        implements UniConstraintCollector<A, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
     private final UniConstraintCollector<A, ResultHolder1_, Result1_> first;
     private final UniConstraintCollector<A, ResultHolder2_, Result2_> second;
     private final UniConstraintCollector<A, ResultHolder3_, Result3_> third;
-    private final TriFunction<Result1_, Result2_, Result3_, Result> composeFunction;
+    private final TriFunction<Result1_, Result2_, Result3_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -31,7 +31,7 @@ public final class UniComposeThreeCollector<A, ResultHolder1_, ResultHolder2_, R
     public UniComposeThreeCollector(UniConstraintCollector<A, ResultHolder1_, Result1_> first,
             UniConstraintCollector<A, ResultHolder2_, Result2_> second,
             UniConstraintCollector<A, ResultHolder3_, Result3_> third,
-            TriFunction<Result1_, Result2_, Result3_, Result> composeFunction) {
+            TriFunction<Result1_, Result2_, Result3_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -71,7 +71,7 @@ public final class UniComposeThreeCollector<A, ResultHolder1_, ResultHolder2_, R
     }
 
     @Override
-    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result> finisher() {
+    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()));

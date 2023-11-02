@@ -7,14 +7,14 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.ReferenceSumCalculator;
 
-public class ReferenceSumUniCollector<A, Result>
-        extends ObjectCalculatorUniCollector<A, Result, Result, ReferenceSumCalculator<Result>> {
-    private final Result zero;
-    private final BinaryOperator<Result> adder;
-    private final BinaryOperator<Result> subtractor;
+public class ReferenceSumUniCollector<A, Result_>
+        extends ObjectCalculatorUniCollector<A, Result_, Result_, ReferenceSumCalculator<Result_>> {
+    private final Result_ zero;
+    private final BinaryOperator<Result_> adder;
+    private final BinaryOperator<Result_> subtractor;
 
-    public ReferenceSumUniCollector(Function<? super A, ? extends Result> mapper, Result zero, BinaryOperator<Result> adder,
-            BinaryOperator<Result> subtractor) {
+    public ReferenceSumUniCollector(Function<? super A, ? extends Result_> mapper, Result_ zero, BinaryOperator<Result_> adder,
+            BinaryOperator<Result_> subtractor) {
         super(mapper);
         this.zero = zero;
         this.adder = adder;
@@ -22,7 +22,7 @@ public class ReferenceSumUniCollector<A, Result>
     }
 
     @Override
-    public Supplier<ReferenceSumCalculator<Result>> supplier() {
+    public Supplier<ReferenceSumCalculator<Result_>> supplier() {
         return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
     }
 

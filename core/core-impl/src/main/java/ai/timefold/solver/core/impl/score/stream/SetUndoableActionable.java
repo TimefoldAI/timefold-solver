@@ -6,11 +6,11 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.util.MutableInt;
 
-public final class SetUndoableActionable<Result> implements UndoableActionable<Result, Set<Result>> {
-    final Map<Result, MutableInt> itemToCount = new LinkedHashMap<>();
+public final class SetUndoableActionable<Mapped_> implements UndoableActionable<Mapped_, Set<Mapped_>> {
+    final Map<Mapped_, MutableInt> itemToCount = new LinkedHashMap<>();
 
     @Override
-    public Runnable insert(Result result) {
+    public Runnable insert(Mapped_ result) {
         MutableInt count = itemToCount.computeIfAbsent(result, ignored -> new MutableInt());
         count.increment();
         return () -> {
@@ -21,7 +21,7 @@ public final class SetUndoableActionable<Result> implements UndoableActionable<R
     }
 
     @Override
-    public Set<Result> result() {
+    public Set<Mapped_> result() {
         return itemToCount.keySet();
     }
 }

@@ -9,12 +9,12 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.util.Triple;
 
-public final class QuadComposeThreeCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result>
-        implements QuadConstraintCollector<A, B, C, D, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result> {
+public final class QuadComposeThreeCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
+        implements QuadConstraintCollector<A, B, C, D, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
     private final QuadConstraintCollector<A, B, C, D, ResultHolder1_, Result1_> first;
     private final QuadConstraintCollector<A, B, C, D, ResultHolder2_, Result2_> second;
     private final QuadConstraintCollector<A, B, C, D, ResultHolder3_, Result3_> third;
-    private final TriFunction<Result1_, Result2_, Result3_, Result> composeFunction;
+    private final TriFunction<Result1_, Result2_, Result3_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -31,7 +31,7 @@ public final class QuadComposeThreeCollector<A, B, C, D, ResultHolder1_, ResultH
     public QuadComposeThreeCollector(QuadConstraintCollector<A, B, C, D, ResultHolder1_, Result1_> first,
             QuadConstraintCollector<A, B, C, D, ResultHolder2_, Result2_> second,
             QuadConstraintCollector<A, B, C, D, ResultHolder3_, Result3_> third,
-            TriFunction<Result1_, Result2_, Result3_, Result> composeFunction) {
+            TriFunction<Result1_, Result2_, Result3_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -71,7 +71,7 @@ public final class QuadComposeThreeCollector<A, B, C, D, ResultHolder1_, ResultH
     }
 
     @Override
-    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result> finisher() {
+    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()));

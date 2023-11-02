@@ -7,17 +7,17 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class ComparatorMaxUniCollector<A, Result>
-        extends UndoableActionableUniCollector<A, Result, Result, MinMaxUndoableActionable<Result, Result>> {
-    private final Comparator<? super Result> comparator;
+public final class ComparatorMaxUniCollector<A, Result_>
+        extends UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable<Result_, Result_>> {
+    private final Comparator<? super Result_> comparator;
 
-    public ComparatorMaxUniCollector(Function<? super A, ? extends Result> mapper, Comparator<? super Result> comparator) {
+    public ComparatorMaxUniCollector(Function<? super A, ? extends Result_> mapper, Comparator<? super Result_> comparator) {
         super(mapper);
         this.comparator = comparator;
     }
 
     @Override
-    public Supplier<MinMaxUndoableActionable<Result, Result>> supplier() {
+    public Supplier<MinMaxUndoableActionable<Result_, Result_>> supplier() {
         return () -> MinMaxUndoableActionable.maxCalculator(comparator);
     }
 

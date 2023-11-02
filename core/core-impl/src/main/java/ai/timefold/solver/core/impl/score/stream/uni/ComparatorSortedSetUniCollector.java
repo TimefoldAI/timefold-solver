@@ -8,18 +8,18 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.SortedSetUndoableActionable;
 
-public final class ComparatorSortedSetUniCollector<A, Result>
-        extends UndoableActionableUniCollector<A, Result, SortedSet<Result>, SortedSetUndoableActionable<Result>> {
-    private final Comparator<? super Result> comparator;
+public final class ComparatorSortedSetUniCollector<A, Mapped_>
+        extends UndoableActionableUniCollector<A, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
+    private final Comparator<? super Mapped_> comparator;
 
-    public ComparatorSortedSetUniCollector(Function<? super A, ? extends Result> mapper,
-            Comparator<? super Result> comparator) {
+    public ComparatorSortedSetUniCollector(Function<? super A, ? extends Mapped_> mapper,
+            Comparator<? super Mapped_> comparator) {
         super(mapper);
         this.comparator = comparator;
     }
 
     @Override
-    public Supplier<SortedSetUndoableActionable<Result>> supplier() {
+    public Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
         return () -> SortedSetUndoableActionable.orderBy(comparator);
     }
 

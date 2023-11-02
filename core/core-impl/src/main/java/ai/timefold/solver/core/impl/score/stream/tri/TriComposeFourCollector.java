@@ -8,14 +8,14 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
-public final class TriComposeFourCollector<A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result>
+public final class TriComposeFourCollector<A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
-        TriConstraintCollector<A, B, C, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> {
+        TriConstraintCollector<A, B, C, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> {
     private final TriConstraintCollector<A, B, C, ResultHolder1_, Result1_> first;
     private final TriConstraintCollector<A, B, C, ResultHolder2_, Result2_> second;
     private final TriConstraintCollector<A, B, C, ResultHolder3_, Result3_> third;
     private final TriConstraintCollector<A, B, C, ResultHolder4_, Result4_> fourth;
-    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction;
+    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -36,7 +36,7 @@ public final class TriComposeFourCollector<A, B, C, ResultHolder1_, ResultHolder
             TriConstraintCollector<A, B, C, ResultHolder2_, Result2_> second,
             TriConstraintCollector<A, B, C, ResultHolder3_, Result3_> third,
             TriConstraintCollector<A, B, C, ResultHolder4_, Result4_> fourth,
-            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction) {
+            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -84,7 +84,7 @@ public final class TriComposeFourCollector<A, B, C, ResultHolder1_, ResultHolder
     }
 
     @Override
-    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> finisher() {
+    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()),

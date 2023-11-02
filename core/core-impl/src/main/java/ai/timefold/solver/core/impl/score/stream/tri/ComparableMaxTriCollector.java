@@ -5,14 +5,14 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class ComparableMaxTriCollector<A, B, C, Result extends Comparable<? super Result>>
-        extends UndoableActionableTriCollector<A, B, C, Result, Result, MinMaxUndoableActionable<Result, Result>> {
-    public ComparableMaxTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Result> mapper) {
+public final class ComparableMaxTriCollector<A, B, C, Result_ extends Comparable<? super Result_>>
+        extends UndoableActionableTriCollector<A, B, C, Result_, Result_, MinMaxUndoableActionable<Result_, Result_>> {
+    public ComparableMaxTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper) {
         super(mapper);
     }
 
     @Override
-    public Supplier<MinMaxUndoableActionable<Result, Result>> supplier() {
+    public Supplier<MinMaxUndoableActionable<Result_, Result_>> supplier() {
         return MinMaxUndoableActionable::maxCalculator;
     }
 }

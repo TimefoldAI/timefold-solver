@@ -8,12 +8,12 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.Triple;
 
-public final class BiComposeThreeCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result>
-        implements BiConstraintCollector<A, B, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result> {
+public final class BiComposeThreeCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
+        implements BiConstraintCollector<A, B, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
     private final BiConstraintCollector<A, B, ResultHolder1_, Result1_> first;
     private final BiConstraintCollector<A, B, ResultHolder2_, Result2_> second;
     private final BiConstraintCollector<A, B, ResultHolder3_, Result3_> third;
-    private final TriFunction<Result1_, Result2_, Result3_, Result> composeFunction;
+    private final TriFunction<Result1_, Result2_, Result3_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -30,7 +30,7 @@ public final class BiComposeThreeCollector<A, B, ResultHolder1_, ResultHolder2_,
     public BiComposeThreeCollector(BiConstraintCollector<A, B, ResultHolder1_, Result1_> first,
             BiConstraintCollector<A, B, ResultHolder2_, Result2_> second,
             BiConstraintCollector<A, B, ResultHolder3_, Result3_> third,
-            TriFunction<Result1_, Result2_, Result3_, Result> composeFunction) {
+            TriFunction<Result1_, Result2_, Result3_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -70,7 +70,7 @@ public final class BiComposeThreeCollector<A, B, ResultHolder1_, ResultHolder2_,
     }
 
     @Override
-    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result> finisher() {
+    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()));

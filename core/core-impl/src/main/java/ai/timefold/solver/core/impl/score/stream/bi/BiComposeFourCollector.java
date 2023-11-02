@@ -9,14 +9,14 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
-public final class BiComposeFourCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result>
+public final class BiComposeFourCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
-        BiConstraintCollector<A, B, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> {
+        BiConstraintCollector<A, B, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> {
     private final BiConstraintCollector<A, B, ResultHolder1_, Result1_> first;
     private final BiConstraintCollector<A, B, ResultHolder2_, Result2_> second;
     private final BiConstraintCollector<A, B, ResultHolder3_, Result3_> third;
     private final BiConstraintCollector<A, B, ResultHolder4_, Result4_> fourth;
-    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction;
+    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -37,7 +37,7 @@ public final class BiComposeFourCollector<A, B, ResultHolder1_, ResultHolder2_, 
             BiConstraintCollector<A, B, ResultHolder2_, Result2_> second,
             BiConstraintCollector<A, B, ResultHolder3_, Result3_> third,
             BiConstraintCollector<A, B, ResultHolder4_, Result4_> fourth,
-            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction) {
+            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -85,7 +85,7 @@ public final class BiComposeFourCollector<A, B, ResultHolder1_, ResultHolder2_, 
     }
 
     @Override
-    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> finisher() {
+    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()),

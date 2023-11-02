@@ -9,14 +9,14 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
-public final class QuadComposeFourCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result>
+public final class QuadComposeFourCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
-        QuadConstraintCollector<A, B, C, D, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> {
+        QuadConstraintCollector<A, B, C, D, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> {
     private final QuadConstraintCollector<A, B, C, D, ResultHolder1_, Result1_> first;
     private final QuadConstraintCollector<A, B, C, D, ResultHolder2_, Result2_> second;
     private final QuadConstraintCollector<A, B, C, D, ResultHolder3_, Result3_> third;
     private final QuadConstraintCollector<A, B, C, D, ResultHolder4_, Result4_> fourth;
-    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction;
+    private final QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction;
 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
@@ -37,7 +37,7 @@ public final class QuadComposeFourCollector<A, B, C, D, ResultHolder1_, ResultHo
             QuadConstraintCollector<A, B, C, D, ResultHolder2_, Result2_> second,
             QuadConstraintCollector<A, B, C, D, ResultHolder3_, Result3_> third,
             QuadConstraintCollector<A, B, C, D, ResultHolder4_, Result4_> fourth,
-            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result> composeFunction) {
+            QuadFunction<Result1_, Result2_, Result3_, Result4_, Result_> composeFunction) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -85,7 +85,7 @@ public final class QuadComposeFourCollector<A, B, C, D, ResultHolder1_, ResultHo
     }
 
     @Override
-    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result> finisher() {
+    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
                 secondFinisher.apply(resultHolder.getB()),
                 thirdFinisher.apply(resultHolder.getC()),

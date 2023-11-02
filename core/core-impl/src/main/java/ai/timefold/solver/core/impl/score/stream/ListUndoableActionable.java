@@ -3,17 +3,17 @@ package ai.timefold.solver.core.impl.score.stream;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ListUndoableActionable<Result> implements UndoableActionable<Result, List<Result>> {
-    private final List<Result> resultList = new ArrayList<>();
+public final class ListUndoableActionable<Mapped_> implements UndoableActionable<Mapped_, List<Mapped_>> {
+    private final List<Mapped_> resultList = new ArrayList<>();
 
     @Override
-    public Runnable insert(Result result) {
+    public Runnable insert(Mapped_ result) {
         resultList.add(result);
         return () -> resultList.remove(result);
     }
 
     @Override
-    public List<Result> result() {
+    public List<Mapped_> result() {
         return resultList;
     }
 }

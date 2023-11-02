@@ -6,18 +6,18 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.MinMaxUndoableActionable;
 
-public final class PropertyMinUniCollector<A, Result, Property extends Comparable<? super Property>>
-        extends UndoableActionableUniCollector<A, Result, Result, MinMaxUndoableActionable<Result, Property>> {
-    private final Function<? super Result, ? extends Property> propertyMapper;
+public final class PropertyMinUniCollector<A, Result_, Property_ extends Comparable<? super Property_>>
+        extends UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable<Result_, Property_>> {
+    private final Function<? super Result_, ? extends Property_> propertyMapper;
 
-    public PropertyMinUniCollector(Function<? super A, ? extends Result> mapper,
-            Function<? super Result, ? extends Property> propertyMapper) {
+    public PropertyMinUniCollector(Function<? super A, ? extends Result_> mapper,
+            Function<? super Result_, ? extends Property_> propertyMapper) {
         super(mapper);
         this.propertyMapper = propertyMapper;
     }
 
     @Override
-    public Supplier<MinMaxUndoableActionable<Result, Property>> supplier() {
+    public Supplier<MinMaxUndoableActionable<Result_, Property_>> supplier() {
         return () -> MinMaxUndoableActionable.minCalculator(propertyMapper);
     }
 

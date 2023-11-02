@@ -8,10 +8,10 @@ import java.util.TreeMap;
 
 import ai.timefold.solver.core.impl.util.MutableInt;
 
-public final class SortedSetUndoableActionable<Result> implements UndoableActionable<Result, SortedSet<Result>> {
-    private final NavigableMap<Result, MutableInt> itemToCount;
+public final class SortedSetUndoableActionable<Mapped_> implements UndoableActionable<Mapped_, SortedSet<Mapped_>> {
+    private final NavigableMap<Mapped_, MutableInt> itemToCount;
 
-    private SortedSetUndoableActionable(NavigableMap<Result, MutableInt> itemToCount) {
+    private SortedSetUndoableActionable(NavigableMap<Mapped_, MutableInt> itemToCount) {
         this.itemToCount = itemToCount;
     }
 
@@ -20,7 +20,7 @@ public final class SortedSetUndoableActionable<Result> implements UndoableAction
     }
 
     @Override
-    public Runnable insert(Result result) {
+    public Runnable insert(Mapped_ result) {
         MutableInt count = itemToCount.computeIfAbsent(result, ignored -> new MutableInt());
         count.increment();
         return () -> {
@@ -31,7 +31,7 @@ public final class SortedSetUndoableActionable<Result> implements UndoableAction
     }
 
     @Override
-    public NavigableSet<Result> result() {
+    public NavigableSet<Mapped_> result() {
         return itemToCount.navigableKeySet();
     }
 }
