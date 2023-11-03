@@ -16,7 +16,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,7 +38,6 @@ public class TimefoldBenchmarkAutoConfiguration
     }
 
     @Bean
-    @ConditionalOnBean({ SolverConfig.class })
     public PlannerBenchmarkConfig plannerBenchmarkConfig(SolverConfig solverConfig) {
         if (solverConfig == null) {
             return null;
@@ -125,7 +123,6 @@ public class TimefoldBenchmarkAutoConfiguration
     }
 
     @Bean
-    @ConditionalOnBean({ PlannerBenchmarkConfig.class })
     public PlannerBenchmarkFactory plannerBenchmarkFactory(PlannerBenchmarkConfig benchmarkConfig) {
         if (benchmarkConfig == null) {
             return null;

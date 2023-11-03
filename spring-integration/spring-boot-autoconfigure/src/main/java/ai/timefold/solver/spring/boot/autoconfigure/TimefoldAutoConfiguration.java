@@ -42,7 +42,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -108,7 +107,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({ SolverConfig.class })
     public <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
         if (solverConfig == null) {
             return null;
@@ -118,7 +116,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({ SolverFactory.class })
     public <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory solverFactory) {
         // TODO supply ThreadFactory
         if (solverFactory == null) {
@@ -137,7 +134,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     @Deprecated(forRemoval = true)
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({ SolverFactory.class })
     public <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager(
             SolverFactory solverFactory) {
         if (solverFactory == null) {
@@ -148,7 +144,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({ SolverFactory.class })
     public <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager(
             SolverFactory solverFactory) {
         if (solverFactory == null) {
@@ -176,8 +171,8 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
         @SuppressWarnings("unchecked")
         <ConstraintProvider_ extends ConstraintProvider, SolutionClass_>
                 ConstraintVerifier<ConstraintProvider_, SolutionClass_> constraintVerifier() {
-            // @ConditionalOnBean({ SolverConfig.class }) does not work here,
-            // so we need to try to fetch SolverConfig via context to check for its presence/absence
+            // Using SolverConfig as an injected parameter here leads to an injection failure on an empty app,
+            // so we need to get the SolverConfig from context
             SolverConfig solverConfig;
             try {
                 solverConfig = context.getBean(SolverConfig.class);
