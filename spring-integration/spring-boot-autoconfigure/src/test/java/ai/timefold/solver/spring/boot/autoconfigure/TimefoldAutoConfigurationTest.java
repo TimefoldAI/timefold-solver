@@ -37,6 +37,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChain
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
@@ -58,6 +59,7 @@ import org.springframework.test.context.TestExecutionListeners;
 class TimefoldAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
+    private final ApplicationContextRunner emptyContextRunner;
     private final ApplicationContextRunner benchmarkContextRunner;
     private final ApplicationContextRunner noConstraintsContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
@@ -72,6 +74,9 @@ class TimefoldAutoConfigurationTest {
         contextRunner = new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
+        emptyContextRunner = new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withUserConfiguration(EmptySpringTestConfiguration.class);
         benchmarkContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBenchmarkAutoConfiguration.class))
@@ -104,6 +109,14 @@ class TimefoldAutoConfigurationTest {
                         new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)),
                 FilteredClassLoader.ClassPathResourceFilter.of(
                         new ClassPathResource(TimefoldProperties.DEFAULT_CONSTRAINTS_DRL_URL)));
+    }
+
+    @Test
+    void noSolutionOrEntityClasses() {
+        emptyContextRunner
+                .run(context -> {
+                    assertThat(context.getStartupFailure()).isNull();
+                });
     }
 
     @Test
