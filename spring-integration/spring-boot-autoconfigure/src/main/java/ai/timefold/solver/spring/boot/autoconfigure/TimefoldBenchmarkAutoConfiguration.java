@@ -39,6 +39,9 @@ public class TimefoldBenchmarkAutoConfiguration
 
     @Bean
     public PlannerBenchmarkConfig plannerBenchmarkConfig(SolverConfig solverConfig) {
+        if (solverConfig == null) {
+            return null;
+        }
         PlannerBenchmarkConfig benchmarkConfig;
         if (timefoldProperties.getBenchmark() != null
                 && timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml() != null) {
@@ -121,6 +124,9 @@ public class TimefoldBenchmarkAutoConfiguration
 
     @Bean
     public PlannerBenchmarkFactory plannerBenchmarkFactory(PlannerBenchmarkConfig benchmarkConfig) {
+        if (benchmarkConfig == null) {
+            return null;
+        }
         return PlannerBenchmarkFactory.create(benchmarkConfig);
     }
 

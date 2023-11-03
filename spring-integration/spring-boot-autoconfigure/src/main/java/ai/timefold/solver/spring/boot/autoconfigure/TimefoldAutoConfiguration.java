@@ -35,10 +35,12 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintVerification;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintVerification;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -81,41 +83,6 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
 
     @Bean
     @ConditionalOnMissingBean
-    public <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory solverFactory) {
-        // TODO supply ThreadFactory
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-        SolverManagerProperties solverManagerProperties = timefoldProperties.getSolverManager();
-        if (solverManagerProperties != null) {
-            if (solverManagerProperties.getParallelSolverCount() != null) {
-                solverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());
-            }
-        }
-        return SolverManager.create(solverFactory, solverManagerConfig);
-    }
-
-    @Deprecated(forRemoval = true)
-    @Bean
-    @ConditionalOnMissingBean
-    public <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager(
-            SolverFactory solverFactory) {
-        return ScoreManager.create(solverFactory);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager(
-            SolverFactory solverFactory) {
-        return SolutionManager.create(solverFactory);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
-        return SolverFactory.create(solverConfig);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
     public SolverConfig solverConfig() {
         String solverConfigXml = timefoldProperties.getSolverConfigXml();
         SolverConfig solverConfig;
@@ -132,26 +99,96 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
             solverConfig = new SolverConfig(beanClassLoader);
         }
 
-        applySolverProperties(solverConfig);
+        if (!applySolverProperties(solverConfig)) {
+            return null;
+        }
         return solverConfig;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
+        if (solverConfig == null) {
+            return null;
+        }
+        return SolverFactory.create(solverConfig);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory solverFactory) {
+        // TODO supply ThreadFactory
+        if (solverFactory == null) {
+            return null;
+        }
+        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        SolverManagerProperties solverManagerProperties = timefoldProperties.getSolverManager();
+        if (solverManagerProperties != null) {
+            if (solverManagerProperties.getParallelSolverCount() != null) {
+                solverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());
+            }
+        }
+        return SolverManager.create(solverFactory, solverManagerConfig);
+    }
+
+    @Deprecated(forRemoval = true)
+    @Bean
+    @ConditionalOnMissingBean
+    public <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager(
+            SolverFactory solverFactory) {
+        if (solverFactory == null) {
+            return null;
+        }
+        return ScoreManager.create(solverFactory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager(
+            SolverFactory solverFactory) {
+        if (solverFactory == null) {
+            return null;
+        }
+        return SolutionManager.create(solverFactory);
     }
 
     // @Bean wrapped by static class to avoid classloading issues if dependencies are absent
     @ConditionalOnClass({ ConstraintVerifier.class })
     @ConditionalOnMissingBean({ ConstraintVerifier.class })
-    static class TimefoldConstraintVerifierConfiguration {
+    @AutoConfigureAfter(TimefoldAutoConfiguration.class)
+    class TimefoldConstraintVerifierConfiguration {
+
+        private final ApplicationContext context;
+        private final TimefoldProperties timefoldProperties;
+
+        protected TimefoldConstraintVerifierConfiguration(ApplicationContext context,
+                TimefoldProperties timefoldProperties) {
+            this.context = context;
+            this.timefoldProperties = timefoldProperties;
+        }
 
         @Bean
         @SuppressWarnings("unchecked")
         <ConstraintProvider_ extends ConstraintProvider, SolutionClass_>
-                ConstraintVerifier<ConstraintProvider_, SolutionClass_> constraintVerifier(SolverConfig solverConfig) {
-            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
-            if (scoreDirectorFactoryConfig.getConstraintProviderClass() == null) {
+                ConstraintVerifier<ConstraintProvider_, SolutionClass_> constraintVerifier() {
+            // Using SolverConfig as an injected parameter here leads to an injection failure on an empty app,
+            // so we need to get the SolverConfig from context
+            SolverConfig solverConfig;
+            try {
+                solverConfig = context.getBean(SolverConfig.class);
+            } catch (BeansException exception) {
+                solverConfig = null;
+            }
+
+            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig =
+                    (solverConfig != null) ? solverConfig.getScoreDirectorFactoryConfig() : null;
+            if (scoreDirectorFactoryConfig == null || scoreDirectorFactoryConfig.getConstraintProviderClass() == null) {
                 // Return a mock ConstraintVerifier so not having ConstraintProvider doesn't crash tests
                 // (Cannot create custom condition that checks SolverConfig, since that
                 //  requires TimefoldAutoConfiguration to have a no-args constructor)
-                final String noConstraintProviderErrorMsg =
-                        "Cannot provision a ConstraintVerifier because there is no ConstraintProvider class.";
+                final String noConstraintProviderErrorMsg = (scoreDirectorFactoryConfig != null)
+                        ? "Cannot provision a ConstraintVerifier because there is no ConstraintProvider class."
+                        : "Cannot provision a ConstraintVerifier because there is no PlanningSolution or PlanningEntity classes.";
                 return new ConstraintVerifier<>() {
                     @Override
                     public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
@@ -176,8 +213,11 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
         }
     }
 
-    private void applySolverProperties(SolverConfig solverConfig) {
+    private boolean applySolverProperties(SolverConfig solverConfig) {
         IncludeAbstractClassesEntityScanner entityScanner = new IncludeAbstractClassesEntityScanner(this.context);
+        if (!hasSolutionOrEntityClasses(entityScanner)) {
+            return false;
+        }
         if (solverConfig.getSolutionClass() == null) {
             solverConfig.setSolutionClass(findSolutionClass(entityScanner));
         }
@@ -209,6 +249,17 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
                 solverConfig.setMoveThreadCount(solverProperties.getMoveThreadCount());
             }
             applyTerminationProperties(solverConfig, solverProperties.getTermination());
+        }
+        return true;
+    }
+
+    private boolean hasSolutionOrEntityClasses(IncludeAbstractClassesEntityScanner entityScanner) {
+        try {
+            return !entityScanner.scan(PlanningSolution.class).isEmpty() || !entityScanner.scan(PlanningSolution.class)
+                    .isEmpty();
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Scanning for @" + PlanningSolution.class.getSimpleName()
+                    + " and @" + PlanningEntity.class.getSimpleName() + " annotations failed.", e);
         }
     }
 
