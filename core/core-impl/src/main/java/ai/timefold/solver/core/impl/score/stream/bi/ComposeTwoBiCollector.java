@@ -71,7 +71,7 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeTwoBiCollector<?, ?, ?, ?, ?, ?, ?> that = (ComposeTwoBiCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeTwoBiCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(composeFunction, that.composeFunction);
     }

@@ -71,7 +71,7 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeTwoTriCollector<?, ?, ?, ?, ?, ?, ?, ?> that = (ComposeTwoTriCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeTwoTriCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(composeFunction, that.composeFunction);
     }

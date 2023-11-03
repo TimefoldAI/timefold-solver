@@ -38,8 +38,7 @@ abstract sealed class UndoableActionableQuadCollector<A, B, C, D, Input_, Output
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        UndoableActionableQuadCollector<?, ?, ?, ?, ?, ?, ?> that =
-                (UndoableActionableQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

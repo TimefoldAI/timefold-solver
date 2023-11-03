@@ -42,7 +42,7 @@ final class ToMultiMapTriCollector<A, B, C, Key_, Value_, Set_ extends Set<Value
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToMultiMapTriCollector<?, ?, ?, ?, ?, ?, ?> that = (ToMultiMapTriCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ToMultiMapTriCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

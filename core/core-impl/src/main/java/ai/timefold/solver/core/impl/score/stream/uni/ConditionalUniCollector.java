@@ -48,7 +48,7 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ConditionalUniCollector<?, ?, ?> that = (ConditionalUniCollector<?, ?, ?>) object;
+        var that = (ConditionalUniCollector<?, ?, ?>) object;
         return Objects.equals(predicate, that.predicate) && Objects.equals(delegate, that.delegate);
     }
 

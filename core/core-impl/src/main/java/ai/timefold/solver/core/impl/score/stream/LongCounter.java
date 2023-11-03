@@ -11,7 +11,7 @@ public final class LongCounter {
         count--;
     }
 
-    public Long result() {
+    public long result() {
         return count;
     }
 }

@@ -37,7 +37,7 @@ public final class ToMapPerKeyCounter<Value_> {
                 .stream()
                 .flatMap(e -> Stream.generate(e::getKey).limit(e.getValue()))
                 .reduce(mergeFunction)
-                .orElseThrow(() -> new IllegalStateException("Programming error: Should have had at least one value."));
+                .orElseThrow(() -> new IllegalStateException("Impossible state: Should have had at least one value."));
     }
 
     public boolean isEmpty() {

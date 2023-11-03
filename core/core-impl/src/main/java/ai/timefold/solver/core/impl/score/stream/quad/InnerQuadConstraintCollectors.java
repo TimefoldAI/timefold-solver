@@ -95,7 +95,7 @@ public class InnerQuadConstraintCollectors {
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> count() {
-        return new CountIntQuadCollector<>();
+        return CountIntQuadCollector.getInstance();
     }
 
     public static <A, B, C, D, Mapped_> QuadConstraintCollector<A, B, C, D, ?, Integer> countDistinct(
@@ -109,7 +109,7 @@ public class InnerQuadConstraintCollectors {
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countLong() {
-        return new CountLongQuadCollector<>();
+        return CountLongQuadCollector.getInstance();
     }
 
     public static <A, B, C, D, Result_ extends Comparable<? super Result_>> QuadConstraintCollector<A, B, C, D, ?, Result_> max(

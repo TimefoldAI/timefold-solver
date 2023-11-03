@@ -36,7 +36,7 @@ abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ e
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        LongCalculatorTriCollector<?, ?, ?, ?, ?> that = (LongCalculatorTriCollector<?, ?, ?, ?, ?>) object;
+        var that = (LongCalculatorTriCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

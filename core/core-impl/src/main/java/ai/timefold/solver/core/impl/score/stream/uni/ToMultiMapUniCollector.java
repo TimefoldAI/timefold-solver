@@ -42,7 +42,7 @@ final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Re
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToMultiMapUniCollector<?, ?, ?, ?, ?> that = (ToMultiMapUniCollector<?, ?, ?, ?, ?>) object;
+        var that = (ToMultiMapUniCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

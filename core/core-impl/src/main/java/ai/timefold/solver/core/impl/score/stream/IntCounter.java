@@ -11,7 +11,7 @@ public final class IntCounter {
         count--;
     }
 
-    public Integer result() {
+    public int result() {
         return count;
     }
 }

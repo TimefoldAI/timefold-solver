@@ -83,7 +83,7 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeThreeUniCollector<?, ?, ?, ?, ?, ?, ?, ?> that = (ComposeThreeUniCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeThreeUniCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
                 && Objects.equals(composeFunction,

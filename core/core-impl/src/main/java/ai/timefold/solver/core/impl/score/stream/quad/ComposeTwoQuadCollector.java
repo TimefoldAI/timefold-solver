@@ -71,7 +71,7 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeTwoQuadCollector<?, ?, ?, ?, ?, ?, ?, ?, ?> that = (ComposeTwoQuadCollector<?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeTwoQuadCollector<?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(composeFunction, that.composeFunction);
     }

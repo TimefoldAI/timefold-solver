@@ -36,7 +36,7 @@ abstract sealed class IntCalculatorBiCollector<A, B, Output_, Calculator_ extend
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        IntCalculatorBiCollector<?, ?, ?, ?> that = (IntCalculatorBiCollector<?, ?, ?, ?>) object;
+        var that = (IntCalculatorBiCollector<?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

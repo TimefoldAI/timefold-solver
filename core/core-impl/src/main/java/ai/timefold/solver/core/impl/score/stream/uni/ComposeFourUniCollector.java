@@ -97,8 +97,7 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeFourUniCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?> that =
-                (ComposeFourUniCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeFourUniCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
                 && Objects.equals(fourth,

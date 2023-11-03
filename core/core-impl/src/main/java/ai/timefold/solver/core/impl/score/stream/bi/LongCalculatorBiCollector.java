@@ -36,7 +36,7 @@ abstract sealed class LongCalculatorBiCollector<A, B, Output_, Calculator_ exten
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        LongCalculatorBiCollector<?, ?, ?, ?> that = (LongCalculatorBiCollector<?, ?, ?, ?>) object;
+        var that = (LongCalculatorBiCollector<?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

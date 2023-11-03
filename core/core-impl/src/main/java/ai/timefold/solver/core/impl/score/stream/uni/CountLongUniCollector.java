@@ -8,7 +8,14 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCounter;
 
 final class CountLongUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
-    CountLongUniCollector() {
+    private final static CountLongUniCollector<?> INSTANCE = new CountLongUniCollector<>();
+
+    private CountLongUniCollector() {
+    }
+
+    @SuppressWarnings("unchecked")
+    static <A> CountLongUniCollector<A> getInstance() {
+        return (CountLongUniCollector<A>) INSTANCE;
     }
 
     @Override
@@ -27,15 +34,5 @@ final class CountLongUniCollector<A> implements UniConstraintCollector<A, LongCo
     @Override
     public Function<LongCounter, Long> finisher() {
         return LongCounter::result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof CountLongUniCollector;
-    }
-
-    @Override
-    public int hashCode() {
-        return 0;
     }
 }

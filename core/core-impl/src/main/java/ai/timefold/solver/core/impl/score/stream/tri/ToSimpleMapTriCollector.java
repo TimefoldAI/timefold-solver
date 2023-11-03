@@ -41,7 +41,7 @@ final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<K
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToSimpleMapTriCollector<?, ?, ?, ?, ?, ?> that = (ToSimpleMapTriCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ToSimpleMapTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

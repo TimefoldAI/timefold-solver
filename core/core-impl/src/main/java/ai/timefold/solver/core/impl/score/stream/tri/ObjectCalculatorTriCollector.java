@@ -38,7 +38,7 @@ abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Cal
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?> that = (ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

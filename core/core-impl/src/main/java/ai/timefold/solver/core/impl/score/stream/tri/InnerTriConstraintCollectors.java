@@ -95,7 +95,7 @@ public class InnerTriConstraintCollectors {
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> count() {
-        return new CountIntTriCollector<>();
+        return CountIntTriCollector.getInstance();
     }
 
     public static <A, B, C, Mapped_> TriConstraintCollector<A, B, C, ?, Integer> countDistinct(
@@ -109,7 +109,7 @@ public class InnerTriConstraintCollectors {
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countLong() {
-        return new CountLongTriCollector<>();
+        return CountLongTriCollector.getInstance();
     }
 
     public static <A, B, C, Result_ extends Comparable<? super Result_>> TriConstraintCollector<A, B, C, ?, Result_> max(

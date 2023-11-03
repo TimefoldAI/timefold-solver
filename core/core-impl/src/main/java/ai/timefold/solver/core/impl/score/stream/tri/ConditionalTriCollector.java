@@ -49,7 +49,7 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ConditionalTriCollector<?, ?, ?, ?, ?> that = (ConditionalTriCollector<?, ?, ?, ?, ?>) object;
+        var that = (ConditionalTriCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(predicate, that.predicate) && Objects.equals(delegate, that.delegate);
     }
 

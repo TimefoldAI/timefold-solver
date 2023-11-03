@@ -41,7 +41,7 @@ final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_,
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToSimpleMapBiCollector<?, ?, ?, ?, ?> that = (ToSimpleMapBiCollector<?, ?, ?, ?, ?>) object;
+        var that = (ToSimpleMapBiCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

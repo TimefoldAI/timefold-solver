@@ -36,7 +36,7 @@ abstract sealed class LongCalculatorUniCollector<A, Output_, Calculator_ extends
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        LongCalculatorUniCollector<?, ?, ?> that = (LongCalculatorUniCollector<?, ?, ?>) object;
+        var that = (LongCalculatorUniCollector<?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

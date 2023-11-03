@@ -37,7 +37,7 @@ abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calcula
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        UndoableActionableUniCollector<?, ?, ?, ?> that = (UndoableActionableUniCollector<?, ?, ?, ?>) object;
+        var that = (UndoableActionableUniCollector<?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -8,7 +8,14 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCounter;
 
 final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, IntCounter, Integer> {
-    CountIntTriCollector() {
+    private final static CountIntTriCollector<?, ?, ?> INSTANCE = new CountIntTriCollector<>();
+
+    private CountIntTriCollector() {
+    }
+
+    @SuppressWarnings("unchecked")
+    static <A, B, C> CountIntTriCollector<A, B, C> getInstance() {
+        return (CountIntTriCollector<A, B, C>) INSTANCE;
     }
 
     @Override
@@ -27,15 +34,5 @@ final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B
     @Override
     public Function<IntCounter, Integer> finisher() {
         return IntCounter::result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof CountIntTriCollector;
-    }
-
-    @Override
-    public int hashCode() {
-        return 0;
     }
 }

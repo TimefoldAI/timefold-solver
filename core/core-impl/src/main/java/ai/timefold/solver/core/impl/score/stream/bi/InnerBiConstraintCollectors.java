@@ -92,7 +92,7 @@ public class InnerBiConstraintCollectors {
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> count() {
-        return new CountIntBiCollector<>();
+        return CountIntBiCollector.getInstance();
     }
 
     public static <A, B, Mapped_> BiConstraintCollector<A, B, ?, Integer> countDistinct(
@@ -106,7 +106,7 @@ public class InnerBiConstraintCollectors {
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, Long> countLong() {
-        return new CountLongBiCollector<>();
+        return CountLongBiCollector.getInstance();
     }
 
     public static <A, B, Result_ extends Comparable<? super Result_>> BiConstraintCollector<A, B, ?, Result_> max(

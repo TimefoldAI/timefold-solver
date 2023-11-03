@@ -8,7 +8,14 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.LongCounter;
 
 final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
-    CountLongQuadCollector() {
+    private final static CountLongQuadCollector<?, ?, ?, ?> INSTANCE = new CountLongQuadCollector<>();
+
+    private CountLongQuadCollector() {
+    }
+
+    @SuppressWarnings("unchecked")
+    static <A, B, C, D> CountLongQuadCollector<A, B, C, D> getInstance() {
+        return (CountLongQuadCollector<A, B, C, D>) INSTANCE;
     }
 
     @Override
@@ -27,15 +34,5 @@ final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollecto
     @Override
     public Function<LongCounter, Long> finisher() {
         return LongCounter::result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof CountLongQuadCollector;
-    }
-
-    @Override
-    public int hashCode() {
-        return 0;
     }
 }

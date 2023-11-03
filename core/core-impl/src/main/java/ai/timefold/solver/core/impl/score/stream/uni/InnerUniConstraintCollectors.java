@@ -85,7 +85,7 @@ public class InnerUniConstraintCollectors {
     }
 
     public static <A> UniConstraintCollector<A, ?, Integer> count() {
-        return new CountIntUniCollector<>();
+        return CountIntUniCollector.getInstance();
     }
 
     public static <A, Mapped_> UniConstraintCollector<A, ?, Integer> countDistinct(
@@ -99,7 +99,7 @@ public class InnerUniConstraintCollectors {
     }
 
     public static <A> UniConstraintCollector<A, ?, Long> countLong() {
-        return new CountLongUniCollector<>();
+        return CountLongUniCollector.getInstance();
     }
 
     public static <A, Result_ extends Comparable<? super Result_>> UniConstraintCollector<A, ?, Result_> max(

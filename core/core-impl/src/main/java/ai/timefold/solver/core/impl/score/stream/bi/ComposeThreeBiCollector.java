@@ -82,7 +82,7 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeThreeBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?> that = (ComposeThreeBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeThreeBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
                 && Objects.equals(composeFunction,

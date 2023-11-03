@@ -98,8 +98,7 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeFourBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> that =
-                (ComposeFourBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeFourBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
                 && Objects.equals(fourth,

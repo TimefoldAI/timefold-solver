@@ -38,7 +38,7 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, C
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        UndoableActionableTriCollector<?, ?, ?, ?, ?, ?> that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -38,7 +38,7 @@ abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, Calcu
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        UndoableActionableBiCollector<?, ?, ?, ?, ?> that = (UndoableActionableBiCollector<?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableBiCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

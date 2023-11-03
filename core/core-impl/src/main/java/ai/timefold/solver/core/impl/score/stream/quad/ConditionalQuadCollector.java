@@ -49,7 +49,7 @@ final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ConditionalQuadCollector<?, ?, ?, ?, ?, ?> that = (ConditionalQuadCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ConditionalQuadCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(predicate, that.predicate) && Objects.equals(delegate, that.delegate);
     }
 

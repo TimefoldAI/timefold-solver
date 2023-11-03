@@ -41,7 +41,7 @@ final class ToSimpleMapQuadCollector<A, B, C, D, Key_, Value_, Result_ extends M
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToSimpleMapQuadCollector<?, ?, ?, ?, ?, ?, ?> that = (ToSimpleMapQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ToSimpleMapQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

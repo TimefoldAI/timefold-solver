@@ -41,7 +41,7 @@ final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, V
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToSimpleMapUniCollector<?, ?, ?, ?> that = (ToSimpleMapUniCollector<?, ?, ?, ?>) object;
+        var that = (ToSimpleMapUniCollector<?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

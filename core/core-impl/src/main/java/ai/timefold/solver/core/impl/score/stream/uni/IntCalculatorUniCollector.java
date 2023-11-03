@@ -36,7 +36,7 @@ abstract sealed class IntCalculatorUniCollector<A, Output_, Calculator_ extends 
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        IntCalculatorUniCollector<?, ?, ?> that = (IntCalculatorUniCollector<?, ?, ?>) object;
+        var that = (IntCalculatorUniCollector<?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -42,8 +42,7 @@ final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<V
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToMultiMapQuadCollector<?, ?, ?, ?, ?, ?, ?, ?> that =
-                (ToMultiMapQuadCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ToMultiMapQuadCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

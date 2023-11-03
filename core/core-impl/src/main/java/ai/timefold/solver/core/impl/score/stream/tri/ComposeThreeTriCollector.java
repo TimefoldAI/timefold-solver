@@ -83,8 +83,7 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeThreeTriCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?> that =
-                (ComposeThreeTriCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeThreeTriCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
                 && Objects.equals(composeFunction,

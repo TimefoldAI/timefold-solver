@@ -49,7 +49,7 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ConditionalBiCollector<?, ?, ?, ?> that = (ConditionalBiCollector<?, ?, ?, ?>) object;
+        var that = (ConditionalBiCollector<?, ?, ?, ?>) object;
         return Objects.equals(predicate, that.predicate) && Objects.equals(delegate, that.delegate);
     }
 

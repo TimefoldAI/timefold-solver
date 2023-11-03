@@ -42,7 +42,7 @@ final class ToMultiMapBiCollector<A, B, Key_, Value_, Set_ extends Set<Value_>, 
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ToMultiMapBiCollector<?, ?, ?, ?, ?, ?> that = (ToMultiMapBiCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ToMultiMapBiCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(keyFunction, that.keyFunction) && Objects.equals(valueFunction,
                 that.valueFunction) && Objects.equals(mapSupplier, that.mapSupplier)
                 && Objects.equals(

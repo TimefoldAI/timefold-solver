@@ -38,7 +38,7 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?> that = (ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -37,7 +37,7 @@ abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculato
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        LongCalculatorQuadCollector<?, ?, ?, ?, ?, ?> that = (LongCalculatorQuadCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (LongCalculatorQuadCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

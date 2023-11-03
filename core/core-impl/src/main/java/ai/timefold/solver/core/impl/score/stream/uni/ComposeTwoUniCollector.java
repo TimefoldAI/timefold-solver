@@ -70,7 +70,7 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        ComposeTwoUniCollector<?, ?, ?, ?, ?, ?> that = (ComposeTwoUniCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ComposeTwoUniCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(composeFunction, that.composeFunction);
     }

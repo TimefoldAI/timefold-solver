@@ -36,7 +36,7 @@ abstract sealed class IntCalculatorTriCollector<A, B, C, Output_, Calculator_ ex
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        IntCalculatorTriCollector<?, ?, ?, ?, ?> that = (IntCalculatorTriCollector<?, ?, ?, ?, ?>) object;
+        var that = (IntCalculatorTriCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

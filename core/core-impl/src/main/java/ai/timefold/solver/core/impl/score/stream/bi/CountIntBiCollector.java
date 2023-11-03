@@ -8,7 +8,14 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.IntCounter;
 
 final class CountIntBiCollector<A, B> implements BiConstraintCollector<A, B, IntCounter, Integer> {
-    CountIntBiCollector() {
+    private final static CountIntBiCollector<?, ?> INSTANCE = new CountIntBiCollector<>();
+
+    private CountIntBiCollector() {
+    }
+
+    @SuppressWarnings("unchecked")
+    static <A, B> CountIntBiCollector<A, B> getInstance() {
+        return (CountIntBiCollector<A, B>) INSTANCE;
     }
 
     @Override
@@ -27,15 +34,5 @@ final class CountIntBiCollector<A, B> implements BiConstraintCollector<A, B, Int
     @Override
     public Function<IntCounter, Integer> finisher() {
         return IntCounter::result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof CountIntBiCollector;
-    }
-
-    @Override
-    public int hashCode() {
-        return 0;
     }
 }
