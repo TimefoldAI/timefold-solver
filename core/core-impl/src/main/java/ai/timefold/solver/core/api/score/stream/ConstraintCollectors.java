@@ -5,16 +5,12 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -25,15 +21,12 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.ToIntBiFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
-import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
@@ -47,23 +40,17 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
-import ai.timefold.solver.core.impl.util.MutableInt;
-import ai.timefold.solver.core.impl.util.MutableLong;
-import ai.timefold.solver.core.impl.util.MutableReference;
-import ai.timefold.solver.core.impl.util.Pair;
-import ai.timefold.solver.core.impl.util.Quadruple;
-import ai.timefold.solver.core.impl.util.Triple;
+import ai.timefold.solver.core.impl.score.stream.bi.InnerBiConstraintCollectors;
+import ai.timefold.solver.core.impl.score.stream.quad.InnerQuadConstraintCollectors;
+import ai.timefold.solver.core.impl.score.stream.tri.InnerTriConstraintCollectors;
+import ai.timefold.solver.core.impl.score.stream.uni.InnerUniConstraintCollectors;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * Creates an {@link UniConstraintCollector}, {@link BiConstraintCollector}, ... instance
  * for use in {@link UniConstraintStream#groupBy(Function, UniConstraintCollector)}, ...
  */
 public final class ConstraintCollectors {
-
-    private static final Runnable NOOP = () -> {
-        // No operation.
-    };
-
     // ************************************************************************
     // count
     // ************************************************************************
@@ -80,90 +67,56 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Integer> count() {
-        return new DefaultUniConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a) -> innerCount(resultContainer),
-                MutableInt::intValue);
-    }
-
-    private static Runnable innerCount(MutableInt resultContainer) {
-        resultContainer.increment();
-        return resultContainer::decrement;
+        return InnerUniConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A> UniConstraintCollector<A, ?, Long> countLong() {
-        return new DefaultUniConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a) -> innerCount(resultContainer),
-                MutableLong::longValue);
-    }
-
-    private static Runnable innerCount(MutableLong resultContainer) {
-        resultContainer.increment();
-        return resultContainer::decrement;
+        return InnerUniConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> countBi() {
-        return new DefaultBiConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a, b) -> innerCount(resultContainer),
-                MutableInt::intValue);
+        return InnerBiConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Long> countLongBi() {
-        return new DefaultBiConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a, b) -> innerCount(resultContainer),
-                MutableLong::longValue);
+        return InnerBiConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> countTri() {
-        return new DefaultTriConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a, b, c) -> innerCount(resultContainer),
-                MutableInt::intValue);
+        return InnerTriConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countLongTri() {
-        return new DefaultTriConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a, b, c) -> innerCount(resultContainer),
-                MutableLong::longValue);
+        return InnerTriConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> countQuad() {
-        return new DefaultQuadConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a, b, c, d) -> innerCount(resultContainer),
-                MutableInt::intValue);
+        return InnerQuadConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countLongQuad() {
-        return new DefaultQuadConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a, b, c, d) -> innerCount(resultContainer),
-                MutableLong::longValue);
+        return InnerQuadConstraintCollectors.countLong();
     }
 
     // ************************************************************************
@@ -174,7 +127,7 @@ public final class ConstraintCollectors {
      * As defined by {@link #countDistinct(Function)}, with {@link Function#identity()} as the argument.
      */
     public static <A> UniConstraintCollector<A, ?, Integer> countDistinct() {
-        return countDistinct(Function.identity());
+        return countDistinct(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -190,26 +143,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Integer> countDistinct(Function<A, ?> groupValueMapping) {
-        return new DefaultUniConstraintCollector<>(
-                (Supplier<Map<Object, MutableInt>>) HashMap::new,
-                (resultContainer, a) -> {
-                    Object value = groupValueMapping.apply(a);
-                    return innerCountDistinct(resultContainer, value);
-                },
-                Map::size);
+        return InnerUniConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
     public static <A> UniConstraintCollector<A, ?, Long> countDistinctLong(Function<A, ?> groupValueMapping) {
-        return new DefaultUniConstraintCollector<>(
-                (Supplier<Map<Object, MutableLong>>) HashMap::new,
-                (resultContainer, a) -> {
-                    Object value = groupValueMapping.apply(a);
-                    return innerCountDistinctLong(resultContainer, value);
-                },
-                resultContainer -> (long) resultContainer.size());
+        return InnerUniConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
@@ -217,13 +158,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> countDistinct(
             BiFunction<A, B, ?> groupValueMapping) {
-        return new DefaultBiConstraintCollector<>(
-                (Supplier<Map<Object, MutableInt>>) HashMap::new,
-                (resultContainer, a, b) -> {
-                    Object value = groupValueMapping.apply(a, b);
-                    return innerCountDistinct(resultContainer, value);
-                },
-                Map::size);
+        return InnerBiConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
@@ -231,13 +166,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Long> countDistinctLong(
             BiFunction<A, B, ?> groupValueMapping) {
-        return new DefaultBiConstraintCollector<>(
-                (Supplier<Map<Object, MutableLong>>) HashMap::new,
-                (resultContainer, a, b) -> {
-                    Object value = groupValueMapping.apply(a, b);
-                    return innerCountDistinctLong(resultContainer, value);
-                },
-                resultContainer -> (long) resultContainer.size());
+        return InnerBiConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
@@ -245,13 +174,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> countDistinct(
             TriFunction<A, B, C, ?> groupValueMapping) {
-        return new DefaultTriConstraintCollector<>(
-                (Supplier<Map<Object, MutableInt>>) HashMap::new,
-                (resultContainer, a, b, c) -> {
-                    Object value = groupValueMapping.apply(a, b, c);
-                    return innerCountDistinct(resultContainer, value);
-                },
-                Map::size);
+        return InnerTriConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
@@ -259,13 +182,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countDistinctLong(
             TriFunction<A, B, C, ?> groupValueMapping) {
-        return new DefaultTriConstraintCollector<>(
-                (Supplier<Map<Object, MutableLong>>) HashMap::new,
-                (resultContainer, a, b, c) -> {
-                    Object value = groupValueMapping.apply(a, b, c);
-                    return innerCountDistinctLong(resultContainer, value);
-                },
-                resultContainer -> (long) resultContainer.size());
+        return InnerTriConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
@@ -273,13 +190,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> countDistinct(
             QuadFunction<A, B, C, D, ?> groupValueMapping) {
-        return new DefaultQuadConstraintCollector<>(
-                (Supplier<Map<Object, MutableInt>>) HashMap::new,
-                (resultContainer, a, b, c, d) -> {
-                    Object value = groupValueMapping.apply(a, b, c, d);
-                    return innerCountDistinct(resultContainer, value);
-                },
-                Map::size);
+        return InnerQuadConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
@@ -287,62 +198,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countDistinctLong(
             QuadFunction<A, B, C, D, ?> groupValueMapping) {
-        return new DefaultQuadConstraintCollector<>(
-                (Supplier<Map<Object, MutableLong>>) HashMap::new,
-                (resultContainer, a, b, c, d) -> {
-                    Object value = groupValueMapping.apply(a, b, c, d);
-                    return innerCountDistinctLong(resultContainer, value);
-                },
-                resultContainer -> (long) resultContainer.size());
-    }
-
-    /**
-     * Increases a running count of how many times a given value is present.
-     *
-     * @param resultContainer map in which the count is maintained;
-     *        the array is there to avoid boxing costs that would have otherwise been incurred
-     *        during arithmetics if we used {@link Long} instead of the array.
-     *        The cost of array access has been benchmarked to be less than the alternative.
-     * @param value the value which is being counted
-     * @param <Value_> generic type of the value being counted
-     * @return never null, code to run to undo the operation
-     */
-    private static <Value_> Runnable innerCountDistinct(Map<Value_, MutableInt> resultContainer, Value_ value) {
-        MutableInt valueCountContainer = resultContainer.computeIfAbsent(value, k -> new MutableInt());
-        valueCountContainer.increment();
-        return () -> {
-            MutableInt valueCountContainer2 = resultContainer.get(value);
-            if (valueCountContainer2 == null) {
-                throw new IllegalStateException("Impossible state: the value (" + value +
-                        ") is removed more times than it was added.");
-            }
-            int valueCount = valueCountContainer2.intValue();
-            if (valueCount == 1) {
-                resultContainer.remove(value);
-            } else {
-                valueCountContainer2.setValue(valueCount - 1);
-            }
-        };
-    }
-
-    /**
-     * As defined by {@link #innerCountDistinct(Map, Object)}.
-     */
-    private static <Value_> Runnable innerCountDistinctLong(Map<Value_, MutableLong> resultContainer, Value_ value) {
-        MutableLong valueCountContainer = resultContainer.computeIfAbsent(value, k -> new MutableLong());
-        valueCountContainer.increment();
-        return () -> {
-            long valueCount = valueCountContainer.longValue();
-            if (valueCount < 1L) {
-                throw new IllegalStateException("Impossible state: the value (" + value +
-                        ") is removed more times than it was added.");
-            }
-            if (valueCount == 1L) {
-                resultContainer.remove(value);
-            } else {
-                valueCountContainer.setValue(valueCount - 1L);
-            }
-        };
+        return InnerQuadConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     // ************************************************************************
@@ -361,36 +217,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Integer> sum(ToIntFunction<? super A> groupValueMapping) {
-        return new DefaultUniConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a) -> {
-                    int value = groupValueMapping.applyAsInt(a);
-                    return innerSum(resultContainer, value);
-                },
-                MutableInt::intValue);
-    }
-
-    private static Runnable innerSum(MutableInt resultContainer, int value) {
-        resultContainer.add(value);
-        return () -> resultContainer.subtract(value);
+        return InnerUniConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
     public static <A> UniConstraintCollector<A, ?, Long> sumLong(ToLongFunction<? super A> groupValueMapping) {
-        return new DefaultUniConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a) -> {
-                    long value = groupValueMapping.applyAsLong(a);
-                    return innerSum(resultContainer, value);
-                },
-                MutableLong::longValue);
-    }
-
-    private static Runnable innerSum(MutableLong resultContainer, long value) {
-        resultContainer.add(value);
-        return () -> resultContainer.subtract(value);
+        return InnerUniConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -398,19 +232,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Result> UniConstraintCollector<A, ?, Result> sum(Function<? super A, Result> groupValueMapping,
             Result zero, BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        return new DefaultUniConstraintCollector<>(
-                () -> new MutableReference<>(zero),
-                (resultContainer, a) -> {
-                    Result value = groupValueMapping.apply(a);
-                    return innerSum(resultContainer, value, adder, subtractor);
-                },
-                MutableReference::getValue);
-    }
-
-    private static <Result> Runnable innerSum(MutableReference<Result> resultContainer, Result value,
-            BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        resultContainer.setValue(adder.apply(resultContainer.getValue(), value));
-        return () -> resultContainer.setValue(subtractor.apply(resultContainer.getValue(), value));
+        return InnerUniConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -449,13 +271,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Integer> sum(
             ToIntBiFunction<? super A, ? super B> groupValueMapping) {
-        return new DefaultBiConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a, b) -> {
-                    int value = groupValueMapping.applyAsInt(a, b);
-                    return innerSum(resultContainer, value);
-                },
-                MutableInt::intValue);
+        return InnerBiConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -463,13 +279,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Long> sumLong(
             ToLongBiFunction<? super A, ? super B> groupValueMapping) {
-        return new DefaultBiConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a, b) -> {
-                    long value = groupValueMapping.applyAsLong(a, b);
-                    return innerSum(resultContainer, value);
-                },
-                MutableLong::longValue);
+        return InnerBiConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -478,13 +288,7 @@ public final class ConstraintCollectors {
     public static <A, B, Result> BiConstraintCollector<A, B, ?, Result> sum(
             BiFunction<? super A, ? super B, Result> groupValueMapping, Result zero, BinaryOperator<Result> adder,
             BinaryOperator<Result> subtractor) {
-        return new DefaultBiConstraintCollector<>(
-                () -> new MutableReference<>(zero),
-                (resultContainer, a, b) -> {
-                    Result value = groupValueMapping.apply(a, b);
-                    return innerSum(resultContainer, value, adder, subtractor);
-                },
-                MutableReference::getValue);
+        return InnerBiConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -524,13 +328,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> sum(
             ToIntTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
-        return new DefaultTriConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a, b, c) -> {
-                    int value = groupValueMapping.applyAsInt(a, b, c);
-                    return innerSum(resultContainer, value);
-                },
-                MutableInt::intValue);
+        return InnerTriConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -538,13 +336,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> sumLong(
             ToLongTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
-        return new DefaultTriConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a, b, c) -> {
-                    long value = groupValueMapping.applyAsLong(a, b, c);
-                    return innerSum(resultContainer, value);
-                },
-                MutableLong::longValue);
+        return InnerTriConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -553,13 +345,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, Result> TriConstraintCollector<A, B, C, ?, Result> sum(
             TriFunction<? super A, ? super B, ? super C, Result> groupValueMapping, Result zero,
             BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        return new DefaultTriConstraintCollector<>(
-                () -> new MutableReference<>(zero),
-                (resultContainer, a, b, c) -> {
-                    Result value = groupValueMapping.apply(a, b, c);
-                    return innerSum(resultContainer, value, adder, subtractor);
-                },
-                MutableReference::getValue);
+        return InnerTriConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -599,13 +385,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> sum(
             ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
-        return new DefaultQuadConstraintCollector<>(
-                MutableInt::new,
-                (resultContainer, a, b, c, d) -> {
-                    int value = groupValueMapping.applyAsInt(a, b, c, d);
-                    return innerSum(resultContainer, value);
-                },
-                MutableInt::intValue);
+        return InnerQuadConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -613,13 +393,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> sumLong(
             ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
-        return new DefaultQuadConstraintCollector<>(
-                MutableLong::new,
-                (resultContainer, a, b, c, d) -> {
-                    long value = groupValueMapping.applyAsLong(a, b, c, d);
-                    return innerSum(resultContainer, value);
-                },
-                MutableLong::longValue);
+        return InnerQuadConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
@@ -628,13 +402,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Result> QuadConstraintCollector<A, B, C, D, ?, Result> sum(
             QuadFunction<? super A, ? super B, ? super C, ? super D, Result> groupValueMapping, Result zero,
             BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
-        return new DefaultQuadConstraintCollector<>(
-                () -> new MutableReference<>(zero),
-                (resultContainer, a, b, c, d) -> {
-                    Result value = groupValueMapping.apply(a, b, c, d);
-                    return innerSum(resultContainer, value, adder, subtractor);
-                },
-                MutableReference::getValue);
+        return InnerQuadConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
 
     /**
@@ -694,7 +462,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> min() {
-        return minOrMax(a -> a, Comparator.naturalOrder(), true);
+        return InnerUniConstraintCollectors.min(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -718,7 +486,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> min(
             Function<A, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+        return InnerUniConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -746,82 +514,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped> min(
             Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, true);
-    }
-
-    private static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped>
-            minOrMax(Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction, boolean min) {
-        return new DefaultUniConstraintCollector<>(
-                getMinOrMaxSupplier(min),
-                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a) -> {
-                    Mapped value = groupValueMapping.apply(a);
-                    return innerMinOrMax(resultContainer, value, comparableFunction);
-                },
-                getMinOrMaxFinisherForComparable(min));
-    }
-
-    private static <Value_, Comparable_ extends Comparable<? super Comparable_>>
-            Supplier<NavigableMap<Comparable_, Map<Value_, MutableLong>>> getMinOrMaxSupplier(boolean returnMinimum) {
-        if (returnMinimum) {
-            return () -> {
-                Comparator<Comparable_> comparator = Comparator.nullsLast(Comparator.naturalOrder());
-                return new TreeMap<>(comparator);
-            };
-        } else {
-            return () -> {
-                Comparator<Comparable_> comparator = Comparator.nullsFirst(Comparator.naturalOrder());
-                return new TreeMap<>(comparator);
-            };
-        }
-    }
-
-    private static <Value_, Comparable_ extends Comparable<? super Comparable_>> Runnable innerMinOrMax(
-            SortedMap<Comparable_, Map<Value_, MutableLong>> resultContainer, Value_ value,
-            Function<Value_, Comparable_> comparableFunction) {
-        Comparable_ comparable = comparableFunction.apply(value);
-        Map<Value_, MutableLong> valueCountMap = resultContainer.computeIfAbsent(comparable, k -> new LinkedHashMap<>());
-        MutableLong valueCounter = valueCountMap.computeIfAbsent(value, k -> new MutableLong(0L));
-        valueCounter.increment();
-        return () -> {
-            long valueCount = valueCounter.longValue();
-            if (valueCount < 1L) {
-                throw new IllegalStateException("Impossible state: the value (" + value +
-                        ") is removed more times than it was added.");
-            }
-            if (valueCounter.longValue() == 1L) {
-                if (valueCountMap.remove(value) == null) {
-                    throw new IllegalStateException("Impossible state: the value (" + value +
-                            ") is removed more times than it was added.");
-                }
-                if (valueCountMap.isEmpty()) {
-                    resultContainer.remove(comparable);
-                }
-            } else {
-                valueCounter.decrement();
-            }
-        };
-    }
-
-    private static <Value_, Comparable_ extends Comparable<? super Comparable_>>
-            Function<NavigableMap<Comparable_, Map<Value_, MutableLong>>, Value_>
-            getMinOrMaxFinisherForComparable(boolean returnMinimum) {
-        if (returnMinimum) {
-            return resultContainer -> {
-                if (resultContainer.isEmpty()) {
-                    return null;
-                }
-                Map.Entry<Comparable_, Map<Value_, MutableLong>> entry = resultContainer.firstEntry();
-                return entry.getValue().keySet().iterator().next();
-            };
-        } else {
-            return resultContainer -> {
-                if (resultContainer.isEmpty()) {
-                    return null;
-                }
-                Map.Entry<Comparable_, Map<Value_, MutableLong>> entry = resultContainer.lastEntry();
-                return entry.getValue().keySet().iterator().next();
-            };
-        }
+        return InnerUniConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -832,7 +525,7 @@ public final class ConstraintCollectors {
      */
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A> UniConstraintCollector<A, ?, A> min(Comparator<? super A> comparator) {
-        return min(Function.identity(), comparator);
+        return min(ConstantLambdaUtils.identity(), comparator);
     }
 
     /**
@@ -844,7 +537,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> min(Function<A, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, true);
+        return InnerUniConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -852,7 +545,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> min(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+        return InnerBiConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -860,19 +553,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
             min(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, true);
-    }
-
-    private static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
-            minOrMax(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction,
-                    boolean min) {
-        return new DefaultBiConstraintCollector<>(
-                getMinOrMaxSupplier(min),
-                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a, B b) -> {
-                    Mapped value = groupValueMapping.apply(a, b);
-                    return innerMinOrMax(resultContainer, value, comparableFunction);
-                },
-                getMinOrMaxFinisherForComparable(min));
+        return InnerBiConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -884,7 +565,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> min(BiFunction<A, B, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, true);
+        return InnerBiConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -892,7 +573,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> min(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+        return InnerTriConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -901,20 +582,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             TriConstraintCollector<A, B, C, ?, Mapped>
             min(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, true);
-    }
-
-    private static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
-            TriConstraintCollector<A, B, C, ?, Mapped> minOrMax(
-                    TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction,
-                    boolean min) {
-        return new DefaultTriConstraintCollector<>(
-                getMinOrMaxSupplier(min),
-                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a, B b, C c) -> {
-                    Mapped value = groupValueMapping.apply(a, b, c);
-                    return innerMinOrMax(resultContainer, value, comparableFunction);
-                },
-                getMinOrMaxFinisherForComparable(min));
+        return InnerTriConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -926,7 +594,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> min(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, true);
+        return InnerTriConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -934,7 +602,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), true);
+        return InnerQuadConstraintCollectors.min(groupValueMapping);
     }
 
     /**
@@ -943,20 +611,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             QuadConstraintCollector<A, B, C, D, ?, Mapped>
             min(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, true);
-    }
-
-    private static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
-            QuadConstraintCollector<A, B, C, D, ?, Mapped> minOrMax(
-                    QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction,
-                    boolean min) {
-        return new DefaultQuadConstraintCollector<>(
-                getMinOrMaxSupplier(min),
-                (NavigableMap<Comparable_, Map<Mapped, MutableLong>> resultContainer, A a, B b, C c, D d) -> {
-                    Mapped value = groupValueMapping.apply(a, b, c, d);
-                    return innerMinOrMax(resultContainer, value, comparableFunction);
-                },
-                getMinOrMaxFinisherForComparable(min));
+        return InnerQuadConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -968,7 +623,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, true);
+        return InnerQuadConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     // ************************************************************************
@@ -996,7 +651,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> max() {
-        return minOrMax(a -> a, Comparator.naturalOrder(), false);
+        return InnerUniConstraintCollectors.max(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -1020,7 +675,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> max(
             Function<A, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
+        return InnerUniConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -1031,7 +686,7 @@ public final class ConstraintCollectors {
      */
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A> UniConstraintCollector<A, ?, A> max(Comparator<? super A> comparator) {
-        return max(Function.identity(), comparator);
+        return InnerUniConstraintCollectors.max(ConstantLambdaUtils.identity(), comparator);
     }
 
     /**
@@ -1059,7 +714,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped>
             max(Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, false);
+        return InnerUniConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -1071,27 +726,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> max(Function<A, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, false);
-    }
-
-    private static <A, Mapped> UniConstraintCollector<A, SortedMap<Mapped, MutableLong>, Mapped> minOrMax(
-            Function<A, Mapped> groupValueMapping, Comparator<? super Mapped> comparator, boolean min) {
-        return new DefaultUniConstraintCollector<>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a) -> {
-                    Mapped mapped = groupValueMapping.apply(a);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                getMinOrMaxFinisherForComparator(min));
-    }
-
-    private static <Value_> Function<SortedMap<Value_, MutableLong>, Value_>
-            getMinOrMaxFinisherForComparator(boolean returnMinimum) {
-        if (returnMinimum) {
-            return resultContainer -> resultContainer.isEmpty() ? null : resultContainer.firstKey();
-        } else {
-            return resultContainer -> resultContainer.isEmpty() ? null : resultContainer.lastKey();
-        }
+        return InnerUniConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -1099,7 +734,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> max(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
+        return InnerBiConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -1107,7 +742,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
             max(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, false);
+        return InnerBiConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -1119,18 +754,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> max(BiFunction<A, B, Mapped> groupValueMapping,
             Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, false);
-    }
-
-    private static <A, B, Mapped> BiConstraintCollector<A, B, SortedMap<Mapped, MutableLong>, Mapped> minOrMax(
-            BiFunction<A, B, Mapped> groupValueMapping, Comparator<? super Mapped> comparator, boolean min) {
-        return new DefaultBiConstraintCollector<>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a, b) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                getMinOrMaxFinisherForComparator(min));
+        return InnerBiConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -1138,7 +762,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> max(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
+        return InnerTriConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -1147,7 +771,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             TriConstraintCollector<A, B, C, ?, Mapped>
             max(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, false);
+        return InnerTriConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -1159,18 +783,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> max(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, false);
-    }
-
-    private static <A, B, C, Mapped> TriConstraintCollector<A, B, C, SortedMap<Mapped, MutableLong>, Mapped> minOrMax(
-            TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator, boolean min) {
-        return new DefaultTriConstraintCollector<>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a, b, c) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                getMinOrMaxFinisherForComparator(min));
+        return InnerTriConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -1178,7 +791,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return minOrMax(groupValueMapping, Comparator.naturalOrder(), false);
+        return InnerQuadConstraintCollectors.max(groupValueMapping);
     }
 
     /**
@@ -1187,7 +800,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
             QuadConstraintCollector<A, B, C, D, ?, Mapped>
             max(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
-        return minOrMax(groupValueMapping, comparableFunction, false);
+        return InnerQuadConstraintCollectors.max(groupValueMapping, comparableFunction);
     }
 
     /**
@@ -1199,18 +812,7 @@ public final class ConstraintCollectors {
     @Deprecated(forRemoval = true, since = "1.0.0")
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return minOrMax(groupValueMapping, comparator, false);
-    }
-
-    private static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, SortedMap<Mapped, MutableLong>, Mapped> minOrMax(
-            QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator, boolean min) {
-        return new DefaultQuadConstraintCollector<>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a, b, c, d) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c, d);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                getMinOrMaxFinisherForComparator(min));
+        return InnerQuadConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -1219,7 +821,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, Result extends Collection<A>> UniConstraintCollector<A, ?, Result> toCollection(
             IntFunction<Result> collectionFunction) {
-        return toCollection(Function.identity(), collectionFunction);
+        return toCollection(ConstantLambdaUtils.identity(), collectionFunction);
     }
 
     // ************************************************************************
@@ -1238,26 +840,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Double> average(ToIntFunction<A> groupValueMapping) {
-        return compose(count(), sum(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerUniConstraintCollectors.average(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A> UniConstraintCollector<A, ?, Double> averageLong(ToLongFunction<A> groupValueMapping) {
-        return compose(count(), sumLong(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerUniConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1267,13 +857,7 @@ public final class ConstraintCollectors {
      */
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigDecimal(
             Function<A, BigDecimal> groupValueMapping) {
-        return compose(count(), sumBigDecimal(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum.divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerUniConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1282,54 +866,28 @@ public final class ConstraintCollectors {
      * with rounding mode {@link RoundingMode#HALF_EVEN}.
      */
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigInteger(Function<A, BigInteger> groupValueMapping) {
-        return compose(count(), sumBigInteger(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return new BigDecimal(sum)
-                        .divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerUniConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A> UniConstraintCollector<A, ?, Duration> averageDuration(Function<A, Duration> groupValueMapping) {
-        return compose(count(), sumDuration(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                long nanos = sum.toNanos();
-                return Duration.ofNanos(nanos / count);
-            }
-        });
+        return InnerUniConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToIntBiFunction<A, B> groupValueMapping) {
-        return compose(countBi(), sum(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerBiConstraintCollectors.average(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Double> averageLong(ToLongBiFunction<A, B> groupValueMapping) {
-        return compose(countBi(), sumLong(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerBiConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1337,13 +895,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal>
             averageBigDecimal(BiFunction<A, B, BigDecimal> groupValueMapping) {
-        return compose(countBi(), sumBigDecimal(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum.divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerBiConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1351,14 +903,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal>
             averageBigInteger(BiFunction<A, B, BigInteger> groupValueMapping) {
-        return compose(countBi(), sumBigInteger(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return new BigDecimal(sum)
-                        .divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerBiConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
@@ -1366,27 +911,14 @@ public final class ConstraintCollectors {
      */
     public static <A, B> BiConstraintCollector<A, B, ?, Duration>
             averageDuration(BiFunction<A, B, Duration> groupValueMapping) {
-        return compose(countBi(), sumDuration(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                long nanos = sum.toNanos();
-                return Duration.ofNanos(nanos / count);
-            }
-        });
+        return InnerBiConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     /**
      * As defined by {@link #average(ToIntFunction)}.
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double> average(ToIntTriFunction<A, B, C> groupValueMapping) {
-        return compose(countTri(), sum(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerTriConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1394,13 +926,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double>
             averageLong(ToLongTriFunction<A, B, C> groupValueMapping) {
-        return compose(countTri(), sumLong(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerTriConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1408,13 +934,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal>
             averageBigDecimal(TriFunction<A, B, C, BigDecimal> groupValueMapping) {
-        return compose(countTri(), sumBigDecimal(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum.divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerTriConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1422,14 +942,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal>
             averageBigInteger(TriFunction<A, B, C, BigInteger> groupValueMapping) {
-        return compose(countTri(), sumBigInteger(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return new BigDecimal(sum)
-                        .divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerTriConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
@@ -1437,14 +950,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Duration>
             averageDuration(TriFunction<A, B, C, Duration> groupValueMapping) {
-        return compose(countTri(), sumDuration(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                long nanos = sum.toNanos();
-                return Duration.ofNanos(nanos / count);
-            }
-        });
+        return InnerTriConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     /**
@@ -1452,13 +958,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double>
             average(ToIntQuadFunction<A, B, C, D> groupValueMapping) {
-        return compose(countQuad(), sum(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerQuadConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1466,13 +966,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double>
             averageLong(ToLongQuadFunction<A, B, C, D> groupValueMapping) {
-        return compose(countQuad(), sumLong(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum / (double) count;
-            }
-        });
+        return InnerQuadConstraintCollectors.average(groupValueMapping);
     }
 
     /**
@@ -1480,13 +974,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal>
             averageBigDecimal(QuadFunction<A, B, C, D, BigDecimal> groupValueMapping) {
-        return compose(countQuad(), sumBigDecimal(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return sum.divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerQuadConstraintCollectors.averageBigDecimal(groupValueMapping);
     }
 
     /**
@@ -1494,14 +982,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal>
             averageBigInteger(QuadFunction<A, B, C, D, BigInteger> groupValueMapping) {
-        return compose(countQuad(), sumBigInteger(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                return new BigDecimal(sum)
-                        .divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN);
-            }
-        });
+        return InnerQuadConstraintCollectors.averageBigInteger(groupValueMapping);
     }
 
     /**
@@ -1509,14 +990,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Duration>
             averageDuration(QuadFunction<A, B, C, D, Duration> groupValueMapping) {
-        return compose(countQuad(), sumDuration(groupValueMapping), (count, sum) -> {
-            if (count == 0) {
-                return null;
-            } else {
-                long nanos = sum.toNanos();
-                return Duration.ofNanos(nanos / count);
-            }
-        });
+        return InnerQuadConstraintCollectors.averageDuration(groupValueMapping);
     }
 
     // ************************************************************************
@@ -1534,7 +1008,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, Set<A>> toSet() {
-        return toSet(Function.identity());
+        return toSet(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -1547,14 +1021,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A extends Comparable<A>> UniConstraintCollector<A, ?, SortedSet<A>> toSortedSet() {
-        return toSortedSet(a -> a);
+        return toSortedSet(ConstantLambdaUtils.<A> identity());
     }
 
     /**
      * As defined by {@link #toSortedSet()}, only with a custom {@link Comparator}.
      */
     public static <A> UniConstraintCollector<A, ?, SortedSet<A>> toSortedSet(Comparator<? super A> comparator) {
-        return toSortedSet(a -> a, comparator);
+        return toSortedSet(ConstantLambdaUtils.identity(), comparator);
     }
 
     /**
@@ -1568,7 +1042,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, List<A>> toList() {
-        return toList(Function.identity());
+        return toList(ConstantLambdaUtils.identity());
     }
 
     /**
@@ -1577,24 +1051,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, Mapped, Result extends Collection<Mapped>> UniConstraintCollector<A, ?, Result> toCollection(
             Function<A, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new DefaultUniConstraintCollector<>(
-                (Supplier<List<Mapped>>) ArrayList::new,
-                (resultContainer, a) -> {
-                    Mapped mapped = groupValueMapping.apply(a);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
-    }
-
-    private static <Mapped, Container extends List<Mapped>, Result extends Collection<Mapped>> Result toCollectionFinisher(
-            IntFunction<Result> collectionFunction, Container resultContainer) {
-        int size = resultContainer.size();
-        Result collection = collectionFunction.apply(size);
-        if (size > 0) { // Avoid exceptions in case collectionFunction gives Collections.emptyList().
-            collection.addAll(resultContainer);
-        }
-        return collection;
+        return InnerUniConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1610,13 +1067,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, Mapped> UniConstraintCollector<A, ?, Set<Mapped>> toSet(Function<A, Mapped> groupValueMapping) {
-        return new DefaultUniConstraintCollector<>(
-                (Supplier<HashMap<Mapped, MutableLong>>) HashMap::new,
-                (resultContainer, a) -> {
-                    Mapped mapped = groupValueMapping.apply(a);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                HashMap::keySet);
+        return InnerUniConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1640,13 +1091,7 @@ public final class ConstraintCollectors {
      */
     public static <A, Mapped> UniConstraintCollector<A, ?, SortedSet<Mapped>> toSortedSet(
             Function<A, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new DefaultUniConstraintCollector<A, TreeMap<Mapped, MutableLong>, SortedSet<Mapped>>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a) -> {
-                    Mapped mapped = groupValueMapping.apply(a);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                TreeMap::navigableKeySet);
+        return InnerUniConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1662,14 +1107,7 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, Mapped> UniConstraintCollector<A, ?, List<Mapped>> toList(Function<A, Mapped> groupValueMapping) {
-        return new DefaultUniConstraintCollector<>(
-                ArrayList::new,
-                (resultContainer, a) -> {
-                    Mapped mapped = groupValueMapping.apply(a);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                Function.identity());
+        return InnerUniConstraintCollectors.toList(groupValueMapping);
     }
 
     /**
@@ -1679,14 +1117,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, B, Mapped, Result extends Collection<Mapped>> BiConstraintCollector<A, B, ?, Result> toCollection(
             BiFunction<A, B, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new DefaultBiConstraintCollector<>(
-                (Supplier<List<Mapped>>) ArrayList::new,
-                (resultContainer, a, b) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+        return InnerBiConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1694,13 +1125,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Set<Mapped>> toSet(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return new DefaultBiConstraintCollector<>(
-                (Supplier<HashMap<Mapped, MutableLong>>) HashMap::new,
-                (resultContainer, a, b) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                HashMap::keySet);
+        return InnerBiConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1717,13 +1142,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, SortedSet<Mapped>> toSortedSet(
             BiFunction<A, B, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new DefaultBiConstraintCollector<A, B, TreeMap<Mapped, MutableLong>, SortedSet<Mapped>>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a, b) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                TreeMap::navigableKeySet);
+        return InnerBiConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1731,14 +1150,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, Mapped> BiConstraintCollector<A, B, ?, List<Mapped>> toList(
             BiFunction<A, B, Mapped> groupValueMapping) {
-        return new DefaultBiConstraintCollector<>(
-                ArrayList::new,
-                (resultContainer, a, b) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                Function.identity());
+        return InnerBiConstraintCollectors.toList(groupValueMapping);
     }
 
     /**
@@ -1748,14 +1160,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, B, C, Mapped, Result extends Collection<Mapped>> TriConstraintCollector<A, B, C, ?, Result> toCollection(
             TriFunction<A, B, C, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new DefaultTriConstraintCollector<>(
-                (Supplier<List<Mapped>>) ArrayList::new,
-                (resultContainer, a, b, c) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+        return InnerTriConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1763,13 +1168,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Set<Mapped>> toSet(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return new DefaultTriConstraintCollector<>(
-                (Supplier<HashMap<Mapped, MutableLong>>) HashMap::new,
-                (resultContainer, a, b, c) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                HashMap::keySet);
+        return InnerTriConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1785,13 +1184,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, SortedSet<Mapped>> toSortedSet(
             TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new DefaultTriConstraintCollector<A, B, C, TreeMap<Mapped, MutableLong>, SortedSet<Mapped>>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a, b, c) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                TreeMap::navigableKeySet);
+        return InnerTriConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1799,14 +1192,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, List<Mapped>> toList(
             TriFunction<A, B, C, Mapped> groupValueMapping) {
-        return new DefaultTriConstraintCollector<>(
-                ArrayList::new,
-                (resultContainer, a, b, c) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                Function.identity());
+        return InnerTriConstraintCollectors.toList(groupValueMapping);
     }
 
     /**
@@ -1816,14 +1202,7 @@ public final class ConstraintCollectors {
     @Deprecated(/* forRemoval = true */)
     public static <A, B, C, D, Mapped, Result extends Collection<Mapped>> QuadConstraintCollector<A, B, C, D, ?, Result>
             toCollection(QuadFunction<A, B, C, D, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return new DefaultQuadConstraintCollector<>(
-                (Supplier<List<Mapped>>) ArrayList::new,
-                (resultContainer, a, b, c, d) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c, d);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                resultContainer -> toCollectionFinisher(collectionFunction, resultContainer));
+        return InnerQuadConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1831,13 +1210,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Set<Mapped>> toSet(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return new DefaultQuadConstraintCollector<>(
-                (Supplier<HashMap<Mapped, MutableLong>>) HashMap::new,
-                (resultContainer, a, b, c, d) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c, d);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                HashMap::keySet);
+        return InnerQuadConstraintCollectors.toSet(groupValueMapping);
     }
 
     /**
@@ -1854,13 +1227,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, SortedSet<Mapped>> toSortedSet(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return new DefaultQuadConstraintCollector<A, B, C, D, TreeMap<Mapped, MutableLong>, SortedSet<Mapped>>(
-                () -> new TreeMap<>(comparator),
-                (resultContainer, a, b, c, d) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c, d);
-                    return innerCountDistinctLong(resultContainer, mapped);
-                },
-                TreeMap::navigableKeySet);
+        return InnerQuadConstraintCollectors.toSortedSet(groupValueMapping, comparator);
     }
 
     /**
@@ -1868,14 +1235,7 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, List<Mapped>> toList(
             QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
-        return new DefaultQuadConstraintCollector<>(
-                ArrayList::new,
-                (resultContainer, a, b, c, d) -> {
-                    Mapped mapped = groupValueMapping.apply(a, b, c, d);
-                    resultContainer.add(mapped);
-                    return () -> resultContainer.remove(mapped);
-                },
-                Function.identity());
+        return InnerQuadConstraintCollectors.toList(groupValueMapping);
     }
 
     // ************************************************************************
@@ -1933,171 +1293,7 @@ public final class ConstraintCollectors {
     public static <A, Key, Value, ValueSet extends Set<Value>> UniConstraintCollector<A, ?, Map<Key, ValueSet>> toMap(
             Function<? super A, ? extends Key> keyMapper, Function<? super A, ? extends Value> valueMapper,
             IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultUniConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
-                (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToMultiMapResultContainer::getResult);
-    }
-
-    private static final class ToMapPerKeyCounter<Value> {
-
-        private final Map<Value, Long> counts = new LinkedHashMap<>(0);
-
-        public long add(Value value) {
-            return counts.compute(value, (k, currentCount) -> {
-                if (currentCount == null) {
-                    return 1L;
-                } else {
-                    return currentCount + 1;
-                }
-            });
-        }
-
-        public long remove(Value value) {
-            Long newCount = counts.compute(value, (k, currentCount) -> {
-                if (currentCount > 1L) {
-                    return currentCount - 1;
-                } else {
-                    return null;
-                }
-            });
-            return newCount == null ? 0L : newCount;
-        }
-
-        public Value merge(BinaryOperator<Value> mergeFunction) {
-            // Rebuilding the value from the collection is not incremental.
-            // The impact is negligible, assuming there are not too many values for the same key.
-            return counts.entrySet()
-                    .stream()
-                    .flatMap(e -> Stream.generate(e::getKey).limit(e.getValue()))
-                    .reduce(mergeFunction)
-                    .orElseThrow(() -> new IllegalStateException("Programming error: Should have had at least one value."));
-        }
-
-        public boolean isEmpty() {
-            return counts.isEmpty();
-        }
-
-    }
-
-    private interface ToMapResultContainer<Key, Value, ResultValue, Result_ extends Map<Key, ResultValue>> {
-
-        void add(Key key, Value value);
-
-        void remove(Key key, Value value);
-
-        Result_ getResult();
-
-    }
-
-    private static final class ToSimpleMapResultContainer<Key, Value, Result_ extends Map<Key, Value>>
-            implements ToMapResultContainer<Key, Value, Value, Result_> {
-
-        private final BinaryOperator<Value> mergeFunction;
-        private final Result_ result;
-        private final Map<Key, ToMapPerKeyCounter<Value>> valueCounts = new HashMap<>(0);
-
-        public ToSimpleMapResultContainer(Supplier<Result_> resultSupplier, BinaryOperator<Value> mergeFunction) {
-            this.mergeFunction = Objects.requireNonNull(mergeFunction);
-            this.result = Objects.requireNonNull(resultSupplier).get();
-        }
-
-        public ToSimpleMapResultContainer(IntFunction<Result_> resultSupplier, BinaryOperator<Value> mergeFunction) {
-            this.mergeFunction = Objects.requireNonNull(mergeFunction);
-            this.result = Objects.requireNonNull(resultSupplier).apply(0);
-        }
-
-        @Override
-        public void add(Key key, Value value) {
-            ToMapPerKeyCounter<Value> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
-            long newCount = counter.add(value);
-            if (newCount == 1L) {
-                result.put(key, value);
-            } else {
-                result.put(key, counter.merge(mergeFunction));
-            }
-        }
-
-        @Override
-        public void remove(Key key, Value value) {
-            ToMapPerKeyCounter<Value> counter = valueCounts.get(key);
-            long newCount = counter.remove(value);
-            if (newCount == 0L) {
-                result.remove(key);
-            } else {
-                result.put(key, counter.merge(mergeFunction));
-            }
-            if (counter.isEmpty()) {
-                valueCounts.remove(key);
-            }
-        }
-
-        @Override
-        public Result_ getResult() {
-            return result;
-        }
-
-    }
-
-    private static final class ToMultiMapResultContainer<Key, Value, Set_ extends Set<Value>, Result_ extends Map<Key, Set_>>
-            implements ToMapResultContainer<Key, Value, Set_, Result_> {
-
-        private final Supplier<Set_> setSupplier;
-        private final Result_ result;
-        private final Map<Key, ToMapPerKeyCounter<Value>> valueCounts = new HashMap<>(0);
-
-        public ToMultiMapResultContainer(Supplier<Result_> resultSupplier, IntFunction<Set_> setFunction) {
-            IntFunction<Set_> nonNullSetFunction = Objects.requireNonNull(setFunction);
-            this.setSupplier = () -> nonNullSetFunction.apply(0);
-            this.result = Objects.requireNonNull(resultSupplier).get();
-        }
-
-        public ToMultiMapResultContainer(IntFunction<Result_> resultFunction, IntFunction<Set_> setFunction) {
-            IntFunction<Set_> nonNullSetFunction = Objects.requireNonNull(setFunction);
-            this.setSupplier = () -> nonNullSetFunction.apply(0);
-            this.result = Objects.requireNonNull(resultFunction).apply(0);
-        }
-
-        @Override
-        public void add(Key key, Value value) {
-            ToMapPerKeyCounter<Value> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
-            counter.add(value);
-            result.computeIfAbsent(key, k -> setSupplier.get())
-                    .add(value);
-        }
-
-        @Override
-        public void remove(Key key, Value value) {
-            ToMapPerKeyCounter<Value> counter = valueCounts.get(key);
-            long newCount = counter.remove(value);
-            if (newCount == 0) {
-                result.get(key).remove(value);
-            }
-            if (counter.isEmpty()) {
-                valueCounts.remove(key);
-                result.remove(key);
-            }
-        }
-
-        @Override
-        public Result_ getResult() {
-            return result;
-        }
-
-    }
-
-    private static <A, Key, Value> Runnable toMapAccumulator(Function<? super A, ? extends Key> keyMapper,
-            Function<? super A, ? extends Value> valueMapper, ToMapResultContainer<Key, Value, ?, ?> resultContainer,
-            A a) {
-        Key key = keyMapper.apply(a);
-        Value value = valueMapper.apply(a);
-        return toMapInnerAccumulator(key, value, resultContainer);
-    }
-
-    private static <Key, Value> Runnable toMapInnerAccumulator(Key key, Value value,
-            ToMapResultContainer<Key, Value, ?, ?> resultContainer) {
-        resultContainer.add(key, value);
-        return () -> resultContainer.remove(key, value);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -2123,10 +1319,7 @@ public final class ConstraintCollectors {
     public static <A, Key, Value> UniConstraintCollector<A, ?, Map<Key, Value>> toMap(
             Function<? super A, ? extends Key> keyMapper, Function<? super A, ? extends Value> valueMapper,
             BinaryOperator<Value> mergeFunction) {
-        return new DefaultUniConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
-                (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToMapResultContainer::getResult);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -2180,10 +1373,7 @@ public final class ConstraintCollectors {
             UniConstraintCollector<A, ?, SortedMap<Key, ValueSet>> toSortedMap(
                     Function<? super A, ? extends Key> keyMapper,
                     Function<? super A, ? extends Value> valueMapper, IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultUniConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
-                (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToMultiMapResultContainer::getResult);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -2207,10 +1397,7 @@ public final class ConstraintCollectors {
             toSortedMap(
                     Function<? super A, ? extends Key> keyMapper, Function<? super A, ? extends Value> valueMapper,
                     BinaryOperator<Value> mergeFunction) {
-        return new DefaultUniConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
-                (resultContainer, a) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a),
-                ToSimpleMapResultContainer::getResult);
+        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     /**
@@ -2228,19 +1415,7 @@ public final class ConstraintCollectors {
     public static <A, B, Key, Value, ValueSet extends Set<Value>> BiConstraintCollector<A, B, ?, Map<Key, ValueSet>> toMap(
             BiFunction<? super A, ? super B, ? extends Key> keyMapper,
             BiFunction<? super A, ? super B, ? extends Value> valueMapper, IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultBiConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
-                (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToMultiMapResultContainer::getResult);
-    }
-
-    private static <A, B, Key, Value> Runnable toMapAccumulator(
-            BiFunction<? super A, ? super B, ? extends Key> keyMapper,
-            BiFunction<? super A, ? super B, ? extends Value> valueMapper,
-            ToMapResultContainer<Key, Value, ?, ?> resultContainer, A a, B b) {
-        Key key = keyMapper.apply(a, b);
-        Value value = valueMapper.apply(a, b);
-        return toMapInnerAccumulator(key, value, resultContainer);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -2249,10 +1424,7 @@ public final class ConstraintCollectors {
     public static <A, B, Key, Value> BiConstraintCollector<A, B, ?, Map<Key, Value>> toMap(
             BiFunction<? super A, ? super B, ? extends Key> keyMapper,
             BiFunction<? super A, ? super B, ? extends Value> valueMapper, BinaryOperator<Value> mergeFunction) {
-        return new DefaultBiConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
-                (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToSimpleMapResultContainer::getResult);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -2271,10 +1443,7 @@ public final class ConstraintCollectors {
             BiConstraintCollector<A, B, ?, SortedMap<Key, ValueSet>> toSortedMap(
                     BiFunction<? super A, ? super B, ? extends Key> keyMapper,
                     BiFunction<? super A, ? super B, ? extends Value> valueMapper, IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultBiConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
-                (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToMultiMapResultContainer::getResult);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -2284,10 +1453,7 @@ public final class ConstraintCollectors {
             toSortedMap(
                     BiFunction<? super A, ? super B, ? extends Key> keyMapper,
                     BiFunction<? super A, ? super B, ? extends Value> valueMapper, BinaryOperator<Value> mergeFunction) {
-        return new DefaultBiConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
-                (resultContainer, a, b) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b),
-                ToSimpleMapResultContainer::getResult);
+        return InnerBiConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     /**
@@ -2306,19 +1472,7 @@ public final class ConstraintCollectors {
             toMap(TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
                     TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultTriConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
-                (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToMultiMapResultContainer::getResult);
-    }
-
-    private static <A, B, C, Key, Value> Runnable toMapAccumulator(
-            TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
-            TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
-            ToMapResultContainer<Key, Value, ?, ?> resultContainer, A a, B b, C c) {
-        Key key = keyMapper.apply(a, b, c);
-        Value value = valueMapper.apply(a, b, c);
-        return toMapInnerAccumulator(key, value, resultContainer);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -2328,10 +1482,7 @@ public final class ConstraintCollectors {
             TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
             TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
             BinaryOperator<Value> mergeFunction) {
-        return new DefaultTriConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
-                (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToSimpleMapResultContainer::getResult);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -2352,10 +1503,7 @@ public final class ConstraintCollectors {
                     TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
                     TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultTriConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
-                (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToMultiMapResultContainer::getResult);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -2366,10 +1514,7 @@ public final class ConstraintCollectors {
             toSortedMap(TriFunction<? super A, ? super B, ? super C, ? extends Key> keyMapper,
                     TriFunction<? super A, ? super B, ? super C, ? extends Value> valueMapper,
                     BinaryOperator<Value> mergeFunction) {
-        return new DefaultTriConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
-                (resultContainer, a, b, c) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c),
-                ToSimpleMapResultContainer::getResult);
+        return InnerTriConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     /**
@@ -2389,19 +1534,7 @@ public final class ConstraintCollectors {
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultQuadConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((IntFunction<HashMap<Key, ValueSet>>) HashMap::new, valueSetFunction),
-                (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToMultiMapResultContainer::getResult);
-    }
-
-    private static <A, B, C, D, Key, Value> Runnable toMapAccumulator(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
-            QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
-            ToMapResultContainer<Key, Value, ?, ?> resultContainer, A a, B b, C c, D d) {
-        Key key = keyMapper.apply(a, b, c, d);
-        Value value = valueMapper.apply(a, b, c, d);
-        return toMapInnerAccumulator(key, value, resultContainer);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, valueSetFunction);
     }
 
     /**
@@ -2411,10 +1544,7 @@ public final class ConstraintCollectors {
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
             BinaryOperator<Value> mergeFunction) {
-        return new DefaultQuadConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((IntFunction<HashMap<Key, Value>>) HashMap::new, mergeFunction),
-                (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToSimpleMapResultContainer::getResult);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, HashMap::new, mergeFunction);
     }
 
     /**
@@ -2435,10 +1565,7 @@ public final class ConstraintCollectors {
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
                     IntFunction<ValueSet> valueSetFunction) {
-        return new DefaultQuadConstraintCollector<>(
-                () -> new ToMultiMapResultContainer<>((Supplier<TreeMap<Key, ValueSet>>) TreeMap::new, valueSetFunction),
-                (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToMultiMapResultContainer::getResult);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**
@@ -2449,10 +1576,7 @@ public final class ConstraintCollectors {
             toSortedMap(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key> keyMapper,
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value> valueMapper,
                     BinaryOperator<Value> mergeFunction) {
-        return new DefaultQuadConstraintCollector<>(
-                () -> new ToSimpleMapResultContainer<>((Supplier<TreeMap<Key, Value>>) TreeMap::new, mergeFunction),
-                (resultContainer, a, b, c, d) -> toMapAccumulator(keyMapper, valueMapper, resultContainer, a, b, c, d),
-                ToSimpleMapResultContainer::getResult);
+        return InnerQuadConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, mergeFunction);
     }
 
     // ************************************************************************
@@ -2476,17 +1600,7 @@ public final class ConstraintCollectors {
      */
     public static <A, ResultContainer_, Result_> UniConstraintCollector<A, ResultContainer_, Result_> conditionally(
             Predicate<A> condition, UniConstraintCollector<A, ResultContainer_, Result_> delegate) {
-        BiFunction<ResultContainer_, A, Runnable> accumulator = delegate.accumulator();
-        return new DefaultUniConstraintCollector<>(
-                delegate.supplier(),
-                (resultContainer, a) -> {
-                    if (condition.test(a)) {
-                        return accumulator.apply(resultContainer, a);
-                    } else {
-                        return NOOP;
-                    }
-                },
-                delegate.finisher());
+        return InnerUniConstraintCollectors.conditionally(condition, delegate);
     }
 
     /**
@@ -2495,17 +1609,7 @@ public final class ConstraintCollectors {
     public static <A, B, ResultContainer_, Result_> BiConstraintCollector<A, B, ResultContainer_, Result_>
             conditionally(BiPredicate<A, B> condition,
                     BiConstraintCollector<A, B, ResultContainer_, Result_> delegate) {
-        TriFunction<ResultContainer_, A, B, Runnable> accumulator = delegate.accumulator();
-        return new DefaultBiConstraintCollector<>(
-                delegate.supplier(),
-                (resultContainer, a, b) -> {
-                    if (condition.test(a, b)) {
-                        return accumulator.apply(resultContainer, a, b);
-                    } else {
-                        return NOOP;
-                    }
-                },
-                delegate.finisher());
+        return InnerBiConstraintCollectors.conditionally(condition, delegate);
     }
 
     /**
@@ -2514,17 +1618,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, ResultContainer_, Result_> TriConstraintCollector<A, B, C, ResultContainer_, Result_>
             conditionally(TriPredicate<A, B, C> condition,
                     TriConstraintCollector<A, B, C, ResultContainer_, Result_> delegate) {
-        QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator = delegate.accumulator();
-        return new DefaultTriConstraintCollector<>(
-                delegate.supplier(),
-                (resultContainer, a, b, c) -> {
-                    if (condition.test(a, b, c)) {
-                        return accumulator.apply(resultContainer, a, b, c);
-                    } else {
-                        return NOOP;
-                    }
-                },
-                delegate.finisher());
+        return InnerTriConstraintCollectors.conditionally(condition, delegate);
     }
 
     /**
@@ -2533,17 +1627,7 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, ResultContainer_, Result_> QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_>
             conditionally(QuadPredicate<A, B, C, D> condition,
                     QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> delegate) {
-        PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator = delegate.accumulator();
-        return new DefaultQuadConstraintCollector<>(
-                delegate.supplier(),
-                (resultContainer, a, b, c, d) -> {
-                    if (condition.test(a, b, c, d)) {
-                        return accumulator.apply(resultContainer, a, b, c, d);
-                    } else {
-                        return NOOP;
-                    }
-                },
-                delegate.finisher());
+        return InnerQuadConstraintCollectors.conditionally(condition, delegate);
     }
 
     // ************************************************************************
@@ -2570,37 +1654,7 @@ public final class ConstraintCollectors {
                     UniConstraintCollector<A, SubResultContainer1_, SubResult1_> subCollector1,
                     UniConstraintCollector<A, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        BiFunction<SubResultContainer1_, A, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        BiFunction<SubResultContainer2_, A, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        return new DefaultUniConstraintCollector<>(
-                () -> Pair.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get()),
-                (resultContainer, a) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getKey(), a);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a);
-                    return compose(undo1, undo2);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
-    }
-
-    private static <Result_, SubResultContainer1_, SubResultContainer2_, SubResult1_, SubResult2_>
-            Function<Pair<SubResultContainer1_, SubResultContainer2_>, Result_>
-            createComposedFinisher(Function<SubResultContainer1_, SubResult1_> subResult1Finisher,
-                    Function<SubResultContainer2_, SubResult2_> subResult2Finisher,
-                    BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        return (resultContainer) -> {
-            SubResult1_ result1 = subResult1Finisher.apply(resultContainer.getKey());
-            SubResult2_ result2 = subResult2Finisher.apply(resultContainer.getValue());
-            return composeFunction.apply(result1, result2);
-        };
-    }
-
-    private static Runnable compose(Runnable runnable1, Runnable runnable2) {
-        return () -> {
-            runnable1.run();
-            runnable2.run();
-        };
+        return InnerUniConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2627,45 +1681,7 @@ public final class ConstraintCollectors {
                     UniConstraintCollector<A, SubResultContainer2_, SubResult2_> subCollector2,
                     UniConstraintCollector<A, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        BiFunction<SubResultContainer1_, A, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        BiFunction<SubResultContainer2_, A, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        BiFunction<SubResultContainer3_, A, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        return new DefaultUniConstraintCollector<>(
-                () -> Triple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get()),
-                (resultContainer, a) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a);
-                    return compose(undo1, undo2, undo3);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
-    }
-
-    private static <Result_, SubResultContainer1_, SubResultContainer2_, SubResultContainer3_, SubResult1_, SubResult2_, SubResult3_>
-            Function<Triple<SubResultContainer1_, SubResultContainer2_, SubResultContainer3_>, Result_>
-            createComposedFinisher(Function<SubResultContainer1_, SubResult1_> subResult1Finisher,
-                    Function<SubResultContainer2_, SubResult2_> subResult2Finisher,
-                    Function<SubResultContainer3_, SubResult3_> subResult3Finisher,
-                    TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        return (resultContainer) -> {
-            SubResult1_ result1 = subResult1Finisher.apply(resultContainer.getA());
-            SubResult2_ result2 = subResult2Finisher.apply(resultContainer.getB());
-            SubResult3_ result3 = subResult3Finisher.apply(resultContainer.getC());
-            return composeFunction.apply(result1, result2, result3);
-        };
-    }
-
-    private static Runnable compose(Runnable runnable1, Runnable runnable2, Runnable runnable3) {
-        return () -> {
-            runnable1.run();
-            runnable2.run();
-            runnable3.run();
-        };
+        return InnerUniConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2696,51 +1712,8 @@ public final class ConstraintCollectors {
                     UniConstraintCollector<A, SubResultContainer3_, SubResult3_> subCollector3,
                     UniConstraintCollector<A, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        BiFunction<SubResultContainer1_, A, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        BiFunction<SubResultContainer2_, A, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        BiFunction<SubResultContainer3_, A, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        Supplier<SubResultContainer4_> subResultContainer4Supplier = subCollector4.supplier();
-        BiFunction<SubResultContainer4_, A, Runnable> subResult4Accumulator = subCollector4.accumulator();
-        return new DefaultUniConstraintCollector<>(
-                () -> Quadruple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get(), subResultContainer4Supplier.get()),
-                (resultContainer, a) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a);
-                    Runnable undo4 = subResult4Accumulator.apply(resultContainer.getD(), a);
-                    return compose(undo1, undo2, undo3, undo4);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
-    }
-
-    private static <Result_, SubResultContainer1_, SubResultContainer2_, SubResultContainer3_, SubResultContainer4_, SubResult1_, SubResult2_, SubResult3_, SubResult4_>
-            Function<Quadruple<SubResultContainer1_, SubResultContainer2_, SubResultContainer3_, SubResultContainer4_>, Result_>
-            createComposedFinisher(Function<SubResultContainer1_, SubResult1_> subResult1Finisher,
-                    Function<SubResultContainer2_, SubResult2_> subResult2Finisher,
-                    Function<SubResultContainer3_, SubResult3_> subResult3Finisher,
-                    Function<SubResultContainer4_, SubResult4_> subResult4Finisher,
-                    QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        return (resultContainer) -> {
-            SubResult1_ result1 = subResult1Finisher.apply(resultContainer.getA());
-            SubResult2_ result2 = subResult2Finisher.apply(resultContainer.getB());
-            SubResult3_ result3 = subResult3Finisher.apply(resultContainer.getC());
-            SubResult4_ result4 = subResult4Finisher.apply(resultContainer.getD());
-            return composeFunction.apply(result1, result2, result3, result4);
-        };
-    }
-
-    private static Runnable compose(Runnable runnable1, Runnable runnable2, Runnable runnable3, Runnable runnable4) {
-        return () -> {
-            runnable1.run();
-            runnable2.run();
-            runnable3.run();
-            runnable4.run();
-        };
+        return InnerUniConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
+                composeFunction);
     }
 
     /**
@@ -2751,18 +1724,7 @@ public final class ConstraintCollectors {
                     BiConstraintCollector<A, B, SubResultContainer1_, SubResult1_> subCollector1,
                     BiConstraintCollector<A, B, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        TriFunction<SubResultContainer1_, A, B, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        TriFunction<SubResultContainer2_, A, B, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        return new DefaultBiConstraintCollector<>(
-                () -> Pair.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get()),
-                (resultContainer, a, b) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getKey(), a, b);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a, b);
-                    return compose(undo1, undo2);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+        return InnerBiConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2774,23 +1736,7 @@ public final class ConstraintCollectors {
                     BiConstraintCollector<A, B, SubResultContainer2_, SubResult2_> subCollector2,
                     BiConstraintCollector<A, B, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        TriFunction<SubResultContainer1_, A, B, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        TriFunction<SubResultContainer2_, A, B, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        TriFunction<SubResultContainer3_, A, B, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        return new DefaultBiConstraintCollector<>(
-                () -> Triple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get()),
-                (resultContainer, a, b) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a, b);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a, b);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a, b);
-                    return compose(undo1, undo2, undo3);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+        return InnerBiConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2804,26 +1750,7 @@ public final class ConstraintCollectors {
                     BiConstraintCollector<A, B, SubResultContainer3_, SubResult3_> subCollector3,
                     BiConstraintCollector<A, B, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        TriFunction<SubResultContainer1_, A, B, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        TriFunction<SubResultContainer2_, A, B, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        TriFunction<SubResultContainer3_, A, B, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        Supplier<SubResultContainer4_> subResultContainer4Supplier = subCollector4.supplier();
-        TriFunction<SubResultContainer4_, A, B, Runnable> subResult4Accumulator = subCollector4.accumulator();
-        return new DefaultBiConstraintCollector<>(
-                () -> Quadruple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get(), subResultContainer4Supplier.get()),
-                (resultContainer, a, b) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a, b);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a, b);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a, b);
-                    Runnable undo4 = subResult4Accumulator.apply(resultContainer.getD(), a, b);
-                    return compose(undo1, undo2, undo3, undo4);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+        return InnerBiConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4, composeFunction);
     }
 
     /**
@@ -2834,18 +1761,7 @@ public final class ConstraintCollectors {
                     TriConstraintCollector<A, B, C, SubResultContainer1_, SubResult1_> subCollector1,
                     TriConstraintCollector<A, B, C, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        QuadFunction<SubResultContainer1_, A, B, C, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        QuadFunction<SubResultContainer2_, A, B, C, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        return new DefaultTriConstraintCollector<>(
-                () -> Pair.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get()),
-                (resultContainer, a, b, c) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getKey(), a, b, c);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a, b, c);
-                    return compose(undo1, undo2);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+        return InnerTriConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2857,23 +1773,7 @@ public final class ConstraintCollectors {
                     TriConstraintCollector<A, B, C, SubResultContainer2_, SubResult2_> subCollector2,
                     TriConstraintCollector<A, B, C, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        QuadFunction<SubResultContainer1_, A, B, C, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        QuadFunction<SubResultContainer2_, A, B, C, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        QuadFunction<SubResultContainer3_, A, B, C, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        return new DefaultTriConstraintCollector<>(
-                () -> Triple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get()),
-                (resultContainer, a, b, c) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a, b, c);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a, b, c);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a, b, c);
-                    return compose(undo1, undo2, undo3);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+        return InnerTriConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2887,26 +1787,8 @@ public final class ConstraintCollectors {
                     TriConstraintCollector<A, B, C, SubResultContainer3_, SubResult3_> subCollector3,
                     TriConstraintCollector<A, B, C, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        QuadFunction<SubResultContainer1_, A, B, C, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        QuadFunction<SubResultContainer2_, A, B, C, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        QuadFunction<SubResultContainer3_, A, B, C, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        Supplier<SubResultContainer4_> subResultContainer4Supplier = subCollector4.supplier();
-        QuadFunction<SubResultContainer4_, A, B, C, Runnable> subResult4Accumulator = subCollector4.accumulator();
-        return new DefaultTriConstraintCollector<>(
-                () -> Quadruple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get(), subResultContainer4Supplier.get()),
-                (resultContainer, a, b, c) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a, b, c);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a, b, c);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a, b, c);
-                    Runnable undo4 = subResult4Accumulator.apply(resultContainer.getD(), a, b, c);
-                    return compose(undo1, undo2, undo3, undo4);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+        return InnerTriConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
+                composeFunction);
     }
 
     /**
@@ -2917,18 +1799,7 @@ public final class ConstraintCollectors {
                     QuadConstraintCollector<A, B, C, D, SubResultContainer1_, SubResult1_> subCollector1,
                     QuadConstraintCollector<A, B, C, D, SubResultContainer2_, SubResult2_> subCollector2,
                     BiFunction<SubResult1_, SubResult2_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        PentaFunction<SubResultContainer1_, A, B, C, D, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        PentaFunction<SubResultContainer2_, A, B, C, D, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        return new DefaultQuadConstraintCollector<>(
-                () -> Pair.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get()),
-                (resultContainer, a, b, c, d) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getKey(), a, b, c, d);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getValue(), a, b, c, d);
-                    return compose(undo1, undo2);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), composeFunction));
+        return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, composeFunction);
     }
 
     /**
@@ -2940,23 +1811,7 @@ public final class ConstraintCollectors {
                     QuadConstraintCollector<A, B, C, D, SubResultContainer2_, SubResult2_> subCollector2,
                     QuadConstraintCollector<A, B, C, D, SubResultContainer3_, SubResult3_> subCollector3,
                     TriFunction<SubResult1_, SubResult2_, SubResult3_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        PentaFunction<SubResultContainer1_, A, B, C, D, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        PentaFunction<SubResultContainer2_, A, B, C, D, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        PentaFunction<SubResultContainer3_, A, B, C, D, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        return new DefaultQuadConstraintCollector<>(
-                () -> Triple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get()),
-                (resultContainer, a, b, c, d) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a, b, c, d);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a, b, c, d);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a, b, c, d);
-                    return compose(undo1, undo2, undo3);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        composeFunction));
+        return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, composeFunction);
     }
 
     /**
@@ -2970,26 +1825,8 @@ public final class ConstraintCollectors {
                     QuadConstraintCollector<A, B, C, D, SubResultContainer3_, SubResult3_> subCollector3,
                     QuadConstraintCollector<A, B, C, D, SubResultContainer4_, SubResult4_> subCollector4,
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
-        Supplier<SubResultContainer1_> subResultContainer1Supplier = subCollector1.supplier();
-        PentaFunction<SubResultContainer1_, A, B, C, D, Runnable> subResult1Accumulator = subCollector1.accumulator();
-        Supplier<SubResultContainer2_> subResultContainer2Supplier = subCollector2.supplier();
-        PentaFunction<SubResultContainer2_, A, B, C, D, Runnable> subResult2Accumulator = subCollector2.accumulator();
-        Supplier<SubResultContainer3_> subResultContainer3Supplier = subCollector3.supplier();
-        PentaFunction<SubResultContainer3_, A, B, C, D, Runnable> subResult3Accumulator = subCollector3.accumulator();
-        Supplier<SubResultContainer4_> subResultContainer4Supplier = subCollector4.supplier();
-        PentaFunction<SubResultContainer4_, A, B, C, D, Runnable> subResult4Accumulator = subCollector4.accumulator();
-        return new DefaultQuadConstraintCollector<>(
-                () -> Quadruple.of(subResultContainer1Supplier.get(), subResultContainer2Supplier.get(),
-                        subResultContainer3Supplier.get(), subResultContainer4Supplier.get()),
-                (resultContainer, a, b, c, d) -> {
-                    Runnable undo1 = subResult1Accumulator.apply(resultContainer.getA(), a, b, c, d);
-                    Runnable undo2 = subResult2Accumulator.apply(resultContainer.getB(), a, b, c, d);
-                    Runnable undo3 = subResult3Accumulator.apply(resultContainer.getC(), a, b, c, d);
-                    Runnable undo4 = subResult4Accumulator.apply(resultContainer.getD(), a, b, c, d);
-                    return compose(undo1, undo2, undo3, undo4);
-                },
-                createComposedFinisher(subCollector1.finisher(), subCollector2.finisher(), subCollector3.finisher(),
-                        subCollector4.finisher(), composeFunction));
+        return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
+                composeFunction);
     }
 
     private ConstraintCollectors() {

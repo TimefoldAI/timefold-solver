@@ -21,6 +21,9 @@ import ai.timefold.solver.core.api.function.TriFunction;
  * used.
  */
 public final class ConstantLambdaUtils {
+    private static final Runnable NO_OP = () -> {
+    };
+
     @SuppressWarnings("rawtypes")
     private static final Function IDENTITY = Function.identity();
 
@@ -65,6 +68,15 @@ public final class ConstantLambdaUtils {
 
     @SuppressWarnings("rawtypes")
     private static final ToIntQuadFunction QUAD_CONSTANT_ONE = (a, b, c, d) -> 1;
+
+    /**
+     * Returns a {@link Runnable} that does nothing.
+     *
+     * @return never null
+     */
+    public static Runnable noop() {
+        return NO_OP;
+    }
 
     /**
      * Returns a {@link Function} that returns its only input.
