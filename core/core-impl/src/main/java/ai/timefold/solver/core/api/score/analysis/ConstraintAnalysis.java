@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.api.score.analysis;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +23,8 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * @param matches null if analysis not available;
  *        empty if constraint has no matches, but still non-zero constraint weight;
  *        non-empty if constraint has matches.
+ *        This is a {@link List} to simplify access to individual elements,
+ *        but it contains no duplicates just like {@link HashSet} wouldn't.
  */
 public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score,
         List<MatchAnalysis<Score_>> matches) {
