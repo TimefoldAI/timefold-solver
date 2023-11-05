@@ -947,7 +947,8 @@ public class MeetingSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<Meet
                             .toList();
                     for (String constraintName : constraintNameList) {
                         List<ConstraintMatch<HardMediumSoftScore>> filteredConstraintMatchList = constraintMatchSet.stream()
-                                .filter(constraintMatch -> constraintMatch.getConstraintRef().constraintName().equals(constraintName))
+                                .filter(constraintMatch -> constraintMatch.getConstraintRef().constraintName()
+                                        .equals(constraintName))
                                 .toList();
                         HardMediumSoftScore sum = filteredConstraintMatchList.stream()
                                 .map(ConstraintMatch::getScore)

@@ -1677,7 +1677,8 @@ public class ConferenceSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<C
                                 .append(" total");
                         Set<ConstraintMatch<?>> constraintMatchSet = indictment.getConstraintMatchSet().stream()
                                 .filter(constraintMatch -> filteredConstraintNameList == null
-                                        || filteredConstraintNameList.contains(constraintMatch.getConstraintRef().constraintName()))
+                                        || filteredConstraintNameList
+                                                .contains(constraintMatch.getConstraintRef().constraintName()))
                                 .collect(toSet());
                         List<String> constraintNameList = constraintMatchSet.stream()
                                 .map(constraintMatch -> constraintMatch.getConstraintRef().constraintName())
@@ -1685,7 +1686,8 @@ public class ConferenceSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<C
                                 .toList();
                         for (String constraintName : constraintNameList) {
                             List<ConstraintMatch<?>> filteredConstraintMatchList = constraintMatchSet.stream()
-                                    .filter(constraintMatch -> constraintMatch.getConstraintRef().constraintName().equals(constraintName)
+                                    .filter(constraintMatch -> constraintMatch.getConstraintRef().constraintName()
+                                            .equals(constraintName)
                                             && (isValidJustificationList == null
                                                     || isValidJustificationList.test(constraintMatch.getIndictedObjectList())))
                                     .toList();
