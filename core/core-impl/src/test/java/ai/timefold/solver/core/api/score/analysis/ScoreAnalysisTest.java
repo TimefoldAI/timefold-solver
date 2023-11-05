@@ -168,10 +168,10 @@ class ScoreAnalysisTest {
             var matchAnalyses = constraintAnalysis1.matches();
             softly.assertThat(matchAnalyses)
                     .containsOnly(
-                            matchAnalysisOf(2, "A", "B", "C"),
-                            matchAnalysisOf(4, "A", "B"),
-                            matchAnalysisOf(6, "B", "C"),
-                            matchAnalysisOf(8));
+                            matchAnalysisOf(constraintAnalysis1.constraintRef(), 2, "A", "B", "C"),
+                            matchAnalysisOf(constraintAnalysis1.constraintRef(), 4, "A", "B"),
+                            matchAnalysisOf(constraintAnalysis1.constraintRef(), 6, "B", "C"),
+                            matchAnalysisOf(constraintAnalysis1.constraintRef(), 8));
         });
         // Matches for constraint2 present in both.
         var constraintAnalysis2 = comparison.getConstraintAnalysis(constraintPackage, constraintName2);
@@ -180,12 +180,12 @@ class ScoreAnalysisTest {
             var matchAnalyses = constraintAnalysis2.matches();
             softly.assertThat(matchAnalyses)
                     .containsOnly(
-                            matchAnalysisOf(3, "B", "C", "D"),
-                            matchAnalysisOf(2, "B", "C"),
-                            matchAnalysisOf(9, "C", "D"),
-                            matchAnalysisOf(12),
-                            matchAnalysisOf(-2, "A", "B", "C"),
-                            matchAnalysisOf(-6, "A", "B"));
+                            matchAnalysisOf(constraintAnalysis2.constraintRef(), 3, "B", "C", "D"),
+                            matchAnalysisOf(constraintAnalysis2.constraintRef(), 2, "B", "C"),
+                            matchAnalysisOf(constraintAnalysis2.constraintRef(), 9, "C", "D"),
+                            matchAnalysisOf(constraintAnalysis2.constraintRef(), 12),
+                            matchAnalysisOf(constraintAnalysis2.constraintRef(), -2, "A", "B", "C"),
+                            matchAnalysisOf(constraintAnalysis2.constraintRef(), -6, "A", "B"));
         });
         // Matches for constraint3 not present.
         var constraintAnalysis3 = comparison.getConstraintAnalysis(constraintPackage, constraintName3);
@@ -194,10 +194,10 @@ class ScoreAnalysisTest {
             var matchAnalyses = constraintAnalysis3.matches();
             softly.assertThat(matchAnalyses)
                     .containsOnly(
-                            matchAnalysisOf(-3, "B", "C", "D"),
-                            matchAnalysisOf(-6, "B", "C"),
-                            matchAnalysisOf(-9, "C", "D"),
-                            matchAnalysisOf(-12));
+                            matchAnalysisOf(constraintAnalysis3.constraintRef(), -3, "B", "C", "D"),
+                            matchAnalysisOf(constraintAnalysis3.constraintRef(), -6, "B", "C"),
+                            matchAnalysisOf(constraintAnalysis3.constraintRef(), -9, "C", "D"),
+                            matchAnalysisOf(constraintAnalysis3.constraintRef(), -12));
         });
 
         var reverseComparison = scoreAnalysis2.diff(scoreAnalysis1);
@@ -214,10 +214,10 @@ class ScoreAnalysisTest {
             var matchAnalyses = reverseConstraintAnalysis1.matches();
             softly.assertThat(matchAnalyses)
                     .containsOnly(
-                            matchAnalysisOf(-2, "A", "B", "C"),
-                            matchAnalysisOf(-4, "A", "B"),
-                            matchAnalysisOf(-6, "B", "C"),
-                            matchAnalysisOf(-8));
+                            matchAnalysisOf(reverseConstraintAnalysis1.constraintRef(), -2, "A", "B", "C"),
+                            matchAnalysisOf(reverseConstraintAnalysis1.constraintRef(), -4, "A", "B"),
+                            matchAnalysisOf(reverseConstraintAnalysis1.constraintRef(), -6, "B", "C"),
+                            matchAnalysisOf(reverseConstraintAnalysis1.constraintRef(), -8));
         });
         // Matches for constraint2 present in both.
         var reverseConstraintAnalysis2 = reverseComparison.getConstraintAnalysis(constraintPackage, constraintName2);
@@ -226,12 +226,12 @@ class ScoreAnalysisTest {
             var matchAnalyses = reverseConstraintAnalysis2.matches();
             softly.assertThat(matchAnalyses)
                     .containsOnly(
-                            matchAnalysisOf(-3, "B", "C", "D"),
-                            matchAnalysisOf(-2, "B", "C"),
-                            matchAnalysisOf(-9, "C", "D"),
-                            matchAnalysisOf(-12),
-                            matchAnalysisOf(2, "A", "B", "C"),
-                            matchAnalysisOf(6, "A", "B"));
+                            matchAnalysisOf(reverseConstraintAnalysis2.constraintRef(), -3, "B", "C", "D"),
+                            matchAnalysisOf(reverseConstraintAnalysis2.constraintRef(), -2, "B", "C"),
+                            matchAnalysisOf(reverseConstraintAnalysis2.constraintRef(), -9, "C", "D"),
+                            matchAnalysisOf(reverseConstraintAnalysis2.constraintRef(), -12),
+                            matchAnalysisOf(reverseConstraintAnalysis2.constraintRef(), 2, "A", "B", "C"),
+                            matchAnalysisOf(reverseConstraintAnalysis2.constraintRef(), 6, "A", "B"));
         });
         // Matches for constraint3 present in reverse.
         var reverseConstraintAnalysis3 = reverseComparison.getConstraintAnalysis(constraintPackage, constraintName3);
@@ -239,10 +239,10 @@ class ScoreAnalysisTest {
             softly.assertThat(reverseConstraintAnalysis3.score()).isEqualTo(SimpleScore.of(30));
             var matchAnalyses = reverseConstraintAnalysis3.matches();
             softly.assertThat(matchAnalyses)
-                    .containsOnly(matchAnalysisOf(3, "B", "C", "D"),
-                            matchAnalysisOf(6, "B", "C"),
-                            matchAnalysisOf(9, "C", "D"),
-                            matchAnalysisOf(12));
+                    .containsOnly(matchAnalysisOf(reverseConstraintAnalysis3.constraintRef(), 3, "B", "C", "D"),
+                            matchAnalysisOf(reverseConstraintAnalysis3.constraintRef(), 6, "B", "C"),
+                            matchAnalysisOf(reverseConstraintAnalysis3.constraintRef(), 9, "C", "D"),
+                            matchAnalysisOf(reverseConstraintAnalysis3.constraintRef(), 12));
         });
     }
 
@@ -252,9 +252,9 @@ class ScoreAnalysisTest {
                 Arrays.asList(indictments), impact);
     }
 
-    private static MatchAnalysis<SimpleScore> matchAnalysisOf(int score, Object... facts) {
+    private static MatchAnalysis<SimpleScore> matchAnalysisOf(ConstraintRef constraintRef, int score, Object... facts) {
         var simpleScore = SimpleScore.of(score);
-        return new MatchAnalysis<>(simpleScore, DefaultConstraintJustification.of(simpleScore, facts));
+        return new MatchAnalysis<>(constraintRef, simpleScore, DefaultConstraintJustification.of(simpleScore, facts));
     }
 
 }

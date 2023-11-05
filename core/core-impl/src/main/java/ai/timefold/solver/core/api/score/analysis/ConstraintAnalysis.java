@@ -17,15 +17,17 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * It is available transitively via {@link SolutionManager#analyze(Object)}.
  *
  * @param <Score_>
+ * @param constraintRef never null
  * @param score never null
  * @param matches null if analysis not available;
  *        empty if constraint has no matches, but still non-zero constraint weight;
  *        non-empty if constraint has matches.
  */
-public record ConstraintAnalysis<Score_ extends Score<Score_>>(Score_ score, List<MatchAnalysis<Score_>> matches) {
+public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score,
+        List<MatchAnalysis<Score_>> matches) {
 
-    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> of(Score_ score) {
-        return new ConstraintAnalysis<>(score, null);
+    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> of(ConstraintRef constraintRef, Score_ score) {
+        return new ConstraintAnalysis<>(constraintRef, score, null);
     }
 
     public ConstraintAnalysis {
@@ -34,12 +36,12 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(Score_ score, Lis
 
     ConstraintAnalysis<Score_> negate() {
         if (matches == null) {
-            return ConstraintAnalysis.of(score.negate());
+            return ConstraintAnalysis.of(constraintRef, score.negate());
         } else {
             var negatedMatchAnalyses = matches.stream()
                     .map(MatchAnalysis::negate)
                     .toList();
-            return new ConstraintAnalysis<>(score.negate(), negatedMatchAnalyses);
+            return new ConstraintAnalysis<>(constraintRef, score.negate(), negatedMatchAnalyses);
         }
     }
 
@@ -68,7 +70,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(Score_ score, Lis
         // Compute the diff.
         var scoreDifference = constraintAnalysis.score().subtract(otherConstraintAnalysis.score());
         if (matchAnalyses == null) {
-            return ConstraintAnalysis.of(scoreDifference);
+            return ConstraintAnalysis.of(constraintRef, scoreDifference);
         }
         var matchAnalysisMap = mapMatchesToJustifications(matchAnalyses);
         var otherMatchAnalysisMap = mapMatchesToJustifications(otherMatchAnalyses);
@@ -89,12 +91,12 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(Score_ score, Lis
                         // No need to compute diff; this match is not present in the other score explanation.
                         return matchAnalysis;
                     } else { // Compute the diff.
-                        return new MatchAnalysis<>(matchAnalysis.score().subtract(otherMatchAnalysis.score()),
+                        return new MatchAnalysis<>(constraintRef, matchAnalysis.score().subtract(otherMatchAnalysis.score()),
                                 justification);
                     }
                 })
                 .collect(Collectors.toList());
-        return new ConstraintAnalysis<>(scoreDifference, result);
+        return new ConstraintAnalysis<>(constraintRef, scoreDifference, result);
     }
 
     private static <Score_ extends Score<Score_>> Map<ConstraintJustification, MatchAnalysis<Score_>>
