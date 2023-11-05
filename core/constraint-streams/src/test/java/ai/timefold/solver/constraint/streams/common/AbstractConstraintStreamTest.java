@@ -91,7 +91,7 @@ public abstract class AbstractConstraintStreamTest {
                 for (ConstraintMatch<SimpleScore> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                     if (Arrays.stream(assertableMatches)
                             .filter(assertableMatch -> assertableMatch.constraintName
-                                    .equals(constraintMatch.getConstraintName()))
+                                    .equals(constraintMatch.getConstraintRef().constraintName()))
                             .noneMatch(assertableMatch -> assertableMatch.isEqualTo(constraintMatch))) {
                         fail("The constraintMatch (" + constraintMatch + ") is in excess,"
                                 + " it's not in the assertableMatches (" + Arrays.toString(assertableMatches) + ").");
@@ -134,7 +134,7 @@ public abstract class AbstractConstraintStreamTest {
             if (score != ((SimpleScore) constraintMatch.getScore()).score()) {
                 return false;
             }
-            if (!constraintName.equals(constraintMatch.getConstraintName())) {
+            if (!constraintName.equals(constraintMatch.getConstraintRef().constraintName())) {
                 return false;
             }
             ConstraintJustification justification = constraintMatch.getJustification();

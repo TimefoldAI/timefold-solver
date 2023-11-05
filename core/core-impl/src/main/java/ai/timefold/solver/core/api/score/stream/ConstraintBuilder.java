@@ -2,12 +2,13 @@ package ai.timefold.solver.core.api.score.stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
 public interface ConstraintBuilder {
 
     /**
      * Builds a {@link Constraint} from the constraint stream.
-     * The {@link Constraint#getConstraintPackage()} defaults to the package of the {@link PlanningSolution} class.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      *
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @return never null

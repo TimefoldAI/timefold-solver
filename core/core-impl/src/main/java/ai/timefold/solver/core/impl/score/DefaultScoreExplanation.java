@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -92,7 +93,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
                             .limit(constraintMatchLimit)
                             .forEach(constraintMatch -> scoreExplanation
                                     .append("            ").append(constraintMatch.getScore().toShortString())
-                                    .append(": constraint (").append(constraintMatch.getConstraintName())
+                                    .append(": constraint (").append(constraintMatch.getConstraintRef().constraintName())
                                     .append(")\n"));
                     if (constraintMatchSet.size() > constraintMatchLimit) {
                         scoreExplanation.append("            ...\n");
@@ -153,12 +154,8 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
 
     @Override
     public String getSummary() {
-        return summary.updateAndGet(currentSummary -> {
-            if (currentSummary != null) {
-                return currentSummary;
-            }
-            return explainScore(score, constraintMatchTotalMap.values(), indictmentMap.values());
-        });
+        return summary.updateAndGet(currentSummary -> Objects.requireNonNullElseGet(currentSummary,
+                () -> explainScore(score, constraintMatchTotalMap.values(), indictmentMap.values())));
     }
 
     @Override

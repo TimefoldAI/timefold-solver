@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
@@ -85,7 +86,7 @@ public interface ConstraintStream {
      * To avoid hard-coding the constraintWeight, to allow end-users to tweak it,
      * use {@link #penalizeConfigurable(String)} and a {@link ConstraintConfiguration} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to the package of the {@link PlanningSolution} class.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      *
      * @deprecated Prefer {@link UniConstraintStream#penalize(Score)} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -115,7 +116,8 @@ public interface ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #penalize(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link UniConstraintStream#penalizeConfigurable()} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -141,7 +143,7 @@ public interface ConstraintStream {
      * To avoid hard-coding the constraintWeight, to allow end-users to tweak it,
      * use {@link #penalizeConfigurable(String)} and a {@link ConstraintConfiguration} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to the package of the {@link PlanningSolution} class.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      *
      * @deprecated Prefer {@link UniConstraintStream#reward(Score)} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -171,7 +173,8 @@ public interface ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #reward(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link UniConstraintStream#rewardConfigurable()} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -197,7 +200,7 @@ public interface ConstraintStream {
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to the package of the {@link PlanningSolution} class.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      *
      * @deprecated Prefer {@link UniConstraintStream#impact(Score)} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification

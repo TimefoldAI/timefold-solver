@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurati
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -2388,7 +2389,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * For non-int {@link Score} types use {@link #impactConfigurableLong(String, ToLongFunction)} or
      * {@link #impactConfigurableBigDecimal(String, Function)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link #impactConfigurable(ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -2427,7 +2429,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link #impactConfigurableLong(ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -2467,7 +2470,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link #impactConfigurableBigDecimal(Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification

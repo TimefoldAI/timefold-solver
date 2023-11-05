@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -1686,7 +1687,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link #impactConfigurable(ToIntQuadFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -1726,7 +1728,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link #impactConfigurableLong(ToLongQuadFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
@@ -1766,7 +1769,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
      * <p>
-     * The {@link Constraint#getConstraintPackage()} defaults to {@link ConstraintConfiguration#constraintPackage()}.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to
+     * {@link ConstraintConfiguration#constraintPackage()}.
      *
      * @deprecated Prefer {@link #impactConfigurableBigDecimal(QuadFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification

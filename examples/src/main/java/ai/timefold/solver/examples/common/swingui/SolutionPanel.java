@@ -182,8 +182,10 @@ public abstract class SolutionPanel<Solution_> extends JPanel implements Scrolla
         }
         StringBuilder s = new StringBuilder("<html>Indictment: ").append(indictment.getScore().toShortString());
         for (ConstraintMatch<?> constraintMatch : indictment.getConstraintMatchSet()) {
-            s.append("<br/>&nbsp;&nbsp;").append(constraintMatch.getConstraintName())
-                    .append(" = ").append(constraintMatch.getScore().toShortString());
+            s.append("<br/>&nbsp;&nbsp;")
+                    .append(constraintMatch.getConstraintRef().constraintName())
+                    .append(" = ")
+                    .append(constraintMatch.getScore().toShortString());
         }
         s.append("</html>");
         return s.toString();
