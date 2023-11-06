@@ -1,6 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.common;
 
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
@@ -10,9 +11,12 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
 final class GroupNodeConstructorWithAccumulate<Tuple_ extends AbstractTuple> implements GroupNodeConstructor<Tuple_> {
 
+    private final Object equalityKey;
     private final NodeConstructorWithAccumulate<Tuple_> nodeConstructorFunction;
 
-    public GroupNodeConstructorWithAccumulate(NodeConstructorWithAccumulate<Tuple_> nodeConstructorFunction) {
+    public GroupNodeConstructorWithAccumulate(Object equalityKey,
+            NodeConstructorWithAccumulate<Tuple_> nodeConstructorFunction) {
+        this.equalityKey = equalityKey;
         this.nodeConstructorFunction = nodeConstructorFunction;
     }
 
@@ -33,5 +37,20 @@ final class GroupNodeConstructorWithAccumulate<Tuple_ extends AbstractTuple> imp
         var node = nodeConstructorFunction.apply(groupStoreIndex, undoStoreIndex, tupleLifecycle, outputStoreSize,
                 environmentMode);
         buildHelper.addNode(node, bridgeStream);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        GroupNodeConstructorWithAccumulate<?> that = (GroupNodeConstructorWithAccumulate<?>) object;
+        return Objects.equals(equalityKey, that.equalityKey);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(equalityKey);
     }
 }

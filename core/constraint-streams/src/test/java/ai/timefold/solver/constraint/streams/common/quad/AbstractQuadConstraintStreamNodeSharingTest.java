@@ -10,6 +10,8 @@ import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamNodeSharingTest;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
+import ai.timefold.solver.core.api.function.ToIntQuadFunction;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
@@ -297,7 +299,67 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     // Group by
     // ************************************************************************
 
-    // TODO
+    @Override
+    @TestTemplate
+    public void differentParentGroupBy() {
+        QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c, d) -> true;
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper =
+                (a, b, c, d) -> a;
+
+        assertThat(baseStream.groupBy(keyMapper))
+                .isNotSameAs(baseStream.filter(filter1).groupBy(keyMapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentKeyMapperGroupBy() {
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper1 =
+                (a, b, c, d) -> a;
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper2 =
+                (a, b, c, d) -> b;
+
+        assertThat(baseStream.groupBy(keyMapper1))
+                .isNotSameAs(baseStream.groupBy(keyMapper2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentCollectorGroupBy() {
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper =
+                (a, b, c, d) -> a;
+
+        assertThat(baseStream.groupBy(ConstraintCollectors.toList(keyMapper)))
+                .isNotSameAs(baseStream.groupBy(ConstraintCollectors.countDistinct(keyMapper)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentCollectorFunctionGroupBy() {
+        ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction1 = (a, b, c, d) -> 0;
+        ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction2 = (a, b, c, d) -> 0;
+
+        assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction1)))
+                .isNotSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction2)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameKeyMapperGroupBy() {
+        QuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> keyMapper =
+                (a, b, c, d) -> a;
+
+        assertThat(baseStream.groupBy(keyMapper))
+                .isSameAs(baseStream.groupBy(keyMapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameCollectorGroupBy() {
+        ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction = (a, b, c, d) -> 0;
+
+        assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)))
+                .isSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)));
+    }
 
     // ************************************************************************
     // Map/expand/flatten/distinct/concat
