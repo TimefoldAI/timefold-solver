@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -41,65 +41,75 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
     public static <Score_ extends Score<Score_>> String explainScore(Score_ workingScore,
             Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection,
             Collection<Indictment<Score_>> indictmentCollection, int indictmentLimit, int constraintMatchLimit) {
-        StringBuilder scoreExplanation =
-                new StringBuilder((constraintMatchTotalCollection.size() + 4 + 2 * indictmentLimit) * 80);
-        scoreExplanation.append("Explanation of score (").append(workingScore).append("):\n");
-        scoreExplanation.append("    Constraint match totals:\n");
+        var scoreExplanation = new StringBuilder((constraintMatchTotalCollection.size() + 4 + 2 * indictmentLimit) * 80);
+        scoreExplanation.append("""
+                Explanation of score (%s):
+                    Constraint matches:
+                """.formatted(workingScore));
+
         Comparator<ConstraintMatchTotal<Score_>> constraintMatchTotalComparator = comparing(ConstraintMatchTotal::getScore);
         Comparator<ConstraintMatch<Score_>> constraintMatchComparator = comparing(ConstraintMatch::getScore);
         constraintMatchTotalCollection.stream()
                 .sorted(constraintMatchTotalComparator)
                 .forEach(constraintMatchTotal -> {
-                    Set<ConstraintMatch<Score_>> constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
-                    scoreExplanation
-                            .append("        ").append(constraintMatchTotal.getScore().toShortString())
-                            .append(": constraint (").append(constraintMatchTotal.getConstraintRef().constraintName())
-                            .append(") has ").append(constraintMatchSet.size()).append(" matches:\n");
+                    var constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
+                    scoreExplanation.append("""
+                                    %s: constraint (%s) has %s matches:
+                            """.formatted(constraintMatchTotal.getScore().toShortString(),
+                            constraintMatchTotal.getConstraintRef().constraintName(), constraintMatchSet.size()));
                     constraintMatchSet.stream()
                             .sorted(constraintMatchComparator)
                             .limit(constraintMatchLimit)
-                            .forEach(constraintMatch -> scoreExplanation
-                                    .append("            ")
-                                    .append(constraintMatch.getScore().toShortString())
-                                    .append(": justifications (")
-                                    .append(constraintMatch.getJustification().toString())
-                                    .append(")\n"));
+                            .forEach(constraintMatch -> scoreExplanation.append("""
+                                                %s: justified with (%s)
+                                    """.formatted(constraintMatch.getScore().toShortString(),
+                                    constraintMatch.getJustification())));
                     if (constraintMatchSet.size() > constraintMatchLimit) {
-                        scoreExplanation.append("            ...\n");
+                        scoreExplanation.append("""
+                                            ...
+                                """);
                     }
                 });
 
-        int indictmentCount = indictmentCollection.size();
+        var indictmentCount = indictmentCollection.size();
         if (indictmentLimit < indictmentCount) {
-            scoreExplanation.append("    Indictments (top ").append(indictmentLimit)
-                    .append(" of ").append(indictmentCount).append("):\n");
+            scoreExplanation.append("""
+                        Indictments (top %s of %s):
+                    """.formatted(indictmentLimit, indictmentCount));
         } else {
-            scoreExplanation.append("    Indictments:\n");
+            scoreExplanation.append("""
+                        Indictments:
+                    """);
         }
+
         Comparator<Indictment<Score_>> indictmentComparator = comparing(Indictment::getScore);
         Comparator<ConstraintMatch<Score_>> constraintMatchScoreComparator = comparing(ConstraintMatch::getScore);
         indictmentCollection.stream()
                 .sorted(indictmentComparator)
                 .limit(indictmentLimit)
                 .forEach(indictment -> {
-                    Set<ConstraintMatch<Score_>> constraintMatchSet = indictment.getConstraintMatchSet();
-                    scoreExplanation
-                            .append("        ").append(indictment.getScore().toShortString())
-                            .append(": indicted object (").append(indictment.getIndictedObject().toString())
-                            .append(") has ").append(constraintMatchSet.size()).append(" matches:\n");
+                    var constraintMatchSet = indictment.getConstraintMatchSet();
+                    scoreExplanation.append("""
+                                    %s: indicted with (%s) has %s matches:
+                            """.formatted(indictment.getScore().toShortString(), indictment.getIndictedObject(),
+                            constraintMatchSet.size()));
                     constraintMatchSet.stream()
                             .sorted(constraintMatchScoreComparator)
                             .limit(constraintMatchLimit)
-                            .forEach(constraintMatch -> scoreExplanation
-                                    .append("            ").append(constraintMatch.getScore().toShortString())
-                                    .append(": constraint (").append(constraintMatch.getConstraintName())
-                                    .append(")\n"));
+                            .forEach(constraintMatch -> scoreExplanation.append("""
+                                                %s: constraint (%s)
+                                    """.formatted(constraintMatch.getScore().toShortString(),
+                                    constraintMatch.getConstraintRef().constraintName())));
                     if (constraintMatchSet.size() > constraintMatchLimit) {
-                        scoreExplanation.append("            ...\n");
+                        scoreExplanation.append("""
+                                            ...
+                                """);
                     }
                 });
         if (indictmentCount > indictmentLimit) {
-            scoreExplanation.append("        ...\n");
+            scoreExplanation.append("""
+                            ...
+                    """);
         }
         return scoreExplanation.toString();
     }
@@ -153,12 +163,8 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
 
     @Override
     public String getSummary() {
-        return summary.updateAndGet(currentSummary -> {
-            if (currentSummary != null) {
-                return currentSummary;
-            }
-            return explainScore(score, constraintMatchTotalMap.values(), indictmentMap.values());
-        });
+        return summary.updateAndGet(currentSummary -> Objects.requireNonNullElseGet(currentSummary,
+                () -> explainScore(score, constraintMatchTotalMap.values(), indictmentMap.values())));
     }
 
     @Override

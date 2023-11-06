@@ -3,6 +3,7 @@ package ai.timefold.solver.core.api.score.analysis;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -12,12 +13,15 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  * It is available transitively via {@link SolutionManager#analyze(Object)}.
  *
  * @param <Score_>
+ * @param constraintRef never null
  * @param score never null
  * @param justification never null
  */
-public record MatchAnalysis<Score_ extends Score<Score_>>(Score_ score, ConstraintJustification justification) {
+public record MatchAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score,
+        ConstraintJustification justification) {
 
     public MatchAnalysis {
+        Objects.requireNonNull(constraintRef);
         Objects.requireNonNull(score);
         Objects.requireNonNull(justification, """
                 Received a null justification.
@@ -26,7 +30,7 @@ public record MatchAnalysis<Score_ extends Score<Score_>>(Score_ score, Constrai
     }
 
     MatchAnalysis<Score_> negate() {
-        return new MatchAnalysis<>(score.negate(), justification);
+        return new MatchAnalysis<>(constraintRef, score.negate(), justification);
     }
 
 }

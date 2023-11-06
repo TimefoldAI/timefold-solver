@@ -59,13 +59,13 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
                         var score = entry.getValue().stream()
                                 .map(ConstraintMatch::getScore)
                                 .reduce(zero, Score::add);
-                        return new MatchAnalysis<>(score, entry.getKey());
+                        return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
                     })
                     .toList();
-            return new ConstraintAnalysis<>(constraintMatchTotal.getScore(),
+            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getScore(),
                     matchAnalyses);
         } else {
-            return new ConstraintAnalysis<>(constraintMatchTotal.getScore(), null);
+            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getScore(), null);
         }
     }
 

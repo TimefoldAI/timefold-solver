@@ -65,8 +65,8 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
         var constraintRef1 = ConstraintRef.of("package1", "constraint1");
         var constraintRef2 = ConstraintRef.of("package2", "constraint2");
-        var constraintAnalysis1 = new ConstraintAnalysis<>(HardSoftScore.ofHard(1), null);
-        var constraintAnalysis2 = new ConstraintAnalysis<>(HardSoftScore.ofSoft(2), null);
+        var constraintAnalysis1 = new ConstraintAnalysis<>(constraintRef1, HardSoftScore.ofHard(1), null);
+        var constraintAnalysis2 = new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofSoft(2), null);
         var originalScoreAnalysis = new ScoreAnalysis<>(HardSoftScore.of(1, 2),
                 Map.of(constraintRef1, constraintAnalysis1,
                         constraintRef2, constraintAnalysis2));
@@ -100,16 +100,18 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
         var constraintRef1 = ConstraintRef.of("package1", "constraint1");
         var constraintRef2 = ConstraintRef.of("package2", "constraint2");
-        var matchAnalysis1 = new MatchAnalysis<>(HardSoftScore.ofHard(1),
+        var matchAnalysis1 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
                 DefaultConstraintJustification.of(HardSoftScore.ofHard(1), "A", "B"));
-        var matchAnalysis2 = new MatchAnalysis<>(HardSoftScore.ofHard(1),
+        var matchAnalysis2 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
                 DefaultConstraintJustification.of(HardSoftScore.ofHard(1), "B", "C", "D"));
-        var matchAnalysis3 = new MatchAnalysis<>(HardSoftScore.ofSoft(1),
+        var matchAnalysis3 = new MatchAnalysis<>(constraintRef2, HardSoftScore.ofSoft(1),
                 DefaultConstraintJustification.of(HardSoftScore.ofSoft(1), "D"));
-        var matchAnalysis4 = new MatchAnalysis<>(HardSoftScore.ofSoft(3),
+        var matchAnalysis4 = new MatchAnalysis<>(constraintRef2, HardSoftScore.ofSoft(3),
                 DefaultConstraintJustification.of(HardSoftScore.ofSoft(3), "A", "C"));
-        var constraintAnalysis1 = new ConstraintAnalysis<>(HardSoftScore.ofHard(2), List.of(matchAnalysis1, matchAnalysis2));
-        var constraintAnalysis2 = new ConstraintAnalysis<>(HardSoftScore.ofSoft(4), List.of(matchAnalysis3, matchAnalysis4));
+        var constraintAnalysis1 =
+                new ConstraintAnalysis<>(constraintRef1, HardSoftScore.ofHard(2), List.of(matchAnalysis1, matchAnalysis2));
+        var constraintAnalysis2 =
+                new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofSoft(4), List.of(matchAnalysis3, matchAnalysis4));
         var originalScoreAnalysis = new ScoreAnalysis<>(HardSoftScore.of(2, 4),
                 Map.of(constraintRef1, constraintAnalysis1,
                         constraintRef2, constraintAnalysis2));

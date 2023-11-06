@@ -197,7 +197,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     // ************************************************************************
 
     public String getIdentificationString() {
-        return getConstraintId() + "/" + justification;
+        return getConstraintRef().constraintId() + "/" + justification;
     }
 
     @Override

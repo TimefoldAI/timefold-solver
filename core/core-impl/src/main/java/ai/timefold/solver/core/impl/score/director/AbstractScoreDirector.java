@@ -2,27 +2,20 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
-import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
@@ -54,31 +47,30 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_>>
         implements InnerScoreDirector<Solution_, Score_>, Cloneable {
 
+    private static final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final boolean lookUpEnabled;
+    private final LookUpManager lookUpManager;
+    private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
-    protected final boolean lookUpEnabled;
-    protected final LookUpManager lookUpManager;
-    protected final boolean expectShadowVariablesInCorrectState;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
     protected final boolean constraintMatchEnabledPreference;
 
+    private long workingEntityListRevision = 0L;
+    private boolean allChangesWillBeUndoneBeforeStepEnds = false;
+    private long calculationCount = 0L;
     protected Solution_ workingSolution;
-    protected long workingEntityListRevision = 0L;
     protected Integer workingInitScore = null;
-
-    protected boolean allChangesWillBeUndoneBeforeStepEnds = false;
-
-    protected long calculationCount = 0L;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
-        this.scoreDirectorFactory = scoreDirectorFactory;
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
                 : null;
         this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
+        this.scoreDirectorFactory = scoreDirectorFactory;
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
@@ -667,159 +659,113 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected String buildScoreCorruptionAnalysis(InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector,
             boolean predicted) {
         if (!isConstraintMatchEnabled() || !uncorruptedScoreDirector.isConstraintMatchEnabled()) {
-            return "Score corruption analysis could not be generated because"
-                    + " either corrupted constraintMatchEnabled (" + isConstraintMatchEnabled()
-                    + ") or uncorrupted constraintMatchEnabled (" + uncorruptedScoreDirector.isConstraintMatchEnabled()
-                    + ") is disabled.\n"
-                    + "  Check your score constraints manually.";
+            return """
+                    Score corruption analysis could not be generated because either corrupted constraintMatchEnabled (%s) \
+                    or uncorrupted constraintMatchEnabled (%s) is disabled.
+                      Check your score constraints manually."""
+                    .formatted(constraintMatchEnabledPreference, uncorruptedScoreDirector.isConstraintMatchEnabled());
         }
 
-        Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = getConstraintMatchTotalMap();
-        Map<Object, Set<ConstraintMatch<Score_>>> corruptedMap =
-                createConstraintMatchMap(constraintMatchTotalMap.values());
-        Map<String, ConstraintMatchTotal<Score_>> uncorruptedConstraintMatchTotalMap =
-                uncorruptedScoreDirector.getConstraintMatchTotalMap();
-        Map<Object, Set<ConstraintMatch<Score_>>> uncorruptedMap =
-                createConstraintMatchMap(uncorruptedConstraintMatchTotalMap.values());
+        var corruptedAnalysis = buildScoreAnalysis(true);
+        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(true);
 
-        Set<ConstraintMatch<Score_>> excessSet = new LinkedHashSet<>();
-        Set<ConstraintMatch<Score_>> missingSet = new LinkedHashSet<>();
+        var excessSet = new LinkedHashSet<MatchAnalysis<Score_>>();
+        var missingSet = new LinkedHashSet<MatchAnalysis<Score_>>();
 
-        uncorruptedMap.forEach((key, uncorruptedMatches) -> {
-            Set<ConstraintMatch<Score_>> corruptedMatches = corruptedMap.getOrDefault(key, Collections.emptySet());
-            if (corruptedMatches.isEmpty()) {
-                missingSet.addAll(uncorruptedMatches);
+        uncorruptedAnalysis.constraintMap().forEach((constraintRef, uncorruptedConstraintAnalysis) -> {
+            var corruptedConstraintAnalysis = corruptedAnalysis.constraintMap()
+                    .get(constraintRef);
+            if (corruptedConstraintAnalysis == null || corruptedConstraintAnalysis.matches().isEmpty()) {
+                missingSet.addAll(uncorruptedConstraintAnalysis.matches());
                 return;
             }
-            updateExcessAndMissingConstraintMatches(uncorruptedMatches, corruptedMatches, excessSet, missingSet);
+            updateExcessAndMissingConstraintMatches(uncorruptedConstraintAnalysis.matches(),
+                    corruptedConstraintAnalysis.matches(), excessSet, missingSet);
         });
 
-        corruptedMap.forEach((key, corruptedMatches) -> {
-            Set<ConstraintMatch<Score_>> uncorruptedMatches = uncorruptedMap.getOrDefault(key, Collections.emptySet());
-            if (uncorruptedMatches.isEmpty()) {
-                excessSet.addAll(corruptedMatches);
+        corruptedAnalysis.constraintMap().forEach((constraintRef, corruptedConstraintAnalysis) -> {
+            var uncorruptedConstraintAnalysis = uncorruptedAnalysis.constraintMap()
+                    .get(constraintRef);
+            if (uncorruptedConstraintAnalysis == null || uncorruptedConstraintAnalysis.matches().isEmpty()) {
+                excessSet.addAll(corruptedConstraintAnalysis.matches());
                 return;
             }
-            updateExcessAndMissingConstraintMatches(uncorruptedMatches, corruptedMatches, excessSet, missingSet);
+            updateExcessAndMissingConstraintMatches(uncorruptedConstraintAnalysis.matches(),
+                    corruptedConstraintAnalysis.matches(), excessSet, missingSet);
         });
 
-        final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
-        StringBuilder analysis = new StringBuilder();
+        var analysis = new StringBuilder();
         analysis.append("Score corruption analysis:\n");
         // If predicted, the score calculation might have happened on another thread, so a different ScoreDirector
         // so there is no guarantee that the working ScoreDirector is the corrupted ScoreDirector
-        String workingLabel = predicted ? "working" : "corrupted";
-        if (excessSet.isEmpty()) {
-            analysis.append("  The ").append(workingLabel)
-                    .append(" scoreDirector has no ConstraintMatch(s) which are in excess.\n");
-        } else {
-            analysis.append("  The ").append(workingLabel).append(" scoreDirector has ").append(excessSet.size())
-                    .append(" ConstraintMatch(s) which are in excess (and should not be there):\n");
-            excessSet.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT)
-                    .forEach(constraintMatch -> analysis.append("    ").append(constraintMatch).append("\n"));
-            if (excessSet.size() >= CONSTRAINT_MATCH_DISPLAY_LIMIT) {
-                analysis.append("    ... ").append(excessSet.size() - CONSTRAINT_MATCH_DISPLAY_LIMIT)
-                        .append(" more\n");
-            }
-        }
-        if (missingSet.isEmpty()) {
-            analysis.append("  The ").append(workingLabel)
-                    .append(" scoreDirector has no ConstraintMatch(s) which are missing.\n");
-        } else {
-            analysis.append("  The ").append(workingLabel).append(" scoreDirector has ").append(missingSet.size())
-                    .append(" ConstraintMatch(s) which are missing:\n");
-            missingSet.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT)
-                    .forEach(constraintMatch -> analysis.append("    ").append(constraintMatch).append("\n"));
-            if (missingSet.size() >= CONSTRAINT_MATCH_DISPLAY_LIMIT) {
-                analysis.append("    ... ").append(missingSet.size() - CONSTRAINT_MATCH_DISPLAY_LIMIT)
-                        .append(" more\n");
-            }
-        }
+        var workingLabel = predicted ? "working" : "corrupted";
+        appendAnalysis(analysis, workingLabel, "should not be there", excessSet);
+        appendAnalysis(analysis, workingLabel, "are missing", missingSet);
         if (!missingSet.isEmpty() || !excessSet.isEmpty()) {
-            analysis.append("  Maybe there is a bug in the score constraints of those ConstraintMatch(s).\n");
-            analysis.append(
-                    "  Maybe a score constraint doesn't select all the entities it depends on, but finds some through a reference in a selected entity."
-                            + " This corrupts incremental score calculation, because the constraint is not re-evaluated if such a non-selected entity changes.");
+            analysis.append("""
+                      Maybe there is a bug in the score constraints of those ConstraintMatch(s).
+                      Maybe a score constraint doesn't select all the entities it depends on,
+                        but discovers some transitively through a reference from the selected entity.
+                        This corrupts incremental score calculation,
+                        because the constraint is not re-evaluated if the transitively discovered entity changes.
+                    """.stripTrailing());
         } else {
             if (predicted) {
-                analysis.append("  If multithreaded solving is active,"
-                        + " the working scoreDirector is probably not the corrupted scoreDirector.\n");
-                analysis.append("  If multithreaded solving is active, maybe the rebase() method of the move is bugged.\n");
-                analysis.append("  If multithreaded solving is active,"
-                        + " maybe a VariableListener affected the moveThread's workingSolution after doing and undoing a move,"
-                        + " but this didn't happen here on the solverThread, so we can't detect it.");
+                analysis.append("""
+                          If multi-threaded solving is active:
+                            - the working scoreDirector is probably not the corrupted scoreDirector.
+                            - maybe the rebase() method of the move is bugged.
+                            - maybe a VariableListener affected the moveThread's workingSolution after doing and undoing a move,
+                              but this didn't happen here on the solverThread, so we can't detect it.
+                        """.stripTrailing());
             } else {
-                analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (").append(getClass())
-                        .append(").");
+                analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (%s)."
+                        .formatted(getClass()));
             }
         }
         return analysis.toString();
     }
 
-    private void updateExcessAndMissingConstraintMatches(Set<ConstraintMatch<Score_>> uncorruptedSet,
-            Set<ConstraintMatch<Score_>> corruptedSet, Set<ConstraintMatch<Score_>> excessSet,
-            Set<ConstraintMatch<Score_>> missingSet) {
-        int uncorruptedMatchCount = uncorruptedSet.size();
-        int corruptedMatchCount = corruptedSet.size();
-        /*
-         * The corrupted and uncorrupted sets contain 1+ constraint matches which are the same.
-         * (= They have the same constraint, same justifications and the same score.)
-         * This is perfectly fine and happens when a constraint stream produces duplicate tuples.
-         *
-         * It is expected that the number of these matches would be the same between the two sets.
-         * When it is not, it is a sign of score corruption.
-         * In that case, for visualization purposes, we need to take the excess and/or missing constraint matches,
-         * and print them to the user.
-         * It does not matter which ones we pick, because they are all the same.
-         * So we just use the limit() below to pick the first ones.
-         */
-        if (corruptedMatchCount > uncorruptedMatchCount) {
-            corruptedSet.stream()
-                    .limit(corruptedMatchCount - uncorruptedMatchCount)
-                    .forEach(excessSet::add);
-        } else if (corruptedMatchCount < uncorruptedMatchCount) {
-            uncorruptedSet.stream()
-                    .limit(uncorruptedMatchCount - corruptedMatchCount)
-                    .forEach(missingSet::add);
+    private void appendAnalysis(StringBuilder analysis, String workingLabel, String suffix,
+            Set<MatchAnalysis<Score_>> matches) {
+        if (matches.isEmpty()) {
+            analysis.append("""
+                      The %s scoreDirector has no ConstraintMatch(es) which %s.
+                    """.formatted(workingLabel, suffix));
+        } else {
+            analysis.append("""
+                      The %s scoreDirector has %s ConstraintMatch(es) which %s:
+                    """.formatted(workingLabel, matches.size(), suffix));
+            matches.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT)
+                    .forEach(match -> analysis.append("""
+                                %s/%s=%s
+                            """.formatted(match.constraintRef().constraintId(), match.justification(), match.score())));
+            if (matches.size() >= CONSTRAINT_MATCH_DISPLAY_LIMIT) {
+                analysis.append("""
+                            ... %s more
+                        """.formatted(matches.size() - CONSTRAINT_MATCH_DISPLAY_LIMIT));
+            }
         }
     }
 
-    private Map<Object, Set<ConstraintMatch<Score_>>> createConstraintMatchMap(
-            Collection<ConstraintMatchTotal<Score_>> constraintMatchTotals) {
-        SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        Map<Object, Set<ConstraintMatch<Score_>>> constraintMatchMap =
-                new LinkedHashMap<>(constraintMatchTotals.size() * 16);
-        for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotals) {
-            String constraintId = constraintMatchTotal.getConstraintRef().constraintId();
-            for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
-                Stream.Builder<Object> keyStream = Stream.builder()
-                        .add(constraintId);
-                ConstraintJustification justification = constraintMatch.getJustification();
-                if (justification instanceof DefaultConstraintJustification constraintJustification) {
-                    // The order of justificationLists for constraints that include accumulates isn't stable, so we make it.
-                    constraintJustification.getFacts()
-                            .stream()
-                            .filter(Objects::nonNull)
-                            .sorted(solutionDescriptor.getClassAndPlanningIdComparator())
-                            .forEach(keyStream);
-                } else {
-                    keyStream.add(justification);
-                }
-                // And now we store the reference to the constraint match.
-                // Constraint Streams with indistinct tuples may produce two different match instances for the same key.
-                Object key = keyStream.add(constraintMatch.getScore())
-                        .build()
-                        .collect(Collectors.toList());
-                boolean added = constraintMatchMap.computeIfAbsent(key, k -> new LinkedHashSet<>(0))
-                        .add(constraintMatch);
-                if (!added) {
-                    throw new IllegalStateException("Score corruption because the constraintMatch (" + constraintMatch
-                            + ") was added twice for constraintMatchTotal (" + constraintMatchTotal
-                            + ") without removal.");
-                }
+    private void updateExcessAndMissingConstraintMatches(List<MatchAnalysis<Score_>> uncorruptedList,
+            List<MatchAnalysis<Score_>> corruptedList, Set<MatchAnalysis<Score_>> excessSet,
+            Set<MatchAnalysis<Score_>> missingSet) {
+        iterateAndAddIfFound(corruptedList, uncorruptedList, excessSet);
+        iterateAndAddIfFound(uncorruptedList, corruptedList, missingSet);
+    }
+
+    private void iterateAndAddIfFound(List<MatchAnalysis<Score_>> referenceList, List<MatchAnalysis<Score_>> lookupList,
+            Set<MatchAnalysis<Score_>> targetSet) {
+        if (referenceList.isEmpty()) {
+            return;
+        }
+        var lookupSet = new LinkedHashSet<>(lookupList); // Guaranteed to not contain duplicates anyway.
+        for (var reference : referenceList) {
+            if (!lookupSet.contains(reference)) {
+                targetSet.add(reference);
             }
         }
-        return constraintMatchMap;
     }
 
     protected boolean isConstraintConfiguration(Object problemFactOrEntity) {

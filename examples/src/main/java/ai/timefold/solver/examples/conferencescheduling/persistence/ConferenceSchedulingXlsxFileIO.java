@@ -1633,7 +1633,7 @@ public class ConferenceSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<C
                     .flatMap(indictment -> indictment.getConstraintMatchSet().stream())
                     // Filter out filtered constraints
                     .filter(constraintMatch -> filteredConstraintNameList == null
-                            || filteredConstraintNameList.contains(constraintMatch.getConstraintName()))
+                            || filteredConstraintNameList.contains(constraintMatch.getConstraintRef().constraintName()))
                     .filter(constraintMatch -> isValidJustificationList == null
                             || isValidJustificationList.test(constraintMatch.getIndictedObjectList()))
                     .map(ConstraintMatch::getScore)
@@ -1677,16 +1677,20 @@ public class ConferenceSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<C
                                 .append(" total");
                         Set<ConstraintMatch<?>> constraintMatchSet = indictment.getConstraintMatchSet().stream()
                                 .filter(constraintMatch -> filteredConstraintNameList == null
-                                        || filteredConstraintNameList.contains(constraintMatch.getConstraintName()))
+                                        || filteredConstraintNameList
+                                                .contains(constraintMatch.getConstraintRef().constraintName()))
                                 .collect(toSet());
                         List<String> constraintNameList = constraintMatchSet.stream()
-                                .map(ConstraintMatch::getConstraintName).distinct().collect(toList());
+                                .map(constraintMatch -> constraintMatch.getConstraintRef().constraintName())
+                                .distinct()
+                                .toList();
                         for (String constraintName : constraintNameList) {
                             List<ConstraintMatch<?>> filteredConstraintMatchList = constraintMatchSet.stream()
-                                    .filter(constraintMatch -> constraintMatch.getConstraintName().equals(constraintName)
+                                    .filter(constraintMatch -> constraintMatch.getConstraintRef().constraintName()
+                                            .equals(constraintName)
                                             && (isValidJustificationList == null
                                                     || isValidJustificationList.test(constraintMatch.getIndictedObjectList())))
-                                    .collect(toList());
+                                    .toList();
                             HardMediumSoftScore sum = filteredConstraintMatchList.stream()
                                     .map(constraintMatch -> (HardMediumSoftScore) constraintMatch.getScore())
                                     .reduce(HardMediumSoftScore::add)

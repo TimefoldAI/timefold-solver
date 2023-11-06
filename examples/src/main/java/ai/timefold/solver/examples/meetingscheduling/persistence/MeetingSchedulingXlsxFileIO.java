@@ -902,7 +902,7 @@ public class MeetingSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<Meet
                     .flatMap(indictment -> indictment.getConstraintMatchSet().stream())
                     // Filter out filtered constraints
                     .filter(constraintMatch -> filteredConstraintNames == null
-                            || filteredConstraintNames.contains(constraintMatch.getConstraintName()))
+                            || filteredConstraintNames.contains(constraintMatch.getConstraintRef().constraintName()))
                     .map(ConstraintMatch::getScore)
                     // Filter out positive constraints
                     .filter(indictmentScore -> !(indictmentScore.hardScore() >= 0 && indictmentScore.softScore() >= 0))
@@ -942,11 +942,14 @@ public class MeetingSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<Meet
                             .append(" total");
                     Set<ConstraintMatch<HardMediumSoftScore>> constraintMatchSet = indictment.getConstraintMatchSet();
                     List<String> constraintNameList = constraintMatchSet.stream()
-                            .map(ConstraintMatch::getConstraintName).distinct().collect(toList());
+                            .map(constraintMatch -> constraintMatch.getConstraintRef().constraintName())
+                            .distinct()
+                            .toList();
                     for (String constraintName : constraintNameList) {
                         List<ConstraintMatch<HardMediumSoftScore>> filteredConstraintMatchList = constraintMatchSet.stream()
-                                .filter(constraintMatch -> constraintMatch.getConstraintName().equals(constraintName))
-                                .collect(toList());
+                                .filter(constraintMatch -> constraintMatch.getConstraintRef().constraintName()
+                                        .equals(constraintName))
+                                .toList();
                         HardMediumSoftScore sum = filteredConstraintMatchList.stream()
                                 .map(ConstraintMatch::getScore)
                                 .reduce(HardMediumSoftScore::add)

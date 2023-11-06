@@ -22,16 +22,16 @@ this prints that talk `S51` is responsible for breaking the hard constraint `Spe
 
 ----
 Explanation of score (-1hard/-806soft):
-    Constraint match totals:
+    Constraint matches:
         -1hard: constraint (Speaker required room tag) has 1 matches:
-            -1hard: justifications ([S51])
+            -1hard: justified with ([S51])
         -340soft: constraint (Theme track conflict) has 32 matches:
-            -20soft: justifications ([S68, S66])
-            -20soft: justifications ([S61, S44])
+            -20soft: justified with ([S68, S66])
+            -20soft: justified with ([S61, S44])
             ...
         ...
     Indictments (top 5 of 72):
-        -1hard/-22soft: justification (S51) has 12 matches:
+        -1hard/-22soft: indicted with (S51) has 12 matches:
             -1hard: constraint (Speaker required room tag)
             -10soft: constraint (Theme track conflict)
             ...
