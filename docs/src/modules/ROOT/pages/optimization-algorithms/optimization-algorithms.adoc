@@ -1425,7 +1425,7 @@ If it has a tail chain itself, that is moved to the location of the original tai
 It uses a `valueSelector` instead of a `secondaryEntitySelector`
 to be able
 to include all possible 2opt moves (such as moving to the end of a tail)
-and to work correctly with <<nearbySelection,nearby selection>>
+and to work correctly with xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection]
 (because of asymmetric distances and also swapped entity distance gives an incorrect selection probability).
 
 [NOTE]
@@ -2293,7 +2293,7 @@ A replaying selector must reference a recorder's id with a ``mimicSelectorRef``:
 Mimic selection is useful to create <<cartesianProductMoveSelector,a composite move>> from two moves that affect the same entity.
 
 
-[#nearbySelection]
+[#nearbySelectionTeaser]
 ==== Nearby selection
 
 [NOTE]
@@ -2303,7 +2303,8 @@ It is not open source, and it is free for development use only.
 https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
 ====
 
-Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section of the Enterprise Edition manual].
+Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section]
+of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition manual].
 
 
 [#customMoves]
@@ -4446,3 +4447,18 @@ Advanced configuration:
 
 Variable Neighborhood Descent doesn't scale well,
 but it is useful in some use cases with a very erratic score landscape.
+
+[#multithreadedTeaser]
+== Multi-threaded solving
+
+[NOTE]
+====
+Multi-threaded solving is a commercial feature of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
+It is not open source, and it is free for development use only.
+https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
+====
+
+Read about multi-threaded solving in the xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[Multi-threaded solving section]
+of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition manual].
+
+

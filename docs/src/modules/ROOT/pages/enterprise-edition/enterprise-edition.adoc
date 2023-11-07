@@ -1,4 +1,4 @@
-= Timefold Solver Enterprise Edition
+= Enterprise Edition
 :doctype: book
 :sectnums:
 :icons: font
@@ -8,13 +8,10 @@ such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-th
 These features are essential to scale out to very large datasets.
 
 Unlike Timefold Solver Community Edition,
-Timefold Solver Enterprise Edition is not open-source.
+the Enterprise Edition is not open-source.
 To use Timefold Solver Enterprise Edition in production,
 you need to https://timefold.ai/company/contact/[purchase a license].
-For information about how to use Timefold Solver Enterprise Edition,
-see <<switchToEnterpriseEdition,Switch To Enterprise Edition>>.
-
-For a high-level overview of the differences between the two editions,
+For a high-level overview of the differences between Timefold offerings,
 see http://timefold.ai/pricing[Timefold Pricing].
 
 
@@ -84,6 +81,12 @@ The following features are only available in Timefold Solver Enterprise Edition:
 
 [#nearbySelection]
 === Nearby selection
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
 
 In some use cases (such as TSP and VRP, but also in non-chained variable cases),
 changing entities to nearby values or swapping nearby entities can *heavily increase scalability* and improve solution quality.
@@ -275,6 +278,12 @@ As always, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc
 [#multithreadedSolving]
 === Multi-threaded solving
 
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
 There are several ways of doing multi-threaded solving:
 
 * *Multitenancy*: solve different datasets in parallel
@@ -433,6 +442,12 @@ use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factor
 
 [#partitionedSearch]
 === Partitioned search
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
 
 [#partitionedSearchAlgorithm]
 ==== Algorithm description
