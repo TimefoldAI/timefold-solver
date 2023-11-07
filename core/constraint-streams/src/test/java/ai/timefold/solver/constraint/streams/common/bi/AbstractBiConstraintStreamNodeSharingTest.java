@@ -7,10 +7,12 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToIntBiFunction;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.constraint.streams.common.ConstraintStreamNodeSharingTest;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
@@ -343,7 +345,62 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     // Group by
     // ************************************************************************
 
-    // TODO
+    @Override
+    @TestTemplate
+    public void differentParentGroupBy() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b) -> a;
+
+        assertThat(baseStream.groupBy(keyMapper))
+                .isNotSameAs(baseStream.filter(filter1).groupBy(keyMapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentKeyMapperGroupBy() {
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper1 = (a, b) -> a;
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper2 = (a, b) -> b;
+
+        assertThat(baseStream.groupBy(keyMapper1))
+                .isNotSameAs(baseStream.groupBy(keyMapper2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentCollectorGroupBy() {
+        BiFunction<TestdataEntity, TestdataEntity, TestdataEntity> keyMapper = (a, b) -> a;
+
+        assertThat(baseStream.groupBy(ConstraintCollectors.toList(keyMapper)))
+                .isNotSameAs(baseStream.groupBy(ConstraintCollectors.countDistinct(keyMapper)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentCollectorFunctionGroupBy() {
+        ToIntBiFunction<TestdataEntity, TestdataEntity> sumFunction1 = (a, b) -> 0;
+        ToIntBiFunction<TestdataEntity, TestdataEntity> sumFunction2 = (a, b) -> 1;
+
+        assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction1)))
+                .isNotSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction2)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameKeyMapperGroupBy() {
+        BiFunction<TestdataEntity, TestdataEntity, Integer> keyMapper = (a, b) -> 0;
+
+        assertThat(baseStream.groupBy(keyMapper))
+                .isSameAs(baseStream.groupBy(keyMapper));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameCollectorGroupBy() {
+        ToIntBiFunction<TestdataEntity, TestdataEntity> sumFunction = (a, b) -> 0;
+
+        assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)))
+                .isSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)));
+    }
 
     // ************************************************************************
     // Map/expand/flatten/distinct/concat

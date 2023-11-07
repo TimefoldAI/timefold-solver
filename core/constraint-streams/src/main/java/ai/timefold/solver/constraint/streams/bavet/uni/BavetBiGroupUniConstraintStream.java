@@ -1,6 +1,7 @@
 package ai.timefold.solver.constraint.streams.bavet.uni;
 
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.constraint.streams.bavet.BavetConstraintFactory;
 import ai.timefold.solver.constraint.streams.bavet.common.GroupNodeConstructor;
@@ -41,6 +42,25 @@ final class BavetBiGroupUniConstraintStream<Solution_, A, NewA, NewB>
         List<? extends ConstraintStream> aftStreamChildList = aftStream.getChildStreamList();
         nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this, childStreamList,
                 constraintFactory.getEnvironmentMode());
+    }
+
+    // ************************************************************************
+    // Equality for node sharing
+    // ************************************************************************
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        var that = (BavetBiGroupUniConstraintStream<?, ?, ?, ?>) object;
+        return Objects.equals(parent, that.parent) && Objects.equals(nodeConstructor, that.nodeConstructor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parent, nodeConstructor);
     }
 
     @Override

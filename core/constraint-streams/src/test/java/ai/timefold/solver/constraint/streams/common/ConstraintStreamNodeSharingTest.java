@@ -161,7 +161,17 @@ public interface ConstraintStreamNodeSharingTest {
     // Group by
     // ************************************************************************
 
-    // TODO
+    void differentParentGroupBy();
+
+    void differentKeyMapperGroupBy();
+
+    void sameParentDifferentCollectorGroupBy();
+
+    void sameParentDifferentCollectorFunctionGroupBy();
+
+    void sameParentSameKeyMapperGroupBy();
+
+    void sameParentSameCollectorGroupBy();
 
     // ************************************************************************
     // Map/expand/flatten/distinct/concat
