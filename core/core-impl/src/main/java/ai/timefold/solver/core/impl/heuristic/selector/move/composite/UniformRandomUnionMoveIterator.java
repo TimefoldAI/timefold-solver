@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
@@ -11,14 +11,23 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 
 final class UniformRandomUnionMoveIterator<Solution_> extends SelectionIterator<Move<Solution_>> {
 
+    private static <Solution_> List<Iterator<Move<Solution_>>> toMoveIteratorList(
+            List<MoveSelector<Solution_>> childMoveSelectorList) {
+        var list = new ArrayList<Iterator<Move<Solution_>>>(childMoveSelectorList.size());
+        for (var moves : childMoveSelectorList) {
+            var iterator = moves.iterator();
+            if (iterator.hasNext()) {
+                list.add(iterator);
+            }
+        }
+        return list;
+    }
+
     private final List<Iterator<Move<Solution_>>> moveIteratorList;
     private final Random workingRandom;
 
     public UniformRandomUnionMoveIterator(List<MoveSelector<Solution_>> childMoveSelectorList, Random workingRandom) {
-        this.moveIteratorList = childMoveSelectorList.stream()
-                .map(Iterable::iterator)
-                .filter(Iterator::hasNext)
-                .collect(Collectors.toList());
+        this.moveIteratorList = toMoveIteratorList(childMoveSelectorList);
         this.workingRandom = workingRandom;
     }
 
