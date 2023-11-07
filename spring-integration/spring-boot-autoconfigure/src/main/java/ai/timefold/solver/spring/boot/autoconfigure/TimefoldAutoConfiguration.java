@@ -255,7 +255,7 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
 
     private boolean hasSolutionOrEntityClasses(IncludeAbstractClassesEntityScanner entityScanner) {
         try {
-            return !entityScanner.scan(PlanningSolution.class).isEmpty() || !entityScanner.scan(PlanningSolution.class)
+            return !entityScanner.scan(PlanningSolution.class).isEmpty() || !entityScanner.scan(PlanningEntity.class)
                     .isEmpty();
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Scanning for @" + PlanningSolution.class.getSimpleName()
