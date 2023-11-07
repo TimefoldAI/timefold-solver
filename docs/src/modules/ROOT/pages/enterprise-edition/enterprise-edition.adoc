@@ -1,0 +1,711 @@
+= Enterprise Edition
+:doctype: book
+:sectnums:
+:icons: font
+
+Timefold Solver Enterprise Edition is a commercial product that offers additional features,
+such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
+These features are essential to scale out to very large datasets.
+
+You are allowed to use Timefold Solver Enterprise Edition for evaluation and development,
+but to use it in production,
+you are required to https://timefold.ai/company/contact/[purchase a license].
+For a high-level overview of the differences between Timefold offerings,
+see http://timefold.ai/pricing[Timefold Pricing].
+
+Unlike Timefold Solver Community Edition,
+the Enterprise Edition is not open-source.
+However,
+source code of the Enterprise Edition https://github.com/TimefoldAI/timefold-solver-enterprise[is available for reference].
+
+
+[#switchToEnterpriseEdition]
+== Switch to Enterprise Edition
+
+In order to switch from Timefold Solver Community Edition to Enterprise Edition,
+first reference the Enterprise Edition Maven repository in your project.
+If you use Maven, add the following repository to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<project>
+  ...
+  <repositories>
+    <repository>
+      <id>timefold-solver-enterprise</id>
+      <name>Timefold Solver Enterprise Edition</name>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
+    </repository>
+  </repositories>
+  ...
+</project>
+----
+
+If you use Gradle, add the following in your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+repositories {
+  mavenCentral()
+  maven {
+    url "https://timefold.jfrog.io/artifactory/releases/"
+  }
+}
+----
+
+Having done that the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
+as shown in the table below.
+
+|===
+|Community Edition|Enterprise Edition
+
+|`ai.timefold.solver:timefold-solver-bom`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
+
+|`ai.timefold.solver:timefold-solver-core`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
+
+|`ai.timefold.solver:timefold-solver-quarkus`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
+
+|`ai.timefold.solver:timefold-solver-spring-boot-starter`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
+|===
+
+
+[#enterpriseEditionFeatures]
+== Features of Enterprise Edition
+
+The following features are only available in Timefold Solver Enterprise Edition:
+
+* <<nearbySelection,Nearby selection>>,
+* <<multithreadedSolving,multi-threaded solving>>,
+* and <<partitionedSearch,partitioned Search>>.
+
+
+[#nearbySelection]
+=== Nearby selection
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+In some use cases (such as TSP and VRP, but also in non-chained variable cases),
+changing entities to nearby values or swapping nearby entities can *heavily increase scalability* and improve solution quality.
+
+image::enterprise-edition/nearbySelectionMotivation.png[align="center"]
+
+Nearby selection increases the probability of selecting an entity or value which is nearby to the first entity being moved in that move.
+
+image::enterprise-edition/nearbySelectionRandomDistribution.png[align="center"]
+
+The distance between two entities or values is domain specific.
+Therefore, implement the `NearbyDistanceMeter` interface:
+
+[source,java,options="nowrap"]
+----
+public interface NearbyDistanceMeter<Origin_, Desination_> {
+
+    double getNearbyDistance(Origin_ origin, Destination_ destination);
+
+}
+----
+In a nutshell, when nearby selection is used in a list move selector,
+`Origin_` is always a planning value (for example `Customer`)
+but `Destination_` can be either a planning value or a planning entity.
+That means that in VRP the distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
+
+[source,java,options="nowrap"]
+----
+public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
+
+    public double getNearbyDistance(Customer origin, LocationAware destination) {
+        return origin.getDistanceTo(destination);
+    }
+
+}
+----
+
+[NOTE]
+====
+`NearbyDistanceMeter` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+====
+
+==== Nearby selection with a list variable
+
+To configure nearby selection with a planning list variable,
+add a `nearbySelection` element in the `destinationSelector`,`valueSelector` or `subListSelector`
+and use xref:optimization-algorithms/optimization-algorithms.adoc#mimicSelection[mimic selection] to specify which destination, value, or subList should be near by the selection.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <listChangeMoveSelector>
+        <valueSelector id="valueSelector1"/>
+        <destinationSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="valueSelector1"/>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </destinationSelector>
+      </listChangeMoveSelector>
+      <listSwapMoveSelector>
+        <valueSelector id="valueSelector2"/>
+        <secondaryValueSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="valueSelector2"/>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </secondaryValueSelector>
+      </listSwapMoveSelector>
+      <subListChangeMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+        <subListSelector id="subListSelector3"/>
+        <destinationSelector>
+          <nearbySelection>
+            <originSubListSelector mimicSelectorRef="subListSelector3"/>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </destinationSelector>
+      </subListChangeMoveSelector>
+      <subListSwapMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+        <subListSelector id="subListSelector4"/>
+        <secondarySubListSelector>
+          <nearbySelection>
+            <originSubListSelector mimicSelectorRef="subListSelector4"/>
+            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </secondarySubListSelector>
+      </subListSwapMoveSelector>
+    </unionMoveSelector>
+----
+
+==== Nearby selection with a chained variable
+
+To configure nearby selection with a chained planning variable, add a `nearbySelection` element in the `entitySelector` or `valueSelector`
+and use <<mimicSelection,mimic selection>> to specify which entity should be near by the selection.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <changeMoveSelector>
+        <entitySelector id="entitySelector1"/>
+        <valueSelector>
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector1"/>
+            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </valueSelector>
+      </changeMoveSelector>
+      <swapMoveSelector>
+        <entitySelector id="entitySelector2"/>
+        <secondaryEntitySelector>
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector2"/>
+            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </secondaryEntitySelector>
+      </swapMoveSelector>
+      <tailChainSwapMoveSelector>
+        <entitySelector id="entitySelector3"/>
+        <valueSelector>
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector3"/>
+            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </valueSelector>
+      </tailChainSwapMoveSelector>
+    </unionMoveSelector>
+----
+
+A `distributionSizeMaximum` parameter should not be 1 because if the nearest is already the planning value of the current entity, then the only move that is selectable is not doable.
+
+To allow every element to be selected, regardless of the number of entities, only set the distribution type (so without a `distributionSizeMaximum` parameter):
+
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+  </nearbySelection>
+----
+
+The following ``NearbySelectionDistributionType``s are supported:
+
+* ``BLOCK_DISTRIBUTION``: Only the n nearest are selected, with an equal probability. For example, select the 20 nearest:
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <blockDistributionSizeMaximum>20</blockDistributionSizeMaximum>
+  </nearbySelection>
+----
+* ``LINEAR_DISTRIBUTION``: Nearest elements are selected with a higher probability. The probability decreases linearly.
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <linearDistributionSizeMaximum>40</linearDistributionSizeMaximum>
+  </nearbySelection>
+----
+* `PARABOLIC_DISTRIBUTION` (recommended): Nearest elements are selected with a higher probability.
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <parabolicDistributionSizeMaximum>80</parabolicDistributionSizeMaximum>
+  </nearbySelection>
+----
+* ``BETA_DISTRIBUTION``: Selection according to a beta distribution. Slows down the solver significantly.
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <betaDistributionAlpha>1</betaDistributionAlpha>
+    <betaDistributionBeta>5</betaDistributionBeta>
+  </nearbySelection>
+----
+
+As always, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak values if desired.
+
+
+[#multithreadedSolving]
+=== Multi-threaded solving
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+There are several ways of doing multi-threaded solving:
+
+* *Multitenancy*: solve different datasets in parallel
+** The `SolverManager` will make it even easier to set this up, in a future version.
+* *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
+** Not recommended: This is a marginal gain for a high cost of hardware resources.
+** Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the most appropriate algorithm, although that's only on average.
+** Use multi-threaded incremental solving instead.
+* *Partitioned Search*: Split 1 dataset in multiple parts and solve them independently.
+** Configure a <<partitionedSearch,Partitioned Search>>.
+* *Multi-threaded incremental solving*: solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
+** Donate a portion of your CPU cores to Timefold Solver to scale up the score calculation speed and get the same results in fraction of the time.
+** Configure <<multithreadedIncrementalSolving,multi-threaded incremental solving>>.
+
+image::enterprise-edition/multiThreadingStrategies.png[align="center"]
+
+[NOTE]
+====
+A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` might cause congestion multi-threaded solving
+and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
+====
+
+[#planningId]
+==== `@PlanningId`
+
+For some functionality (such as multi-threaded solving and real-time planning),
+Timefold Solver needs to map problem facts and planning entities to an ID.
+Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
+
+To enable such functionality, specify the `@PlanningId` annotation on the identification field or getter method,
+for example on the database ID:
+
+[source,java,options="nowrap"]
+----
+public class CloudComputer {
+
+    @PlanningId
+    private Long id;
+
+    ...
+}
+----
+
+Or alternatively, on another type of ID:
+
+[source,java,options="nowrap"]
+----
+public class User {
+
+    @PlanningId
+    private String username;
+
+    ...
+}
+----
+
+A `@PlanningId` property must be:
+
+* Unique for that specific class
+** It does not need to be unique across different problem fact classes
+(unless in that rare case that those classes are mixed in the same value range or planning entity collection).
+* An instance of a type that implements `Object.hashCode()` and `Object.equals()`.
+** It's recommended to use the type `Integer`, `int`, `Long`, `long`, `String` or `UUID`.
+* Never `null` by the time `Solver.solve()` is called.
+
+
+[#customThreadFactory]
+==== Custom thread factory (WildFly, GAE, ...)
+
+The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
+where arbitrary thread creation should be avoided,
+such as most application servers (including WildFly) or Google App Engine.
+
+Configure the `ThreadFactory` on the solver to create the <<multithreadedIncrementalSolving,move threads>>
+and the <<partitionedSearch,Partition Search threads>> with it:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
+  ...
+</solver>
+----
+
+[#multithreadedIncrementalSolving]
+==== Multi-threaded incremental solving
+
+Enable multi-threaded incremental solving by <<planningId,adding a @PlanningId annotation>>
+on every planning entity class and planning value class.
+Then configure a `moveThreadCount`:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <moveThreadCount>AUTO</moveThreadCount>
+  ...
+</solver>
+----
+
+That one extra line heavily improves the score calculation speed,
+presuming that your machine has enough free CPU cores.
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <moveThreadCount>4</moveThreadCount>
+  <moveThreadBufferSize>10</moveThreadBufferSize>
+  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
+  ...
+</solver>
+----
+
+A `moveThreadCount` of `4` xref:integration/integration.adoc#sizingHardwareAndSoftware[saturates almost 5 CPU cores]:
+the 4 move threads fill up 4 CPU cores completely
+and the solver thread uses most of another CPU core.
+
+The following ``moveThreadCount``s are supported:
+
+* `NONE` (default): Don't run any move threads. Use the single threaded code.
+* ``AUTO``: Let Timefold Solver decide how many move threads to run in parallel.
+On machines or containers with little or no CPUs, this falls back to the single threaded code.
+* Static number: The number of move threads to run in parallel.
++
+[source,xml,options="nowrap"]
+----
+<moveThreadCount>4</moveThreadCount>
+----
++
+This can be `1` to enforce running the multi-threaded code with only 1 move thread
+(which is less efficient than `NONE`).
+
+It is counter-effective to set a `moveThreadCount`
+that is higher than the number of available CPU cores,
+as that will slow down the score calculation speed.
+One good reason to do it anyway, is to reproduce a bug of a high-end production machine.
+
+[NOTE]
+====
+Multi-threaded solving is _still reproducible_, as long as the resolved `moveThreadCount` is stable.
+A run of the same solver configuration on 2 machines with a different number of CPUs,
+is still reproducible, unless the `moveThreadCount` is set to `AUTO` or a function of `availableProcessorCount`.
+====
+
+The `moveThreadBufferSize` power tweaks the number of moves that are selected but won't be foraged.
+Setting it too low reduces performance, but setting it too high too.
+Unless you're deeply familiar with the inner workings of multi-threaded solving, don't configure this parameter.
+
+To run in an environment that doesn't like arbitrary thread creation,
+use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factory>>.
+
+
+[#partitionedSearch]
+=== Partitioned search
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+[#partitionedSearchAlgorithm]
+==== Algorithm description
+
+It is often more efficient to partition large data sets (usually above 5000 planning entities)
+into smaller pieces and solve them separately.
+Partition Search is <<multithreadedSolving,multi-threaded>>,
+so it provides a performance boost on multi-core machines due to higher CPU utilization.
+Additionally, even when only using one CPU, it finds an initial solution faster,
+because the search space sum of a partitioned Construction Heuristic is far less than its non-partitioned variant.
+
+However, **partitioning does lead to suboptimal results**, even if the pieces are solved optimally, as shown below:
+
+image::enterprise-edition/mapReduceIsTerribleForTsp.png[align="center"]
+
+It effectively trades a short term gain in solution quality for long term loss.
+One way to compensate for this loss,
+is to run a non-partitioned Local Search after the Partitioned Search phase.
+
+[NOTE]
+====
+Not all use cases can be partitioned.
+Partitioning only works for use cases where the planning entities and value ranges can be split into n partitions,
+without any of the constraints crossing boundaries between partitions.
+====
+
+
+[#partitionedSearchConfiguration]
+==== Configuration
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+  <partitionedSearch>
+    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+  </partitionedSearch>
+----
+
+Also <<planningId,add a @PlanningId annotations>> on every planning entity class and planning value class.
+There are several ways to <<partitioningASolution,partition a solution>>.
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+  <partitionedSearch>
+    ...
+    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <runnablePartThreadLimit>4</runnablePartThreadLimit>
+
+    <constructionHeuristic>...</constructionHeuristic>
+    <localSearch>...</localSearch>
+  </partitionedSearch>
+----
+
+The `runnablePartThreadLimit` allows limiting CPU usage to avoid hanging your machine, see below.
+
+To run in an environment that doesn't like arbitrary thread creation,
+plug in a <<customThreadFactory,custom thread factory>>.
+
+[IMPORTANT]
+====
+A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` causes congestion in multi-threaded Partitioned Search
+and slows down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
+====
+
+Just like a `<solver>` element, the `<partitionedSearch>` element can contain one or more xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[phases].
+Each of those phases will be run on each partition.
+
+A common configuration is to first run a Partitioned Search phase
+(which includes a Construction Heuristic and a Local Search)
+followed by a non-partitioned Local Search phase:
+
+[source,xml,options="nowrap"]
+----
+  <partitionedSearch>
+    <solutionPartitionerClass>...CloudBalancePartitioner</solutionPartitionerClass>
+
+    <constructionHeuristic/>
+    <localSearch>
+      <termination>
+        <secondsSpentLimit>60</secondsSpentLimit>
+      </termination>
+    </localSearch>
+  </partitionedSearch>
+  <localSearch/>
+----
+
+
+[#partitioningASolution]
+==== Partitioning a solution
+
+
+[#customSolutionPartitioner]
+===== Custom `SolutionPartitioner`
+
+To use a custom `SolutionPartitioner`, configure one on the Partitioned Search phase:
+
+[source,xml,options="nowrap"]
+----
+  <partitionedSearch>
+    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+  </partitionedSearch>
+----
+
+Implement the `SolutionPartitioner` interface:
+
+[source,java,options="nowrap"]
+----
+public interface SolutionPartitioner<Solution_> {
+
+    List<Solution_> splitWorkingSolution(ScoreDirector<Solution_> scoreDirector, Integer runnablePartThreadLimit);
+
+}
+----
+
+The `size()` of the returned `List` is the `partCount` (the number of partitions).
+This can be decided dynamically, for example, based on the size of the non-partitioned solution.
+The `partCount` is unrelated to the `runnablePartThreadLimit`.
+
+For example:
+
+[source,java,options="nowrap"]
+----
+public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance> {
+
+    private int partCount = 4;
+    private int minimumProcessListSize = 75;
+
+    @Override
+    public List<CloudBalance> splitWorkingSolution(ScoreDirector<CloudBalance> scoreDirector, Integer runnablePartThreadLimit) {
+        CloudBalance originalSolution = scoreDirector.getWorkingSolution();
+        List<CloudComputer> originalComputerList = originalSolution.getComputerList();
+        List<CloudProcess> originalProcessList = originalSolution.getProcessList();
+        int partCount = this.partCount;
+        if (originalProcessList.size() / partCount < minimumProcessListSize) {
+            partCount = originalProcessList.size() / minimumProcessListSize;
+        }
+        List<CloudBalance> partList = new ArrayList<>(partCount);
+        for (int i = 0; i < partCount; i++) {
+            CloudBalance partSolution = new CloudBalance(originalSolution.getId(),
+                    new ArrayList<>(originalComputerList.size() / partCount + 1),
+                    new ArrayList<>(originalProcessList.size() / partCount + 1));
+            partList.add(partSolution);
+        }
+
+        int partIndex = 0;
+        Map<Long, Pair<Integer, CloudComputer>> idToPartIndexAndComputerMap = new HashMap<>(originalComputerList.size());
+        for (CloudComputer originalComputer : originalComputerList) {
+            CloudBalance part = partList.get(partIndex);
+            CloudComputer computer = new CloudComputer(
+                    originalComputer.getId(),
+                    originalComputer.getCpuPower(), originalComputer.getMemory(),
+                    originalComputer.getNetworkBandwidth(), originalComputer.getCost());
+            part.getComputerList().add(computer);
+            idToPartIndexAndComputerMap.put(computer.getId(), Pair.of(partIndex, computer));
+            partIndex = (partIndex + 1) % partList.size();
+        }
+
+        partIndex = 0;
+        for (CloudProcess originalProcess : originalProcessList) {
+            CloudBalance part = partList.get(partIndex);
+            CloudProcess process = new CloudProcess(
+                    originalProcess.getId(),
+                    originalProcess.getRequiredCpuPower(), originalProcess.getRequiredMemory(),
+                    originalProcess.getRequiredNetworkBandwidth());
+            part.getProcessList().add(process);
+            if (originalProcess.getComputer() != null) {
+                Pair<Integer, CloudComputer> partIndexAndComputer = idToPartIndexAndComputerMap.get(
+                        originalProcess.getComputer().getId());
+                if (partIndexAndComputer == null) {
+                    throw new IllegalStateException("The initialized process (" + originalProcess
+                            + ") has a computer (" + originalProcess.getComputer()
+                            + ") which doesn't exist in the originalSolution (" + originalSolution + ").");
+                }
+                if (partIndex != partIndexAndComputer.getLeft().intValue()) {
+                    throw new IllegalStateException("The initialized process (" + originalProcess
+                            + ") with partIndex (" + partIndex
+                            + ") has a computer (" + originalProcess.getComputer()
+                            + ") which belongs to another partIndex (" + partIndexAndComputer.getLeft() + ").");
+                }
+                process.setComputer(partIndexAndComputer.getRight());
+            }
+            partIndex = (partIndex + 1) % partList.size();
+        }
+        return partList;
+    }
+
+}
+----
+
+To configure values of a `SolutionPartitioner` dynamically in the solver configuration
+(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `solutionPartitionerCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
+
+[source,xml,options="nowrap"]
+----
+  <partitionedSearch>
+    <solutionPartitionerClass>...CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerCustomProperties>
+      <property name="myPartCount" value="8"/>
+      <property name="myMinimumProcessListSize" value="100"/>
+    </solutionPartitionerCustomProperties>
+  </partitionedSearch>
+----
+
+
+[#runnablePartThreadLimit]
+==== Runnable part thread limit
+
+When running a multi-threaded solver, such as Partitioned Search, CPU power can quickly become a scarce resource,
+which can cause other processes or threads to hang or freeze.
+However, Timefold Solver has a system to prevent CPU starving of
+other processes (such as an SSH connection in production or your IDE in development)
+or other threads (such as the servlet threads that handle REST requests).
+
+As explained in xref:integration/integration.adoc#sizingHardwareAndSoftware[sizing hardware and software],
+each solver (including each child solver) does no IO during `solve()` and therefore saturates one CPU core completely.
+In Partitioned Search, every partition always has its own thread, called a part thread.
+It is impossible for two partitions to share a thread,
+because of xref:optimization-algorithms/optimization-algorithms.adoc#asynchronousTermination[asynchronous termination]:
+the second thread would never run.
+Every part thread will try to consume one CPU core entirely, so if there are more partitions than CPU cores,
+this will probably hang the system.
+`Thread.setPriority()` is often too weak to solve this hogging problem, so another approach is used.
+
+The `runnablePartThreadLimit` parameter specifies how many part threads are runnable at the same time.
+The other part threads will temporarily block and therefore will not consume any CPU power.
+*This parameter basically specifies how many CPU cores are donated to Timefold Solver.*
+All part threads share the CPU cores in a round-robin manner
+to consume (more or less) the same number of CPU cycles:
+
+image::enterprise-edition/partitionedSearchThreading.png[align="center"]
+
+The following `runnablePartThreadLimit` options are supported:
+
+* `UNLIMITED`: Allow Timefold Solver to occupy all CPU cores, do not avoid hogging.
+Useful if a no hogging CPU policy is configured on the OS level.
+* `AUTO` (default): Let Timefold Solver decide how many CPU cores to occupy. This formula is based on experience.
+It does not hog all CPU cores on a multi-core machine.
+* Static number: The number of CPU cores to consume. For example:
++
+[source,xml,options="nowrap"]
+----
+<runnablePartThreadLimit>2</runnablePartThreadLimit>
+----
+
+[WARNING]
+====
+If the `runnablePartThreadLimit` is equal to or higher than the number of available processors,
+the host is likely to hang or freeze,
+unless there is an OS specific policy in place to avoid Timefold Solver from hogging all the CPU processors.
+====
+
+
+

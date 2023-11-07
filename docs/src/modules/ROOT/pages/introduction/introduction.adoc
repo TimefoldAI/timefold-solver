@@ -148,18 +148,10 @@ Most users will be able to solve their planning problems with the Community Edit
 [#enterpriseEdition]
 === Timefold Solver Enterprise Edition
 
-Timefold Solver Enterprise Edition is a commercial product that offers additional features,
-such as xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[nearby selection]
-and xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multi-threaded solving].
-These features are essential to scale out to very large datasets.
-
-To use Timefold Solver Enterprise Edition in production,
-you need to https://timefold.ai/company/contact/[purchase a license].
-For information about how to use Timefold Solver Enterprise Edition,
-see <<switchToEnterpriseEdition,Switch To Enterprise Edition>>.
-
-For a high-level overview of the differences between the two editions,
-see http://timefold.ai/pricing[Timefold Pricing].
+Timefold Solver Enterprise Edition is a commercial product
+that offers xref:enterprise-edition/enterprise-edition.adoc#enterpriseEditionFeatures[additional features]
+to scale out to very large datasets.
+To find out more, see xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition section] of this documentation.
 
 [#backwardsCompatibility]
 == Backwards compatibility
@@ -243,58 +235,9 @@ dependencies {
 }
 ----
 
-[#switchToEnterpriseEdition]
-=== Switch to Enterprise Edition
+See also how to xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[switch To Enterprise Edition].
 
-In order to switch from Timefold Solver Community Edition to Enterprise Edition,
-first reference the Enterprise Edition Maven repository in your project.
-If you use Maven, add the following repository to your `pom.xml`:
-
-[source,xml,options="nowrap"]
-----
-<project>
-  ...
-  <repositories>
-    <repository>
-      <id>timefold-solver-enterprise</id>
-      <name>Timefold Solver Enterprise</name>
-      <url>https://timefold.jfrog.io/artifactory/releases/</url>
-    </repository>
-  </repositories>
-  ...
-</project>
-----
-
-If you use Gradle, add the following in your `build.gradle`:
-
-[source,groovy,options="nowrap"]
-----
-repositories {
-  mavenCentral()
-  maven {
-    url "https://timefold.jfrog.io/artifactory/releases/"
-  }
-}
-----
-
-Having done that the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
-as shown in the table below.
-
-|===
-|Community Edition|Enterprise Edition
-
-|`ai.timefold.solver:timefold-solver-bom`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
-
-|`ai.timefold.solver:timefold-solver-core`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
-
-|`ai.timefold.solver:timefold-solver-quarkus`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
-
-|`ai.timefold.solver:timefold-solver-spring-boot-starter`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
-|===
+[#useWithOtherBuildTools]
 
 === Upgrade to the latest version
 
