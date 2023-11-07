@@ -3,9 +3,87 @@
 :sectnums:
 :icons: font
 
+Timefold Solver Enterprise Edition is a commercial product that offers additional features,
+such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
+These features are essential to scale out to very large datasets.
+
+Unlike Timefold Solver Community Edition,
+Timefold Solver Enterprise Edition is not open-source.
+To use Timefold Solver Enterprise Edition in production,
+you need to https://timefold.ai/company/contact/[purchase a license].
+For information about how to use Timefold Solver Enterprise Edition,
+see <<switchToEnterpriseEdition,Switch To Enterprise Edition>>.
+
+For a high-level overview of the differences between the two editions,
+see http://timefold.ai/pricing[Timefold Pricing].
+
+
+[#switchToEnterpriseEdition]
+== Switch to Enterprise Edition
+
+In order to switch from Timefold Solver Community Edition to Enterprise Edition,
+first reference the Enterprise Edition Maven repository in your project.
+If you use Maven, add the following repository to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<project>
+  ...
+  <repositories>
+    <repository>
+      <id>timefold-solver-enterprise</id>
+      <name>Timefold Solver Enterprise Edition</name>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
+    </repository>
+  </repositories>
+  ...
+</project>
+----
+
+If you use Gradle, add the following in your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+repositories {
+  mavenCentral()
+  maven {
+    url "https://timefold.jfrog.io/artifactory/releases/"
+  }
+}
+----
+
+Having done that the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
+as shown in the table below.
+
+|===
+|Community Edition|Enterprise Edition
+
+|`ai.timefold.solver:timefold-solver-bom`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
+
+|`ai.timefold.solver:timefold-solver-core`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
+
+|`ai.timefold.solver:timefold-solver-quarkus`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
+
+|`ai.timefold.solver:timefold-solver-spring-boot-starter`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
+|===
+
+
+[#enterpriseEditionFeatures]
+== Features of Enterprise Edition
+
+The following features are only available in Timefold Solver Enterprise Edition:
+
+* <<nearbySelection,Nearby selection>>,
+* <<multithreadedSolving,multi-threaded solving>>,
+* and <<partitionedSearch,partitioned Search>>.
+
 
 [#nearbySelection]
-== Nearby selection
+=== Nearby selection
 
 In some use cases (such as TSP and VRP, but also in non-chained variable cases),
 changing entities to nearby values or swapping nearby entities can *heavily increase scalability* and improve solution quality.
@@ -49,7 +127,7 @@ public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer
 The solver may choose to reuse them in different contexts.
 ====
 
-=== Nearby selection with a list variable
+==== Nearby selection with a list variable
 
 To configure nearby selection with a planning list variable,
 add a `nearbySelection` element in the `destinationSelector`,`valueSelector` or `subListSelector`
@@ -103,7 +181,7 @@ and use xref:optimization-algorithms/optimization-algorithms.adoc#mimicSelection
     </unionMoveSelector>
 ----
 
-=== Nearby selection with a chained variable
+==== Nearby selection with a chained variable
 
 To configure nearby selection with a chained planning variable, add a `nearbySelection` element in the `entitySelector` or `valueSelector`
 and use <<mimicSelection,mimic selection>> to specify which entity should be near by the selection.
@@ -195,7 +273,7 @@ As always, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc
 
 
 [#multithreadedSolving]
-== Multi-threaded solving
+=== Multi-threaded solving
 
 There are several ways of doing multi-threaded solving:
 
@@ -220,7 +298,7 @@ and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSp
 ====
 
 [#planningId]
-=== `@PlanningId`
+==== `@PlanningId`
 
 For some functionality (such as multi-threaded solving and real-time planning),
 Timefold Solver needs to map problem facts and planning entities to an ID.
@@ -264,7 +342,7 @@ A `@PlanningId` property must be:
 
 
 [#customThreadFactory]
-=== Custom thread factory (WildFly, GAE, ...)
+==== Custom thread factory (WildFly, GAE, ...)
 
 The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
 where arbitrary thread creation should be avoided,
@@ -283,7 +361,7 @@ and the <<partitionedSearch,Partition Search threads>> with it:
 ----
 
 [#multithreadedIncrementalSolving]
-=== Multi-threaded incremental solving
+==== Multi-threaded incremental solving
 
 Enable multi-threaded incremental solving by <<planningId,adding a @PlanningId annotation>>
 on every planning entity class and planning value class.
@@ -354,10 +432,10 @@ use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factor
 
 
 [#partitionedSearch]
-== Partitioned search
+=== Partitioned search
 
 [#partitionedSearchAlgorithm]
-=== Algorithm description
+==== Algorithm description
 
 It is often more efficient to partition large data sets (usually above 5000 planning entities)
 into smaller pieces and solve them separately.
@@ -383,7 +461,7 @@ without any of the constraints crossing boundaries between partitions.
 
 
 [#partitionedSearchConfiguration]
-=== Configuration
+==== Configuration
 
 Simplest configuration:
 
@@ -446,11 +524,11 @@ followed by a non-partitioned Local Search phase:
 
 
 [#partitioningASolution]
-=== Partitioning a solution
+==== Partitioning a solution
 
 
 [#customSolutionPartitioner]
-==== Custom `SolutionPartitioner`
+===== Custom `SolutionPartitioner`
 
 To use a custom `SolutionPartitioner`, configure one on the Partitioned Search phase:
 
@@ -564,7 +642,7 @@ add the `solutionPartitionerCustomProperties` element and use xref:configuration
 
 
 [#runnablePartThreadLimit]
-=== Runnable part thread limit
+==== Runnable part thread limit
 
 When running a multi-threaded solver, such as Partitioned Search, CPU power can quickly become a scarce resource,
 which can cause other processes or threads to hang or freeze.
