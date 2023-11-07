@@ -1020,7 +1020,6 @@ Advanced configuration:
       </entitySelector>
       <valueSelector variableName="room">
         ...
-        <nearbySelection>...</nearbySelection>
       </valueSelector>
     </changeMoveSelector>
 ----
@@ -1071,7 +1070,6 @@ Advanced configuration:
       <secondaryEntitySelector>
         <entityClass>...Lecture</entityClass>
         ...
-        <nearbySelection>...</nearbySelection>
       </secondaryEntitySelector>
       <variableNameIncludes>
         <variableNameInclude>room</variableNameInclude>
@@ -1279,10 +1277,6 @@ Advanced configuration:
         <valueSelector>
           ...
         </valueSelector>
-        <nearbySelection>
-          <originValueSelector mimicSelectorRef="valueSelector1"/>
-          ... <!-- Normal nearby selection properties -->
-        </nearbySelection>
       </destinationSelector>
     </listChangeMoveSelector>
 ----
@@ -1297,24 +1291,6 @@ Simplest configuration:
 [source,xml]
 ----
     <listSwapMoveSelector/>
-----
-
-Advanced configuration:
-
-[source,xml]
-----
-    <listSwapMoveSelector>
-      ... <!-- Normal selector properties -->
-      <valueSelector id="valueSelector1">
-        ...
-      </valueSelector>
-      <secondaryValueSelector>
-        <nearbySelection>
-          <originValueSelector mimicSelectorRef="valueSelector1"/>
-          ... <!-- Normal nearby selection properties -->
-        </nearbySelection>
-      </secondaryValueSelector>
-    </listSwapMoveSelector>
 ----
 
 [#subListChangeMoveSelector]
@@ -1346,18 +1322,6 @@ Advanced configuration:
         <minimumSubListSize>2</minimumSubListSize>
         <maximumSubListSize>6</maximumSubListSize>
       </subListSelector>
-      <destinationSelector>
-        <entitySelector>
-          ...
-        </entitySelector>
-        <valueSelector>
-          ...
-        </valueSelector>
-        <nearbySelection>
-          <originSubListSelector mimicSelectorRef="subListSelector1"/>
-          ... <!-- Normal nearby selection properties -->
-        </nearbySelection>
-      </destinationSelector>
     </subListChangeMoveSelector>
 ----
 
@@ -1390,17 +1354,6 @@ Advanced configuration:
         <minimumSubListSize>2</minimumSubListSize>
         <maximumSubListSize>6</maximumSubListSize>
       </subListSelector>
-      <secondarySubListSelector>
-        <valueSelector>
-          ...
-        </valueSelector>
-        <nearbySelection>
-          <originSubListSelector mimicSelectorRef="subListSelector1"/>
-          ... <!-- Normal nearby selection properties -->
-        </nearbySelection>
-        <minimumSubListSize>3</minimumSubListSize>
-        <maximumSubListSize>5</maximumSubListSize>
-      </secondarySubListSelector>
     </subListSwapMoveSelector>
 ----
 
@@ -1462,7 +1415,6 @@ Advanced configuration:
       </entitySelector>
       <valueSelector variableName="previousStandstill">
         ...
-        <nearbySelection>...</nearbySelection>
       </valueSelector>
     </tailChainSwapMoveSelector>
 ----
@@ -1470,7 +1422,11 @@ Advanced configuration:
 The `entitySelector` selects the start of the tail chain that is being moved.
 The `valueSelector` selects to where that tail chain is moved.
 If it has a tail chain itself, that is moved to the location of the original tail chain.
-It uses a `valueSelector` instead of a `secondaryEntitySelector` to be able to include all possible 2opt moves (such as moving to the end of a tail) and to work correctly with <<nearbySelection,nearby selection>> (because of asymmetric distances and also swapped entity distance gives an incorrect selection probability).
+It uses a `valueSelector` instead of a `secondaryEntitySelector`
+to be able
+to include all possible 2opt moves (such as moving to the end of a tail)
+and to work correctly with <<nearbySelection,nearby selection>>
+(because of asymmetric distances and also swapped entity distance gives an incorrect selection probability).
 
 [NOTE]
 ====
@@ -2342,191 +2298,12 @@ Mimic selection is useful to create <<cartesianProductMoveSelector,a composite m
 
 [NOTE]
 ====
-Nearby selection is a commercial feature of xref:introduction/introduction.adoc#enterpriseEdition[Timefold Solver Enterprise Edition].
+Nearby selection is a commercial feature of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
 It is not open source, and it is free for development use only.
 https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
 ====
 
-In some use cases (such as TSP and VRP, but also in non-chained variable cases), changing entities to nearby values or swapping nearby entities can *heavily increase scalability* and improve solution quality.
-
-image::optimization-algorithms/nearbySelectionMotivation.png[align="center"]
-
-Nearby selection increases the probability of selecting an entity or value which is nearby to the first entity being moved in that move.
-
-image::optimization-algorithms/nearbySelectionRandomDistribution.png[align="center"]
-
-The distance between two entities or values is domain specific.
-Therefore, implement the `NearbyDistanceMeter` interface:
-
-[source,java,options="nowrap"]
-----
-public interface NearbyDistanceMeter<O, D> {
-
-    double getNearbyDistance(O origin, D destination);
-
-}
-----
-In a nutshell, when nearby selection is used in a list move selector, Origin_ is always a planning value (for example Customer) but Destination_ can be either a planning value or a planning entity. That means that in VRP the distance meter must be able to handle both Customers and Vehicles as the Destination_ destination argument:
-
-[source,java,options="nowrap"]
-----
-public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
-
-    public double getNearbyDistance(Customer origin, LocationAware destination) {
-        return origin.getDistanceTo(destination);
-    }
-
-}
-----
-
-[NOTE]
-====
-`NearbyDistanceMeter` implementations are expected to be stateless.
-The solver may choose to reuse them in different contexts.
-====
-
-===== Nearby selection with a list variable
-
-To configure nearby selection with a planning list variable, add a `nearbySelection` element in the `destinationSelector`, `valueSelector` or `subListSelector`
-and use <<mimicSelection,mimic selection>> to specify which destination, value, or subList should be near by the selection.
-
-[source,xml,options="nowrap"]
-----
-    <unionMoveSelector>
-      <listChangeMoveSelector>
-        <valueSelector id="valueSelector1"/>
-        <destinationSelector>
-          <nearbySelection>
-            <originValueSelector mimicSelectorRef="valueSelector1"/>
-            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </destinationSelector>
-      </listChangeMoveSelector>
-      <listSwapMoveSelector>
-        <valueSelector id="valueSelector2"/>
-        <secondaryValueSelector>
-          <nearbySelection>
-            <originValueSelector mimicSelectorRef="valueSelector2"/>
-            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </secondaryValueSelector>
-      </listSwapMoveSelector>
-      <subListChangeMoveSelector>
-        <selectReversingMoveToo>true</selectReversingMoveToo>
-        <subListSelector id="subListSelector3"/>
-        <destinationSelector>
-          <nearbySelection>
-            <originSubListSelector mimicSelectorRef="subListSelector3"/>
-            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </destinationSelector>
-      </subListChangeMoveSelector>
-      <subListSwapMoveSelector>
-        <selectReversingMoveToo>true</selectReversingMoveToo>
-        <subListSelector id="subListSelector4"/>
-        <secondarySubListSelector>
-          <nearbySelection>
-            <originSubListSelector mimicSelectorRef="subListSelector4"/>
-            <nearbyDistanceMeterClass>ai.timefold.solver.examples.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </secondarySubListSelector>
-      </subListSwapMoveSelector>
-    </unionMoveSelector>
-----
-
-===== Nearby selection with a chained variable
-
-To configure nearby selection with a chained planning variable, add a `nearbySelection` element in the `entitySelector` or `valueSelector`
-and use <<mimicSelection,mimic selection>> to specify which entity should be near by the selection.
-
-[source,xml,options="nowrap"]
-----
-    <unionMoveSelector>
-      <changeMoveSelector>
-        <entitySelector id="entitySelector1"/>
-        <valueSelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector1"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </valueSelector>
-      </changeMoveSelector>
-      <swapMoveSelector>
-        <entitySelector id="entitySelector2"/>
-        <secondaryEntitySelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector2"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </secondaryEntitySelector>
-      </swapMoveSelector>
-      <tailChainSwapMoveSelector>
-        <entitySelector id="entitySelector3"/>
-        <valueSelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector3"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-          </nearbySelection>
-        </valueSelector>
-      </tailChainSwapMoveSelector>
-    </unionMoveSelector>
-----
-
-A `distributionSizeMaximum` parameter should not be 1 because if the nearest is already the planning value of the current entity, then the only move that is selectable is not doable.
-
-To allow every element to be selected, regardless of the number of entities, only set the distribution type (so without a `distributionSizeMaximum` parameter):
-
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
-  </nearbySelection>
-----
-
-The following ``NearbySelectionDistributionType``s are supported:
-
-* ``BLOCK_DISTRIBUTION``: Only the n nearest are selected, with an equal probability. For example, select the 20 nearest:
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <blockDistributionSizeMaximum>20</blockDistributionSizeMaximum>
-  </nearbySelection>
-----
-* ``LINEAR_DISTRIBUTION``: Nearest elements are selected with a higher probability. The probability decreases linearly.
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <linearDistributionSizeMaximum>40</linearDistributionSizeMaximum>
-  </nearbySelection>
-----
-* `PARABOLIC_DISTRIBUTION` (recommended): Nearest elements are selected with a higher probability.
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <parabolicDistributionSizeMaximum>80</parabolicDistributionSizeMaximum>
-  </nearbySelection>
-----
-* ``BETA_DISTRIBUTION``: Selection according to a beta distribution. Slows down the solver significantly.
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <betaDistributionAlpha>1</betaDistributionAlpha>
-    <betaDistributionBeta>5</betaDistributionBeta>
-  </nearbySelection>
-----
-
-As always, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak values if desired.
+Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section of the Enterprise Edition manual].
 
 
 [#customMoves]

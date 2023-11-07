@@ -149,7 +149,7 @@ Most users will be able to solve their planning problems with the Community Edit
 === Timefold Solver Enterprise Edition
 
 Timefold Solver Enterprise Edition is a commercial product that offers additional features,
-such as xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[nearby selection]
+such as xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection]
 and xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multi-threaded solving].
 These features are essential to scale out to very large datasets.
 

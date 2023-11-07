@@ -362,7 +362,7 @@ Understand these guidelines to decide the hardware for a Timefold Solver service
 *** **Plenty**: There is enough heap space. The Garbage Collector is active, but its CPU usage is low.
 **** Adding more heap space does _not_ increase performance.
 **** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_,
-except with xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[nearby selection] and caching move selector,
+except with xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] and caching move selector,
 neither of which are used by default.
 * **CPU power**: More is better.
 ** Improving CPU speed directly increases the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].

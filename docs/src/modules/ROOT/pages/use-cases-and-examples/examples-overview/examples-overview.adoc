@@ -107,7 +107,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * https://neo.lcc.uma.es/vrp/[VRP web]
 |* xref:configuration/configuration.adoc#shadowVariable[Shadow variable]
 * xref:responding-to-change/responding-to-change.adoc#realTimePlanning[Real-time planning]
-* xref:optimization-algorithms/optimization-algorithms.adoc#nearbySelection[Nearby selection]
+* xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection]
 * Real road distances
 
 |xref:use-cases-and-examples/vehicle-routing/vehicle-routing.adoc#vehicleRouting[Vehicle routing] with time windows
