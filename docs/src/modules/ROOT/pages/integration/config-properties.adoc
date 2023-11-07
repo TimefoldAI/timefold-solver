@@ -24,9 +24,11 @@ This is often useful for xref:responding-to-change/responding-to-change.adoc#rea
 Defaults to `false`.
 
 {property_prefix}timefold.solver.move-thread-count::
-Enable multithreaded solving for a single problem, which increases CPU consumption.
+Enable multi-threaded solving for a single problem, which increases CPU consumption.
 Defaults to `NONE`.
-See xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedIncrementalSolving[multithreaded incremental solving].
+Note that this is a feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise edition],
+which is Timefold's commercial offering.
+See xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multithreaded incremental solving].
 
 {property_prefix}timefold.solver.domain-access-type::
 How Timefold Solver should access the domain model.

@@ -2207,10 +2207,11 @@ Meanwhile, the code is disrupted from doing further harm or obfuscating the erro
 Turning on `trace` logging, will slow down performance considerably: it is often four times slower.
 However, it is invaluable during development to discover a bottleneck.
 
-Even `debug` logging can slow down performance considerably for fast stepping algorithms (such as Late Acceptance and Simulated Annealing),
+Even `debug` logging can slow down performance considerably for fast stepping algorithms
+(such as Late Acceptance and Simulated Annealing),
 but not for slow stepping algorithms (such as Tabu Search).
 
-Both cause congestion in xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multithreaded solving] with most appenders, see below.
+Both cause congestion in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving] with most appenders, see below.
 
 In Eclipse, `debug` logging to the console tends to cause congestion with a score calculation speeds above 10 000 per second.
 Nor IntelliJ, nor the Maven command line suffer from this problem.
@@ -2266,7 +2267,7 @@ If it isn't picked up, temporarily add the system property `-Dlogback.debug=true
 
 [NOTE]
 ====
-When running multiple solvers or one xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[multithreaded solver],
+When running multiple solvers or a xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solver],
 most appenders (including the console) cause congestion with `debug` and `trace` logging.
 Switch to an async appender to avoid this problem or turn off `debug` logging.
 ====
@@ -2502,7 +2503,7 @@ For example, if set to `4`, submitting five problems
 has four problems solving immediately, and the fifth one starts when another one ends.
 If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
 By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
-regardless of the xref:optimization-algorithms/optimization-algorithms.adoc#multithreadedSolving[`moveThreadCount`] of the solvers.
+regardless of the xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[`moveThreadCount`] of the solvers.
 
 To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
 
