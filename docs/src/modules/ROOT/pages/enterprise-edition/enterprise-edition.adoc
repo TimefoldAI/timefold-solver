@@ -7,12 +7,16 @@ Timefold Solver Enterprise Edition is a commercial product that offers additiona
 such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
 These features are essential to scale out to very large datasets.
 
-Unlike Timefold Solver Community Edition,
-the Enterprise Edition is not open-source.
-To use Timefold Solver Enterprise Edition in production,
-you need to https://timefold.ai/company/contact/[purchase a license].
+You are allowed to use Timefold Solver Enterprise Edition for evaluation and development,
+but to use it in production,
+you are required to https://timefold.ai/company/contact/[purchase a license].
 For a high-level overview of the differences between Timefold offerings,
 see http://timefold.ai/pricing[Timefold Pricing].
+
+Unlike Timefold Solver Community Edition,
+the Enterprise Edition is not open-source.
+However,
+source code of the Enterprise Edition https://github.com/TimefoldAI/timefold-solver-enterprise[is available for reference].
 
 
 [#switchToEnterpriseEdition]
