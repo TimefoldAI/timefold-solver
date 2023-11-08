@@ -78,11 +78,12 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             readTspLibCityList();
             createVisitList();
             readTspLibSolution();
-            readConstantLine("EOF");
+            readOptionalConstantLine("EOF");
         }
 
         private void readTspLibHeaders() throws IOException {
-            readUntilConstantLine("TYPE *: TSP");
+            // Data format described here: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp95.pdf
+            readUntilConstantLine("TYPE *: TSP.*");
             readOptionalConstantLine("COMMENT.*");
             locationListSize = readIntegerValue("DIMENSION *:");
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:");
