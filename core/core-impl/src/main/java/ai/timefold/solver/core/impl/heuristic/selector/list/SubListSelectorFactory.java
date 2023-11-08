@@ -10,7 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.enterprise.NearbySelectionEnterpriseService;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -107,7 +107,8 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         if (nearbySelectionConfig == null) {
             return subListSelector;
         }
-        return NearbySelectionEnterpriseService.load()
+        return TimefoldSolverEnterpriseService
+                .loadOrFail("Nearby selection", "remove nearby selection from solver configuration")
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 
