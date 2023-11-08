@@ -3,6 +3,7 @@ package ai.timefold.solver.core.enterprise;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
@@ -30,6 +31,12 @@ import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 public interface TimefoldSolverEnterpriseService {
+
+    static String identifySolverVersion() {
+        var packaging = TimefoldSolverEnterpriseService.load() == null ? "Community Edition" : "Enterprise Edition";
+        var version = SolverFactory.class.getPackage().getImplementationVersion();
+        return packaging + (version == null ? " (Development snapshot)" : " " + version);
+    }
 
     static TimefoldSolverEnterpriseService load() {
         var serviceLoader = ServiceLoader.load(TimefoldSolverEnterpriseService.class);
