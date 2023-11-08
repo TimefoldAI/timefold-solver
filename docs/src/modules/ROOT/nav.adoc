@@ -16,6 +16,6 @@
 * xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 * xref:integration/integration.adoc[leveloffset=+1]
-* xref:enterprise-edition/enterprise.edition[leveloffset=+1]
+* xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]
 * xref:design-patterns/design-patterns.adoc[leveloffset=+1]
 * xref:development/development.adoc[leveloffset=+1]

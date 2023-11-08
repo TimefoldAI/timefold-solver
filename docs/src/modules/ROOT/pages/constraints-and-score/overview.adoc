@@ -1,5 +1,5 @@
 [#constraintsAndScoreOverview]
-= Constraints and Score
+= Overview
 :page-aliases: score-calculation/score-calculation.adoc, \
     constraints-and-score/constraints-and-score.adoc
 :doctype: book
