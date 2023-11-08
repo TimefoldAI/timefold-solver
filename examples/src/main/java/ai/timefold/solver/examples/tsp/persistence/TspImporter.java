@@ -82,7 +82,8 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         }
 
         private void readTspLibHeaders() throws IOException {
-            readUntilConstantLine("TYPE *: +TSP");
+            readUntilConstantLine("TYPE *: TSP");
+            readOptionalConstantLine("COMMENT.*");
             locationListSize = readIntegerValue("DIMENSION *:");
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:");
             if (edgeWeightType.equalsIgnoreCase("EUC_2D")) {
