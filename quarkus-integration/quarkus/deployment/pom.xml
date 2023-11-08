@@ -28,6 +28,10 @@
       <artifactId>quarkus-arc-deployment</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-vertx-http-deployment-spi</artifactId>
+    </dependency>
+    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-quarkus</artifactId>
     </dependency>
