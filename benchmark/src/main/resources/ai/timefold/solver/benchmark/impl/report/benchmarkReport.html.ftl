@@ -827,7 +827,7 @@
                     </#if>
                 </tr>
                 <tr>
-                    <th>Timefold version</th>
+                    <th>Timefold Solver version</th>
                     <td>${benchmarkReport.plannerBenchmarkResult.timefoldSolverVersion!"Differs"}</td>
                 </tr>
                 <tr>

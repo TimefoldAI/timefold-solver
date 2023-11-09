@@ -31,15 +31,14 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
-import ai.timefold.solver.core.enterprise.MultithreadedSolvingEnterpriseService;
-import ai.timefold.solver.core.enterprise.NearbySelectionEnterpriseService;
-import ai.timefold.solver.core.enterprise.PartitionedSearchEnterpriseService;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
+import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
@@ -102,8 +101,7 @@ class TimefoldProcessor {
 
     @BuildStep
     void registerSpi(BuildProducer<ServiceProviderBuildItem> services) {
-        Stream.of(ScoreDirectorFactoryService.class, JoinerService.class, MultithreadedSolvingEnterpriseService.class,
-                PartitionedSearchEnterpriseService.class, NearbySelectionEnterpriseService.class)
+        Stream.of(ScoreDirectorFactoryService.class, JoinerService.class, TimefoldSolverEnterpriseService.class)
                 .forEach(service -> registerSpi(service, services));
     }
 
@@ -292,6 +290,7 @@ class TimefoldProcessor {
                 .defaultBean()
                 .supplier(recorder.solverManagerConfig(solverManagerConfig)).done());
 
+        additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
         return new SolverConfigBuildItem(solverConfig);

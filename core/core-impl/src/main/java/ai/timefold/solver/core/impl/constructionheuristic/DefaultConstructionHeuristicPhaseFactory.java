@@ -22,7 +22,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.enterprise.MultithreadedSolvingEnterpriseService;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForagerFactory;
@@ -179,7 +179,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (moveThreadCount == null) {
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
-            decider = MultithreadedSolvingEnterpriseService.load(moveThreadCount)
+            decider = TimefoldSolverEnterpriseService
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                     .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {

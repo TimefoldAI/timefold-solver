@@ -20,9 +20,9 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 import org.slf4j.Logger;
@@ -270,10 +270,7 @@ public class PlannerBenchmarkResult {
         availableProcessors = Runtime.getRuntime().availableProcessors();
         loggingLevelTimefoldSolverCore = resolveLoggingLevel("ai.timefold.solver.core");
         maxMemory = Runtime.getRuntime().maxMemory();
-        timefoldSolverVersion = SolverFactory.class.getPackage().getImplementationVersion();
-        if (timefoldSolverVersion == null) {
-            timefoldSolverVersion = "Unjarred development snapshot";
-        }
+        timefoldSolverVersion = TimefoldSolverEnterpriseService.identifySolverVersion();
         javaVersion = "Java " + System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")";
         javaVM = "Java " + System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version")
                 + " (" + System.getProperty("java.vm.vendor") + ")";

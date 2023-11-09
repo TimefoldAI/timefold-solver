@@ -82,6 +82,11 @@ public class TimefoldAutoConfiguration implements BeanClassLoaderAware {
     }
 
     @Bean
+    public TimefoldSolverBannerBean getBanner() {
+        return new TimefoldSolverBannerBean();
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     public SolverConfig solverConfig() {
         String solverConfigXml = timefoldProperties.getSolverConfigXml();
