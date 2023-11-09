@@ -18,7 +18,7 @@ public class DefaultPartitionedSearchPhaseFactory<Solution_>
     public PartitionedSearchPhase<Solution_> buildPhase(int phaseIndex, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
             BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination) {
         return TimefoldSolverEnterpriseService
-                .loadOrFail("Partitioned Search", "remove partitioned search phase from configuration")
+                .loadOrFail(TimefoldSolverEnterpriseService.Feature.PARTITIONED_SEARCH)
                 .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicy, solverTermination,
                         this::buildPhaseTermination);
     }

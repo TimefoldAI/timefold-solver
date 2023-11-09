@@ -44,7 +44,7 @@ public interface TimefoldSolverEnterpriseService {
         return iterator.hasNext() ? iterator.next() : null;
     }
 
-    static TimefoldSolverEnterpriseService loadOrFail(String feature, String workaround) {
+    static TimefoldSolverEnterpriseService loadOrFail(Feature feature) {
         var service = load();
         if (service == null) {
             throw new IllegalStateException("""
@@ -52,7 +52,7 @@ public interface TimefoldSolverEnterpriseService {
                      Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency,
                      or %s.
                     "Note: Timefold Solver Enterprise Edition is a commercial product."""
-                    .formatted(feature, workaround));
+                    .formatted(feature.getName(), feature.getWorkaround()));
         }
         return service;
     }
@@ -86,5 +86,28 @@ public interface TimefoldSolverEnterpriseService {
     <Solution_> DestinationSelector<Solution_> applyNearbySelection(DestinationSelectorConfig destinationSelectorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ElementDestinationSelector<Solution_> destinationSelector);
+
+    public enum Feature {
+        MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
+        PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
+        NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration");
+
+        private final String name;
+        private final String workaround;
+
+        Feature(String name, String workaround) {
+            this.name = name;
+            this.workaround = workaround;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getWorkaround() {
+            return workaround;
+        }
+
+    }
 
 }

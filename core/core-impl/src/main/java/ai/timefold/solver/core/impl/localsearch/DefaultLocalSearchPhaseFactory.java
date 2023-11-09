@@ -80,7 +80,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
         } else {
             decider = TimefoldSolverEnterpriseService
-                    .loadOrFail("Multi-threader solving", "remove moveThreadCount from solver configuration")
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                     .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
                             configPolicy);
         }

@@ -97,7 +97,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             return destinationSelector;
         }
         return TimefoldSolverEnterpriseService
-                .loadOrFail("Nearby selection", "remove nearby selection from solver configuration")
+                .loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, destinationSelector);
     }
 }

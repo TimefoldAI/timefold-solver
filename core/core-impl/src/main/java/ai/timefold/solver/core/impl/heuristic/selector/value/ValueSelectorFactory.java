@@ -449,7 +449,7 @@ public class ValueSelectorFactory<Solution_>
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ValueSelector<Solution_> valueSelector) {
         return TimefoldSolverEnterpriseService
-                .loadOrFail("Nearby selection", "remove nearby selection from solver configuration")
+                .loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, entityDescriptor, minimumCacheType, resolvedSelectionOrder,
                         valueSelector);
     }

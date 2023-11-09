@@ -180,7 +180,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
             decider = TimefoldSolverEnterpriseService
-                    .loadOrFail("Multi-threader solving", "remove moveThreadCount from solver configuration")
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                     .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {

@@ -176,7 +176,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             NearbySelectionConfig nearbySelectionConfig, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, EntitySelector<Solution_> entitySelector) {
         return TimefoldSolverEnterpriseService
-                .loadOrFail("Nearby selection", "remove nearby selection from solver configuration")
+                .loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, nearbySelectionConfig, minimumCacheType,
                         resolvedSelectionOrder, entitySelector);
     }
