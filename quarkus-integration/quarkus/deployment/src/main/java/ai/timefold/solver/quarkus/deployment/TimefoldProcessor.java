@@ -5,7 +5,6 @@ import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,6 +37,7 @@ import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
+import ai.timefold.solver.quarkus.bean.BannerBean;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
@@ -73,7 +73,6 @@ import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
-import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
@@ -291,6 +290,7 @@ class TimefoldProcessor {
                 .defaultBean()
                 .supplier(recorder.solverManagerConfig(solverManagerConfig)).done());
 
+        additionalBeans.produce(new AdditionalBeanBuildItem(BannerBean.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
         return new SolverConfigBuildItem(solverConfig);
@@ -662,26 +662,6 @@ class TimefoldProcessor {
                 reflectiveClassSet.add(clazz);
             }
         });
-    }
-
-    @BuildStep
-    void produceTimefoldSolverQuarkusBanner(BuildProducer<GeneratedResourceBuildItem> resourceProducer) {
-        var id = "Timefold Solver " + TimefoldSolverEnterpriseService.identifySolverVersion().strip();
-        var replacement = String.format("%67s", id);
-        var banner = """
-                     ____         _______
-                    |    |       /      /
-                  __|    |______/______/   _     _                       __           _       _
-                 /             /          | |_  (_)  _ __ ___     ___   / _|   ___   | |   __| |
-                /___      ____/_______    | __| | | | '_ ` _ \\   / _ \\ | |_   / _ \\  | |  / _` |
-                    |    |    /      /    | |_  | | | | | | | | |  __/ |  _| | (_) | | | | (_| |
-                    |    |___/______/      \\__| |_| |_| |_| |_|  \\___| |_|    \\___/  |_|  \\__,_|
-                    |       /
-                    |______/ %s
-                """.formatted(replacement);
-        var build_item =
-                new GeneratedResourceBuildItem("default_banner.txt", banner.getBytes(StandardCharsets.UTF_8));
-        resourceProducer.produce(build_item);
     }
 
 }

@@ -38,6 +38,22 @@ public interface TimefoldSolverEnterpriseService {
         return packaging + (version == null ? " (Development snapshot)" : " " + version);
     }
 
+    static String getBanner() {
+        var id = "Timefold Solver " + TimefoldSolverEnterpriseService.identifySolverVersion().strip();
+        var replacement = String.format("%67s", id);
+        return """
+                     ____         _______
+                    |    |       /      /
+                  __|    |______/______/   _     _                       __           _       _
+                 /             /          | |_  (_)  _ __ ___     ___   / _|   ___   | |   __| |
+                /___      ____/_______    | __| | | | '_ ` _ \\   / _ \\ | |_   / _ \\  | |  / _` |
+                    |    |    /      /    | |_  | | | | | | | | |  __/ |  _| | (_) | | | | (_| |
+                    |    |___/______/      \\__| |_| |_| |_| |_|  \\___| |_|    \\___/  |_|  \\__,_|
+                    |       /
+                    |______/ %s
+                """.formatted(replacement);
+    }
+
     static TimefoldSolverEnterpriseService load() {
         var serviceLoader = ServiceLoader.load(TimefoldSolverEnterpriseService.class);
         var iterator = serviceLoader.iterator();
