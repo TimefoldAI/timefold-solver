@@ -417,7 +417,7 @@ class TimefoldProcessor {
         Collection<AnnotationInstance> timefoldFieldAnnotations = new HashSet<>();
 
         for (DotName annotationName : DotNames.PLANNING_ENTITY_FIELD_ANNOTATIONS) {
-            timefoldFieldAnnotations.addAll(indexView.getAnnotations(annotationName));
+            timefoldFieldAnnotations.addAll(indexView.getAnnotationsWithRepeatable(annotationName, indexView));
         }
 
         for (AnnotationInstance annotationInstance : timefoldFieldAnnotations) {
@@ -467,7 +467,7 @@ class TimefoldProcessor {
     private void registerClassesFromAnnotations(IndexView indexView, Set<Class<?>> reflectiveClassSet) {
         for (DotNames.BeanDefiningAnnotations beanDefiningAnnotation : DotNames.BeanDefiningAnnotations.values()) {
             for (AnnotationInstance annotationInstance : indexView
-                    .getAnnotations(beanDefiningAnnotation.getAnnotationDotName())) {
+                    .getAnnotationsWithRepeatable(beanDefiningAnnotation.getAnnotationDotName(), indexView)) {
                 for (String parameterName : beanDefiningAnnotation.getParameterNames()) {
                     AnnotationValue value = annotationInstance.value(parameterName);
 
@@ -618,7 +618,7 @@ class TimefoldProcessor {
             Collection<AnnotationInstance> membersToGeneratedAccessorsFor = new ArrayList<>();
 
             for (DotName dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
-                membersToGeneratedAccessorsFor.addAll(indexView.getAnnotations(dotName));
+                membersToGeneratedAccessorsFor.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
             }
             membersToGeneratedAccessorsFor.removeIf(this::shouldIgnoreMember);
 
