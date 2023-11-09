@@ -37,8 +37,8 @@ import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
-import ai.timefold.solver.quarkus.bean.BannerBean;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
+import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
@@ -290,7 +290,7 @@ class TimefoldProcessor {
                 .defaultBean()
                 .supplier(recorder.solverManagerConfig(solverManagerConfig)).done());
 
-        additionalBeans.produce(new AdditionalBeanBuildItem(BannerBean.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
         return new SolverConfigBuildItem(solverConfig);

@@ -10,14 +10,16 @@ import org.jboss.logging.Logger;
 import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
-public class BannerBean {
+public class TimefoldSolverBannerBean {
 
-    private static final Logger LOGGER = Logger.getLogger(BannerBean.class);
+    private static final Logger LOGGER = Logger.getLogger(TimefoldSolverBannerBean.class);
 
     void onStart(@Observes StartupEvent ev) {
         LOGGER.info("""
 
-                %s""".formatted(TimefoldSolverEnterpriseService.getBanner()));
+                %s"""
+                .stripTrailing()
+                .formatted(TimefoldSolverEnterpriseService.getBanner()));
     }
 
 }

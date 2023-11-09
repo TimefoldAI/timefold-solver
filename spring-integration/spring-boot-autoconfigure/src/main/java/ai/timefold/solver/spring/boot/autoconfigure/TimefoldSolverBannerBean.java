@@ -17,6 +17,8 @@ public class TimefoldSolverBannerBean implements InitializingBean {
         LOG.info("""
 
                 %s
-                """.formatted(TimefoldSolverEnterpriseService.getBanner()));
+                """
+                .stripTrailing()
+                .formatted(TimefoldSolverEnterpriseService.getBanner()));
     }
 }
