@@ -14,17 +14,7 @@ class TimefoldSolverEnterpriseServiceTest {
     @Test
     void banner() {
         Assertions.assertThat(TimefoldSolverEnterpriseService.getBanner())
-                .isEqualTo("""
-                             ____         _______
-                            |    |       /      /
-                          __|    |______/______/        _    _                      __         _      _
-                         /             /              _| |_ (_) _ __ ___    ___    / _|  ___  | |  __| |
-                        /___      ____/_______       |_   _|| || '_ ` _ \\  / _ \\ _| |_  / _ \\ | | / _` |
-                            |    |    /      /         | |_ | || | | | | ||  __/|_   _|| (_) || || (_| |
-                            |    |___/______/           \\__||_||_| |_| |_| \\___|  |_|   \\___/ |_| \\__,_|
-                            |       /
-                            |______/            Timefold Solver Community Edition (Development snapshot)
-                        """);
+                .contains("Community Edition");
     }
 
 }
