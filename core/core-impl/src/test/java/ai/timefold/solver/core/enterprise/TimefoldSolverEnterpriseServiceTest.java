@@ -12,8 +12,8 @@ class TimefoldSolverEnterpriseServiceTest {
     }
 
     @Test
-    void banner() {
-        Assertions.assertThat(TimefoldSolverEnterpriseService.getBanner())
+    void solverVersion() {
+        Assertions.assertThat(TimefoldSolverEnterpriseService.identifySolverVersion())
                 .contains("Community Edition");
     }
 

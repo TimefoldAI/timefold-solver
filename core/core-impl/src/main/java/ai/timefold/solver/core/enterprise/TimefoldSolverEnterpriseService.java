@@ -35,23 +35,7 @@ public interface TimefoldSolverEnterpriseService {
     static String identifySolverVersion() {
         var packaging = TimefoldSolverEnterpriseService.load() == null ? "Community Edition" : "Enterprise Edition";
         var version = SolverFactory.class.getPackage().getImplementationVersion();
-        return packaging + (version == null ? " (Development snapshot)" : " " + version);
-    }
-
-    static String getBanner() {
-        var id = "Timefold Solver " + TimefoldSolverEnterpriseService.identifySolverVersion().strip();
-        var replacement = String.format("%67s", id);
-        return """
-                     ____         _______
-                    |    |       /      /
-                  __|    |______/______/        _    _                      __         _      _
-                 /             /              _| |_ (_) _ __ ___    ___    / _|  ___  | |  __| |
-                /___      ____/_______       |_   _|| || '_ ` _ \\  / _ \\ _| |_  / _ \\ | | / _` |
-                    |    |    /      /         | |_ | || | | | | ||  __/|_   _|| (_) || || (_| |
-                    |    |___/______/           \\__||_||_| |_| |_| \\___|  |_|   \\___/ |_| \\__,_|
-                    |       /
-                    |______/ %s
-                """.formatted(replacement);
+        return packaging + " " + (version == null ? "(Development snapshot)" : "v" + version);
     }
 
     static TimefoldSolverEnterpriseService load() {

@@ -15,11 +15,7 @@ public class TimefoldSolverBannerBean {
     private static final Logger LOGGER = Logger.getLogger(TimefoldSolverBannerBean.class);
 
     void onStart(@Observes StartupEvent ev) {
-        LOGGER.info("""
-
-                %s"""
-                .stripTrailing()
-                .formatted(TimefoldSolverEnterpriseService.getBanner()));
+        LOGGER.info("Using Timefold Solver " + TimefoldSolverEnterpriseService.identifySolverVersion() + ".");
     }
 
 }

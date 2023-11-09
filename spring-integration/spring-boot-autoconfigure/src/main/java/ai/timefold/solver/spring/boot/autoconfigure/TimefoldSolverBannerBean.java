@@ -14,11 +14,6 @@ public class TimefoldSolverBannerBean implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        LOG.info("""
-
-                %s
-                """
-                .stripTrailing()
-                .formatted(TimefoldSolverEnterpriseService.getBanner()));
+        LOG.info("Using Timefold Solver " + TimefoldSolverEnterpriseService.identifySolverVersion() + ".");
     }
 }
