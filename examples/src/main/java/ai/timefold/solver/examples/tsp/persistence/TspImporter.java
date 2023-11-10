@@ -116,6 +116,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                     String edgeWeightFormat = readStringValue("EDGE_WEIGHT_FORMAT *:").toUpperCase();
                     coordinateReader = switch (edgeWeightFormat) {
                         case "FULL_MATRIX" -> this::readFullMatrixLocations;
+                        case "UPPER_ROW" -> this::readUpperRowMatrixLocations;
                         default ->
                                 throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
                     };
@@ -270,6 +271,37 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                     }
                 });
                 roadLocation.setTravelDistanceMap(distanceMatrix);
+            }
+            return (List) locationList;
+        }
+
+        private List<Location> readUpperRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            Map<LocationPair, Double> distanceMap = new HashMap<>();
+            for (int locationA = 0; locationA < locationListSize - 1; locationA++) {
+                int processedLocationsAlready = locationA + 1;
+                int expectedTokenCount = locationListSize - processedLocationsAlready;
+                String line = bufferedReader.readLine().trim();
+                String[] lineTokens = splitBySpace(line, expectedTokenCount, expectedTokenCount, true, true);
+                for (int locationB = 0; locationB < expectedTokenCount; locationB++) {
+                    int actualLocationB = processedLocationsAlready + locationB;
+                    distanceMap.put(new LocationPair(locationA, actualLocationB), Double.parseDouble(lineTokens[locationB]));
+                }
+            }
+            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
+            for (int i = 0; i < locationListSize; i++) {
+                RoadLocation roadLocation = new RoadLocation(i);
+                roadLocation.setTravelDistanceMap(new LinkedHashMap<>());
+                locationList.add(roadLocation);
+            }
+            for (int i = 0; i < locationListSize; i++) {
+                RoadLocation roadLocation = locationList.get(i);
+                distanceMap.forEach((locationPair, distance) -> {
+                    if (locationPair.locationA == roadLocation.getId()) {
+                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
+                        roadLocation.getTravelDistanceMap().put(otherLocation, distance);
+                        otherLocation.getTravelDistanceMap().put(roadLocation, distance);
+                    }
+                });
             }
             return (List) locationList;
         }
