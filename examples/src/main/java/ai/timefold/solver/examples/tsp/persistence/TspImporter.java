@@ -90,7 +90,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
 
         private void readTspLibHeaders() throws IOException {
             // Data format described here: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp95.pdf
-            readUntilConstantLine("TYPE *: TSP.*");
+            readUntilConstantLine("TYPE *: A?TSP.*");
             readOptionalConstantLine("COMMENT.*");
             locationListSize = readIntegerValue("DIMENSION *:");
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:").toUpperCase();
