@@ -1,5 +1,6 @@
 package ai.timefold.solver.examples.tsp.persistence;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         private TspSolution tspSolution;
 
         private int locationListSize;
+        private CoordinateReader coordinateReader;
 
         @Override
         public TspSolution readSolution() throws IOException {
@@ -86,49 +88,44 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             readUntilConstantLine("TYPE *: TSP.*");
             readOptionalConstantLine("COMMENT.*");
             locationListSize = readIntegerValue("DIMENSION *:");
-            String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:");
-            if (edgeWeightType.equalsIgnoreCase("EUC_2D")) {
-                tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
-            } else if (edgeWeightType.equalsIgnoreCase("EXPLICIT")) {
-                tspSolution.setDistanceType(DistanceType.ROAD_DISTANCE);
-                String edgeWeightFormat = readStringValue("EDGE_WEIGHT_FORMAT *:");
-                if (!edgeWeightFormat.equalsIgnoreCase("FULL_MATRIX")) {
-                    throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
-                }
-            } else {
-                throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
+            String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:").toUpperCase();
+            switch (edgeWeightType) {
+                case "EUC_2D":
+                    tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
+                    coordinateReader = (bufferedReader, locationListSize) -> {
+                        List<Location> locationList = new ArrayList<>(locationListSize);
+                        for (int i = 0; i < locationListSize; i++) {
+                            String line = bufferedReader.readLine().trim();
+                            String[] lineTokens = splitBySpace(line, 3, 3, true, true);
+                            long id = Long.parseLong(lineTokens[0]);
+                            double latitude = Double.parseDouble(lineTokens[1]);
+                            double longitude = Double.parseDouble(lineTokens[2]);
+                            Location location = new AirLocation(id, latitude, longitude);
+                            locationList.add(location);
+                        }
+                        return locationList;
+                    };
+                    break;
+                case "EXPLICIT":
+                    tspSolution.setDistanceType(DistanceType.ROAD_DISTANCE);
+                    String edgeWeightFormat = readStringValue("EDGE_WEIGHT_FORMAT *:");
+                    if (!edgeWeightFormat.equalsIgnoreCase("FULL_MATRIX")) {
+                        throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
             }
             tspSolution.setDistanceUnitOfMeasurement(readOptionalStringValue("EDGE_WEIGHT_UNIT_OF_MEASUREMENT *:", "distance"));
         }
 
         private void readTspLibCityList() throws IOException {
             readConstantLine("NODE_COORD_SECTION");
-            DistanceType distanceType = tspSolution.getDistanceType();
-            List<Location> locationList = new ArrayList<>(locationListSize);
-            for (int i = 0; i < locationListSize; i++) {
-                String line = bufferedReader.readLine();
-                String[] lineTokens = splitBySpace(line, 3, 4, false, true);
-                Location location;
-                long id = Long.parseLong(lineTokens[0]);
-                double latitude = Double.parseDouble(lineTokens[1]);
-                double longitude = Double.parseDouble(lineTokens[2]);
-                switch (distanceType) {
-                    case AIR_DISTANCE:
-                        location = new AirLocation(id, latitude, longitude);
-                        break;
-                    case ROAD_DISTANCE:
-                        location = new RoadLocation(id, latitude, longitude);
-                        break;
-                    default:
-                        throw new IllegalStateException("The distanceType (" + distanceType
-                                + ") is not implemented.");
-
-                }
-                if (lineTokens.length >= 4) {
-                    location.setName(lineTokens[3]);
-                }
-                locationList.add(location);
+            if  (coordinateReader == null) {
+                throw new IllegalStateException("Read the headers first.");
             }
+            DistanceType distanceType = tspSolution.getDistanceType();
+            List<Location> locationList = coordinateReader.apply(bufferedReader, locationListSize);
             tspSolution.setLocationList(locationList);
             if (distanceType == DistanceType.ROAD_DISTANCE) {
                 readConstantLine("EDGE_WEIGHT_SECTION");
@@ -217,6 +214,13 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             tspSolution.setLocationList(locationList);
             createVisitList();
         }
+
+    }
+
+    @FunctionalInterface
+    private interface CoordinateReader {
+
+        List<Location> apply(BufferedReader bufferedReader, int locationListSize) throws IOException;
 
     }
 

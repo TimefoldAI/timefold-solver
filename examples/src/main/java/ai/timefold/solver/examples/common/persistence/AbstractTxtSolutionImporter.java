@@ -356,7 +356,11 @@ public abstract class AbstractTxtSolutionImporter<Solution_> extends AbstractSol
                     }
                     lineTokenList.add(token);
                 }
-                lineTokens = lineTokenList.toArray(new String[0]);
+                // Empty token == somewhere in there was an extra empty space
+                lineTokens = lineTokenList
+                        .stream()
+                        .filter(token -> !token.isEmpty())
+                        .toArray(String[]::new);
             }
             if (minimumNumberOfTokens != null && lineTokens.length < minimumNumberOfTokens) {
                 throw new IllegalArgumentException("Read line (" + line + ") has " + lineTokens.length
