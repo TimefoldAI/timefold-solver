@@ -100,6 +100,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                     isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
                     break;
+                case "CEIL_2D":
                 case "EUC_2D":
                     tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
                     isMatrix = false;
