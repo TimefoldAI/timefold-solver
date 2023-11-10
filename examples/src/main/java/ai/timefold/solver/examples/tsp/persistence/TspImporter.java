@@ -129,6 +129,8 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         }
 
         private void readTspLibCityList() throws IOException {
+            readOptionalConstantLine("EDGE_WEIGHT_FORMAT.*");
+            readOptionalConstantLine("DISPLAY_DATA_TYPE.*");
             readConstantLine("NODE_COORD_SECTION");
             if (coordinateReader == null) {
                 throw new IllegalStateException("Read the headers first.");
