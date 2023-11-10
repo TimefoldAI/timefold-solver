@@ -79,6 +79,12 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
 
         private void readTspLibFormat() throws IOException {
             readTspLibHeaders();
+            if (coordinateReader == null) {
+                throw new IllegalStateException("Read the headers first.");
+            }
+            readOptionalConstantLine("EDGE_WEIGHT_FORMAT.*");
+            readOptionalConstantLine("NODE_COORD_TYPE.*");
+            readOptionalConstantLine("DISPLAY_DATA_TYPE.*");
             if (isMatrix) {
                 readTspLibMatrix();
             } else {
@@ -133,12 +139,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         }
 
         private void readTspLibCityList() throws IOException {
-            readOptionalConstantLine("EDGE_WEIGHT_FORMAT.*");
-            readOptionalConstantLine("DISPLAY_DATA_TYPE.*");
             readConstantLine("NODE_COORD_SECTION");
-            if (coordinateReader == null) {
-                throw new IllegalStateException("Read the headers first.");
-            }
             DistanceType distanceType = tspSolution.getDistanceType();
             List<Location> locationList = coordinateReader.apply(bufferedReader, locationListSize);
             tspSolution.setLocationList(locationList);
@@ -167,9 +168,6 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         }
 
         private void readTspLibMatrix() throws IOException {
-            if (coordinateReader == null) {
-                throw new IllegalStateException("Read the headers first.");
-            }
             readConstantLine("EDGE_WEIGHT_SECTION");
             List<Location> locationList = coordinateReader.apply(bufferedReader, locationListSize);
             tspSolution.setLocationList(locationList);
