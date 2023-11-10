@@ -1,18 +1,10 @@
 package ai.timefold.solver.examples.tsp.domain.location;
 
 public enum DistanceType {
-    /**
-     * Requires that all {@link Location} instances are of type {@link AirLocation}.
-     */
     AIR_DISTANCE(AirLocation::new),
-    /**
-     * Requires that all {@link Location} instances are of type {@link RoadLocation}.
-     */
     ROAD_DISTANCE(RoadLocation::new),
-    /**
-     * Requires that all {@link Location} instances are of type {@link GeoLocation}.
-     */
-    GEO(GeoLocation::new);
+    GEO(GeoLocation::new),
+    ATT(AttLocation::new);
 
     private final LocationFunction locationFunction;
 

@@ -90,12 +90,16 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             locationListSize = readIntegerValue("DIMENSION *:");
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:").toUpperCase();
             switch (edgeWeightType) {
-                case "GEO":
-                    tspSolution.setDistanceType(DistanceType.GEO);
+                case "ATT":
+                    tspSolution.setDistanceType(DistanceType.ATT);
                     coordinateReader = this::readTwoCoordinateLocations;
                     break;
                 case "EUC_2D":
                     tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
+                    coordinateReader = this::readTwoCoordinateLocations;
+                    break;
+                case "GEO":
+                    tspSolution.setDistanceType(DistanceType.GEO);
                     coordinateReader = this::readTwoCoordinateLocations;
                     break;
                 case "EXPLICIT":
