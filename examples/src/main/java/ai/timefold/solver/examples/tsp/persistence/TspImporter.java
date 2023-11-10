@@ -1,14 +1,5 @@
 package ai.timefold.solver.examples.tsp.persistence;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import ai.timefold.solver.examples.common.business.SolutionBusiness;
 import ai.timefold.solver.examples.common.persistence.AbstractTxtSolutionImporter;
 import ai.timefold.solver.examples.common.persistence.SolutionConverter;
@@ -21,6 +12,15 @@ import ai.timefold.solver.examples.tsp.domain.location.AirLocation;
 import ai.timefold.solver.examples.tsp.domain.location.DistanceType;
 import ai.timefold.solver.examples.tsp.domain.location.Location;
 import ai.timefold.solver.examples.tsp.domain.location.RoadLocation;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
 
@@ -90,21 +90,13 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             locationListSize = readIntegerValue("DIMENSION *:");
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:").toUpperCase();
             switch (edgeWeightType) {
+                case "GEO":
+                    tspSolution.setDistanceType(DistanceType.GEO);
+                    coordinateReader = this::readTwoCoordinateLocations;
+                    break;
                 case "EUC_2D":
                     tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
-                    coordinateReader = (bufferedReader, locationListSize) -> {
-                        List<Location> locationList = new ArrayList<>(locationListSize);
-                        for (int i = 0; i < locationListSize; i++) {
-                            String line = bufferedReader.readLine().trim();
-                            String[] lineTokens = splitBySpace(line, 3, 3, true, true);
-                            long id = Long.parseLong(lineTokens[0]);
-                            double latitude = Double.parseDouble(lineTokens[1]);
-                            double longitude = Double.parseDouble(lineTokens[2]);
-                            Location location = new AirLocation(id, latitude, longitude);
-                            locationList.add(location);
-                        }
-                        return locationList;
-                    };
+                    coordinateReader = this::readTwoCoordinateLocations;
                     break;
                 case "EXPLICIT":
                     tspSolution.setDistanceType(DistanceType.ROAD_DISTANCE);
@@ -116,12 +108,13 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                 default:
                     throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
             }
+            readOptionalConstantLine("DISPLAY_DATA_TYPE.*");
             tspSolution.setDistanceUnitOfMeasurement(readOptionalStringValue("EDGE_WEIGHT_UNIT_OF_MEASUREMENT *:", "distance"));
         }
 
         private void readTspLibCityList() throws IOException {
             readConstantLine("NODE_COORD_SECTION");
-            if  (coordinateReader == null) {
+            if (coordinateReader == null) {
                 throw new IllegalStateException("Read the headers first.");
             }
             DistanceType distanceType = tspSolution.getDistanceType();
@@ -215,6 +208,19 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             createVisitList();
         }
 
+        private List<Location> readTwoCoordinateLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            List<Location> locationList = new ArrayList<>(locationListSize);
+            for (int i = 0; i < locationListSize; i++) {
+                String line = bufferedReader.readLine().trim();
+                String[] lineTokens = splitBySpace(line, 3, 3, true, true);
+                long id = Long.parseLong(lineTokens[0]);
+                double x = Double.parseDouble(lineTokens[1]);
+                double y = Double.parseDouble(lineTokens[2]);
+                Location location = tspSolution.getDistanceType().createLocation(id, x, y);
+                locationList.add(location);
+            }
+            return locationList;
+        }
     }
 
     @FunctionalInterface
