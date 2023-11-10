@@ -137,11 +137,15 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             List<Location> locationList = new ArrayList<>(locationListSize);
             for (int i = 0; i < locationListSize; i++) {
                 String line = bufferedReader.readLine().trim();
-                String[] lineTokens = splitBySpace(line, 3, 3, true, true);
+                // The fourth token is an optional description.
+                String[] lineTokens = splitBySpace(line, 3, 4, true, true);
                 long id = Long.parseLong(lineTokens[0]);
                 double x = Double.parseDouble(lineTokens[1]);
                 double y = Double.parseDouble(lineTokens[2]);
                 Location location = tspSolution.getDistanceType().createLocation(id, x, y);
+                if (lineTokens.length == 4) {
+                    location.setName(lineTokens[3]);
+                }
                 locationList.add(location);
             }
             return locationList;
@@ -324,6 +328,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         }
 
         private void readTspLibCityList() throws IOException {
+            readOptionalConstantLine("EDGE_WEIGHT_UNIT_OF_MEASUREMENT.*");
             readConstantLine("NODE_COORD_SECTION");
             DistanceType distanceType = tspSolution.getDistanceType();
             List<Location> locationList = coordinateReader.apply(bufferedReader, locationListSize);
