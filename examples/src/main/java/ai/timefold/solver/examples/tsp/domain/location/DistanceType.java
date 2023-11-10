@@ -1,5 +1,7 @@
 package ai.timefold.solver.examples.tsp.domain.location;
 
+import java.util.Map;
+
 public enum DistanceType {
     AIR_DISTANCE(AirLocation::new),
     ROAD_DISTANCE(RoadLocation::new),
@@ -19,4 +21,5 @@ public enum DistanceType {
     interface LocationFunction {
         Location apply(long id, double x, double y);
     }
+
 }

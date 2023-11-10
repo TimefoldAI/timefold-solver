@@ -49,6 +49,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         private TspSolution tspSolution;
 
         private int locationListSize;
+        private boolean isMatrix;
         private CoordinateReader coordinateReader;
 
         @Override
@@ -77,7 +78,11 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
 
         private void readTspLibFormat() throws IOException {
             readTspLibHeaders();
-            readTspLibCityList();
+            if (isMatrix) {
+                readTspLibMatrix();
+            } else {
+                readTspLibCityList();
+            }
             createVisitList();
             readTspLibSolution();
             readOptionalConstantLine("EOF");
@@ -92,22 +97,28 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             switch (edgeWeightType) {
                 case "ATT":
                     tspSolution.setDistanceType(DistanceType.ATT);
+                    isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
                     break;
                 case "EUC_2D":
                     tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
+                    isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
                     break;
                 case "GEO":
                     tspSolution.setDistanceType(DistanceType.GEO);
+                    isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
                     break;
                 case "EXPLICIT":
                     tspSolution.setDistanceType(DistanceType.ROAD_DISTANCE);
-                    String edgeWeightFormat = readStringValue("EDGE_WEIGHT_FORMAT *:");
-                    if (!edgeWeightFormat.equalsIgnoreCase("FULL_MATRIX")) {
-                        throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
-                    }
+                    isMatrix = true;
+                    String edgeWeightFormat = readStringValue("EDGE_WEIGHT_FORMAT *:").toUpperCase();
+                    coordinateReader = switch (edgeWeightFormat) {
+                        case "FULL_MATRIX" -> this::readFullMatrixLocations;
+                        default ->
+                                throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
+                    };
                     break;
                 default:
                     throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
@@ -146,6 +157,15 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                     location.setTravelDistanceMap(travelDistanceMap);
                 }
             }
+        }
+
+        private void readTspLibMatrix() throws IOException {
+            if (coordinateReader == null) {
+                throw new IllegalStateException("Read the headers first.");
+            }
+            readConstantLine("EDGE_WEIGHT_SECTION");
+            List<Location> locationList = coordinateReader.apply(bufferedReader, locationListSize);
+            tspSolution.setLocationList(locationList);
         }
 
         private void createVisitList() {
@@ -224,6 +244,38 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                 locationList.add(location);
             }
             return locationList;
+        }
+
+        private List<Location> readFullMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            Map<LocationPair, Double> distanceMap = new HashMap<>();
+            for (int locationA = 0; locationA < locationListSize; locationA++) {
+                String line = bufferedReader.readLine().trim();
+                String[] lineTokens = splitBySpace(line, locationListSize, locationListSize, true, true);
+                for (int locationB = 0; locationB < locationListSize; locationB++) {
+                    distanceMap.put(new LocationPair(locationA, locationB), Double.parseDouble(lineTokens[locationB]));
+                }
+            }
+            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
+            for (int i = 0; i < locationListSize; i++) {
+                RoadLocation roadLocation = new RoadLocation(i);
+                locationList.add(roadLocation);
+            }
+            for (int i = 0; i < locationListSize; i++) {
+                Map<RoadLocation, Double> distanceMatrix = new LinkedHashMap<>();
+                RoadLocation roadLocation = locationList.get(i);
+                distanceMap.forEach((locationPair, distance) -> {
+                    if (locationPair.locationA == roadLocation.getId()) {
+                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
+                        distanceMatrix.put(otherLocation, distance);
+                    }
+                });
+                roadLocation.setTravelDistanceMap(distanceMatrix);
+            }
+            return (List) locationList;
+        }
+
+        private record LocationPair(long locationA, long locationB) {
+
         }
     }
 
