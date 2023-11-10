@@ -28,8 +28,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
     public static final String INPUT_FILE_SUFFIX = "tsp";
 
     public static void main(String[] args) {
-        SolutionConverter<TspSolution> converter =
-                SolutionConverter.createImportConverter(TspApp.DATA_DIR_NAME, new TspImporter(), new TspSolutionFileIO());
+        SolutionConverter<TspSolution> converter = SolutionConverter.createImportConverter(TspApp.DATA_DIR_NAME, new TspImporter(), new TspSolutionFileIO());
         converter.convert("other/air/europe40.tsp", "europe40.json");
         converter.convert("other/road-km/americanRoadTrip-road-km-n50.tsp", "americanRoadTrip-road-km-n50.json");
         converter.convert("cook/air/lu980.tsp", "lu980.json");
@@ -66,10 +65,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                 readCourseraFormat();
             }
             BigInteger possibleSolutionSize = factorial(tspSolution.getLocationList().size() - 1);
-            logger.info("TspSolution {} has {} locations with a search space of {}.",
-                    getInputId(),
-                    tspSolution.getLocationList().size(),
-                    getFlooredPossibleSolutionSize(possibleSolutionSize));
+            logger.info("TspSolution {} has {} locations with a search space of {}.", getInputId(), tspSolution.getLocationList().size(), getFlooredPossibleSolutionSize(possibleSolutionSize));
             return tspSolution;
         }
 
@@ -102,23 +98,22 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             locationListSize = readIntegerValue("DIMENSION *:");
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:").toUpperCase();
             switch (edgeWeightType) {
-                case "ATT":
+                case "ATT" -> {
                     tspSolution.setDistanceType(DistanceType.ATT);
                     isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
-                    break;
-                case "CEIL_2D":
-                case "EUC_2D":
+                }
+                case "CEIL_2D", "EUC_2D" -> {
                     tspSolution.setDistanceType(DistanceType.AIR_DISTANCE);
                     isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
-                    break;
-                case "GEO":
+                }
+                case "GEO" -> {
                     tspSolution.setDistanceType(DistanceType.GEO);
                     isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
-                    break;
-                case "EXPLICIT":
+                }
+                case "EXPLICIT" -> {
                     tspSolution.setDistanceType(DistanceType.ROAD_DISTANCE);
                     isMatrix = true;
                     String edgeWeightFormat = readStringValue("EDGE_WEIGHT_FORMAT *:").toUpperCase();
@@ -130,12 +125,202 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                         default ->
                                 throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
                     };
-                    break;
-                default:
-                    throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
+                }
+                default ->
+                        throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
             }
             readOptionalConstantLine("DISPLAY_DATA_TYPE.*");
             tspSolution.setDistanceUnitOfMeasurement(readOptionalStringValue("EDGE_WEIGHT_UNIT_OF_MEASUREMENT *:", "distance"));
+        }
+
+        private List<Location> readTwoCoordinateLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            List<Location> locationList = new ArrayList<>(locationListSize);
+            for (int i = 0; i < locationListSize; i++) {
+                String line = bufferedReader.readLine().trim();
+                String[] lineTokens = splitBySpace(line, 3, 3, true, true);
+                long id = Long.parseLong(lineTokens[0]);
+                double x = Double.parseDouble(lineTokens[1]);
+                double y = Double.parseDouble(lineTokens[2]);
+                Location location = tspSolution.getDistanceType().createLocation(id, x, y);
+                locationList.add(location);
+            }
+            return locationList;
+        }
+
+        private List<Location> readFullMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            Map<LocationPair, Double> distanceMap = new HashMap<>();
+            String[][] lineTokens = readFullMatrix(locationListSize);
+            for (int locationA = 0; locationA < locationListSize; locationA++) {
+                for (int locationB = 0; locationB < locationListSize; locationB++) {
+                    distanceMap.put(new LocationPair(locationA, locationB), Double.parseDouble(lineTokens[locationA][locationB]));
+                }
+            }
+            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
+            for (int i = 0; i < locationListSize; i++) {
+                RoadLocation roadLocation = new RoadLocation(i);
+                locationList.add(roadLocation);
+            }
+            for (int i = 0; i < locationListSize; i++) {
+                Map<RoadLocation, Double> distanceMatrix = new LinkedHashMap<>();
+                RoadLocation roadLocation = locationList.get(i);
+                distanceMap.forEach((locationPair, distance) -> {
+                    if (locationPair.locationA == roadLocation.getId()) {
+                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
+                        distanceMatrix.put(otherLocation, distance);
+                    }
+                });
+                roadLocation.setTravelDistanceMap(distanceMatrix);
+            }
+            return (List) locationList;
+        }
+
+        private String[][] readFullMatrix(int expectedLocations) throws IOException {
+            int unreadTokens = expectedLocations * expectedLocations;
+            List<String> tokens = readMatrix(unreadTokens);
+            // Split array into chunks of expectedLocations
+            String[][] tokenArray = new String[expectedLocations][expectedLocations];
+            for (int i = 0; i < expectedLocations; i++) {
+                tokenArray[i] = tokens.subList(i * expectedLocations, (i + 1) * expectedLocations).toArray(new String[0]);
+            }
+            return tokenArray;
+        }
+
+        /**
+         * Sometimes all tokens for a single location are on a single line.
+         * Sometimes they span multiple lines.
+         * This method can read all of those cases.
+         *
+         * @param unreadTokens How many tokens to read.
+         * @return All tokens for all locations.
+         * @throws IOException
+         */
+        private List<String> readMatrix(int unreadTokens) throws IOException {
+            List<String> tokens = new ArrayList<>(unreadTokens);
+            while (unreadTokens > 0) {
+                String line = bufferedReader.readLine();
+                if (line == null) {
+                    throw new IllegalStateException("Unprocessed tokens: " + unreadTokens);
+                } else if (line.trim().isEmpty()) {
+                    continue;
+                }
+                String[] lineTokens = splitBySpace(line, 1, unreadTokens, true, true);
+                tokens.addAll(Arrays.asList(lineTokens));
+                unreadTokens -= lineTokens.length;
+            }
+            return tokens;
+        }
+
+        private List<Location> readUpperRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            Map<LocationPair, Double> distanceMap = new HashMap<>();
+            String[][] lineTokens = readUpperRowMatrix(locationListSize);
+            return getSymmetricalLocations(locationListSize, distanceMap, lineTokens);
+        }
+
+        private List<Location> getSymmetricalLocations(int locationListSize, Map<LocationPair, Double> distanceMap, String[][] lineTokens) {
+            for (int locationA = 0; locationA < locationListSize - 1; locationA++) {
+                int processedLocationsAlready = locationA + 1;
+                int expectedTokenCount = locationListSize - processedLocationsAlready;
+                for (int locationB = 0; locationB < expectedTokenCount; locationB++) {
+                    int actualLocationB = processedLocationsAlready + locationB;
+                    distanceMap.put(new LocationPair(locationA, actualLocationB), Double.parseDouble(lineTokens[locationA][locationB]));
+                }
+            }
+            return getSymmetricalLocations(locationListSize, distanceMap);
+        }
+
+        private List<Location> getSymmetricalLocations(int locationListSize, Map<LocationPair, Double> distanceMap) {
+            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
+            for (int i = 0; i < locationListSize; i++) {
+                RoadLocation roadLocation = new RoadLocation(i);
+                roadLocation.setTravelDistanceMap(new LinkedHashMap<>());
+                locationList.add(roadLocation);
+            }
+            for (int i = 0; i < locationListSize; i++) {
+                RoadLocation roadLocation = locationList.get(i);
+                distanceMap.forEach((locationPair, distance) -> {
+                    if (locationPair.locationA == roadLocation.getId()) {
+                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
+                        roadLocation.getTravelDistanceMap().put(otherLocation, distance);
+                        otherLocation.getTravelDistanceMap().put(roadLocation, distance);
+                    }
+                });
+            }
+            return (List) locationList;
+        }
+
+        private String[][] readUpperRowMatrix(int expectedLocations) throws IOException {
+            int n = expectedLocations - 1;
+            int unreadTokens = (n * (n + 1)) / 2;
+            List<String> tokens = readMatrix(unreadTokens);
+            // Split array into chunks of expectedLocations
+            String[][] tokenArray = new String[expectedLocations][];
+            List<String> unprocessedTokens = tokens;
+            for (int i = 0; i < expectedLocations; i++) {
+                int expectedTokenCount = expectedLocations - i - 1;
+                tokenArray[i] = unprocessedTokens.subList(0, expectedTokenCount).toArray(new String[0]);
+                unprocessedTokens = unprocessedTokens.subList(expectedTokenCount, unprocessedTokens.size());
+            }
+            if (!unprocessedTokens.isEmpty()) {
+                throw new IllegalStateException("Not all tokens processed: " + unprocessedTokens);
+            }
+            return tokenArray;
+        }
+
+        private List<Location> readUpperDiagRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            Map<LocationPair, Double> distanceMap = new HashMap<>();
+            String[][] lineTokens = readUpperDiagRowMatrix(locationListSize);
+            return getSymmetricalLocations(locationListSize, distanceMap, lineTokens);
+        }
+
+        private String[][] readUpperDiagRowMatrix(int expectedLocations) throws IOException {
+            List<String> tokens = readDiagMatrix(expectedLocations);
+            // Split array into chunks of expectedLocations
+            String[][] tokenArray = new String[expectedLocations][];
+            List<String> unprocessedTokens = tokens;
+            int expectedTokenCount = expectedLocations;
+            for (int i = 0; i < expectedLocations; i++) {
+                tokenArray[i] = unprocessedTokens.subList(0, expectedTokenCount).toArray(new String[0]);
+                unprocessedTokens = unprocessedTokens.subList(expectedTokenCount, unprocessedTokens.size());
+                expectedTokenCount = expectedTokenCount - 1;
+            }
+            if (!unprocessedTokens.isEmpty()) {
+                throw new IllegalStateException("Not all tokens processed: " + unprocessedTokens);
+            }
+            return tokenArray;
+        }
+
+        private List<String> readDiagMatrix(int expectedLocations) throws IOException {
+            int unreadTokens = (int) Math.round(expectedLocations * ((expectedLocations + 1) / 2.0));
+            return readMatrix(unreadTokens);
+        }
+
+        private List<Location> readLowerDiagRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
+            Map<LocationPair, Double> distanceMap = new HashMap<>();
+            String[][] lineTokens = readLowerDiagRowMatrix(locationListSize);
+            for (int locationA = 0; locationA < locationListSize; locationA++) {
+                for (int locationB = locationA; locationB >= 0; locationB--) {
+                    double distance = Double.parseDouble(lineTokens[locationA][locationB]);
+                    distanceMap.put(new LocationPair(locationA, locationB), distance);
+                }
+            }
+            return getSymmetricalLocations(locationListSize, distanceMap);
+        }
+
+        private String[][] readLowerDiagRowMatrix(int expectedLocations) throws IOException {
+            List<String> tokens = readDiagMatrix(expectedLocations);
+            // Split array into chunks of expectedLocations
+            String[][] tokenArray = new String[expectedLocations][];
+            List<String> unprocessedTokens = tokens;
+            int expectedTokenCount = 1;
+            for (int i = 0; i < expectedLocations; i++) {
+                tokenArray[i] = unprocessedTokens.subList(0, expectedTokenCount).toArray(new String[0]);
+                unprocessedTokens = unprocessedTokens.subList(expectedTokenCount, unprocessedTokens.size());
+                expectedTokenCount = expectedTokenCount + 1;
+            }
+            if (!unprocessedTokens.isEmpty()) {
+                throw new IllegalStateException("Not all tokens processed: " + unprocessedTokens);
+            }
+            return tokenArray;
         }
 
         private void readTspLibCityList() throws IOException {
@@ -154,8 +339,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                         double travelDistance = Double.parseDouble(lineTokens[j]);
                         if (i == j) {
                             if (travelDistance != 0.0) {
-                                throw new IllegalStateException("The travelDistance (" + travelDistance
-                                        + ") should be zero.");
+                                throw new IllegalStateException("The travelDistance (" + travelDistance + ") should be zero.");
                             }
                         } else {
                             RoadLocation otherLocation = (RoadLocation) locationList.get(j);
@@ -199,8 +383,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             long domicileId = readLongValue();
             Domicile domicile = tspSolution.getDomicile();
             if (domicile.getId() != domicileId) {
-                throw new IllegalStateException("The domicileId (" + domicileId
-                        + ") is not the domicile's id (" + domicile.getId() + ").");
+                throw new IllegalStateException("The domicileId (" + domicileId + ") is not the domicile's id (" + domicile.getId() + ").");
             }
             int visitListSize = tspSolution.getVisitList().size();
             Map<Long, Visit> idToVisitMap = new HashMap<>(visitListSize);
@@ -212,8 +395,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                 long visitId = readLongValue();
                 Visit visit = idToVisitMap.get(visitId);
                 if (visit == null) {
-                    throw new IllegalStateException("The visitId (" + visitId
-                            + ") is does not exist.");
+                    throw new IllegalStateException("The visitId (" + visitId + ") is does not exist.");
                 }
                 visit.setPreviousStandstill(previousStandstill);
                 previousStandstill = visit;
@@ -237,247 +419,10 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             createVisitList();
         }
 
-        private List<Location> readTwoCoordinateLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
-            List<Location> locationList = new ArrayList<>(locationListSize);
-            for (int i = 0; i < locationListSize; i++) {
-                String line = bufferedReader.readLine().trim();
-                String[] lineTokens = splitBySpace(line, 3, 3, true, true);
-                long id = Long.parseLong(lineTokens[0]);
-                double x = Double.parseDouble(lineTokens[1]);
-                double y = Double.parseDouble(lineTokens[2]);
-                Location location = tspSolution.getDistanceType().createLocation(id, x, y);
-                locationList.add(location);
-            }
-            return locationList;
-        }
+    }
 
-        private List<Location> readFullMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
-            Map<LocationPair, Double> distanceMap = new HashMap<>();
-            String[][] lineTokens = readFullMatrix(bufferedReader, locationListSize);
-            for (int locationA = 0; locationA < locationListSize; locationA++) {
-                for (int locationB = 0; locationB < locationListSize; locationB++) {
-                    distanceMap.put(new LocationPair(locationA, locationB), Double.parseDouble(lineTokens[locationA][locationB]));
-                }
-            }
-            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = new RoadLocation(i);
-                locationList.add(roadLocation);
-            }
-            for (int i = 0; i < locationListSize; i++) {
-                Map<RoadLocation, Double> distanceMatrix = new LinkedHashMap<>();
-                RoadLocation roadLocation = locationList.get(i);
-                distanceMap.forEach((locationPair, distance) -> {
-                    if (locationPair.locationA == roadLocation.getId()) {
-                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
-                        distanceMatrix.put(otherLocation, distance);
-                    }
-                });
-                roadLocation.setTravelDistanceMap(distanceMatrix);
-            }
-            return (List) locationList;
-        }
+    private record LocationPair(long locationA, long locationB) {
 
-        private String[][] readFullMatrix(BufferedReader bufferedReader, int expectedLocations) throws IOException {
-            List<String> tokens = new ArrayList<>(expectedLocations * expectedLocations);
-            int unreadTokens = expectedLocations * expectedLocations;
-            while (unreadTokens > 0) {
-                String line = bufferedReader.readLine();
-                if (line == null) {
-                    throw new IllegalStateException("Unprocessed tokens: " + unreadTokens);
-                } else if (line.trim().isEmpty()) {
-                    continue;
-                }
-                String[] lineTokens = splitBySpace(line, 1, unreadTokens, true, true);
-                tokens.addAll(Arrays.asList(lineTokens));
-                unreadTokens -= lineTokens.length;
-            }
-            // Split array into chunks of expectedLocations
-            String[][] tokenArray = new String[expectedLocations][expectedLocations];
-            for (int i = 0; i < expectedLocations; i++) {
-                tokenArray[i] = tokens.subList(i * expectedLocations, (i + 1) * expectedLocations).toArray(new String[0]);
-            }
-            return tokenArray;
-        }
-
-        private List<Location> readUpperRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
-            Map<LocationPair, Double> distanceMap = new HashMap<>();
-            String[][] lineTokens = readUpperRowMatrix(bufferedReader, locationListSize);
-            for (int locationA = 0; locationA < locationListSize - 1; locationA++) {
-                int processedLocationsAlready = locationA + 1;
-                int expectedTokenCount = locationListSize - processedLocationsAlready;
-                for (int locationB = 0; locationB < expectedTokenCount; locationB++) {
-                    int actualLocationB = processedLocationsAlready + locationB;
-                    distanceMap.put(new LocationPair(locationA, actualLocationB), Double.parseDouble(lineTokens[locationA][locationB]));
-                }
-            }
-            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = new RoadLocation(i);
-                roadLocation.setTravelDistanceMap(new LinkedHashMap<>());
-                locationList.add(roadLocation);
-            }
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = locationList.get(i);
-                distanceMap.forEach((locationPair, distance) -> {
-                    if (locationPair.locationA == roadLocation.getId()) {
-                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
-                        roadLocation.getTravelDistanceMap().put(otherLocation, distance);
-                        otherLocation.getTravelDistanceMap().put(roadLocation, distance);
-                    }
-                });
-            }
-            return (List) locationList;
-        }
-
-        private String[][] readUpperRowMatrix(BufferedReader bufferedReader, int expectedLocations) throws IOException {
-            List<String> tokens = new ArrayList<>(expectedLocations * expectedLocations);
-            int n = expectedLocations - 1;
-            int unreadTokens = (n * (n + 1)) / 2;
-            while (unreadTokens > 0) {
-                String line = bufferedReader.readLine();
-                if (line == null) {
-                    throw new IllegalStateException("Unprocessed tokens: " + unreadTokens);
-                } else if (line.trim().isEmpty()) {
-                    continue;
-                }
-                String[] lineTokens = splitBySpace(line, 1, unreadTokens, true, true);
-                tokens.addAll(Arrays.asList(lineTokens));
-                unreadTokens -= lineTokens.length;
-            }
-            // Split array into chunks of expectedLocations
-            String[][] tokenArray = new String[expectedLocations][];
-            List<String> unprocessedTokens = tokens;
-            for (int i = 0; i < expectedLocations; i++) {
-                int expectedTokenCount = expectedLocations - i - 1;
-                tokenArray[i] = unprocessedTokens.subList(0, expectedTokenCount).toArray(new String[0]);
-                unprocessedTokens = unprocessedTokens.subList(expectedTokenCount, unprocessedTokens.size());
-            }
-            if (!unprocessedTokens.isEmpty()) {
-                throw new IllegalStateException("Not all tokens processed: " + unprocessedTokens);
-            }
-            return tokenArray;
-        }
-
-        private List<Location> readUpperDiagRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
-            Map<LocationPair, Double> distanceMap = new HashMap<>();
-            String[][] lineTokens = readUpperDiagRowMatrix(bufferedReader, locationListSize);
-            for (int locationA = 0; locationA < locationListSize - 1; locationA++) {
-                int processedLocationsAlready = locationA + 1;
-                int expectedTokenCount = locationListSize - processedLocationsAlready;
-                for (int locationB = 0; locationB < expectedTokenCount; locationB++) {
-                    int actualLocationB = processedLocationsAlready + locationB;
-                    distanceMap.put(new LocationPair(locationA, actualLocationB), Double.parseDouble(lineTokens[locationA][locationB]));
-                }
-            }
-            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = new RoadLocation(i);
-                roadLocation.setTravelDistanceMap(new LinkedHashMap<>());
-                locationList.add(roadLocation);
-            }
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = locationList.get(i);
-                distanceMap.forEach((locationPair, distance) -> {
-                    if (locationPair.locationA == roadLocation.getId()) {
-                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
-                        roadLocation.getTravelDistanceMap().put(otherLocation, distance);
-                        otherLocation.getTravelDistanceMap().put(roadLocation, distance);
-                    }
-                });
-            }
-            return (List) locationList;
-        }
-
-        private String[][] readUpperDiagRowMatrix(BufferedReader bufferedReader, int expectedLocations) throws IOException {
-            List<String> tokens = new ArrayList<>(expectedLocations * expectedLocations);
-            int unreadTokens = (int) Math.round(expectedLocations * ((expectedLocations + 1)/2.0));
-            while (unreadTokens > 0) {
-                String line = bufferedReader.readLine();
-                if (line == null) {
-                    throw new IllegalStateException("Unprocessed tokens: " + unreadTokens);
-                } else if (line.trim().isEmpty()) {
-                    continue;
-                }
-                String[] lineTokens = splitBySpace(line, 1, unreadTokens, true, true);
-                tokens.addAll(Arrays.asList(lineTokens));
-                unreadTokens -= lineTokens.length;
-            }
-            // Split array into chunks of expectedLocations
-            String[][] tokenArray = new String[expectedLocations][];
-            List<String> unprocessedTokens = tokens;
-            int expectedTokenCount = expectedLocations;
-            for (int i = 0; i < expectedLocations; i++) {
-                tokenArray[i] = unprocessedTokens.subList(0, expectedTokenCount).toArray(new String[0]);
-                unprocessedTokens = unprocessedTokens.subList(expectedTokenCount, unprocessedTokens.size());
-                expectedTokenCount = expectedTokenCount - 1;
-            }
-            if (!unprocessedTokens.isEmpty()) {
-                throw new IllegalStateException("Not all tokens processed: " + unprocessedTokens);
-            }
-            return tokenArray;
-        }
-
-        private List<Location> readLowerDiagRowMatrixLocations(BufferedReader bufferedReader, int locationListSize) throws IOException {
-            Map<LocationPair, Double> distanceMap = new HashMap<>();
-            String[][] lineTokens = readLowerDiagRowMatrix(bufferedReader, locationListSize);
-            for (int locationA = 0; locationA < locationListSize; locationA++) {
-                for (int locationB = locationA; locationB >= 0; locationB--) {
-                    double distance = Double.parseDouble(lineTokens[locationA][locationB]);
-                    distanceMap.put(new LocationPair(locationA, locationB), distance);
-                }
-            }
-            List<RoadLocation> locationList = new ArrayList<>(locationListSize);
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = new RoadLocation(i);
-                roadLocation.setTravelDistanceMap(new LinkedHashMap<>());
-                locationList.add(roadLocation);
-            }
-            for (int i = 0; i < locationListSize; i++) {
-                RoadLocation roadLocation = locationList.get(i);
-                distanceMap.forEach((locationPair, distance) -> {
-                    if (locationPair.locationA == roadLocation.getId()) {
-                        RoadLocation otherLocation = locationList.get((int) locationPair.locationB);
-                        roadLocation.getTravelDistanceMap().put(otherLocation, distance);
-                        otherLocation.getTravelDistanceMap().put(roadLocation, distance);
-                    }
-                });
-            }
-            return (List) locationList;
-        }
-
-        private String[][] readLowerDiagRowMatrix(BufferedReader bufferedReader, int expectedLocations) throws IOException {
-            List<String> tokens = new ArrayList<>(expectedLocations * expectedLocations);
-            int unreadTokens = (int) Math.round(expectedLocations * ((expectedLocations + 1)/2.0));
-            while (unreadTokens > 0) {
-                String line = bufferedReader.readLine();
-                if (line == null) {
-                    throw new IllegalStateException("Unprocessed tokens: " + unreadTokens);
-                } else if (line.trim().isEmpty()) {
-                    continue;
-                }
-                String[] lineTokens = splitBySpace(line, 1, unreadTokens, true, true);
-                tokens.addAll(Arrays.asList(lineTokens));
-                unreadTokens -= lineTokens.length;
-            }
-            // Split array into chunks of expectedLocations
-            String[][] tokenArray = new String[expectedLocations][];
-            List<String> unprocessedTokens = tokens;
-            int expectedTokenCount = 1;
-            for (int i = 0; i < expectedLocations; i++) {
-                tokenArray[i] = unprocessedTokens.subList(0, expectedTokenCount).toArray(new String[0]);
-                unprocessedTokens = unprocessedTokens.subList(expectedTokenCount, unprocessedTokens.size());
-                expectedTokenCount = expectedTokenCount + 1;
-            }
-            if (!unprocessedTokens.isEmpty()) {
-                throw new IllegalStateException("Not all tokens processed: " + unprocessedTokens);
-            }
-            return tokenArray;
-        }
-
-        private record LocationPair(long locationA, long locationB) {
-
-        }
     }
 
     @FunctionalInterface
