@@ -20,7 +20,7 @@ public class GeoLocation extends Location {
         double q1 = Math.cos(longitude - location.longitude);
         double q2 = Math.cos(latitude - location.latitude);
         double q3 = Math.cos(latitude + location.latitude);
-        return (long) (RRR * Math.acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
+        return adjust(RRR * Math.acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
     }
 
     private static double toCoordinate(double i) {

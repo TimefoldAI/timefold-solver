@@ -98,6 +98,11 @@ public abstract class Location extends AbstractPersistable {
         return Math.atan2(latitudeDifference, longitudeDifference);
     }
 
+    protected long adjust(double distance) {
+        // Multiplied by 1000 to avoid floating point arithmetic rounding errors
+        return (long) (distance * 1000 + 0.5);
+    }
+
     @Override
     public String toString() {
         if (name == null) {

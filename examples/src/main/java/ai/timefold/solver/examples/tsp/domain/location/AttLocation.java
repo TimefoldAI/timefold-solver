@@ -18,7 +18,7 @@ public class AttLocation extends Location {
         double yd = longitude - location.longitude;
         double rij = Math.sqrt((xd * xd + yd * yd) / 10.0);
         double tij = nint(rij);
-        return nint(tij < rij ? tij + 1 : tij);
+        return adjust(tij < rij ? tij + 1 : tij);
     }
 
     private static int nint(double x) {
