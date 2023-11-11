@@ -22,6 +22,9 @@ import ai.timefold.solver.examples.tsp.domain.location.DistanceType;
 import ai.timefold.solver.examples.tsp.domain.location.Location;
 import ai.timefold.solver.examples.tsp.domain.location.RoadLocation;
 
+/**
+ * Supports the Coursera format and the parts of the TSPLIB format relevant to supporting the TSPLIB95 datasets.
+ */
 public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
 
     public static final String INPUT_FILE_SUFFIX = "tsp";
@@ -70,11 +73,13 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             return tspSolution;
         }
 
-        // ************************************************************************
-        // TSP TSPLIB format. See http://www.math.uwaterloo.ca/tsp/
-        // ************************************************************************
-
         private void readTspLibFormat() throws IOException {
+            /*
+             * TSP TSPLIB format.
+             * See:
+             * - http://www.math.uwaterloo.ca/tsp/
+             * - http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp95.pdf
+             */
             readTspLibHeaders();
             if (coordinateReader == null) {
                 throw new IllegalStateException("Read the headers first.");
@@ -93,7 +98,6 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         }
 
         private void readTspLibHeaders() throws IOException {
-            // Data format described here: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp95.pdf
             readUntilConstantLine("TYPE *: A?TSP.*");
             readOptionalConstantLine("COMMENT.*");
             locationListSize = readIntegerValue("DIMENSION *:");
@@ -123,9 +127,8 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                         case "UPPER_ROW" -> this::setDistancesFromUpperRowMatrix;
                         case "UPPER_DIAG_ROW" -> this::setDistancesFromUpperDiagRowMatrix;
                         case "LOWER_DIAG_ROW" -> this::setDistancesFromLowerDiagRowMatrix;
-                        default ->
-                            throw new IllegalArgumentException(
-                                    "The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
+                        default -> throw new IllegalArgumentException(
+                                "The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
                     };
                 }
                 default ->
@@ -218,11 +221,6 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         private void setDistancesFromUpperRowMatrix(List<Location> locationList, int locationListSize) throws IOException {
             Map<LocationPair, Double> distanceMap = new HashMap<>();
             String[][] lineTokens = readUpperRowMatrix(locationListSize);
-            setDistancesSymmetrical(locationList, locationListSize, distanceMap, lineTokens);
-        }
-
-        private void setDistancesSymmetrical(List<Location> locationList, int locationListSize,
-                Map<LocationPair, Double> distanceMap, String[][] lineTokens) {
             for (int locationA = 0; locationA < locationListSize - 1; locationA++) {
                 int processedLocationsAlready = locationA + 1;
                 int expectedTokenCount = locationListSize - processedLocationsAlready;
@@ -277,7 +275,17 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
         private void setDistancesFromUpperDiagRowMatrix(List<Location> locationList, int locationListSize) throws IOException {
             Map<LocationPair, Double> distanceMap = new HashMap<>();
             String[][] lineTokens = readUpperDiagRowMatrix(locationListSize);
-            setDistancesSymmetrical(locationList, locationListSize, distanceMap, lineTokens);
+            for (int locationA = 0; locationA < locationListSize; locationA++) {
+                for (int locationB = 0; locationB < locationListSize - locationA; locationB++) {
+                    int actualLocationB = locationA + locationB;
+                    if (locationA == actualLocationB) {
+                        continue;
+                    }
+                    distanceMap.put(new LocationPair(locationA, actualLocationB),
+                            Double.parseDouble(lineTokens[locationA][locationB]));
+                }
+            }
+            setDistancesSymmetrical(locationList, locationListSize, distanceMap);
         }
 
         private String[][] readUpperDiagRowMatrix(int expectedLocations) throws IOException {
