@@ -1,5 +1,14 @@
 package ai.timefold.solver.examples.tsp.persistence;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import ai.timefold.solver.examples.common.business.SolutionBusiness;
 import ai.timefold.solver.examples.common.persistence.AbstractTxtSolutionImporter;
 import ai.timefold.solver.examples.common.persistence.SolutionConverter;
@@ -13,21 +22,13 @@ import ai.timefold.solver.examples.tsp.domain.location.DistanceType;
 import ai.timefold.solver.examples.tsp.domain.location.Location;
 import ai.timefold.solver.examples.tsp.domain.location.RoadLocation;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
 
     public static final String INPUT_FILE_SUFFIX = "tsp";
 
     public static void main(String[] args) {
-        SolutionConverter<TspSolution> converter = SolutionConverter.createImportConverter(TspApp.DATA_DIR_NAME, new TspImporter(), new TspSolutionFileIO());
+        SolutionConverter<TspSolution> converter =
+                SolutionConverter.createImportConverter(TspApp.DATA_DIR_NAME, new TspImporter(), new TspSolutionFileIO());
         converter.convert("other/air/europe40.tsp", "europe40.json");
         converter.convert("other/road-km/americanRoadTrip-road-km-n50.tsp", "americanRoadTrip-road-km-n50.json");
         converter.convert("cook/air/lu980.tsp", "lu980.json");
@@ -64,7 +65,8 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                 readCourseraFormat();
             }
             BigInteger possibleSolutionSize = factorial(tspSolution.getLocationList().size() - 1);
-            logger.info("TspSolution {} has {} locations with a search space of {}.", getInputId(), tspSolution.getLocationList().size(), getFlooredPossibleSolutionSize(possibleSolutionSize));
+            logger.info("TspSolution {} has {} locations with a search space of {}.", getInputId(),
+                    tspSolution.getLocationList().size(), getFlooredPossibleSolutionSize(possibleSolutionSize));
             return tspSolution;
         }
 
@@ -122,11 +124,12 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                         case "UPPER_DIAG_ROW" -> this::setDistancesFromUpperDiagRowMatrix;
                         case "LOWER_DIAG_ROW" -> this::setDistancesFromLowerDiagRowMatrix;
                         default ->
-                                throw new IllegalArgumentException("The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
+                            throw new IllegalArgumentException(
+                                    "The edgeWeightFormat (" + edgeWeightFormat + ") is not supported.");
                     };
                 }
                 default ->
-                        throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
+                    throw new IllegalArgumentException("The edgeWeightType (" + edgeWeightType + ") is not supported.");
             }
             readOptionalConstantLine("DISPLAY_DATA_TYPE.*");
             tspSolution.setDistanceUnitOfMeasurement(readOptionalStringValue("EDGE_WEIGHT_UNIT_OF_MEASUREMENT *:", "distance"));
@@ -153,7 +156,8 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             String[][] lineTokens = readFullMatrix(locationListSize);
             for (int locationA = 0; locationA < locationListSize; locationA++) {
                 for (int locationB = 0; locationB < locationListSize; locationB++) {
-                    distanceMap.put(new LocationPair(locationA, locationB), Double.parseDouble(lineTokens[locationA][locationB]));
+                    distanceMap.put(new LocationPair(locationA, locationB),
+                            Double.parseDouble(lineTokens[locationA][locationB]));
                 }
             }
             if (locationList.isEmpty()) {
@@ -217,19 +221,22 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             setDistancesSymmetrical(locationList, locationListSize, distanceMap, lineTokens);
         }
 
-        private void setDistancesSymmetrical(List<Location> locationList, int locationListSize, Map<LocationPair, Double> distanceMap, String[][] lineTokens) {
+        private void setDistancesSymmetrical(List<Location> locationList, int locationListSize,
+                Map<LocationPair, Double> distanceMap, String[][] lineTokens) {
             for (int locationA = 0; locationA < locationListSize - 1; locationA++) {
                 int processedLocationsAlready = locationA + 1;
                 int expectedTokenCount = locationListSize - processedLocationsAlready;
                 for (int locationB = 0; locationB < expectedTokenCount; locationB++) {
                     int actualLocationB = processedLocationsAlready + locationB;
-                    distanceMap.put(new LocationPair(locationA, actualLocationB), Double.parseDouble(lineTokens[locationA][locationB]));
+                    distanceMap.put(new LocationPair(locationA, actualLocationB),
+                            Double.parseDouble(lineTokens[locationA][locationB]));
                 }
             }
             setDistancesSymmetrical(locationList, locationListSize, distanceMap);
         }
 
-        private void setDistancesSymmetrical(List<Location> locationList, int locationListSize, Map<LocationPair, Double> distanceMap) {
+        private void setDistancesSymmetrical(List<Location> locationList, int locationListSize,
+                Map<LocationPair, Double> distanceMap) {
             if (locationList.isEmpty()) {
                 for (int i = 0; i < locationListSize; i++) {
                     RoadLocation roadLocation = new RoadLocation(i);
@@ -391,7 +398,8 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             long domicileId = readLongValue();
             Domicile domicile = tspSolution.getDomicile();
             if (domicile.getId() != domicileId) {
-                throw new IllegalStateException("The domicileId (" + domicileId + ") is not the domicile's id (" + domicile.getId() + ").");
+                throw new IllegalStateException(
+                        "The domicileId (" + domicileId + ") is not the domicile's id (" + domicile.getId() + ").");
             }
             int visitListSize = tspSolution.getVisitList().size();
             Map<Long, Visit> idToVisitMap = new HashMap<>(visitListSize);
