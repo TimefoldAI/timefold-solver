@@ -75,3 +75,22 @@ class ElementAwareListTest {
     }
 
 }
+
+@Test
+ void testToString() {
+ ElementAwareList<String> list = new ElementAwareList<>();
+ assertThat(list.toString()).isEqualTo("[]");
+ ElementAwareListEntry<String> entryA = list.add("A");
+ assertThat(list.toString()).isEqualTo("[A]");
+ ElementAwareListEntry<String> entryB = list.add("B");
+ assertThat(list.toString()).isEqualTo("[A, B]");
+ ElementAwareListEntry<String> entryC = list.add("C");
+ assertThat(list.toString()).isEqualTo("[A, B, C]");
+ entryB.remove();
+ assertThat(list.toString()).isEqualTo("[A, C]");
+ entryA.remove();
+ assertThat(list.toString()).isEqualTo("[C]");
+ entryC.remove();
+ assertThat(list.toString()).isEqualTo("[]");
+ }
+}
