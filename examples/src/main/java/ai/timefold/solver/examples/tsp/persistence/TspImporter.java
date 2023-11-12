@@ -93,6 +93,10 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                 readTspLibCityList();
             }
             createVisitsFromLocations(tspSolution);
+            if (tspSolution.getVisitList().size() != locationListSize - 1) {
+                throw new IllegalStateException("The visitList size (%s) is not locationListSize (%s - 1)."
+                        .formatted(tspSolution.getVisitList().size(), locationListSize));
+            }
             readTspLibSolution();
             readOptionalConstantLine("EOF");
         }

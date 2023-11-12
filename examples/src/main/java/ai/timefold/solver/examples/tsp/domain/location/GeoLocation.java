@@ -17,9 +17,9 @@ public class GeoLocation extends Location {
 
     @Override
     public long getDistanceTo(Location location) {
-        double q1 = Math.cos(longitude - location.longitude);
-        double q2 = Math.cos(latitude - location.latitude);
-        double q3 = Math.cos(latitude + location.latitude);
+        double q1 = Math.cos(location.longitude - longitude);
+        double q2 = Math.cos(location.latitude - latitude);
+        double q3 = Math.cos(location.latitude + latitude);
         return adjust(RRR * Math.acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
     }
 

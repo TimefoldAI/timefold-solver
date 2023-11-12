@@ -99,8 +99,7 @@ public abstract class Location extends AbstractPersistable {
     }
 
     protected long adjust(double distance) {
-        // Multiplied by 1000 to avoid floating point arithmetic rounding errors
-        return (long) (distance * 1000 + 0.5);
+        return (long) (distance + 0.5); // +0.5 to avoid floating point rounding errors
     }
 
     @Override
