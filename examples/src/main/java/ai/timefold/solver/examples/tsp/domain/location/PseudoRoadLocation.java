@@ -1,11 +1,11 @@
 package ai.timefold.solver.examples.tsp.domain.location;
 
-public class AttLocation extends Location {
+public class PseudoRoadLocation extends Location {
 
-    public AttLocation() {
+    public PseudoRoadLocation() {
     }
 
-    public AttLocation(long id, double x, double y) {
+    public PseudoRoadLocation(long id, double x, double y) {
         super(id, x, y);
     }
 

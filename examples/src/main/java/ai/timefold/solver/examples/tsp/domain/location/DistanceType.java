@@ -3,8 +3,8 @@ package ai.timefold.solver.examples.tsp.domain.location;
 public enum DistanceType {
     AIR_DISTANCE(AirLocation::new),
     ROAD_DISTANCE(RoadLocation::new),
-    GEO(GeoLocation::new),
-    ATT(AttLocation::new);
+    GEOGRAPHIC_DISTANCE(GeoLocation::new),
+    PSEUDO_ROAD_DISTANCE(PseudoRoadLocation::new); // Niche distance type for TSPLIB95.
 
     private final LocationFunction locationFunction;
 

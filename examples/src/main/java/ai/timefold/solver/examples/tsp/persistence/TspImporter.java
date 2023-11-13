@@ -108,7 +108,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
             String edgeWeightType = readStringValue("EDGE_WEIGHT_TYPE *:").toUpperCase();
             switch (edgeWeightType) {
                 case "ATT" -> {
-                    tspSolution.setDistanceType(DistanceType.ATT);
+                    tspSolution.setDistanceType(DistanceType.PSEUDO_ROAD_DISTANCE);
                     isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
                 }
@@ -118,7 +118,7 @@ public class TspImporter extends AbstractTxtSolutionImporter<TspSolution> {
                     coordinateReader = this::readTwoCoordinateLocations;
                 }
                 case "GEO" -> {
-                    tspSolution.setDistanceType(DistanceType.GEO);
+                    tspSolution.setDistanceType(DistanceType.GEOGRAPHIC_DISTANCE);
                     isMatrix = false;
                     coordinateReader = this::readTwoCoordinateLocations;
                 }

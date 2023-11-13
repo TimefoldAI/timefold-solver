@@ -1,7 +1,7 @@
 package ai.timefold.solver.examples.tsp.domain.location;
 
 /**
- * Used with {@link DistanceType#GEO}.
+ * Used with {@link DistanceType#GEOGRAPHIC_DISTANCE}.
  */
 public class GeoLocation extends Location {
 
@@ -24,13 +24,9 @@ public class GeoLocation extends Location {
     }
 
     private static double toCoordinate(double i) {
-        int deg = nint(i);
+        long deg = adjust(i);
         double min = i - deg;
         return PI * (deg + 5.0 * min / 3.0) / 180.0;
-    }
-
-    private static int nint(double x) {
-        return (int) (x + 0.5);
     }
 
 }
