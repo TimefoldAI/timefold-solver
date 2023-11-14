@@ -28,7 +28,8 @@ public class TestdataListWithShadowHistoryIncrementalScoreCalculator
     public void resetWorkingSolution(TestdataListSolutionWithShadowHistory workingSolution) {
         score = 0;
         constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.chained.shadow", "testConstraint"));
+                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.chained.shadow", "testConstraint"),
+                SimpleScore.ONE);
         indictmentMap = new HashMap<>();
         for (TestdataListEntityWithShadowHistory left : workingSolution.getEntityList()) {
             String code = left.getCode();

@@ -40,7 +40,8 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
             var matchScoreList = new ArrayList<MatchAnalysis<Score_>>();
             JsonNode matchesNode = constraintNode.get("matches");
             if (matchesNode == null) {
-                constraintAnalysisList.put(constraintRef, new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, null));
+                constraintAnalysisList.put(constraintRef,
+                        new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, null));
             } else {
                 constraintNode.get("matches").forEach(matchNode -> {
                     var matchScore = parseScore(matchNode.get("score").asText());

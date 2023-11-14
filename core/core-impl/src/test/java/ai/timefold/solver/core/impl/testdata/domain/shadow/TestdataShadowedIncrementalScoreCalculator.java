@@ -29,7 +29,8 @@ public class TestdataShadowedIncrementalScoreCalculator
     public void resetWorkingSolution(TestdataShadowedSolution workingSolution) {
         score = 0;
         constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.shadow", "testConstraint"));
+                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.shadow", "testConstraint"),
+                SimpleScore.ONE);
         indictmentMap = new HashMap<>();
         for (TestdataShadowedEntity left : workingSolution.getEntityList()) {
             TestdataValue value = left.getValue();

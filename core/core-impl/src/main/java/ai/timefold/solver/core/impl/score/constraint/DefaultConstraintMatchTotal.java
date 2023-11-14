@@ -38,6 +38,11 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
         this(ConstraintRef.of(constraintPackage, constraintName));
     }
 
+    /**
+     *
+     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.5.0")
     public DefaultConstraintMatchTotal(ConstraintRef constraintRef) {
         this.constraintRef = requireNonNull(constraintRef);
         this.constraintWeight = null;

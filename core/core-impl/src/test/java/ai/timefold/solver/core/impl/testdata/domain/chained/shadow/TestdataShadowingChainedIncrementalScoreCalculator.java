@@ -28,7 +28,8 @@ public class TestdataShadowingChainedIncrementalScoreCalculator
     public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution) {
         score = 0;
         constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.chained.shadow", "testConstraint"));
+                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.chained.shadow", "testConstraint"),
+                SimpleScore.ONE);
         indictmentMap = new HashMap<>();
         for (TestdataShadowingChainedEntity left : workingSolution.getChainedEntityList()) {
             String code = left.getCode();

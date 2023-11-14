@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -37,7 +39,20 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
 
     public ConstraintAnalysis {
         Objects.requireNonNull(constraintRef);
-        Objects.requireNonNull(weight);
+        if (weight == null) {
+            /*
+             * Only possible in ConstraintMatchAwareIncrementalScoreCalculator and/or tests.
+             * Easy doesn't support constraint analysis at all.
+             * CS always provides constraint weights.
+             */
+            throw new IllegalArgumentException("""
+                    The constraint weight must be non-null.
+                    Maybe use a non-deprecated %s constructor in your %s implementation?
+                    """
+                    .stripTrailing()
+                    .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
+                            ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
+        }
         Objects.requireNonNull(score);
     }
 
