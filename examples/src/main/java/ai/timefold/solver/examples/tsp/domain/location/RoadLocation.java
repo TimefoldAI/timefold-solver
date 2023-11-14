@@ -43,9 +43,12 @@ public class RoadLocation extends Location {
         if (this == location) {
             return 0L;
         }
-        double distance = travelDistanceMap.get((RoadLocation) location);
-        // Multiplied by 1000 to avoid floating point arithmetic rounding errors
-        return (long) (distance * 1000.0 + 0.5);
+        Double distance = travelDistanceMap.get((RoadLocation) location);
+        if (distance == null) {
+            throw new IllegalStateException("The travelDistanceMap in location (%s) does not contain the key (%s)."
+                    .formatted(this, location));
+        }
+        return adjust(distance);
     }
 
 }

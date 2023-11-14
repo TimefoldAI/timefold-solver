@@ -9,9 +9,7 @@ import ai.timefold.solver.examples.common.business.SolutionBusiness;
 import ai.timefold.solver.examples.common.persistence.AbstractPngSolutionImporter;
 import ai.timefold.solver.examples.common.persistence.SolutionConverter;
 import ai.timefold.solver.examples.tsp.app.TspApp;
-import ai.timefold.solver.examples.tsp.domain.Domicile;
 import ai.timefold.solver.examples.tsp.domain.TspSolution;
-import ai.timefold.solver.examples.tsp.domain.Visit;
 import ai.timefold.solver.examples.tsp.domain.location.AirLocation;
 import ai.timefold.solver.examples.tsp.domain.location.DistanceType;
 import ai.timefold.solver.examples.tsp.domain.location.Location;
@@ -98,21 +96,7 @@ public class TspImageStipplerImporter extends AbstractPngSolutionImporter<TspSol
         }
 
         private void createVisitList() {
-            List<Location> locationList = tspSolution.getLocationList();
-            List<Visit> visitList = new ArrayList<>(locationList.size() - 1);
-            int count = 0;
-            for (Location location : locationList) {
-                if (count < 1) {
-                    Domicile domicile = new Domicile(location.getId(), location);
-                    tspSolution.setDomicile(domicile);
-                } else {
-                    Visit visit = new Visit(location.getId(), location);
-                    // Notice that we leave the PlanningVariable properties on null
-                    visitList.add(visit);
-                }
-                count++;
-            }
-            tspSolution.setVisitList(visitList);
+            TspImporter.TspInputBuilder.createVisitsFromLocations(tspSolution);
         }
 
     }
