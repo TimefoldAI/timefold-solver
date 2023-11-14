@@ -25,6 +25,7 @@ public final class ScoreAnalysisJacksonSerializer<Score_ extends Score<Score_>> 
             Map<String, Object> constraintAnalysisMap = new LinkedHashMap<>();
             constraintAnalysisMap.put("package", constraintRef.packageName());
             constraintAnalysisMap.put("name", constraintRef.constraintName());
+            constraintAnalysisMap.put("weight", constraintAnalysis.weight().toString());
             constraintAnalysisMap.put("score", constraintAnalysis.score().toString());
             if (constraintAnalysis.matches() != null) {
                 List<Map<String, Object>> matchAnalysis = new ArrayList<>(constraintAnalysis.matches().size());

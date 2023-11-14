@@ -63,7 +63,7 @@ public abstract class AbstractScorer<Tuple_ extends AbstractTuple> implements Tu
     @Override
     public final String toString() {
         return getClass().getSimpleName() + "(" + weightedScoreImpacter.getContext().getConstraint().getConstraintRef()
-                + ") with constraintWeight (" + weightedScoreImpacter.getContext().getConstraintWeight() + ")";
+                + ") with weight (" + weightedScoreImpacter.getContext().getConstraintWeight() + ")";
     }
 
 }
