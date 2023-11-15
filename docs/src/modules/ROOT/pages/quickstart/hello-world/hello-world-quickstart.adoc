@@ -87,6 +87,13 @@ Create a Maven or Gradle build file and add these dependencies:
 * `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
 * A xref:configuration/configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
+
+
+[tabs]
+====
+Maven::
++
+--
 If you choose Maven, your `pom.xml` file has the following content:
 
 [source,xml,subs=attributes+]
@@ -155,8 +162,12 @@ If you choose Maven, your `pom.xml` file has the following content:
   </build>
 </project>
 ----
+--
 
-On the other hand, in Gradle, your `build.gradle` file has this content:
+Gradle::
++
+--
+In Gradle, your `build.gradle` file has this content:
 
 [source,groovy,subs=attributes+]
 ----
@@ -208,6 +219,8 @@ test {
     }
 }
 ----
+--
+====
 
 include::../school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
 include::../school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
