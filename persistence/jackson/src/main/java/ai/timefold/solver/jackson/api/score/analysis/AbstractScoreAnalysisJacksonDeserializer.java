@@ -35,11 +35,13 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
             var constraintPackage = constraintNode.get("package").asText();
             var constraintName = constraintNode.get("name").asText();
             var constraintRef = ConstraintRef.of(constraintPackage, constraintName);
+            var constraintWeight = parseScore(constraintNode.get("weight").asText());
             var constraintScore = parseScore(constraintNode.get("score").asText());
             var matchScoreList = new ArrayList<MatchAnalysis<Score_>>();
             JsonNode matchesNode = constraintNode.get("matches");
             if (matchesNode == null) {
-                constraintAnalysisList.put(constraintRef, new ConstraintAnalysis<>(constraintRef, constraintScore, null));
+                constraintAnalysisList.put(constraintRef,
+                        new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, null));
             } else {
                 constraintNode.get("matches").forEach(matchNode -> {
                     var matchScore = parseScore(matchNode.get("score").asText());
@@ -48,7 +50,7 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
                     matchScoreList.add(new MatchAnalysis<>(constraintRef, matchScore, justification));
                 });
                 constraintAnalysisList.put(constraintRef,
-                        new ConstraintAnalysis<>(constraintRef, constraintScore, matchScoreList));
+                        new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, matchScoreList));
             }
         });
         return new ScoreAnalysis<>(score, constraintAnalysisList);

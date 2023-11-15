@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -19,6 +21,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  *
  * @param <Score_>
  * @param constraintRef never null
+ * @param weight never null
  * @param score never null
  * @param matches null if analysis not available;
  *        empty if constraint has no matches, but still non-zero constraint weight;
@@ -26,25 +29,41 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  *        This is a {@link List} to simplify access to individual elements,
  *        but it contains no duplicates just like {@link HashSet} wouldn't.
  */
-public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score,
-        List<MatchAnalysis<Score_>> matches) {
+public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ weight,
+        Score_ score, List<MatchAnalysis<Score_>> matches) {
 
-    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> of(ConstraintRef constraintRef, Score_ score) {
-        return new ConstraintAnalysis<>(constraintRef, score, null);
+    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> of(ConstraintRef constraintRef, Score_ constraintWeight,
+            Score_ score) {
+        return new ConstraintAnalysis<>(constraintRef, constraintWeight, score, null);
     }
 
     public ConstraintAnalysis {
+        Objects.requireNonNull(constraintRef);
+        if (weight == null) {
+            /*
+             * Only possible in ConstraintMatchAwareIncrementalScoreCalculator and/or tests.
+             * Easy doesn't support constraint analysis at all.
+             * CS always provides constraint weights.
+             */
+            throw new IllegalArgumentException("""
+                    The constraint weight must be non-null.
+                    Maybe use a non-deprecated %s constructor in your %s implementation?
+                    """
+                    .stripTrailing()
+                    .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
+                            ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
+        }
         Objects.requireNonNull(score);
     }
 
     ConstraintAnalysis<Score_> negate() {
         if (matches == null) {
-            return ConstraintAnalysis.of(constraintRef, score.negate());
+            return ConstraintAnalysis.of(constraintRef, weight.negate(), score.negate());
         } else {
             var negatedMatchAnalyses = matches.stream()
                     .map(MatchAnalysis::negate)
                     .toList();
-            return new ConstraintAnalysis<>(constraintRef, score.negate(), negatedMatchAnalyses);
+            return new ConstraintAnalysis<>(constraintRef, weight.negate(), score.negate(), negatedMatchAnalyses);
         }
     }
 
@@ -71,9 +90,10 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                     .formatted(constraintAnalysis, otherConstraintAnalysis, constraintRef));
         }
         // Compute the diff.
+        var constraintWeightDifference = constraintAnalysis.weight().subtract(otherConstraintAnalysis.weight());
         var scoreDifference = constraintAnalysis.score().subtract(otherConstraintAnalysis.score());
         if (matchAnalyses == null) {
-            return ConstraintAnalysis.of(constraintRef, scoreDifference);
+            return ConstraintAnalysis.of(constraintRef, constraintWeightDifference, scoreDifference);
         }
         var matchAnalysisMap = mapMatchesToJustifications(matchAnalyses);
         var otherMatchAnalysisMap = mapMatchesToJustifications(otherMatchAnalyses);
@@ -99,7 +119,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                     }
                 })
                 .collect(Collectors.toList());
-        return new ConstraintAnalysis<>(constraintRef, scoreDifference, result);
+        return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, result);
     }
 
     private static <Score_ extends Score<Score_>> Map<ConstraintJustification, MatchAnalysis<Score_>>
@@ -121,9 +141,11 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
     @Override
     public String toString() {
         if (matches == null) {
-            return "(" + score + ", no match analysis)";
+            return "(%s at %s, no matches)"
+                    .formatted(score, weight);
         } else {
-            return "(" + score + ", " + matches.size() + " matches)";
+            return "(%s at %s, %s matches)"
+                    .formatted(score, weight, matches.size());
         }
     }
 }

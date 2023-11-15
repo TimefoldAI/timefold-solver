@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.api.score.analysis;
 
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -38,8 +40,13 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  *
  * @param score never null
  * @param constraintMap never null;
- *        constraints will be present even if they have no matches, unless their weight is zero;
+ *        for each constraint identified by its {@link Constraint#getConstraintRef()},
+ *        the {@link ConstraintAnalysis} that describes the impact of that constraint on the overall score.
+ *        Constraints are present even if they have no matches, unless their weight is zero;
  *        zero-weight constraints are not present.
+ *        Entries in the map have a stable iteration order; items are ordered first by {@link ConstraintAnalysis#weight()},
+ *        then by {@link ConstraintAnalysis#constraintRef()}.
+ *
  * @param <Score_>
  */
 public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
@@ -52,17 +59,17 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
             throw new IllegalArgumentException("The constraintMap must not be empty.");
         }
         // Ensure consistent order and no external interference.
-        constraintMap = Collections.unmodifiableMap(new TreeMap<>(constraintMap));
-    }
-
-    /**
-     * For each constraint identified by its {@link Constraint#getConstraintRef()} id},
-     * the {@link ConstraintAnalysis} that describes the impact of that constraint on the overall score.
-     *
-     * @return never null, unmodifiable
-     */
-    public Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap() {
-        return constraintMap;
+        var comparator = Comparator.<ConstraintAnalysis<Score_>, Score_> comparing(ConstraintAnalysis::weight)
+                .reversed()
+                .thenComparing(ConstraintAnalysis::constraintRef);
+        constraintMap = Collections.unmodifiableMap(constraintMap.values()
+                .stream()
+                .sorted(comparator)
+                .collect(Collectors.toMap(
+                        ConstraintAnalysis::constraintRef,
+                        Function.identity(),
+                        (constraintAnalysis, otherConstraintAnalysis) -> constraintAnalysis,
+                        LinkedHashMap::new)));
     }
 
     /**
@@ -127,8 +134,4 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
         return new ScoreAnalysis<>(score.subtract(other.score()), result);
     }
 
-    @Override
-    public String toString() {
-        return "(" + score + ", " + constraintMap + ")";
-    }
 }

@@ -62,10 +62,12 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
                         return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
                     })
                     .toList();
-            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getScore(),
+            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
+                    constraintMatchTotal.getScore(),
                     matchAnalyses);
         } else {
-            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getScore(), null);
+            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
+                    constraintMatchTotal.getScore(), null);
         }
     }
 
