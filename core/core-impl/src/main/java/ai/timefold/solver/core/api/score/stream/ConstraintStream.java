@@ -81,9 +81,9 @@ public interface ConstraintStream {
     // ************************************************************************
 
     /**
-     * Negatively impact the {@link Score}: subtract the weight for each match.
+     * Negatively impact the {@link Score}: subtract the constraintWeight for each match.
      * <p>
-     * To avoid hard-coding the weight, to allow end-users to tweak it,
+     * To avoid hard-coding the constraintWeight, to allow end-users to tweak it,
      * use {@link #penalizeConfigurable(String)} and a {@link ConstraintConfiguration} instead.
      * <p>
      * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
@@ -111,7 +111,7 @@ public interface ConstraintStream {
     /**
      * Negatively impact the {@link Score}: subtract the {@link ConstraintWeight} for each match.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #penalize(String, Score)} instead.
@@ -138,9 +138,9 @@ public interface ConstraintStream {
     Constraint penalizeConfigurable(String constraintPackage, String constraintName);
 
     /**
-     * Positively impact the {@link Score}: add the weight for each match.
+     * Positively impact the {@link Score}: add the constraintWeight for each match.
      * <p>
-     * To avoid hard-coding the weight, to allow end-users to tweak it,
+     * To avoid hard-coding the constraintWeight, to allow end-users to tweak it,
      * use {@link #penalizeConfigurable(String)} and a {@link ConstraintConfiguration} instead.
      * <p>
      * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
@@ -168,7 +168,7 @@ public interface ConstraintStream {
     /**
      * Positively impact the {@link Score}: add the {@link ConstraintWeight} for each match.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #reward(String, Score)} instead.
@@ -195,7 +195,7 @@ public interface ConstraintStream {
     Constraint rewardConfigurable(String constraintPackage, String constraintName);
 
     /**
-     * Positively or negatively impact the {@link Score} by the weight for each match.
+     * Positively or negatively impact the {@link Score} by the constraintWeight for each match.
      * <p>
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.

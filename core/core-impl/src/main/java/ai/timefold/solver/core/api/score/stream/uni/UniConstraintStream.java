@@ -1635,14 +1635,14 @@ public interface UniConstraintStream<A> extends ConstraintStream {
 
     /**
      * Applies a negative {@link Score} impact,
-     * subtracting the weight multiplied by the match weight,
+     * subtracting the constraintWeight multiplied by the match weight,
      * and returns a builder to apply optional constraint properties.
      * <p>
      * For non-int {@link Score} types use {@link #penalizeLong(Score, ToLongFunction)} or
      * {@link #penalizeBigDecimal(Score, Function)} instead.
      *
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(Score_ constraintWeight,
@@ -1665,7 +1665,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * subtracting the {@link ConstraintWeight} for each match,
      * and returns a builder to apply optional constraint properties.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #penalize(Score)} instead.
@@ -1681,12 +1681,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * subtracting the {@link ConstraintWeight} multiplied by match weight for each match,
      * and returns a builder to apply optional constraint properties.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #penalize(Score, ToIntFunction)} instead.
      *
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     UniConstraintBuilder<A, ?> penalizeConfigurable(ToIntFunction<A> matchWeigher);
@@ -1716,14 +1716,14 @@ public interface UniConstraintStream<A> extends ConstraintStream {
 
     /**
      * Applies a positive {@link Score} impact,
-     * adding the weight multiplied by the match weight,
+     * adding the constraintWeight multiplied by the match weight,
      * and returns a builder to apply optional constraint properties.
      * <p>
      * For non-int {@link Score} types use {@link #rewardLong(Score, ToLongFunction)} or
      * {@link #rewardBigDecimal(Score, Function)} instead.
      *
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(Score_ constraintWeight,
@@ -1746,7 +1746,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * adding the {@link ConstraintWeight} for each match,
      * and returns a builder to apply optional constraint properties.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #reward(Score)} instead.
@@ -1762,12 +1762,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * adding the {@link ConstraintWeight} multiplied by match weight for each match,
      * and returns a builder to apply optional constraint properties.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #reward(Score, ToIntFunction)} instead.
      *
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     UniConstraintBuilder<A, ?> rewardConfigurable(ToIntFunction<A> matchWeigher);
@@ -1787,7 +1787,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     UniConstraintBuilder<A, ?> rewardConfigurableBigDecimal(Function<A, BigDecimal> matchWeigher);
 
     /**
-     * Positively or negatively impacts the {@link Score} by the weight for each match
+     * Positively or negatively impacts the {@link Score} by the constraintWeight for each match
      * and returns a builder to apply optional constraint properties.
      * <p>
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
@@ -1801,14 +1801,14 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively or negatively impacts the {@link Score} by weight multiplied by matchWeight for each match
+     * Positively or negatively impacts the {@link Score} by constraintWeight multiplied by matchWeight for each match
      * and returns a builder to apply optional constraint properties.
      * <p>
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.
      *
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(Score_ constraintWeight,
@@ -1830,7 +1830,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Positively impacts the {@link Score} by the {@link ConstraintWeight} for each match,
      * and returns a builder to apply optional constraint properties.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(Score)} instead.
@@ -1845,7 +1845,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Positively impacts the {@link Score} by the {@link ConstraintWeight} multiplied by match weight for each match,
      * and returns a builder to apply optional constraint properties.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(Score, ToIntFunction)} instead.
@@ -1869,7 +1869,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     UniConstraintBuilder<A, ?> impactConfigurableBigDecimal(Function<A, BigDecimal> matchWeigher);
 
     /**
-     * Negatively impact the {@link Score}: subtract the weight multiplied by the match weight.
+     * Negatively impact the {@link Score}: subtract the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #penalize(String, Score)}.
      * <p>
      * For non-int {@link Score} types use {@link #penalizeLong(String, Score, ToLongFunction)} or
@@ -1878,7 +1878,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @deprecated Prefer {@link #penalize(Score, ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -1905,13 +1905,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Negatively impact the {@link Score}: subtract the weight multiplied by the match weight.
+     * Negatively impact the {@link Score}: subtract the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #penalize(String, Score)}.
      *
      * @deprecated Prefer {@link #penalizeLong(Score, ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -1938,13 +1938,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Negatively impact the {@link Score}: subtract the weight multiplied by the match weight.
+     * Negatively impact the {@link Score}: subtract the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #penalize(String, Score)}.
      *
      * @deprecated Prefer {@link #penalizeBigDecimal(Score, Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -1980,7 +1980,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #penalizeConfigurable(ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2010,7 +2010,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #penalizeConfigurableLong(ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2041,7 +2041,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #penalizeConfigurableBigDecimal(Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2067,7 +2067,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively impact the {@link Score}: add the weight multiplied by the match weight.
+     * Positively impact the {@link Score}: add the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #reward(String, Score)}.
      * <p>
      * For non-int {@link Score} types use {@link #rewardLong(String, Score, ToLongFunction)} or
@@ -2076,7 +2076,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @deprecated Prefer {@link #reward(Score, ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2103,13 +2103,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively impact the {@link Score}: add the weight multiplied by the match weight.
+     * Positively impact the {@link Score}: add the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #reward(String, Score)}.
      *
      * @deprecated Prefer {@link #rewardLong(Score, ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2136,13 +2136,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively impact the {@link Score}: add the weight multiplied by the match weight.
+     * Positively impact the {@link Score}: add the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #reward(String, Score)}.
      *
      * @deprecated Prefer {@link #rewardBigDecimal(Score, Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2178,7 +2178,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #rewardConfigurable(ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2208,7 +2208,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #rewardConfigurableLong(ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2238,7 +2238,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #rewardConfigurableBigDecimal(Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2264,7 +2264,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively or negatively impact the {@link Score} by the weight multiplied by the match weight.
+     * Positively or negatively impact the {@link Score} by the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #impact(String, Score)}.
      * <p>
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and negative
@@ -2276,7 +2276,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @deprecated Prefer {@link #impact(Score, ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2303,7 +2303,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively or negatively impact the {@link Score} by the weight multiplied by the match weight.
+     * Positively or negatively impact the {@link Score} by the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #impact(String, Score)}.
      * <p>
      * Use {@code penalizeLong(...)} or {@code rewardLong(...)} instead, unless this constraint can both have positive
@@ -2312,7 +2312,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @deprecated Prefer {@link #impactLong(Score, ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2339,7 +2339,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Positively or negatively impact the {@link Score} by the weight multiplied by the match weight.
+     * Positively or negatively impact the {@link Score} by the constraintWeight multiplied by the match weight.
      * Otherwise as defined by {@link #impact(String, Score)}.
      * <p>
      * Use {@code penalizeBigDecimal(...)} or {@code rewardBigDecimal(...)} instead, unless this constraint can both
@@ -2348,7 +2348,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @deprecated Prefer {@link #impactBigDecimal(Score, Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2381,7 +2381,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Use {@code penalizeConfigurable(...)} or {@code rewardConfigurable(...)} instead, unless this constraint can both
      * have positive and negative weights.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the
      * {@link ConstraintConfiguration}, so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
@@ -2394,7 +2394,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #impactConfigurable(ToIntFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2424,7 +2424,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Use {@code penalizeConfigurableLong(...)} or {@code rewardConfigurableLong(...)} instead, unless this constraint
      * can both have positive and negative weights.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the
      * {@link ConstraintConfiguration}, so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
@@ -2434,7 +2434,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #impactConfigurableLong(ToLongFunction)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)
@@ -2465,7 +2465,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Use {@code penalizeConfigurableBigDecimal(...)} or {@code rewardConfigurableBigDecimal(...)} instead, unless this
      * constraint can both have positive and negative weights.
      * <p>
-     * The weight comes from an {@link ConstraintWeight} annotated member on the
+     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the
      * {@link ConstraintConfiguration}, so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
      * If there is no {@link ConstraintConfiguration}, use {@link #impact(String, Score)} instead.
@@ -2475,7 +2475,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @deprecated Prefer {@link #impactConfigurableBigDecimal(Function)}.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the weight
+     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
      * @return never null
      */
     @Deprecated(forRemoval = true)

@@ -126,7 +126,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
     private void validateConstraintWeight(Constraint constraint, Score_ constraintWeight) {
         if (constraintWeight == null || constraintWeight.isZero()) {
-            throw new IllegalArgumentException("Impossible state: The weight (" +
+            throw new IllegalArgumentException("Impossible state: The constraintWeight (" +
                     constraintWeight + ") cannot be zero, constraint (" + constraint +
                     ") should have been culled during session creation.");
         }

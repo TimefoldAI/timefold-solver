@@ -148,8 +148,8 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             return Pair.of(zero, zero);
         }
         // We do not know the matchWeight, so we need to deduce it.
-        // Constraint matches give us a score, whose levels are in the form of (matchWeight * weight).
-        // Here, we strip the weight.
+        // Constraint matches give us a score, whose levels are in the form of (matchWeight * constraintWeight).
+        // Here, we strip the constraintWeight.
         Score_ totalMatchWeightedScore = constraintMatchTotalCollection.stream()
                 .map(matchScore -> scoreDefinition.divideBySanitizedDivisor(matchScore.getScore(),
                         matchScore.getConstraintWeight()))
