@@ -23,7 +23,6 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerBiConstraintCollectors {
@@ -204,9 +203,8 @@ public class InnerBiConstraintCollectors {
         return new ToSortedSetComparatorBiCollector<>(mapper, comparator);
     }
 
-    public static <A, B, Result_>
-            BiConstraintCollector<A, B, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
-            consecutive(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+    public static <A, B, Result_> BiConstraintCollector<A, B, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return new ConsecutiveSequencesBiConstraintCollector<>(resultMap, indexMap);
     }
 

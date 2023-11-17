@@ -1,54 +1,38 @@
 package ai.timefold.solver.core.impl.score.stream.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
-import ai.timefold.solver.core.impl.score.stream.SequenceAccumulator;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
+import ai.timefold.solver.core.impl.score.stream.SequenceCalculator;
 
-final class ConsecutiveSequencesUniConstraintCollector<A> implements
-        UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, ConstraintCollectors.SequenceChain<A, Integer>> {
+final class ConsecutiveSequencesUniConstraintCollector<A>
+        extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, SequenceCalculator<A>> {
 
-    private final SequenceAccumulator<A> accumulator;
+    private final ToIntFunction<A> indexMap;
 
     public ConsecutiveSequencesUniConstraintCollector(ToIntFunction<A> indexMap) {
-        this.accumulator = new SequenceAccumulator<>(indexMap);
+        super(Function.identity());
+        this.indexMap = Objects.requireNonNull(indexMap);
     }
 
     @Override
-    public Supplier<ConsecutiveSetTree<A, Integer, Integer>> supplier() {
-        return () -> new ConsecutiveSetTree<>(
-                (Integer a, Integer b) -> b - a,
-                Integer::sum,
-                1, 0);
-    }
-
-    @Override
-    public BiFunction<ConsecutiveSetTree<A, Integer, Integer>, A, Runnable> accumulator() {
-        return accumulator::accumulate;
-    }
-
-    @Override
-    public Function<ConsecutiveSetTree<A, Integer, Integer>, ConstraintCollectors.SequenceChain<A, Integer>> finisher() {
-        return tree -> tree;
+    public Supplier<SequenceCalculator<A>> supplier() {
+        return () -> new SequenceCalculator<>(indexMap);
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof ConsecutiveSequencesUniConstraintCollector<?> other) {
-            return Objects.equals(accumulator, other.accumulator);
+            return Objects.equals(indexMap, other.indexMap);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return accumulator.hashCode();
+        return indexMap.hashCode();
     }
-
 }

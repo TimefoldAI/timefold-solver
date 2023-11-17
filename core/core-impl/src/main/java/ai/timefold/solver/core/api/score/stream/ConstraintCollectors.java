@@ -1851,8 +1851,9 @@ public final class ConstraintCollectors {
      * @param <A> type of the first mapped fact
      * @return never null
      */
-    public static <A> UniConstraintCollector<A, ?, SequenceChain<A, Integer>> consecutive(ToIntFunction<A> indexMap) {
-        return InnerUniConstraintCollectors.consecutive(indexMap);
+    public static <A> UniConstraintCollector<A, ?, SequenceChain<A, Integer>>
+            toConsecutiveSequences(ToIntFunction<A> indexMap) {
+        return InnerUniConstraintCollectors.toConsecutiveSequences(indexMap);
     }
 
     /**
@@ -1991,7 +1992,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by {@link #consecutive(ToIntFunction)}.
+     * As defined by {@link #toConsecutiveSequences(ToIntFunction)}.
      *
      * @param resultMap Maps both facts to an item in the sequence
      * @param indexMap Maps the item to its position in the sequence
@@ -2001,12 +2002,12 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, Result_> BiConstraintCollector<A, B, ?, SequenceChain<Result_, Integer>>
-            consecutive(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
-        return InnerBiConstraintCollectors.consecutive(resultMap, indexMap);
+            toConsecutiveSequences(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerBiConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
     }
 
     /**
-     * As defined by {@link #consecutive(ToIntFunction)}.
+     * As defined by {@link #toConsecutiveSequences(ToIntFunction)}.
      *
      * @param resultMap Maps the three facts to an item in the sequence
      * @param indexMap Maps the item to its position in the sequence
@@ -2017,12 +2018,12 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, SequenceChain<Result_, Integer>>
-            consecutive(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
-        return InnerTriConstraintCollectors.consecutive(resultMap, indexMap);
+            toConsecutiveSequences(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerTriConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
     }
 
     /**
-     * As defined by {@link #consecutive(ToIntFunction)}.
+     * As defined by {@link #toConsecutiveSequences(ToIntFunction)}.
      *
      * @param resultMap Maps the four facts to an item in the sequence
      * @param indexMap Maps the item to its position in the sequence
@@ -2034,8 +2035,8 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
-            consecutive(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
-        return InnerQuadConstraintCollectors.consecutive(resultMap, indexMap);
+            toConsecutiveSequences(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerQuadConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
     }
 
     private ConstraintCollectors() {

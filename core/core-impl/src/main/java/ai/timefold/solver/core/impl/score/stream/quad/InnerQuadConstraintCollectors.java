@@ -23,7 +23,6 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerQuadConstraintCollectors {
@@ -212,9 +211,8 @@ public class InnerQuadConstraintCollectors {
         return new ToSortedSetComparatorQuadCollector<>(mapper, comparator);
     }
 
-    public static <A, B, C, D, Result_>
-            QuadConstraintCollector<A, B, C, D, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
-            consecutive(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+    public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return new ConsecutiveSequencesQuadConstraintCollector<>(resultMap, indexMap);
     }
 

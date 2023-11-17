@@ -23,7 +23,6 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerTriConstraintCollectors {
@@ -211,9 +210,8 @@ public class InnerTriConstraintCollectors {
         return new ToSortedSetComparatorTriCollector<>(mapper, comparator);
     }
 
-    public static <A, B, C, Result_>
-            TriConstraintCollector<A, B, C, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
-            consecutive(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return new ConsecutiveSequencesTriConstraintCollector<>(resultMap, indexMap);
     }
 

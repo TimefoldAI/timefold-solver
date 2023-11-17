@@ -1,6 +1,5 @@
 package ai.timefold.solver.examples.nurserostering.score;
 
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.*;
 import static ai.timefold.solver.examples.nurserostering.optional.score.EmployeeConsecutiveAssignmentEnd.getDistanceToLastDayOfWeekend;
 import static ai.timefold.solver.examples.nurserostering.optional.score.EmployeeConsecutiveAssignmentEnd.isWeekendAndNotLastDayOfWeekend;
 import static ai.timefold.solver.examples.nurserostering.optional.score.EmployeeConsecutiveAssignmentStart.getDistanceToFirstDayOfWeekend;
@@ -11,6 +10,8 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -97,9 +98,9 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
         return assignmentLimitedOrUnassignedEmployeeStream
                 .groupBy((line, employee, shift) -> employee,
                         (line, employee, shift) -> line,
-                        conditionally(
+                        ConstraintCollectors.conditionally(
                                 (line, employee, shift) -> shift != null,
-                                countTri()))
+                                ConstraintCollectors.countTri()))
                 .map((employee, contract, shiftCount) -> employee,
                         (employee, contract, shiftCount) -> contract,
                         (employee, contract, shiftCount) -> contract.getViolationAmount(shiftCount))
@@ -119,7 +120,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.toConsecutiveSequences((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(SequenceChain::getConsecutiveSequences)
                 .map((employee, contract, shiftList) -> employee,
@@ -141,7 +142,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.toConsecutiveSequences((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(SequenceChain::getConsecutiveSequences)
                 .join(NurseRosterParametrization.class)
@@ -204,7 +205,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.toConsecutiveSequences((contract, shift) -> shift.getShiftDate(),
                                 shiftDate -> shiftDate.getWeekendSundayIndex() / 7))
                 .flattenLast(SequenceChain::getConsecutiveSequences)
                 .map((employee, contract, shiftList) -> employee,
@@ -225,7 +226,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.toConsecutiveSequences((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(SequenceChain::getConsecutiveSequences)
                 .filter((employee, contract, shiftList) -> isWeekendAndNotFirstDayOfWeekend(employee,
@@ -246,7 +247,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.toConsecutiveSequences((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(SequenceChain::getConsecutiveSequences)
                 .filter((employee, contract, shiftList) -> isWeekendAndNotLastDayOfWeekend(employee,
@@ -273,7 +274,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .groupBy((contract, date, sa) -> contract,
                         (contract, date, sa) -> sa.getEmployee(),
                         (contract, date, sa) -> Pair.of(sa.getShiftType(), date), // No 4-key groupBy overload
-                        countTri())
+                        ConstraintCollectors.countTri())
                 .filter((contract, employee, type, count) -> count < employee.getWeekendLength())
                 .penalize(HardSoftScore.ONE_SOFT,
                         (contract, employee, type, count) -> (employee.getWeekendLength() - count) * contract.getWeight())

@@ -10,9 +10,9 @@ import ai.timefold.solver.core.impl.score.stream.ObjectCalculator;
 
 abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
         implements BiConstraintCollector<A, B, Calculator_, Output_>
-        permits AverageReferenceBiCollector, CountDistinctIntBiCollector, CountDistinctLongBiCollector,
-        SumReferenceBiCollector {
-    private final BiFunction<? super A, ? super B, ? extends Input_> mapper;
+        permits AverageReferenceBiCollector, ConsecutiveSequencesBiConstraintCollector, CountDistinctIntBiCollector,
+        CountDistinctLongBiCollector, SumReferenceBiCollector {
+    protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
     public ObjectCalculatorBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
         this.mapper = mapper;

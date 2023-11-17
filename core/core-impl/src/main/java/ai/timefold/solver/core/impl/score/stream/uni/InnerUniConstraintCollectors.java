@@ -22,7 +22,6 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerUniConstraintCollectors {
@@ -191,8 +190,8 @@ public class InnerUniConstraintCollectors {
         return new ToSortedSetComparatorUniCollector<>(mapper, comparator);
     }
 
-    public static <A> UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, SequenceChain<A, Integer>>
-            consecutive(ToIntFunction<A> indexMap) {
+    public static <A> UniConstraintCollector<A, ?, SequenceChain<A, Integer>>
+            toConsecutiveSequences(ToIntFunction<A> indexMap) {
         return new ConsecutiveSequencesUniConstraintCollector<>(indexMap);
     }
 

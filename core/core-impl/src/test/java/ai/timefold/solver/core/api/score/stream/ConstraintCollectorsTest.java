@@ -3924,9 +3924,9 @@ class ConstraintCollectorsTest {
     }
 
     @Test
-    void consecutive() {
+    void toConsecutiveSequences() {
         // Do a basic test w/o edge cases; edge cases are covered in ConsecutiveSetTreeTest
-        var collector = ConstraintCollectors.consecutive(Integer::intValue);
+        var collector = ConstraintCollectors.toConsecutiveSequences(Integer::intValue);
         var container = collector.supplier().get();
         // Add first value, sequence is [2]
         int firstValue = 2;
