@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -21,7 +22,10 @@ import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@Execution(ExecutionMode.CONCURRENT)
 class ConsecutiveSetTreeTest {
 
     private ConsecutiveSetTree<AtomicInteger, Integer, Integer> getIntegerConsecutiveSetTree() {
@@ -48,23 +52,38 @@ class ConsecutiveSetTreeTest {
 
     @Test
     void testNonconsecutiveNumbers() {
-        ConsecutiveSetTree<AtomicInteger, Integer, Integer> tree = getIntegerConsecutiveSetTree();
-        AtomicInteger start1 = atomic(3);
-        AtomicInteger middle3 = atomic(5);
-        AtomicInteger end7 = atomic(5);
+        var tree = getIntegerConsecutiveSetTree();
+        var start1 = atomic(3);
+        var middle3 = atomic(5);
+        var end7 = atomic(5);
 
         tree.add(start1, 1);
         tree.add(middle3, 3);
         tree.add(end7, 7);
 
-        IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
-        Assertions.assertThat(sequenceList).hasSize(3);
-        IterableList<ConstraintCollectors.Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
-        Assertions.assertThat(breakList).hasSize(2);
+        var sequenceList = new IterableList<>(tree.getConsecutiveSequences());
+        assertSoftly(softly -> {
+            softly.assertThat(sequenceList).hasSize(3);
+            softly.assertThat(tree.getFirstSequence())
+                    .usingRecursiveComparison()
+                    .isEqualTo(sequenceList.get(0));
+            softly.assertThat(tree.getLastSequence())
+                    .usingRecursiveComparison()
+                    .isEqualTo(sequenceList.get(2));
+        });
+
+        var breakList = new IterableList<>(tree.getBreaks());
+        assertSoftly(softly -> {
+            softly.assertThat(breakList).hasSize(2);
+            softly.assertThat(tree.getFirstBreak())
+                    .usingRecursiveComparison()
+                    .isEqualTo(breakList.get(0));
+            softly.assertThat(tree.getLastBreak())
+                    .usingRecursiveComparison()
+                    .isEqualTo(breakList.get(1));
+        });
 
         assertThat(tree.getConsecutiveSequences()).allMatch(seq -> seq.getCount() == 1);
-        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, start1, middle3, 2));
-        assertThat(breakList.get(1)).usingRecursiveComparison().isEqualTo(getBreak(tree, middle3, end7, 4));
     }
 
     @Test
@@ -94,21 +113,35 @@ class ConsecutiveSetTreeTest {
 
     @Test
     void testDuplicateNumbers() {
-        ConsecutiveSetTree<AtomicInteger, Integer, Integer> tree = getIntegerConsecutiveSetTree();
-        AtomicInteger duplicateValue = atomic(3);
+        var tree = getIntegerConsecutiveSetTree();
+        var duplicateValue = atomic(3);
         tree.add(atomic(1), 1);
         tree.add(atomic(2), 2);
         tree.add(duplicateValue, 3);
         tree.add(duplicateValue, 3);
         tree.add(duplicateValue, 3);
 
-        IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
-        Assertions.assertThat(sequenceList).hasSize(1);
-        IterableList<Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
-        Assertions.assertThat(breakList).hasSize(0);
+        var sequenceList = new IterableList<>(tree.getConsecutiveSequences());
+        assertSoftly(softly -> {
+            softly.assertThat(sequenceList).hasSize(1);
+            softly.assertThat(tree.getFirstSequence())
+                    .usingRecursiveComparison()
+                    .isEqualTo(sequenceList.get(0));
+            softly.assertThat(tree.getLastSequence())
+                    .usingRecursiveComparison()
+                    .isEqualTo(sequenceList.get(0));
+            softly.assertThat(sequenceList)
+                    .first()
+                    .matches(sequence -> sequence.getCount() == 3);
+        });
 
-        assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        assertThat(tree.getBreaks()).hasSize(0);
+        var breakList = new IterableList<>(tree.getBreaks());
+        assertSoftly(softly -> {
+            softly.assertThat(breakList).isEmpty();
+            softly.assertThat(tree.getBreaks()).isEmpty();
+            softly.assertThat(tree.getFirstBreak()).isNull();
+            softly.assertThat(tree.getLastBreak()).isNull();
+        });
 
         duplicateValue.set(0); // mimic the constraint collector changing a planning variable
 

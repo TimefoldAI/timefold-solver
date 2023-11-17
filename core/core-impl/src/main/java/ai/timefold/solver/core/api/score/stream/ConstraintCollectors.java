@@ -1872,6 +1872,35 @@ public final class ConstraintCollectors {
          * @return never null; the breaks contained in the collection in ascending order.
          */
         Iterable<Break<Value_, Difference_>> getBreaks();
+
+        /**
+         * Returns the first sequence of consecutive values.
+         *
+         * @return null if there are no sequences
+         */
+        Sequence<Value_, Difference_> getFirstSequence();
+
+        /**
+         * Returns the last sequence of consecutive values.
+         *
+         * @return null if there are no sequences
+         */
+        Sequence<Value_, Difference_> getLastSequence();
+
+        /**
+         * Returns the first break between two consecutive sequences of values.
+         *
+         * @return null if there are less than two sequences
+         */
+        Break<Value_, Difference_> getFirstBreak();
+
+        /**
+         * Returns the last break between two consecutive sequences of values.
+         *
+         * @return null if there are less than two sequences
+         */
+        Break<Value_, Difference_> getLastBreak();
+
     }
 
     /**

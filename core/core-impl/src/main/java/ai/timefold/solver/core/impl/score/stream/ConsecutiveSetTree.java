@@ -65,6 +65,38 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         return (Iterable) startItemToPreviousBreak.values();
     }
 
+    @Override
+    public ConstraintCollectors.Sequence<Value_, Difference_> getFirstSequence() {
+        if (startItemToSequence.isEmpty()) {
+            return null;
+        }
+        return startItemToSequence.firstEntry().getValue();
+    }
+
+    @Override
+    public ConstraintCollectors.Sequence<Value_, Difference_> getLastSequence() {
+        if (startItemToSequence.isEmpty()) {
+            return null;
+        }
+        return startItemToSequence.lastEntry().getValue();
+    }
+
+    @Override
+    public Break<Value_, Difference_> getFirstBreak() {
+        if (startItemToSequence.size() <= 1) {
+            return null;
+        }
+        return startItemToPreviousBreak.firstEntry().getValue();
+    }
+
+    @Override
+    public Break<Value_, Difference_> getLastBreak() {
+        if (startItemToSequence.size() <= 1) {
+            return null;
+        }
+        return startItemToPreviousBreak.lastEntry().getValue();
+    }
+
     public boolean add(Value_ value, Point_ valueIndex) {
         var valueCount = valueCountMap.get(value);
         if (valueCount != null) { // Item already in bag.
