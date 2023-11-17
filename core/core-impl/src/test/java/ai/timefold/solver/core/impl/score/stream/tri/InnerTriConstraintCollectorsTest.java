@@ -1071,6 +1071,36 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         assertResultRecursive(collector, container, buildSequenceChain());
     }
 
+    @Override
+    @Test
+    public void collectAndThen() {
+        var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.countTri(), i -> i * 10);
+        var container = collector.supplier().get();
+
+        // Default state.
+        assertResult(collector, container, 0);
+        // Add first value, we have one now.
+        var firstValue = 2;
+        var firstRetractor = accumulate(collector, container, firstValue, 0, 0);
+        assertResult(collector, container, 10);
+        // Add second value, we have two now.
+        var secondValue = 1;
+        var secondRetractor = accumulate(collector, container, secondValue, 0, 0);
+        assertResult(collector, container, 20);
+        // Add third value, same as the second. We now have three values, two of which are the same.
+        var thirdRetractor = accumulate(collector, container, secondValue, 0, 0);
+        assertResult(collector, container, 30);
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertResult(collector, container, 20);
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertResult(collector, container, 10);
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertResult(collector, container, 0);
+    }
+
     private static <A, B, C, Container_, Result_> Runnable accumulate(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC) {

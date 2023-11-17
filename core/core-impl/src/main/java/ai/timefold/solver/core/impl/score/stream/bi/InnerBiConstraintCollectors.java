@@ -208,4 +208,10 @@ public class InnerBiConstraintCollectors {
         return new ConsecutiveSequencesBiConstraintCollector<>(resultMap, indexMap);
     }
 
+    public static <A, B, Intermediate_, Result_> BiConstraintCollector<A, B, ?, Result_>
+            collectAndThen(BiConstraintCollector<A, B, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenBiCollector<>(delegate, mappingFunction);
+    }
+
 }

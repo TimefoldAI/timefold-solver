@@ -1631,6 +1631,56 @@ public final class ConstraintCollectors {
     }
 
     // ************************************************************************
+    // forwarding collectors
+    // ************************************************************************
+
+    /**
+     * Returns a collector that delegates to the underlying collector
+     * and maps its result to another value.
+     * <p>
+     * This is a better performing alternative to {@code .groupBy(...).map(...)}.
+     *
+     * @param <A> generic type of the tuple variable
+     * @param <Intermediate_> generic type of the delegate's return value
+     * @param <Result_> generic type of the final colector's return value
+     * @param delegate never null, the underlying collector to delegate to
+     * @param mappingFunction never null, maps the result of the underlying collector to another value
+     * @return never null
+     */
+    public static <A, Intermediate_, Result_> UniConstraintCollector<A, ?, Result_>
+            collectAndThen(UniConstraintCollector<A, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerUniConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #collectAndThen(UniConstraintCollector, Function)}.
+     */
+    public static <A, B, Intermediate_, Result_> BiConstraintCollector<A, B, ?, Result_>
+            collectAndThen(BiConstraintCollector<A, B, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerBiConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #collectAndThen(UniConstraintCollector, Function)}.
+     */
+    public static <A, B, C, Intermediate_, Result_> TriConstraintCollector<A, B, C, ?, Result_>
+            collectAndThen(TriConstraintCollector<A, B, C, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerTriConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #collectAndThen(UniConstraintCollector, Function)}.
+     */
+    public static <A, B, C, D, Intermediate_, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_>
+            collectAndThen(QuadConstraintCollector<A, B, C, D, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerQuadConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    // ************************************************************************
     // composite collectors
     // ************************************************************************
 
@@ -1863,6 +1913,7 @@ public final class ConstraintCollectors {
      * @param <Difference_> The type of difference between values in the sequence.
      */
     public interface SequenceChain<Value_, Difference_ extends Comparable<Difference_>> {
+
         /**
          * @return never null; the sequences contained in the collection in ascending order.
          */
@@ -1911,6 +1962,7 @@ public final class ConstraintCollectors {
      * @param <Difference_> The type of difference between values in the sequence.
      */
     public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
+
         /**
          * @return never null; the first item in the sequence.
          */
@@ -1958,7 +2010,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * Represents a gap between two {@link ai.timefold.solver.core.api.score.stream.api.Sequence sequences}.
+     * Represents a gap between two {@link Sequence sequences}.
      * For instance, the list [1,2,4,5,6,10] has a break of length 2 between 2 and 4,
      * as well as a break of length 4 between 6 and 10.
      *
@@ -1966,6 +2018,7 @@ public final class ConstraintCollectors {
      * @param <Difference_> The type of difference between values in the sequence.
      */
     public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
+
         /**
          * @return never null; the sequence leading directly into this
          */

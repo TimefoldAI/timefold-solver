@@ -195,4 +195,10 @@ public class InnerUniConstraintCollectors {
         return new ConsecutiveSequencesUniConstraintCollector<>(indexMap);
     }
 
+    public static <A, Intermediate_, Result_> UniConstraintCollector<A, ?, Result_>
+            collectAndThen(UniConstraintCollector<A, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenUniCollector<>(delegate, mappingFunction);
+    }
+
 }

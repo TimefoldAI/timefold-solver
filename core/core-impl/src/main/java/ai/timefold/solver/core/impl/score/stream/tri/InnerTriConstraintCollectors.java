@@ -215,4 +215,10 @@ public class InnerTriConstraintCollectors {
         return new ConsecutiveSequencesTriConstraintCollector<>(resultMap, indexMap);
     }
 
+    public static <A, B, C, Intermediate_, Result_> TriConstraintCollector<A, B, C, ?, Result_>
+            collectAndThen(TriConstraintCollector<A, B, C, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenTriCollector<>(delegate, mappingFunction);
+    }
+
 }

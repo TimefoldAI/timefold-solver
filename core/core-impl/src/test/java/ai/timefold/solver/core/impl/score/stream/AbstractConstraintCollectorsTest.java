@@ -104,6 +104,9 @@ public abstract class AbstractConstraintCollectorsTest {
     @Test
     public abstract void toConsecutiveSequences();
 
+    @Test
+    public abstract void collectAndThen();
+
     protected static SequenceChain<Integer, Integer> buildSequenceChain(Integer... data) {
         return Arrays.stream(data).collect(
                 () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),

@@ -216,4 +216,10 @@ public class InnerQuadConstraintCollectors {
         return new ConsecutiveSequencesQuadConstraintCollector<>(resultMap, indexMap);
     }
 
+    public static <A, B, C, D, Intermediate_, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_>
+            collectAndThen(QuadConstraintCollector<A, B, C, D, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenQuadCollector<>(delegate, mappingFunction);
+    }
+
 }
