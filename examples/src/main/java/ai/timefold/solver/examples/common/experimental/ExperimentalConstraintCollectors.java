@@ -5,7 +5,6 @@ import java.time.temporal.Temporal;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
@@ -15,9 +14,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.examples.common.experimental.api.ConsecutiveInfo;
 import ai.timefold.solver.examples.common.experimental.api.ConsecutiveIntervalInfo;
-import ai.timefold.solver.examples.common.experimental.impl.ConsecutiveSetTree;
 import ai.timefold.solver.examples.common.experimental.impl.Interval;
 import ai.timefold.solver.examples.common.experimental.impl.IntervalTree;
 
@@ -25,166 +22,6 @@ import ai.timefold.solver.examples.common.experimental.impl.IntervalTree;
  * A collection of experimental constraint collectors subject to change in future versions.
  */
 public class ExperimentalConstraintCollectors {
-    /**
-     * Creates a constraint collector that returns {@link ConsecutiveInfo} about the first fact.
-     *
-     * For instance, {@code [Shift slot=1] [Shift slot=2] [Shift slot=4] [Shift slot=6]}
-     * returns the following information:
-     *
-     * <pre>
-     * {@code
-     * Consecutive Lengths: 2, 1, 1
-     * Break Lengths: 1, 2
-     * Consecutive Items: [[Shift slot=1] [Shift slot=2]], [[Shift slot=4]], [[Shift slot=6]]
-     * }
-     * </pre>
-     *
-     * @param indexMap Maps the fact to its position in the sequence
-     * @param <A> type of the first mapped fact
-     * @return never null
-     */
-    public static <A> UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, ConsecutiveInfo<A, Integer>>
-            consecutive(ToIntFunction<A> indexMap) {
-        return new UniConstraintCollector<>() {
-
-            @Override
-            public Supplier<ConsecutiveSetTree<A, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a,
-                        Integer::sum,
-                        1, 0);
-            }
-
-            @Override
-            public BiFunction<ConsecutiveSetTree<A, Integer, Integer>, A, Runnable> accumulator() {
-                return (acc, a) -> {
-                    Integer value = indexMap.applyAsInt(a);
-                    acc.add(a, value);
-                    return () -> acc.remove(a);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<A, Integer, Integer>, ConsecutiveInfo<A, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
-    }
-
-    /**
-     * As defined by {@link #consecutive(ToIntFunction)}.
-     *
-     * @param resultMap Maps both facts to an item in the sequence
-     * @param indexMap Maps the item to its position in the sequence
-     * @param <A> type of the first mapped fact
-     * @param <B> type of the second mapped fact
-     * @param <Result> type of item in the sequence
-     * @return never null
-     */
-    public static <A, B, Result>
-            BiConstraintCollector<A, B, ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>>
-            consecutive(BiFunction<A, B, Result> resultMap, ToIntFunction<Result> indexMap) {
-        return new BiConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a,
-                        Integer::sum, 1, 0);
-            }
-
-            @Override
-            public TriFunction<ConsecutiveSetTree<Result, Integer, Integer>, A, B, Runnable> accumulator() {
-                return (acc, a, b) -> {
-                    Result result = resultMap.apply(a, b);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
-    }
-
-    /**
-     * As defined by {@link #consecutive(ToIntFunction)}.
-     *
-     * @param resultMap Maps the three facts to an item in the sequence
-     * @param indexMap Maps the item to its position in the sequence
-     * @param <A> type of the first mapped fact
-     * @param <B> type of the second mapped fact
-     * @param <C> type of the third mapped fact
-     * @param <Result> type of item in the sequence
-     * @return never null
-     */
-    public static <A, B, C, Result>
-            TriConstraintCollector<A, B, C, ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>>
-            consecutive(TriFunction<A, B, C, Result> resultMap, ToIntFunction<Result> indexMap) {
-        return new TriConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a, Integer::sum, 1, 0);
-            }
-
-            @Override
-            public QuadFunction<ConsecutiveSetTree<Result, Integer, Integer>, A, B, C, Runnable> accumulator() {
-                return (acc, a, b, c) -> {
-                    Result result = resultMap.apply(a, b, c);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
-    }
-
-    /**
-     * As defined by {@link #consecutive(ToIntFunction)}.
-     *
-     * @param resultMap Maps the four facts to an item in the sequence
-     * @param indexMap Maps the item to its position in the sequence
-     * @param <A> type of the first mapped fact
-     * @param <B> type of the second mapped fact
-     * @param <C> type of the third mapped fact
-     * @param <D> type of the fourth mapped fact
-     * @param <Result> type of item in the sequence
-     * @return never null
-     */
-    public static <A, B, C, D, Result>
-            QuadConstraintCollector<A, B, C, D, ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>>
-            consecutive(QuadFunction<A, B, C, D, Result> resultMap, ToIntFunction<Result> indexMap) {
-        return new QuadConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a, Integer::sum, 1, 0);
-            }
-
-            @Override
-            public PentaFunction<ConsecutiveSetTree<Result, Integer, Integer>, A, B, C, D, Runnable> accumulator() {
-                return (acc, a, b, c, d) -> {
-                    Result result = resultMap.apply(a, b, c, d);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
-    }
 
     /**
      * Creates a constraint collector that returns {@link ConsecutiveIntervalInfo} about the first fact.

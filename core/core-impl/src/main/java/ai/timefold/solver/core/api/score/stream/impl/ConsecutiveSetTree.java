@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.api.score.stream.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,9 +9,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.examples.common.experimental.api.Break;
-import ai.timefold.solver.examples.common.experimental.api.ConsecutiveInfo;
-import ai.timefold.solver.examples.common.experimental.api.Sequence;
+import ai.timefold.solver.core.api.score.stream.api.Break;
+import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
+import ai.timefold.solver.core.api.score.stream.api.Sequence;
 
 /**
  * A {@code ConsecutiveSetTree} determines what values are consecutive. A sequence

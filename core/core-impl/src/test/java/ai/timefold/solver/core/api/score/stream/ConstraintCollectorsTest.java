@@ -25,17 +25,21 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.impl.ConsecutiveSetTree;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
@@ -3919,6 +3923,46 @@ class ConstraintCollectorsTest {
         assertResult(collector, container, Quadruple.of(0, null, null, null));
     }
 
+    @Test
+    void consecutive() {
+        // Do a basic test w/o edge cases; edge cases are covered in ConsecutiveSetTreeTest
+        var collector = ConstraintCollectors.consecutive(Integer::intValue);
+        var container = collector.supplier().get();
+        // Add first value, sequence is [2]
+        int firstValue = 2;
+        Runnable firstRetractor = accumulate(collector, container, firstValue);
+        assertResultRecursive(collector, container, consecutiveData(2));
+        // Add second value, sequence is [1,2]
+        int secondValue = 1;
+        Runnable secondRetractor = accumulate(collector, container, secondValue);
+        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        // Add third value, same as the second. Sequence is [{1,1},2}]
+        Runnable thirdRetractor = accumulate(collector, container, secondValue);
+        assertResultRecursive(collector, container, consecutiveData(1, 1, 2));
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertResultRecursive(collector, container, consecutiveData(2));
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertResultRecursive(collector, container, consecutiveData());
+    }
+
+    private ConsecutiveInfo<Integer, Integer> consecutiveData(Integer... data) {
+        return Arrays.stream(data).collect(
+                () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),
+                (tree, datum) -> tree.add(datum, datum),
+                mergingNotSupported());
+    }
+
+    private static <T> BiConsumer<T, T> mergingNotSupported() {
+        return (a, b) -> {
+            throw new UnsupportedOperationException();
+        };
+    }
+
     private static <A, B, C, Container_, Result_> Runnable accumulate(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC) {
@@ -3971,6 +4015,16 @@ class ConstraintCollectorsTest {
         Result_ actualResult = collector.finisher().apply((Container_) container);
         assertThat(actualResult)
                 .as("Collector (" + collector + ") did not produce expected result.")
+                .isEqualTo(expectedResult);
+    }
+
+    private static <A, Container_, Result_> void assertResultRecursive(UniConstraintCollector<A, Container_, Result_> collector,
+            Container_ container, Result_ expectedResult) {
+        Result_ actualResult = collector.finisher().apply(container);
+        assertThat(actualResult)
+                .as("Collector (" + collector + ") did not produce expected result.")
+                .usingRecursiveComparison()
+                .ignoringFields("sourceTree", "indexFunction", "sequenceList", "startItemToSequence")
                 .isEqualTo(expectedResult);
     }
 

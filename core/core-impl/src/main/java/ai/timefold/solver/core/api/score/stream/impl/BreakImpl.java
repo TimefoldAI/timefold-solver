@@ -1,9 +1,9 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.api.score.stream.impl;
 
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.examples.common.experimental.api.Break;
-import ai.timefold.solver.examples.common.experimental.api.Sequence;
+import ai.timefold.solver.core.api.score.stream.api.Break;
+import ai.timefold.solver.core.api.score.stream.api.Sequence;
 
 final class BreakImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements Break<Value_, Difference_> {

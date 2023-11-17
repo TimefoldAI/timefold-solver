@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.api;
+package ai.timefold.solver.core.api.score.stream.api;
 
 /**
  * Contains info regarding the consecutive sequences and breaks

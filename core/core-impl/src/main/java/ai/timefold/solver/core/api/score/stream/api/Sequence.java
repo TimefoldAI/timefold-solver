@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.api;
+package ai.timefold.solver.core.api.score.stream.api;
 
 /**
  * A Sequence is a series of consecutive values. For instance,

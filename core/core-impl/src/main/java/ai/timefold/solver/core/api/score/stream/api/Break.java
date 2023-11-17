@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.api;
+package ai.timefold.solver.core.api.score.stream.api;
 
 /**
  * A Break is a gap between two consecutive values. For instance,

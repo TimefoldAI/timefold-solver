@@ -14,11 +14,10 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
-import ai.timefold.solver.examples.common.experimental.ExperimentalConstraintCollectors;
-import ai.timefold.solver.examples.common.experimental.api.ConsecutiveInfo;
 import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.nurserostering.domain.Employee;
 import ai.timefold.solver.examples.nurserostering.domain.NurseRosterParametrization;
@@ -121,7 +120,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
                 .map((employee, contract, shiftList) -> employee,
@@ -143,7 +142,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
                 .join(NurseRosterParametrization.class)
@@ -206,7 +205,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 shiftDate -> shiftDate.getWeekendSundayIndex() / 7))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
                 .map((employee, contract, shiftList) -> employee,
@@ -227,7 +226,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
                 .filter((employee, contract, shiftList) -> isWeekendAndNotFirstDayOfWeekend(employee,
@@ -248,7 +247,7 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
                 .groupBy((contract, shift) -> shift.getEmployee(),
                         (contract, shift) -> contract,
-                        ExperimentalConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
+                        ConstraintCollectors.consecutive((contract, shift) -> shift.getShiftDate(),
                                 ShiftDate::getDayIndex))
                 .flattenLast(ConsecutiveInfo::getConsecutiveSequences)
                 .filter((employee, contract, shiftList) -> isWeekendAndNotLastDayOfWeekend(employee,

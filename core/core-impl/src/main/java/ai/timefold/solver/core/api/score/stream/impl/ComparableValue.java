@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.api.score.stream.impl;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
