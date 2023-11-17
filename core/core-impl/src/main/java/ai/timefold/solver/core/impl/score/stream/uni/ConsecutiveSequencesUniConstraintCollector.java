@@ -1,12 +1,12 @@
 package ai.timefold.solver.core.impl.score.stream.uni;
 
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.SequenceCalculator;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 final class ConsecutiveSequencesUniConstraintCollector<A>
         extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, SequenceCalculator<A>> {
@@ -14,7 +14,7 @@ final class ConsecutiveSequencesUniConstraintCollector<A>
     private final ToIntFunction<A> indexMap;
 
     public ConsecutiveSequencesUniConstraintCollector(ToIntFunction<A> indexMap) {
-        super(Function.identity());
+        super(ConstantLambdaUtils.identity());
         this.indexMap = Objects.requireNonNull(indexMap);
     }
 
