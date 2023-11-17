@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.score.stream.impl;
+package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.Iterator;
 

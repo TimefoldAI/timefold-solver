@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.score.stream.impl;
+package ai.timefold.solver.core.impl.score.stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -18,7 +18,6 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Sequence;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
