@@ -207,29 +207,7 @@ public class InnerBiConstraintCollectors {
     public static <A, B, Result_>
             BiConstraintCollector<A, B, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
             consecutive(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
-        return new BiConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result_, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a,
-                        Integer::sum, 1, 0);
-            }
-
-            @Override
-            public TriFunction<ConsecutiveSetTree<Result_, Integer, Integer>, A, B, Runnable> accumulator() {
-                return (acc, a, b) -> {
-                    Result_ result = resultMap.apply(a, b);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
+        return new ConsecutiveSequencesBiConstraintCollector<>(resultMap, indexMap);
     }
 
 }

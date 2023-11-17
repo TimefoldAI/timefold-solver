@@ -214,28 +214,7 @@ public class InnerTriConstraintCollectors {
     public static <A, B, C, Result_>
             TriConstraintCollector<A, B, C, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
             consecutive(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
-        return new TriConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result_, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a, Integer::sum, 1, 0);
-            }
-
-            @Override
-            public QuadFunction<ConsecutiveSetTree<Result_, Integer, Integer>, A, B, C, Runnable> accumulator() {
-                return (acc, a, b, c) -> {
-                    Result_ result = resultMap.apply(a, b, c);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
+        return new ConsecutiveSequencesTriConstraintCollector<>(resultMap, indexMap);
     }
 
 }

@@ -14,6 +14,13 @@ import ai.timefold.solver.core.api.score.stream.ConstraintStream;
  * <p>
  * Loosely based on JDK's {@link Collector}, but it returns an undo operation for each accumulation
  * to enable incremental score calculation in {@link ConstraintStream constraint streams}.
+ * <p>
+ * It is recommended that if two constraint collectors implement the same functionality,
+ * they should {@link Object#equals(Object) be equal}.
+ * This may require comparing lambdas and method references for equality,
+ * and in many cases this comparison will be false.
+ * We still ask that you do this on the off chance that the objects are equal,
+ * in which case Constraint Streams can perform some significant runtime performance optimizations.
  *
  * @param <A> the type of the one and only fact of the tuple in the source {@link UniConstraintStream}
  * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)

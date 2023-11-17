@@ -2,22 +2,18 @@ package ai.timefold.solver.core.api.score.stream.tri;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 
 /**
- * Usually created with {@link ConstraintCollectors}.
- * Used by {@link TriConstraintStream#groupBy(TriFunction, TriConstraintCollector)}, ...
- * <p>
- * Loosely based on JDK's {@link Collector}, but it returns an undo operation for each accumulation
- * to enable incremental score calculation in {@link ConstraintStream constraint streams}.
+ * As described by {@link UniConstraintCollector}, only for {@link TriConstraintStream}.
  *
  * @param <A> the type of the first fact of the tuple in the source {@link TriConstraintStream}
  * @param <B> the type of the second fact of the tuple in the source {@link TriConstraintStream}
+ * @param <C> the type of the third fact of the tuple in the source {@link TriConstraintStream}
  * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
  * @param <Result_> the type of the fact of the tuple in the destination {@link ConstraintStream}
  *        It is recommended that this type be deeply immutable.

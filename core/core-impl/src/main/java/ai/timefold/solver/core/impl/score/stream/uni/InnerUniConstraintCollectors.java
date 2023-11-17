@@ -193,30 +193,7 @@ public class InnerUniConstraintCollectors {
 
     public static <A> UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, SequenceChain<A, Integer>>
             consecutive(ToIntFunction<A> indexMap) {
-        return new UniConstraintCollector<>() {
-
-            @Override
-            public Supplier<ConsecutiveSetTree<A, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a,
-                        Integer::sum,
-                        1, 0);
-            }
-
-            @Override
-            public BiFunction<ConsecutiveSetTree<A, Integer, Integer>, A, Runnable> accumulator() {
-                return (acc, a) -> {
-                    Integer value = indexMap.applyAsInt(a);
-                    acc.add(a, value);
-                    return () -> acc.remove(a);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<A, Integer, Integer>, SequenceChain<A, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
+        return new ConsecutiveSequencesUniConstraintCollector<>(indexMap);
     }
 
 }

@@ -2,19 +2,14 @@ package ai.timefold.solver.core.api.score.stream.quad;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 
 /**
- * Usually created with {@link ConstraintCollectors}.
- * Used by {@link QuadConstraintStream#groupBy(QuadFunction, QuadConstraintCollector)}, ...
- * <p>
- * Loosely based on JDK's {@link Collector}, but it returns an undo operation for each accumulation
- * to enable incremental score calculation in {@link ConstraintStream constraint streams}.
+ * As described by {@link UniConstraintCollector}, only for {@link QuadConstraintStream}.
  *
  * @param <A> the type of the first fact of the tuple in the source {@link QuadConstraintStream}
  * @param <B> the type of the second fact of the tuple in the source {@link QuadConstraintStream}
