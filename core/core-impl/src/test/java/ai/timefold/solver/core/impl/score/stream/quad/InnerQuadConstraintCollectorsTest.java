@@ -23,30 +23,26 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
+import ai.timefold.solver.core.impl.score.stream.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Test;
 
-class InnerQuadConstraintCollectorsTest {
+final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollectorsTest {
 
+    @Override
     @Test
-    void countQuad() {
+    public void count() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors.countQuad();
         Object container = collector.supplier().get();
 
@@ -82,8 +78,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countQuadLong() {
+    public void countLong() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Long> collector = countLongQuad();
         Object container = collector.supplier().get();
 
@@ -119,8 +116,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void countDistinctQuad() {
+    public void countDistinct() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors
                 .countDistinct((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -157,8 +155,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countDistinctQuadLong() {
+    public void countDistinctLong() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
                 .countDistinctLong((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -195,8 +194,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumQuad() {
+    public void sum() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors
                 .sum((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -233,8 +233,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void sumQuadLong() {
+    public void sumLong() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
                 .sumLong((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -273,8 +274,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumQuadBigDecimal() {
+    public void sumBigDecimal() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, BigDecimal> collector = ConstraintCollectors
                 .sumBigDecimal((a, b, c, d) -> BigDecimal.valueOf(a + b + c + d));
         Object container = collector.supplier().get();
@@ -311,8 +313,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, BigDecimal.ZERO);
     }
 
+    @Override
     @Test
-    void sumQuadBigInteger() {
+    public void sumBigInteger() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, BigInteger> collector = ConstraintCollectors
                 .sumBigInteger((a, b, c, d) -> BigInteger.valueOf(a + b + c + d));
         Object container = collector.supplier().get();
@@ -349,8 +352,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, BigInteger.ZERO);
     }
 
+    @Override
     @Test
-    void sumQuadDuration() {
+    public void sumDuration() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Duration> collector = ConstraintCollectors
                 .sumDuration((a, b, c, d) -> Duration.ofSeconds(a + b + c + d));
         Object container = collector.supplier().get();
@@ -387,8 +391,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, Duration.ZERO);
     }
 
+    @Override
     @Test
-    void sumQuadPeriod() {
+    public void sumPeriod() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Period> collector = ConstraintCollectors
                 .sumPeriod((a, b, c, d) -> Period.ofDays(a + b + c + d));
         Object container = collector.supplier().get();
@@ -425,8 +430,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, Period.ZERO);
     }
 
+    @Override
     @Test
-    void minComparableQuad() {
+    public void minComparable() {
         /*
          * LocalDateTime is chosen because it doesn't implement Comparable<LocalDateTime>.
          * Rather it implements Comparable<? super LocalDateTime>,
@@ -461,8 +467,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void minNotComparableQuad() {
+    public void minNotComparable() {
         QuadConstraintCollector<String, String, String, String, ?, String> collector = min((a, b, c, d) -> a, o -> o);
         Object container = collector.supplier().get();
 
@@ -490,8 +497,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxComparableQuad() {
+    public void maxComparable() {
         /*
          * LocalDateTime is chosen because it doesn't implement Comparable<LocalDateTime>.
          * Rather it implements Comparable<? super LocalDateTime>,
@@ -526,8 +534,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxNotComparableQuad() {
+    public void maxNotComparable() {
         QuadConstraintCollector<String, String, String, String, ?, String> collector = max((a, b, c, d) -> a, o -> o);
         Object container = collector.supplier().get();
 
@@ -555,8 +564,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageQuad() {
+    public void average() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Double> collector =
                 ConstraintCollectors.average((i, i2, i3, i4) -> i + i2 + i3 + i4);
         Object container = collector.supplier().get();
@@ -585,8 +595,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageQuadLong() {
+    public void averageLong() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Double> collector =
                 ConstraintCollectors.averageLong((i, i2, i3, i4) -> i + i2 + i3 + i4);
         Object container = collector.supplier().get();
@@ -615,8 +626,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageQuadBigDecimal() {
+    public void averageBigDecimal() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigDecimal((i, i2, i3, i4) -> BigDecimal.valueOf(i + i2 + i3 + i4));
         Object container = collector.supplier().get();
@@ -645,8 +657,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageQuadBigInteger() {
+    public void averageBigInteger() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigInteger((i, i2, i3, i4) -> BigInteger.valueOf(i + i2 + i3 + i4));
         Object container = collector.supplier().get();
@@ -675,8 +688,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageQuadDuration() {
+    public void averageDuration() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Duration> collector =
                 ConstraintCollectors.averageDuration((i, i2, i3, i4) -> Duration.ofSeconds(i + i2 + i3 + i4));
         Object container = collector.supplier().get();
@@ -705,8 +719,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void toSetQuad() {
+    public void toSet() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Set<Integer>> collector = ConstraintCollectors
                 .toSet((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -741,8 +756,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptySet());
     }
 
+    @Override
     @Test
-    void toSortedSetQuad() {
+    public void toSortedSet() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, SortedSet<Integer>> collector = ConstraintCollectors
                 .toSortedSet((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -777,8 +793,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptySortedSet());
     }
 
+    @Override
     @Test
-    void toListQuad() {
+    public void toList() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, List<Integer>> collector = ConstraintCollectors
                 .toList((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -813,8 +830,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptyList());
     }
 
+    @Override
     @Test
-    void toMapQuad() {
+    public void toMap() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Map<Integer, Set<Integer>>> collector =
                 ConstraintCollectors.toMap((a, b, c, d) -> a + b + c + d, (a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -843,8 +861,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toMapQuadMerged() {
+    public void toMapMerged() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Map<Integer, Integer>> collector = ConstraintCollectors
                 .toMap((a, b, c, d) -> a + b + c + d, (a, b, c, d) -> a + b + c + d, Integer::sum);
         Object container = collector.supplier().get();
@@ -873,38 +892,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toSortedMapBi() {
-        BiConstraintCollector<Integer, Integer, ?, SortedMap<Integer, Set<Integer>>> collector = ConstraintCollectors
-                .toSortedMap(Integer::sum, Integer::sum);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, emptySortedMap());
-        // Add first value, we have one now.
-        int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue, 0);
-        assertResult(collector, container, asSortedMap(2, singleton(2)));
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, asSortedMap(2, singleton(2), 1, singleton(1)));
-        // Add third value, same as the second. We now have three values, two of which map to the same key.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, asSortedMap(2, singleton(2), 1, singleton(1)));
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, asSortedMap(2, singleton(2), 1, singleton(1)));
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, asSortedMap(2, singleton(2)));
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, emptySortedMap());
-    }
-
-    @Test
-    void toSortedMapQuad() {
+    public void toSortedMap() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, SortedMap<Integer, Set<Integer>>> collector =
                 ConstraintCollectors.toSortedMap((a, b, c, d) -> a + b + c + d, (a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
@@ -933,8 +923,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void toSortedMapQuadMerged() {
+    public void toSortedMapMerged() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, SortedMap<Integer, Integer>> collector =
                 ConstraintCollectors.toSortedMap((a, b, c, d) -> a + b + c + d, (a, b, c, d) -> a + b + c + d, Integer::sum);
         Object container = collector.supplier().get();
@@ -963,8 +954,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void conditionallyQuad() {
+    public void conditionally() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, Object, Integer> collector =
                 ConstraintCollectors.conditionally(
                         (i, i2, i3, i4) -> i < 2,
@@ -995,8 +987,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void compose2Quad() {
+    public void compose2() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Pair<Integer, Integer>> collector =
                 compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
@@ -1027,8 +1020,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, Pair.of(null, null));
     }
 
+    @Override
     @Test
-    void compose3Quad() {
+    public void compose3() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Triple<Integer, Integer, Double>> collector =
                 compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
@@ -1060,8 +1054,9 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, Triple.of(null, null, null));
     }
 
+    @Override
     @Test
-    void compose4Quad() {
+    public void compose4() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countQuad(),
                         min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
@@ -1094,60 +1089,39 @@ class InnerQuadConstraintCollectorsTest {
         assertResult(collector, container, Quadruple.of(0, null, null, null));
     }
 
+    @Override
     @Test
-    void toConsecutiveSequences() {
+    public void toConsecutiveSequences() {
         // Do a basic test w/o edge cases; edge cases are covered in ConsecutiveSetTreeTest
-        var collector = ConstraintCollectors.toConsecutiveSequences(Integer::intValue);
+        var collector = ConstraintCollectors
+                .toConsecutiveSequences((Integer a, Integer b, Integer c, Integer d) -> a + b + c + d, Integer::intValue);
         var container = collector.supplier().get();
         // Add first value, sequence is [2]
         int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResultRecursive(collector, container, consecutiveData(2));
+        Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Add second value, sequence is [1,2]
         int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Add third value, same as the second. Sequence is [{1,1},2}]
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 1, 2));
+        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(1, 1, 2));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(2));
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData());
-    }
-
-    private SequenceChain<Integer, Integer> consecutiveData(Integer... data) {
-        return Arrays.stream(data).collect(
-                () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),
-                (tree, datum) -> tree.add(datum, datum),
-                mergingNotSupported());
-    }
-
-    private static <T> BiConsumer<T, T> mergingNotSupported() {
-        return (a, b) -> {
-            throw new UnsupportedOperationException();
-        };
+        assertResultRecursive(collector, container, buildSequenceChain());
     }
 
     private static <A, B, C, D, Container_, Result_> Runnable accumulate(
             QuadConstraintCollector<A, B, C, D, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC, D valueD) {
         return collector.accumulator().apply((Container_) container, valueA, valueB, valueC, valueD);
-    }
-
-    private static <A, B, Container_, Result_> Runnable accumulate(
-            BiConstraintCollector<A, B, Container_, Result_> collector, Object container, A valueA, B valueB) {
-        return collector.accumulator().apply((Container_) container, valueA, valueB);
-    }
-
-    private static <A, Container_, Result_> Runnable accumulate(
-            UniConstraintCollector<A, Container_, Result_> collector, Object container, A value) {
-        return collector.accumulator().apply((Container_) container, value);
     }
 
     private static <A, B, C, D, Container_, Result_> void assertResult(
@@ -1159,15 +1133,8 @@ class InnerQuadConstraintCollectorsTest {
                 .isEqualTo(expectedResult);
     }
 
-    private static <A, B, Container_, Result_> void assertResult(
-            BiConstraintCollector<A, B, Container_, Result_> collector, Object container, Result_ expectedResult) {
-        Result_ actualResult = collector.finisher().apply((Container_) container);
-        assertThat(actualResult)
-                .as("Collector (" + collector + ") did not produce expected result.")
-                .isEqualTo(expectedResult);
-    }
-
-    private static <A, Container_, Result_> void assertResultRecursive(UniConstraintCollector<A, Container_, Result_> collector,
+    private static <A, B, C, D, Container_, Result_> void assertResultRecursive(
+            QuadConstraintCollector<A, B, C, D, Container_, Result_> collector,
             Object container, Result_ expectedResult) {
         var actualResult = collector.finisher().apply((Container_) container);
         assertThat(actualResult)

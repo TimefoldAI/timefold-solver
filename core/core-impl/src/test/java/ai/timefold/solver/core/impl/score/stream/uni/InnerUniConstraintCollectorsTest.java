@@ -21,32 +21,30 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Period;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
+import ai.timefold.solver.core.impl.score.stream.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Test;
 
-class InnerUniConstraintCollectorsTest {
+final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollectorsTest {
 
+    @Override
     @Test
-    void count() {
+    public void count() {
         UniConstraintCollector<Integer, ?, Integer> collector = ConstraintCollectors.count();
         Object container = collector.supplier().get();
 
@@ -74,8 +72,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countLong() {
+    public void countLong() {
         UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.countLong();
         Object container = collector.supplier().get();
 
@@ -103,8 +102,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void countDistinct() {
+    public void countDistinct() {
         UniConstraintCollector<Integer, ?, Integer> collector = ConstraintCollectors.countDistinct();
         Object container = collector.supplier().get();
 
@@ -132,8 +132,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countDistinctLong() {
+    public void countDistinctLong() {
         UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.countDistinctLong(Function.identity());
         Object container = collector.supplier().get();
 
@@ -161,7 +162,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
-    void sum() {
+    @Override
+    @Test
+    public void sum() {
         UniConstraintCollector<Integer, ?, Integer> collector = ConstraintCollectors.sum(i -> i);
         Object container = collector.supplier().get();
 
@@ -189,8 +192,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void sumLong() {
+    public void sumLong() {
         UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.sumLong(l -> l);
         Object container = collector.supplier().get();
 
@@ -218,8 +222,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumBigDecimal() {
+    public void sumBigDecimal() {
         UniConstraintCollector<BigDecimal, ?, BigDecimal> collector = ConstraintCollectors.sumBigDecimal(l -> l);
         Object container = collector.supplier().get();
 
@@ -247,8 +252,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, BigDecimal.ZERO);
     }
 
+    @Override
     @Test
-    void sumBigInteger() {
+    public void sumBigInteger() {
         UniConstraintCollector<BigInteger, ?, BigInteger> collector = ConstraintCollectors.sumBigInteger(l -> l);
         Object container = collector.supplier().get();
 
@@ -276,8 +282,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, BigInteger.ZERO);
     }
 
+    @Override
     @Test
-    void sumDuration() {
+    public void sumDuration() {
         UniConstraintCollector<Duration, ?, Duration> collector = ConstraintCollectors.sumDuration(l -> l);
         Object container = collector.supplier().get();
 
@@ -305,8 +312,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, Duration.ZERO);
     }
 
+    @Override
     @Test
-    void sumPeriod() {
+    public void sumPeriod() {
         UniConstraintCollector<Period, ?, Period> collector = ConstraintCollectors.sumPeriod(l -> l);
         Object container = collector.supplier().get();
 
@@ -334,8 +342,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, Period.ZERO);
     }
 
+    @Override
     @Test
-    void minComparable() {
+    public void minComparable() {
         UniConstraintCollector<Integer, ?, Integer> collector = min();
         Object container = collector.supplier().get();
 
@@ -363,8 +372,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void minNotComparable() {
+    public void minNotComparable() {
         UniConstraintCollector<Object, ?, Object> collector = min(Function.identity(), o -> (String) o);
         Object container = collector.supplier().get();
 
@@ -392,8 +402,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxComparable() {
+    public void maxComparable() {
         UniConstraintCollector<Integer, ?, Integer> collector = max();
         Object container = collector.supplier().get();
 
@@ -421,8 +432,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxNotComparable() {
+    public void maxNotComparable() {
         UniConstraintCollector<String, ?, String> collector = max(Function.identity(), o -> o);
         Object container = collector.supplier().get();
 
@@ -450,8 +462,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void average() {
+    public void average() {
         UniConstraintCollector<Integer, ?, Double> collector = ConstraintCollectors.average(i -> i);
         Object container = collector.supplier().get();
 
@@ -479,8 +492,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageLong() {
+    public void averageLong() {
         UniConstraintCollector<Integer, ?, Double> collector = ConstraintCollectors.averageLong(i -> i);
         Object container = collector.supplier().get();
 
@@ -508,8 +522,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBigDecimal() {
+    public void averageBigDecimal() {
         UniConstraintCollector<Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigDecimal(i -> BigDecimal.valueOf(i));
         Object container = collector.supplier().get();
@@ -538,8 +553,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBigInteger() {
+    public void averageBigInteger() {
         UniConstraintCollector<Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigInteger(i -> BigInteger.valueOf(i));
         Object container = collector.supplier().get();
@@ -568,8 +584,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageDuration() {
+    public void averageDuration() {
         UniConstraintCollector<Integer, ?, Duration> collector =
                 ConstraintCollectors.averageDuration(i -> Duration.ofSeconds(i));
         Object container = collector.supplier().get();
@@ -598,8 +615,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void toSet() {
+    public void toSet() {
         UniConstraintCollector<Integer, ?, Set<Integer>> collector = ConstraintCollectors.toSet();
         Object container = collector.supplier().get();
 
@@ -627,8 +645,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptySet());
     }
 
+    @Override
     @Test
-    void toSortedSet() {
+    public void toSortedSet() {
         UniConstraintCollector<Integer, ?, SortedSet<Integer>> collector = ConstraintCollectors.toSortedSet();
         Object container = collector.supplier().get();
 
@@ -656,8 +675,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptySortedSet());
     }
 
+    @Override
     @Test
-    void toList() {
+    public void toList() {
         UniConstraintCollector<Integer, ?, List<Integer>> collector = ConstraintCollectors.toList();
         Object container = collector.supplier().get();
 
@@ -685,8 +705,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptyList());
     }
 
+    @Override
     @Test
-    void toMap() {
+    public void toMap() {
         UniConstraintCollector<Integer, ?, Map<Integer, Set<Integer>>> collector = ConstraintCollectors
                 .toMap(Function.identity(), Function.identity());
         Object container = collector.supplier().get();
@@ -715,8 +736,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toMapMerged() {
+    public void toMapMerged() {
         UniConstraintCollector<Integer, ?, Map<Integer, Integer>> collector = ConstraintCollectors.toMap(Function.identity(),
                 Function.identity(), Integer::sum);
         Object container = collector.supplier().get();
@@ -745,8 +767,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toSortedMap() {
+    public void toSortedMap() {
         UniConstraintCollector<Integer, ?, SortedMap<Integer, Set<Integer>>> collector = ConstraintCollectors
                 .toSortedMap(a -> a, Function.identity());
         Object container = collector.supplier().get();
@@ -775,8 +798,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void toSortedMapMerged() {
+    public void toSortedMapMerged() {
         UniConstraintCollector<Integer, ?, SortedMap<Integer, Integer>> collector = ConstraintCollectors.toSortedMap(a -> a,
                 Function.identity(), Integer::sum);
         Object container = collector.supplier().get();
@@ -805,8 +829,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void conditionally() {
+    public void conditionally() {
         UniConstraintCollector<Integer, Object, Integer> collector = ConstraintCollectors.conditionally(
                 (Integer i) -> i > 1,
                 min());
@@ -836,8 +861,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void compose2() {
+    public void compose2() {
         UniConstraintCollector<Integer, ?, Pair<Integer, Integer>> collector =
                 compose(min(i -> i), max(i -> i),
                         (BiFunction<Integer, Integer, Pair<Integer, Integer>>) Pair::of);
@@ -867,8 +893,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, Pair.of(null, null));
     }
 
+    @Override
     @Test
-    void compose3() {
+    public void compose3() {
         UniConstraintCollector<Integer, ?, Triple<Integer, Integer, Double>> collector =
                 compose(min(i -> i), max(i -> i), ConstraintCollectors.average(i -> i),
                         (TriFunction<Integer, Integer, Double, Triple<Integer, Integer, Double>>) Triple::of);
@@ -898,8 +925,9 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, Triple.of(null, null, null));
     }
 
+    @Override
     @Test
-    void compose4() {
+    public void compose4() {
         UniConstraintCollector<Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.count(), min(i -> i), max(i -> i),
                         ConstraintCollectors.average(i -> i),
@@ -930,44 +958,32 @@ class InnerUniConstraintCollectorsTest {
         assertResult(collector, container, Quadruple.of(0, null, null, null));
     }
 
+    @Override
     @Test
-    void toConsecutiveSequences() {
+    public void toConsecutiveSequences() {
         // Do a basic test w/o edge cases; edge cases are covered in ConsecutiveSetTreeTest
         var collector = ConstraintCollectors.toConsecutiveSequences(Integer::intValue);
         var container = collector.supplier().get();
         // Add first value, sequence is [2]
         int firstValue = 2;
         Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResultRecursive(collector, container, consecutiveData(2));
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Add second value, sequence is [1,2]
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Add third value, same as the second. Sequence is [{1,1},2}]
         Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 1, 2));
+        assertResultRecursive(collector, container, buildSequenceChain(1, 1, 2));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(2));
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData());
-    }
-
-    private SequenceChain<Integer, Integer> consecutiveData(Integer... data) {
-        return Arrays.stream(data).collect(
-                () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),
-                (tree, datum) -> tree.add(datum, datum),
-                mergingNotSupported());
-    }
-
-    private static <T> BiConsumer<T, T> mergingNotSupported() {
-        return (a, b) -> {
-            throw new UnsupportedOperationException();
-        };
+        assertResultRecursive(collector, container, buildSequenceChain());
     }
 
     private static <A, Container_, Result_> Runnable accumulate(

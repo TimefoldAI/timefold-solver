@@ -23,30 +23,26 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
+import ai.timefold.solver.core.impl.score.stream.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Test;
 
-class InnerTriConstraintCollectorsTest {
+final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollectorsTest {
 
+    @Override
     @Test
-    void countTri() {
+    public void count() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors.countTri();
         Object container = collector.supplier().get();
 
@@ -78,8 +74,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countTriLong() {
+    public void countLong() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = countLongTri();
         Object container = collector.supplier().get();
 
@@ -111,8 +108,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void countDistinctTri() {
+    public void countDistinct() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors
                 .countDistinct((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -145,8 +143,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countDistinctTriLong() {
+    public void countDistinctLong() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
                 .countDistinctLong((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -179,8 +178,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumTri() {
+    public void sum() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors
                 .sum((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -213,8 +213,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void sumTriLong() {
+    public void sumLong() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
                 .sumLong((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -248,8 +249,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumTriBigDecimal() {
+    public void sumBigDecimal() {
         TriConstraintCollector<Integer, Integer, Integer, ?, BigDecimal> collector = ConstraintCollectors
                 .sumBigDecimal((a, b, c) -> BigDecimal.valueOf(a + b + c));
         Object container = collector.supplier().get();
@@ -282,8 +284,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, BigDecimal.ZERO);
     }
 
+    @Override
     @Test
-    void sumTriBigInteger() {
+    public void sumBigInteger() {
         TriConstraintCollector<Integer, Integer, Integer, ?, BigInteger> collector = ConstraintCollectors
                 .sumBigInteger((a, b, c) -> BigInteger.valueOf(a + b + c));
         Object container = collector.supplier().get();
@@ -316,8 +319,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, BigInteger.ZERO);
     }
 
+    @Override
     @Test
-    void sumTriDuration() {
+    public void sumDuration() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Duration> collector = ConstraintCollectors
                 .sumDuration((a, b, c) -> Duration.ofSeconds(a + b + c));
         Object container = collector.supplier().get();
@@ -350,8 +354,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, Duration.ZERO);
     }
 
+    @Override
     @Test
-    void sumTriPeriod() {
+    public void sumPeriod() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Period> collector = ConstraintCollectors
                 .sumPeriod((a, b, c) -> Period.ofDays(a + b + c));
         Object container = collector.supplier().get();
@@ -384,8 +389,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, Period.ZERO);
     }
 
+    @Override
     @Test
-    void minComparableTri() {
+    public void minComparable() {
         /*
          * LocalDateTime is chosen because it doesn't implement Comparable<LocalDateTime>.
          * Rather it implements Comparable<? super LocalDateTime>,
@@ -420,8 +426,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void minNotComparableTri() {
+    public void minNotComparable() {
         TriConstraintCollector<String, String, String, ?, String> collector = min((a, b, c) -> a, o -> o);
         Object container = collector.supplier().get();
 
@@ -449,8 +456,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxComparableTri() {
+    public void maxComparable() {
         /*
          * LocalDateTime is chosen because it doesn't implement Comparable<LocalDateTime>.
          * Rather it implements Comparable<? super LocalDateTime>,
@@ -485,8 +493,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxNotComparableTri() {
+    public void maxNotComparable() {
         TriConstraintCollector<String, String, String, ?, String> collector = max((a, b, c) -> a, o -> o);
         Object container = collector.supplier().get();
 
@@ -514,8 +523,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageTri() {
+    public void average() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Double> collector =
                 ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3);
         Object container = collector.supplier().get();
@@ -544,8 +554,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageTriLong() {
+    public void averageLong() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Double> collector =
                 ConstraintCollectors.averageLong((i, i2, i3) -> i + i2 + i3);
         Object container = collector.supplier().get();
@@ -574,8 +585,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageTriBigDecimal() {
+    public void averageBigDecimal() {
         TriConstraintCollector<Integer, Integer, Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigDecimal((i, i2, i3) -> BigDecimal.valueOf(i + i2 + i3));
         Object container = collector.supplier().get();
@@ -604,8 +616,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageTriBigInteger() {
+    public void averageBigInteger() {
         TriConstraintCollector<Integer, Integer, Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigInteger((i, i2, i3) -> BigInteger.valueOf(i + i2 + i3));
         Object container = collector.supplier().get();
@@ -634,8 +647,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageTriDuration() {
+    public void averageDuration() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Duration> collector =
                 ConstraintCollectors.averageDuration((i, i2, i3) -> Duration.ofSeconds(i + i2 + i3));
         Object container = collector.supplier().get();
@@ -664,8 +678,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void toSetTri() {
+    public void toSet() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Set<Integer>> collector = ConstraintCollectors
                 .toSet((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -698,8 +713,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptySet());
     }
 
+    @Override
     @Test
-    void toSortedSetTri() {
+    public void toSortedSet() {
         TriConstraintCollector<Integer, Integer, Integer, ?, SortedSet<Integer>> collector = ConstraintCollectors
                 .toSortedSet((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -732,8 +748,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptySortedSet());
     }
 
+    @Override
     @Test
-    void toListTri() {
+    public void toList() {
         TriConstraintCollector<Integer, Integer, Integer, ?, List<Integer>> collector = ConstraintCollectors
                 .toList((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -766,8 +783,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptyList());
     }
 
+    @Override
     @Test
-    void toMapTri() {
+    public void toMap() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Map<Integer, Set<Integer>>> collector = ConstraintCollectors
                 .toMap((a, b, c) -> a + b + c, (a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -796,8 +814,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toMapTriMerged() {
+    public void toMapMerged() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Map<Integer, Integer>> collector = ConstraintCollectors
                 .toMap((a, b, c) -> a + b + c, (a, b, c) -> a + b + c, Integer::sum);
         Object container = collector.supplier().get();
@@ -826,38 +845,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toSortedMapBi() {
-        BiConstraintCollector<Integer, Integer, ?, SortedMap<Integer, Set<Integer>>> collector = ConstraintCollectors
-                .toSortedMap(Integer::sum, Integer::sum);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, emptySortedMap());
-        // Add first value, we have one now.
-        int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue, 0);
-        assertResult(collector, container, asSortedMap(2, singleton(2)));
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, asSortedMap(2, singleton(2), 1, singleton(1)));
-        // Add third value, same as the second. We now have three values, two of which map to the same key.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, asSortedMap(2, singleton(2), 1, singleton(1)));
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, asSortedMap(2, singleton(2), 1, singleton(1)));
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, asSortedMap(2, singleton(2)));
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, emptySortedMap());
-    }
-
-    @Test
-    void toSortedMapTri() {
+    public void toSortedMap() {
         TriConstraintCollector<Integer, Integer, Integer, ?, SortedMap<Integer, Set<Integer>>> collector = ConstraintCollectors
                 .toSortedMap((a, b, c) -> a + b + c, (a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
@@ -886,8 +876,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void toSortedMapTriMerged() {
+    public void toSortedMapMerged() {
         TriConstraintCollector<Integer, Integer, Integer, ?, SortedMap<Integer, Integer>> collector = ConstraintCollectors
                 .toSortedMap((a, b, c) -> a + b + c, (a, b, c) -> a + b + c, Integer::sum);
         Object container = collector.supplier().get();
@@ -916,8 +907,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void conditionallyTri() {
+    public void conditionally() {
         TriConstraintCollector<Integer, Integer, Integer, Object, Integer> collector =
                 ConstraintCollectors.conditionally(
                         (i, i2, i3) -> i < 2,
@@ -948,8 +940,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void compose2Tri() {
+    public void compose2() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Pair<Integer, Integer>> collector =
                 compose(min((i, i2, i3) -> i + i2 + i3, i -> i),
                         max((i, i2, i3) -> i + i2 + i3, i -> i),
@@ -980,8 +973,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, Pair.of(null, null));
     }
 
+    @Override
     @Test
-    void compose3Tri() {
+    public void compose3() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Triple<Integer, Integer, Double>> collector =
                 compose(min((i, i2, i3) -> i + i2 + i3, i -> i),
                         max((i, i2, i3) -> i + i2 + i3, i -> i),
@@ -1013,8 +1007,9 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, Triple.of(null, null, null));
     }
 
+    @Override
     @Test
-    void compose4Tri() {
+    public void compose4() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countTri(),
                         min((i, i2, i3) -> i + i2 + i3, i -> i),
@@ -1047,60 +1042,39 @@ class InnerTriConstraintCollectorsTest {
         assertResult(collector, container, Quadruple.of(0, null, null, null));
     }
 
+    @Override
     @Test
-    void toConsecutiveSequences() {
+    public void toConsecutiveSequences() {
         // Do a basic test w/o edge cases; edge cases are covered in ConsecutiveSetTreeTest
-        var collector = ConstraintCollectors.toConsecutiveSequences(Integer::intValue);
+        var collector =
+                ConstraintCollectors.toConsecutiveSequences((Integer a, Integer b, Integer c) -> a + b + c, Integer::intValue);
         var container = collector.supplier().get();
         // Add first value, sequence is [2]
         int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResultRecursive(collector, container, consecutiveData(2));
+        Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Add second value, sequence is [1,2]
         int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Add third value, same as the second. Sequence is [{1,1},2}]
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 1, 2));
+        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(1, 1, 2));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(2));
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData());
-    }
-
-    private SequenceChain<Integer, Integer> consecutiveData(Integer... data) {
-        return Arrays.stream(data).collect(
-                () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),
-                (tree, datum) -> tree.add(datum, datum),
-                mergingNotSupported());
-    }
-
-    private static <T> BiConsumer<T, T> mergingNotSupported() {
-        return (a, b) -> {
-            throw new UnsupportedOperationException();
-        };
+        assertResultRecursive(collector, container, buildSequenceChain());
     }
 
     private static <A, B, C, Container_, Result_> Runnable accumulate(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC) {
         return collector.accumulator().apply((Container_) container, valueA, valueB, valueC);
-    }
-
-    private static <A, B, Container_, Result_> Runnable accumulate(
-            BiConstraintCollector<A, B, Container_, Result_> collector, Object container, A valueA, B valueB) {
-        return collector.accumulator().apply((Container_) container, valueA, valueB);
-    }
-
-    private static <A, Container_, Result_> Runnable accumulate(
-            UniConstraintCollector<A, Container_, Result_> collector, Object container, A value) {
-        return collector.accumulator().apply((Container_) container, value);
     }
 
     private static <A, B, C, Container_, Result_> void assertResult(
@@ -1111,15 +1085,8 @@ class InnerTriConstraintCollectorsTest {
                 .isEqualTo(expectedResult);
     }
 
-    private static <A, B, Container_, Result_> void assertResult(
-            BiConstraintCollector<A, B, Container_, Result_> collector, Object container, Result_ expectedResult) {
-        Result_ actualResult = collector.finisher().apply((Container_) container);
-        assertThat(actualResult)
-                .as("Collector (" + collector + ") did not produce expected result.")
-                .isEqualTo(expectedResult);
-    }
-
-    private static <A, Container_, Result_> void assertResultRecursive(UniConstraintCollector<A, Container_, Result_> collector,
+    private static <A, B, C, Container_, Result_> void assertResultRecursive(
+            TriConstraintCollector<A, B, C, Container_, Result_> collector,
             Object container, Result_ expectedResult) {
         var actualResult = collector.finisher().apply((Container_) container);
         assertThat(actualResult)

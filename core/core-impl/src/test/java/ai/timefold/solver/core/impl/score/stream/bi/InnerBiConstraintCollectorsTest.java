@@ -23,30 +23,27 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
+import ai.timefold.solver.core.impl.score.stream.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Test;
 
-class InnerBiConstraintCollectorsTest {
+final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectorsTest {
 
+    @Override
     @Test
-    void countBi() {
+    public void count() {
         BiConstraintCollector<Integer, Integer, ?, Integer> collector = ConstraintCollectors.countBi();
         Object container = collector.supplier().get();
 
@@ -76,8 +73,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countBiLong() {
+    public void countLong() {
         BiConstraintCollector<Integer, Integer, ?, Long> collector = countLongBi();
         Object container = collector.supplier().get();
 
@@ -107,8 +105,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void countDistinctBi() {
+    public void countDistinct() {
         BiConstraintCollector<Integer, Integer, ?, Integer> collector = ConstraintCollectors.countDistinct(Integer::sum);
         Object container = collector.supplier().get();
 
@@ -138,8 +137,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void countDistinctBiLong() {
+    public void countDistinctLong() {
         BiConstraintCollector<Integer, Integer, ?, Long> collector = ConstraintCollectors.countDistinctLong(Integer::sum);
         Object container = collector.supplier().get();
 
@@ -169,8 +169,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumBi() {
+    public void sum() {
         BiConstraintCollector<Integer, Integer, ?, Integer> collector = ConstraintCollectors.sum(Integer::sum);
         Object container = collector.supplier().get();
 
@@ -200,8 +201,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, 0);
     }
 
+    @Override
     @Test
-    void sumBiLong() {
+    public void sumLong() {
         BiConstraintCollector<Integer, Integer, ?, Long> collector = ConstraintCollectors.sumLong(Integer::sum);
         Object container = collector.supplier().get();
 
@@ -231,8 +233,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, 0L);
     }
 
+    @Override
     @Test
-    void sumBiBigDecimal() {
+    public void sumBigDecimal() {
         BiConstraintCollector<Integer, Integer, ?, BigDecimal> collector = ConstraintCollectors
                 .sumBigDecimal((a, b) -> BigDecimal.valueOf(a + b));
         Object container = collector.supplier().get();
@@ -263,8 +266,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, BigDecimal.ZERO);
     }
 
+    @Override
     @Test
-    void sumBiBigInteger() {
+    public void sumBigInteger() {
         BiConstraintCollector<Integer, Integer, ?, BigInteger> collector = ConstraintCollectors
                 .sumBigInteger((a, b) -> BigInteger.valueOf(a + b));
         Object container = collector.supplier().get();
@@ -295,8 +299,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, BigInteger.ZERO);
     }
 
+    @Override
     @Test
-    void sumBiDuration() {
+    public void sumDuration() {
         BiConstraintCollector<Integer, Integer, ?, Duration> collector = ConstraintCollectors
                 .sumDuration((a, b) -> Duration.ofSeconds(a + b));
         Object container = collector.supplier().get();
@@ -327,8 +332,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, Duration.ZERO);
     }
 
+    @Override
     @Test
-    void sumBiPeriod() {
+    public void sumPeriod() {
         BiConstraintCollector<Integer, Integer, ?, Period> collector = ConstraintCollectors
                 .sumPeriod((a, b) -> Period.ofDays(a + b));
         Object container = collector.supplier().get();
@@ -359,8 +365,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, Period.ZERO);
     }
 
+    @Override
     @Test
-    void minComparableBi() {
+    public void minComparable() {
         /*
          * LocalDateTime is chosen because it doesn't implement Comparable<LocalDateTime>.
          * Rather it implements Comparable<? super LocalDateTime>,
@@ -395,8 +402,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void minNotComparableBi() {
+    public void minNotComparable() {
         BiConstraintCollector<String, String, ?, String> collector = min((a, b) -> a, o -> o);
         Object container = collector.supplier().get();
 
@@ -424,8 +432,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxComparableBi() {
+    public void maxComparable() {
         /*
          * LocalDateTime is chosen because it doesn't implement Comparable<LocalDateTime>.
          * Rather it implements Comparable<? super LocalDateTime>,
@@ -460,8 +469,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void maxNotComparableBi() {
+    public void maxNotComparable() {
         BiConstraintCollector<String, String, ?, String> collector = max((a, b) -> a, o -> o);
         Object container = collector.supplier().get();
 
@@ -489,8 +499,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBi() {
+    public void average() {
         BiConstraintCollector<Integer, Integer, ?, Double> collector = ConstraintCollectors.average((i, i2) -> i + i2);
         Object container = collector.supplier().get();
 
@@ -518,8 +529,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBiLong() {
+    public void averageLong() {
         BiConstraintCollector<Integer, Integer, ?, Double> collector =
                 ConstraintCollectors.averageLong((i, i2) -> i + i2);
         Object container = collector.supplier().get();
@@ -548,8 +560,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBiBigDecimal() {
+    public void averageBigDecimal() {
         BiConstraintCollector<Integer, Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigDecimal((i, i2) -> BigDecimal.valueOf(i + i2));
         Object container = collector.supplier().get();
@@ -578,8 +591,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBiBigInteger() {
+    public void averageBigInteger() {
         BiConstraintCollector<Integer, Integer, ?, BigDecimal> collector =
                 ConstraintCollectors.averageBigInteger((i, i2) -> BigInteger.valueOf(i + i2));
         Object container = collector.supplier().get();
@@ -608,8 +622,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void averageBiDuration() {
+    public void averageDuration() {
         BiConstraintCollector<Integer, Integer, ?, Duration> collector =
                 ConstraintCollectors.averageDuration((i, i2) -> Duration.ofSeconds(i + i2));
         Object container = collector.supplier().get();
@@ -638,8 +653,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void toSetBi() {
+    public void toSet() {
         BiConstraintCollector<Integer, Integer, ?, Set<Integer>> collector = ConstraintCollectors.toSet(Integer::sum);
         Object container = collector.supplier().get();
 
@@ -669,8 +685,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptySet());
     }
 
+    @Override
     @Test
-    void toSortedSetBi() {
+    public void toSortedSet() {
         BiConstraintCollector<Integer, Integer, ?, SortedSet<Integer>> collector =
                 ConstraintCollectors.toSortedSet((BiFunction<Integer, Integer, Integer>) Integer::sum);
         Object container = collector.supplier().get();
@@ -701,8 +718,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptySortedSet());
     }
 
+    @Override
     @Test
-    void toListBi() {
+    public void toList() {
         BiConstraintCollector<Integer, Integer, ?, List<Integer>> collector = ConstraintCollectors.toList(Integer::sum);
         Object container = collector.supplier().get();
 
@@ -732,8 +750,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptyList());
     }
 
+    @Override
     @Test
-    void toMapBi() {
+    public void toMap() {
         BiConstraintCollector<Integer, Integer, ?, Map<Integer, Set<Integer>>> collector = ConstraintCollectors
                 .toMap(Integer::sum, Integer::sum);
         Object container = collector.supplier().get();
@@ -763,7 +782,7 @@ class InnerBiConstraintCollectorsTest {
     }
 
     @Test
-    void toMapBiDuplicates() { // PLANNER-2271
+    public void toMapDuplicates() { // PLANNER-2271
         BiConstraintCollector<String, Integer, ?, Map<String, Set<Integer>>> collector =
                 ConstraintCollectors.toMap((a, b) -> a, (a, b) -> b);
         Object container = collector.supplier().get();
@@ -792,8 +811,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toMapBiMerged() {
+    public void toMapMerged() {
         BiConstraintCollector<Integer, Integer, ?, Map<Integer, Integer>> collector = ConstraintCollectors.toMap(Integer::sum,
                 Integer::sum, Integer::sum);
         Object container = collector.supplier().get();
@@ -822,8 +842,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptyMap());
     }
 
+    @Override
     @Test
-    void toSortedMapBi() {
+    public void toSortedMap() {
         BiConstraintCollector<Integer, Integer, ?, SortedMap<Integer, Set<Integer>>> collector = ConstraintCollectors
                 .toSortedMap(Integer::sum, Integer::sum);
         Object container = collector.supplier().get();
@@ -852,8 +873,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void toSortedMapBiMerged() {
+    public void toSortedMapMerged() {
         BiConstraintCollector<Integer, Integer, ?, SortedMap<Integer, Integer>> collector = ConstraintCollectors
                 .toSortedMap(Integer::sum, Integer::sum, Integer::sum);
         Object container = collector.supplier().get();
@@ -882,8 +904,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, emptySortedMap());
     }
 
+    @Override
     @Test
-    void conditionallyBi() {
+    public void conditionally() {
         BiConstraintCollector<Integer, Integer, Object, Integer> collector = ConstraintCollectors.conditionally(
                 (i, i2) -> i < 2,
                 max(Integer::sum, i -> i));
@@ -913,8 +936,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, null);
     }
 
+    @Override
     @Test
-    void compose2Bi() {
+    public void compose2() {
         BiConstraintCollector<Integer, Integer, ?, Pair<Integer, Integer>> collector =
                 compose(min(Integer::sum, i -> i),
                         max(Integer::sum, i -> i),
@@ -945,8 +969,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, Pair.of(null, null));
     }
 
+    @Override
     @Test
-    void compose3Bi() {
+    public void compose3() {
         BiConstraintCollector<Integer, Integer, ?, Triple<Integer, Integer, Double>> collector =
                 compose(min(Integer::sum, i -> i),
                         max(Integer::sum, i -> i),
@@ -978,8 +1003,9 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, Triple.of(null, null, null));
     }
 
+    @Override
     @Test
-    void compose4Bi() {
+    public void compose4() {
         BiConstraintCollector<Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countBi(),
                         min(Integer::sum, i -> i),
@@ -1012,54 +1038,37 @@ class InnerBiConstraintCollectorsTest {
         assertResult(collector, container, Quadruple.of(0, null, null, null));
     }
 
+    @Override
     @Test
-    void toConsecutiveSequences() {
+    public void toConsecutiveSequences() {
         // Do a basic test w/o edge cases; edge cases are covered in ConsecutiveSetTreeTest
-        var collector = ConstraintCollectors.toConsecutiveSequences(Integer::intValue);
+        var collector = ConstraintCollectors.toConsecutiveSequences(Integer::sum, Integer::intValue);
         var container = collector.supplier().get();
         // Add first value, sequence is [2]
         int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResultRecursive(collector, container, consecutiveData(2));
+        Runnable firstRetractor = accumulate(collector, container, firstValue, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Add second value, sequence is [1,2]
         int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        Runnable secondRetractor = accumulate(collector, container, secondValue, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Add third value, same as the second. Sequence is [{1,1},2}]
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResultRecursive(collector, container, consecutiveData(1, 1, 2));
+        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0);
+        assertResultRecursive(collector, container, buildSequenceChain(1, 1, 2));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(1, 2));
+        assertResultRecursive(collector, container, buildSequenceChain(1, 2));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData(2));
+        assertResultRecursive(collector, container, buildSequenceChain(2));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResultRecursive(collector, container, consecutiveData());
-    }
-
-    private SequenceChain<Integer, Integer> consecutiveData(Integer... data) {
-        return Arrays.stream(data).collect(
-                () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),
-                (tree, datum) -> tree.add(datum, datum),
-                mergingNotSupported());
-    }
-
-    private static <T> BiConsumer<T, T> mergingNotSupported() {
-        return (a, b) -> {
-            throw new UnsupportedOperationException();
-        };
+        assertResultRecursive(collector, container, buildSequenceChain());
     }
 
     private static <A, B, Container_, Result_> Runnable accumulate(
             BiConstraintCollector<A, B, Container_, Result_> collector, Object container, A valueA, B valueB) {
         return collector.accumulator().apply((Container_) container, valueA, valueB);
-    }
-
-    private static <A, Container_, Result_> Runnable accumulate(
-            UniConstraintCollector<A, Container_, Result_> collector, Object container, A value) {
-        return collector.accumulator().apply((Container_) container, value);
     }
 
     private static <A, B, Container_, Result_> void assertResult(
@@ -1070,7 +1079,8 @@ class InnerBiConstraintCollectorsTest {
                 .isEqualTo(expectedResult);
     }
 
-    private static <A, Container_, Result_> void assertResultRecursive(UniConstraintCollector<A, Container_, Result_> collector,
+    private static <A, B, Container_, Result_> void assertResultRecursive(
+            BiConstraintCollector<A, B, Container_, Result_> collector,
             Object container, Result_ expectedResult) {
         var actualResult = collector.finisher().apply((Container_) container);
         assertThat(actualResult)
