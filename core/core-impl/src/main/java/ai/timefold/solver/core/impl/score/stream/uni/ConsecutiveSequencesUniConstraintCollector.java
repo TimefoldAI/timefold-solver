@@ -9,14 +9,15 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
+import ai.timefold.solver.core.impl.score.stream.SequenceAccumulator;
 
 final class ConsecutiveSequencesUniConstraintCollector<A> implements
         UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, ConstraintCollectors.SequenceChain<A, Integer>> {
 
-    private final ToIntFunction<A> indexMap;
+    private final SequenceAccumulator<A> accumulator;
 
     public ConsecutiveSequencesUniConstraintCollector(ToIntFunction<A> indexMap) {
-        this.indexMap = Objects.requireNonNull(indexMap);
+        this.accumulator = new SequenceAccumulator<>(indexMap);
     }
 
     @Override
@@ -29,11 +30,7 @@ final class ConsecutiveSequencesUniConstraintCollector<A> implements
 
     @Override
     public BiFunction<ConsecutiveSetTree<A, Integer, Integer>, A, Runnable> accumulator() {
-        return (acc, a) -> {
-            Integer value = indexMap.applyAsInt(a);
-            acc.add(a, value);
-            return () -> acc.remove(a);
-        };
+        return accumulator::accumulate;
     }
 
     @Override
@@ -44,14 +41,14 @@ final class ConsecutiveSequencesUniConstraintCollector<A> implements
     @Override
     public boolean equals(Object o) {
         if (o instanceof ConsecutiveSequencesUniConstraintCollector<?> other) {
-            return Objects.equals(indexMap, other.indexMap);
+            return Objects.equals(accumulator, other.accumulator);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return indexMap.hashCode();
+        return accumulator.hashCode();
     }
 
 }

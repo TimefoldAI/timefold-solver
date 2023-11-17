@@ -10,18 +10,19 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
+import ai.timefold.solver.core.impl.score.stream.SequenceAccumulator;
 
 final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
         implements
         QuadConstraintCollector<A, B, C, D, ConsecutiveSetTree<Result_, Integer, Integer>, ConstraintCollectors.SequenceChain<Result_, Integer>> {
 
     private final QuadFunction<A, B, C, D, Result_> resultMap;
-    private final ToIntFunction<Result_> indexMap;
+    private final SequenceAccumulator<Result_> accumulator;
 
     public ConsecutiveSequencesQuadConstraintCollector(QuadFunction<A, B, C, D, Result_> resultMap,
             ToIntFunction<Result_> indexMap) {
         this.resultMap = Objects.requireNonNull(resultMap);
-        this.indexMap = Objects.requireNonNull(indexMap);
+        this.accumulator = new SequenceAccumulator<>(indexMap);
     }
 
     @Override
@@ -35,9 +36,7 @@ final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
     public PentaFunction<ConsecutiveSetTree<Result_, Integer, Integer>, A, B, C, D, Runnable> accumulator() {
         return (acc, a, b, c, d) -> {
             Result_ result = resultMap.apply(a, b, c, d);
-            Integer value = indexMap.applyAsInt(result);
-            acc.add(result, value);
-            return () -> acc.remove(result);
+            return accumulator.accumulate(acc, result);
         };
     }
 
@@ -51,14 +50,14 @@ final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
     public boolean equals(Object o) {
         if (o instanceof ConsecutiveSequencesQuadConstraintCollector<?, ?, ?, ?, ?> other) {
             return Objects.equals(resultMap, other.resultMap)
-                    && Objects.equals(indexMap, other.indexMap);
+                    && Objects.equals(accumulator, other.accumulator);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(resultMap, indexMap);
+        return Objects.hash(resultMap, accumulator);
     }
 
 }
