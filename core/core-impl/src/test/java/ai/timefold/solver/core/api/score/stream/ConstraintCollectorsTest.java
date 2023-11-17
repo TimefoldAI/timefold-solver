@@ -37,12 +37,12 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.impl.ConsecutiveSetTree;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
@@ -3950,7 +3950,7 @@ class ConstraintCollectorsTest {
         assertResultRecursive(collector, container, consecutiveData());
     }
 
-    private ConsecutiveInfo<Integer, Integer> consecutiveData(Integer... data) {
+    private SequenceChain<Integer, Integer> consecutiveData(Integer... data) {
         return Arrays.stream(data).collect(
                 () -> new ConsecutiveSetTree<Integer, Integer, Integer>((a, b) -> b - a, Integer::sum, 1, 0),
                 (tree, datum) -> tree.add(datum, datum),
@@ -4019,8 +4019,8 @@ class ConstraintCollectorsTest {
     }
 
     private static <A, Container_, Result_> void assertResultRecursive(UniConstraintCollector<A, Container_, Result_> collector,
-            Container_ container, Result_ expectedResult) {
-        Result_ actualResult = collector.finisher().apply(container);
+            Object container, Result_ expectedResult) {
+        var actualResult = collector.finisher().apply((Container_) container);
         assertThat(actualResult)
                 .as("Collector (" + collector + ") did not produce expected result.")
                 .usingRecursiveComparison()

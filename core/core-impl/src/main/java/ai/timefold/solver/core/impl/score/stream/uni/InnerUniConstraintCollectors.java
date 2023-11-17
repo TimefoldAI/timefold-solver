@@ -20,7 +20,9 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerUniConstraintCollectors {
@@ -188,4 +190,33 @@ public class InnerUniConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorUniCollector<>(mapper, comparator);
     }
+
+    public static <A> UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, SequenceChain<A, Integer>>
+            consecutive(ToIntFunction<A> indexMap) {
+        return new UniConstraintCollector<>() {
+
+            @Override
+            public Supplier<ConsecutiveSetTree<A, Integer, Integer>> supplier() {
+                return () -> new ConsecutiveSetTree<>(
+                        (Integer a, Integer b) -> b - a,
+                        Integer::sum,
+                        1, 0);
+            }
+
+            @Override
+            public BiFunction<ConsecutiveSetTree<A, Integer, Integer>, A, Runnable> accumulator() {
+                return (acc, a) -> {
+                    Integer value = indexMap.applyAsInt(a);
+                    acc.add(a, value);
+                    return () -> acc.remove(a);
+                };
+            }
+
+            @Override
+            public Function<ConsecutiveSetTree<A, Integer, Integer>, SequenceChain<A, Integer>> finisher() {
+                return tree -> tree;
+            }
+        };
+    }
+
 }

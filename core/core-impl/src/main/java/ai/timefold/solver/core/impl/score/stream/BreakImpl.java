@@ -1,16 +1,16 @@
-package ai.timefold.solver.core.api.score.stream.impl;
+package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.core.api.score.stream.api.Break;
-import ai.timefold.solver.core.api.score.stream.api.Sequence;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Sequence;
 
 final class BreakImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements Break<Value_, Difference_> {
+        implements ConstraintCollectors.Break<Value_, Difference_> {
 
     private final BiFunction<Point_, Point_, Difference_> lengthFunction;
+    private final SequenceImpl<Value_, Point_, Difference_> nextSequence;
     SequenceImpl<Value_, Point_, Difference_> previousSequence;
-    final SequenceImpl<Value_, Point_, Difference_> nextSequence;
     private Difference_ length;
 
     BreakImpl(SequenceImpl<Value_, Point_, Difference_> previousSequence,

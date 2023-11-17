@@ -16,11 +16,14 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntBiFunction;
+import java.util.function.ToIntFunction;
 import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerBiConstraintCollectors {
@@ -200,4 +203,33 @@ public class InnerBiConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorBiCollector<>(mapper, comparator);
     }
+
+    public static <A, B, Result_>
+            BiConstraintCollector<A, B, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
+            consecutive(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return new BiConstraintCollector<>() {
+            @Override
+            public Supplier<ConsecutiveSetTree<Result_, Integer, Integer>> supplier() {
+                return () -> new ConsecutiveSetTree<>(
+                        (Integer a, Integer b) -> b - a,
+                        Integer::sum, 1, 0);
+            }
+
+            @Override
+            public TriFunction<ConsecutiveSetTree<Result_, Integer, Integer>, A, B, Runnable> accumulator() {
+                return (acc, a, b) -> {
+                    Result_ result = resultMap.apply(a, b);
+                    Integer value = indexMap.applyAsInt(result);
+                    acc.add(result, value);
+                    return () -> acc.remove(result);
+                };
+            }
+
+            @Override
+            public Function<ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>> finisher() {
+                return tree -> tree;
+            }
+        };
+    }
+
 }

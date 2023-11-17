@@ -14,13 +14,16 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
+import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerTriConstraintCollectors {
@@ -207,4 +210,32 @@ public class InnerTriConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorTriCollector<>(mapper, comparator);
     }
+
+    public static <A, B, C, Result_>
+            TriConstraintCollector<A, B, C, ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>>
+            consecutive(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return new TriConstraintCollector<>() {
+            @Override
+            public Supplier<ConsecutiveSetTree<Result_, Integer, Integer>> supplier() {
+                return () -> new ConsecutiveSetTree<>(
+                        (Integer a, Integer b) -> b - a, Integer::sum, 1, 0);
+            }
+
+            @Override
+            public QuadFunction<ConsecutiveSetTree<Result_, Integer, Integer>, A, B, C, Runnable> accumulator() {
+                return (acc, a, b, c) -> {
+                    Result_ result = resultMap.apply(a, b, c);
+                    Integer value = indexMap.applyAsInt(result);
+                    acc.add(result, value);
+                    return () -> acc.remove(result);
+                };
+            }
+
+            @Override
+            public Function<ConsecutiveSetTree<Result_, Integer, Integer>, SequenceChain<Result_, Integer>> finisher() {
+                return tree -> tree;
+            }
+        };
+    }
+
 }

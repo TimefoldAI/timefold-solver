@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.score.stream.impl;
+package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,9 +9,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.core.api.score.stream.api.Break;
-import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
-import ai.timefold.solver.core.api.score.stream.api.Sequence;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 
 /**
  * A {@code ConsecutiveSetTree} determines what values are consecutive. A sequence
@@ -27,7 +27,7 @@ import ai.timefold.solver.core.api.score.stream.api.Sequence;
  * @param <Difference_> The type of the difference (examples: int, Duration)
  */
 public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConsecutiveInfo<Value_, Difference_> {
+        implements SequenceChain<Value_, Difference_> {
 
     private final BiFunction<Point_, Point_, Difference_> differenceFunction;
     private final BiFunction<Point_, Point_, Difference_> sequenceLengthFunction;
@@ -55,7 +55,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     // Public API
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Sequence<Value_, Difference_>> getConsecutiveSequences() {
+    public Iterable<ConstraintCollectors.Sequence<Value_, Difference_>> getConsecutiveSequences() {
         return (Iterable) startItemToSequence.values();
     }
 

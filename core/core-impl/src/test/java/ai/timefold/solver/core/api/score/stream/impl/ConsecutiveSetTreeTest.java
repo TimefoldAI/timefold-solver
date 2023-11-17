@@ -14,9 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.api.score.stream.api.Break;
-import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
-import ai.timefold.solver.core.api.score.stream.api.Sequence;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Sequence;
+import ai.timefold.solver.core.impl.score.stream.ConsecutiveSetTree;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,10 +28,12 @@ class ConsecutiveSetTreeTest {
         return new ConsecutiveSetTree<>((a, b) -> b - a, Integer::sum, 1, 0);
     }
 
-    private <ValueType_, DifferenceType_ extends Comparable<DifferenceType_>> Break<ValueType_, DifferenceType_> getBreak(
-            ConsecutiveInfo<ValueType_, DifferenceType_> consecutiveData, ValueType_ start, ValueType_ end,
-            DifferenceType_ length) {
-        for (Break<ValueType_, DifferenceType_> sequenceBreak : consecutiveData.getBreaks()) {
+    private <ValueType_, DifferenceType_ extends Comparable<DifferenceType_>>
+            ConstraintCollectors.Break<ValueType_, DifferenceType_> getBreak(
+                    ConstraintCollectors.SequenceChain<ValueType_, DifferenceType_> consecutiveData, ValueType_ start,
+                    ValueType_ end,
+                    DifferenceType_ length) {
+        for (ConstraintCollectors.Break<ValueType_, DifferenceType_> sequenceBreak : consecutiveData.getBreaks()) {
             if (sequenceBreak.getPreviousSequenceEnd().equals(start) && sequenceBreak.getNextSequenceStart().equals(end)) {
                 return sequenceBreak;
             }
@@ -56,7 +59,7 @@ class ConsecutiveSetTreeTest {
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
         Assertions.assertThat(sequenceList).hasSize(3);
-        IterableList<Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
+        IterableList<ConstraintCollectors.Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
         Assertions.assertThat(breakList).hasSize(2);
 
         assertThat(tree.getConsecutiveSequences()).allMatch(seq -> seq.getCount() == 1);

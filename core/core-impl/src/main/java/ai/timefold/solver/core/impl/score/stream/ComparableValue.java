@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.score.stream.impl;
+package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -29,12 +29,11 @@ record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, 
         }
         Point_ point1 = this.index;
         Point_ point2 = other.index;
-        if (point1 == point2) {
-            return compareWithIdentityHashCode(this.value, other.value);
-        }
-        int comparison = point1.compareTo(point2);
-        if (comparison != 0) {
-            return comparison;
+        if (point1 != point2) {
+            int comparison = point1.compareTo(point2);
+            if (comparison != 0) {
+                return comparison;
+            }
         }
         return compareWithIdentityHashCode(this.value, other.value);
     }

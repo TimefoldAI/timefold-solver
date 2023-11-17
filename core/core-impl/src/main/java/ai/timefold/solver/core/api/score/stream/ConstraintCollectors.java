@@ -21,14 +21,12 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.ToIntBiFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
@@ -37,9 +35,7 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
-import ai.timefold.solver.core.api.score.stream.api.ConsecutiveInfo;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.impl.ConsecutiveSetTree;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
@@ -1833,8 +1829,12 @@ public final class ConstraintCollectors {
                 composeFunction);
     }
 
+    // ************************************************************************
+    // consecutive collectors
+    // ************************************************************************
+
     /**
-     * Creates a constraint collector that returns {@link ConsecutiveInfo} about the first fact.
+     * Creates a constraint collector that returns {@link SequenceChain} about the first fact.
      *
      * For instance, {@code [Shift slot=1] [Shift slot=2] [Shift slot=4] [Shift slot=6]}
      * returns the following information:
@@ -1851,32 +1851,143 @@ public final class ConstraintCollectors {
      * @param <A> type of the first mapped fact
      * @return never null
      */
-    public static <A> UniConstraintCollector<A, ConsecutiveSetTree<A, Integer, Integer>, ConsecutiveInfo<A, Integer>>
-            consecutive(ToIntFunction<A> indexMap) {
-        return new UniConstraintCollector<>() {
+    public static <A> UniConstraintCollector<A, ?, SequenceChain<A, Integer>> consecutive(ToIntFunction<A> indexMap) {
+        return InnerUniConstraintCollectors.consecutive(indexMap);
+    }
 
-            @Override
-            public Supplier<ConsecutiveSetTree<A, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a,
-                        Integer::sum,
-                        1, 0);
-            }
+    /**
+     * Contains info regarding the consecutive sequences and breaks in a collection of points.
+     *
+     * @param <Value_> The type of value in the sequence.
+     * @param <Difference_> The type of difference between values in the sequence.
+     */
+    public interface SequenceChain<Value_, Difference_ extends Comparable<Difference_>> {
+        /**
+         * @return never null; the sequences contained in the collection in ascending order.
+         */
+        Iterable<Sequence<Value_, Difference_>> getConsecutiveSequences();
 
-            @Override
-            public BiFunction<ConsecutiveSetTree<A, Integer, Integer>, A, Runnable> accumulator() {
-                return (acc, a) -> {
-                    Integer value = indexMap.applyAsInt(a);
-                    acc.add(a, value);
-                    return () -> acc.remove(a);
-                };
-            }
+        /**
+         * @return never null; the breaks contained in the collection in ascending order.
+         */
+        Iterable<Break<Value_, Difference_>> getBreaks();
+    }
 
-            @Override
-            public Function<ConsecutiveSetTree<A, Integer, Integer>, ConsecutiveInfo<A, Integer>> finisher() {
-                return tree -> tree;
-            }
+    /**
+     * Represents a series of consecutive values.
+     * For instance, the list [1,2,4,5,6,10] has three sequences: [1,2], [4,5,6], and [10].
+     *
+     * @param <Value_> The type of value in the sequence.
+     * @param <Difference_> The type of difference between values in the sequence.
+     */
+    public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
+        /**
+         * @return never null; the first item in the sequence.
+         */
+        Value_ getFirstItem();
+
+        /**
+         * @return never null; the last item in the sequence.
+         */
+        Value_ getLastItem();
+
+        /**
+         * @return true if and only if this is the first sequence
+         */
+        boolean isFirst();
+
+        /**
+         * @return true if and only if this is the last sequence
+         */
+        boolean isLast();
+
+        /**
+         * @return If this is not the first sequence, the break before it. Otherwise, null.
+         */
+        Break<Value_, Difference_> getPreviousBreak();
+
+        /**
+         * @return If this is not the last sequence, the break after it. Otherwise, null.
+         */
+        Break<Value_, Difference_> getNextBreak();
+
+        /**
+         * @return never null; items in this sequence
+         */
+        Iterable<Value_> getItems();
+
+        /**
+         * @return the number of items in this sequence
+         */
+        int getCount();
+
+        /**
+         * @return never null; the difference between the last item and first item in this sequence
+         */
+        Difference_ getLength();
+    }
+
+    /**
+     * Represents a gap between two {@link ai.timefold.solver.core.api.score.stream.api.Sequence sequences}.
+     * For instance, the list [1,2,4,5,6,10] has a break of length 2 between 2 and 4,
+     * as well as a break of length 4 between 6 and 10.
+     *
+     * @param <Value_> The type of value in the sequence.
+     * @param <Difference_> The type of difference between values in the sequence.
+     */
+    public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
+        /**
+         * @return never null; the sequence leading directly into this
+         */
+        Sequence<Value_, Difference_> getPreviousSequence();
+
+        /**
+         * @return never null; the sequence immediately following this
+         */
+        Sequence<Value_, Difference_> getNextSequence();
+
+        /**
+         * @return true if and only if this is the first break
+         */
+        default boolean isFirst() {
+            return getPreviousSequence().isFirst();
+        }
+
+        /**
+         * @return true if and only if this is the last break
+         */
+        default boolean isLast() {
+            return getNextSequence().isLast();
+        }
+
+        /**
+         * Return the end of the sequence before this break. For the
+         * break between 6 and 10, this will return 6.
+         *
+         * @return never null; the item this break is directly after
+         */
+        default Value_ getPreviousSequenceEnd() {
+            return getPreviousSequence().getLastItem();
         };
+
+        /**
+         * Return the start of the sequence after this break. For the
+         * break between 6 and 10, this will return 10.
+         *
+         * @return never null; the item this break is directly before
+         */
+        default Value_ getNextSequenceStart() {
+            return getNextSequence().getFirstItem();
+        }
+
+        /**
+         * Return the length of the break, which is the difference
+         * between {@link #getNextSequenceStart()} and {@link #getPreviousSequenceEnd()}. For the
+         * break between 6 and 10, this will return 4.
+         *
+         * @return never null; the length of this break
+         */
+        Difference_ getLength();
     }
 
     /**
@@ -1886,35 +1997,12 @@ public final class ConstraintCollectors {
      * @param indexMap Maps the item to its position in the sequence
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
-     * @param <Result> type of item in the sequence
+     * @param <Result_> type of item in the sequence
      * @return never null
      */
-    public static <A, B, Result>
-            BiConstraintCollector<A, B, ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>>
-            consecutive(BiFunction<A, B, Result> resultMap, ToIntFunction<Result> indexMap) {
-        return new BiConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a,
-                        Integer::sum, 1, 0);
-            }
-
-            @Override
-            public TriFunction<ConsecutiveSetTree<Result, Integer, Integer>, A, B, Runnable> accumulator() {
-                return (acc, a, b) -> {
-                    Result result = resultMap.apply(a, b);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
+    public static <A, B, Result_> BiConstraintCollector<A, B, ?, SequenceChain<Result_, Integer>>
+            consecutive(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerBiConstraintCollectors.consecutive(resultMap, indexMap);
     }
 
     /**
@@ -1925,34 +2013,12 @@ public final class ConstraintCollectors {
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
-     * @param <Result> type of item in the sequence
+     * @param <Result_> type of item in the sequence
      * @return never null
      */
-    public static <A, B, C, Result>
-            TriConstraintCollector<A, B, C, ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>>
-            consecutive(TriFunction<A, B, C, Result> resultMap, ToIntFunction<Result> indexMap) {
-        return new TriConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a, Integer::sum, 1, 0);
-            }
-
-            @Override
-            public QuadFunction<ConsecutiveSetTree<Result, Integer, Integer>, A, B, C, Runnable> accumulator() {
-                return (acc, a, b, c) -> {
-                    Result result = resultMap.apply(a, b, c);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
+    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, SequenceChain<Result_, Integer>>
+            consecutive(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerTriConstraintCollectors.consecutive(resultMap, indexMap);
     }
 
     /**
@@ -1964,34 +2030,12 @@ public final class ConstraintCollectors {
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
      * @param <D> type of the fourth mapped fact
-     * @param <Result> type of item in the sequence
+     * @param <Result_> type of item in the sequence
      * @return never null
      */
-    public static <A, B, C, D, Result>
-            QuadConstraintCollector<A, B, C, D, ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>>
-            consecutive(QuadFunction<A, B, C, D, Result> resultMap, ToIntFunction<Result> indexMap) {
-        return new QuadConstraintCollector<>() {
-            @Override
-            public Supplier<ConsecutiveSetTree<Result, Integer, Integer>> supplier() {
-                return () -> new ConsecutiveSetTree<>(
-                        (Integer a, Integer b) -> b - a, Integer::sum, 1, 0);
-            }
-
-            @Override
-            public PentaFunction<ConsecutiveSetTree<Result, Integer, Integer>, A, B, C, D, Runnable> accumulator() {
-                return (acc, a, b, c, d) -> {
-                    Result result = resultMap.apply(a, b, c, d);
-                    Integer value = indexMap.applyAsInt(result);
-                    acc.add(result, value);
-                    return () -> acc.remove(result);
-                };
-            }
-
-            @Override
-            public Function<ConsecutiveSetTree<Result, Integer, Integer>, ConsecutiveInfo<Result, Integer>> finisher() {
-                return tree -> tree;
-            }
-        };
+    public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
+            consecutive(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerQuadConstraintCollectors.consecutive(resultMap, indexMap);
     }
 
     private ConstraintCollectors() {
