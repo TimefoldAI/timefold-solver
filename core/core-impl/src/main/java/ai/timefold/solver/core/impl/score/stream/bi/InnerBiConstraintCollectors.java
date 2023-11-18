@@ -16,11 +16,13 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntBiFunction;
+import java.util.function.ToIntFunction;
 import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
 public class InnerBiConstraintCollectors {
@@ -200,4 +202,16 @@ public class InnerBiConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorBiCollector<>(mapper, comparator);
     }
+
+    public static <A, B, Result_> BiConstraintCollector<A, B, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return new ConsecutiveSequencesBiConstraintCollector<>(resultMap, indexMap);
+    }
+
+    public static <A, B, Intermediate_, Result_> BiConstraintCollector<A, B, ?, Result_>
+            collectAndThen(BiConstraintCollector<A, B, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenBiCollector<>(delegate, mappingFunction);
+    }
+
 }

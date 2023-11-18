@@ -36,6 +36,7 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
@@ -1631,6 +1632,56 @@ public final class ConstraintCollectors {
     }
 
     // ************************************************************************
+    // forwarding collectors
+    // ************************************************************************
+
+    /**
+     * Returns a collector that delegates to the underlying collector
+     * and maps its result to another value.
+     * <p>
+     * This is a better performing alternative to {@code .groupBy(...).map(...)}.
+     *
+     * @param <A> generic type of the tuple variable
+     * @param <Intermediate_> generic type of the delegate's return value
+     * @param <Result_> generic type of the final colector's return value
+     * @param delegate never null, the underlying collector to delegate to
+     * @param mappingFunction never null, maps the result of the underlying collector to another value
+     * @return never null
+     */
+    public static <A, Intermediate_, Result_> UniConstraintCollector<A, ?, Result_>
+            collectAndThen(UniConstraintCollector<A, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerUniConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #collectAndThen(UniConstraintCollector, Function)}.
+     */
+    public static <A, B, Intermediate_, Result_> BiConstraintCollector<A, B, ?, Result_>
+            collectAndThen(BiConstraintCollector<A, B, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerBiConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #collectAndThen(UniConstraintCollector, Function)}.
+     */
+    public static <A, B, C, Intermediate_, Result_> TriConstraintCollector<A, B, C, ?, Result_>
+            collectAndThen(TriConstraintCollector<A, B, C, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerTriConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #collectAndThen(UniConstraintCollector, Function)}.
+     */
+    public static <A, B, C, D, Intermediate_, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_>
+            collectAndThen(QuadConstraintCollector<A, B, C, D, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return InnerQuadConstraintCollectors.collectAndThen(delegate, mappingFunction);
+    }
+
+    // ************************************************************************
     // composite collectors
     // ************************************************************************
 
@@ -1827,6 +1878,81 @@ public final class ConstraintCollectors {
                     QuadFunction<SubResult1_, SubResult2_, SubResult3_, SubResult4_, Result_> composeFunction) {
         return InnerQuadConstraintCollectors.compose(subCollector1, subCollector2, subCollector3, subCollector4,
                 composeFunction);
+    }
+
+    // ************************************************************************
+    // consecutive collectors
+    // ************************************************************************
+
+    /**
+     * Creates a constraint collector that returns {@link SequenceChain} about the first fact.
+     *
+     * For instance, {@code [Shift slot=1] [Shift slot=2] [Shift slot=4] [Shift slot=6]}
+     * returns the following information:
+     *
+     * <pre>
+     * {@code
+     * Consecutive Lengths: 2, 1, 1
+     * Break Lengths: 1, 2
+     * Consecutive Items: [[Shift slot=1] [Shift slot=2]], [[Shift slot=4]], [[Shift slot=6]]
+     * }
+     * </pre>
+     *
+     * @param indexMap Maps the fact to its position in the sequence
+     * @param <A> type of the first mapped fact
+     * @return never null
+     */
+    public static <A> UniConstraintCollector<A, ?, SequenceChain<A, Integer>>
+            toConsecutiveSequences(ToIntFunction<A> indexMap) {
+        return InnerUniConstraintCollectors.toConsecutiveSequences(indexMap);
+    }
+
+    /**
+     * As defined by {@link #toConsecutiveSequences(ToIntFunction)}.
+     *
+     * @param resultMap Maps both facts to an item in the sequence
+     * @param indexMap Maps the item to its position in the sequence
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <Result_> type of item in the sequence
+     * @return never null
+     */
+    public static <A, B, Result_> BiConstraintCollector<A, B, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerBiConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
+    }
+
+    /**
+     * As defined by {@link #toConsecutiveSequences(ToIntFunction)}.
+     *
+     * @param resultMap Maps the three facts to an item in the sequence
+     * @param indexMap Maps the item to its position in the sequence
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <Result_> type of item in the sequence
+     * @return never null
+     */
+    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerTriConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
+    }
+
+    /**
+     * As defined by {@link #toConsecutiveSequences(ToIntFunction)}.
+     *
+     * @param resultMap Maps the four facts to an item in the sequence
+     * @param indexMap Maps the item to its position in the sequence
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <D> type of the fourth mapped fact
+     * @param <Result_> type of item in the sequence
+     * @return never null
+     */
+    public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return InnerQuadConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
     }
 
     private ConstraintCollectors() {

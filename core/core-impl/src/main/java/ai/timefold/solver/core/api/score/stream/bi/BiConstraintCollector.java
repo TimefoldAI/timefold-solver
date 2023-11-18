@@ -1,20 +1,15 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 
 /**
- * Usually created with {@link ConstraintCollectors}.
- * Used by {@link BiConstraintStream#groupBy(BiFunction, BiConstraintCollector)}, ...
- * <p>
- * Loosely based on JDK's {@link Collector}, but it returns an undo operation for each accumulation
- * to enable incremental score calculation in {@link ConstraintStream constraint streams}.
+ * As described by {@link UniConstraintCollector}, only for {@link BiConstraintStream}.
  *
  * @param <A> the type of the first fact of the tuple in the source {@link BiConstraintStream}
  * @param <B> the type of the second fact of the tuple in the source {@link BiConstraintStream}

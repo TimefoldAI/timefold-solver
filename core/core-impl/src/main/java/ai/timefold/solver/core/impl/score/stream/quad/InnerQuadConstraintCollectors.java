@@ -14,12 +14,14 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
@@ -208,4 +210,16 @@ public class InnerQuadConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorQuadCollector<>(mapper, comparator);
     }
+
+    public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return new ConsecutiveSequencesQuadConstraintCollector<>(resultMap, indexMap);
+    }
+
+    public static <A, B, C, D, Intermediate_, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_>
+            collectAndThen(QuadConstraintCollector<A, B, C, D, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenQuadCollector<>(delegate, mappingFunction);
+    }
+
 }

@@ -14,12 +14,14 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
@@ -207,4 +209,16 @@ public class InnerTriConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorTriCollector<>(mapper, comparator);
     }
+
+    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, SequenceChain<Result_, Integer>>
+            toConsecutiveSequences(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
+        return new ConsecutiveSequencesTriConstraintCollector<>(resultMap, indexMap);
+    }
+
+    public static <A, B, C, Intermediate_, Result_> TriConstraintCollector<A, B, C, ?, Result_>
+            collectAndThen(TriConstraintCollector<A, B, C, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenTriCollector<>(delegate, mappingFunction);
+    }
+
 }

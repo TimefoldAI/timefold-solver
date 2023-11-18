@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,25 +9,24 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.examples.common.experimental.api.Break;
-import ai.timefold.solver.examples.common.experimental.api.ConsecutiveInfo;
-import ai.timefold.solver.examples.common.experimental.api.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
 /**
- * A {@code ConsecutiveSetTree} determines what values are consecutive. A sequence
- * <i>x<sub>1</sub>,&nbsp;x<sub>2</sub>,&nbsp;x<sub>3</sub>,&nbsp;...,&nbsp;x<sub>n</sub></i>
+ * A {@code ConsecutiveSetTree} determines what values are consecutive.
+ * A sequence <i>x<sub>1</sub>,&nbsp;x<sub>2</sub>,&nbsp;x<sub>3</sub>,&nbsp;...,&nbsp;x<sub>n</sub></i>
  * is understood to be consecutive by <i>d</i> iff
  * <i>x<sub>2</sub> &minus; x<sub>1</sub> &le; d, x<sub>3</sub> &minus; x<sub>2</sub> &le; d, ..., x<sub>n</sub> &minus;
  * x<sub>n-1</sub> &le; d</i>.
- * This data structure can be thought as an interval tree that maps the point <i>p</i> to
- * the interval <i>[p, p + d]</i>.
+ * This data structure can be thought as an interval tree that maps the point <i>p</i> to the interval <i>[p, p + d]</i>.
  *
  * @param <Value_> The type of value stored (examples: shifts)
  * @param <Point_> The type of the point (examples: int, LocalDateTime)
  * @param <Difference_> The type of the difference (examples: int, Duration)
  */
 public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConsecutiveInfo<Value_, Difference_> {
+        implements SequenceChain<Value_, Difference_> {
 
     private final BiFunction<Point_, Point_, Difference_> differenceFunction;
     private final BiFunction<Point_, Point_, Difference_> sequenceLengthFunction;
@@ -63,6 +62,38 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     @Override
     public Iterable<Break<Value_, Difference_>> getBreaks() {
         return (Iterable) startItemToPreviousBreak.values();
+    }
+
+    @Override
+    public Sequence<Value_, Difference_> getFirstSequence() {
+        if (startItemToSequence.isEmpty()) {
+            return null;
+        }
+        return startItemToSequence.firstEntry().getValue();
+    }
+
+    @Override
+    public Sequence<Value_, Difference_> getLastSequence() {
+        if (startItemToSequence.isEmpty()) {
+            return null;
+        }
+        return startItemToSequence.lastEntry().getValue();
+    }
+
+    @Override
+    public Break<Value_, Difference_> getFirstBreak() {
+        if (startItemToSequence.size() <= 1) {
+            return null;
+        }
+        return startItemToPreviousBreak.firstEntry().getValue();
+    }
+
+    @Override
+    public Break<Value_, Difference_> getLastBreak() {
+        if (startItemToSequence.size() <= 1) {
+            return null;
+        }
+        return startItemToPreviousBreak.lastEntry().getValue();
     }
 
     public boolean add(Value_ value, Point_ valueIndex) {

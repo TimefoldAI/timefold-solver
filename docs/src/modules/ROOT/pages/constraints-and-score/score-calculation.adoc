@@ -514,6 +514,7 @@ which is processed differently and does not suffer from this issue:
         ))
 ----
 
+
 [#constraintStreamsGroupingAndCollectors]
 === Grouping and collectors
 
@@ -539,18 +540,18 @@ every computer whose processes consume more power than is available.
 
 [source,java,options="nowrap"]
 ----
-    import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.*;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.*;
 
-    ...
+...
 
-    private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class)
-                .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
-                .filter((computer, requiredCpuPower) -> requiredCpuPower > computer.getCpuPower())
-                .penalize(HardSoftScore.ONE_HARD,
-                        (computer, requiredCpuPower) -> requiredCpuPower - computer.getCpuPower())
-                .asConstraint("requiredCpuPowerTotal");
-    }
+private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(CloudProcess.class)
+            .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
+            .filter((computer, requiredCpuPower) -> requiredCpuPower > computer.getCpuPower())
+            .penalize(HardSoftScore.ONE_HARD,
+                    (computer, requiredCpuPower) -> requiredCpuPower - computer.getCpuPower())
+            .asConstraint("requiredCpuPowerTotal");
+}
 ----
 
 [NOTE]
@@ -560,25 +561,14 @@ In the previous example, `filter()` and all subsequent operations no longer have
 `CloudProcess` instance.
 ====
 
-There are several collectors available out of the box. You can also provide your own collectors by implementing the
-`ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector` interface, or its `Bi...`, `Tri...` and `Quad...` counterparts.
-
-
-[#collectorsOutOfTheBox]
-==== Out-of-the-box collectors
-
-The following collectors are provided out of the box:
-
-* <<collectorsCount,`count()`>>
-* <<collectorsCountDistinct,`countDistinct()`>>
-* <<collectorsSum,`sum()`>>
-* <<collectorsAverage,`average()`>>
-* <<collectorsMinMax,`min()` and `max()`>>
-* <<collectorsCollection,`toList()`, `toSet()` and `toMap()`>>
+There are many collectors available out of the box.
+You can also provide your own collectors by implementing the
+`ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector` interface,
+or its `Bi...`, `Tri...` and `Quad...` counterparts.
 
 
 [#collectorsCount]
-===== `count()` collector
+==== `count()` collector
 
 The `ConstraintCollectors.count(...)` counts all elements per group. For example, the following use of the collector
 gives a number of items for two separate groups - one where the talks have unavailable speakers, and one where they
@@ -586,13 +576,13 @@ don't.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint speakerAvailability(ConstraintFactory factory) {
-        return factory.forEach(Talk.class)
-                .groupBy(Talk::hasAnyUnavailableSpeaker, count())
-                .penalize(HardSoftScore.ONE_HARD,
-                        (hasUnavailableSpeaker, count) -> ...)
-                .asConstraint("speakerAvailability");
-    }
+private Constraint speakerAvailability(ConstraintFactory factory) {
+    return factory.forEach(Talk.class)
+            .groupBy(Talk::hasAnyUnavailableSpeaker, count())
+            .penalize(HardSoftScore.ONE_HARD,
+                    (hasUnavailableSpeaker, count) -> ...)
+            .asConstraint("speakerAvailability");
+}
 ----
 
 The count is collected in an `int`. Variants of this collector:
@@ -602,21 +592,22 @@ The count is collected in an `int`. Variants of this collector:
 To count a bi, tri or quad stream, use `countBi()`, `countTri()` or `countQuad()` respectively,
 because - unlike the other built-in collectors - they aren't overloaded methods due to Java's generics erasure.
 
+
 [#collectorsCountDistinct]
-===== `countDistinct()` collector
+==== `countDistinct()` collector
 
 The `ConstraintCollectors.countDistinct(...)` counts any element per group once, regardless of how many times it
 occurs. For example, the following use of the collector gives a number of talks in each unique room.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint roomCount(ConstraintFactory factory) {
-        return factory.forEach(Talk.class)
-                .groupBy(Talk::getRoom, countDistinct())
-                .penalize(HardSoftScore.ONE_SOFT,
-                        (room, count) -> ...)
-                .asConstraint("roomCount");
-    }
+private Constraint roomCount(ConstraintFactory factory) {
+    return factory.forEach(Talk.class)
+            .groupBy(Talk::getRoom, countDistinct())
+            .penalize(HardSoftScore.ONE_SOFT,
+                    (room, count) -> ...)
+            .asConstraint("roomCount");
+}
 ----
 
 The distinct count is collected in an `int`. Variants of this collector:
@@ -625,7 +616,7 @@ The distinct count is collected in an `int`. Variants of this collector:
 
 
 [#collectorsSum]
-===== `sum()` collector
+==== `sum()` collector
 
 To sum the values of a particular property of all elements per group, use the `ConstraintCollectors.sum(...)`
 collector. The following code snippet first groups all processes by the computer they run on and sums up all the power
@@ -633,13 +624,13 @@ required by the processes on that computer using the `ConstraintCollectors.sum(.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class)
-                .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
-                .penalize(HardSoftScore.ONE_SOFT,
-                        (computer, requiredCpuPower) -> requiredCpuPower)
-                .asConstraint("requiredCpuPowerTotal");
-    }
+private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(CloudProcess.class)
+            .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
+            .penalize(HardSoftScore.ONE_SOFT,
+                    (computer, requiredCpuPower) -> requiredCpuPower)
+            .asConstraint("requiredCpuPowerTotal");
+}
 ----
 
 The sum is collected in an `int`. Variants of this collector:
@@ -653,7 +644,7 @@ The sum is collected in an `int`. Variants of this collector:
 
 
 [#collectorsAverage]
-===== `average()` collector
+==== `average()` collector
 
 To calculate the average of a particular property of all elements per group, use the `ConstraintCollectors.average(...)`
 collector.
@@ -662,13 +653,13 @@ required by the processes on that computer using the `ConstraintCollectors.avera
 
 [source,java,options="nowrap"]
 ----
-    private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class)
-                .groupBy(CloudProcess::getComputer, average(CloudProcess::getRequiredCpuPower))
-                .penalize(HardSoftScore.ONE_SOFT,
-                        (computer, averageCpuPower) -> averageCpuPower)
-                .asConstraint("averageCpuPower");
-    }
+private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(CloudProcess.class)
+            .groupBy(CloudProcess::getComputer, average(CloudProcess::getRequiredCpuPower))
+            .penalize(HardSoftScore.ONE_SOFT,
+                    (computer, averageCpuPower) -> averageCpuPower)
+            .asConstraint("averageCpuPower");
+}
 ----
 
 The average is collected as a `double`, and the average of no elements is `null`.
@@ -681,7 +672,7 @@ Variants of this collector:
 
 
 [#collectorsMinMax]
-===== `min()` and `max()` collectors
+==== `min()` and `max()` collectors
 
 To extract the minimum or maximum per group, use the `ConstraintCollectors.min(...)` and
 `ConstraintCollectors.max(...)` collectors respectively.
@@ -693,13 +684,13 @@ The following example finds a computer which runs the most power-demanding proce
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class)
-                .groupBy(CloudProcess::getComputer, max(CloudProcess::getRequiredCpuPower))
-                .penalize(HardSoftScore.ONE_HARD,
-                        (computer, biggestProcess) -> ...)
-                .asConstraint("computerWithBiggestProcess");
-    }
+private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(CloudProcess.class)
+            .groupBy(CloudProcess::getComputer, max(CloudProcess::getRequiredCpuPower))
+            .penalize(HardSoftScore.ONE_HARD,
+                    (computer, biggestProcess) -> ...)
+            .asConstraint("computerWithBiggestProcess");
+}
 ----
 
 [NOTE]
@@ -711,7 +702,7 @@ See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Compa
 
 
 [#collectorsCollection]
-===== `toList()`, `toSet()` and `toMap()` collectors
+==== `toList()`, `toSet()` and `toMap()` collectors
 
 To extract all elements per group into a collection, use the `ConstraintCollectors.toList(...)`.
 
@@ -719,13 +710,13 @@ The following example retrieves all processes running on a computer in a `List`:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class)
-                .groupBy(CloudProcess::getComputer, toList())
-                .penalize(HardSoftScore.ONE_HARD,
-                        (computer, processList) -> ...)
-                .asConstraint("computerAndItsProcesses");
-    }
+private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(CloudProcess.class)
+            .groupBy(CloudProcess::getComputer, toList())
+            .penalize(HardSoftScore.ONE_HARD,
+                    (computer, processList) -> ...)
+            .asConstraint("computerAndItsProcesses");
+}
 ----
 
 Variants of this collector:
@@ -742,9 +733,85 @@ The iteration order of elements in the resulting collection is not guaranteed to
 unless it is a sorted collector such as `toSortedSet` or `toSortedMap`.
 ====
 
+[NOTE]
+====
+Collecting elements into a `Collection` negates benefits of
+xref:performance.adoc#incrementalScoreCalculation[incremental score calculation],
+as all operations on the resulting `Collection` will no longer be incremental.
+If performance is a concern, avoid these collectors.
+====
+
+
+[#collectorsConsecutive]
+==== Consecutive collectors
+
+Certain constraints, such as maximum consecutive working days for an employee,
+require ordering those shifts in sequences and penalizing sequences exceeding a certain threshold.
+If those sequences can be of arbitrary length unknown at the time of writing the constraints,
+you can implement this pattern using the `ConstraintCollectors.consecutive(...)` collector:
+
+[source,java,options="nowrap"]
+----
+Constraint consecutiveWorkingDays(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(MinMaxContractLine.class)
+        .filter(minMaxContractLine ->
+                minMaxContractLine.getContractLineType() == ContractLineType.CONSECUTIVE_WORKING_DAYS
+                        && minMaxContractLine.isEnabled())
+        .join(ShiftAssignment.class,
+                Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
+        .groupBy((contract, shift) -> shift.getEmployee(),
+                (contract, shift) -> contract,
+                ConstraintCollectors.toConsecutiveSequences(
+                        (contract, shift) -> shift.getShiftDate(),
+                        ShiftDate::getDayIndex))
+        .flattenLast(SequenceChain::getConsecutiveSequences)
+        .map((employee, contract, shiftList) -> employee,
+                (employee, contract, shiftList) -> contract,
+                (employee, contract, shiftList) -> contract.getViolationAmount(shiftList.getLength()))
+        .filter((contract, employee, violationAmount) -> violationAmount != 0)
+        .penalize(HardSoftScore.ONE_SOFT,
+                (contract, employee, violationAmount) -> violationAmount)
+        .indictWith((contract, employee, violationAmount) -> Arrays.asList(employee, contract))
+        .asConstraint("consecutiveWorkingDays");
+}
+----
+
+Let's take a closer look at the crucial part of this constraint:
+
+[source,java,options="nowrap"]
+----
+.groupBy((contract, shift) -> shift.getEmployee(),
+        (contract, shift) -> contract,
+        ConstraintCollectors.toConsecutiveSequences(
+                (contract, shift) -> shift.getShiftDate(),
+                ShiftDate::getDayIndex))
+.flattenLast(SequenceChain::getConsecutiveSequences)
+.map((employee, contract, shiftList) -> employee,
+        (employee, contract, shiftList) -> contract,
+        (employee, contract, shiftList) -> contract.getViolationAmount(shiftList.getLength()))
+.filter((contract, employee, violationAmount) -> violationAmount != 0)
+----
+
+The `groupBy()` building block groups all shifts by employee and contract,
+and for every such pair it creates a `SequenceChain` instance.
+The shifts will be put into sequence by their date,
+and the day index will be used to identify consecutive sequences and breaks between them.
+Imagine the collector putting each shift on a number line,
+where the number is the day index of the shift.
+
+The `SequenceChain` then has several useful methods to not only get the list of shifts,
+but also to get any and all breaks between those shifts.
+In this case, we are only interested in the sequences of shifts themselves,
+and we use <<constraintStreamsFlattening,flattening>> to convert each to its own tuple.
+
+Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the violation amount for each sequence.
+For example, if the contract says that an employee can work at most 5 consecutive days,
+and `shiftList` contains 6 shifts, then `violationAmount` will be `1`.
+If the amount is `0`, then the sequence is not violating the contract and we can filter it out.
+
 
 [#collectorsConditional]
-===== Conditional collectors
+==== Conditional collectors
 
 The constraint collector framework enables you to create constraint collectors which will only collect in certain circumstances.
 This is achieved using the `ConstraintCollectors.conditionally(...)` constraint collector.
@@ -755,16 +822,16 @@ excluding processes which are not long-running:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithLongRunningProcesses(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class)
-                .groupBy(CloudProcess::getComputer, conditionally(
-                        CloudProcess::isLongRunning,
-                        count()
-                ))
-                .penalize(HardSoftScore.ONE_HARD,
-                        (computer, longRunningProcessCount) -> ...)
-                .asConstraint("longRunningProcesses");
-    }
+private Constraint computerWithLongRunningProcesses(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(CloudProcess.class)
+            .groupBy(CloudProcess::getComputer, conditionally(
+                    CloudProcess::isLongRunning,
+                    count()
+            ))
+            .penalize(HardSoftScore.ONE_HARD,
+                    (computer, longRunningProcessCount) -> ...)
+            .asConstraint("longRunningProcesses");
+}
 ----
 
 This is useful in situations where multiple collectors are used and only some of them need to be restricted.
@@ -785,15 +852,15 @@ using the <<collectorsCount,`count` constraint collector>> and <<collectorsSum,`
 
 [source,java,options="nowrap"]
 ----
-    public static <A> UniConstraintCollector<A, ?, Double>
-        average(ToIntFunction<A> groupValueMapping) {
-            return compose(count(), sum(groupValueMapping), (count, sum) -> {
-                if (count == 0) {
-                    return null;
-                } else {
-                    return sum / (double) count;
-                }
-            });
+<A> UniConstraintCollector<A, ?, Double>
+    average(ToIntFunction<A> groupValueMapping) {
+        return compose(count(), sum(groupValueMapping), (count, sum) -> {
+            if (count == 0) {
+                return null;
+            } else {
+                return sum / (double) count;
+            }
+        });
     }
 ----
 
@@ -802,12 +869,11 @@ and use as many as 4 collectors in your <<constraintStreamsGroupingAndCollectors
 
 [source,java,options="nowrap"]
 ----
-    UniConstraintCollector<A, ?, Triple<Integer, Integer, Integer>> collector =
-        compose(count(),
-                min(),
-                max(),
-                (count, min, max) -> Triple.of(count, min, max));
-    }
+UniConstraintCollector<A, ?, Triple<Integer, Integer, Integer>> collector =
+    compose(count(),
+            min(),
+            max(),
+            (count, min, max) -> Triple.of(count, min, max));
 ----
 
 Such a composite collector returns a `Triple` instance which allows you to access
@@ -817,6 +883,29 @@ each of the sub collectors individually.
 ====
 Timefold Solver does not provide any `Pair`, `Triple` or `Quadruple` implementation out of the box.
 ====
+
+
+[#collectorsAdjusting]
+==== Adjusting results
+
+In some cases, you may want to adjust the result that a constraint collector produces.
+Consider the <<collectorsAverage,`average()` constraint collector>>:
+
+[source,java,options="nowrap"]
+----
+ConstraintCollectors.average(...)
+----
+
+This collector returns `double` values, which may not be suitable for your use case.
+For example, you may want to round the result to the nearest integer.
+To do this, you can use the `ConstraintCollectors.collectAndThen(...)` collector:
+
+[source,java,options="nowrap"]
+----
+ConstraintCollectors.collectAndThen(
+    ConstraintCollectors.average(...),
+    doubleValue -> (int) Math.round(doubleValue))
+----
 
 
 [#constraintStreamsConditionalPropagation]

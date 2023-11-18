@@ -20,6 +20,7 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.ReferenceAverageCalculator;
 
@@ -188,4 +189,16 @@ public class InnerUniConstraintCollectors {
             Comparator<? super Mapped_> comparator) {
         return new ToSortedSetComparatorUniCollector<>(mapper, comparator);
     }
+
+    public static <A> UniConstraintCollector<A, ?, SequenceChain<A, Integer>>
+            toConsecutiveSequences(ToIntFunction<A> indexMap) {
+        return new ConsecutiveSequencesUniConstraintCollector<>(indexMap);
+    }
+
+    public static <A, Intermediate_, Result_> UniConstraintCollector<A, ?, Result_>
+            collectAndThen(UniConstraintCollector<A, ?, Intermediate_> delegate,
+                    Function<Intermediate_, Result_> mappingFunction) {
+        return new AndThenUniCollector<>(delegate, mappingFunction);
+    }
+
 }
