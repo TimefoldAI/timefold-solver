@@ -15,39 +15,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Sequence;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.CONCURRENT)
 class ConsecutiveSetTreeTest {
-
-    private ConsecutiveSetTree<AtomicInteger, Integer, Integer> getIntegerConsecutiveSetTree() {
-        return new ConsecutiveSetTree<>((a, b) -> b - a, Integer::sum, 1, 0);
-    }
-
-    private <ValueType_, DifferenceType_ extends Comparable<DifferenceType_>>
-            ConstraintCollectors.Break<ValueType_, DifferenceType_> getBreak(
-                    ConstraintCollectors.SequenceChain<ValueType_, DifferenceType_> consecutiveData, ValueType_ start,
-                    ValueType_ end,
-                    DifferenceType_ length) {
-        for (ConstraintCollectors.Break<ValueType_, DifferenceType_> sequenceBreak : consecutiveData.getBreaks()) {
-            if (sequenceBreak.getPreviousSequenceEnd().equals(start) && sequenceBreak.getNextSequenceStart().equals(end)) {
-                return sequenceBreak;
-            }
-        }
-        throw new IllegalStateException("Unable to find sequence with start (" + start + ") and end (" + end + ") in ("
-                + consecutiveData.getConsecutiveSequences() + ")");
-    }
-
-    private static AtomicInteger atomic(int value) {
-        return new AtomicInteger(value);
-    }
 
     @Test
     void testNonconsecutiveNumbers() {
@@ -101,13 +78,13 @@ class ConsecutiveSetTreeTest {
         tree.add(atomic(8), 8);
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
-        Assertions.assertThat(sequenceList).hasSize(2);
+        assertThat(sequenceList).hasSize(2);
         IterableList<Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
-        Assertions.assertThat(breakList).hasSize(1);
+        assertThat(breakList).hasSize(1);
 
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
         assertThat(sequenceList.get(1).getCount()).isEqualTo(4);
-        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, breakStart3, breakEnd5, 2));
+        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, breakStart3, breakEnd5));
     }
 
     @Test
@@ -145,17 +122,17 @@ class ConsecutiveSetTreeTest {
         duplicateValue.set(0); // mimic the constraint collector changing a planning variable
 
         tree.remove(duplicateValue);
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        Assertions.assertThat(breakList).hasSize(0);
+        assertThat(breakList).hasSize(0);
 
         tree.remove(duplicateValue);
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        Assertions.assertThat(breakList).hasSize(0);
+        assertThat(breakList).hasSize(0);
 
         tree.remove(duplicateValue);
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(2);
         assertThat(tree.getBreaks()).hasSize(0);
     }
@@ -176,13 +153,13 @@ class ConsecutiveSetTreeTest {
         tree.add(breakEnd5, 5);
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
-        Assertions.assertThat(sequenceList).hasSize(2);
+        assertThat(sequenceList).hasSize(2);
         IterableList<Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
-        Assertions.assertThat(breakList).hasSize(1);
+        assertThat(breakList).hasSize(1);
 
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
         assertThat(sequenceList.get(1).getCount()).isEqualTo(4);
-        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, breakStart3, breakEnd5, 2));
+        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, breakStart3, breakEnd5));
     }
 
     @Test
@@ -201,7 +178,7 @@ class ConsecutiveSetTreeTest {
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
 
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(8);
         assertThat(tree.getBreaks()).hasSize(0);
     }
@@ -225,15 +202,15 @@ class ConsecutiveSetTreeTest {
         tree.remove(removed4);
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
-        Assertions.assertThat(sequenceList).hasSize(2);
+        assertThat(sequenceList).hasSize(2);
         IterableList<Break<AtomicInteger, Integer>> breakList = new IterableList<>(tree.getBreaks());
-        Assertions.assertThat(breakList).hasSize(1);
+        assertThat(breakList).hasSize(1);
 
-        Assertions.assertThat(sequenceList).hasSize(2);
+        assertThat(sequenceList).hasSize(2);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
         assertThat(sequenceList.get(1).getCount()).isEqualTo(3);
-        Assertions.assertThat(breakList).hasSize(1);
-        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, breakStart3, breakEnd5, 2));
+        assertThat(breakList).hasSize(1);
+        assertThat(breakList.get(0)).usingRecursiveComparison().isEqualTo(getBreak(tree, breakStart3, breakEnd5));
     }
 
     @Test
@@ -261,7 +238,7 @@ class ConsecutiveSetTreeTest {
         tree.remove(removed3);
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
 
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
         assertThat(tree.getBreaks()).hasSize(0);
@@ -288,7 +265,7 @@ class ConsecutiveSetTreeTest {
 
         IterableList<Sequence<AtomicInteger, Integer>> sequenceList = new IterableList<>(tree.getConsecutiveSequences());
 
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(6);
         assertThat(tree.getBreaks()).hasSize(0);
 
@@ -296,7 +273,7 @@ class ConsecutiveSetTreeTest {
         start.set(3);
 
         tree.remove(start);
-        Assertions.assertThat(sequenceList).hasSize(1);
+        assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(5);
         assertThat(tree.getBreaks()).hasSize(0);
     }
@@ -383,16 +360,6 @@ class ConsecutiveSetTreeTest {
         }
     }
 
-    private static class Timeslot {
-        OffsetDateTime from;
-        OffsetDateTime to;
-
-        public Timeslot(int fromIndex, int toIndex) {
-            from = OffsetDateTime.of(2000, 1, fromIndex + 1, 0, 0, 0, 0, ZoneOffset.UTC);
-            to = OffsetDateTime.of(2000, 1, toIndex + 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        }
-    }
-
     @Test
     void testTimeslotConsecutive() {
         ConsecutiveSetTree<Timeslot, OffsetDateTime, Duration> tree = new ConsecutiveSetTree<>(
@@ -425,6 +392,34 @@ class ConsecutiveSetTreeTest {
 
         assertThat(breakList).hasSize(1);
         assertThat(breakIterator.next()).usingRecursiveComparison()
-                .isEqualTo(getBreak(tree, t2, t3, Duration.ofDays(2)));
+                .isEqualTo(getBreak(tree, t2, t3));
     }
+
+    private ConsecutiveSetTree<AtomicInteger, Integer, Integer> getIntegerConsecutiveSetTree() {
+        return new ConsecutiveSetTree<>((a, b) -> b - a, Integer::sum, 1, 0);
+    }
+
+    private <ValueType_, DifferenceType_ extends Comparable<DifferenceType_>> Break<ValueType_, DifferenceType_>
+            getBreak(SequenceChain<ValueType_, DifferenceType_> consecutiveData, ValueType_ start, ValueType_ end) {
+        for (var sequenceBreak : consecutiveData.getBreaks()) {
+            if (sequenceBreak.getPreviousSequenceEnd().equals(start) && sequenceBreak.getNextSequenceStart().equals(end)) {
+                return sequenceBreak;
+            }
+        }
+        throw new IllegalStateException("Unable to find sequence with start (" + start + ") and end (" + end + ") in ("
+                + consecutiveData.getConsecutiveSequences() + ")");
+    }
+
+    private static AtomicInteger atomic(int value) {
+        return new AtomicInteger(value);
+    }
+
+    private record Timeslot(OffsetDateTime from, OffsetDateTime to) {
+        public Timeslot(int fromIndex, int toIndex) {
+            this(OffsetDateTime.of(2000, 1, fromIndex + 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                    OffsetDateTime.of(2000, 1, toIndex + 1, 0, 0, 0, 0, ZoneOffset.UTC));
+        }
+
+    }
+
 }
