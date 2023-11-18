@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.SequenceCalculator;
 
 final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>

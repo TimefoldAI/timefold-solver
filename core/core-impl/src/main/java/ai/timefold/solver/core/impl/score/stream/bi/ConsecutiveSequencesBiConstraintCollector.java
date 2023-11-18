@@ -5,7 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.SequenceCalculator;
 
 final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>

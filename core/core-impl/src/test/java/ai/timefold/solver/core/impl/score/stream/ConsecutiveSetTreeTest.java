@@ -15,9 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Sequence;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;

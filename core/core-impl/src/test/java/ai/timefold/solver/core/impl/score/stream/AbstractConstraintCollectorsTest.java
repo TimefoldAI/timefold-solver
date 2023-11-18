@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
 import org.junit.jupiter.api.Test;
 

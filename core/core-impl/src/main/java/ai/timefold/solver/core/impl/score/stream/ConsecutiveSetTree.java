@@ -9,18 +9,17 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.SequenceChain;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
 /**
- * A {@code ConsecutiveSetTree} determines what values are consecutive. A sequence
- * <i>x<sub>1</sub>,&nbsp;x<sub>2</sub>,&nbsp;x<sub>3</sub>,&nbsp;...,&nbsp;x<sub>n</sub></i>
+ * A {@code ConsecutiveSetTree} determines what values are consecutive.
+ * A sequence <i>x<sub>1</sub>,&nbsp;x<sub>2</sub>,&nbsp;x<sub>3</sub>,&nbsp;...,&nbsp;x<sub>n</sub></i>
  * is understood to be consecutive by <i>d</i> iff
  * <i>x<sub>2</sub> &minus; x<sub>1</sub> &le; d, x<sub>3</sub> &minus; x<sub>2</sub> &le; d, ..., x<sub>n</sub> &minus;
  * x<sub>n-1</sub> &le; d</i>.
- * This data structure can be thought as an interval tree that maps the point <i>p</i> to
- * the interval <i>[p, p + d]</i>.
+ * This data structure can be thought as an interval tree that maps the point <i>p</i> to the interval <i>[p, p + d]</i>.
  *
  * @param <Value_> The type of value stored (examples: shifts)
  * @param <Point_> The type of the point (examples: int, LocalDateTime)
@@ -55,7 +54,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     // Public API
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<ConstraintCollectors.Sequence<Value_, Difference_>> getConsecutiveSequences() {
+    public Iterable<Sequence<Value_, Difference_>> getConsecutiveSequences() {
         return (Iterable) startItemToSequence.values();
     }
 
@@ -66,7 +65,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     @Override
-    public ConstraintCollectors.Sequence<Value_, Difference_> getFirstSequence() {
+    public Sequence<Value_, Difference_> getFirstSequence() {
         if (startItemToSequence.isEmpty()) {
             return null;
         }
@@ -74,7 +73,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     @Override
-    public ConstraintCollectors.Sequence<Value_, Difference_> getLastSequence() {
+    public Sequence<Value_, Difference_> getLastSequence() {
         if (startItemToSequence.isEmpty()) {
             return null;
         }

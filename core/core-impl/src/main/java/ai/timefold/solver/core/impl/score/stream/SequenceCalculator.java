@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.score.stream;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
 public final class SequenceCalculator<Result_>
-        implements ObjectCalculator<Result_, ConstraintCollectors.SequenceChain<Result_, Integer>> {
+        implements ObjectCalculator<Result_, SequenceChain<Result_, Integer>> {
 
     private final ConsecutiveSetTree<Result_, Integer, Integer> context = new ConsecutiveSetTree<>(
             (Integer a, Integer b) -> b - a,

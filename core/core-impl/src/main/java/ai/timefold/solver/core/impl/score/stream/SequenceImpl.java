@@ -5,11 +5,11 @@ import java.util.NavigableSet;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors.Break;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
 final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConstraintCollectors.Sequence<Value_, Difference_> {
+        implements Sequence<Value_, Difference_> {
 
     private final BiFunction<Point_, Point_, Difference_> lengthFunction;
     private final ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree;
