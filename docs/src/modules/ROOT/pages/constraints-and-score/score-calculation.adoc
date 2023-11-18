@@ -904,26 +904,7 @@ To do this, you can use the `ConstraintCollectors.collectAndThen(...)` collector
 ----
 ConstraintCollectors.collectAndThen(
     ConstraintCollectors.average(...),
-    doubleValue -> (int) Math.round(doubleValue)
-)
-----
-
-
-[source,java,options="nowrap"]
-----
-ConstraintCollectors.average(...)
-----
-
-This collector returns `double` values, which may not be suitable for your use case.
-For example, you may want to round the result to the nearest integer.
-To do this, you can use the `ConstraintCollectors.collectAndThen(...)` collector:
-
-[source,java,options="nowrap"]
-----
-ConstraintCollectors.collectAndThen(
-    ConstraintCollectors.average(...),
-    doubleValue -> (int) Math.round(doubleValue)
-)
+    doubleValue -> (int) Math.round(doubleValue))
 ----
 
 
