@@ -104,14 +104,10 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof DefaultIndictment) {
-            DefaultIndictment<Score_> other = (DefaultIndictment<Score_>) o;
+        if (o instanceof DefaultIndictment other) {
             return indictedObject.equals(other.indictedObject);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

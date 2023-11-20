@@ -69,7 +69,6 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
-import ai.timefold.solver.core.impl.util.Pair;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -513,30 +512,30 @@ public class SolutionDescriptor<Solution_> {
 
     private void determineGlobalShadowOrder() {
         // Topological sorting with Kahn's algorithm
-        List<MutablePair<ShadowVariableDescriptor<Solution_>, Integer>> pairList = new ArrayList<>();
-        Map<ShadowVariableDescriptor<Solution_>, MutablePair<ShadowVariableDescriptor<Solution_>, Integer>> shadowToPairMap =
-                new HashMap<>();
-        for (EntityDescriptor<Solution_> entityDescriptor : entityDescriptorMap.values()) {
-            for (ShadowVariableDescriptor<Solution_> shadow : entityDescriptor.getDeclaredShadowVariableDescriptors()) {
-                int sourceSize = shadow.getSourceVariableDescriptorList().size();
-                MutablePair<ShadowVariableDescriptor<Solution_>, Integer> pair = MutablePair.of(shadow, sourceSize);
+        var pairList = new ArrayList<MutablePair<ShadowVariableDescriptor<Solution_>, Integer>>();
+        var shadowToPairMap =
+                new HashMap<ShadowVariableDescriptor<Solution_>, MutablePair<ShadowVariableDescriptor<Solution_>, Integer>>();
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            for (var shadow : entityDescriptor.getDeclaredShadowVariableDescriptors()) {
+                var sourceSize = shadow.getSourceVariableDescriptorList().size();
+                var pair = MutablePair.of(shadow, sourceSize);
                 pairList.add(pair);
                 shadowToPairMap.put(shadow, pair);
             }
         }
-        for (EntityDescriptor<Solution_> entityDescriptor : entityDescriptorMap.values()) {
-            for (GenuineVariableDescriptor<Solution_> genuine : entityDescriptor.getDeclaredGenuineVariableDescriptors()) {
-                for (ShadowVariableDescriptor<Solution_> sink : genuine.getSinkVariableDescriptorList()) {
-                    MutablePair<ShadowVariableDescriptor<Solution_>, Integer> sinkPair = shadowToPairMap.get(sink);
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            for (var genuine : entityDescriptor.getDeclaredGenuineVariableDescriptors()) {
+                for (var sink : genuine.getSinkVariableDescriptorList()) {
+                    var sinkPair = shadowToPairMap.get(sink);
                     sinkPair.setValue(sinkPair.getValue() - 1);
                 }
             }
         }
         int globalShadowOrder = 0;
         while (!pairList.isEmpty()) {
-            pairList.sort(Comparator.comparingInt(Pair::getValue));
-            Pair<ShadowVariableDescriptor<Solution_>, Integer> pair = pairList.remove(0);
-            ShadowVariableDescriptor<Solution_> shadow = pair.getKey();
+            pairList.sort(Comparator.comparingInt(MutablePair::getValue));
+            var pair = pairList.remove(0);
+            var shadow = pair.getKey();
             if (pair.getValue() != 0) {
                 if (pair.getValue() < 0) {
                     throw new IllegalStateException("Impossible state because the shadowVariable ("
@@ -548,8 +547,8 @@ public class SolutionDescriptor<Solution_> {
                         + ") because it must be later than its sources (" + shadow.getSourceVariableDescriptorList()
                         + ") and also earlier than its sinks (" + shadow.getSinkVariableDescriptorList() + ").");
             }
-            for (ShadowVariableDescriptor<Solution_> sink : shadow.getSinkVariableDescriptorList()) {
-                MutablePair<ShadowVariableDescriptor<Solution_>, Integer> sinkPair = shadowToPairMap.get(sink);
+            for (var sink : shadow.getSinkVariableDescriptorList()) {
+                var sinkPair = shadowToPairMap.get(sink);
                 sinkPair.setValue(sinkPair.getValue() - 1);
             }
             shadow.setGlobalShadowOrder(globalShadowOrder);

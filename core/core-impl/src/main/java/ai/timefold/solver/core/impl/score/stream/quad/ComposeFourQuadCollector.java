@@ -62,16 +62,21 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
 
     @Override
     public Supplier<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>> supplier() {
-        return () -> Quadruple.of(firstSupplier.get(), secondSupplier.get(), thirdSupplier.get(), fourthSupplier.get());
+        return () -> {
+            ResultHolder1_ a = firstSupplier.get();
+            ResultHolder2_ b = secondSupplier.get();
+            ResultHolder3_ c = thirdSupplier.get();
+            return new Quadruple<>(a, b, c, fourthSupplier.get());
+        };
     }
 
     @Override
     public PentaFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, D, Runnable>
             accumulator() {
-        return (resultHolder, a, b, c, d) -> composeUndo(firstAccumulator.apply(resultHolder.getA(), a, b, c, d),
-                secondAccumulator.apply(resultHolder.getB(), a, b, c, d),
-                thirdAccumulator.apply(resultHolder.getC(), a, b, c, d),
-                fourthAccumulator.apply(resultHolder.getD(), a, b, c, d));
+        return (resultHolder, a, b, c, d) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b, c, d),
+                secondAccumulator.apply(resultHolder.b(), a, b, c, d),
+                thirdAccumulator.apply(resultHolder.c(), a, b, c, d),
+                fourthAccumulator.apply(resultHolder.d(), a, b, c, d));
     }
 
     private static Runnable composeUndo(Runnable first, Runnable second, Runnable third,
@@ -86,10 +91,10 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
 
     @Override
     public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
-        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
-                secondFinisher.apply(resultHolder.getB()),
-                thirdFinisher.apply(resultHolder.getC()),
-                fourthFinisher.apply(resultHolder.getD()));
+        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
+                secondFinisher.apply(resultHolder.b()),
+                thirdFinisher.apply(resultHolder.c()),
+                fourthFinisher.apply(resultHolder.d()));
     }
 
     @Override

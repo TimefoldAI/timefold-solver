@@ -22,7 +22,7 @@ final class ToMultiMapBiCollector<A, B, Key_, Value_, Set_ extends Set<Value_>, 
             BiFunction<? super A, ? super B, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             IntFunction<Set_> setFunction) {
-        super((a, b) -> Pair.of(keyFunction.apply(a, b), valueFunction.apply(a, b)));
+        super((a, b) -> new Pair<>(keyFunction.apply(a, b), valueFunction.apply(a, b)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

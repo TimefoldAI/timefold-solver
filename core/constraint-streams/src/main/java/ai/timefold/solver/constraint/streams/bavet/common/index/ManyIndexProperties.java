@@ -6,13 +6,7 @@ import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;
 
-final class ManyIndexProperties implements IndexProperties {
-
-    private final Object[] properties;
-
-    ManyIndexProperties(Object... properties) {
-        this.properties = properties;
-    }
+record ManyIndexProperties(Object... properties) implements IndexProperties {
 
     @Override
     public <Type_> Type_ toKey(int index) {
@@ -21,32 +15,21 @@ final class ManyIndexProperties implements IndexProperties {
 
     @Override
     public <Type_> Type_ toKey(int from, int to) {
-        switch (to - from) {
-            case 1:
-                return toKey(from);
-            case 2:
-                return (Type_) Pair.of(toKey(from), toKey(from + 1));
-            case 3:
-                return (Type_) Triple.of(toKey(from), toKey(from + 1),
-                        toKey(from + 2));
-            case 4:
-                return (Type_) Quadruple.of(toKey(from), toKey(from + 1),
-                        toKey(from + 2), toKey(from + 3));
-            default:
-                return (Type_) new IndexerKey(this, from, to);
-        }
+        return switch (to - from) {
+            case 1 -> toKey(from);
+            case 2 -> (Type_) new Pair<>(toKey(from), toKey(from + 1));
+            case 3 -> (Type_) new Triple<>(toKey(from), toKey(from + 1), toKey(from + 2));
+            case 4 -> (Type_) new Quadruple<>(toKey(from), toKey(from + 1), toKey(from + 2), toKey(from + 3));
+            default -> (Type_) new IndexerKey(this, from, to);
+        };
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (o instanceof ManyIndexProperties other) {
+            return Arrays.equals(properties, other.properties);
         }
-        if (!(o instanceof ManyIndexProperties)) {
-            return false;
-        }
-        ManyIndexProperties other = (ManyIndexProperties) o;
-        return Arrays.equals(properties, other.properties);
+        return false;
     }
 
     @Override

@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.tennis.domain.TeamAssignment;
 import ai.timefold.solver.examples.tennis.domain.UnavailabilityPenalty;
 
@@ -113,7 +112,7 @@ public final class TennisConstraintProvider implements ConstraintProvider {
                         equal(TeamAssignment::getDay),
                         lessThan(assignment -> assignment.getTeam().getId()))
                 .groupBy(loadBalance(
-                        (assignment, otherAssignment) -> Pair.of(assignment.getTeam(), otherAssignment.getTeam())))
+                        (assignment, otherAssignment) -> new Pair<>(assignment.getTeam(), otherAssignment.getTeam())))
                 .penalize(HardMediumSoftScore.ONE_SOFT,
                         result -> (int) result.getZeroDeviationSquaredSumRootMillis())
                 .asConstraint("evenlyConfrontationCount");
@@ -141,6 +140,10 @@ public final class TennisConstraintProvider implements ConstraintProvider {
         public long getZeroDeviationSquaredSumRootMillis() {
             return (long) (Math.sqrt(squaredSum) * 1_000);
         }
+
+    }
+
+    private record Pair<A, B>(A key, B value) {
 
     }
 

@@ -33,7 +33,7 @@ final class Group0Mapping4CollectorBiNode<OldA, OldB, A, B, C, D, ResultContaine
                     BiConstraintCollector<OldA, OldB, ResultContainerC_, C> collectorC,
                     BiConstraintCollector<OldA, OldB, ResultContainerD_, D> collectorD) {
         return (BiConstraintCollector<OldA, OldB, Object, Quadruple<A, B, C, D>>) ConstraintCollectors.compose(collectorA,
-                collectorB, collectorC, collectorD, Quadruple::of);
+                collectorB, collectorC, collectorD, (a, b, c, d) -> new Quadruple<>(a, b, c, d));
     }
 
     @Override
@@ -43,10 +43,10 @@ final class Group0Mapping4CollectorBiNode<OldA, OldB, A, B, C, D, ResultContaine
 
     @Override
     protected void updateOutTupleToResult(QuadTuple<A, B, C, D> outTuple, Quadruple<A, B, C, D> result) {
-        outTuple.factA = result.getA();
-        outTuple.factB = result.getB();
-        outTuple.factC = result.getC();
-        outTuple.factD = result.getD();
+        outTuple.factA = result.a();
+        outTuple.factB = result.b();
+        outTuple.factC = result.c();
+        outTuple.factD = result.d();
     }
 
 }

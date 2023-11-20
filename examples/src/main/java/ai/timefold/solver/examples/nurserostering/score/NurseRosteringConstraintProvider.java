@@ -18,7 +18,6 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
-import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.nurserostering.domain.Employee;
 import ai.timefold.solver.examples.nurserostering.domain.NurseRosterParametrization;
 import ai.timefold.solver.examples.nurserostering.domain.ShiftAssignment;
@@ -273,7 +272,10 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                         Joiners.equal((contract, date) -> contract.getContract(), ShiftAssignment::getContract))
                 .groupBy((contract, date, sa) -> contract,
                         (contract, date, sa) -> sa.getEmployee(),
-                        (contract, date, sa) -> Pair.of(sa.getShiftType(), date), // No 4-key groupBy overload
+                        (contract, date, sa) -> {
+                            ai.timefold.solver.examples.nurserostering.domain.ShiftType key = sa.getShiftType();
+                            return new Pair<>(key, date);
+                        }, // No 4-key groupBy overload
                         ConstraintCollectors.countTri())
                 .filter((contract, employee, type, count) -> count < employee.getWeekendLength())
                 .penalize(HardSoftScore.ONE_SOFT,
@@ -413,5 +415,8 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .penalize(HardSoftScore.ONE_SOFT,
                         (contractLine, shift1, shift2, shift3) -> contractLine.getPattern().getWeight())
                 .asConstraint("unwantedPatternShiftType3DaysPattern");
+    }
+
+    private record Pair<A, B>(A a, B b) {
     }
 }

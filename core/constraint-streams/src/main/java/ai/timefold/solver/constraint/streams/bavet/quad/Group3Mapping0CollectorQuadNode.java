@@ -35,12 +35,12 @@ final class Group3Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C>
         A a = groupKeyMappingA.apply(oldA, oldB, oldC, oldD);
         B b = groupKeyMappingB.apply(oldA, oldB, oldC, oldD);
         C c = groupKeyMappingC.apply(oldA, oldB, oldC, oldD);
-        return Triple.of(a, b, c);
+        return new Triple<>(a, b, c);
     }
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(Triple<A, B, C> groupKey) {
-        return new TriTuple<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), outputStoreSize);
+        return new TriTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), outputStoreSize);
     }
 
     @Override

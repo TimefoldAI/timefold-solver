@@ -5,7 +5,8 @@ package ai.timefold.solver.constraint.streams.bavet.common.index;
  * <p>
  * Index properties are shallow immutable and implement {@link Object#equals(Object)} and {@link Object#hashCode()}.
  */
-public interface IndexProperties {
+public sealed interface IndexProperties
+        permits ManyIndexProperties, NoneIndexProperties, SingleIndexProperties, ThreeIndexProperties, TwoIndexProperties {
 
     /**
      * Retrieves index property at a given position.

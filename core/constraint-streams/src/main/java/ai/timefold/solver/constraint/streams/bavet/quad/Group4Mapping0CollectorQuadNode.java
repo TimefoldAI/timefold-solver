@@ -38,12 +38,12 @@ final class Group4Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C, D>
         B b = groupKeyMappingB.apply(oldA, oldB, oldC, oldD);
         C c = groupKeyMappingC.apply(oldA, oldB, oldC, oldD);
         D d = groupKeyMappingD.apply(oldA, oldB, oldC, oldD);
-        return Quadruple.of(a, b, c, d);
+        return new Quadruple<>(a, b, c, d);
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTuple<>(groupKey.getA(), groupKey.getB(), groupKey.getC(), groupKey.getD(), outputStoreSize);
+        return new QuadTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
     }
 
     @Override

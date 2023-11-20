@@ -43,10 +43,10 @@ public class KOptUtilsTest {
                 addedEdges);
 
         assertThat(KOptUtils.getRemovedEdgeList(kOptDescriptor))
-                .containsExactlyInAnyOrder(Pair.of(v1, v2),
-                        Pair.of(v3, v4),
-                        Pair.of(v5, v6),
-                        Pair.of(v7, v8));
+                .containsExactlyInAnyOrder(new Pair<>(v1, v2),
+                        new Pair<>(v3, v4),
+                        new Pair<>(v5, v6),
+                        new Pair<>(v7, v8));
     }
 
     @Test
@@ -66,10 +66,10 @@ public class KOptUtilsTest {
                 addedEdges);
 
         assertThat(KOptUtils.getAddedEdgeList(kOptDescriptor))
-                .containsExactlyInAnyOrder(Pair.of(v1, v4),
-                        Pair.of(v2, v7),
-                        Pair.of(v5, v3),
-                        Pair.of(v6, v8));
+                .containsExactlyInAnyOrder(new Pair<>(v1, v4),
+                        new Pair<>(v2, v7),
+                        new Pair<>(v5, v3),
+                        new Pair<>(v6, v8));
     }
 
     @Test

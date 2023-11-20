@@ -81,7 +81,7 @@ public class PlanningIdLookUpStrategy implements LookUpStrategy {
                     + " or change the @" + PlanningSolution.class.getSimpleName() + " annotation's "
                     + LookUpStrategyType.class.getSimpleName() + ".");
         }
-        return Pair.of(externalObject.getClass(), planningId);
+        return new Pair<>(externalObject.getClass(), planningId);
     }
 
 }

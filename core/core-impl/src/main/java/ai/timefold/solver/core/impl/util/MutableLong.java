@@ -58,14 +58,10 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (o instanceof MutableLong other) {
+            return value == other.value;
         }
-        if (o == null || !Objects.equals(getClass(), o.getClass())) {
-            return false;
-        }
-        MutableLong that = (MutableLong) o;
-        return value == that.value;
+        return false;
     }
 
     @Override

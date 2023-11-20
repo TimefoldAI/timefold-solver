@@ -22,7 +22,6 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
-import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration;
 import ai.timefold.solver.examples.conferencescheduling.domain.ConferenceSolution;
 import ai.timefold.solver.examples.conferencescheduling.domain.Room;
@@ -379,7 +378,7 @@ public class ConferenceSchedulingCfpDevoxxImporter {
             }
             TalkType timeslotTalkType = talkTypeIdToTalkTypeMap.get(talkTypeId);
 
-            Timeslot timeslot = startAndEndTimeToTimeslotMap.get(Pair.of(startDateTime, endDateTime));
+            Timeslot timeslot = startAndEndTimeToTimeslotMap.get(new Pair<>(startDateTime, endDateTime));
             if (timeslot != null) {
                 timeslotToAvailableRoomsMap.get(timeslot).add(room);
                 if (timeslotTalkType != null) {
@@ -395,7 +394,7 @@ public class ConferenceSchedulingCfpDevoxxImporter {
 
                 timeslotList.add(timeslot);
                 timeslotToAvailableRoomsMap.put(timeslot, new ArrayList<>(Arrays.asList(room)));
-                startAndEndTimeToTimeslotMap.put(Pair.of(startDateTime, endDateTime), timeslot);
+                startAndEndTimeToTimeslotMap.put(new Pair<>(startDateTime, endDateTime), timeslot);
             }
 
             for (TalkType talkType : timeslot.getTalkTypeSet()) {
@@ -428,7 +427,7 @@ public class ConferenceSchedulingCfpDevoxxImporter {
                 LocalDateTime endDateTime = LocalDateTime.ofInstant(
                         Instant.ofEpochMilli(timeslotObject.getJsonNumber("toTimeMillis").longValue()),
                         ZoneId.of(ZONE_ID));
-                Timeslot timeslot = startAndEndTimeToTimeslotMap.get(Pair.of(startDateTime, endDateTime));
+                Timeslot timeslot = startAndEndTimeToTimeslotMap.get(new Pair<>(startDateTime, endDateTime));
                 if (timeslot == null) {
                     throw new IllegalStateException("Timeslot (" + timeslotObject.getString("slotId") + ") in + ("
                             + dayUrl + ") does not exist in /slots endpoint.");
@@ -514,4 +513,9 @@ public class ConferenceSchedulingCfpDevoxxImporter {
                     "Import failed on URL (" + url + ").", e);
         }
     }
+
+    private record Pair<A, B>(A key, B value) {
+
+    }
+
 }

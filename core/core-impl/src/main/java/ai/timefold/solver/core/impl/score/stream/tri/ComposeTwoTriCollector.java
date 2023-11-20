@@ -43,13 +43,13 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
 
     @Override
     public Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
-        return () -> Pair.of(firstSupplier.get(), secondSupplier.get());
+        return () -> new Pair<>(firstSupplier.get(), secondSupplier.get());
     }
 
     @Override
     public QuadFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, Runnable> accumulator() {
-        return (resultHolder, a, b, c) -> composeUndo(firstAccumulator.apply(resultHolder.getKey(), a, b, c),
-                secondAccumulator.apply(resultHolder.getValue(), a, b, c));
+        return (resultHolder, a, b, c) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a, b, c),
+                secondAccumulator.apply(resultHolder.value(), a, b, c));
     }
 
     private static Runnable composeUndo(Runnable first, Runnable second) {
@@ -61,8 +61,8 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
 
     @Override
     public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
-        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getKey()),
-                secondFinisher.apply(resultHolder.getValue()));
+        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
+                secondFinisher.apply(resultHolder.value()));
     }
 
     @Override

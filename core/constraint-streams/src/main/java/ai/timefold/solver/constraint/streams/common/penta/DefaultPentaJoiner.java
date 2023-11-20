@@ -72,16 +72,12 @@ public final class DefaultPentaJoiner<A, B, C, D, E> extends AbstractJoiner<E> i
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (o instanceof DefaultPentaJoiner<?, ?, ?, ?, ?> other) {
+            return Arrays.equals(joinerTypes, other.joinerTypes)
+                    && Arrays.equals(leftMappings, other.leftMappings)
+                    && Arrays.equals(rightMappings, other.rightMappings);
         }
-        if (!(o instanceof DefaultPentaJoiner)) {
-            return false;
-        }
-        DefaultPentaJoiner<?, ?, ?, ?, ?> other = (DefaultPentaJoiner<?, ?, ?, ?, ?>) o;
-        return Arrays.equals(joinerTypes, other.joinerTypes)
-                && Arrays.equals(leftMappings, other.leftMappings)
-                && Arrays.equals(rightMappings, other.rightMappings);
+        return false;
     }
 
     @Override

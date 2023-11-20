@@ -5,17 +5,9 @@ package ai.timefold.solver.core.impl.util;
  * Two instances {@link Object#equals(Object) are equal} if both values in the first instance
  * are equal to their counterpart in the other instance.
  *
- * @param <A>
- * @param <B>
+ * @param <Key_>
+ * @param <Value_>
  */
-public interface Pair<A, B> {
-
-    static <A, B> Pair<A, B> of(A key, B value) {
-        return new PairImpl<>(key, value);
-    }
-
-    A getKey();
-
-    B getValue();
+public record Pair<Key_, Value_>(Key_ key, Value_ value) {
 
 }

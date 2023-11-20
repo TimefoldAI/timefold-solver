@@ -81,8 +81,8 @@ public class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Soluti
             Score bestScore = solverScope.getBestScore();
             for (Iterator<Pair<Long, Score>> it = bestScoreImprovementHistoryQueue.iterator(); it.hasNext();) {
                 Pair<Long, Score> bestScoreImprovement = it.next();
-                Score scoreDifference = bestScore.subtract(bestScoreImprovement.getValue());
-                boolean timeLimitNotYetReached = bestScoreImprovement.getKey()
+                Score scoreDifference = bestScore.subtract(bestScoreImprovement.value());
+                boolean timeLimitNotYetReached = bestScoreImprovement.key()
                         + unimprovedTimeMillisSpentLimit >= bestSolutionTimeMillis;
                 boolean scoreImprovedOverThreshold = scoreDifference.compareTo(unimprovedScoreDifferenceThreshold) >= 0;
                 if (scoreImprovedOverThreshold && timeLimitNotYetReached) {
@@ -94,7 +94,7 @@ public class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Soluti
                     break;
                 }
             }
-            bestScoreImprovementHistoryQueue.add(Pair.of(bestSolutionTimeMillis, bestScore));
+            bestScoreImprovementHistoryQueue.add(new Pair<>(bestSolutionTimeMillis, bestScore));
         }
     }
 

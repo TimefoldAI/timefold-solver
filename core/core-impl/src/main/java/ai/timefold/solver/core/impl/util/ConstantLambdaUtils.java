@@ -13,12 +13,13 @@ import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 
 /**
- * A class that holds common lambdas that are guaranteed to be the same across method calls. In most JDK's, stateless lambdas
- * are
- * bound to a {@link java.lang.invoke.ConstantCallSite} inside the method that define them, but that
- * {@link java.lang.invoke.ConstantCallSite} is not shared across methods (even for methods in the same class). Thus, when
- * lambda reference equality is important (such as for node sharing in Constraint Streams), the lambdas in this class should be
- * used.
+ * A class that holds common lambdas that are guaranteed to be the same across method calls.
+ * In most JDK's,
+ * stateless lambdas are bound to a {@link java.lang.invoke.ConstantCallSite} inside the method that defined them,
+ * but that {@link java.lang.invoke.ConstantCallSite} is not shared across methods,
+ * even for methods in the same class.
+ * Thus, when lambda reference equality is important (such as for node sharing in Constraint Streams),
+ * the lambdas in this class should be used.
  */
 public final class ConstantLambdaUtils {
     private static final Runnable NO_OP = () -> {

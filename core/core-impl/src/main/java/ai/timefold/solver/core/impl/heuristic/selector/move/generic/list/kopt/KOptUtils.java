@@ -88,7 +88,7 @@ final class KOptUtils {
 
         // This loop iterates through the new tour created
         while (currentEndpoint != 2 * k + 1) {
-            out.add(Pair.of(removedEdges[currentEndpoint], removedEdges[addedEdgeToOtherEndpoint[currentEndpoint]]));
+            out.add(new Pair<>(removedEdges[currentEndpoint], removedEdges[addedEdgeToOtherEndpoint[currentEndpoint]]));
             int tourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
             int nextEndpointTourIndex = addedEdgeToOtherEndpoint[tourIndex];
             currentEndpoint = inverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex] ^ 1;
@@ -101,7 +101,7 @@ final class KOptUtils {
         Node_[] removedEdges = kOptDescriptor.getRemovedEdges();
         List<Pair<Node_, Node_>> out = new ArrayList<>(2 * k);
         for (int i = 1; i <= k; i++) {
-            out.add(Pair.of(removedEdges[2 * i - 1], removedEdges[2 * i]));
+            out.add(new Pair<>(removedEdges[2 * i - 1], removedEdges[2 * i]));
         }
         return out;
     }

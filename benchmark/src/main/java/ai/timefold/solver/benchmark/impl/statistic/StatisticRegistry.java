@@ -106,10 +106,10 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         Set<Pair<String, String>> constraintPackageNamePairs = new HashSet<>();
         // Add the constraint ids from the meter ids
         meterIds.forEach(meterId -> constraintPackageNamePairs
-                .add(Pair.of(meterId.getTag("constraint.package"), meterId.getTag("constraint.name"))));
+                .add(new Pair<>(meterId.getTag("constraint.package"), meterId.getTag("constraint.name"))));
         constraintPackageNamePairs.forEach(constraintPackageNamePair -> {
-            String constraintPackage = constraintPackageNamePair.getKey();
-            String constraintName = constraintPackageNamePair.getValue();
+            String constraintPackage = constraintPackageNamePair.key();
+            String constraintName = constraintPackageNamePair.value();
             Tags constraintMatchTotalRunId = runId.and("constraint.package", constraintPackage)
                     .and("constraint.name", constraintName);
             // Get the score from the corresponding constraint package and constraint name meters

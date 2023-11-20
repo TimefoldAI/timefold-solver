@@ -29,7 +29,7 @@ final class Group0Mapping3CollectorBiNode<OldA, OldB, A, B, C, ResultContainerA_
                     BiConstraintCollector<OldA, OldB, ResultContainerB_, B> collectorB,
                     BiConstraintCollector<OldA, OldB, ResultContainerC_, C> collectorC) {
         return (BiConstraintCollector<OldA, OldB, Object, Triple<A, B, C>>) ConstraintCollectors.compose(collectorA, collectorB,
-                collectorC, Triple::of);
+                collectorC, (a, b, c) -> new Triple<>(a, b, c));
     }
 
     @Override
@@ -39,9 +39,9 @@ final class Group0Mapping3CollectorBiNode<OldA, OldB, A, B, C, ResultContainerA_
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
-        outTuple.factA = result.getA();
-        outTuple.factB = result.getB();
-        outTuple.factC = result.getC();
+        outTuple.factA = result.a();
+        outTuple.factB = result.b();
+        outTuple.factC = result.c();
     }
 
 }

@@ -73,16 +73,12 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (o instanceof DefaultQuadJoiner<?, ?, ?, ?> other) {
+            return Arrays.equals(joinerTypes, other.joinerTypes)
+                    && Arrays.equals(leftMappings, other.leftMappings)
+                    && Arrays.equals(rightMappings, other.rightMappings);
         }
-        if (!(o instanceof DefaultQuadJoiner)) {
-            return false;
-        }
-        DefaultQuadJoiner<?, ?, ?, ?> other = (DefaultQuadJoiner<?, ?, ?, ?>) o;
-        return Arrays.equals(joinerTypes, other.joinerTypes)
-                && Arrays.equals(leftMappings, other.leftMappings)
-                && Arrays.equals(rightMappings, other.rightMappings);
+        return false;
     }
 
     @Override

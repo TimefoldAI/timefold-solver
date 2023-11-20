@@ -27,7 +27,7 @@ final class Group0Mapping2CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, Result
                     QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerA_, A> collectorA,
                     QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerB_, B> collectorB) {
         return (QuadConstraintCollector<OldA, OldB, OldC, OldD, Object, Pair<A, B>>) ConstraintCollectors.compose(collectorA,
-                collectorB, Pair::of);
+                collectorB, Pair::new);
     }
 
     @Override
@@ -37,8 +37,8 @@ final class Group0Mapping2CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, Result
 
     @Override
     protected void updateOutTupleToResult(BiTuple<A, B> outTuple, Pair<A, B> result) {
-        outTuple.factA = result.getKey();
-        outTuple.factB = result.getValue();
+        outTuple.factA = result.key();
+        outTuple.factB = result.value();
     }
 
 }

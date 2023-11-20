@@ -22,7 +22,7 @@ final class ToMultiMapTriCollector<A, B, C, Key_, Value_, Set_ extends Set<Value
             TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             IntFunction<Set_> setFunction) {
-        super((a, b, c) -> Pair.of(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c)));
+        super((a, b, c) -> new Pair<>(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

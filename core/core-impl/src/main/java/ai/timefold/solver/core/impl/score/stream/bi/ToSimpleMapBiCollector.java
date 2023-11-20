@@ -21,7 +21,7 @@ final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_,
             BiFunction<? super A, ? super B, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             BinaryOperator<Value_> mergeFunction) {
-        super((a, b) -> Pair.of(keyFunction.apply(a, b), valueFunction.apply(a, b)));
+        super((a, b) -> new Pair<>(keyFunction.apply(a, b), valueFunction.apply(a, b)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

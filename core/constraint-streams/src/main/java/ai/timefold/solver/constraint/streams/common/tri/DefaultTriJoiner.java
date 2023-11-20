@@ -73,16 +73,12 @@ public final class DefaultTriJoiner<A, B, C> extends AbstractJoiner<C> implement
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (o instanceof DefaultTriJoiner<?, ?, ?> other) {
+            return Arrays.equals(joinerTypes, other.joinerTypes)
+                    && Arrays.equals(leftMappings, other.leftMappings)
+                    && Arrays.equals(rightMappings, other.rightMappings);
         }
-        if (!(o instanceof DefaultTriJoiner)) {
-            return false;
-        }
-        DefaultTriJoiner<?, ?, ?> other = (DefaultTriJoiner<?, ?, ?>) o;
-        return Arrays.equals(joinerTypes, other.joinerTypes)
-                && Arrays.equals(leftMappings, other.leftMappings)
-                && Arrays.equals(rightMappings, other.rightMappings);
+        return false;
     }
 
     @Override

@@ -10,7 +10,6 @@ import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartit
 import ai.timefold.solver.examples.cloudbalancing.domain.CloudBalance;
 import ai.timefold.solver.examples.cloudbalancing.domain.CloudComputer;
 import ai.timefold.solver.examples.cloudbalancing.domain.CloudProcess;
-import ai.timefold.solver.examples.common.util.Pair;
 
 public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance> {
 
@@ -53,7 +52,7 @@ public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance
                     originalComputer.getCpuPower(), originalComputer.getMemory(),
                     originalComputer.getNetworkBandwidth(), originalComputer.getCost());
             part.getComputerList().add(computer);
-            idToPartIndexAndComputerMap.put(computer.getId(), Pair.of(partIndex, computer));
+            idToPartIndexAndComputerMap.put(computer.getId(), new Pair<>(partIndex, computer));
             partIndex = (partIndex + 1) % partList.size();
         }
 
@@ -73,17 +72,21 @@ public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance
                             + ") has a computer (" + originalProcess.getComputer()
                             + ") which doesn't exist in the originalSolution (" + originalSolution + ").");
                 }
-                if (partIndex != partIndexAndComputer.getKey().intValue()) {
+                if (partIndex != partIndexAndComputer.key().intValue()) {
                     throw new IllegalStateException("The initialized process (" + originalProcess
                             + ") with partIndex (" + partIndex
                             + ") has a computer (" + originalProcess.getComputer()
-                            + ") which belongs to another partIndex (" + partIndexAndComputer.getKey() + ").");
+                            + ") which belongs to another partIndex (" + partIndexAndComputer.key() + ").");
                 }
-                process.setComputer(partIndexAndComputer.getValue());
+                process.setComputer(partIndexAndComputer.value());
             }
             partIndex = (partIndex + 1) % partList.size();
         }
         return partList;
+    }
+
+    private record Pair<A, B>(A key, B value) {
+
     }
 
 }

@@ -27,7 +27,7 @@ final class Group2Mapping1CollectorUniNode<OldA, A, B, C, ResultContainer_>
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(Pair<A, B> groupKey) {
-        return new TriTuple<>(groupKey.getKey(), groupKey.getValue(), null, outputStoreSize);
+        return new TriTuple<>(groupKey.key(), groupKey.value(), null, outputStoreSize);
     }
 
     @Override

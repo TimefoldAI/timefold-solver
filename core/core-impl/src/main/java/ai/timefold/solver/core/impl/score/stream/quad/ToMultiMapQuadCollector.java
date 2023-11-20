@@ -22,7 +22,7 @@ final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<V
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             IntFunction<Set_> setFunction) {
-        super((a, b, c, d) -> Pair.of(keyFunction.apply(a, b, c, d), valueFunction.apply(a, b, c, d)));
+        super((a, b, c, d) -> new Pair<>(keyFunction.apply(a, b, c, d), valueFunction.apply(a, b, c, d)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

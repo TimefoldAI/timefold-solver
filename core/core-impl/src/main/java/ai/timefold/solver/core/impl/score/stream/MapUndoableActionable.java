@@ -30,8 +30,8 @@ public final class MapUndoableActionable<Key_, Value_, ResultValue_, Result_ ext
 
     @Override
     public Runnable insert(Pair<Key_, Value_> entry) {
-        container.add(entry.getKey(), entry.getValue());
-        return () -> container.remove(entry.getKey(), entry.getValue());
+        container.add(entry.key(), entry.value());
+        return () -> container.remove(entry.key(), entry.value());
     }
 
     @Override

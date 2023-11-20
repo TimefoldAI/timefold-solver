@@ -234,15 +234,12 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof HardSoftScore other) {
+        if (o instanceof HardSoftScore other) {
             return initScore == other.initScore()
                     && hardScore == other.hardScore()
                     && softScore == other.softScore();
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

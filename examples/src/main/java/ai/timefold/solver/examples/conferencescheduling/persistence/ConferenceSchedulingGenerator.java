@@ -20,7 +20,6 @@ import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.app.LoggingMain;
 import ai.timefold.solver.examples.common.persistence.AbstractSolutionImporter;
 import ai.timefold.solver.examples.common.persistence.generator.StringDataGenerator;
-import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.conferencescheduling.app.ConferenceSchedulingApp;
 import ai.timefold.solver.examples.conferencescheduling.domain.ConferenceConstraintConfiguration;
 import ai.timefold.solver.examples.conferencescheduling.domain.ConferenceSolution;
@@ -62,18 +61,18 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
     private final LocalDate timeslotFirstDay = LocalDate.of(2018, 10, 1);
 
     private final List<Pair<LocalTime, LocalTime>> timeslotOptions = Arrays.asList(
-            //        Pair.of(LocalTime.of(8, 30), LocalTime.of(9, 30)), // General session
-            Pair.of(LocalTime.of(10, 15), LocalTime.of(12, 15)), // Lab
-            Pair.of(LocalTime.of(10, 15), LocalTime.of(11, 0)),
-            Pair.of(LocalTime.of(11, 30), LocalTime.of(12, 15)),
-            Pair.of(LocalTime.of(13, 0), LocalTime.of(15, 0)), // Lab
-            //        Pair.of(LocalTime.of(13, 45), LocalTime.of(15, 0)), // General session
-            Pair.of(LocalTime.of(15, 30), LocalTime.of(16, 15)),
-            Pair.of(LocalTime.of(16, 30), LocalTime.of(17, 15)));
+            //        new Pair<>(LocalTime.of(8, 30), LocalTime.of(9, 30)), // General session
+            new Pair<>(LocalTime.of(10, 15), LocalTime.of(12, 15)), // Lab
+            new Pair<>(LocalTime.of(10, 15), LocalTime.of(11, 0)),
+            new Pair<>(LocalTime.of(11, 30), LocalTime.of(12, 15)),
+            new Pair<>(LocalTime.of(13, 0), LocalTime.of(15, 0)), // Lab
+            //        new Pair<>(LocalTime.of(13, 45), LocalTime.of(15, 0)), // General session
+            new Pair<>(LocalTime.of(15, 30), LocalTime.of(16, 15)),
+            new Pair<>(LocalTime.of(16, 30), LocalTime.of(17, 15)));
 
     private final List<Pair<String, Double>> roomTagProbabilityList = Arrays.asList(
-            Pair.of("Large", 0.20),
-            Pair.of("Recorded", 0.50));
+            new Pair<>("Large", 0.20),
+            new Pair<>("Recorded", 0.50));
 
     private final StringDataGenerator speakerNameGenerator = StringDataGenerator.buildFullNames();
 
@@ -207,7 +206,7 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
 
     private void writeConferenceSolution(int dayListSize, int roomListSize) {
         int labTimeslotCount = (int) timeslotOptions.stream()
-                .filter(pair -> Duration.between(pair.getKey(), pair.getValue()).toMinutes() >= 120).count();
+                .filter(pair -> Duration.between(pair.key(), pair.value()).toMinutes() >= 120).count();
         int labRoomCount = roomListSize / 5;
         labTalkCount = (dayListSize * labTimeslotCount) * labRoomCount;
 
@@ -275,8 +274,8 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
                 day = day.plusDays(1);
             }
             Pair<LocalTime, LocalTime> pair = timeslotOptions.get(timeslotOptionsIndex);
-            timeslot.setStartDateTime(LocalDateTime.of(day, pair.getKey()));
-            timeslot.setEndDateTime(LocalDateTime.of(day, pair.getValue()));
+            timeslot.setStartDateTime(LocalDateTime.of(day, pair.key()));
+            timeslot.setEndDateTime(LocalDateTime.of(day, pair.value()));
             TalkType talkType = timeslot.getDurationInMinutes() >= 120 ? labTalkType : breakoutTalkType;
             talkType.getCompatibleTimeslotSet().add(timeslot);
             timeslot.setTalkTypeSet(Collections.singleton(talkType));
@@ -311,9 +310,9 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
             room.setUnavailableTimeslotSet(new LinkedHashSet<>());
             Set<String> tagSet = new LinkedHashSet<>(roomTagProbabilityList.size());
             for (Pair<String, Double> roomTagProbability : roomTagProbabilityList) {
-                if ((i == 0 || i == 4 || random.nextDouble() < roomTagProbability.getValue())
-                        && roomTagProbability.getKey().equals("Recorded")) {
-                    tagSet.add(roomTagProbability.getKey());
+                if ((i == 0 || i == 4 || random.nextDouble() < roomTagProbability.value())
+                        && roomTagProbability.key().equals("Recorded")) {
+                    tagSet.add(roomTagProbability.key());
                 }
             }
             if (room.getCapacity() >= 500) {
@@ -500,15 +499,20 @@ public class ConferenceSchedulingGenerator extends LoggingMain {
             Set<String> prohibitedRoomTagSet, Set<String> undesiredRoomTagSet) {
         for (Pair<String, Double> roomTagProbability : roomTagProbabilityList) {
             double segmentRandom = random.nextDouble();
-            if (segmentRandom < roomTagProbability.getValue() / 25.0) {
-                requiredRoomTagSet.add(roomTagProbability.getKey());
-            } else if (segmentRandom < roomTagProbability.getValue() / 20.0) {
-                prohibitedRoomTagSet.add(roomTagProbability.getKey());
-            } else if (segmentRandom < roomTagProbability.getValue() / 15.0) {
-                preferredRoomTagSet.add(roomTagProbability.getKey());
-            } else if (segmentRandom < roomTagProbability.getValue() / 10.0) {
-                undesiredRoomTagSet.add(roomTagProbability.getKey());
+            if (segmentRandom < roomTagProbability.value() / 25.0) {
+                requiredRoomTagSet.add(roomTagProbability.key());
+            } else if (segmentRandom < roomTagProbability.value() / 20.0) {
+                prohibitedRoomTagSet.add(roomTagProbability.key());
+            } else if (segmentRandom < roomTagProbability.value() / 15.0) {
+                preferredRoomTagSet.add(roomTagProbability.key());
+            } else if (segmentRandom < roomTagProbability.value() / 10.0) {
+                undesiredRoomTagSet.add(roomTagProbability.key());
             }
         }
     }
+
+    private record Pair<A, B>(A key, B value) {
+
+    }
+
 }

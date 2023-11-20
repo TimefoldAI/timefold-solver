@@ -21,7 +21,7 @@ final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<K
             TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             BinaryOperator<Value_> mergeFunction) {
-        super((a, b, c) -> Pair.of(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c)));
+        super((a, b, c) -> new Pair<>(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

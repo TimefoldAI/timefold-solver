@@ -9,16 +9,6 @@ package ai.timefold.solver.core.impl.util;
  * @param <B>
  * @param <C>
  */
-public interface Triple<A, B, C> {
-
-    static <A, B, C> Triple<A, B, C> of(A a, B b, C c) {
-        return new TripleImpl<>(a, b, c);
-    }
-
-    A getA();
-
-    B getB();
-
-    C getC();
+public record Triple<A, B, C>(A a, B b, C c) {
 
 }
