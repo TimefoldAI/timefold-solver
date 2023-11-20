@@ -71,16 +71,12 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (o instanceof DefaultBiJoiner<?, ?> other) {
+            return Arrays.equals(joinerTypes, other.joinerTypes)
+                    && Arrays.equals(leftMappings, other.leftMappings)
+                    && Arrays.equals(rightMappings, other.rightMappings);
         }
-        if (!(o instanceof DefaultBiJoiner)) {
-            return false;
-        }
-        DefaultBiJoiner<?, ?> other = (DefaultBiJoiner<?, ?>) o;
-        return Arrays.equals(joinerTypes, other.joinerTypes)
-                && Arrays.equals(leftMappings, other.leftMappings)
-                && Arrays.equals(rightMappings, other.rightMappings);
+        return false;
     }
 
     @Override

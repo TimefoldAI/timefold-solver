@@ -21,7 +21,7 @@ final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, V
             Function<? super A, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             BinaryOperator<Value_> mergeFunction) {
-        super(a -> Pair.of(keyFunction.apply(a), valueFunction.apply(a)));
+        super(a -> new Pair<>(keyFunction.apply(a), valueFunction.apply(a)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

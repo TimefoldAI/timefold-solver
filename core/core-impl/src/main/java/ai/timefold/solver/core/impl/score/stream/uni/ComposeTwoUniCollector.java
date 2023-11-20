@@ -42,13 +42,13 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
 
     @Override
     public Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
-        return () -> Pair.of(firstSupplier.get(), secondSupplier.get());
+        return () -> new Pair<>(firstSupplier.get(), secondSupplier.get());
     }
 
     @Override
     public BiFunction<Pair<ResultHolder1_, ResultHolder2_>, A, Runnable> accumulator() {
-        return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.getKey(), a),
-                secondAccumulator.apply(resultHolder.getValue(), a));
+        return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a),
+                secondAccumulator.apply(resultHolder.value(), a));
     }
 
     private static Runnable composeUndo(Runnable first, Runnable second) {
@@ -60,8 +60,8 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
 
     @Override
     public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
-        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getKey()),
-                secondFinisher.apply(resultHolder.getValue()));
+        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
+                secondFinisher.apply(resultHolder.value()));
     }
 
     @Override

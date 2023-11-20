@@ -26,7 +26,7 @@ final class Group0Mapping2CollectorBiNode<OldA, OldB, A, B, ResultContainerA_, R
                     BiConstraintCollector<OldA, OldB, ResultContainerA_, A> collectorA,
                     BiConstraintCollector<OldA, OldB, ResultContainerB_, B> collectorB) {
         return (BiConstraintCollector<OldA, OldB, Object, Pair<A, B>>) ConstraintCollectors.compose(collectorA, collectorB,
-                Pair::of);
+                Pair::new);
     }
 
     @Override
@@ -36,8 +36,8 @@ final class Group0Mapping2CollectorBiNode<OldA, OldB, A, B, ResultContainerA_, R
 
     @Override
     protected void updateOutTupleToResult(BiTuple<A, B> outTuple, Pair<A, B> result) {
-        outTuple.factA = result.getKey();
-        outTuple.factB = result.getValue();
+        outTuple.factA = result.key();
+        outTuple.factB = result.value();
     }
 
 }

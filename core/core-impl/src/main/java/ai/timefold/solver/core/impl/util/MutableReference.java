@@ -20,12 +20,10 @@ public final class MutableReference<Value_> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        MutableReference<?> that = (MutableReference<?>) o;
-        return Objects.equals(value, that.value);
+        if (o instanceof MutableReference<?> other) {
+            return value.equals(other.value);
+        }
+        return false;
     }
 
     @Override

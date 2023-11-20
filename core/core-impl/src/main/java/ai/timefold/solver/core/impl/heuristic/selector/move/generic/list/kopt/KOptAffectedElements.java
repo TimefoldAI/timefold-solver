@@ -18,7 +18,7 @@ final class KOptAffectedElements {
     }
 
     static KOptAffectedElements forMiddleRange(int startInclusive, int endExclusive) {
-        return new KOptAffectedElements(-1, -1, List.of(Pair.of(startInclusive, endExclusive)));
+        return new KOptAffectedElements(-1, -1, List.of(new Pair<>(startInclusive, endExclusive)));
     }
 
     static KOptAffectedElements forWrappedRange(int startInclusive, int endExclusive) {
@@ -70,11 +70,11 @@ final class KOptAffectedElements {
                     Pair<Integer, Integer> leftInterval = newAffectedMiddleRangeList.get(i);
                     Pair<Integer, Integer> rightInterval = newAffectedMiddleRangeList.get(j);
 
-                    if (leftInterval.getKey() <= rightInterval.getValue() &&
-                            rightInterval.getKey() <= leftInterval.getValue()) {
+                    if (leftInterval.key() <= rightInterval.value() &&
+                            rightInterval.key() <= leftInterval.value()) {
                         Pair<Integer, Integer> mergedInterval =
-                                Pair.of(Math.min(leftInterval.getKey(), rightInterval.getKey()),
-                                        Math.max(leftInterval.getValue(), rightInterval.getValue()));
+                                new Pair<>(Math.min(leftInterval.key(), rightInterval.key()),
+                                        Math.max(leftInterval.value(), rightInterval.value()));
                         newAffectedMiddleRangeList.set(i, mergedInterval);
                         newAffectedMiddleRangeList.remove(j);
                         removedAny = true;

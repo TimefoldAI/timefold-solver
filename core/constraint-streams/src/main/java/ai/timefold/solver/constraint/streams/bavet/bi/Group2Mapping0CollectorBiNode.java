@@ -27,12 +27,12 @@ final class Group2Mapping0CollectorBiNode<OldA, OldB, A, B>
         OldB oldB = tuple.factB;
         A a = groupKeyMappingA.apply(oldA, oldB);
         B b = groupKeyMappingB.apply(oldA, oldB);
-        return Pair.of(a, b);
+        return new Pair<>(a, b);
     }
 
     @Override
     protected BiTuple<A, B> createOutTuple(Pair<A, B> groupKey) {
-        return new BiTuple<>(groupKey.getKey(), groupKey.getValue(), outputStoreSize);
+        return new BiTuple<>(groupKey.key(), groupKey.value(), outputStoreSize);
     }
 
     @Override

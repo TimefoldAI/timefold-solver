@@ -31,13 +31,13 @@ final class Group2Mapping2CollectorTriNode<OldA, OldB, OldC, A, B, C, D, ResultC
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Pair<A, B> groupKey) {
-        return new QuadTuple<>(groupKey.getKey(), groupKey.getValue(), null, null, outputStoreSize);
+        return new QuadTuple<>(groupKey.key(), groupKey.value(), null, null, outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(QuadTuple<A, B, C, D> outTuple, Pair<C, D> result) {
-        outTuple.factC = result.getKey();
-        outTuple.factD = result.getValue();
+        outTuple.factC = result.key();
+        outTuple.factD = result.value();
     }
 
 }

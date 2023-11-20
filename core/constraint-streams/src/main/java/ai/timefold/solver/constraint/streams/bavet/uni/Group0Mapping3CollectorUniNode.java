@@ -29,7 +29,7 @@ final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainerA_, Res
                     UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
                     UniConstraintCollector<OldA, ResultContainerC_, C> collectorC) {
         return (UniConstraintCollector<OldA, Object, Triple<A, B, C>>) ConstraintCollectors.compose(collectorA, collectorB,
-                collectorC, Triple::of);
+                collectorC, (a, b, c) -> new Triple<>(a, b, c));
     }
 
     @Override
@@ -39,9 +39,9 @@ final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainerA_, Res
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
-        outTuple.factA = result.getA();
-        outTuple.factB = result.getB();
-        outTuple.factC = result.getC();
+        outTuple.factA = result.a();
+        outTuple.factB = result.b();
+        outTuple.factC = result.c();
     }
 
 }

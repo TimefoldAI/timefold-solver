@@ -158,14 +158,11 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof SimpleLongScore other) {
+        if (o instanceof SimpleLongScore other) {
             return initScore == other.initScore()
                     && score == other.score();
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

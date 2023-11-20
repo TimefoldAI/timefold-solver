@@ -171,14 +171,11 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof SimpleBigDecimalScore other) {
+        if (o instanceof SimpleBigDecimalScore other) {
             return initScore == other.initScore()
                     && score.stripTrailingZeros().equals(other.score().stripTrailingZeros());
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

@@ -235,15 +235,12 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof HardSoftBigDecimalScore other) {
+        if (o instanceof HardSoftBigDecimalScore other) {
             return initScore == other.initScore()
                     && hardScore.stripTrailingZeros().equals(other.hardScore().stripTrailingZeros())
                     && softScore.stripTrailingZeros().equals(other.softScore().stripTrailingZeros());
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

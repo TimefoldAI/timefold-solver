@@ -70,13 +70,11 @@ public final class DefaultConstraintJustification
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other)
-            return true;
-        if (other == null || getClass() != other.getClass())
-            return false;
-        DefaultConstraintJustification that = (DefaultConstraintJustification) other;
-        return this.compareTo(that) == 0; // Ensure consistency with compareTo().
+    public boolean equals(Object o) {
+        if (o instanceof DefaultConstraintJustification other) {
+            return this.compareTo(other) == 0; // Ensure consistency with compareTo().
+        }
+        return false;
     }
 
     @Override

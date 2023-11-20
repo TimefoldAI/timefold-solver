@@ -180,7 +180,7 @@ final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             out.addAll(combinedList.subList(0, affectedElementsInfo.getWrappedEndIndex()));
         }
         for (Pair<Integer, Integer> affectedInterval : affectedElementsInfo.getAffectedMiddleRangeList()) {
-            out.addAll(combinedList.subList(affectedInterval.getKey(), affectedInterval.getValue()));
+            out.addAll(combinedList.subList(affectedInterval.key(), affectedInterval.value()));
         }
 
         return out;

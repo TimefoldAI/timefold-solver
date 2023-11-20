@@ -21,7 +21,7 @@ final class ToSimpleMapQuadCollector<A, B, C, D, Key_, Value_, Result_ extends M
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             BinaryOperator<Value_> mergeFunction) {
-        super((a, b, c, d) -> Pair.of(keyFunction.apply(a, b, c, d), valueFunction.apply(a, b, c, d)));
+        super((a, b, c, d) -> new Pair<>(keyFunction.apply(a, b, c, d), valueFunction.apply(a, b, c, d)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

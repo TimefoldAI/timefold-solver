@@ -62,15 +62,20 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
 
     @Override
     public Supplier<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>> supplier() {
-        return () -> Quadruple.of(firstSupplier.get(), secondSupplier.get(), thirdSupplier.get(), fourthSupplier.get());
+        return () -> {
+            ResultHolder1_ a = firstSupplier.get();
+            ResultHolder2_ b = secondSupplier.get();
+            ResultHolder3_ c = thirdSupplier.get();
+            return new Quadruple<>(a, b, c, fourthSupplier.get());
+        };
     }
 
     @Override
     public BiFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, Runnable> accumulator() {
-        return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.getA(), a),
-                secondAccumulator.apply(resultHolder.getB(), a),
-                thirdAccumulator.apply(resultHolder.getC(), a),
-                fourthAccumulator.apply(resultHolder.getD(), a));
+        return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a),
+                secondAccumulator.apply(resultHolder.b(), a),
+                thirdAccumulator.apply(resultHolder.c(), a),
+                fourthAccumulator.apply(resultHolder.d(), a));
     }
 
     private static Runnable composeUndo(Runnable first, Runnable second, Runnable third,
@@ -85,10 +90,10 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
 
     @Override
     public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
-        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
-                secondFinisher.apply(resultHolder.getB()),
-                thirdFinisher.apply(resultHolder.getC()),
-                fourthFinisher.apply(resultHolder.getD()));
+        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
+                secondFinisher.apply(resultHolder.b()),
+                thirdFinisher.apply(resultHolder.c()),
+                fourthFinisher.apply(resultHolder.d()));
     }
 
     @Override

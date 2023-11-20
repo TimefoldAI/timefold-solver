@@ -30,7 +30,7 @@ final class Group0Mapping3CollectorTriNode<OldA, OldB, OldC, A, B, C, ResultCont
                     TriConstraintCollector<OldA, OldB, OldC, ResultContainerB_, B> collectorB,
                     TriConstraintCollector<OldA, OldB, OldC, ResultContainerC_, C> collectorC) {
         return (TriConstraintCollector<OldA, OldB, OldC, Object, Triple<A, B, C>>) ConstraintCollectors.compose(collectorA,
-                collectorB, collectorC, Triple::of);
+                collectorB, collectorC, (a, b, c) -> new Triple<>(a, b, c));
     }
 
     @Override
@@ -40,9 +40,9 @@ final class Group0Mapping3CollectorTriNode<OldA, OldB, OldC, A, B, C, ResultCont
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
-        outTuple.factA = result.getA();
-        outTuple.factB = result.getB();
-        outTuple.factC = result.getC();
+        outTuple.factA = result.a();
+        outTuple.factB = result.b();
+        outTuple.factC = result.c();
     }
 
 }

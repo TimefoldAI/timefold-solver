@@ -151,13 +151,10 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof DefaultConstraintMatchTotal<?> other) {
+        if (o instanceof DefaultConstraintMatchTotal<?> other) {
             return constraintRef.equals(other.constraintRef);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

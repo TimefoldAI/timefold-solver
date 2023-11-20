@@ -502,7 +502,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void average() {
-        BiConstraintCollector<Integer, Integer, ?, Double> collector = ConstraintCollectors.average((i, i2) -> i + i2);
+        BiConstraintCollector<Integer, Integer, ?, Double> collector = ConstraintCollectors.average(Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -533,7 +533,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Test
     public void averageLong() {
         BiConstraintCollector<Integer, Integer, ?, Double> collector =
-                ConstraintCollectors.averageLong((i, i2) -> i + i2);
+                ConstraintCollectors.averageLong(Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -942,31 +942,31 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
         BiConstraintCollector<Integer, Integer, ?, Pair<Integer, Integer>> collector =
                 compose(min(Integer::sum, i -> i),
                         max(Integer::sum, i -> i),
-                        Pair::of);
+                        Pair::new);
         Object container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, Pair.of(null, null));
+        assertResult(collector, container, new Pair<>(null, null));
         // Add first value.
         int firstValue = 2;
         Runnable firstRetractor = accumulate(collector, container, firstValue, 0);
-        assertResult(collector, container, Pair.of(2, 2));
+        assertResult(collector, container, new Pair<>(2, 2));
         // Add second value, lesser than the first.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, Pair.of(1, 2));
+        assertResult(collector, container, new Pair<>(1, 2));
         // Add third value, same as the second, result does not change.
         Runnable thirdRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, Pair.of(1, 2));
+        assertResult(collector, container, new Pair<>(1, 2));
         // Retract one instance of the second value; nothing should change.
         secondRetractor.run();
-        assertResult(collector, container, Pair.of(1, 2));
+        assertResult(collector, container, new Pair<>(1, 2));
         // Retract final instance of the second value.
         thirdRetractor.run();
-        assertResult(collector, container, Pair.of(2, 2));
+        assertResult(collector, container, new Pair<>(2, 2));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, Pair.of(null, null));
+        assertResult(collector, container, new Pair<>(null, null));
     }
 
     @Override
@@ -1011,31 +1011,31 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
                         min(Integer::sum, i -> i),
                         max(Integer::sum, i -> i),
                         ConstraintCollectors.average(Integer::sum),
-                        Quadruple::of);
+                        Quadruple::new);
         Object container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, Quadruple.of(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0, null, null, null));
         // Add first value.
         int firstValue = 4;
         Runnable firstRetractor = accumulate(collector, container, firstValue, 0);
-        assertResult(collector, container, Quadruple.of(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
         // Add second value, lesser than the first.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, Quadruple.of(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
         // Add third value, same as the second.
         Runnable thirdRetractor = accumulate(collector, container, secondValue, 0);
-        assertResult(collector, container, Quadruple.of(3, 1, 4, 2D));
+        assertResult(collector, container, new Quadruple<>(3, 1, 4, 2D));
         // Retract one instance of the second value.
         secondRetractor.run();
-        assertResult(collector, container, Quadruple.of(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
         // Retract final instance of the second value.
         thirdRetractor.run();
-        assertResult(collector, container, Quadruple.of(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, Quadruple.of(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0, null, null, null));
     }
 
     @Override

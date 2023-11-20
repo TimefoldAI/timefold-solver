@@ -108,13 +108,13 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         BiPredicate<Number, Number> equalityPredicate =
                 NumberEqualityUtil.getEqualityPredicate(scoreDefinition, matchWeightTotal);
         Pair<Number, Number> deducedImpacts = deduceImpact();
-        Number impact = deducedImpacts.getKey();
+        Number impact = deducedImpacts.key();
         ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
             switch (scoreImpactType) {
                 case REWARD:
-                    Number negatedImpact = deducedImpacts.getValue();
+                    Number negatedImpact = deducedImpacts.value();
                     if (equalityPredicate.test(matchWeightTotal, negatedImpact)) {
                         return;
                     }
@@ -145,7 +145,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         Score_ zeroScore = scoreDefinition.getZeroScore();
         Number zero = zeroScore.toLevelNumbers()[0]; // Zero in the exact numeric type expected by the caller.
         if (constraintMatchTotalCollection.isEmpty()) {
-            return Pair.of(zero, zero);
+            return new Pair<>(zero, zero);
         }
         // We do not know the matchWeight, so we need to deduce it.
         // Constraint matches give us a score, whose levels are in the form of (matchWeight * constraintWeight).
@@ -158,10 +158,10 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         // Except for where the number is zero.
         Number deducedImpact = retrieveImpact(totalMatchWeightedScore, zero);
         if (deducedImpact.equals(zero)) {
-            return Pair.of(zero, zero);
+            return new Pair<>(zero, zero);
         }
         Number negatedDeducedImpact = retrieveImpact(totalMatchWeightedScore.negate(), zero);
-        return Pair.of(deducedImpact, negatedDeducedImpact);
+        return new Pair<>(deducedImpact, negatedDeducedImpact);
     }
 
     private Number retrieveImpact(Score_ score, Number zero) {

@@ -30,7 +30,6 @@ import ai.timefold.solver.examples.common.swingui.CommonIcons;
 import ai.timefold.solver.examples.common.swingui.SolutionPanel;
 import ai.timefold.solver.examples.common.swingui.components.LabeledComboBoxRenderer;
 import ai.timefold.solver.examples.common.swingui.timetable.TimeTablePanel;
-import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.meetingscheduling.domain.Day;
 import ai.timefold.solver.examples.meetingscheduling.domain.MeetingAssignment;
 import ai.timefold.solver.examples.meetingscheduling.domain.MeetingSchedule;
@@ -98,8 +97,8 @@ public class MeetingSchedulingPanel extends SolutionPanel<MeetingSchedule> {
         personsPanel.defineRowHeaderByKey(HEADER_ROW_GROUP1); // Day header
         personsPanel.defineRowHeaderByKey(HEADER_ROW); // TimeGrain header
         for (Person person : meetingSchedule.getPersonList()) {
-            personsPanel.defineRowHeader(Pair.of(person, Boolean.TRUE));
-            personsPanel.defineRowHeader(Pair.of(person, Boolean.FALSE));
+            personsPanel.defineRowHeader(new Pair<>(person, Boolean.TRUE));
+            personsPanel.defineRowHeader(new Pair<>(person, Boolean.FALSE));
         }
     }
 
@@ -124,12 +123,12 @@ public class MeetingSchedulingPanel extends SolutionPanel<MeetingSchedule> {
 
     private void fillPersonCells(MeetingSchedule meetingSchedule) {
         for (Person person : meetingSchedule.getPersonList()) {
-            personsPanel.addRowHeader(HEADER_COLUMN_GROUP1, Pair.of(person, Boolean.TRUE),
-                    HEADER_COLUMN_GROUP1, Pair.of(person, Boolean.FALSE),
+            personsPanel.addRowHeader(HEADER_COLUMN_GROUP1, new Pair<>(person, Boolean.TRUE),
+                    HEADER_COLUMN_GROUP1, new Pair<>(person, Boolean.FALSE),
                     createTableHeader(new JLabel(person.getLabel(), SwingConstants.CENTER)));
-            personsPanel.addRowHeader(HEADER_COLUMN, Pair.of(person, Boolean.TRUE),
+            personsPanel.addRowHeader(HEADER_COLUMN, new Pair<>(person, Boolean.TRUE),
                     createTableHeader(new JLabel("Required", SwingConstants.CENTER)));
-            personsPanel.addRowHeader(HEADER_COLUMN, Pair.of(person, Boolean.FALSE),
+            personsPanel.addRowHeader(HEADER_COLUMN, new Pair<>(person, Boolean.FALSE),
                     createTableHeader(new JLabel("Preferred", SwingConstants.CENTER)));
         }
     }
@@ -193,13 +192,15 @@ public class MeetingSchedulingPanel extends SolutionPanel<MeetingSchedule> {
                     lastTimeGrain, meetingAssignment.getRoom(),
                     createButton(meetingAssignment, color));
             for (RequiredAttendance requiredAttendance : meetingAssignment.getMeeting().getRequiredAttendanceList()) {
-                Pair<Person, Boolean> pair = Pair.of(requiredAttendance.getPerson(), Boolean.TRUE);
+                Person key = requiredAttendance.getPerson();
+                Pair<Person, Boolean> pair = new Pair<>(key, Boolean.TRUE);
                 personsPanel.addCell(startingTimeGrain, pair,
                         lastTimeGrain, pair,
                         createButton(meetingAssignment, color));
             }
             for (PreferredAttendance preferredAttendance : meetingAssignment.getMeeting().getPreferredAttendanceList()) {
-                Pair<Person, Boolean> pair = Pair.of(preferredAttendance.getPerson(), Boolean.FALSE);
+                Person key = preferredAttendance.getPerson();
+                Pair<Person, Boolean> pair = new Pair<>(key, Boolean.FALSE);
                 personsPanel.addCell(startingTimeGrain, pair,
                         lastTimeGrain, pair,
                         createButton(meetingAssignment, color));
@@ -302,6 +303,10 @@ public class MeetingSchedulingPanel extends SolutionPanel<MeetingSchedule> {
         public String getDateTimeString() {
             return "Overtime";
         }
+
+    }
+
+    private record Pair<A, B>(A key, B value) {
 
     }
 

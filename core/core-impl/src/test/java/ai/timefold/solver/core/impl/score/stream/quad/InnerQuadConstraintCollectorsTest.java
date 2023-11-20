@@ -247,28 +247,28 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
         int firstValueB = 3;
         int firstValueC = 1;
         int firstValueD = 4;
-        int firstSum = firstValueA + firstValueB + firstValueC + firstValueD;
+        long firstSum = firstValueA + firstValueB + firstValueC + firstValueD;
         Runnable firstRetractor = accumulate(collector, container, firstValueA, firstValueB, firstValueC, firstValueD);
-        assertResult(collector, container, 10L);
+        assertResult(collector, container, firstSum);
         // Add second value, we have two now.
         int secondValueA = 4;
         int secondValueB = 5;
         int secondValueC = 1;
         int secondValueD = 2;
-        int secondSum = secondValueA + secondValueB + secondValueC + secondValueD;
+        long secondSum = secondValueA + secondValueB + secondValueC + secondValueD;
         Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC,
                 secondValueD);
-        assertResult(collector, container, 22L);
+        assertResult(collector, container, firstSum + secondSum);
         // Add third value, same as the second. We now have three values, two of which are the same.
         Runnable thirdRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC,
                 secondValueD);
-        assertResult(collector, container, 34L);
+        assertResult(collector, container, firstSum + 2 * secondSum);
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, 22L);
+        assertResult(collector, container, firstSum + secondSum);
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, 10L);
+        assertResult(collector, container, firstSum);
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResult(collector, container, 0L);
@@ -993,31 +993,31 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Pair<Integer, Integer>> collector =
                 compose(min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
-                        Pair::of);
+                        Pair::new);
         Object container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, Pair.of(null, null));
+        assertResult(collector, container, new Pair<>(null, null));
         // Add first value.
         int firstValue = 2;
         Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0, 0);
-        assertResult(collector, container, Pair.of(2, 2));
+        assertResult(collector, container, new Pair<>(2, 2));
         // Add second value, lesser than the first.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, Pair.of(1, 2));
+        assertResult(collector, container, new Pair<>(1, 2));
         // Add third value, same as the second, result does not change.
         Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, Pair.of(1, 2));
+        assertResult(collector, container, new Pair<>(1, 2));
         // Retract one instance of the second value; nothing should change.
         secondRetractor.run();
-        assertResult(collector, container, Pair.of(1, 2));
+        assertResult(collector, container, new Pair<>(1, 2));
         // Retract final instance of the second value.
         thirdRetractor.run();
-        assertResult(collector, container, Pair.of(2, 2));
+        assertResult(collector, container, new Pair<>(2, 2));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, Pair.of(null, null));
+        assertResult(collector, container, new Pair<>(null, null));
     }
 
     @Override
@@ -1062,31 +1062,31 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
                         min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         ConstraintCollectors.average((i, i2, i3, i4) -> i + i2 + i3 + i4),
-                        Quadruple::of);
+                        Quadruple::new);
         Object container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, Quadruple.of(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0, null, null, null));
         // Add first value.
         int firstValue = 4;
         Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0, 0);
-        assertResult(collector, container, Quadruple.of(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
         // Add second value, lesser than the first.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, Quadruple.of(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
         // Add third value, same as the second.
         Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, Quadruple.of(3, 1, 4, 2D));
+        assertResult(collector, container, new Quadruple<>(3, 1, 4, 2D));
         // Retract one instance of the second value.
         secondRetractor.run();
-        assertResult(collector, container, Quadruple.of(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
         // Retract final instance of the second value.
         thirdRetractor.run();
-        assertResult(collector, container, Quadruple.of(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, Quadruple.of(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0, null, null, null));
     }
 
     @Override

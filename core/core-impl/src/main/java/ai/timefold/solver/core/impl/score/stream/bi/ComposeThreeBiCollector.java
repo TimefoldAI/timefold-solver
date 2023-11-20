@@ -51,14 +51,18 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
 
     @Override
     public Supplier<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>> supplier() {
-        return () -> Triple.of(firstSupplier.get(), secondSupplier.get(), thirdSupplier.get());
+        return () -> {
+            ResultHolder1_ a = firstSupplier.get();
+            ResultHolder2_ b = secondSupplier.get();
+            return new Triple<>(a, b, thirdSupplier.get());
+        };
     }
 
     @Override
     public TriFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, Runnable> accumulator() {
-        return (resultHolder, a, b) -> composeUndo(firstAccumulator.apply(resultHolder.getA(), a, b),
-                secondAccumulator.apply(resultHolder.getB(), a, b),
-                thirdAccumulator.apply(resultHolder.getC(), a, b));
+        return (resultHolder, a, b) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b),
+                secondAccumulator.apply(resultHolder.b(), a, b),
+                thirdAccumulator.apply(resultHolder.c(), a, b));
     }
 
     private static Runnable composeUndo(Runnable first, Runnable second, Runnable third) {
@@ -71,9 +75,9 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
 
     @Override
     public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
-        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.getA()),
-                secondFinisher.apply(resultHolder.getB()),
-                thirdFinisher.apply(resultHolder.getC()));
+        return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
+                secondFinisher.apply(resultHolder.b()),
+                thirdFinisher.apply(resultHolder.c()));
     }
 
     @Override

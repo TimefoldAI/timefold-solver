@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.examples.common.score.AbstractConstraintProviderTest;
 import ai.timefold.solver.examples.common.score.ConstraintProviderTest;
-import ai.timefold.solver.examples.common.util.Pair;
 import ai.timefold.solver.examples.nurserostering.domain.Employee;
 import ai.timefold.solver.examples.nurserostering.domain.NurseRoster;
 import ai.timefold.solver.examples.nurserostering.domain.NurseRosterParametrization;
@@ -234,7 +233,7 @@ class NurseRosteringConstraintProviderTest
             out.setCode("Contract - " + out.getId());
             out.setDescription("Pattern " + patternContractLine + " Contract");
             out.setWeekendDefinition(weekendDefinition);
-            return Pair.of(patternContractLine, out);
+            return new Pair<>(patternContractLine, out);
         }
     }
 
@@ -265,7 +264,7 @@ class NurseRosteringConstraintProviderTest
     }
 
     private ShiftAssignment getShiftAssignment(int dayIndex, Employee employee, ShiftType shiftType) {
-        Shift shift = indexShiftTypePairToShiftMap.get().computeIfAbsent(Pair.of(dayIndex, shiftType), key -> {
+        Shift shift = indexShiftTypePairToShiftMap.get().computeIfAbsent(new Pair<>(dayIndex, shiftType), key -> {
             ShiftDate shiftDate = getShiftDate(dayIndex);
             Shift newShift = new Shift(getNextId(), shiftDate, shiftType, 0, 0);
             shiftDate.getShiftList().add(newShift);
@@ -761,8 +760,8 @@ class NurseRosteringConstraintProviderTest
         Pair<PatternContractLine, Contract> patternContractPair = new PatternContractBuilder()
                 .freeBefore2DaysWithAWorkDay(DayOfWeek.WEDNESDAY)
                 .build();
-        PatternContractLine patternContractLine = patternContractPair.getKey();
-        Contract contract = patternContractPair.getValue();
+        PatternContractLine patternContractLine = patternContractPair.key();
+        Contract contract = patternContractPair.value();
 
         Employee employee = getEmployee(contract);
         ShiftAssignment freeShift = getShiftAssignment(4, employee);
@@ -807,8 +806,8 @@ class NurseRosteringConstraintProviderTest
                 .shiftType2DaysPattern(dayShiftType, nightShiftType)
                 .build();
 
-        PatternContractLine patternContractLine = patternContractPair.getKey();
-        Contract contract = patternContractPair.getValue();
+        PatternContractLine patternContractLine = patternContractPair.key();
+        Contract contract = patternContractPair.value();
 
         Employee employee = getEmployee(contract);
 
@@ -848,8 +847,8 @@ class NurseRosteringConstraintProviderTest
                 .shiftType2DaysPattern(dayShiftType, null)
                 .build();
 
-        PatternContractLine patternContractLine = patternContractPair.getKey();
-        Contract contract = patternContractPair.getValue();
+        PatternContractLine patternContractLine = patternContractPair.key();
+        Contract contract = patternContractPair.value();
 
         Employee employee = getEmployee(contract);
 
@@ -889,8 +888,8 @@ class NurseRosteringConstraintProviderTest
                 .shiftType3DaysPattern(dayShiftType, nightShiftType, nightShiftType)
                 .build();
 
-        PatternContractLine patternContractLine = patternContractPair.getKey();
-        Contract contract = patternContractPair.getValue();
+        PatternContractLine patternContractLine = patternContractPair.key();
+        Contract contract = patternContractPair.value();
 
         Employee employee = getEmployee(contract);
 
@@ -923,6 +922,10 @@ class NurseRosteringConstraintProviderTest
 
         unwantedPatternShiftType3DaysPatternConstraint.given(patternContractLine, employee, shift1Day, shift2Night, shift4Night)
                 .penalizesBy(0);
+    }
+
+    private record Pair<A, B>(A key, B value) {
+
     }
 
 }

@@ -30,7 +30,7 @@ final class Group0Mapping3CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C, Res
                     QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerB_, B> collectorB,
                     QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerC_, C> collectorC) {
         return (QuadConstraintCollector<OldA, OldB, OldC, OldD, Object, Triple<A, B, C>>) ConstraintCollectors.compose(
-                collectorA, collectorB, collectorC, Triple::of);
+                collectorA, collectorB, collectorC, (a, b, c) -> new Triple<>(a, b, c));
     }
 
     @Override
@@ -40,9 +40,9 @@ final class Group0Mapping3CollectorQuadNode<OldA, OldB, OldC, OldD, A, B, C, Res
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
-        outTuple.factA = result.getA();
-        outTuple.factB = result.getB();
-        outTuple.factC = result.getC();
+        outTuple.factA = result.a();
+        outTuple.factB = result.b();
+        outTuple.factC = result.c();
     }
 
 }

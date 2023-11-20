@@ -17,9 +17,4 @@ final class NoneIndexProperties implements IndexProperties {
         throw new IllegalArgumentException("Impossible state: none index property requested");
     }
 
-    @Override
-    public String toString() {
-        return "[]";
-    }
-
 }

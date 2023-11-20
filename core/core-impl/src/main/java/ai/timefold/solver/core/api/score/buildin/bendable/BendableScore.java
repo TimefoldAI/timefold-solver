@@ -385,9 +385,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof BendableScore other) {
+        if (o instanceof BendableScore other) {
             if (hardLevelsSize() != other.hardLevelsSize()
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;
@@ -406,9 +404,8 @@ public final class BendableScore implements IBendableScore<BendableScore> {
                 }
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

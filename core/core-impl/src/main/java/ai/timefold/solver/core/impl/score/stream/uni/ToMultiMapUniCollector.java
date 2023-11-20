@@ -22,7 +22,7 @@ final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Re
             Function<? super A, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             IntFunction<Set_> setFunction) {
-        super(a -> Pair.of(keyFunction.apply(a), valueFunction.apply(a)));
+        super(a -> new Pair<>(keyFunction.apply(a), valueFunction.apply(a)));
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;

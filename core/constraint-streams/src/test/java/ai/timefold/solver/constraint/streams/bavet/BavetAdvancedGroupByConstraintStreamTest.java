@@ -44,14 +44,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(e -> e.getCode().substring(0, 1), count())
-                        .groupBy(Pair::of)
-                        .filter(pair -> !pair.getKey().equals("G"))
-                        .penalize(SimpleScore.ONE, Pair::getValue)
+                        .groupBy(Pair::new)
+                        .filter(pair -> !pair.key().equals("G"))
+                        .penalize(SimpleScore.ONE, Pair::value)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatch(Pair.of("M", 1)));
+        assertScore(scoreDirector, assertMatch(new Pair<>("M", 1)));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
