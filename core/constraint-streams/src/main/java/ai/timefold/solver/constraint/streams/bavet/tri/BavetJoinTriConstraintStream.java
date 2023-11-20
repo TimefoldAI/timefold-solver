@@ -10,7 +10,6 @@ import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.index.JoinerUtils;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.tri.DefaultTriJoiner;
@@ -58,10 +57,10 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexerFactory indexerFactory = new IndexerFactory(joiner);
+        IndexerFactory<C> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
                 ? new IndexedJoinTriNode<>(
-                        JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
+                        indexerFactory.buildBiLeftMapping(), indexerFactory.buildRightMapping(),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),

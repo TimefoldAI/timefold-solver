@@ -149,13 +149,14 @@ final class DynamicPropagationQueue<Tuple_ extends AbstractTuple, Carrier_ exten
 
     @Override
     public void propagateUpdates() {
+        int dirtyListSize = dirtyList.size();
         BitSet insertAndRetractQueue = buildInsertAndRetractQueue(insertQueue, retractQueue);
         if (insertAndRetractQueue == null) { // Iterate over the entire list more efficiently.
-            for (Carrier_ carrier : dirtyList) {
-                propagateInsertOrUpdate(carrier, updatePropagator);
+            for (int i = 0; i < dirtyListSize; i++) {
+                // Not using enhanced for loop in order not to create so many iterators in the hot path.
+                propagateInsertOrUpdate(dirtyList.get(i), updatePropagator);
             }
         } else { // The gaps in the queue are the updates.
-            int dirtyListSize = dirtyList.size();
             int i = insertAndRetractQueue.nextClearBit(0);
             while (i != -1 && i < dirtyListSize) {
                 propagateInsertOrUpdate(dirtyList.get(i), updatePropagator);

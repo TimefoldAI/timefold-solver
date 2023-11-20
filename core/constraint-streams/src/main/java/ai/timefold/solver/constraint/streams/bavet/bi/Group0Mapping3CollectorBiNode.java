@@ -29,7 +29,7 @@ final class Group0Mapping3CollectorBiNode<OldA, OldB, A, B, C, ResultContainerA_
                     BiConstraintCollector<OldA, OldB, ResultContainerB_, B> collectorB,
                     BiConstraintCollector<OldA, OldB, ResultContainerC_, C> collectorC) {
         return (BiConstraintCollector<OldA, OldB, Object, Triple<A, B, C>>) ConstraintCollectors.compose(collectorA, collectorB,
-                collectorC, (a, b, c) -> new Triple<>(a, b, c));
+                collectorC, Triple::new);
     }
 
     @Override

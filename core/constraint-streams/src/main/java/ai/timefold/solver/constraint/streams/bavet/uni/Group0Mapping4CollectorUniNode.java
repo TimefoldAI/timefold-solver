@@ -33,7 +33,7 @@ final class Group0Mapping4CollectorUniNode<OldA, A, B, C, D, ResultContainerA_, 
                     UniConstraintCollector<OldA, ResultContainerC_, C> collectorC,
                     UniConstraintCollector<OldA, ResultContainerD_, D> collectorD) {
         return (UniConstraintCollector<OldA, Object, Quadruple<A, B, C, D>>) ConstraintCollectors.compose(collectorA,
-                collectorB, collectorC, collectorD, (a, b, c, d) -> new Quadruple<>(a, b, c, d));
+                collectorB, collectorC, collectorD, Quadruple::new);
     }
 
     @Override

@@ -33,7 +33,7 @@ final class Group0Mapping4CollectorTriNode<OldA, OldB, OldC, A, B, C, D, ResultC
                     TriConstraintCollector<OldA, OldB, OldC, ResultContainerC_, C> collectorC,
                     TriConstraintCollector<OldA, OldB, OldC, ResultContainerD_, D> collectorD) {
         return (TriConstraintCollector<OldA, OldB, OldC, Object, Quadruple<A, B, C, D>>) ConstraintCollectors.compose(
-                collectorA, collectorB, collectorC, collectorD, (a, b, c, d) -> new Quadruple<>(a, b, c, d));
+                collectorA, collectorB, collectorC, collectorD, Quadruple::new);
     }
 
     @Override

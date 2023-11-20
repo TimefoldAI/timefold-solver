@@ -30,7 +30,7 @@ final class Group0Mapping3CollectorTriNode<OldA, OldB, OldC, A, B, C, ResultCont
                     TriConstraintCollector<OldA, OldB, OldC, ResultContainerB_, B> collectorB,
                     TriConstraintCollector<OldA, OldB, OldC, ResultContainerC_, C> collectorC) {
         return (TriConstraintCollector<OldA, OldB, OldC, Object, Triple<A, B, C>>) ConstraintCollectors.compose(collectorA,
-                collectorB, collectorC, (a, b, c) -> new Triple<>(a, b, c));
+                collectorB, collectorC, Triple::new);
     }
 
     @Override
