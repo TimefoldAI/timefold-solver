@@ -33,7 +33,7 @@ final class Group0Mapping4CollectorBiNode<OldA, OldB, A, B, C, D, ResultContaine
                     BiConstraintCollector<OldA, OldB, ResultContainerC_, C> collectorC,
                     BiConstraintCollector<OldA, OldB, ResultContainerD_, D> collectorD) {
         return (BiConstraintCollector<OldA, OldB, Object, Quadruple<A, B, C, D>>) ConstraintCollectors.compose(collectorA,
-                collectorB, collectorC, collectorD, (a, b, c, d) -> new Quadruple<>(a, b, c, d));
+                collectorB, collectorC, collectorD, Quadruple::new);
     }
 
     @Override

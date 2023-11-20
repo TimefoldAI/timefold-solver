@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Indexer<T> {
 
-    private final int indexKeyPosition;
+    private final int propertyIndex;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Comparator<Key_> keyComparator;
     private final boolean hasOrEquals;
@@ -23,9 +23,9 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         this(comparisonJoinerType, 0, downstreamIndexerSupplier);
     }
 
-    public ComparisonIndexer(JoinerType comparisonJoinerType, int indexKeyPosition,
+    public ComparisonIndexer(JoinerType comparisonJoinerType, int propertyIndex,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.indexKeyPosition = indexKeyPosition;
+        this.propertyIndex = propertyIndex;
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
         /*
          * For GT/GTE, the iteration order is reversed.
@@ -34,8 +34,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
          */
         this.keyComparator =
                 (comparisonJoinerType == JoinerType.GREATER_THAN || comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL)
-                        ? KeyComparator.INSTANCE.reversed()
-                        : KeyComparator.INSTANCE;
+                        ? Comparator.<Key_> naturalOrder().reversed()
+                        : Comparator.naturalOrder();
         this.hasOrEquals = comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL
                 || comparisonJoinerType == JoinerType.LESS_THAN_OR_EQUAL;
         this.comparisonMap = new TreeMap<>(keyComparator);
@@ -43,7 +43,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
 
     @Override
     public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
-        Key_ indexKey = indexProperties.toKey(indexKeyPosition);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = comparisonMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -55,7 +55,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
 
     @Override
     public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = indexProperties.toKey(indexKeyPosition);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(indexProperties, indexKey, entry);
         downstreamIndexer.remove(indexProperties, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -81,7 +81,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         if (mapSize == 0) {
             return 0;
         }
-        Key_ indexKey = indexProperties.toKey(indexKeyPosition);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         if (mapSize == 1) { // Avoid creation of the entry set and iterator.
             Map.Entry<Key_, Indexer<T>> entry = comparisonMap.firstEntry();
             int comparison = keyComparator.compare(entry.getKey(), indexKey);
@@ -115,7 +115,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         if (size == 0) {
             return;
         }
-        Key_ indexKey = indexProperties.toKey(indexKeyPosition);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         if (size == 1) { // Avoid creation of the entry set and iterator.
             Map.Entry<Key_, Indexer<T>> entry = comparisonMap.firstEntry();
             visitEntry(indexProperties, tupleConsumer, indexKey, entry);
@@ -152,20 +152,6 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     @Override
     public String toString() {
         return "size = " + comparisonMap.size();
-    }
-
-    private static final class KeyComparator<Key_ extends Comparable<Key_>> implements Comparator<Key_> {
-
-        private static final Comparator INSTANCE = new KeyComparator<>();
-
-        @Override
-        public int compare(Key_ o1, Key_ o2) {
-            if (o1 == o2) {
-                return 0;
-            }
-            return o1.compareTo(o2);
-        }
-
     }
 
 }

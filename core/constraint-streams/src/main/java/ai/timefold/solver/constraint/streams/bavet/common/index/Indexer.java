@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
  *        For example for {@code Bi<A, B>.join(C)}, the tuple is {@code BiTuple<A, B>} xor {@code UniTuple<C>}.
  */
-public interface Indexer<T> {
+public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
     ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple);
 

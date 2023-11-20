@@ -10,25 +10,22 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
-    private final int indexKeyFrom;
-    private final int indexKeyTo;
+    private final int propertyIndex;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
 
     public EqualsIndexer(Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this(0, 1, downstreamIndexerSupplier);
+        this(0, downstreamIndexerSupplier);
     }
 
-    public EqualsIndexer(int indexKeyFromInclusive, int indexKeyToExclusive,
-            Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.indexKeyFrom = indexKeyFromInclusive;
-        this.indexKeyTo = indexKeyToExclusive;
+    public EqualsIndexer(int propertyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        this.propertyIndex = propertyIndex;
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
     }
 
     @Override
     public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
-        Key_ indexKey = indexProperties.toKey(indexKeyFrom, indexKeyTo);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -40,7 +37,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = indexProperties.toKey(indexKeyFrom, indexKeyTo);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(indexProperties, indexKey, entry);
         downstreamIndexer.remove(indexProperties, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -61,7 +58,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public int size(IndexProperties indexProperties) {
-        Key_ indexKey = indexProperties.toKey(indexKeyFrom, indexKeyTo);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
@@ -71,7 +68,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer) {
-        Key_ indexKey = indexProperties.toKey(indexKeyFrom, indexKeyTo);
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null || downstreamIndexer.isEmpty()) {
             return;

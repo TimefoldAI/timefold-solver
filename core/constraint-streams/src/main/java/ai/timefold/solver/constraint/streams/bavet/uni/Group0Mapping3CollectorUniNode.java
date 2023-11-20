@@ -29,7 +29,7 @@ final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainerA_, Res
                     UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
                     UniConstraintCollector<OldA, ResultContainerC_, C> collectorC) {
         return (UniConstraintCollector<OldA, Object, Triple<A, B, C>>) ConstraintCollectors.compose(collectorA, collectorB,
-                collectorC, (a, b, c) -> new Triple<>(a, b, c));
+                collectorC, Triple::new);
     }
 
     @Override

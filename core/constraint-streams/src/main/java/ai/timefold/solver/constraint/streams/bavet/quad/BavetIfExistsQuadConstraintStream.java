@@ -9,7 +9,6 @@ import ai.timefold.solver.constraint.streams.bavet.common.BavetIfExistsConstrain
 import ai.timefold.solver.constraint.streams.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.constraint.streams.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.constraint.streams.bavet.common.index.JoinerUtils;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.common.penta.DefaultPentaJoiner;
@@ -64,17 +63,17 @@ final class BavetIfExistsQuadConstraintStream<Solution_, A, B, C, D, E>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         TupleLifecycle<QuadTuple<A, B, C, D>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexerFactory indexerFactory = new IndexerFactory(joiner);
+        IndexerFactory<E> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
                 ? (filtering == null ? new IndexedIfExistsQuadNode<>(shouldExist,
-                        JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
+                        indexerFactory.buildQuadLeftMapping(), indexerFactory.buildRightMapping(),
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                         downstream, indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
                         : new IndexedIfExistsQuadNode<>(shouldExist,
-                                JoinerUtils.combineLeftMappings(joiner), JoinerUtils.combineRightMappings(joiner),
+                                indexerFactory.buildQuadLeftMapping(), indexerFactory.buildRightMapping(),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),

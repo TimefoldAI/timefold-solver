@@ -7,6 +7,7 @@ import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.constraint.streams.common.bi.DefaultBiJoiner;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.Pair;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,17 +48,17 @@ class EqualsIndexerTest extends AbstractIndexerTest {
         Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
 
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        indexer.put(new ManyIndexProperties("F", 40), annTuple);
+        indexer.put(new SingleIndexProperties(new Pair<>("F", 40)), annTuple);
         UniTuple<String> bethTuple = newTuple("Beth-F-30");
-        indexer.put(new ManyIndexProperties("F", 30), bethTuple);
-        indexer.put(new ManyIndexProperties("M", 40), newTuple("Carl-M-40"));
-        indexer.put(new ManyIndexProperties("M", 30), newTuple("Dan-M-30"));
+        indexer.put(new SingleIndexProperties(new Pair<>("F", 30)), bethTuple);
+        indexer.put(new SingleIndexProperties(new Pair<>("M", 40)), newTuple("Carl-M-40"));
+        indexer.put(new SingleIndexProperties(new Pair<>("M", 30)), newTuple("Dan-M-30"));
         UniTuple<String> ednaTuple = newTuple("Edna-F-40");
-        indexer.put(new ManyIndexProperties("F", 40), ednaTuple);
+        indexer.put(new SingleIndexProperties(new Pair<>("F", 40)), ednaTuple);
 
-        assertThat(getTuples(indexer, "F", 40)).containsOnly(annTuple, ednaTuple);
-        assertThat(getTuples(indexer, "F", 30)).containsOnly(bethTuple);
-        assertThat(getTuples(indexer, "F", 20)).isEmpty();
+        assertThat(getTuples(indexer, new Pair<>("F", 40))).containsOnly(annTuple, ednaTuple);
+        assertThat(getTuples(indexer, new Pair<>("F", 30))).containsOnly(bethTuple);
+        assertThat(getTuples(indexer, new Pair<>("F", 20))).isEmpty();
     }
 
     private static UniTuple<String> newTuple(String factA) {
