@@ -16,7 +16,11 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.solver.RecommendedFit;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
+import ai.timefold.solver.jackson.api.solver.AbstractRecommendedFitJacksonDeserializer;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
@@ -103,6 +108,17 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         objectMapper.registerModule(TimefoldJacksonModule.createModule());
 
+        var originalScoreAnalysis = getScoreAnalysis();
+        var serialized = objectMapper.writeValueAsString(originalScoreAnalysis);
+        Assertions.assertThat(serialized)
+                .isEqualToIgnoringWhitespace(getSerializedScoreAnalysis());
+
+        objectMapper.registerModule(new CustomJacksonModule());
+        ScoreAnalysis<HardSoftScore> deserialized = objectMapper.readValue(serialized, ScoreAnalysis.class);
+        Assertions.assertThat(deserialized).isEqualTo(originalScoreAnalysis);
+    }
+
+    private static ScoreAnalysis<HardSoftScore> getScoreAnalysis() {
         var constraintRef1 = ConstraintRef.of("package1", "constraint1");
         var constraintRef2 = ConstraintRef.of("package2", "constraint2");
         var matchAnalysis1 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
@@ -119,45 +135,73 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         var constraintAnalysis2 =
                 new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofSoft(1), HardSoftScore.ofSoft(4),
                         List.of(matchAnalysis3, matchAnalysis4));
-        var originalScoreAnalysis = new ScoreAnalysis<>(HardSoftScore.of(2, 4),
+        return new ScoreAnalysis<>(HardSoftScore.of(2, 4),
                 Map.of(constraintRef1, constraintAnalysis1,
                         constraintRef2, constraintAnalysis2));
+    }
 
-        var serialized = objectMapper.writeValueAsString(originalScoreAnalysis);
+    private static String getSerializedScoreAnalysis() {
+        return """
+                {
+                  "score" : "2hard/4soft",
+                  "constraints" : [ {
+                    "package" : "package1",
+                    "name" : "constraint1",
+                    "weight" : "1hard/0soft",
+                    "score" : "2hard/0soft",
+                    "matches" : [ {
+                      "score" : "1hard/0soft",
+                      "justification" : [ "A", "B" ]
+                    }, {
+                      "score" : "1hard/0soft",
+                      "justification" : [ "B", "C", "D" ]
+                    } ]
+                  }, {
+                    "package" : "package2",
+                    "name" : "constraint2",
+                    "weight" : "0hard/1soft",
+                    "score" : "0hard/4soft",
+                    "matches" : [ {
+                      "score" : "0hard/1soft",
+                      "justification" : [ "D" ]
+                    }, {
+                      "score" : "0hard/3soft",
+                      "justification" : [ "A", "C" ]
+                    } ]
+                  } ]
+                }""";
+    }
+
+    @Test
+    void recommendationFit() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+
+        var proposition = new Pair<>("A", "1");
+        var originalScoreAnalysis = getScoreAnalysis();
+        var originalRecommendedFit = new DefaultRecommendedFit<>(0, proposition, originalScoreAnalysis);
+        var fitList = List.of(originalRecommendedFit);
+
+        var serialized = objectMapper.writeValueAsString(fitList);
         Assertions.assertThat(serialized)
                 .isEqualToIgnoringWhitespace("""
-                        {
-                            "score" : "2hard/4soft",
-                            "constraints" : [ {
-                              "package" : "package1",
-                              "name" : "constraint1",
-                              "weight" : "1hard/0soft",
-                              "score" : "2hard/0soft",
-                              "matches" : [ {
-                                "score" : "1hard/0soft",
-                                "justification" : [ "A", "B" ]
-                              }, {
-                                "score" : "1hard/0soft",
-                                "justification" : [ "B", "C", "D" ]
-                              } ]
-                            }, {
-                              "package" : "package2",
-                              "name" : "constraint2",
-                              "weight" : "0hard/1soft",
-                              "score" : "0hard/4soft",
-                              "matches" : [ {
-                                "score" : "0hard/1soft",
-                                "justification" : [ "D" ]
-                              }, {
-                                "score" : "0hard/3soft",
-                                "justification" : [ "A", "C" ]
-                              } ]
-                            } ]
-                          }""");
+                        [ {
+                             "proposition" : {
+                               "key" : "A",
+                               "value" : "1"
+                             },
+                             "scoreDiff" : %s
+                           } ]""".formatted(getSerializedScoreAnalysis()));
 
         objectMapper.registerModule(new CustomJacksonModule());
-        ScoreAnalysis<HardSoftScore> deserialized = objectMapper.readValue(serialized, ScoreAnalysis.class);
-        Assertions.assertThat(deserialized).isEqualTo(originalScoreAnalysis);
+        List<RecommendedFit<Pair<String, String>, HardSoftScore>> deserialized =
+                objectMapper.readValue(serialized,
+                        TypeFactory.defaultInstance().constructCollectionType(List.class, RecommendedFit.class));
+        Assertions.assertThat(deserialized)
+                .hasSize(1)
+                .first()
+                .isEqualTo(originalRecommendedFit);
     }
 
     public static final class CustomJacksonModule extends SimpleModule {
@@ -165,6 +209,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         public CustomJacksonModule() {
             super("Timefold Custom");
             addDeserializer(ScoreAnalysis.class, new CustomScoreAnalysisJacksonDeserializer());
+            addDeserializer(RecommendedFit.class, new CustomRecommendedFitJacksonDeserializer());
         }
 
     }
@@ -190,6 +235,15 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
             return (ConstraintJustification_) DefaultConstraintJustification.of(score, justificationList);
         }
 
+    }
+
+    public static final class CustomRecommendedFitJacksonDeserializer
+            extends AbstractRecommendedFitJacksonDeserializer<Pair<String, String>, HardSoftScore> {
+
+        @Override
+        protected Class<Pair<String, String>> getPropositionClass() {
+            return (Class) Pair.class;
+        }
     }
 
     public static class TestTimefoldJacksonModuleWrapper {

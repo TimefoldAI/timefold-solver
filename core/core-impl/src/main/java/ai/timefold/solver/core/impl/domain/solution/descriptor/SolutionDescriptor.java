@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -924,11 +925,19 @@ public class SolutionDescriptor<Solution_> {
         }
     }
 
-    public void visitEntitiesByEntityClass(Solution_ solution, Class<?> entityClass, Consumer<Object> visitor) {
+    /**
+     *
+     * @param solution solution to extract the entities from
+     * @param entityClass class of the entity to be visited, including subclasses
+     * @param visitor never null; applied to every entity, iteration stops if it returns true
+     */
+    public void visitEntitiesByEntityClass(Solution_ solution, Class<?> entityClass, Predicate<Object> visitor) {
         for (MemberAccessor entityMemberAccessor : entityMemberAccessorMap.values()) {
             Object entity = extractMemberObject(entityMemberAccessor, solution);
             if (entityClass.isInstance(entity)) {
-                visitor.accept(entity);
+                if (visitor.test(entity)) {
+                    return;
+                }
             }
         }
         for (MemberAccessor entityCollectionMemberAccessor : entityCollectionMemberAccessorMap.values()) {
@@ -948,7 +957,11 @@ public class SolutionDescriptor<Solution_> {
                  */
                 Collection<Object> entityCollection =
                         extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution, false);
-                entityCollection.forEach(visitor);
+                for (Object o : entityCollection) {
+                    if (visitor.test(o)) {
+                        return;
+                    }
+                }
                 continue;
             }
             // The collection now is either raw, or it is not of an entity type, such as perhaps a parent interface.
@@ -964,7 +977,9 @@ public class SolutionDescriptor<Solution_> {
                     extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution, false);
             for (Object entity : entityCollection) {
                 if (entityClass.isInstance(entity)) {
-                    visitor.accept(entity);
+                    if (visitor.test(entity)) {
+                        return;
+                    }
                 }
             }
         }

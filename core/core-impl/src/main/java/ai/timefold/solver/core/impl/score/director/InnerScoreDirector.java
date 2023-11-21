@@ -456,8 +456,22 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void forceTriggerVariableListeners();
 
     default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches) {
+        return buildScoreAnalysis(analyzeConstraintMatches, false);
+    }
+
+    /**
+     *
+     * @param analyzeConstraintMatches True if the result's {@link ConstraintAnalysis} should have its {@link MatchAnalysis}
+     *        populated.
+     * @param overrideInitScore True if the result's {@link Score} should have its {@link Score#isSolutionInitialized()} set to
+     *        true.
+     * @return never null
+     */
+    default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches, boolean overrideInitScore) {
         var score = calculateScore();
-        if (!score.isSolutionInitialized()) {
+        if (overrideInitScore) {
+            score = score.withInitScore(0);
+        } else if (!score.isSolutionInitialized()) {
             throw new IllegalArgumentException("""
                     Cannot analyze solution (%s) as it is not initialized (%s).
                     Maybe run the solver first?"""

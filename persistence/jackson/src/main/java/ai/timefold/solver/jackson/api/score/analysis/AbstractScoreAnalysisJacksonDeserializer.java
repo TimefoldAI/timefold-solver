@@ -31,28 +31,35 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
         JsonNode node = p.readValueAsTree();
         var score = parseScore(node.get("score").asText());
         var constraintAnalysisList = new HashMap<ConstraintRef, ConstraintAnalysis<Score_>>();
-        node.get("constraints").forEach(constraintNode -> {
+        for (var constraintNode : node.get("constraints")) {
             var constraintPackage = constraintNode.get("package").asText();
             var constraintName = constraintNode.get("name").asText();
             var constraintRef = ConstraintRef.of(constraintPackage, constraintName);
             var constraintWeight = parseScore(constraintNode.get("weight").asText());
             var constraintScore = parseScore(constraintNode.get("score").asText());
             var matchScoreList = new ArrayList<MatchAnalysis<Score_>>();
-            JsonNode matchesNode = constraintNode.get("matches");
+            var matchesNode = constraintNode.get("matches");
             if (matchesNode == null) {
                 constraintAnalysisList.put(constraintRef,
                         new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, null));
             } else {
-                constraintNode.get("matches").forEach(matchNode -> {
+                for (var matchNode : constraintNode.get("matches")) {
                     var matchScore = parseScore(matchNode.get("score").asText());
-                    var justificationString = matchNode.get("justification").toString();
-                    var justification = parseConstraintJustification(constraintRef, justificationString, matchScore);
-                    matchScoreList.add(new MatchAnalysis<>(constraintRef, matchScore, justification));
-                });
+                    var justificationNode = matchNode.get("justification");
+                    var justificationString = justificationNode.toString();
+                    if (getConstraintJustificationClass(constraintRef) == null) { // String-based fallback.
+                        var parsedJustification = parseConstraintJustification(constraintRef, justificationString, matchScore);
+                        matchScoreList.add(new MatchAnalysis<>(constraintRef, matchScore, parsedJustification));
+                    } else { // Deserializer-based method.
+                        var parsedJustification =
+                                ctxt.readTreeAsValue(justificationNode, getConstraintJustificationClass(constraintRef));
+                        matchScoreList.add(new MatchAnalysis<>(constraintRef, matchScore, parsedJustification));
+                    }
+                }
                 constraintAnalysisList.put(constraintRef,
                         new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, matchScoreList));
             }
-        });
+        }
         return new ScoreAnalysis<>(score, constraintAnalysisList);
     }
 
@@ -68,7 +75,24 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
     /**
      * Each {@link Constraint} in the {@link ConstraintProvider} is justified
      * with a custom implementation {@link ConstraintJustification}.
+     * This method is responsible for telling Jackson which type to serialize the justification into.
+     * This type must have a deserializer registered.
+     *
+     * @param constraintRef never null
+     * @return null if fallback {@link #parseConstraintJustification(ConstraintRef, String, Score)} should be used instead.
+     * @param <ConstraintJustification_> Domain-specific custom implementation, typically constraint-specific.
+     */
+    protected <ConstraintJustification_ extends ConstraintJustification> Class<ConstraintJustification_>
+            getConstraintJustificationClass(ConstraintRef constraintRef) {
+        return null;
+    }
+
+    /**
+     * Each {@link Constraint} in the {@link ConstraintProvider} is justified
+     * with a custom implementation {@link ConstraintJustification}.
      * This method is responsible for parsing the justification string into that subtype.
+     * It is a fallback for when using a deserializer for {@link #getConstraintJustificationClass(ConstraintRef)}
+     * isn't possible
      *
      * @param constraintRef never null
      * @param constraintJustificationString never null
@@ -76,7 +100,9 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
      * @return never null
      * @param <ConstraintJustification_> Domain-specific custom implementation, typically constraint-specific.
      */
-    protected abstract <ConstraintJustification_ extends ConstraintJustification> ConstraintJustification_
-            parseConstraintJustification(ConstraintRef constraintRef, String constraintJustificationString, Score_ score);
+    protected <ConstraintJustification_ extends ConstraintJustification> ConstraintJustification_
+            parseConstraintJustification(ConstraintRef constraintRef, String constraintJustificationString, Score_ score) {
+        throw new UnsupportedOperationException();
+    }
 
 }

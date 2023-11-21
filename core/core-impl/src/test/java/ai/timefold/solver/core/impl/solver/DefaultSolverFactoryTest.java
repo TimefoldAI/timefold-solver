@@ -37,8 +37,12 @@ class DefaultSolverFactoryTest {
                         return mockCpuCount;
                     }
                 };
-
-        return moveThreadCountResolverMock.resolveMoveThreadCount(SolverConfig.MOVE_THREAD_COUNT_AUTO);
+        var maybeCount = moveThreadCountResolverMock.resolveMoveThreadCount(SolverConfig.MOVE_THREAD_COUNT_AUTO);
+        if (maybeCount.isPresent()) {
+            return maybeCount.getAsInt();
+        } else {
+            return null;
+        }
     }
 
     @Test
@@ -59,7 +63,12 @@ class DefaultSolverFactoryTest {
     private Integer resolveMoveThreadCount(String moveThreadCountString) {
         DefaultSolverFactory.MoveThreadCountResolver moveThreadCountResolver =
                 new DefaultSolverFactory.MoveThreadCountResolver();
-        return moveThreadCountResolver.resolveMoveThreadCount(moveThreadCountString);
+        var maybeCount = moveThreadCountResolver.resolveMoveThreadCount(moveThreadCountString);
+        if (maybeCount.isPresent()) {
+            return maybeCount.getAsInt();
+        } else {
+            return null;
+        }
     }
 
     @Test

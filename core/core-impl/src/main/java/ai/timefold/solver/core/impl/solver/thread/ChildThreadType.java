@@ -10,5 +10,6 @@ public enum ChildThreadType {
     /**
      * Used by multithreaded incremental solving.
      */
-    MOVE_THREAD;
+    MOVE_THREAD
+
 }

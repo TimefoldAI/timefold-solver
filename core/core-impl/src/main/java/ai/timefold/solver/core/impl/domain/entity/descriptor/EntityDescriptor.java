@@ -554,7 +554,10 @@ public class EntityDescriptor<Solution_> {
     }
 
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {
-        solutionDescriptor.visitEntitiesByEntityClass(solution, entityClass, visitor);
+        solutionDescriptor.visitEntitiesByEntityClass(solution, entityClass, entity -> {
+            visitor.accept(entity);
+            return false; // Iterate over all entities.
+        });
     }
 
     public long getMaximumValueCount(Solution_ solution, Object entity) {
