@@ -25,6 +25,9 @@ import ai.timefold.solver.core.config.solver.testutil.calculator.TestdataCorrupt
 import ai.timefold.solver.core.config.solver.testutil.calculator.TestdataDifferentValuesCalculator;
 import ai.timefold.solver.core.config.solver.testutil.corruptedmove.factory.TestdataCorruptedEntityUndoMoveFactory;
 import ai.timefold.solver.core.config.solver.testutil.corruptedmove.factory.TestdataCorruptedUndoMoveFactory;
+import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEasyScoreCalculator;
+import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEntity;
+import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowSolution;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
@@ -112,7 +115,8 @@ class EnvironmentModeTest {
                 setSolverConfigMoveListFactoryClassToCorrupted(
                         solverConfig,
                         TestdataCorruptedUndoMoveFactory.class);
-                assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove");
+                assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove",
+                        "Shadow variables agrees with from scratch calculations before and after undo.");
                 break;
             case NON_INTRUSIVE_FULL_ASSERT:
                 setSolverConfigMoveListFactoryClassToCorrupted(
@@ -122,6 +126,40 @@ class EnvironmentModeTest {
                 break;
             case REPRODUCIBLE:
             case NON_REPRODUCIBLE:
+                // No exception expected
+                break;
+            default:
+                Assertions.fail("Environment mode not covered: " + environmentMode);
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(EnvironmentMode.class)
+    void corruptedUndoShadowVariableListener(EnvironmentMode environmentMode) {
+        SolverConfig solverConfig = new SolverConfig()
+                .withEnvironmentMode(environmentMode)
+                .withSolutionClass(CorruptedUndoShadowSolution.class)
+                .withEntityClasses(CorruptedUndoShadowEntity.class)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withEasyScoreCalculatorClass(CorruptedUndoShadowEasyScoreCalculator.class))
+                .withTerminationConfig(new TerminationConfig()
+                        .withScoreCalculationCountLimit(10L));
+
+        switch (environmentMode) {
+            case FULL_ASSERT:
+            case FAST_ASSERT:
+                assertThatExceptionOfType(IllegalStateException.class)
+                        .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
+                                new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
+                        .withMessageContainingAll("corrupted undoMove",
+                                "Shadow variables have different values when recalculated from scratch after undo:",
+                                "The entity (" + CorruptedUndoShadowEntity.class.getSimpleName() + ")'s shadow variable ("
+                                        + CorruptedUndoShadowEntity.class.getSimpleName()
+                                        + ".valueClone)'s corrupted value (v1) changed to uncorrupted value (null)");
+                break;
+            case REPRODUCIBLE:
+            case NON_REPRODUCIBLE:
+            case NON_INTRUSIVE_FULL_ASSERT:
                 // No exception expected
                 break;
             default:
@@ -169,10 +207,10 @@ class EnvironmentModeTest {
         assertDifferentScoreSeries(solver1, solver2);
     }
 
-    private void assertIllegalStateExceptionWhileSolving(SolverConfig solverConfig, String exceptionMessage) {
+    private void assertIllegalStateExceptionWhileSolving(SolverConfig solverConfig, String... exceptionMessage) {
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> PlannerTestUtils.solve(solverConfig, inputProblem))
-                .withMessageContaining(exceptionMessage);
+                .withMessageContainingAll(exceptionMessage);
     }
 
     private void assertSameScoreSeries(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
