@@ -514,8 +514,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        if (afterVariableChangedEvents != null) {
-            afterVariableChangedEvents.add(new Pair<>(variableDescriptor, entity));
+        if (beforeVariableChangedEvents != null) {
+            beforeVariableChangedEvents.add(new Pair<>(variableDescriptor, entity));
         }
     }
 
