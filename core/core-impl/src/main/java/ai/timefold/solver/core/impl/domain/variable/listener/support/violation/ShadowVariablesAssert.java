@@ -35,6 +35,15 @@ public final class ShadowVariablesAssert {
         return new ShadowVariablesAssert(shadowVariableSnapshots);
     }
 
+    public static <Solution_> void resetShadowVariables(
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            Solution_ workingSolution) {
+        solutionDescriptor.visitAllEntities(workingSolution,
+                entity -> solutionDescriptor.findEntityDescriptorOrFail(entity.getClass())
+                        .getShadowVariableDescriptors()
+                        .forEach(descriptor -> descriptor.setValue(entity, null)));
+    }
+
     /**
      * Takes a look at the shadow variables of all entities and compares them against the recorded state. Every difference
      * is added to the violation message. The first N differences up to the {@code violationDisplayLimit} are displayed

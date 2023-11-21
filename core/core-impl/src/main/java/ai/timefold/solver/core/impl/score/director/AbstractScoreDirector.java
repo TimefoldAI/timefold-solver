@@ -25,6 +25,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
+import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -62,6 +63,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private long calculationCount = 0L;
     protected Solution_ workingSolution;
     protected Integer workingInitScore = null;
+    private ShadowVariablesAssert beforeMoveSnapshot;
+    private String undoMoveText;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
@@ -183,9 +186,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+        if (assertMoveScoreFromScratch) {
+            beforeMoveSnapshot = ShadowVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+        }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
         if (assertMoveScoreFromScratch) {
+            undoMoveText = undoMove.toString();
             assertWorkingScoreFromScratch(score, move);
         }
         undoMove.doMoveOnly(this);
@@ -194,9 +201,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
+        if (assertMoveScoreFromScratch) {
+            beforeMoveSnapshot = ShadowVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+        }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
         if (assertMoveScoreFromScratch) {
+            undoMoveText = undoMove.toString();
             assertWorkingScoreFromScratch(score, move);
         }
         moveProcessor.accept(score);
@@ -560,6 +571,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                             + completedAction + "):\n"
                             + violationMessage);
         }
+
         Score_ workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
             assertWorkingScoreFromScratch(workingScore,
@@ -631,23 +643,54 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         Score_ undoScore = calculateScore();
         if (!undoScore.equals(beforeMoveScore)) {
             logger.trace("        Corruption detected. Diagnosing...");
-            // TODO PLANNER-421 Avoid undoMove.toString() because it's stale (because the move is already done)
-            String undoMoveString = "Undo(" + move + ")";
+
+            ShadowVariablesAssert afterUndoSnapshot =
+                    ShadowVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
             // Precondition: assert that there are probably no corrupted constraints
-            assertWorkingScoreFromScratch(undoScore, undoMoveString);
+            assertWorkingScoreFromScratch(undoScore, undoMoveText);
             // Precondition: assert that shadow variables aren't stale after doing the undoMove
-            assertShadowVariablesAreNotStale(undoScore, undoMoveString);
+            assertShadowVariablesAreNotStale(undoScore, undoMoveText);
+
+            String differentShadowVariables = buildShadowVariableDiff(afterUndoSnapshot);
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
+
             throw new IllegalStateException("UndoMove corruption (" + scoreDifference
                     + "): the beforeMoveScore (" + beforeMoveScore + ") is not the undoScore (" + undoScore
                     + ") which is the uncorruptedScore (" + undoScore + ") of the workingSolution.\n"
+                    + differentShadowVariables
                     + "  1) Enable EnvironmentMode " + EnvironmentMode.FULL_ASSERT
                     + " (if you haven't already) to fail-faster in case there's a score corruption or variable listener corruption.\n"
                     + "  2) Check the Move.createUndoMove(...) method of the moveClass (" + move.getClass() + ")."
-                    + " The move (" + move + ") might have a corrupted undoMove (" + undoMoveString + ").\n"
+                    + " The move (" + move + ") might have a corrupted undoMove (" + undoMoveText + ").\n"
                     + "  3) Check your custom " + VariableListener.class.getSimpleName() + "s (if you have any)"
                     + " for shadow variables that are used by score constraints that could cause"
                     + " the scoreDifference (" + scoreDifference + ").");
+        }
+    }
+
+    private String buildShadowVariableDiff(ShadowVariablesAssert afterMoveSnapshot) {
+        ShadowVariablesAssert.resetShadowVariables(getSolutionDescriptor(), workingSolution);
+        variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+
+        String undoShadowVariableViolations = afterMoveSnapshot.createShadowVariablesViolationMessage(3L);
+        String beforeShadowVariableViolations = null;
+
+        if (beforeMoveSnapshot != null) {
+            beforeShadowVariableViolations = beforeMoveSnapshot.createShadowVariablesViolationMessage(3L);
+        }
+        if (undoShadowVariableViolations != null && beforeShadowVariableViolations != null) {
+            return "Shadow variables have different values when recalculated from scratch before and after undo:\n" +
+                    "Before undo: " + beforeShadowVariableViolations + "\n" +
+                    "After undo: " + undoShadowVariableViolations + "\n";
+        } else if (undoShadowVariableViolations != null) {
+            return "Shadow variables have different values when recalculated from scratch after undo:\n" +
+                    undoShadowVariableViolations + "\n";
+        } else if (beforeShadowVariableViolations != null) {
+            return "Shadow variables have different values when recalculated from scratch before undo:\n"
+                    + beforeShadowVariableViolations
+                    + "\n";
+        } else {
+            return "Shadow variables agrees with from scratch calculations before and after undo.\n";
         }
     }
 
