@@ -28,6 +28,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.AllVariablesAssert;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
+import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -68,7 +69,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected Solution_ workingSolution;
     protected Integer workingInitScore = null;
     private AllVariablesAssert<Solution_> beforeMoveSnapshot;
+    private Solution_ beforeMoveSolution;
     private AllVariablesAssert<Solution_> afterMoveSnapshot;
+    private Solution_ afterMoveSolution;
     private final List<Pair<VariableDescriptor<Solution_>, Object>> beforeVariableChangedForwardEvents = new ArrayList<>();
     private final List<Pair<VariableDescriptor<Solution_>, Object>> afterVariableChangedForwardEvents = new ArrayList<>();
     private final List<Pair<VariableDescriptor<Solution_>, Object>> beforeVariableChangedUndoEvents = new ArrayList<>();
@@ -223,6 +226,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             beforeVariableChangedEvents = beforeVariableChangedForwardEvents;
             afterVariableChangedEvents = afterVariableChangedForwardEvents;
             beforeMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+            beforeMoveSolution = cloneSolution(workingSolution);
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
@@ -231,6 +235,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             beforeVariableChangedEvents = beforeVariableChangedUndoEvents;
             afterVariableChangedEvents = afterVariableChangedUndoEvents;
             afterMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+            afterMoveSolution = cloneSolution(workingSolution);
             assertWorkingScoreFromScratch(score, move);
         }
         undoMove.doMoveOnly(this);
@@ -247,6 +252,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             beforeVariableChangedEvents = beforeVariableChangedForwardEvents;
             afterVariableChangedEvents = afterVariableChangedForwardEvents;
             beforeMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+            beforeMoveSolution = cloneSolution(workingSolution);
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
@@ -255,6 +261,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             beforeVariableChangedEvents = beforeVariableChangedUndoEvents;
             afterVariableChangedEvents = afterVariableChangedUndoEvents;
             afterMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+            afterMoveSolution = cloneSolution(workingSolution);
             assertWorkingScoreFromScratch(score, move);
         }
         moveProcessor.accept(score);
@@ -711,6 +718,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
             AllVariablesAssert<Solution_> afterUndoSnapshot =
                     AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
+            Solution_ afterUndoSolution = cloneSolution(workingSolution);
             // Precondition: assert that there are probably no corrupted constraints
             assertWorkingScoreFromScratch(undoScore, undoMoveText);
             // Precondition: assert that shadow variables aren't stale after doing the undoMove
@@ -719,7 +727,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             String differentVariables = buildVariableDiff(afterUndoSnapshot);
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
 
-            throw new IllegalStateException("UndoMove corruption (" + scoreDifference
+            throw new UndoScoreCorruptionException("UndoMove corruption (" + scoreDifference
                     + "): the beforeMoveScore (" + beforeMoveScore + ") is not the undoScore (" + undoScore
                     + ") which is the uncorruptedScore (" + undoScore + ") of the workingSolution.\n"
                     + differentVariables
@@ -729,7 +737,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     + " The move (" + move + ") might have a corrupted undoMove (" + undoMoveText + ").\n"
                     + "  3) Check your custom " + VariableListener.class.getSimpleName() + "s (if you have any)"
                     + " for shadow variables that are used by score constraints that could cause"
-                    + " the scoreDifference (" + scoreDifference + ").");
+                    + " the scoreDifference (" + scoreDifference + ").",
+                    beforeMoveSolution,
+                    afterMoveSolution,
+                    afterUndoSolution,
+                    move,
+                    scoreDirectorFactory);
         }
     }
 
