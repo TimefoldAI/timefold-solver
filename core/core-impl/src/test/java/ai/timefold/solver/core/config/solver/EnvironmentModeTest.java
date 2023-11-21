@@ -111,12 +111,20 @@ class EnvironmentModeTest {
 
         switch (environmentMode) {
             case FULL_ASSERT:
-            case FAST_ASSERT:
                 setSolverConfigMoveListFactoryClassToCorrupted(
                         solverConfig,
                         TestdataCorruptedUndoMoveFactory.class);
                 assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove",
-                        "Shadow variables agrees with from scratch calculations before and after undo.");
+                        "Undo variables do not match before variables",
+                        "TestdataEntity.value (e2) expected (v1) actual (v2)",
+                        "Before shadow variables do not match recalculated from scratch shadow variables",
+                        "TestdataEntity.value (e2) expected (v2) actual (v1)");
+                break;
+            case FAST_ASSERT:
+                setSolverConfigMoveListFactoryClassToCorrupted(
+                        solverConfig,
+                        TestdataCorruptedUndoMoveFactory.class);
+                assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove");
                 break;
             case NON_INTRUSIVE_FULL_ASSERT:
                 setSolverConfigMoveListFactoryClassToCorrupted(
@@ -147,15 +155,23 @@ class EnvironmentModeTest {
 
         switch (environmentMode) {
             case FULL_ASSERT:
-            case FAST_ASSERT:
                 assertThatExceptionOfType(IllegalStateException.class)
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
                                 new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
                         .withMessageContainingAll("corrupted undoMove",
-                                "Shadow variables have different values when recalculated from scratch after undo:",
-                                "The entity (" + CorruptedUndoShadowEntity.class.getSimpleName() + ")'s shadow variable ("
-                                        + CorruptedUndoShadowEntity.class.getSimpleName()
-                                        + ".valueClone)'s corrupted value (v1) changed to uncorrupted value (null)");
+                                "Undo variables do not match before variables",
+                                "After Undo shadow variables do not match recalculated from scratch shadow variables",
+                                "Missing beforeVariableChanged events for undo move",
+                                "Missing afterVariableChanged events for undo move",
+                                "CorruptedUndoShadowEntity.valueClone (CorruptedUndoShadowEntity) expected (null) actual (v1)",
+                                "Missing beforeVariableChanged(CorruptedUndoShadowEntity, \"valueClone\")");
+            case FAST_ASSERT:
+                // FAST_ASSERT does not create snapshots since it does not intrusive, and hence it can only
+                // detect the undo corruption and not what caused it
+                assertThatExceptionOfType(IllegalStateException.class)
+                        .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
+                                new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
+                        .withMessageContainingAll("corrupted undoMove");
                 break;
             case REPRODUCIBLE:
             case NON_REPRODUCIBLE:
