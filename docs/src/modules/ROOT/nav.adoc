@@ -5,7 +5,6 @@
 ** xref:quickstart/quarkus/quarkus-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[leveloffset=+1]
 * xref:use-cases-and-examples/use-cases-and-examples.adoc[leveloffset=+1]
-* xref:configuration/configuration.adoc[leveloffset=+1]
 * Using Timefold Solver
 ** xref:using-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/configuration.adoc[leveloffset=+1]
@@ -22,5 +21,4 @@
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 * xref:integration/integration.adoc[leveloffset=+1]
 * xref:design-patterns/design-patterns.adoc[leveloffset=+1]
-* xref:development/development.adoc[leveloffset=+1]
 * xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]
