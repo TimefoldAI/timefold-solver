@@ -145,7 +145,7 @@ public class TaskAssigningPanel extends SolutionPanel<TaskAssigningSolution> {
         }
         logger.debug("Scheduling production of {} new tasks.", newTaskCount);
         previousProducedTime = producedTime;
-        final int readyTime = previousConsumedTime;
+        final int minStartTime = previousConsumedTime;
         doProblemChange((taskAssigningSolution, problemChangeDirector) -> {
             List<TaskType> taskTypeList = taskAssigningSolution.getTaskTypeList();
             List<Customer> customerList = taskAssigningSolution.getCustomerList();
@@ -167,7 +167,7 @@ public class TaskAssigningPanel extends SolutionPanel<TaskAssigningSolution> {
                 }
                 // Prevent the new task from being assigned retroactively
                 Task task = new Task(nextTaskId, taskType, nextIndexInTaskType,
-                        customerList.get(producingRandom.nextInt(customerList.size())), readyTime,
+                        customerList.get(producingRandom.nextInt(customerList.size())), minStartTime,
                         priorities[producingRandom.nextInt(priorities.length)]);
                 problemChangeDirector.addEntity(task, taskList::add);
             }

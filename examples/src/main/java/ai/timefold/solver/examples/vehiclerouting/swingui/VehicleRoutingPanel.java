@@ -95,12 +95,12 @@ public class VehicleRoutingPanel extends SolutionPanel<VehicleRoutingSolution> {
         int demand = demandRandom.nextInt(10) + 1; // Demand must not be 0.
         if (solution instanceof TimeWindowedVehicleRoutingSolution) {
             TimeWindowedDepot timeWindowedDepot = (TimeWindowedDepot) solution.getDepotList().get(0);
-            long windowTime = (timeWindowedDepot.getDueTime() - timeWindowedDepot.getReadyTime()) / 4L;
-            long readyTime = demandRandom.longs(0, windowTime * 3L)
+            long windowTime = (timeWindowedDepot.getMaxEndTime() - timeWindowedDepot.getMinStartTime()) / 4L;
+            long minStartTime = demandRandom.longs(0, windowTime * 3L)
                     .findAny()
                     .orElseThrow();
             return new TimeWindowedCustomer(newLocation.getId(), newLocation, demand,
-                    readyTime, readyTime + windowTime, Math.min(10000L, windowTime / 2L));
+                    minStartTime, minStartTime + windowTime, Math.min(10000L, windowTime / 2L));
         } else {
             return new Customer(newLocation.getId(), newLocation, demand);
         }

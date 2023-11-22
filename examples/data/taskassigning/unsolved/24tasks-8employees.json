@@ -77,7 +77,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 1,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -87,7 +87,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 1,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -97,7 +97,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 2,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -107,7 +107,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 1,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -117,7 +117,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 2,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -127,7 +127,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 3,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -137,7 +137,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 1,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -147,7 +147,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 2,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -157,7 +157,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 3,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -167,7 +167,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 3,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -177,7 +177,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 2,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -187,7 +187,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 4,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -197,7 +197,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 3,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -207,7 +207,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 5,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -217,7 +217,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 6,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -227,7 +227,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 7,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -237,7 +237,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 4,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -247,7 +247,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 5,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -257,7 +257,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 4,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -267,7 +267,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 5,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -277,7 +277,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 6,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -287,7 +287,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 7,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -297,7 +297,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 8,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -307,7 +307,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 6,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null

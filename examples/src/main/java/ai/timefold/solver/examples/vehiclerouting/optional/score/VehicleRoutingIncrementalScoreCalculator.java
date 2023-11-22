@@ -130,22 +130,22 @@ public class VehicleRoutingIncrementalScoreCalculator
     private void insertArrivalTime(TimeWindowedCustomer customer) {
         Long arrivalTime = customer.getArrivalTime();
         if (arrivalTime != null) {
-            long dueTime = customer.getDueTime();
-            if (dueTime < arrivalTime) {
-                // Score constraint arrivalAfterDueTime
-                hardScore -= (arrivalTime - dueTime);
+            long maxEndTime = customer.getMaxEndTime();
+            if (maxEndTime < arrivalTime) {
+                // Score constraint arrivalAfterMaxEndTime
+                hardScore -= (arrivalTime - maxEndTime);
             }
         }
-        // Score constraint arrivalAfterDueTimeAtDepot is a built-in hard constraint in VehicleRoutingImporter
+        // Score constraint arrivalAfterMaxEndTimeAtDepot is a built-in hard constraint in VehicleRoutingImporter
     }
 
     private void retractArrivalTime(TimeWindowedCustomer customer) {
         Long arrivalTime = customer.getArrivalTime();
         if (arrivalTime != null) {
-            long dueTime = customer.getDueTime();
-            if (dueTime < arrivalTime) {
-                // Score constraint arrivalAfterDueTime
-                hardScore += (arrivalTime - dueTime);
+            long maxEndTime = customer.getMaxEndTime();
+            if (maxEndTime < arrivalTime) {
+                // Score constraint arrivalAfterMaxEndTime
+                hardScore += (arrivalTime - maxEndTime);
             }
         }
     }

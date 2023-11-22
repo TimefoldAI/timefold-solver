@@ -70,6 +70,6 @@ public class StartTimeUpdatingVariableListener implements ListVariableListener<T
         if (previousEndTime == null) {
             return null;
         }
-        return Math.max(task.getReadyTime(), previousEndTime);
+        return Math.max(task.getMinStartTime(), previousEndTime);
     }
 }

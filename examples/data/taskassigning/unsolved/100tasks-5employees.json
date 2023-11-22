@@ -229,7 +229,7 @@
     "taskType" : "TaskType#13",
     "indexInTaskType" : 1,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -239,7 +239,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 1,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -249,7 +249,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 1,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -259,7 +259,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 1,
     "customer" : "Customer#12",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -269,7 +269,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 2,
     "customer" : "Customer#8",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -279,7 +279,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 2,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -289,7 +289,7 @@
     "taskType" : "TaskType#10",
     "indexInTaskType" : 1,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -299,7 +299,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 1,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -309,7 +309,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 3,
     "customer" : "Customer#12",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -319,7 +319,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 1,
     "customer" : "Customer#8",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -329,7 +329,7 @@
     "taskType" : "TaskType#17",
     "indexInTaskType" : 1,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -339,7 +339,7 @@
     "taskType" : "TaskType#9",
     "indexInTaskType" : 1,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -349,7 +349,7 @@
     "taskType" : "TaskType#19",
     "indexInTaskType" : 1,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -359,7 +359,7 @@
     "taskType" : "TaskType#18",
     "indexInTaskType" : 1,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -369,7 +369,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 3,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -379,7 +379,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 2,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -389,7 +389,7 @@
     "taskType" : "TaskType#4",
     "indexInTaskType" : 1,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -399,7 +399,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 4,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -409,7 +409,7 @@
     "taskType" : "TaskType#12",
     "indexInTaskType" : 1,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -419,7 +419,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 1,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -429,7 +429,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 2,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -439,7 +439,7 @@
     "taskType" : "TaskType#12",
     "indexInTaskType" : 2,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -449,7 +449,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 5,
     "customer" : "Customer#5",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -459,7 +459,7 @@
     "taskType" : "TaskType#4",
     "indexInTaskType" : 2,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -469,7 +469,7 @@
     "taskType" : "TaskType#18",
     "indexInTaskType" : 2,
     "customer" : "Customer#12",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -479,7 +479,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 3,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -489,7 +489,7 @@
     "taskType" : "TaskType#4",
     "indexInTaskType" : 3,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -499,7 +499,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 2,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -509,7 +509,7 @@
     "taskType" : "TaskType#6",
     "indexInTaskType" : 1,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -519,7 +519,7 @@
     "taskType" : "TaskType#13",
     "indexInTaskType" : 2,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -529,7 +529,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 3,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -539,7 +539,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 2,
     "customer" : "Customer#8",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -549,7 +549,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 3,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -559,7 +559,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 6,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -569,7 +569,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 3,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -579,7 +579,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 1,
     "customer" : "Customer#13",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -589,7 +589,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 4,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -599,7 +599,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 5,
     "customer" : "Customer#5",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -609,7 +609,7 @@
     "taskType" : "TaskType#7",
     "indexInTaskType" : 1,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -619,7 +619,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 4,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -629,7 +629,7 @@
     "taskType" : "TaskType#19",
     "indexInTaskType" : 2,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -639,7 +639,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 2,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -649,7 +649,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 3,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -659,7 +659,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 4,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -669,7 +669,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 4,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -679,7 +679,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 5,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -689,7 +689,7 @@
     "taskType" : "TaskType#4",
     "indexInTaskType" : 4,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -699,7 +699,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 1,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -709,7 +709,7 @@
     "taskType" : "TaskType#11",
     "indexInTaskType" : 1,
     "customer" : "Customer#9",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -719,7 +719,7 @@
     "taskType" : "TaskType#11",
     "indexInTaskType" : 2,
     "customer" : "Customer#13",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -729,7 +729,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 6,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -739,7 +739,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 5,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -749,7 +749,7 @@
     "taskType" : "TaskType#18",
     "indexInTaskType" : 3,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -759,7 +759,7 @@
     "taskType" : "TaskType#16",
     "indexInTaskType" : 1,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -769,7 +769,7 @@
     "taskType" : "TaskType#13",
     "indexInTaskType" : 3,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -779,7 +779,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 4,
     "customer" : "Customer#12",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -789,7 +789,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 5,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -799,7 +799,7 @@
     "taskType" : "TaskType#16",
     "indexInTaskType" : 2,
     "customer" : "Customer#8",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -809,7 +809,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 5,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -819,7 +819,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 4,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -829,7 +829,7 @@
     "taskType" : "TaskType#10",
     "indexInTaskType" : 2,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -839,7 +839,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 7,
     "customer" : "Customer#13",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -849,7 +849,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 7,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -859,7 +859,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 5,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -869,7 +869,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 6,
     "customer" : "Customer#8",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -879,7 +879,7 @@
     "taskType" : "TaskType#10",
     "indexInTaskType" : 3,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -889,7 +889,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 6,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -899,7 +899,7 @@
     "taskType" : "TaskType#6",
     "indexInTaskType" : 2,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -909,7 +909,7 @@
     "taskType" : "TaskType#18",
     "indexInTaskType" : 4,
     "customer" : "Customer#3",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -919,7 +919,7 @@
     "taskType" : "TaskType#12",
     "indexInTaskType" : 3,
     "customer" : "Customer#2",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -929,7 +929,7 @@
     "taskType" : "TaskType#9",
     "indexInTaskType" : 2,
     "customer" : "Customer#4",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -939,7 +939,7 @@
     "taskType" : "TaskType#19",
     "indexInTaskType" : 3,
     "customer" : "Customer#4",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -949,7 +949,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 2,
     "customer" : "Customer#9",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -959,7 +959,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 6,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -969,7 +969,7 @@
     "taskType" : "TaskType#0",
     "indexInTaskType" : 6,
     "customer" : "Customer#9",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -979,7 +979,7 @@
     "taskType" : "TaskType#14",
     "indexInTaskType" : 7,
     "customer" : "Customer#4",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -989,7 +989,7 @@
     "taskType" : "TaskType#6",
     "indexInTaskType" : 3,
     "customer" : "Customer#9",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -999,7 +999,7 @@
     "taskType" : "TaskType#10",
     "indexInTaskType" : 4,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1009,7 +1009,7 @@
     "taskType" : "TaskType#17",
     "indexInTaskType" : 2,
     "customer" : "Customer#13",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1019,7 +1019,7 @@
     "taskType" : "TaskType#4",
     "indexInTaskType" : 5,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1029,7 +1029,7 @@
     "taskType" : "TaskType#8",
     "indexInTaskType" : 8,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1039,7 +1039,7 @@
     "taskType" : "TaskType#11",
     "indexInTaskType" : 3,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1049,7 +1049,7 @@
     "taskType" : "TaskType#4",
     "indexInTaskType" : 6,
     "customer" : "Customer#6",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -1059,7 +1059,7 @@
     "taskType" : "TaskType#18",
     "indexInTaskType" : 5,
     "customer" : "Customer#14",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -1069,7 +1069,7 @@
     "taskType" : "TaskType#10",
     "indexInTaskType" : 5,
     "customer" : "Customer#12",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1079,7 +1079,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 6,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1089,7 +1089,7 @@
     "taskType" : "TaskType#19",
     "indexInTaskType" : 4,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1099,7 +1099,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 7,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1109,7 +1109,7 @@
     "taskType" : "TaskType#15",
     "indexInTaskType" : 7,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1119,7 +1119,7 @@
     "taskType" : "TaskType#5",
     "indexInTaskType" : 7,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1129,7 +1129,7 @@
     "taskType" : "TaskType#2",
     "indexInTaskType" : 8,
     "customer" : "Customer#4",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1139,7 +1139,7 @@
     "taskType" : "TaskType#12",
     "indexInTaskType" : 4,
     "customer" : "Customer#0",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -1149,7 +1149,7 @@
     "taskType" : "TaskType#19",
     "indexInTaskType" : 5,
     "customer" : "Customer#11",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1159,7 +1159,7 @@
     "taskType" : "TaskType#12",
     "indexInTaskType" : 5,
     "customer" : "Customer#12",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -1169,7 +1169,7 @@
     "taskType" : "TaskType#6",
     "indexInTaskType" : 4,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MINOR",
     "employee" : null,
     "startTime" : null
@@ -1179,7 +1179,7 @@
     "taskType" : "TaskType#1",
     "indexInTaskType" : 8,
     "customer" : "Customer#4",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "CRITICAL",
     "employee" : null,
     "startTime" : null
@@ -1189,7 +1189,7 @@
     "taskType" : "TaskType#3",
     "indexInTaskType" : 3,
     "customer" : "Customer#7",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1199,7 +1199,7 @@
     "taskType" : "TaskType#7",
     "indexInTaskType" : 2,
     "customer" : "Customer#13",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1209,7 +1209,7 @@
     "taskType" : "TaskType#16",
     "indexInTaskType" : 3,
     "customer" : "Customer#1",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null
@@ -1219,7 +1219,7 @@
     "taskType" : "TaskType#6",
     "indexInTaskType" : 5,
     "customer" : "Customer#10",
-    "readyTime" : 0,
+    "minStartTime" : 0,
     "priority" : "MAJOR",
     "employee" : null,
     "startTime" : null

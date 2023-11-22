@@ -17,7 +17,7 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
                 vehicleCapacity(factory),
                 distanceToPreviousStandstill(factory),
                 distanceFromLastCustomerToDepot(factory),
-                arrivalAfterDueTime(factory)
+                arrivalAfterMaxEndTime(factory)
         };
     }
 
@@ -59,12 +59,12 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
     // TimeWindowed: additional hard constraints
     // ************************************************************************
 
-    protected Constraint arrivalAfterDueTime(ConstraintFactory factory) {
+    protected Constraint arrivalAfterMaxEndTime(ConstraintFactory factory) {
         return factory.forEach(TimeWindowedCustomer.class)
-                .filter(customer -> customer.getVehicle() != null && customer.getArrivalTime() > customer.getDueTime())
+                .filter(customer -> customer.getVehicle() != null && customer.getArrivalTime() > customer.getMaxEndTime())
                 .penalizeLong(HardSoftLongScore.ONE_HARD,
-                        customer -> customer.getArrivalTime() - customer.getDueTime())
-                .asConstraint("arrivalAfterDueTime");
+                        customer -> customer.getArrivalTime() - customer.getMaxEndTime())
+                .asConstraint("arrivalAfterMaxEndTime");
     }
 
 }

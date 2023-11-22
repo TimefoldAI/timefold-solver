@@ -63,7 +63,7 @@ public class ArrivalTimeUpdatingVariableListener implements VariableListener<Veh
         Customer previousCustomer = sourceCustomer.getPreviousCustomer();
         Long departureTime;
         if (previousCustomer == null) {
-            departureTime = ((TimeWindowedDepot) sourceCustomer.getVehicle().getDepot()).getReadyTime();
+            departureTime = ((TimeWindowedDepot) sourceCustomer.getVehicle().getDepot()).getMinStartTime();
         } else {
             departureTime = ((TimeWindowedCustomer) previousCustomer).getDepartureTime();
         }
