@@ -20,7 +20,8 @@ public class TimeWindowedCustomer extends Customer {
     public TimeWindowedCustomer() {
     }
 
-    public TimeWindowedCustomer(long id, Location location, int demand, long minStartTime, long maxEndTime, long serviceDuration) {
+    public TimeWindowedCustomer(long id, Location location, int demand, long minStartTime, long maxEndTime,
+            long serviceDuration) {
         super(id, location, demand);
         this.minStartTime = minStartTime;
         this.maxEndTime = maxEndTime;

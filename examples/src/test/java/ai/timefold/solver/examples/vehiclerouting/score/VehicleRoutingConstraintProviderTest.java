@@ -77,7 +77,8 @@ class VehicleRoutingConstraintProviderTest
     }
 
     @ConstraintProviderTest
-    void arrivalAfterMaxEndTime(ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutingSolution> constraintVerifier) {
+    void arrivalAfterMaxEndTime(
+            ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutingSolution> constraintVerifier) {
         TimeWindowedCustomer customer1 = new TimeWindowedCustomer(2L, location2, 1, 8_00_00L, 18_00_00L, 1_00_00L);
         customer1.setArrivalTime(8_00_00L + 4000L);
         TimeWindowedCustomer customer2 = new TimeWindowedCustomer(3L, location3, 40, 8_00_00L, 9_00_00L, 1_00_00L);
