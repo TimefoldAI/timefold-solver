@@ -496,8 +496,8 @@
            height="130"
            width="140.00043"
            id="rect4362-0" /></flowRegion><flowPara
-         id="flowPara4364-8">readyTime</flowPara><flowPara
-         id="flowPara4366">dueTime</flowPara><flowPara
+         id="flowPara4364-8">minStartTime</flowPara><flowPara
+         id="flowPara4366">maxEndTime</flowPara><flowPara
          id="flowPara4370">serviceDuration</flowPara><flowPara
          id="flowPara3305"
          style="fill:#5c3566">arrivalTime</flowPara><flowPara
@@ -1044,7 +1044,7 @@
          style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
          id="flowPara863">departureTime =</flowPara><flowPara
          style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
-         id="flowPara865">  max(arrivalTime, readyTime)</flowPara><flowPara
+         id="flowPara865">  max(arrivalTime, minStartTime)</flowPara><flowPara
          style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"
          id="flowPara867">  + serviceDuration</flowPara><flowPara
          style="font-style:normal;font-size:14px;-inkscape-font-specification:'Liberation Sans, Normal'"

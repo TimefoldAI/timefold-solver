@@ -146,7 +146,7 @@ public class TaskOverviewPanel extends JPanel implements Scrollable {
         taskButton.setHorizontalTextPosition(SwingConstants.CENTER);
         taskButton.setVerticalTextPosition(SwingConstants.TOP);
         taskButton.setSize(task.getDuration(), ROW_HEIGHT);
-        int x = HEADER_COLUMN_WIDTH + (task.getEmployee() == null ? task.getReadyTime() : task.getStartTime());
+        int x = HEADER_COLUMN_WIDTH + (task.getEmployee() == null ? task.getMinStartTime() : task.getStartTime());
         int y = HEADER_ROW_HEIGHT + rowIndex * ROW_HEIGHT;
         taskButton.setLocation(x, y);
         return taskButton;

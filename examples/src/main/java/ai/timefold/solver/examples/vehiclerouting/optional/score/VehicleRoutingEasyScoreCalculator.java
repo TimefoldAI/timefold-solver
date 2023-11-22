@@ -38,11 +38,11 @@ public class VehicleRoutingEasyScoreCalculator
                 }
                 if (timeWindowed) {
                     TimeWindowedCustomer timeWindowedCustomer = (TimeWindowedCustomer) customer;
-                    long dueTime = timeWindowedCustomer.getDueTime();
+                    long maxEndTime = timeWindowedCustomer.getMaxEndTime();
                     Long arrivalTime = timeWindowedCustomer.getArrivalTime();
-                    if (dueTime < arrivalTime) {
-                        // Score constraint arrivalAfterDueTime
-                        hardScore -= (arrivalTime - dueTime);
+                    if (maxEndTime < arrivalTime) {
+                        // Score constraint arrivalAfterMaxEndTime
+                        hardScore -= (arrivalTime - maxEndTime);
                     }
                 }
             }
@@ -55,7 +55,7 @@ public class VehicleRoutingEasyScoreCalculator
                 hardScore -= (demand - capacity);
             }
         }
-        // Score constraint arrivalAfterDueTimeAtDepot is a built-in hard constraint in VehicleRoutingImporter
+        // Score constraint arrivalAfterMaxEndTimeAtDepot is a built-in hard constraint in VehicleRoutingImporter
         return HardSoftLongScore.of(hardScore, softScore);
     }
 

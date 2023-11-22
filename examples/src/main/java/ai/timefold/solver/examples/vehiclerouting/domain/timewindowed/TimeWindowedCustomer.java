@@ -10,8 +10,8 @@ import ai.timefold.solver.examples.vehiclerouting.domain.timewindowed.solver.Arr
 public class TimeWindowedCustomer extends Customer {
 
     // Times are multiplied by 1000 to avoid floating point arithmetic rounding errors
-    private long readyTime;
-    private long dueTime;
+    private long minStartTime;
+    private long maxEndTime;
     private long serviceDuration;
 
     // Shadow variable
@@ -20,33 +20,33 @@ public class TimeWindowedCustomer extends Customer {
     public TimeWindowedCustomer() {
     }
 
-    public TimeWindowedCustomer(long id, Location location, int demand, long readyTime, long dueTime, long serviceDuration) {
+    public TimeWindowedCustomer(long id, Location location, int demand, long minStartTime, long maxEndTime, long serviceDuration) {
         super(id, location, demand);
-        this.readyTime = readyTime;
-        this.dueTime = dueTime;
+        this.minStartTime = minStartTime;
+        this.maxEndTime = maxEndTime;
         this.serviceDuration = serviceDuration;
     }
 
     /**
      * @return a positive number, the time multiplied by 1000 to avoid floating point arithmetic rounding errors
      */
-    public long getReadyTime() {
-        return readyTime;
+    public long getMinStartTime() {
+        return minStartTime;
     }
 
-    public void setReadyTime(long readyTime) {
-        this.readyTime = readyTime;
+    public void setMinStartTime(long minStartTime) {
+        this.minStartTime = minStartTime;
     }
 
     /**
      * @return a positive number, the time multiplied by 1000 to avoid floating point arithmetic rounding errors
      */
-    public long getDueTime() {
-        return dueTime;
+    public long getMaxEndTime() {
+        return maxEndTime;
     }
 
-    public void setDueTime(long dueTime) {
-        this.dueTime = dueTime;
+    public void setMaxEndTime(long maxEndTime) {
+        this.maxEndTime = maxEndTime;
     }
 
     /**
@@ -86,31 +86,31 @@ public class TimeWindowedCustomer extends Customer {
         if (arrivalTime == null) {
             return null;
         }
-        return Math.max(arrivalTime, readyTime) + serviceDuration;
+        return Math.max(arrivalTime, minStartTime) + serviceDuration;
     }
 
-    public boolean isArrivalBeforeReadyTime() {
+    public boolean isArrivalBeforeMinStartTime() {
         return arrivalTime != null
-                && arrivalTime < readyTime;
+                && arrivalTime < minStartTime;
     }
 
-    public boolean isArrivalAfterDueTime() {
+    public boolean isArrivalAfterMaxEndTime() {
         return arrivalTime != null
-                && dueTime < arrivalTime;
+                && maxEndTime < arrivalTime;
     }
 
     /**
      * @return a positive number, the time multiplied by 1000 to avoid floating point arithmetic rounding errors
      */
     public long getTimeWindowGapTo(TimeWindowedCustomer other) {
-        // dueTime doesn't account for serviceDuration
-        long latestDepartureTime = dueTime + serviceDuration;
-        long otherLatestDepartureTime = other.getDueTime() + other.getServiceDuration();
-        if (latestDepartureTime < other.getReadyTime()) {
-            return other.getReadyTime() - latestDepartureTime;
+        // maxEndTime doesn't account for serviceDuration
+        long latestDepartureTime = maxEndTime + serviceDuration;
+        long otherLatestDepartureTime = other.getMaxEndTime() + other.getServiceDuration();
+        if (latestDepartureTime < other.getMinStartTime()) {
+            return other.getMinStartTime() - latestDepartureTime;
         }
-        if (otherLatestDepartureTime < readyTime) {
-            return readyTime - otherLatestDepartureTime;
+        if (otherLatestDepartureTime < minStartTime) {
+            return minStartTime - otherLatestDepartureTime;
         }
         return 0L;
     }

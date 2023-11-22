@@ -93,13 +93,13 @@ public class VehicleRoutingSolutionPainter {
                 int circleY = y + 5;
                 g.drawOval(circleX, circleY, TIME_WINDOW_DIAMETER, TIME_WINDOW_DIAMETER);
                 g.fillArc(circleX, circleY, TIME_WINDOW_DIAMETER, TIME_WINDOW_DIAMETER,
-                        90 - calculateTimeWindowDegree(timeWindowedCustomer.getReadyTime()),
-                        calculateTimeWindowDegree(timeWindowedCustomer.getReadyTime())
-                                - calculateTimeWindowDegree(timeWindowedCustomer.getDueTime()));
+                        90 - calculateTimeWindowDegree(timeWindowedCustomer.getMinStartTime()),
+                        calculateTimeWindowDegree(timeWindowedCustomer.getMinStartTime())
+                                - calculateTimeWindowDegree(timeWindowedCustomer.getMaxEndTime()));
                 if (timeWindowedCustomer.getArrivalTime() != null) {
-                    if (timeWindowedCustomer.isArrivalAfterDueTime()) {
+                    if (timeWindowedCustomer.isArrivalAfterMaxEndTime()) {
                         g.setColor(TangoColorFactory.SCARLET_2);
-                    } else if (timeWindowedCustomer.isArrivalBeforeReadyTime()) {
+                    } else if (timeWindowedCustomer.isArrivalBeforeMinStartTime()) {
                         g.setColor(TangoColorFactory.ORANGE_2);
                     } else {
                         g.setColor(TangoColorFactory.ALUMINIUM_6);
@@ -218,25 +218,25 @@ public class VehicleRoutingSolutionPainter {
         maximumTimeWindowTime = Long.MIN_VALUE;
         for (Depot depot : solution.getDepotList()) {
             if (depot instanceof TimeWindowedDepot timeWindowedDepot) {
-                long readyTime = timeWindowedDepot.getReadyTime();
-                if (readyTime < minimumTimeWindowTime) {
-                    minimumTimeWindowTime = readyTime;
+                long minStartTime = timeWindowedDepot.getMinStartTime();
+                if (minStartTime < minimumTimeWindowTime) {
+                    minimumTimeWindowTime = minStartTime;
                 }
-                long dueTime = timeWindowedDepot.getDueTime();
-                if (dueTime > maximumTimeWindowTime) {
-                    maximumTimeWindowTime = dueTime;
+                long maxEndTime = timeWindowedDepot.getMaxEndTime();
+                if (maxEndTime > maximumTimeWindowTime) {
+                    maximumTimeWindowTime = maxEndTime;
                 }
             }
         }
         for (Customer customer : solution.getCustomerList()) {
             if (customer instanceof TimeWindowedCustomer timeWindowedCustomer) {
-                long readyTime = timeWindowedCustomer.getReadyTime();
-                if (readyTime < minimumTimeWindowTime) {
-                    minimumTimeWindowTime = readyTime;
+                long minStartTime = timeWindowedCustomer.getMinStartTime();
+                if (minStartTime < minimumTimeWindowTime) {
+                    minimumTimeWindowTime = minStartTime;
                 }
-                long dueTime = timeWindowedCustomer.getDueTime();
-                if (dueTime > maximumTimeWindowTime) {
-                    maximumTimeWindowTime = dueTime;
+                long maxEndTime = timeWindowedCustomer.getMaxEndTime();
+                if (maxEndTime > maximumTimeWindowTime) {
+                    maximumTimeWindowTime = maxEndTime;
                 }
             }
         }

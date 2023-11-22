@@ -716,8 +716,8 @@
     "@id" : "TimeWindowedDepot#0",
     "id" : 0,
     "location" : "AirLocation#0",
-    "readyTime" : 0,
-    "dueTime" : 230000
+    "minStartTime" : 0,
+    "maxEndTime" : 230000
   } ],
   "vehicleList" : [ {
     "@id" : "Vehicle#0",
@@ -879,13 +879,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 161000,
-    "dueTime" : 171000,
+    "minStartTime" : 161000,
+    "maxEndTime" : 171000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#2",
@@ -895,13 +895,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 50000,
-    "dueTime" : 60000,
+    "minStartTime" : 50000,
+    "maxEndTime" : 60000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#3",
@@ -911,13 +911,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 116000,
-    "dueTime" : 126000,
+    "minStartTime" : 116000,
+    "maxEndTime" : 126000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#4",
@@ -927,13 +927,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 149000,
-    "dueTime" : 159000,
+    "minStartTime" : 149000,
+    "maxEndTime" : 159000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#5",
@@ -943,13 +943,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 34000,
-    "dueTime" : 44000,
+    "minStartTime" : 34000,
+    "maxEndTime" : 44000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#6",
@@ -959,13 +959,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 99000,
-    "dueTime" : 109000,
+    "minStartTime" : 99000,
+    "maxEndTime" : 109000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#7",
@@ -975,13 +975,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 81000,
-    "dueTime" : 91000,
+    "minStartTime" : 81000,
+    "maxEndTime" : 91000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#8",
@@ -991,13 +991,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 95000,
-    "dueTime" : 105000,
+    "minStartTime" : 95000,
+    "maxEndTime" : 105000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#9",
@@ -1007,13 +1007,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 97000,
-    "dueTime" : 107000,
+    "minStartTime" : 97000,
+    "maxEndTime" : 107000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#10",
@@ -1023,13 +1023,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 124000,
-    "dueTime" : 134000,
+    "minStartTime" : 124000,
+    "maxEndTime" : 134000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#11",
@@ -1039,13 +1039,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 67000,
-    "dueTime" : 77000,
+    "minStartTime" : 67000,
+    "maxEndTime" : 77000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#12",
@@ -1055,13 +1055,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 63000,
-    "dueTime" : 73000,
+    "minStartTime" : 63000,
+    "maxEndTime" : 73000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#13",
@@ -1071,13 +1071,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 159000,
-    "dueTime" : 169000,
+    "minStartTime" : 159000,
+    "maxEndTime" : 169000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#14",
@@ -1087,13 +1087,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 32000,
-    "dueTime" : 42000,
+    "minStartTime" : 32000,
+    "maxEndTime" : 42000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#15",
@@ -1103,13 +1103,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 61000,
-    "dueTime" : 71000,
+    "minStartTime" : 61000,
+    "maxEndTime" : 71000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#16",
@@ -1119,13 +1119,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 75000,
-    "dueTime" : 85000,
+    "minStartTime" : 75000,
+    "maxEndTime" : 85000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#17",
@@ -1135,13 +1135,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 157000,
-    "dueTime" : 167000,
+    "minStartTime" : 157000,
+    "maxEndTime" : 167000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#18",
@@ -1151,13 +1151,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 87000,
-    "dueTime" : 97000,
+    "minStartTime" : 87000,
+    "maxEndTime" : 97000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#19",
@@ -1167,13 +1167,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 76000,
-    "dueTime" : 86000,
+    "minStartTime" : 76000,
+    "maxEndTime" : 86000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#20",
@@ -1183,13 +1183,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 126000,
-    "dueTime" : 136000,
+    "minStartTime" : 126000,
+    "maxEndTime" : 136000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#21",
@@ -1199,13 +1199,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 62000,
-    "dueTime" : 72000,
+    "minStartTime" : 62000,
+    "maxEndTime" : 72000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#22",
@@ -1215,13 +1215,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 97000,
-    "dueTime" : 107000,
+    "minStartTime" : 97000,
+    "maxEndTime" : 107000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#23",
@@ -1231,13 +1231,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 68000,
-    "dueTime" : 78000,
+    "minStartTime" : 68000,
+    "maxEndTime" : 78000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#24",
@@ -1247,13 +1247,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 153000,
-    "dueTime" : 163000,
+    "minStartTime" : 153000,
+    "maxEndTime" : 163000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#25",
@@ -1263,13 +1263,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 172000,
-    "dueTime" : 182000,
+    "minStartTime" : 172000,
+    "maxEndTime" : 182000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#26",
@@ -1279,13 +1279,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 132000,
-    "dueTime" : 142000,
+    "minStartTime" : 132000,
+    "maxEndTime" : 142000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#27",
@@ -1295,13 +1295,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 37000,
-    "dueTime" : 47000,
+    "minStartTime" : 37000,
+    "maxEndTime" : 47000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#28",
@@ -1311,13 +1311,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 39000,
-    "dueTime" : 49000,
+    "minStartTime" : 39000,
+    "maxEndTime" : 49000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#29",
@@ -1327,13 +1327,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 63000,
-    "dueTime" : 73000,
+    "minStartTime" : 63000,
+    "maxEndTime" : 73000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#30",
@@ -1343,13 +1343,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 71000,
-    "dueTime" : 81000,
+    "minStartTime" : 71000,
+    "maxEndTime" : 81000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#31",
@@ -1359,13 +1359,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 50000,
-    "dueTime" : 60000,
+    "minStartTime" : 50000,
+    "maxEndTime" : 60000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#32",
@@ -1375,13 +1375,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 141000,
-    "dueTime" : 151000,
+    "minStartTime" : 141000,
+    "maxEndTime" : 151000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#33",
@@ -1391,13 +1391,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 37000,
-    "dueTime" : 47000,
+    "minStartTime" : 37000,
+    "maxEndTime" : 47000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#34",
@@ -1407,13 +1407,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 117000,
-    "dueTime" : 127000,
+    "minStartTime" : 117000,
+    "maxEndTime" : 127000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#35",
@@ -1423,13 +1423,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 143000,
-    "dueTime" : 153000,
+    "minStartTime" : 143000,
+    "maxEndTime" : 153000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#36",
@@ -1439,13 +1439,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 41000,
-    "dueTime" : 51000,
+    "minStartTime" : 41000,
+    "maxEndTime" : 51000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#37",
@@ -1455,13 +1455,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 134000,
-    "dueTime" : 144000,
+    "minStartTime" : 134000,
+    "maxEndTime" : 144000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#38",
@@ -1471,13 +1471,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 83000,
-    "dueTime" : 93000,
+    "minStartTime" : 83000,
+    "maxEndTime" : 93000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#39",
@@ -1487,13 +1487,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 44000,
-    "dueTime" : 54000,
+    "minStartTime" : 44000,
+    "maxEndTime" : 54000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#40",
@@ -1503,13 +1503,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 85000,
-    "dueTime" : 95000,
+    "minStartTime" : 85000,
+    "maxEndTime" : 95000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#41",
@@ -1519,13 +1519,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 97000,
-    "dueTime" : 107000,
+    "minStartTime" : 97000,
+    "maxEndTime" : 107000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#42",
@@ -1535,13 +1535,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 31000,
-    "dueTime" : 41000,
+    "minStartTime" : 31000,
+    "maxEndTime" : 41000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#43",
@@ -1551,13 +1551,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 132000,
-    "dueTime" : 142000,
+    "minStartTime" : 132000,
+    "maxEndTime" : 142000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#44",
@@ -1567,13 +1567,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 69000,
-    "dueTime" : 79000,
+    "minStartTime" : 69000,
+    "maxEndTime" : 79000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#45",
@@ -1583,13 +1583,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 32000,
-    "dueTime" : 42000,
+    "minStartTime" : 32000,
+    "maxEndTime" : 42000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#46",
@@ -1599,13 +1599,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 117000,
-    "dueTime" : 127000,
+    "minStartTime" : 117000,
+    "maxEndTime" : 127000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#47",
@@ -1615,13 +1615,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 51000,
-    "dueTime" : 61000,
+    "minStartTime" : 51000,
+    "maxEndTime" : 61000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#48",
@@ -1631,13 +1631,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 165000,
-    "dueTime" : 175000,
+    "minStartTime" : 165000,
+    "maxEndTime" : 175000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#49",
@@ -1647,13 +1647,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 108000,
-    "dueTime" : 118000,
+    "minStartTime" : 108000,
+    "maxEndTime" : 118000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#50",
@@ -1663,13 +1663,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 124000,
-    "dueTime" : 134000,
+    "minStartTime" : 124000,
+    "maxEndTime" : 134000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#51",
@@ -1679,13 +1679,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 88000,
-    "dueTime" : 98000,
+    "minStartTime" : 88000,
+    "maxEndTime" : 98000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#52",
@@ -1695,13 +1695,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 52000,
-    "dueTime" : 62000,
+    "minStartTime" : 52000,
+    "maxEndTime" : 62000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#53",
@@ -1711,13 +1711,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 95000,
-    "dueTime" : 105000,
+    "minStartTime" : 95000,
+    "maxEndTime" : 105000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#54",
@@ -1727,13 +1727,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 140000,
-    "dueTime" : 150000,
+    "minStartTime" : 140000,
+    "maxEndTime" : 150000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#55",
@@ -1743,13 +1743,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 136000,
-    "dueTime" : 146000,
+    "minStartTime" : 136000,
+    "maxEndTime" : 146000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#56",
@@ -1759,13 +1759,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 130000,
-    "dueTime" : 140000,
+    "minStartTime" : 130000,
+    "maxEndTime" : 140000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#57",
@@ -1775,13 +1775,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 101000,
-    "dueTime" : 111000,
+    "minStartTime" : 101000,
+    "maxEndTime" : 111000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#58",
@@ -1791,13 +1791,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 200000,
-    "dueTime" : 210000,
+    "minStartTime" : 200000,
+    "maxEndTime" : 210000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#59",
@@ -1807,13 +1807,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 18000,
-    "dueTime" : 28000,
+    "minStartTime" : 18000,
+    "maxEndTime" : 28000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#60",
@@ -1823,13 +1823,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 162000,
-    "dueTime" : 172000,
+    "minStartTime" : 162000,
+    "maxEndTime" : 172000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#61",
@@ -1839,13 +1839,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 76000,
-    "dueTime" : 86000,
+    "minStartTime" : 76000,
+    "maxEndTime" : 86000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#62",
@@ -1855,13 +1855,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 58000,
-    "dueTime" : 68000,
+    "minStartTime" : 58000,
+    "maxEndTime" : 68000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#63",
@@ -1871,13 +1871,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 34000,
-    "dueTime" : 44000,
+    "minStartTime" : 34000,
+    "maxEndTime" : 44000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#64",
@@ -1887,13 +1887,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 73000,
-    "dueTime" : 83000,
+    "minStartTime" : 73000,
+    "maxEndTime" : 83000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#65",
@@ -1903,13 +1903,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 51000,
-    "dueTime" : 61000,
+    "minStartTime" : 51000,
+    "maxEndTime" : 61000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#66",
@@ -1919,13 +1919,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 127000,
-    "dueTime" : 137000,
+    "minStartTime" : 127000,
+    "maxEndTime" : 137000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#67",
@@ -1935,13 +1935,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 83000,
-    "dueTime" : 93000,
+    "minStartTime" : 83000,
+    "maxEndTime" : 93000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#68",
@@ -1951,13 +1951,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 142000,
-    "dueTime" : 152000,
+    "minStartTime" : 142000,
+    "maxEndTime" : 152000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#69",
@@ -1967,13 +1967,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 50000,
-    "dueTime" : 60000,
+    "minStartTime" : 50000,
+    "maxEndTime" : 60000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#70",
@@ -1983,13 +1983,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 182000,
-    "dueTime" : 192000,
+    "minStartTime" : 182000,
+    "maxEndTime" : 192000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#71",
@@ -1999,13 +1999,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 77000,
-    "dueTime" : 87000,
+    "minStartTime" : 77000,
+    "maxEndTime" : 87000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#72",
@@ -2015,13 +2015,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 35000,
-    "dueTime" : 45000,
+    "minStartTime" : 35000,
+    "maxEndTime" : 45000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#73",
@@ -2031,13 +2031,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 78000,
-    "dueTime" : 88000,
+    "minStartTime" : 78000,
+    "maxEndTime" : 88000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#74",
@@ -2047,13 +2047,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 149000,
-    "dueTime" : 159000,
+    "minStartTime" : 149000,
+    "maxEndTime" : 159000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#75",
@@ -2063,13 +2063,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 69000,
-    "dueTime" : 79000,
+    "minStartTime" : 69000,
+    "maxEndTime" : 79000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#76",
@@ -2079,13 +2079,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 73000,
-    "dueTime" : 83000,
+    "minStartTime" : 73000,
+    "maxEndTime" : 83000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#77",
@@ -2095,13 +2095,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 179000,
-    "dueTime" : 189000,
+    "minStartTime" : 179000,
+    "maxEndTime" : 189000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#78",
@@ -2111,13 +2111,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 96000,
-    "dueTime" : 106000,
+    "minStartTime" : 96000,
+    "maxEndTime" : 106000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#79",
@@ -2127,13 +2127,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 92000,
-    "dueTime" : 102000,
+    "minStartTime" : 92000,
+    "maxEndTime" : 102000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#80",
@@ -2143,13 +2143,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 182000,
-    "dueTime" : 192000,
+    "minStartTime" : 182000,
+    "maxEndTime" : 192000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#81",
@@ -2159,13 +2159,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 94000,
-    "dueTime" : 104000,
+    "minStartTime" : 94000,
+    "maxEndTime" : 104000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#82",
@@ -2175,13 +2175,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 55000,
-    "dueTime" : 65000,
+    "minStartTime" : 55000,
+    "maxEndTime" : 65000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#83",
@@ -2191,13 +2191,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 44000,
-    "dueTime" : 54000,
+    "minStartTime" : 44000,
+    "maxEndTime" : 54000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#84",
@@ -2207,13 +2207,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 101000,
-    "dueTime" : 111000,
+    "minStartTime" : 101000,
+    "maxEndTime" : 111000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#85",
@@ -2223,13 +2223,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 91000,
-    "dueTime" : 101000,
+    "minStartTime" : 91000,
+    "maxEndTime" : 101000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#86",
@@ -2239,13 +2239,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 94000,
-    "dueTime" : 104000,
+    "minStartTime" : 94000,
+    "maxEndTime" : 104000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#87",
@@ -2255,13 +2255,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 93000,
-    "dueTime" : 103000,
+    "minStartTime" : 93000,
+    "maxEndTime" : 103000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#88",
@@ -2271,13 +2271,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 74000,
-    "dueTime" : 84000,
+    "minStartTime" : 74000,
+    "maxEndTime" : 84000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#89",
@@ -2287,13 +2287,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 176000,
-    "dueTime" : 186000,
+    "minStartTime" : 176000,
+    "maxEndTime" : 186000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#90",
@@ -2303,13 +2303,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 95000,
-    "dueTime" : 105000,
+    "minStartTime" : 95000,
+    "maxEndTime" : 105000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#91",
@@ -2319,13 +2319,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 160000,
-    "dueTime" : 170000,
+    "minStartTime" : 160000,
+    "maxEndTime" : 170000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#92",
@@ -2335,13 +2335,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 18000,
-    "dueTime" : 28000,
+    "minStartTime" : 18000,
+    "maxEndTime" : 28000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#93",
@@ -2351,13 +2351,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 188000,
-    "dueTime" : 198000,
+    "minStartTime" : 188000,
+    "maxEndTime" : 198000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#94",
@@ -2367,13 +2367,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 100000,
-    "dueTime" : 110000,
+    "minStartTime" : 100000,
+    "maxEndTime" : 110000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#95",
@@ -2383,13 +2383,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 39000,
-    "dueTime" : 49000,
+    "minStartTime" : 39000,
+    "maxEndTime" : 49000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#96",
@@ -2399,13 +2399,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 135000,
-    "dueTime" : 145000,
+    "minStartTime" : 135000,
+    "maxEndTime" : 145000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#97",
@@ -2415,13 +2415,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 133000,
-    "dueTime" : 143000,
+    "minStartTime" : 133000,
+    "maxEndTime" : 143000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#98",
@@ -2431,13 +2431,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 58000,
-    "dueTime" : 68000,
+    "minStartTime" : 58000,
+    "maxEndTime" : 68000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#99",
@@ -2447,13 +2447,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 83000,
-    "dueTime" : 93000,
+    "minStartTime" : 83000,
+    "maxEndTime" : 93000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   }, {
     "@type" : "timeWindowed",
     "@id" : "TimeWindowedCustomer#100",
@@ -2463,13 +2463,13 @@
     "vehicle" : null,
     "previousCustomer" : null,
     "nextCustomer" : null,
-    "readyTime" : 185000,
-    "dueTime" : 195000,
+    "minStartTime" : 185000,
+    "maxEndTime" : 195000,
     "serviceDuration" : 10000,
     "arrivalTime" : null,
     "departureTime" : null,
-    "arrivalBeforeReadyTime" : false,
-    "arrivalAfterDueTime" : false
+    "arrivalBeforeminStartTime" : false,
+    "arrivalAftermaxEndTime" : false
   } ],
   "score" : null
 }

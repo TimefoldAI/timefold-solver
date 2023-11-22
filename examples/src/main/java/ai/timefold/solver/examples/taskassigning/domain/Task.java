@@ -18,7 +18,7 @@ public class Task extends AbstractPersistable implements Labeled {
     private TaskType taskType;
     private int indexInTaskType;
     private Customer customer;
-    private int readyTime;
+    private int minStartTime;
     private Priority priority;
 
     // Shadow variables
@@ -31,12 +31,12 @@ public class Task extends AbstractPersistable implements Labeled {
     public Task() {
     }
 
-    public Task(long id, TaskType taskType, int indexInTaskType, Customer customer, int readyTime, Priority priority) {
+    public Task(long id, TaskType taskType, int indexInTaskType, Customer customer, int minStartTime, Priority priority) {
         super(id);
         this.taskType = taskType;
         this.indexInTaskType = indexInTaskType;
         this.customer = customer;
-        this.readyTime = readyTime;
+        this.minStartTime = minStartTime;
         this.priority = priority;
     }
 
@@ -64,12 +64,12 @@ public class Task extends AbstractPersistable implements Labeled {
         this.customer = customer;
     }
 
-    public int getReadyTime() {
-        return readyTime;
+    public int getMinStartTime() {
+        return minStartTime;
     }
 
-    public void setReadyTime(int readyTime) {
-        this.readyTime = readyTime;
+    public void setMinStartTime(int minStartTime) {
+        this.minStartTime = minStartTime;
     }
 
     public Priority getPriority() {
