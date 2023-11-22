@@ -175,7 +175,7 @@ public class CloudProcess ... {
 
 [NOTE]
 ====
-Instead of getter annotations, it is also possible to use xref:configuration/configuration.adoc#annotationAlternatives[field annotations].
+Instead of getter annotations, it is also possible to use xref:using-timefold-solver/configuration.adoc#annotationAlternatives[field annotations].
 ====
 
 
@@ -285,7 +285,7 @@ public class CloudBalancingHelloWorld {
 The code example does the following:
 
 . Build the `Solver` based on a solver configuration
-which can come from xref:configuration/configuration.adoc#solverConfigurationByXML[an XML file] as classpath resource:
+which can come from xref:using-timefold-solver/configuration.adoc#solverConfigurationByXML[an XML file] as classpath resource:
 +
 [source,java,options="nowrap"]
 ----
@@ -294,7 +294,7 @@ which can come from xref:configuration/configuration.adoc#solverConfigurationByX
         Solver<CloudBalance> solver = solverFactory.buildSolver();
 ----
 +
-Or to avoid XML, build it through xref:configuration/configuration.adoc#solverConfigurationByJavaAPI[the programmatic API] instead:
+Or to avoid XML, build it through xref:using-timefold-solver/configuration.adoc#solverConfigurationByJavaAPI[the programmatic API] instead:
 +
 [source,java,options="nowrap"]
 ----
@@ -407,7 +407,7 @@ xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time p
 Advanced use cases might use different xref:optimization-algorithms/optimization-algorithms.adoc#termination[termination criteria] than a hard time limit.
 +
 The default algorithms already easily surpass human planners and most in-house implementations.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to xref:optimization-algorithms/optimization-algorithms.adoc#powerTweaking[power tweak] to get even better results.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to xref:optimization-algorithms/optimization-algorithms.adoc#powerTweaking[power tweak] to get even better results.
 
 [#cloudBalancingScoreConfiguration]
 == Score configuration

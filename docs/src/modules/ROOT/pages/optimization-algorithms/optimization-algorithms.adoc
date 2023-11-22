@@ -128,7 +128,7 @@ However, this basic procedure provides a good starting configuration that will p
 . Start with a quick configuration that involves little or no configuration and optimization code:
 See <<firstFit,First Fit>>.
 
-. Next, implement xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty] comparison
+. Next, implement xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty] comparison
 and turn it into <<firstFitDecreasing,First Fit Decreasing>>.
 
 . Next, add Late Acceptance behind it:
@@ -138,11 +138,11 @@ and turn it into <<firstFitDecreasing,First Fit Decreasing>>.
 At this point, the return on invested time lowers and the result is likely to be sufficient.
 
 However, this can be improved at a lower return on invested time.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] and try a couple of different Tabu Search, Simulated Annealing and Late Acceptance configurations, for example:
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] and try a couple of different Tabu Search, Simulated Annealing and Late Acceptance configurations, for example:
 
 . First Fit Decreasing: <<tabuSearch,Tabu Search>>.
 
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to improve the values for the size parameters.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to improve the values for the size parameters.
 
 Other experiments can also be run. For example, the following multiple algorithms can be combined together:
 
@@ -175,7 +175,7 @@ Many optimization algorithms have parameters that affect results and scalability
 Timefold Solver applies __configuration by exception__, so all optimization algorithms have default parameter values.
 This is very similar to the Garbage Collection parameters in a JVM: most users have no need to tweak them, but power users often do.
 
-The default parameter values are sufficient for many cases (and especially for prototypes), but if development time allows, it may be beneficial to power tweak them with the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[benchmarker] for better results and scalability on a specific use case.
+The default parameter values are sufficient for many cases (and especially for prototypes), but if development time allows, it may be beneficial to power tweak them with the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarker] for better results and scalability on a specific use case.
 The documentation for each optimization algorithm also declares the advanced configuration for power tweaking.
 
 [WARNING]
@@ -267,7 +267,7 @@ These form four nested scopes:
 
 image::optimization-algorithms/scopeOverview.png[align="center"]
 
-Configure xref:configuration/configuration.adoc#logging[logging] to display the log messages of each scope.
+Configure xref:using-timefold-solver/running-the-solver.adoc#logging[logging] to display the log messages of each scope.
 
 
 [#termination]
@@ -610,7 +610,7 @@ This is useful for benchmarking.
   </termination>
 ----
 
-Switching xref:configuration/configuration.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 
 [#combiningMultipleTerminations]
@@ -721,7 +721,7 @@ For example, to implement a custom Construction Heuristic without implementing a
 Most of the time, a custom solver phase is not worth the development time investment.
 <<constructionHeuristics,Constructions Heuristics>> are configurable,
 `Termination`-aware and support partially initialized solutions too.
-You can use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
+You can use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
 ====
 
 The `CustomPhaseCommand` interface appears as follows:
@@ -798,8 +798,8 @@ The built-in solver phases do not have this issue.
 ====
 
 To configure values of a `CustomPhaseCommand` dynamically in the solver configuration
-(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `customProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `customProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -1033,7 +1033,7 @@ This guarantees that every possible solution can be reached in theory through ap
 Of course, normally it is unioned with other, more coarse grained move selectors.
 ====
 
-This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on a xref:configuration/configuration.adoc#chainedPlanningVariable[chained] variable.
+This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on a xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained] variable.
 
 
 [#swapMoveSelector]
@@ -1083,7 +1083,7 @@ The `secondaryEntitySelector` is rarely needed: if it is not specified, entities
 If one or more `variableNameInclude` properties are specified, not all planning variables will be swapped, but only those specified.
 For example for course scheduling, specifying only `variableNameInclude` room will make it only swap room, not period.
 
-This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on any xref:configuration/configuration.adoc#chainedPlanningVariable[chained] variables.
+This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on any xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained] variables.
 
 [#pillarMoveSelectors]
 ==== Pillar-based move selectors
@@ -2046,7 +2046,7 @@ If you do explicitly configure the ``Selector``, it overwrites the default setti
 Some `Selector` types implement a `SorterManner` out of the box:
 
 * `EntitySelector` supports:
-** ``DECREASING_DIFFICULTY``: Sorts the planning entities according to decreasing xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty]. Requires that planning entity difficulty is annotated on the domain model.
+** ``DECREASING_DIFFICULTY``: Sorts the planning entities according to decreasing xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty]. Requires that planning entity difficulty is annotated on the domain model.
 +
 [source,xml,options="nowrap"]
 ----
@@ -2057,7 +2057,7 @@ Some `Selector` types implement a `SorterManner` out of the box:
     </entitySelector>
 ----
 * `ValueSelector` supports:
-** ``INCREASING_STRENGTH``: Sorts the planning values according to increasing xref:configuration/configuration.adoc#planningValueStrength[planning value strength]. Requires that planning value strength is annotated on the domain model.
+** ``INCREASING_STRENGTH``: Sorts the planning values according to increasing xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength]. Requires that planning value strength is annotated on the domain model.
 +
 [source,xml,options="nowrap"]
 ----
@@ -2315,8 +2315,8 @@ of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition manual
 ==== Which move types might be missing in my implementation?
 
 To determine which move types might be missing in your implementation,
-run a xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] __for a short amount of time__
-and xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#writeTheOutputSolutionOfBenchmarkRuns[configure it to write the best solutions to disk].
+run a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] __for a short amount of time__
+and xref:using-timefold-solver/benchmarking-and-tweaking.adoc#writeTheOutputSolutionOfBenchmarkRuns[configure it to write the best solutions to disk].
 Take a look at such a best solution: it will likely be a local optima.
 Try to figure out if there's a move that could get out of that local optima faster.
 
@@ -2454,7 +2454,7 @@ Keep it non-verbose and make it consistent with <<genericMoveSelectorsOverview,t
 ----
 
 Optionally, implement the `getSimpleMoveTypeDescription()` method to support
-xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarkReportPickedMoveTypeBestScoreDiffOverTimeStatistic[picked move statistics]:
+xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedMoveTypeBestScoreDiffOverTimeStatistic[picked move statistics]:
 
 [source,java,options="nowrap"]
 ----
@@ -2633,8 +2633,8 @@ it does not support `cacheType` ``JUST_IN_TIME``.
 Therefore, `moveListFactory` uses `cacheType` ``STEP`` by default and it scales badly.
 
 To configure values of a `MoveListFactory` dynamically in the solver configuration
-(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `moveListFactoryCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties].
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `moveListFactoryCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties].
 
 [WARNING]
 ====
@@ -2696,8 +2696,8 @@ Advanced configuration:
 ----
 
 To configure values of a `MoveIteratorFactory` dynamically in the solver configuration
-(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `moveIteratorFactoryCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties].
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `moveIteratorFactoryCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties].
 
 [WARNING]
 ====
@@ -2863,16 +2863,16 @@ The `nodeExplorationType` options are:
 The `entitySorterManner` options are:
 
 * ``DECREASING_DIFFICULTY``: Initialize the more difficult planning entities first. This usually increases pruning (and therefore improves scalability).
-Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
-* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
-* ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength. Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
-* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
-* ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength. Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
-* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
+* ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength. Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
+* ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength. Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 
@@ -2884,7 +2884,7 @@ Exhaustive Search variants suffer from two big scalability issues:
 * They scale terribly memory wise.
 * They scale horribly performance wise.
 
-As shown in these time spent graphs from the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker], Brute Force and Branch And Bound both hit a performance scalability wall.
+As shown in these time spent graphs from the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker], Brute Force and Branch And Bound both hit a performance scalability wall.
 For example, on N queens it hits wall at a few dozen queens:
 
 image::optimization-algorithms/exhaustiveSearchScalabilityNQueens.png[align="center"]
@@ -2972,7 +2972,7 @@ So it sorts the planning entities on decreasing difficulty.
 
 image::optimization-algorithms/firstFitDecreasingNQueens04.png[align="center"]
 
-Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison].
 
 [NOTE]
 ====
@@ -3019,7 +3019,7 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Like First Fit, but uses the weaker planning values first, because the strong planning values are more likely to be able to accommodate later planning entities.
 So it sorts the planning values on increasing strength.
 
-Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -3066,8 +3066,8 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Combines First Fit Decreasing and Weakest Fit.
 So it sorts the planning entities on decreasing difficulty and the planning values on increasing strength.
 
-Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison]
-and xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison]
+and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -3115,7 +3115,7 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Like First Fit, but uses the strong planning values first, because the strong planning values are more likely to have a lower soft cost to use.
 So it sorts the planning values on decreasing strength.
 
-Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -3162,8 +3162,8 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 Combines First Fit Decreasing and Strongest Fit.
 So it sorts the planning entities on decreasing difficulty and the planning values on decreasing strength.
 
-Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison]
-and xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison]
+and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
 
 [NOTE]
 ====
@@ -3245,18 +3245,18 @@ The `entitySorterManner` options are:
 
 * ``DECREASING_DIFFICULTY``: Initialize the more difficult planning entities first.
 This usually increases pruning (and therefore improves scalability).
-Requires the model to support xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison].
-* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
 * ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength.
-Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
-* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
 * ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength.
-Requires the model to support xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison].
-* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:configuration/configuration.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 Advanced configuration with <<weakestFitDecreasing,Weakest Fit Decreasing>> for a single entity class with one variable:
@@ -3364,7 +3364,7 @@ This is the default if the xref:constraints-and-score/overview.adoc#initializing
 If there are only negative constraints,
 but the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is strictly not ``ONLY_DOWN``,
 it can sometimes make sense to apply FIRST_NON_DETERIORATING_SCORE.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 to decide if the score quality loss is worth the time gain.
 ====
 * ``FIRST_FEASIBLE_SCORE``: Initialize the variable(s) with the first move that has a feasible score.
@@ -3609,7 +3609,7 @@ there is too little time left for <<localSearch,Local Search>> to reach a near o
 Ideally, a Construction Heuristic should take less than 20 seconds from scratch
 and less than 50 milliseconds in xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning],
 so there is plenty of time left for <<localSearch,Local Search>>.
-If the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
+If the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
 
 
 [#initializingScoreTrendShortcuts]
@@ -3681,7 +3681,7 @@ The order of the variables is important, especially in the sequential technique.
 In the sequential example above, it's better to select the `period` first and the `room` second (instead of the other way around),
 because there are more hard constraints that do not involve the room, such as _no teacher should teach two lectures at the same time_.
 
-Let the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] guide you.
+Let the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] guide you.
 ====
 
 With three or more variables, it's possible to combine the cartesian product and sequential techniques:
@@ -3821,7 +3821,7 @@ In the example below, the `MoveSelector` generated the moves shown with the blue
 
 image::optimization-algorithms/decideNextStepNQueens04.png[align="center"]
 
-xref:configuration/configuration.adoc#logging[Turn on `trace` logging] to show the decision making in the log:
+xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on `trace` logging] to show the decision making in the log:
 
 [source,options="nowrap"]
 ----
@@ -3841,7 +3841,7 @@ DEBUG     LS step (0), time spent (6), score (-3), new best score (-3), accepted
 ----
 
 Because the last solution can degrade (for example in Tabu Search), the `Solver` remembers the best solution it has encountered through the entire search path.
-Each time the current solution is better than the last best solution, the current solution is xref:configuration/configuration.adoc#cloningASolution[cloned] and referenced as the new best solution.
+Each time the current solution is better than the last best solution, the current solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[cloned] and referenced as the new best solution.
 
 image::optimization-algorithms/localSearchScoreOverTime.png[align="center"]
 
@@ -3873,7 +3873,7 @@ It is possible to disable breaking ties randomly by explicitly setting `breakTie
 the score calculator should add an extra softer xref:constraints-and-score/overview#scoreLevel[score level]
 to score the first move as slightly better.
 Don't rely on move selection order to enforce that.
-* Random tie breaking does not affect xref:configuration/configuration.adoc#environmentMode[reproducibility].
+* Random tie breaking does not affect xref:using-timefold-solver/running-the-solver.adoc#environmentMode[reproducibility].
 ====
 
 
@@ -3893,8 +3893,8 @@ To evaluate only a random subset of all the moves, use:
 ----
 
 Unlike the n queens problem, real world problems require the use of ``acceptedCountLimit``.
-Start from an `acceptedCountLimit` that takes a step in less than two seconds. xref:configuration/configuration.adoc#logging[Turn on INFO logging] to see the step times.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak the value.
+Start from an `acceptedCountLimit` that takes a step in less than two seconds. xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on INFO logging] to see the step times.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak the value.
 
 [IMPORTANT]
 ====
@@ -4126,7 +4126,7 @@ Sometimes it's useful to combine tabu types:
 
 If the tabu size is too small, the solver can still get stuck in a local optimum.
 On the other hand, if the tabu size is too large, the solver can be inefficient by bouncing off the walls.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to fine tweak your configuration.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to fine tweak your configuration.
 
 
 [#simulatedAnnealing]
@@ -4153,7 +4153,7 @@ In the end, it gradually turns into Hill Climbing, only accepting improving move
 ==== Configuration
 
 Start with a `simulatedAnnealingStartingTemperature` set to the maximum score delta a single move can cause.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak the value.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak the value.
 Advanced configuration:
 
 [source,xml,options="nowrap"]

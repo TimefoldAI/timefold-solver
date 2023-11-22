@@ -1,0 +1,587 @@
+[#useTheSolver]
+[#runningTimefoldSolver]
+= Running Timefold Solver
+:doctype: book
+:sectnums:
+:icons: font
+
+[#theSolverInterface]
+== The `Solver` interface
+
+A `Solver` solves your planning problem.
+
+[source,java,options="nowrap"]
+----
+public interface Solver<Solution_> {
+
+    Solution_ solve(Solution_ problem);
+
+    ...
+}
+----
+
+A `Solver` can only solve one planning problem instance at a time.
+It is built with a ``SolverFactory``, there is no need to implement it yourself.
+
+A `Solver` should only be accessed from a single thread, except for the methods that are specifically documented in javadoc as being thread-safe.
+The `solve()` method hogs the current thread.
+This can cause HTTP timeouts for REST services and it requires extra code to solve multiple datasets in parallel.
+To avoid such issues, use a <<solverManager,`SolverManager`>> instead.
+
+
+[#solvingAProblem]
+== Solving a problem
+
+Solving a problem is quite easy once you have:
+
+* A `Solver` built from a solver configuration
+* A `@PlanningSolution` that represents the planning problem instance
+
+Just provide the planning problem as argument to the `solve()` method and it will return the best solution found:
+
+[source,java,options="nowrap"]
+----
+    NQueens problem = ...;
+    NQueens bestSolution = solver.solve(problem);
+----
+
+For example in n queens, the `solve()` method will return an `NQueens` instance with every `Queen` assigned to a ``Row``.
+
+.Best Solution for the Four Queens Puzzle in 8ms (Also an Optimal Solution)
+image::using-timefold-solver/running-the-solver/solvedNQueens04.png[align="left"]
+
+The `solve(Solution)` method can take a long time (depending on the problem size and the solver configuration). The `Solver` intelligently wades through xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space] of possible solutions and remembers the best solution it encounters during solving.
+Depending on a number of factors (including problem size, how much time the `Solver` has, the solver configuration, ...), xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[that best solution might or might not be an optimal solution].
+
+[NOTE]
+====
+The solution instance given to the method `solve(solution)` is changed by the ``Solver``,
+but do not mistake it for the best solution.
+
+The solution instance returned by the methods `solve(solution)` or `getBestSolution()` is most likely <<cloningASolution,a planning clone>> of the instance given to the method ``solve(solution)``, which implies it is a different instance.
+====
+
+[NOTE]
+====
+The solution instance given to the `solve(Solution)` method does not need to be uninitialized.
+It can be partially or fully initialized, which is often the case in xref:responding-to-change/responding-to-change.adoc[repeated planning].
+====
+
+
+[#environmentMode]
+== Environment mode: are there bugs in my code?
+
+The environment mode allows you to detect common bugs in your implementation.
+It does not affect the <<logging,logging level>>.
+
+You can set the environment mode in the solver configuration XML file:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <environmentMode>FAST_ASSERT</environmentMode>
+  ...
+</solver>
+----
+
+A solver has a single `Random` instance.
+Some solver configurations use the `Random` instance a lot more than others.
+For example, Simulated Annealing depends highly on random numbers, while Tabu Search only depends on it to deal with score ties.
+The environment mode influences the seed of that `Random` instance.
+
+These are the environment modes:
+
+
+[#environmentModeFullAssert]
+=== `FULL_ASSERT`
+
+The FULL_ASSERT mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+
+This mode is reproducible (see the reproducible mode). It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
+
+The FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
+
+
+[#environmentModeNonIntrusiveFullAssert]
+=== `NON_INTRUSIVE_FULL_ASSERT`
+
+The NON_INTRUSIVE_FULL_ASSERT turns on several assertions to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+
+This mode is reproducible (see the reproducible mode). It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
+
+The NON_INTRUSIVE_FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
+
+
+[#environmentModeFastAssert]
+=== `FAST_ASSERT`
+
+The FAST_ASSERT mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+
+This mode is reproducible (see the reproducible mode). It is also intrusive because it calls the method `calculateScore()` more frequently than a non assert mode.
+
+The FAST_ASSERT mode is slow.
+
+It is recommended to write a test case that does a short run of your planning problem with the FAST_ASSERT mode on.
+
+
+[#environmentModeReproducible]
+=== `REPRODUCIBLE` (default)
+
+The reproducible mode is the default mode because it is recommended during development.
+In this mode, two runs in the same Timefold Solver version will execute the same code in the same order.
+**Those two runs will have the same result at every step**, except if the note below applies.
+This enables you to reproduce bugs consistently.
+It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
+
+[NOTE]
+====
+Despite the reproducible mode, your application might still not be fully reproducible because of:
+
+* Use of `HashSet` (or another `Collection` which has an inconsistent order between JVM runs) for collections of planning entities or planning values (but not normal problem facts), especially in the solution implementation. Replace it with ``LinkedHashSet``.
+* Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination. A sufficiently large difference in allocated CPU time will influence the time gradient values. Replace Simulated Annealing with Late Acceptance. Or instead, replace time spent termination with step count termination.
+
+====
+
+The reproducible mode can be slightly slower than the non-reproducible mode.
+If your production environment can benefit from reproducibility, use this mode in production.
+
+In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified, and it also disables certain concurrency optimizations (such as work stealing).
+
+
+[#environmentModeProduction]
+=== `NON_REPRODUCIBLE`
+
+The non-reproducible mode can be slightly faster than the reproducible mode.
+Avoid using it during development as it makes debugging and bug fixing painful.
+If your production environment doesn't care about reproducibility, use this mode in production.
+
+In practice, this mode uses no fixed <<randomNumberGenerator,random seed>> if no seed is specified.
+
+
+[#logging]
+== Logging level: what is the `Solver` doing?
+
+The best way to illuminate the black box that is a ``Solver``, is to play with the logging level:
+
+* **error**: Log errors, except those that are thrown to the calling code as a ``RuntimeException``.
++
+[NOTE]
+====
+**If an error happens, Timefold Solver normally fails fast**: it throws a subclass of `RuntimeException` with a detailed message to the calling code.
+It does not log it as an error itself to avoid duplicate log messages.
+Except if the calling code explicitly catches and eats that ``RuntimeException``, a ``Thread``'s default `ExceptionHandler` will log it as an error anyway.
+Meanwhile, the code is disrupted from doing further harm or obfuscating the error.
+====
+* **warn**: Log suspicious circumstances.
+* **info**: Log every phase and the solver itself. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
+* **debug**: Log every step of every phase. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
+* **trace**: Log every move of every step of every phase. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
+
+[NOTE]
+====
+Turning on `trace` logging, will slow down performance considerably: it is often four times slower.
+However, it is invaluable during development to discover a bottleneck.
+
+Even `debug` logging can slow down performance considerably for fast stepping algorithms
+(such as Late Acceptance and Simulated Annealing),
+but not for slow stepping algorithms (such as Tabu Search).
+
+Both cause congestion in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving] with most appenders, see below.
+
+In Eclipse, `debug` logging to the console tends to cause congestion with a score calculation speeds above 10 000 per second.
+Nor IntelliJ, nor the Maven command line suffer from this problem.
+====
+
+For example, set it to `debug` logging, to see when the phases end and how fast steps are taken:
+
+[source,options="nowrap"]
+----
+INFO  Solving started: time spent (3), best score (-4init/0), random (JDK with seed 0).
+DEBUG     CH step (0), time spent (5), score (-3init/0), selected move count (1), picked move (Queen-2 {null -> Row-0}).
+DEBUG     CH step (1), time spent (7), score (-2init/0), selected move count (3), picked move (Queen-1 {null -> Row-2}).
+DEBUG     CH step (2), time spent (10), score (-1init/0), selected move count (4), picked move (Queen-3 {null -> Row-3}).
+DEBUG     CH step (3), time spent (12), score (-1), selected move count (4), picked move (Queen-0 {null -> Row-1}).
+INFO  Construction Heuristic phase (0) ended: time spent (12), best score (-1), score calculation speed (9000/sec), step total (4).
+DEBUG     LS step (0), time spent (19), score (-1),     best score (-1), accepted/selected move count (12/12), picked move (Queen-1 {Row-2 -> Row-3}).
+DEBUG     LS step (1), time spent (24), score (0), new best score (0), accepted/selected move count (9/12), picked move (Queen-3 {Row-3 -> Row-2}).
+INFO  Local Search phase (1) ended: time spent (24), best score (0), score calculation speed (4000/sec), step total (2).
+INFO  Solving ended: time spent (24), best score (0), score calculation speed (7000/sec), phase total (2), environment mode (REPRODUCIBLE).
+----
+
+All time spent values are in milliseconds.
+
+Everything is logged to http://www.slf4j.org/[SLF4J], which is a simple logging facade
+which delegates every log message to Logback, Apache Commons Logging, Log4j or java.util.logging.
+Add a dependency to the logging adaptor for your logging framework of choice.
+
+If you are not using any logging framework yet, use Logback by adding this Maven dependency (there is no need to add an extra bridge dependency):
+
+[source,xml,options="nowrap"]
+----
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.x</version>
+    </dependency>
+----
+
+Configure the logging level on the `ai.timefold.solver` package in your `logback.xml` file:
+
+[source,xml,options="nowrap"]
+----
+<configuration>
+
+  <logger name="ai.timefold.solver" level="debug"/>
+
+  ...
+
+</configuration>
+----
+
+If it isn't picked up, temporarily add the system property `-Dlogback.debug=true` to figure out why.
+
+[NOTE]
+====
+When running multiple solvers or a xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solver],
+most appenders (including the console) cause congestion with `debug` and `trace` logging.
+Switch to an async appender to avoid this problem or turn off `debug` logging.
+====
+
+If instead, you are still using Log4j 1.x (and you do not want to switch to its faster successor, Logback), add the bridge dependency:
+
+[source,xml,options="nowrap"]
+----
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.x</version>
+    </dependency>
+----
+
+And configure the logging level on the package `ai.timefold.solver` in your `log4j.xml` file:
+
+[source,xml,options="nowrap"]
+----
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+  <category name="ai.timefold.solver">
+    <priority value="debug" />
+  </category>
+
+  ...
+
+</log4j:configuration>
+----
+
+[NOTE]
+====
+In a multitenant application, multiple `Solver` instances might be running at the same time.
+To separate their logging into distinct files, surround the `solve()` call with an http://logback.qos.ch/manual/mdc.html[MDC]:
+
+[source,java,options="nowrap"]
+----
+        MDC.put("tenant.name", tenantName);
+        MySolution bestSolution = solver.solve(problem);
+        MDC.remove("tenant.name");
+----
+
+Then configure your logger to use different files for each ``${tenant.name}``.
+For example in Logback, use a `SiftingAppender` in ``logback.xml``:
+
+[source,xml,options="nowrap"]
+----
+  <appender name="fileAppender" class="ch.qos.logback.classic.sift.SiftingAppender">
+    <discriminator>
+      <key>tenant.name</key>
+      <defaultValue>unknown</defaultValue>
+    </discriminator>
+    <sift>
+      <appender name="fileAppender.${tenant.name}" class="...FileAppender">
+        <file>local/log/timefold-solver-${tenant.name}.log</file>
+        ...
+      </appender>
+    </sift>
+  </appender>
+----
+====
+
+[#monitoring]
+== Monitoring the solver
+
+Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver. Timefold automatically connects to configured registries when it is used in Quarkus or Spring Boot. If you use Timefold with plain Java, you must add the metrics registry to the global registry.
+
+.Prerequisites
+* You have a plain Java Timefold Solver project.
+* You have configured a Micrometer registry. For information about configuring Micrometer registries, see the https://micrometer.io[Micrometer] web site.
+
+.Procedure
+. Add configuration information for the Micrometer registry for your desired monitoring system to the global registry.
+. Add the following line below the configuration information, where `<REGISTRY>` is the name of the registry that you configured:
++
+[source,java,nowrap]
+----
+Metrics.addRegistry(<REGISTRY>);
+----
+The following example shows how to add the Prometheus registry:
++
+[source,java,nowrap]
+----
+PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+try {
+    HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+    server.createContext("/prometheus", httpExchange -> {
+        String response = prometheusRegistry.scrape(); (1)
+        httpExchange.sendResponseHeaders(200, response.getBytes().length);
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    });
+
+    new Thread(server::start).start();
+} catch (IOException e) {
+    throw new RuntimeException(e);
+}
+
+Metrics.addRegistry(prometheusRegistry);
+----
+
+. Open your monitoring system to view the metrics for your Timefold Solver project. The following metrics are exposed:
++
+[NOTE]
+====
+The names and format of the metrics vary depending on the registry.
+====
++
+* `timefold.solver.errors.total`: the total number of errors that occurred while solving since the start
+of the measuring.
+* `timefold.solver.solve.duration.active-count`: the number of solvers currently solving.
+* `timefold.solver.solve.duration.seconds-max`: run time of the
+longest-running currently active solver.
+* `timefold.solver.solve.duration.seconds-duration-sum`: the sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
+
+=== Additional metrics
+
+For more detailed monitoring, Timefold Solver can be configured to monitor additional metrics at a performance cost.
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <monitoring>
+    <metric>BEST_SCORE</metric>
+    <metric>SCORE_CALCULATION_COUNT</metric>
+    ...
+  </monitoring>
+  ...
+</solver>
+----
+
+The following metrics are available:
+
+- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"): Measure the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
+
+- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"): Measures the number of errors that occur while solving.
+
+- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"): Measures the number of score calculations Timefold Solver performed.
+
+- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"): Measures the score of the best solution Timefold Solver found so far.
+There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
+
+- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"): Measures the score of each step Timefold Solver takes.
+There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
+
+- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"): Measures the number of changed planning variables between consecutive best solutions.
+
+- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"): Measures the number of moves evaluated in a step.
+
+- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"): Measures the amount of memory used across the JVM. This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
+
+- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"): Measures the score impact of each constraint on the best solution Timefold Solver found so far.
+There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+
+- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"): Measures the score impact of each constraint on the current step. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+
+- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+
+- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+
+[#randomNumberGenerator]
+== Random number generator
+
+Many heuristics and metaheuristics depend on a pseudorandom number generator for move selection, to resolve score ties, probability based move acceptance, ... During solving, the same `Random` instance is reused to improve reproducibility, performance and uniform distribution of random values.
+
+To change the random seed of that `Random` instance, specify a ``randomSeed``:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <randomSeed>0</randomSeed>
+  ...
+</solver>
+----
+
+To change the pseudorandom number generator implementation, specify a ``randomType``:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <randomType>MERSENNE_TWISTER</randomType>
+  ...
+</solver>
+----
+
+The following types are supported:
+
+* `JDK` (default): Standard implementation (``java.util.Random``).
+* ``MERSENNE_TWISTER``: Implementation by http://commons.apache.org/proper/commons-math/userguide/random.html[Commons Math].
+* ``WELL512A``, ``WELL1024A``, ``WELL19937A``, ``WELL19937C``, `WELL44497A` and ``WELL44497B``: Implementation by http://commons.apache.org/proper/commons-math/userguide/random.html[Commons Math].
+
+For most use cases, the randomType has no significant impact on the average quality of the best solution on multiple datasets.
+If you want to confirm this on your use case, use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarker].
+
+
+[#solverManager]
+== `SolverManager`
+
+A `SolverManager` is a facade for one or more `Solver` instances
+to simplify solving planning problems in REST and other enterprise services.
+Unlike the `Solver.solve(...)` method:
+
+* *`SolverManager.solve(...)` returns immediately*: it schedules a problem for asynchronous solving without blocking the calling thread.
+This avoids timeout issues of HTTP and other technologies.
+* *`SolverManager.solve(...)` solves multiple planning problems* of the same domain, in parallel.
+
+Internally a `SolverManager` manages a thread pool of solver threads, which call `Solver.solve(...)`,
+and a thread pool of consumer threads, which handle best solution changed events.
+
+In xref:integration/integration.adoc#integrationWithQuarkus[Quarkus] and xref:integration/integration.adoc#integrationWithSpringBoot[Spring Boot],
+the `SolverManager` instance is automatically injected in your code.
+Otherwise, build a `SolverManager` instance with the `create(...)` method:
+
+[source,java,options="nowrap"]
+----
+SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../cloudBalancingSolverConfig.xml");
+SolverManager<CloudBalance, UUID> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
+----
+
+Each problem submitted to the `SolverManager.solve(...)` methods needs a unique problem ID.
+Later calls to `getSolverStatus(problemId)` or `terminateEarly(problemId)` use that problem ID
+to distinguish between the planning problems.
+The problem ID must be an immutable class, such as `Long`, `String` or `java.util.UUID`.
+
+The `SolverManagerConfig` class has a `parallelSolverCount` property,
+that controls how many solvers are run in parallel.
+For example, if set to `4`, submitting five problems
+has four problems solving immediately, and the fifth one starts when another one ends.
+If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
+By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
+regardless of the xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[`moveThreadCount`] of the solvers.
+
+To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
+
+[source,java,options="nowrap"]
+----
+CloudBalance problem1 = ...;
+UUID problemId = UUID.randomUUID();
+// Returns immediately
+SolverJob<CloudBalance, UUID> solverJob = solverManager.solve(problemId, problem1);
+...
+CloudBalance solution1;
+try {
+    // Returns only after solving terminates
+    solution1 = solverJob.getFinalBestSolution();
+} catch (InterruptedException | ExecutionException e) {
+    throw ...;
+}
+----
+
+However, there are better approaches, both for solving batch problems before an end-user needs the solution
+as well as for live solving while an end-user is actively waiting for the solution, as explained below.
+
+The current `SolverManager` implementation runs on a single computer node,
+but future work aims to distribute solver loads across a cloud.
+
+
+[#solverManagerSolveBatch]
+=== Solve batch problems
+
+At night, batch solving is a great approach to deliver solid plans by breakfast, because:
+
+* There are typically few or no problem changes in the middle of the night.
+Some organizations even enforce a deadline, for example, _submit all day off requests before midnight_.
+* The solvers can run for much longer, often hours, because nobody's waiting for it and CPU resources are often cheaper.
+
+To solve a multiple datasets in parallel (limited by `parallelSolverCount`),
+call `solve(...)` for each dataset:
+
+[source,java,options="nowrap"]
+----
+public class TimeTableService {
+
+    private SolverManager<TimeTable, Long> solverManager;
+
+    // Returns immediately, call it for every dataset
+    public void solveBatch(Long timeTableId) {
+        solverManager.solve(timeTableId,
+                // Called once, when solving starts
+                this::findById,
+                // Called once, when solving ends
+                this::save);
+    }
+
+    public TimeTable findById(Long timeTableId) {...}
+
+    public void save(TimeTable timeTable) {...}
+
+}
+----
+
+A solid plan delivered by breakfast is great,
+even if you need to react on problem changes during the day.
+
+
+[#solverManagerSolveAndListen]
+=== Solve and listen to show progress to the end-user
+
+When a solver is running while an end-user is waiting for that solution,
+the user might need to wait for several minutes or hours before receiving a result.
+To assure the user that everything is going well,
+show progress by displaying the best solution and best score attained so far.
+
+To handle intermediate best solutions, use `solveAndListen(...)`:
+
+[source,java,options="nowrap"]
+----
+public class TimeTableService {
+
+    private SolverManager<TimeTable, Long> solverManager;
+
+    // Returns immediately
+    public void solveLive(Long timeTableId) {
+        solverManager.solveAndListen(timeTableId,
+                // Called once, when solving starts
+                this::findById,
+                // Called multiple times, for every best solution change
+                this::save);
+    }
+
+    public TimeTable findById(Long timeTableId) {...}
+
+    public void save(TimeTable timeTable) {...}
+
+    public void stopSolving(Long timeTableId) {
+        solverManager.terminateEarly(timeTableId);
+    }
+
+}
+----
+
+This implementation is using the database to communicate with the UI, which polls the database.
+More advanced implementations push the best solutions directly to the UI or a messaging queue.
+
+If the user is satisfied with the intermediate best solution
+and does not want to wait any longer for a better one, call `SolverManager.terminateEarly(problemId)`.

@@ -97,7 +97,7 @@ However, this class is also the output of the solution:
 The `timeslots` field is a value range provider.
 It holds the `Timeslot` instances which Timefold Solver can pick from to assign to the `timeslot` field of `Lesson` instances.
 The `timeslots` field has an `@ValueRangeProvider` annotation to connect the `@PlanningVariable` with the `@ValueRangeProvider`,
-by matching the type of the planning variable with the type returned by the xref:configuration/configuration.adoc#planningValueRangeProvider[value range provider].
+by matching the type of the planning variable with the type returned by the xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider].
 
 Following the same logic, the `rooms` field also has an `@ValueRangeProvider` annotation.
 

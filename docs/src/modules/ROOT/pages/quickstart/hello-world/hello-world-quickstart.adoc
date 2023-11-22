@@ -85,7 +85,7 @@ Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
 * `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
-* A xref:configuration/configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
+* A xref:using-timefold-solver/running-the-solver.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
 
 

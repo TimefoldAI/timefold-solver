@@ -1,5 +1,6 @@
 [#benchmarker]
 = Benchmarking and tweaking
+:page-aliases: benchmarking-and-tweaking/benchmarking-and-tweaking.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -16,7 +17,7 @@ Those parameters can influence the results a lot, even though most solver phases
 Luckily, Timefold Solver includes a benchmarker, which allows you to play out different solver phases with different settings
 against each other in development, so you can use the best configuration for your planning problem in production.
 
-image::benchmarking-and-tweaking/benchmarkOverview.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/benchmarkOverview.png[align="center"]
 
 
 [#benchmarkConfiguration]
@@ -416,7 +417,7 @@ To write those solutions in the ``benchmarkDirectory``, enable ``writeOutputSolu
 [#benchmarkLogging]
 === Benchmark logging
 
-Benchmark logging is configured like xref:configuration/configuration.adoc#logging[solver logging].
+Benchmark logging is configured like xref:using-timefold-solver/running-the-solver.adoc#logging[solver logging].
 
 To separate the log messages of each single benchmark run into a separate file, use the http://logback.qos.ch/manual/mdc.html[MDC] with key `subSingleBenchmark.name` in a sifting appender.
 For example with Logback in ``logback.xml``:
@@ -532,7 +533,7 @@ Shows the best score per `inputSolutionFile` for each solver configuration.
 Useful for visualizing the best solver configuration.
 
 .Best score summary statistic
-image::benchmarking-and-tweaking/bestScoreSummary.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/bestScoreSummary.png[align="center"]
 
 
 [#benchmarkReportBestScoreScalabilitySummary]
@@ -556,7 +557,7 @@ Shows the best score distribution per `inputSolutionFile` for each solver config
 Useful for visualizing the reliability of each solver configuration.
 
 .Best Score Distribution Summary Statistic
-image::benchmarking-and-tweaking/bestScoreDistributionSummary.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/bestScoreDistributionSummary.png[align="center"]
 
 Enable <<statisticalBenchmarking,statistical benchmarking>> to use this summary.
 
@@ -677,7 +678,7 @@ To run it when other statistics are configured, also add:
 ----
 
 .Best Score Over Time Statistic
-image::benchmarking-and-tweaking/bestScoreStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/bestScoreStatistic.png[align="center"]
 
 [NOTE]
 ====
@@ -689,7 +690,7 @@ On the other hand, for the Tabu Search and Late Acceptance, what you see is what
 *The best score over time statistic is very useful to detect abnormalities, such as a
 potential xref:constraints-and-score/performance.adoc#scoreTrap[score trap] which gets the solver temporarily stuck in a local optima.*
 
-image::benchmarking-and-tweaking/letTheBestScoreStatisticGuideYou.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/letTheBestScoreStatisticGuideYou.png[align="center"]
 
 
 [#benchmarkReportStepScoreOverTimeStatistic]
@@ -706,7 +707,7 @@ To see how the step score evolves over time, add:
 ----
 
 .Step Score Over Time Statistic
-image::benchmarking-and-tweaking/stepScoreStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/stepScoreStatistic.png[align="center"]
 
 Compare the step score statistic with the best score statistic (especially on parts for which the best score flatlines). If it hits a local optima, the solver should take deteriorating steps to escape it.
 But it shouldn't deteriorate too much either.
@@ -734,7 +735,7 @@ To see how fast the scores are calculated, add:
 ----
 
 .Score Calculation Speed Statistic
-image::benchmarking-and-tweaking/scoreCalculationSpeedStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/scoreCalculationSpeedStatistic.png[align="center"]
 
 
 [NOTE]
@@ -759,7 +760,7 @@ To see how much each new best solution differs from the __previous best solution
 ----
 
 .Best Solution Mutation Over Time Statistic
-image::benchmarking-and-tweaking/bestSolutionMutationStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/bestSolutionMutationStatistic.png[align="center"]
 
 Use Tabu Search - an algorithm that behaves like a human - to get an estimation on how difficult it would be for a human to improve the previous best solution to that new best solution.
 
@@ -783,7 +784,7 @@ To see how the selected and accepted move count per step evolves over time, add:
 ----
 
 .Move Count Per Step Statistic
-image::benchmarking-and-tweaking/moveCountPerStepStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/moveCountPerStepStatistic.png[align="center"]
 
 
 [WARNING]
@@ -806,7 +807,7 @@ To see how much memory is used, add:
 ----
 
 .Memory Use Statistic
-image::benchmarking-and-tweaking/memoryUseStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/memoryUseStatistic.png[align="center"]
 
 
 [WARNING]
@@ -870,7 +871,7 @@ To see which constraints are matched in the best score (and how much) over time,
 ----
 
 .Constraint Match Total Best Score Diff Over Time Statistic
-image::benchmarking-and-tweaking/constraintMatchTotalBestScoreStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/constraintMatchTotalBestScoreStatistic.png[align="center"]
 
 Requires the score calculation to support xref:constraints-and-score/understanding-the-score.adoc[score explanation].
 xref:constraints-and-score/score-calculation.adoc[Constraint Streams] supports constraint matches automatically,
@@ -896,7 +897,7 @@ To see which constraints are matched in the step score (and how much) over time,
 ----
 
 .Constraint Match Total Step Score Diff Over Time Statistic
-image::benchmarking-and-tweaking/constraintMatchTotalStepScoreStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/constraintMatchTotalStepScoreStatistic.png[align="center"]
 
 Also requires the score calculation to support xref:constraints-and-score/understanding-the-score.adoc[score explanation].
 
@@ -920,7 +921,7 @@ To see which move types improve the best score (and how much) over time, add:
 ----
 
 .Picked Move Type Best Score Diff Over Time Statistic
-image::benchmarking-and-tweaking/pickedMoveTypeBestScoreDiffStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/pickedMoveTypeBestScoreDiffStatistic.png[align="center"]
 
 
 [#benchmarkReportPickedMoveTypeStepScoreDiffOverTimeStatistic]
@@ -937,7 +938,7 @@ To see how much each winning step affects the step score over time, add:
 ----
 
 .Picked Move Type Step Score Diff Over Time Statistic
-image::benchmarking-and-tweaking/pickedMoveTypeStepScoreDiffStatistic.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/pickedMoveTypeStepScoreDiffStatistic.png[align="center"]
 
 
 [#advancedBenchmarking]
@@ -1044,7 +1045,9 @@ The `subSingleCount` defaults to `1` (so no statistical benchmarking).
 
 [NOTE]
 ====
-If `subSingleCount` is higher than ``1``, the benchmarker will automatically use a _different_ xref:configuration/configuration.adoc#randomNumberGenerator[`Random` seed] for every sub single run, without losing reproducibility (for each sub single index) in xref:configuration/configuration.adoc#environmentMode[EnvironmentMode] ``REPRODUCIBLE`` and lower.
+If `subSingleCount` is higher than ``1``,
+the benchmarker will automatically use a _different_ xref:using-timefold-solver/running-the-solver.adoc#randomNumberGenerator[`Random` seed] for every sub single run,
+without losing reproducibility (for each sub single index) in xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] ``REPRODUCIBLE`` and lower.
 ====
 
 
@@ -1135,7 +1138,7 @@ And build it with the class ``PlannerBenchmarkFactory``:
 
 The `BenchmarkAggregator` takes one or more existing benchmarks and merges them into new benchmark report, without actually running the benchmarks again.
 
-image::benchmarking-and-tweaking/benchmarkAggregator.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/benchmarkAggregator.png[align="center"]
 
 This is useful to:
 
@@ -1146,7 +1149,7 @@ This is useful to:
 
 Compose the aggregated report in the Benchmark aggregator UI:
 
-image::benchmarking-and-tweaking/benchmarkAggregatorScreenshot.png[align="center"]
+image::using-timefold-solver/benchmarking-and-tweaking/benchmarkAggregatorScreenshot.png[align="center"]
 
 To display that UI, provide a benchmark config to the `BenchmarkAggregatorFrame`:
 

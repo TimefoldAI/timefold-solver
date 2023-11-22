@@ -276,7 +276,7 @@ The following ``NearbySelectionDistributionType``s are supported:
   </nearbySelection>
 ----
 
-As always, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak values if desired.
+As always, use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak values if desired.
 
 
 [#multithreadedSolving]
@@ -294,7 +294,7 @@ There are several ways of doing multi-threaded solving:
 ** The `SolverManager` will make it even easier to set this up, in a future version.
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
-** Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the most appropriate algorithm, although that's only on average.
+** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the most appropriate algorithm, although that's only on average.
 ** Use multi-threaded incremental solving instead.
 * *Partitioned Search*: Split 1 dataset in multiple parts and solve them independently.
 ** Configure a <<partitionedSearch,Partitioned Search>>.
@@ -306,7 +306,7 @@ image::enterprise-edition/multiThreadingStrategies.png[align="center"]
 
 [NOTE]
 ====
-A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` might cause congestion multi-threaded solving
+A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` might cause congestion multi-threaded solving
 and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
@@ -515,7 +515,7 @@ plug in a <<customThreadFactory,custom thread factory>>.
 
 [IMPORTANT]
 ====
-A xref:configuration/configuration.adoc#logging[logging level] of `debug` or `trace` causes congestion in multi-threaded Partitioned Search
+A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` causes congestion in multi-threaded Partitioned Search
 and slows down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
@@ -645,8 +645,8 @@ public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance
 ----
 
 To configure values of a `SolutionPartitioner` dynamically in the solver configuration
-(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `solutionPartitionerCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `solutionPartitionerCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
