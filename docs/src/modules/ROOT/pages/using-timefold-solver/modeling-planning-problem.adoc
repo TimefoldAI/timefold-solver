@@ -1,226 +1,13 @@
-[#configuration]
-= Configuring Timefold Solver
+[#modelAPlanningProblem]
+= Modeling planning problems
 :page-aliases: shadow-variable/shadow-variable.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
 
-[#configurationOverview]
-== Overview
-
-Solving a planning problem with Timefold Solver consists of the following steps:
-
-. *Model your planning problem* as a class annotated with the ``@PlanningSolution`` annotation, for example the ``NQueens`` class.
-. *Configure a ``Solver``*, for example a First Fit and Tabu Search solver for any `NQueens` instance.
-. *Load a problem data set* from your data layer, for example a Four Queens instance. That is the planning problem.
-. *Solve it* with `Solver.solve(problem)` which returns the best solution found.
-
-image::configuration/inputOutputOverview.png[align="center"]
-
-
-[#solverConfiguration]
-== Solver configuration
-
-
-[#solverConfigurationByXML]
-=== Solver configuration by XML
-
-Build a `Solver` instance with the ``SolverFactory``.
-Configure the `SolverFactory` with a solver configuration XML file, provided as a classpath resource (as defined by ``ClassLoader.getResource()``):
-
-[source,java,options="nowrap"]
-----
-       SolverFactory<NQueens> solverFactory = SolverFactory.createFromXmlResource(
-               "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
-       Solver<NQueens> solver = solverFactory.buildSolver();
-----
-
-In a typical project (following the Maven directory structure),
-that solverConfig XML file would be located at ``$PROJECT_DIR/src/main/resources/ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml``.
-Alternatively, a `SolverFactory` can be created from a ``File`` with ``SolverFactory.createFromXmlFile()``.
-However, for portability reasons, a classpath resource is recommended.
-
-Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``, which is the class representing a <<planningProblemAndPlanningSolution,planning problem and solution>>.
-
-A solver configuration XML file looks like this:
-
-[source,xml,options="nowrap"]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <!-- Define the model -->
-  <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
-  <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
-
-  <!-- Define the score function -->
-  <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
-  </scoreDirectorFactory>
-
-  <!-- Configure the optimization algorithms (optional) -->
-  <termination>
-    ...
-  </termination>
-  <constructionHeuristic>
-    ...
-  </constructionHeuristic>
-  <localSearch>
-    ...
-  </localSearch>
-</solver>
-----
-
-Notice the three parts in it:
-
-* Define the model.
-* Define the score function.
-* Optionally configure the optimization algorithm(s).
-
-These various parts of a configuration are explained further in this manual.
-
-*Timefold Solver makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
-
-
-[#solverConfigurationByJavaAPI]
-=== Solver configuration by Java API
-
-A solver configuration can also be configured with the `SolverConfig` API.
-This is especially useful to change some values dynamically at runtime.
-For example, to change the running time based on system property, before building the ``Solver``:
-
-[source,java,options="nowrap"]
-----
-        SolverConfig solverConfig = SolverConfig.createFromXmlResource(
-                "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
-        solverConfig.withTerminationConfig(new TerminationConfig()
-                        .withMinutesSpentLimit(userInput));
-
-        SolverFactory<NQueens> solverFactory = SolverFactory.create(solverConfig);
-        Solver<NQueens> solver = solverFactory.buildSolver();
-----
-
-Every element in the solver configuration XML is available as a `$$*$$Config` class
-or a property on a `$$*$$Config` class in the package namespace ``ai.timefold.solver.core.config``.
-These `$$*$$Config` classes are the Java representation of the XML format.
-They build the runtime components (of the package namespace ``ai.timefold.solver.core.impl``)
-and assemble them into an efficient ``Solver``.
-
-[NOTE]
-====
-To configure a `SolverFactory` dynamically for each user request,
-build a template `SolverConfig` during initialization
-and copy it with the copy constructor for each user request:
-
-[source,java,options="nowrap"]
-----
-    private SolverConfig template;
-
-    public void init() {
-        template = SolverConfig.createFromXmlResource(
-                "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
-        template.setTerminationConfig(new TerminationConfig());
-    }
-
-    // Called concurrently from different threads
-    public void userRequest(..., long userInput) {
-        SolverConfig solverConfig = new SolverConfig(template); // Copy it
-        solverConfig.getTerminationConfig().setMinutesSpentLimit(userInput);
-        SolverFactory<NQueens> solverFactory = SolverFactory.create(solverConfig);
-        Solver<NQueens> solver = solverFactory.buildSolver();
-        ...
-    }
-----
-====
-
-[#annotationAlternatives]
-=== Annotation alternatives
-
-Timefold Solver needs to be told which classes in your domain model are planning entities, which properties are planning variables, etc.
-There are several ways to deliver this information:
-
-* Add class annotations and JavaBean property annotations on the domain model (recommended).
-The property annotations must be on the getter method, not on the setter method.
-Such a getter does not need to be public.
-* Add class annotations and field annotations on the domain model.
-Such a field does not need to be public.
-* No annotations: externalize the domain configuration in an XML file.
-This is https://issues.redhat.com/browse/PLANNER-151[not yet supported].
-
-This manual focuses on the first manner, but every feature supports all three manners, even if it's not explicitly mentioned.
-
-[#domainAccess]
-=== Domain access
-
-Timefold Solver by default accesses your domain using reflection, which
-will always work, but is slow compared to direct access.
-Alternatively, you can configure Timefold Solver to access your domain
-using Gizmo, which will generate bytecode that directly access the
-fields/methods of your domain without reflection. However, it comes with some restrictions:
-
-* All fields in the domain must be public.
-* The planning annotations can only be on public fields and
-  public getters.
-* io.quarkus.gizmo:gizmo must be on the classpath.
-
-These restrictions do not apply when using Timefold Solver with Quarkus,
-where Gizmo is the default domain access type.
-
-To use Gizmo outside of Quarkus, set the `domainAccessType` in the
-Solver Configuration:
-
-[source,xml,options="nowrap"]
-----
-  <solver>
-    <domainAccessType>GIZMO</domainAccessType>
-  </solver>
-----
-
-[#customPropertiesConfiguration]
-=== Custom properties configuration
-
-Solver configuration elements, that instantiate classes and explicitly mention it, support custom properties.
-Custom properties are useful to tweak dynamic values through the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker].
-For example, presume your `EasyScoreCalculator` has heavy calculations (which are cached)
-and you want to increase the cache size in one benchmark:
-
-[source,xml,options="nowrap"]
-----
-  <scoreDirectorFactory>
-    <easyScoreCalculatorClass>...MyEasyScoreCalculator</easyScoreCalculatorClass>
-    <easyScoreCalculatorCustomProperties>
-      <property name="myCacheSize" value="1000"/><!-- Override value -->
-    </easyScoreCalculatorCustomProperties>
-  </scoreDirectorFactory>
-----
-
-Add a public setter for each custom property, which is called when a `Solver` is built.
-
-[source,java,options="nowrap"]
-----
-public class MyEasyScoreCalculator extends EasyScoreCalculator<MySolution, SimpleScore> {
-
-        private int myCacheSize = 500; // Default value
-
-        @SuppressWarnings("unused")
-        public void setMyCacheSize(int myCacheSize) {
-            this.myCacheSize = myCacheSize;
-        }
-
-    ...
-}
-----
-
-Most value types are supported (including `boolean`, `int`, `double`, `BigDecimal`, `String` and enums).
-
-
-[#modelAPlanningProblem]
-== Model a planning problem
-
-
 [#isThisClassAProblemFactOrPlanningEntity]
-=== Is this class a problem fact or planning entity?
+== Is this class a problem fact or planning entity?
 
 Look at a dataset of your planning problem.
 You will recognize domain classes in there, each of which can be categorized as one of the following:
@@ -247,7 +34,7 @@ To create a good domain model, read the xref:design-patterns/design-patterns.ado
 *In Timefold Solver, all problem facts and planning entities are plain old JavaBeans (POJOs).* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
 
 [#problemFact]
-=== Problem fact
+== Problem fact
 
 A problem fact is any JavaBean (POJO) with getters that does not change during planning.
 For example in n queens, the columns and rows are problem facts:
@@ -305,11 +92,11 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 
 
 [#planningEntity]
-=== Planning entity
+== Planning entity
 
 
 [#planningEntityAnnotation]
-==== Planning entity annotation
+=== Planning entity annotation
 
 A planning entity is a JavaBean (POJO) that changes during solving, for example a `Queen` that changes to another row.
 A planning problem has multiple planning entities, for example for a single n queens problem, each `Queen` is a planning entity.
@@ -399,7 +186,7 @@ whereas planning entities will.
 ====
 
 [#planningEntityDifficulty]
-==== Planning entity difficulty
+=== Planning entity difficulty
 
 Some optimization algorithms work more efficiently if they have an estimation of which planning entities are more difficult to plan.
 For example: in bin packing bigger items are harder to fit, in course scheduling lectures with more students are more difficult to schedule, and in n queens the middle queens are more difficult to fit on the board.
@@ -463,11 +250,11 @@ For example, a ``Queen``'s `row` variable should not be used.
 
 
 [#planningVariable]
-=== Planning variable (genuine)
+== Planning variable (genuine)
 
 
 [#planningVariableAnnotation]
-==== Planning variable annotation
+=== Planning variable annotation
 
 A planning variable is a JavaBean property (so a getter and setter) on a planning entity.
 It points to a planning value, which changes during planning.
@@ -507,7 +294,7 @@ A @PlanningVariable annotation needs to be on a member in a class with a @Planni
 It is ignored on parent classes or subclasses without that annotation.
 ====
 
-<<annotationAlternatives,Annotating the field>> instead of the property works too:
+xref:using-timefold-solver.adoc/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [source,java,options="nowrap"]
 ----
@@ -528,7 +315,7 @@ For more advanced planning variables used to model precedence relationships, see
 
 
 [#nullablePlanningVariable]
-==== Nullable planning variable
+=== Nullable planning variable
 
 By default, an initialized planning variable cannot be ``null``, so an initialized solution will never use `null` for any of its planning variables.
 In an over-constrained use case, this can be counterproductive.
@@ -591,7 +378,7 @@ One way to deal with this is to filter the entity selector of the placer in the 
 ----
 
 [#whenIsAPlanningVariableInitialized]
-==== When is a planning variable considered initialized?
+=== When is a planning variable considered initialized?
 
 A planning variable is considered initialized if its value is not `null` or if the variable is ``nullable``.
 So a nullable variable is always considered initialized.
@@ -601,13 +388,13 @@ A planning entity is initialized if all of its planning variables are initialize
 A solution is initialized if all of its planning entities are initialized.
 
 [#shadowVariable]
-=== Planning variable (shadow)
+== Planning variable (shadow)
 
-A shadow variable is a planning variable whose correct value can be deduced from the state of the xref:configuration/configuration.adoc#planningVariable[genuine planning variables].
+A shadow variable is a planning variable whose correct value can be deduced from the state of the <<planningVariable,genuine planning variables>>.
 Even though such a variable violates the principle of normalization by definition, in some use cases it can be very practical to use a shadow variable, especially to express the constraints more naturally.
 For example in vehicle routing with time windows: the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle (and the known travel times between two locations).
 
-image::configuration/planningVariableListener.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
 
 When the customers for a vehicle change, the arrival time for each customer is automatically adjusted.
 For more information, see the xref:use-cases-and-examples/vehicle-routing/vehicle-routing.adoc#vehicleRoutingDomainModel[vehicle routing domain model].
@@ -628,12 +415,12 @@ There are several built-in shadow variables:
 
 
 [#bidirectionalVariable]
-==== Bi-directional variable (inverse relation shadow variable)
+=== Bi-directional variable (inverse relation shadow variable)
 
 Two variables are bi-directional if their instances always point to each other (unless one side points to `null` and the other side does not exist).
 So if A references B, then B references A.
 
-image::configuration/bidirectionalVariable.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/bidirectionalVariable.png[align="center"]
 
 For a non-chained planning variable, the bi-directional relationship must be a many-to-one relationship.
 To map a bi-directional relationship between two planning variables, annotate the source side (which is the genuine side) as a normal planning variable:
@@ -725,9 +512,9 @@ Timefold Solver will not violate that principle during planning, but the input m
 
 
 [#anchorShadowVariable]
-==== Anchor shadow variable
+=== Anchor shadow variable
 
-An anchor shadow variable is the anchor of xref:configuration/configuration.adoc#chainedPlanningVariable[a chained variable].
+An anchor shadow variable is the anchor of <<chainedPlanningVariable,a chained variable>>.
 
 Annotate the anchor property as a `@AnchorShadowVariable` annotation:
 
@@ -748,11 +535,12 @@ The `sourceVariableName` property is the name of the chained variable on the sam
 
 
 [#listVariableShadowVariables]
-==== List variable shadow variables
+=== List variable shadow variables
 
-When the planning entity uses a xref:configuration/configuration.adoc#planningListVariable[list variable], its elements can use a number of built-in shadow variables.
+When the planning entity uses a <<planningListVariable,list variable>>,
+its elements can use a number of built-in shadow variables.
 
-===== Inverse relation shadow variable
+==== Inverse relation shadow variable
 
 Use the same `@InverseRelationShadowVariable` annotation as with basic or chained planning variable to establish bi-directional relationship between the entity and the elements assigned to its list variable.
 The type of the inverse shadow variable is the planning entity itself because there is a one-to-many relationship between the entity and the element classes.
@@ -794,7 +582,7 @@ public class Customer {
 }
 ----
 
-===== Previous and next element shadow variable
+==== Previous and next element shadow variable
 
 Use `@PreviousElementShadowVariable` or `@NextElementShadowVariable` to get a reference to an element that is assigned to the same entity's list variable one index lower (previous element) or one index higher (next element).
 
@@ -843,7 +631,7 @@ public class Customer {
 ----
 
 [#customVariableListener]
-==== Custom `VariableListener`
+=== Custom `VariableListener`
 
 To update a shadow variable, Timefold Solver uses a ``VariableListener``.
 To define a custom shadow variable, write a custom ``VariableListener``:
@@ -914,7 +702,7 @@ It must never change a genuine planning variable or a problem fact.
 Any change of a shadow variable must be told to the ``ScoreDirector`` with `before*()` and `after*()` methods.
 ====
 
-===== Multiple source variables
+==== Multiple source variables
 
 If your custom variable listener needs multiple source variables to compute the shadow variable, annotate the shadow variable with multiple `@ShadowVariable` annotations, one per each source variable.
 
@@ -941,7 +729,7 @@ If your custom variable listener needs multiple source variables to compute the 
     }
 ----
 
-===== Piggyback shadow variable
+==== Piggyback shadow variable
 
 If one `VariableListener` changes two or more shadow variables (because having two separate ``VariableListener``s would be inefficient), then annotate only the first shadow variable with `@ShadowVariable` and specify the `variableListenerClass` there.
 Use `@PiggybackShadowVariable` on each shadow variable updated by that variable listener and reference the first shadow variable:
@@ -966,10 +754,10 @@ Use `@PiggybackShadowVariable` on each shadow variable updated by that variable 
     }
 ----
 
-===== Shadow variable cloning
+==== Shadow variable cloning
 
 A shadow variable's value (just like a genuine variable's value)
-isn't xref:configuration/configuration.adoc#cloningASolution[planning cloned] by the default solution cloner,
+isn't <<cloningASolution,planning cloned>> by the default solution cloner,
 unless it can easily prove that it must be planning cloned (for example the property type is a planning entity class).
 Specifically shadow variables of type `List`, `Set`, `Collection` or `Map` usually need to be planning cloned
 to avoid corrupting the best solution when the working solution changes.
@@ -984,12 +772,12 @@ To planning clone a shadow variable, add `@DeepPlanningClone` annotation:
 
 
 [#variableListenerTriggeringOrder]
-==== VariableListener triggering order
+=== VariableListener triggering order
 
 All shadow variables are triggered by a ``VariableListener``, regardless if it's a built-in or a custom shadow variable.
 The genuine and shadow variables form a graph, that determines the order in which the ``afterEntityAdded()``, `afterVariableChanged()` and `afterEntityRemoved()` methods are called:
 
-image::configuration/shadowVariableOrder.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/shadowVariableOrder.png[align="center"]
 
 [NOTE]
 ====
@@ -1023,11 +811,11 @@ public class StartTimeUpdatingVariableListener implements VariableListener<TaskA
 
 
 [#planningValueAndPlanningValueRange]
-=== Planning value and planning value range
+== Planning value and planning value range
 
 
 [#planningValue]
-==== Planning value
+=== Planning value
 
 A planning value is a possible value for a genuine planning variable.
 Usually, a planning value is a problem fact, but it can also be any object, for example an ``Integer``.
@@ -1043,11 +831,11 @@ This set can be a countable (for example row ``1``, ``2``, `3` or ``4``) or unco
 
 
 [#planningValueRangeProvider]
-==== Planning value range provider
+=== Planning value range provider
 
 
 [#planningValueRangeProviderOverview]
-===== Overview
+==== Overview
 
 The value range of a planning variable is defined with the `@ValueRangeProvider` annotation.
 A `@ValueRangeProvider` may carry a property ``id``, which is referenced by the ``@PlanningVariable``'s property ``valueRangeProviderRefs``.
@@ -1071,7 +859,7 @@ The return type of that method can be three types:
 * ``ValueRange``: The value range is defined by its bounds. This is less common.
 
 [#valueRangeProviderOnSolution]
-===== `ValueRangeProvider` on the solution
+==== `ValueRangeProvider` on the solution
 
 All instances of the same planning entity class share the same set of possible planning values for that planning variable.
 This is the most common way to configure a value range.
@@ -1106,7 +894,7 @@ public class NQueens {
 That `Collection` (or ``ValueRange``) must not contain the value ``null``, not even for a <<nullablePlanningVariable,nullable planning variable>>.
 ====
 
-<<annotationAlternatives,Annotating the field>> instead of the property works too:
+xref:using-timefold-solver.adoc/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [source,java,options="nowrap"]
 ----
@@ -1122,7 +910,7 @@ public class NQueens {
 
 
 [#valueRangeProviderOnPlanningEntity]
-===== `ValueRangeProvider` on the Planning Entity
+==== `ValueRangeProvider` on the Planning Entity
 
 Each planning entity has its own value range (a set of possible planning values) for the planning variable.
 For example, if a teacher can *never* teach in a room that does not belong to his department, lectures of that teacher can limit their room value range to the rooms of his department.
@@ -1173,14 +961,14 @@ A `ValueRangeProvider` on the planning entity is not compatible with a <<plannin
 
 
 [#referencingValueRangeProviders]
-===== Referencing ``ValueRangeProvider``s
+==== Referencing ``ValueRangeProvider``s
 
 There are two ways how to match a planning variable to a value range provider.
 The simplest way is to have value range provider auto-detected.
 Another way is to explicitly reference the value range provider.
 
 [#anonymousValueRangeProviders]
-====== Anonymous ``ValueRangeProvider``s
+===== Anonymous ``ValueRangeProvider``s
 
 We already described the first approach.
 By not providing any `valueRangeProviderRefs` on the `@PlanningVariable` annotation,
@@ -1242,7 +1030,7 @@ as an ``Airplane`` is not a ``Car``.
 ----
 
 [#explicitlyReferencingValueRangeProviders]
-====== Explicitly referenced ``ValueRangeProvider``s
+===== Explicitly referenced ``ValueRangeProvider``s
 
 In more complicated cases where auto-detection is not sufficient or where clarity is preferred over simplicity,
 value range providers can also be referenced explicitly.
@@ -1290,7 +1078,7 @@ Explicitly referenced value range providers can also be combined, for example:
 
 
 [#valueRangeFactory]
-===== `ValueRangeFactory`
+==== `ValueRangeFactory`
 
 Instead of a ``Collection``, you can also return a `ValueRange` or ``CountableValueRange``, built by the ``ValueRangeFactory``:
 
@@ -1333,7 +1121,7 @@ The `ValueRangeFactory` has creation methods for several value class types:
 
 
 [#planningValueStrength]
-==== Planning value strength
+=== Planning value strength
 
 Some optimization algorithms work a bit more efficiently if they have an estimation of which planning values are stronger, which means they are more likely to satisfy a planning entity.
 For example: in bin packing bigger containers are more likely to fit an item and in course scheduling bigger rooms are less likely to break the student capacity constraint.
@@ -1401,7 +1189,7 @@ For example, none of the `row` variables of any `Queen` may be used to determine
 
 
 [#planningListVariable]
-=== Planning list variable (VRP, Task assigning, ...)
+== Planning list variable (VRP, Task assigning, ...)
 
 Use the planning list variable to model problems where the goal is to distribute a number of workload elements among limited resources in a specific order.
 This includes, for example, vehicle routing, traveling salesman, task assigning, and similar problems, that have previously been modeled using the <<chainedPlanningVariable,chained planning variable>>.
@@ -1453,7 +1241,7 @@ No planning value may appear in multiple entities.
 
 
 [#chainedPlanningVariable]
-=== Chained planning variable (TSP, VRP, ...)
+== Chained planning variable (TSP, VRP, ...)
 
 Chained planning variable is one way to implement the xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
 This pattern is used for some use cases, such as TSP and vehicle routing.
@@ -1469,7 +1257,7 @@ A planning variable that is chained either:
 
 Here are some examples of valid and invalid chains:
 
-image::configuration/chainPrinciples.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/chainPrinciples.png[align="center"]
 
 *Every initialized planning entity is part of an open-ended chain that begins from an anchor.* A valid model means that:
 
@@ -1492,7 +1280,7 @@ If your constraints dictate a closed chain, model it as an open-ended chain (whi
 
 The optimization algorithms and built-in ``Move``s do chain correction to guarantee that the model stays valid:
 
-image::configuration/chainCorrection.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/chainCorrection.png[align="center"]
 
 
 [WARNING]
@@ -1554,11 +1342,11 @@ Notice how two value range providers are usually combined:
 
 
 [#planningProblemAndPlanningSolution]
-=== Planning problem and planning solution
+== Planning problem and planning solution
 
 
 [#planningProblemInstance]
-==== Planning problem instance
+=== Planning problem instance
 
 A dataset for a planning problem needs to be wrapped in a class for the `Solver` to solve.
 That solution class represents both the planning problem and (if solved) a solution.
@@ -1572,7 +1360,7 @@ It's an uninitialized solution.
 
 
 [#solutionClass]
-==== Solution class
+=== Solution class
 
 A solution class holds all problem facts, planning entities and a score.
 It is annotated with a `@PlanningSolution` annotation.
@@ -1618,7 +1406,7 @@ whereas a planning solution will.
 
 
 [#planningEntitiesOfASolution]
-==== Planning entities of a solution (`@PlanningEntityCollectionProperty`)
+=== Planning entities of a solution (`@PlanningEntityCollectionProperty`)
 
 Timefold Solver needs to extract the entity instances from the solution instance.
 It gets those collection(s) by calling every getter (or field) that is annotated with ``@PlanningEntityCollectionProperty``:
@@ -1655,7 +1443,7 @@ Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> 
 
 
 [#scoreOfASolution]
-==== `Score` of a Solution (`@PlanningScore`)
+=== `Score` of a Solution (`@PlanningScore`)
 
 A `@PlanningSolution` class requires a score property (or field), which is annotated with a `@PlanningScore` annotation.
 The score property is `null` if the score hasn't been calculated yet.
@@ -1709,7 +1497,7 @@ This annotation can also be <<autoDiscoverSolutionProperties,auto discovered>> i
 
 
 [#problemFacts]
-==== Problem facts of a solution (`@ProblemFactCollectionProperty`)
+=== Problem facts of a solution (`@ProblemFactCollectionProperty`)
 
 For xref:constraints-and-score/score-calculation.adoc[Constraint Streams],
 Timefold Solver needs to extract the problem fact instances from the solution instance.
@@ -1763,7 +1551,7 @@ Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> 
 
 
 [#cachedProblemFact]
-===== Cached problem fact
+==== Cached problem fact
 
 A cached problem fact is a problem fact that does not exist in the real domain model, but is calculated before the `Solver` really starts solving.
 The problem facts methods have the opportunity to enrich the domain model with such cached problem facts, which can lead to simpler and faster score constraints.
@@ -1798,7 +1586,7 @@ Where a score constraint needs to check that no two exams with a topic that shar
 
 
 [#autoDiscoverSolutionProperties]
-==== Auto discover solution properties
+=== Auto discover solution properties
 
 Instead of configuring each property (or field) annotation explicitly,
 some can also be deduced automatically by Timefold Solver.
@@ -1843,7 +1631,7 @@ with an explicit `@PlanningScore` annotation to define the number of hard and so
 
 
 [#cloningASolution]
-==== Cloning a solution
+=== Cloning a solution
 
 Most (if not all) optimization algorithms clone the solution each time they encounter a new best solution (so they can recall it later) or to work with multiple solutions in parallel.
 
@@ -1858,13 +1646,13 @@ A planning clone of a solution must fulfill these requirements:
 * The clone must use different, cloned instances of the entities and entity collections.
 Changes to an original solution entity's variables must not affect its clone.
 
-image::configuration/solutionCloning.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/solutionCloning.png[align="center"]
 
 *Implementing a planning clone method is hard, therefore you do not need to implement it.*
 
 
 [#fieldAccessingSolutionCloner]
-===== `FieldAccessingSolutionCloner`
+==== `FieldAccessingSolutionCloner`
 
 This `SolutionCloner` is used by default.
 It works well for most use cases.
@@ -1906,7 +1694,7 @@ They are immutable by design and shouldn't be used to store mutable state, such 
 ====
 
 [#customCloning]
-===== Custom cloning with a `SolutionCloner`
+==== Custom cloning with a `SolutionCloner`
 
 To use a custom cloner, configure it on the planning solution:
 
@@ -1965,7 +1753,7 @@ If A is cloned, then its variable must point to the clone of B, not the original
 
 
 [#createAnUninitializedSolution]
-==== Create an uninitialized solution
+=== Create an uninitialized solution
 
 Create a `@PlanningSolution` instance to represent your planning problem's dataset, so it can be set on the `Solver` as the planning problem to solve.
 For example in n queens, an `NQueens` instance is created with the required `Column` and `Row` instances and every `Queen` set to a different `column` and every `row` set to ``null``.
@@ -1999,7 +1787,7 @@ For example in n queens, an `NQueens` instance is created with the required `Col
 ----
 
 .Uninitialized Solution for the Four Queens Puzzle
-image::configuration/uninitializedNQueens04.png[align="left"]
+image::using-timefold-solver/modeling-planning-problems/uninitializedNQueens04.png[align="left"]
 
 Usually, most of this data comes from your data layer, and your solution implementation just aggregates that data and creates the uninitialized planning entity instances to plan:
 
@@ -2023,589 +1811,3 @@ Usually, most of this data comes from your data layer, and your solution impleme
             schedule.setLectureList(lectureList);
         }
 ----
-
-
-[#useTheSolver]
-== Use the `Solver`
-
-
-[#theSolverInterface]
-=== The `Solver` interface
-
-A `Solver` solves your planning problem.
-
-[source,java,options="nowrap"]
-----
-public interface Solver<Solution_> {
-
-    Solution_ solve(Solution_ problem);
-
-    ...
-}
-----
-
-A `Solver` can only solve one planning problem instance at a time.
-It is built with a ``SolverFactory``, there is no need to implement it yourself.
-
-A `Solver` should only be accessed from a single thread, except for the methods that are specifically documented in javadoc as being thread-safe.
-The `solve()` method hogs the current thread.
-This can cause HTTP timeouts for REST services and it requires extra code to solve multiple datasets in parallel.
-To avoid such issues, use a <<solverManager,`SolverManager`>> instead.
-
-
-[#solvingAProblem]
-=== Solving a problem
-
-Solving a problem is quite easy once you have:
-
-* A `Solver` built from a solver configuration
-* A `@PlanningSolution` that represents the planning problem instance
-
-Just provide the planning problem as argument to the `solve()` method and it will return the best solution found:
-
-[source,java,options="nowrap"]
-----
-    NQueens problem = ...;
-    NQueens bestSolution = solver.solve(problem);
-----
-
-For example in n queens, the `solve()` method will return an `NQueens` instance with every `Queen` assigned to a ``Row``.
-
-.Best Solution for the Four Queens Puzzle in 8ms (Also an Optimal Solution)
-image::configuration/solvedNQueens04.png[align="left"]
-
-The `solve(Solution)` method can take a long time (depending on the problem size and the solver configuration). The `Solver` intelligently wades through xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space] of possible solutions and remembers the best solution it encounters during solving.
-Depending on a number of factors (including problem size, how much time the `Solver` has, the solver configuration, ...), xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[that best solution might or might not be an optimal solution].
-
-[NOTE]
-====
-The solution instance given to the method `solve(solution)` is changed by the ``Solver``,
-but do not mistake it for the best solution.
-
-The solution instance returned by the methods `solve(solution)` or `getBestSolution()` is most likely <<cloningASolution,a planning clone>> of the instance given to the method ``solve(solution)``, which implies it is a different instance.
-====
-
-[NOTE]
-====
-The solution instance given to the `solve(Solution)` method does not need to be uninitialized.
-It can be partially or fully initialized, which is often the case in xref:responding-to-change/responding-to-change.adoc[repeated planning].
-====
-
-
-[#environmentMode]
-=== Environment mode: are there bugs in my code?
-
-The environment mode allows you to detect common bugs in your implementation.
-It does not affect the <<logging,logging level>>.
-
-You can set the environment mode in the solver configuration XML file:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <environmentMode>FAST_ASSERT</environmentMode>
-  ...
-</solver>
-----
-
-A solver has a single `Random` instance.
-Some solver configurations use the `Random` instance a lot more than others.
-For example, Simulated Annealing depends highly on random numbers, while Tabu Search only depends on it to deal with score ties.
-The environment mode influences the seed of that `Random` instance.
-
-These are the environment modes:
-
-
-[#environmentModeFullAssert]
-==== `FULL_ASSERT`
-
-The FULL_ASSERT mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
-
-This mode is reproducible (see the reproducible mode). It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
-
-The FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
-
-
-[#environmentModeNonIntrusiveFullAssert]
-==== `NON_INTRUSIVE_FULL_ASSERT`
-
-The NON_INTRUSIVE_FULL_ASSERT turns on several assertions to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
-
-This mode is reproducible (see the reproducible mode). It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
-
-The NON_INTRUSIVE_FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
-
-
-[#environmentModeFastAssert]
-==== `FAST_ASSERT`
-
-The FAST_ASSERT mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
-
-This mode is reproducible (see the reproducible mode). It is also intrusive because it calls the method `calculateScore()` more frequently than a non assert mode.
-
-The FAST_ASSERT mode is slow.
-
-It is recommended to write a test case that does a short run of your planning problem with the FAST_ASSERT mode on.
-
-
-[#environmentModeReproducible]
-==== `REPRODUCIBLE` (default)
-
-The reproducible mode is the default mode because it is recommended during development.
-In this mode, two runs in the same Timefold Solver version will execute the same code in the same order.
-**Those two runs will have the same result at every step**, except if the note below applies.
-This enables you to reproduce bugs consistently.
-It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
-
-[NOTE]
-====
-Despite the reproducible mode, your application might still not be fully reproducible because of:
-
-* Use of `HashSet` (or another `Collection` which has an inconsistent order between JVM runs) for collections of planning entities or planning values (but not normal problem facts), especially in the solution implementation. Replace it with ``LinkedHashSet``.
-* Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination. A sufficiently large difference in allocated CPU time will influence the time gradient values. Replace Simulated Annealing with Late Acceptance. Or instead, replace time spent termination with step count termination.
-
-====
-
-The reproducible mode can be slightly slower than the non-reproducible mode.
-If your production environment can benefit from reproducibility, use this mode in production.
-
-In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified, and it also disables certain concurrency optimizations (such as work stealing).
-
-
-[#environmentModeProduction]
-==== `NON_REPRODUCIBLE`
-
-The non-reproducible mode can be slightly faster than the reproducible mode.
-Avoid using it during development as it makes debugging and bug fixing painful.
-If your production environment doesn't care about reproducibility, use this mode in production.
-
-In practice, this mode uses no fixed <<randomNumberGenerator,random seed>> if no seed is specified.
-
-
-[#logging]
-=== Logging level: what is the `Solver` doing?
-
-The best way to illuminate the black box that is a ``Solver``, is to play with the logging level:
-
-* **error**: Log errors, except those that are thrown to the calling code as a ``RuntimeException``.
-+
-[NOTE]
-====
-**If an error happens, Timefold Solver normally fails fast**: it throws a subclass of `RuntimeException` with a detailed message to the calling code.
-It does not log it as an error itself to avoid duplicate log messages.
-Except if the calling code explicitly catches and eats that ``RuntimeException``, a ``Thread``'s default `ExceptionHandler` will log it as an error anyway.
-Meanwhile, the code is disrupted from doing further harm or obfuscating the error.
-====
-* **warn**: Log suspicious circumstances.
-* **info**: Log every phase and the solver itself. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
-* **debug**: Log every step of every phase. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
-* **trace**: Log every move of every step of every phase. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
-
-[NOTE]
-====
-Turning on `trace` logging, will slow down performance considerably: it is often four times slower.
-However, it is invaluable during development to discover a bottleneck.
-
-Even `debug` logging can slow down performance considerably for fast stepping algorithms
-(such as Late Acceptance and Simulated Annealing),
-but not for slow stepping algorithms (such as Tabu Search).
-
-Both cause congestion in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving] with most appenders, see below.
-
-In Eclipse, `debug` logging to the console tends to cause congestion with a score calculation speeds above 10 000 per second.
-Nor IntelliJ, nor the Maven command line suffer from this problem.
-====
-
-For example, set it to `debug` logging, to see when the phases end and how fast steps are taken:
-
-[source,options="nowrap"]
-----
-INFO  Solving started: time spent (3), best score (-4init/0), random (JDK with seed 0).
-DEBUG     CH step (0), time spent (5), score (-3init/0), selected move count (1), picked move (Queen-2 {null -> Row-0}).
-DEBUG     CH step (1), time spent (7), score (-2init/0), selected move count (3), picked move (Queen-1 {null -> Row-2}).
-DEBUG     CH step (2), time spent (10), score (-1init/0), selected move count (4), picked move (Queen-3 {null -> Row-3}).
-DEBUG     CH step (3), time spent (12), score (-1), selected move count (4), picked move (Queen-0 {null -> Row-1}).
-INFO  Construction Heuristic phase (0) ended: time spent (12), best score (-1), score calculation speed (9000/sec), step total (4).
-DEBUG     LS step (0), time spent (19), score (-1),     best score (-1), accepted/selected move count (12/12), picked move (Queen-1 {Row-2 -> Row-3}).
-DEBUG     LS step (1), time spent (24), score (0), new best score (0), accepted/selected move count (9/12), picked move (Queen-3 {Row-3 -> Row-2}).
-INFO  Local Search phase (1) ended: time spent (24), best score (0), score calculation speed (4000/sec), step total (2).
-INFO  Solving ended: time spent (24), best score (0), score calculation speed (7000/sec), phase total (2), environment mode (REPRODUCIBLE).
-----
-
-All time spent values are in milliseconds.
-
-Everything is logged to http://www.slf4j.org/[SLF4J], which is a simple logging facade
-which delegates every log message to Logback, Apache Commons Logging, Log4j or java.util.logging.
-Add a dependency to the logging adaptor for your logging framework of choice.
-
-If you are not using any logging framework yet, use Logback by adding this Maven dependency (there is no need to add an extra bridge dependency):
-
-[source,xml,options="nowrap"]
-----
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.x</version>
-    </dependency>
-----
-
-Configure the logging level on the `ai.timefold.solver` package in your `logback.xml` file:
-
-[source,xml,options="nowrap"]
-----
-<configuration>
-
-  <logger name="ai.timefold.solver" level="debug"/>
-
-  ...
-
-</configuration>
-----
-
-If it isn't picked up, temporarily add the system property `-Dlogback.debug=true` to figure out why.
-
-[NOTE]
-====
-When running multiple solvers or a xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solver],
-most appenders (including the console) cause congestion with `debug` and `trace` logging.
-Switch to an async appender to avoid this problem or turn off `debug` logging.
-====
-
-If instead, you are still using Log4j 1.x (and you do not want to switch to its faster successor, Logback), add the bridge dependency:
-
-[source,xml,options="nowrap"]
-----
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.x</version>
-    </dependency>
-----
-
-And configure the logging level on the package `ai.timefold.solver` in your `log4j.xml` file:
-
-[source,xml,options="nowrap"]
-----
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
-  <category name="ai.timefold.solver">
-    <priority value="debug" />
-  </category>
-
-  ...
-
-</log4j:configuration>
-----
-
-[NOTE]
-====
-In a multitenant application, multiple `Solver` instances might be running at the same time.
-To separate their logging into distinct files, surround the `solve()` call with an http://logback.qos.ch/manual/mdc.html[MDC]:
-
-[source,java,options="nowrap"]
-----
-        MDC.put("tenant.name", tenantName);
-        MySolution bestSolution = solver.solve(problem);
-        MDC.remove("tenant.name");
-----
-
-Then configure your logger to use different files for each ``${tenant.name}``.
-For example in Logback, use a `SiftingAppender` in ``logback.xml``:
-
-[source,xml,options="nowrap"]
-----
-  <appender name="fileAppender" class="ch.qos.logback.classic.sift.SiftingAppender">
-    <discriminator>
-      <key>tenant.name</key>
-      <defaultValue>unknown</defaultValue>
-    </discriminator>
-    <sift>
-      <appender name="fileAppender.${tenant.name}" class="...FileAppender">
-        <file>local/log/timefold-solver-${tenant.name}.log</file>
-        ...
-      </appender>
-    </sift>
-  </appender>
-----
-====
-
-[#monitoring]
-=== Monitoring the solver
-
-Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver. Timefold automatically connects to configured registries when it is used in Quarkus or Spring Boot. If you use Timefold with plain Java, you must add the metrics registry to the global registry.
-
-.Prerequisites
-* You have a plain Java Timefold Solver project.
-* You have configured a Micrometer registry. For information about configuring Micrometer registries, see the https://micrometer.io[Micrometer] web site.
-
-.Procedure
-. Add configuration information for the Micrometer registry for your desired monitoring system to the global registry.
-. Add the following line below the configuration information, where `<REGISTRY>` is the name of the registry that you configured:
-+
-[source,java,nowrap]
-----
-Metrics.addRegistry(<REGISTRY>);
-----
-The following example shows how to add the Prometheus registry:
-+
-[source,java,nowrap]
-----
-PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-
-try {
-    HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-    server.createContext("/prometheus", httpExchange -> {
-        String response = prometheusRegistry.scrape(); (1)
-        httpExchange.sendResponseHeaders(200, response.getBytes().length);
-        try (OutputStream os = httpExchange.getResponseBody()) {
-            os.write(response.getBytes());
-        }
-    });
-
-    new Thread(server::start).start();
-} catch (IOException e) {
-    throw new RuntimeException(e);
-}
-
-Metrics.addRegistry(prometheusRegistry);
-----
-
-. Open your monitoring system to view the metrics for your Timefold Solver project. The following metrics are exposed:
-+
-[NOTE]
-====
-The names and format of the metrics vary depending on the registry.
-====
-+
-* `timefold.solver.errors.total`: the total number of errors that occurred while solving since the start
-of the measuring.
-* `timefold.solver.solve.duration.active-count`: the number of solvers currently solving.
-* `timefold.solver.solve.duration.seconds-max`: run time of the
-longest-running currently active solver.
-* `timefold.solver.solve.duration.seconds-duration-sum`: the sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
-
-==== Additional metrics
-
-For more detailed monitoring, Timefold Solver can be configured to monitor additional metrics at a performance cost.
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <monitoring>
-    <metric>BEST_SCORE</metric>
-    <metric>SCORE_CALCULATION_COUNT</metric>
-    ...
-  </monitoring>
-  ...
-</solver>
-----
-
-The following metrics are available:
-
-- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"): Measure the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
-
-- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"): Measures the number of errors that occur while solving.
-
-- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"): Measures the number of score calculations Timefold Solver performed.
-
-- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"): Measures the score of the best solution Timefold Solver found so far.
-There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
-
-- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"): Measures the score of each step Timefold Solver takes.
-There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
-
-- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"): Measures the number of changed planning variables between consecutive best solutions.
-
-- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"): Measures the number of moves evaluated in a step.
-
-- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"): Measures the amount of memory used across the JVM. This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
-
-- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"): Measures the score impact of each constraint on the best solution Timefold Solver found so far.
-There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
-
-- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"): Measures the score impact of each constraint on the current step. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
-
-- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
-
-- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
-
-[#randomNumberGenerator]
-=== Random number generator
-
-Many heuristics and metaheuristics depend on a pseudorandom number generator for move selection, to resolve score ties, probability based move acceptance, ... During solving, the same `Random` instance is reused to improve reproducibility, performance and uniform distribution of random values.
-
-To change the random seed of that `Random` instance, specify a ``randomSeed``:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <randomSeed>0</randomSeed>
-  ...
-</solver>
-----
-
-To change the pseudorandom number generator implementation, specify a ``randomType``:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <randomType>MERSENNE_TWISTER</randomType>
-  ...
-</solver>
-----
-
-The following types are supported:
-
-* `JDK` (default): Standard implementation (``java.util.Random``).
-* ``MERSENNE_TWISTER``: Implementation by http://commons.apache.org/proper/commons-math/userguide/random.html[Commons Math].
-* ``WELL512A``, ``WELL1024A``, ``WELL19937A``, ``WELL19937C``, `WELL44497A` and ``WELL44497B``: Implementation by http://commons.apache.org/proper/commons-math/userguide/random.html[Commons Math].
-
-For most use cases, the randomType has no significant impact on the average quality of the best solution on multiple datasets.
-If you want to confirm this on your use case, use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[benchmarker].
-
-
-[#solverManager]
-== `SolverManager`
-
-A `SolverManager` is a facade for one or more `Solver` instances
-to simplify solving planning problems in REST and other enterprise services.
-Unlike the `Solver.solve(...)` method:
-
-* *`SolverManager.solve(...)` returns immediately*: it schedules a problem for asynchronous solving without blocking the calling thread.
-This avoids timeout issues of HTTP and other technologies.
-* *`SolverManager.solve(...)` solves multiple planning problems* of the same domain, in parallel.
-
-Internally a `SolverManager` manages a thread pool of solver threads, which call `Solver.solve(...)`,
-and a thread pool of consumer threads, which handle best solution changed events.
-
-In xref:integration/integration.adoc#integrationWithQuarkus[Quarkus] and xref:integration/integration.adoc#integrationWithSpringBoot[Spring Boot],
-the `SolverManager` instance is automatically injected in your code.
-Otherwise, build a `SolverManager` instance with the `create(...)` method:
-
-[source,java,options="nowrap"]
-----
-SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../cloudBalancingSolverConfig.xml");
-SolverManager<CloudBalance, UUID> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
-----
-
-Each problem submitted to the `SolverManager.solve(...)` methods needs a unique problem ID.
-Later calls to `getSolverStatus(problemId)` or `terminateEarly(problemId)` use that problem ID
-to distinguish between the planning problems.
-The problem ID must be an immutable class, such as `Long`, `String` or `java.util.UUID`.
-
-The `SolverManagerConfig` class has a `parallelSolverCount` property,
-that controls how many solvers are run in parallel.
-For example, if set to `4`, submitting five problems
-has four problems solving immediately, and the fifth one starts when another one ends.
-If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
-By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
-regardless of the xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[`moveThreadCount`] of the solvers.
-
-To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
-
-[source,java,options="nowrap"]
-----
-CloudBalance problem1 = ...;
-UUID problemId = UUID.randomUUID();
-// Returns immediately
-SolverJob<CloudBalance, UUID> solverJob = solverManager.solve(problemId, problem1);
-...
-CloudBalance solution1;
-try {
-    // Returns only after solving terminates
-    solution1 = solverJob.getFinalBestSolution();
-} catch (InterruptedException | ExecutionException e) {
-    throw ...;
-}
-----
-
-However, there are better approaches, both for solving batch problems before an end-user needs the solution
-as well as for live solving while an end-user is actively waiting for the solution, as explained below.
-
-The current `SolverManager` implementation runs on a single computer node,
-but future work aims to distribute solver loads across a cloud.
-
-
-[#solverManagerSolveBatch]
-=== Solve batch problems
-
-At night, batch solving is a great approach to deliver solid plans by breakfast, because:
-
-* There are typically few or no problem changes in the middle of the night.
-Some organizations even enforce a deadline, for example, _submit all day off requests before midnight_.
-* The solvers can run for much longer, often hours, because nobody's waiting for it and CPU resources are often cheaper.
-
-To solve a multiple datasets in parallel (limited by `parallelSolverCount`),
-call `solve(...)` for each dataset:
-
-[source,java,options="nowrap"]
-----
-public class TimeTableService {
-
-    private SolverManager<TimeTable, Long> solverManager;
-
-    // Returns immediately, call it for every dataset
-    public void solveBatch(Long timeTableId) {
-        solverManager.solve(timeTableId,
-                // Called once, when solving starts
-                this::findById,
-                // Called once, when solving ends
-                this::save);
-    }
-
-    public TimeTable findById(Long timeTableId) {...}
-
-    public void save(TimeTable timeTable) {...}
-
-}
-----
-
-A solid plan delivered by breakfast is great,
-even if you need to react on problem changes during the day.
-
-
-[#solverManagerSolveAndListen]
-=== Solve and listen to show progress to the end-user
-
-When a solver is running while an end-user is waiting for that solution,
-the user might need to wait for several minutes or hours before receiving a result.
-To assure the user that everything is going well,
-show progress by displaying the best solution and best score attained so far.
-
-To handle intermediate best solutions, use `solveAndListen(...)`:
-
-[source,java,options="nowrap"]
-----
-public class TimeTableService {
-
-    private SolverManager<TimeTable, Long> solverManager;
-
-    // Returns immediately
-    public void solveLive(Long timeTableId) {
-        solverManager.solveAndListen(timeTableId,
-                // Called once, when solving starts
-                this::findById,
-                // Called multiple times, for every best solution change
-                this::save);
-    }
-
-    public TimeTable findById(Long timeTableId) {...}
-
-    public void save(TimeTable timeTable) {...}
-
-    public void stopSolving(Long timeTableId) {
-        solverManager.terminateEarly(timeTableId);
-    }
-
-}
-----
-
-This implementation is using the database to communicate with the UI, which polls the database.
-More advanced implementations push the best solutions directly to the UI or a messaging queue.
-
-If the user is satisfied with the intermediate best solution
-and does not want to wait any longer for a better one, call `SolverManager.terminateEarly(problemId)`.

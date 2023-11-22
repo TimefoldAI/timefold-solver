@@ -62,7 +62,7 @@ Do not call remote services in your score calculation (except if you are bridgin
 Cache the results of those remote services if possible.
 
 If some parts of a constraint can be calculated once, when the `Solver` starts, and never change during solving,
-then turn them into xref:configuration/configuration.adoc#cachedProblemFact[cached problem facts].
+then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#cachedProblemFact[cached problem facts].
 
 
 [#pointlessConstraints]
@@ -86,7 +86,7 @@ There is no need to dynamically change your score calculation based on the datas
 Instead of implementing a hard constraint, it can sometimes be built in.
 For example, if `Lecture` A should never be assigned to `Room` X, but it uses `ValueRangeProvider` on Solution,
 so the `Solver` will often try to assign it to `Room` X too (only to find out that it breaks a hard constraint).
-Use xref:configuration/configuration.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity] or xref:optimization-algorithms/optimization-algorithms.adoc#filteredSelection[filtered selection] to define that Course A should only be assigned a `Room` different than X.
+Use xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity] or xref:optimization-algorithms/optimization-algorithms.adoc#filteredSelection[filtered selection] to define that Course A should only be assigned a `Room` different than X.
 
 This can give a good performance gain in some use cases, not just because the score calculation is faster,
 but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
@@ -158,7 +158,7 @@ There are several ways to deal with a score trap:
 
 Not all score constraints have the same performance cost.
 Sometimes one score constraint can kill the score calculation performance outright.
-Use the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to do a one minute run and check what happens to the score calculation speed if you comment out all but one of the score constraints.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to do a one minute run and check what happens to the score calculation speed if you comment out all but one of the score constraints.
 
 
 [#fairnessScoreConstraints]

@@ -48,8 +48,9 @@ only using the Constraint Streams API:
     }
 ----
 
-This constraint stream iterates over all instances of class `Shift` in the xref:configuration/configuration.adoc#problemFacts[problem facts] and
-xref:configuration/configuration.adoc#planningEntity[planning entities] in the xref:configuration/configuration.adoc#planningProblemAndPlanningSolution[planning problem].
+This constraint stream iterates over all instances of class `Shift` in the xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem facts] and
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntity[planning entities]
+in the xref:using-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem].
 It finds every `Shift` which is assigned to employee `Ann` and for every such instance (also called a match), it adds a
 soft penalty of `1` to the overall xref:constraints-and-score/overview.adoc#calculateTheScore[score].
 The following figure illustrates this process on a problem with 4 different shifts:
@@ -215,8 +216,8 @@ This constraint stream penalizes each known and initialized instance of `Shift`.
 === ForEach
 
 The `.forEach(T)` building block selects every `T` instance that
-is in a xref:configuration/configuration.adoc#problemFacts[problem fact collection]
-or a xref:configuration/configuration.adoc#planningEntitiesOfASolution[planning entity collection]
+is in a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact collection]
+or a xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitiesOfASolution[planning entity collection]
 and has no `null` genuine planning variables.
 
 To include instances with a `null` genuine planning variable,
@@ -236,7 +237,7 @@ replace the `forEach()` building block by `forEachIncludingNullVars()`:
 The `forEach()` building block has a legacy counterpart, `from()`.
 This alternative approach included instances based on the initialization status of their genuine planning variables.
 As an unwanted consequence,
-`from()` behaves unexpectedly for xref:configuration/configuration.adoc#nullablePlanningVariable[nullable variables].
+`from()` behaves unexpectedly for xref:using-timefold-solver/modeling-planning-problems.adoc#nullablePlanningVariable[nullable variables].
 These are considered initialized even when `null`,
 and therefore this legacy method could still return entities with `null` variables.
 `from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in a future major version of Timefold Solver.
@@ -245,7 +246,7 @@ and therefore this legacy method could still return entities with `null` variabl
 [#constraintStreamsPenaltiesRewards]
 === Penalties and rewards
 
-The purpose of constraint streams is to build up a xref:constraints-and-score/overview.adoc#whatIsAScore[score] for a xref:configuration/configuration.adoc#planningProblemAndPlanningSolution[solution].
+The purpose of constraint streams is to build up a xref:constraints-and-score/overview.adoc#whatIsAScore[score] for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[solution].
 To do this, every constraint stream must contain a call to either a `penalize()` or a `reward()`
 building block.
 The `penalize()` building block makes the score worse and the `reward()` building block improves the score.
@@ -1423,8 +1424,8 @@ Configure it in the solver configuration:
 ----
 
 To configure values of an `EasyScoreCalculator` dynamically in the solver configuration
-(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `easyScoreCalculatorCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -1592,8 +1593,8 @@ the assertions triggered by the ``environmentMode``.
 ====
 
 To configure values of an `IncrementalScoreCalculator` dynamically in the solver configuration
-(so the xref:benchmarking-and-tweaking/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `incrementalScoreCalculatorCustomProperties` element and use xref:configuration/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `incrementalScoreCalculatorCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----

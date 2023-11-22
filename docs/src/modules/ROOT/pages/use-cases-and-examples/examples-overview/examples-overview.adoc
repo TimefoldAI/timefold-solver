@@ -105,7 +105,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * Search space <= `10^8380`
 |* Unrealistic
 * https://neo.lcc.uma.es/vrp/[VRP web]
-|* xref:configuration/configuration.adoc#shadowVariable[Shadow variable]
+|* xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[Shadow variable]
 * xref:responding-to-change/responding-to-change.adoc#realTimePlanning[Real-time planning]
 * xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection]
 * Real road distances
@@ -119,7 +119,7 @@ The source code of all these examples is available on https://github.com/Timefol
 |* Unrealistic
 * https://neo.lcc.uma.es/vrp/[VRP web]
 |* All of Vehicle routing
-* Custom xref:configuration/configuration.adoc#customVariableListener[VariableListener]
+* Custom xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[VariableListener]
 
 |xref:use-cases-and-examples/project-job-scheduling/project-job-scheduling.adoc#projectJobScheduling[Project job scheduling]
 |* 1 entity class
@@ -131,8 +131,8 @@ The source code of all these examples is available on https://github.com/Timefol
 |* Nearly realistic
 * http://gent.cs.kuleuven.be/mista2013challenge/[MISTA 2013]
 |* xref:constraints-and-score/overview.adoc#bendableScore[Bendable score]
-* Custom xref:configuration/configuration.adoc#customVariableListener[VariableListener]
-* xref:configuration/configuration.adoc#valueRangeFactory[ValueRangeFactory]
+* Custom xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[VariableListener]
+* xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeFactory[ValueRangeFactory]
 
 |xref:use-cases-and-examples/bed-allocation/bed-allocation.adoc#bedAllocation[Hospital bed planning]
 |* 1 entity class
@@ -157,7 +157,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * Defined by us
 |* xref:constraints-and-score/overview.adoc#bendableScore[Bendable score]
 * xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained through time pattern]
-* Custom xref:configuration/configuration.adoc#customVariableListener[VariableListener]
+* Custom xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[VariableListener]
 * xref:responding-to-change/responding-to-change.adoc#continuousPlanning[Continuous planning]
 * xref:responding-to-change/responding-to-change.adoc#realTimePlanning[Real-time planning]
 
@@ -169,7 +169,7 @@ The source code of all these examples is available on https://github.com/Timefol
 * Search space <= `10^3374`
 |* Realistic
 * http://www.cs.qub.ac.uk/itc2007/examtrack/exam_track_index.htm[ITC 2007 track 1]
-|* Custom xref:configuration/configuration.adoc#customVariableListener[VariableListener]
+|* Custom xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[VariableListener]
 
 |xref:use-cases-and-examples/nurse-rostering/nurse-rostering.adoc#nurseRostering[Nurse rostering]
 |* 1 entity class

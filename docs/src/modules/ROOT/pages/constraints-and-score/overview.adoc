@@ -1,5 +1,5 @@
 [#constraintsAndScoreOverview]
-= Overview
+= Constraints and Score: Overview
 :page-aliases: score-calculation/score-calculation.adoc, \
     constraints-and-score/constraints-and-score.adoc
 :doctype: book
@@ -418,11 +418,11 @@ The score calculation must be read-only.
 It must not change the planning entities or the problem facts in any way.
 For example, it must not call a setter method on a planning entity in the score calculation.
 
-Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:configuration/configuration.adoc#environmentMode[environmentMode assertion] is enabled).
+Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:using-timefold-solver/running-the-solver.adoc#environmentMode[environmentMode assertion] is enabled).
 For example, after a winning step is done, there is no need to calculate the score because that move was done and undone earlier.
 As a result, there is no guarantee that changes applied during score calculation actually happen.
 
-To update planning entities when the planning variable change, use xref:configuration/configuration.adoc#shadowVariable[shadow variables] instead.
+To update planning entities when the planning variable change, use xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
 ====
 
 
@@ -466,7 +466,7 @@ Alternatively, you can also specify the trend for each score level separately:
 [#invalidScoreDetection]
 === Invalid score detection
 
-When you put the xref:configuration/configuration.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``FAST_ASSERT``),
+When you put the xref:using-timefold-solver/running-the-solver.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``FAST_ASSERT``),
 it will detect score corruption in the xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
 However, that will not verify that your score calculator actually implements your score constraints as your business desires.
 For example, one constraint might consistently match the wrong pattern.

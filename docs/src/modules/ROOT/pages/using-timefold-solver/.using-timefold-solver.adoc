@@ -1,0 +1,15 @@
+[#usingTimefoldSolver]
+= Using Timefold Solver
+:doctype: book
+:sectnums:
+:icons: font
+
+include::overview.adoc[leveloffset=+1]
+
+include::configuration.adoc[leveloffset=+1]
+
+include::modeling-planning-problem.adoc[leveloffset=+1]
+
+include::running-the-solver.adoc[leveloffset=+1]
+
+include::benchmarking-and-tweaking.adoc[leveloffset=+1]

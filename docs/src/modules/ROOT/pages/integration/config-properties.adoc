@@ -32,7 +32,7 @@ See xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolv
 
 {property_prefix}timefold.solver.domain-access-type::
 How Timefold Solver should access the domain model.
-See xref:configuration/configuration.adoc#domainAccess[the domain access section] for more details.
+See xref:using-timefold-solver/configuration.adoc#domainAccess[the domain access section] for more details.
 ifeval::["{property_prefix}" == "quarkus."]
 Defaults to `GIZMO`.
 The other possible value is `REFLECTION`.
