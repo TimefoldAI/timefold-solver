@@ -72,3 +72,97 @@ The following prefixes are allowed:
 - `chore` for any other changes.
 
 This convention is enforced by CI checks on pull requests.
+
+[#methodologyOverview]
+=== Methodology overview
+
+==== Development philosophy
+
+Timefold Solver is developed in accordance with the following general principles:
+
+* **Fail fast**: Invalid states are checked as early as possible.
+* **Understandable error message**: Errors describe what happened and if possible, suggest solutions.
+* **Consistent terminology**: Names of features and components are not ambiguous and are used consistently throughout the codebase.
+* **Real world usefulness**: Every feature is used in an example or a quickstart. A feature is only delivered when tested and fully documented.
+* **Automated testing**: There are unit tests, integration tests, performance regressions tests and stress tests. The test coverage is high.
+* **Good code hygiene**: The code is clean, readable and understandable. Readability of code is preferred over ease of writing.
+
+==== Package structure
+
+The codebase of Timefold Solver is structured into three conceptual parts:
+
+* Public API, typically in a package with *api* somewhere in its name.
+* Configuration, typically in a package with *config* somewhere in its name.
+* Implementation, which is everything else.
+
+The public API and configuration are the parts that we keep 100 % backwards compatible.
+Compatibility-breaking changes are only allowed in major versions of Timefold Solver, such as 2.0.0.
+
+The implementation is out of bounds for users and it can and does change all the time.
+If users choose to depend on the implementation classes, they do so at their own risk.
+
+[#developmentGuidelines]
+=== Development guidelines
+
+==== Fail fast
+
+There are several levels of fail fast, from better to worse:
+
+. **Fail Fast at compile time**. For example: Don't accept an `Object` as a parameter if it needs to be a `String` or an ``Integer``.
+. **Fail Fast at startup time**. For example: if the configuration parameter needs to be a positive `int` and it's negative, fail fast
+. **Fail Fast at runtime**. For example: if the request needs to contain a double between `0.0` and `1.0` and it's bigger than ``1.0``, fail fast.
+. *Fail Fast at runtime in assertion mode* if the detection performance cost is high. For example: If, after every low level iteration, the variable A needs to be equal to the square root of B, check it if and only if an assert flag is set to true (usually controlled by the xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode]).
+
+==== Exception messages
+
+. The `Exception` message must include the name and state of each relevant variable. For example:
++
+[source,java,options="nowrap"]
+----
+if (fooSize < 0) {
+    throw new IllegalArgumentException("The fooSize (" + fooSize + ") of bar (" + this + ") must be positive.");
+}
+----
+Notice that the output clearly explains what's wrong:
++
+[source,java,options="nowrap"]
+----
+Exception in thread "main" java.lang.IllegalArgumentException: The fooSize (-5) of bar (myBar) must be positive.
+    at ...
+----
+
+. Whenever possible, the `Exception` message must include context.
+
+. Whenever the fix is not obvious, the `Exception` message should include advice. Advice normally starts with the word _maybe_ on a new line:
++
+[source,java,options="nowrap"]
+----
+Exception in thread "main" java.lang.IllegalStateException: The valueRangeDescriptor (fooRange) is nullable, but not countable (false).
+Maybe the member (getFooRange) should return CountableValueRange.
+    at ...
+----
++
+The word _maybe_ is to indicate that the advice is not guaranteed to be right in all cases.
+
+==== Generics
+
+. The `@PlanningSolution` class is often passed as a generic type parameter to subsystems.
+. The `@PlanningEntity` class(es) are rarely passed as a generic type parameter because there could be multiple planning entities.
+
+==== Lifecycle
+
+One of the biggest challenges in multi-algorithm implementations (such as Timefold Solver)
+is the lifecycle management of internal subsystems.
+These guidelines avoid lifecycle complexity:
+
+. The subsystems are called in the same order in `*Started()` and `*Ended` methods.
+.. This avoids cyclic subsystem dependencies.
+
+. The `*Scope` class's fields are filled in piecemeal by the subsystems
+as the algorithms discover more information about its current scope subject.
+.. Therefore, a `*Scope` has mutable fields. It's not an `Event`.
+.. A subsystem can only depend on scope information provided by an earlier subsystem.
+
+. Global variables are sorted:
+.. First by volatility
+.. Then by initialization time

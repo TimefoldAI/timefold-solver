@@ -1,7 +1,7 @@
 [#quickStartOverview]
 = Overview
-// Redirect to this page from .../docs/timefold/latest/quickstart/quickstart.html.
-:page-aliases: quickstart/quickstart.adoc
+:page-aliases: quickstart/quickstart.adoc, \
+    development/development.adoc
 :imagesdir: ../..
 
 IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository
