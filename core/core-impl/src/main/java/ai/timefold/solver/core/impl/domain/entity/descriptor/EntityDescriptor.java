@@ -623,8 +623,9 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean isMovable(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        return effectiveMovableEntitySelectionFilter == null
-                || effectiveMovableEntitySelectionFilter.accept(scoreDirector, entity);
+        return isGenuine() &&
+                (effectiveMovableEntitySelectionFilter == null
+                        || effectiveMovableEntitySelectionFilter.accept(scoreDirector, entity));
     }
 
     /**
@@ -633,7 +634,7 @@ public class EntityDescriptor<Solution_> {
      * @return true if the entity is initialized or pinned
      */
     public boolean isEntityInitializedOrPinned(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        return isInitialized(entity) || !isMovable(scoreDirector, entity);
+        return !isGenuine() || isInitialized(entity) || !isMovable(scoreDirector, entity);
     }
 
     @Override

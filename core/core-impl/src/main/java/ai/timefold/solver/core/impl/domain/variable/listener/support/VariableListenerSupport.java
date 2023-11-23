@@ -239,6 +239,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private void simulateGenuineVariableChange(Object entity) {
         var entityDescriptor = scoreDirector.getSolutionDescriptor()
                 .findEntityDescriptorOrFail(entity.getClass());
+        if (!entityDescriptor.isGenuine()) {
+            return;
+        }
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             if (variableDescriptor.isGenuineListVariable()) {
                 var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;

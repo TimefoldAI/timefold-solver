@@ -1007,15 +1007,23 @@ public class SolutionDescriptor<Solution_> {
      */
     public long getGenuineVariableCount(Solution_ solution) {
         MutableLong result = new MutableLong();
-        visitAllEntities(solution,
-                entity -> result.add(findEntityDescriptorOrFail(entity.getClass()).getGenuineVariableCount()));
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                result.add(entityDescriptor.getGenuineVariableCount());
+            }
+        });
         return result.longValue();
     }
 
     public long getMaximumValueCount(Solution_ solution) {
         return extractAllEntitiesStream(solution)
-                .mapToLong(entity -> findEntityDescriptorOrFail(entity.getClass()).getMaximumValueCount(solution, entity))
-                .max().orElse(0L);
+                .mapToLong(entity -> {
+                    var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+                    return entityDescriptor.isGenuine() ? entityDescriptor.getMaximumValueCount(solution, entity) : 0L;
+                })
+                .max()
+                .orElse(0L);
     }
 
     /**
@@ -1037,6 +1045,10 @@ public class SolutionDescriptor<Solution_> {
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {
+        return computeInitializationStatistics(solution, null);
+    }
+
+    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution, Consumer<Object> finisher) {
         /*
          * The score director requires all of these data points,
          * so we calculate them all in a single pass over the entities.
@@ -1058,6 +1070,9 @@ public class SolutionDescriptor<Solution_> {
                 shadowEntityCount.increment();
             }
             uninitializedVariableCount.add(entityDescriptor.countUninitializedVariables(entity));
+            if (finisher != null) {
+                finisher.accept(entity);
+            }
             if (!entityDescriptor.hasAnyGenuineListVariables()) {
                 return;
             }
