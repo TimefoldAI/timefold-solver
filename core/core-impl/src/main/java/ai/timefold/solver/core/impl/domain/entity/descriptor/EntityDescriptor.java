@@ -457,7 +457,14 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean hasAnyGenuineListVariables() {
+        if (!isGenuine()) {
+            return false;
+        }
         return effectiveGenuineVariableDescriptorList.stream().anyMatch(GenuineVariableDescriptor::isListVariable);
+    }
+
+    public boolean isGenuine() {
+        return hasAnyGenuineVariables();
     }
 
     public List<GenuineVariableDescriptor<Solution_>> getGenuineVariableDescriptorList() {

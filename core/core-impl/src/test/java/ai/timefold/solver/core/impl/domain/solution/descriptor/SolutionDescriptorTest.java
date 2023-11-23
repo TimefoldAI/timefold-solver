@@ -334,29 +334,46 @@ class SolutionDescriptorTest {
     }
 
     @Test
-    void countUninitializedVariables() {
-        int valueCount = 10;
-        int entityCount = 3;
-        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+    void countEntities() {
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
 
-        assertThat(solutionDescriptor.countUninitialized(solution)).isZero();
+        var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.genuineEntityCount()).isEqualTo(entityCount);
+        // TODO uncomment when we properly count genuine entities
+        //assertThat(initializationStats.shadowEntityCount()).isEqualTo(valueCount);
+    }
+
+    @Test
+    void countUninitializedVariables() {
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+
+        var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.uninitializedVariableCount()).isZero();
 
         solution.getEntityList().get(0).setValue(null);
-        assertThat(solutionDescriptor.countUninitialized(solution)).isOne();
+        initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.uninitializedVariableCount()).isOne();
 
         solution.getEntityList().forEach(entity -> entity.setValue(null));
-        assertThat(solutionDescriptor.countUninitialized(solution)).isEqualTo(entityCount);
+        initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.uninitializedVariableCount()).isEqualTo(entityCount);
     }
 
     @Test
     void countUnassignedValues() {
-        int valueCount = 10;
-        int entityCount = 3;
-        TestdataListSolution solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
-        SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
 
-        assertThat(solutionDescriptor.countUninitialized(solution)).isZero();
+        var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.unassignedValueCount()).isZero();
 
         List<TestdataListValue> valueList = solution.getEntityList().get(0).getValueList();
         int unassignedValueCount = valueList.size();
@@ -366,7 +383,9 @@ class SolutionDescriptorTest {
             value.setIndex(null);
         });
         valueList.clear();
-        assertThat(solutionDescriptor.countUninitialized(solution)).isEqualTo(unassignedValueCount);
+
+        initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.unassignedValueCount()).isEqualTo(unassignedValueCount);
     }
 
     @Test

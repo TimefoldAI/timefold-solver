@@ -148,8 +148,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         this.workingSolution = requireNonNull(workingSolution);
-        SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        workingInitScore = -solutionDescriptor.countUninitialized(workingSolution);
+        var solutionDescriptor = getSolutionDescriptor();
+        var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution);
+        workingInitScore =
+                -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
         if (lookUpEnabled) {
             lookUpManager.reset();
             solutionDescriptor.visitAll(workingSolution, c -> {
