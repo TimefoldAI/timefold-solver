@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class EntityRatioTabuSizeStrategy<Solution_> extends AbstractTabuSizeStrategy<Solution_> {
+public final class EntityRatioTabuSizeStrategy<Solution_> extends AbstractTabuSizeStrategy<Solution_> {
 
-    protected final double tabuRatio;
+    private final double tabuRatio;
 
     public EntityRatioTabuSizeStrategy(double tabuRatio) {
         this.tabuRatio = tabuRatio;

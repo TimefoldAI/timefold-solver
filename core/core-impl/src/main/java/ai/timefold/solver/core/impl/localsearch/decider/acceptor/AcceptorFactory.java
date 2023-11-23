@@ -20,7 +20,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAc
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.ValueTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.EntityRatioTabuSizeStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.FixedTabuSizeStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.ValueRatioTabuSizeStrategy;
 
 public class AcceptorFactory<Solution_> {
 
@@ -143,7 +142,11 @@ public class AcceptorFactory<Solution_> {
                 }
                 acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getValueTabuSize()));
             } else if (acceptorConfig.getValueTabuRatio() != null) {
-                acceptor.setTabuSizeStrategy(new ValueRatioTabuSizeStrategy<>(acceptorConfig.getValueTabuRatio()));
+                /*
+                 * Although the strategy was implemented, it always threw UnsupportedOperationException.
+                 * Therefore the strategy was removed and exception thrown here directly.
+                 */
+                throw new UnsupportedOperationException();
             }
             if (acceptorConfig.getFadingValueTabuSize() != null) {
                 if (acceptorConfig.getFadingValueTabuRatio() != null) {
@@ -153,7 +156,11 @@ public class AcceptorFactory<Solution_> {
                 }
                 acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuSize()));
             } else if (acceptorConfig.getFadingValueTabuRatio() != null) {
-                acceptor.setFadingTabuSizeStrategy(new ValueRatioTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuRatio()));
+                /*
+                 * Although the strategy was implemented, it always threw UnsupportedOperationException.
+                 * Therefore the strategy was removed and exception thrown here directly.
+                 */
+                throw new UnsupportedOperationException();
             }
 
             if (acceptorConfig.getValueTabuSize() != null) {

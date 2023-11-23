@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size;
 
-public abstract class AbstractTabuSizeStrategy<Solution_> implements TabuSizeStrategy<Solution_> {
+public sealed abstract class AbstractTabuSizeStrategy<Solution_>
+        implements TabuSizeStrategy<Solution_>
+        permits EntityRatioTabuSizeStrategy, FixedTabuSizeStrategy {
 
     protected int protectTabuSizeCornerCases(int totalSize, int tabuSize) {
         if (tabuSize < 1) {

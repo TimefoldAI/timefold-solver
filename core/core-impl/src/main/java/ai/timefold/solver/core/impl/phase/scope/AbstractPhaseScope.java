@@ -129,10 +129,6 @@ public abstract class AbstractPhaseScope<Solution_> {
         return solverScope.getWorkingEntityCount();
     }
 
-    public int getWorkingValueCount() {
-        return solverScope.getWorkingValueCount();
-    }
-
     public <Score_ extends Score<Score_>> Score_ calculateScore() {
         return (Score_) solverScope.calculateScore();
     }

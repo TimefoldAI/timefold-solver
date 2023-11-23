@@ -136,10 +136,6 @@ public class SolverScope<Solution_> {
         return getSolutionDescriptor().getEntityCount(getWorkingSolution());
     }
 
-    public int getWorkingValueCount() {
-        return getSolutionDescriptor().getValueCount(getWorkingSolution());
-    }
-
     public Score calculateScore() {
         return scoreDirector.calculateScore();
     }

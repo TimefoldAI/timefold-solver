@@ -1015,18 +1015,6 @@ public class SolutionDescriptor<Solution_> {
     }
 
     /**
-     * @param solution never null
-     * @return {@code >= 0}
-     */
-    public int getValueCount(Solution_ solution) {
-        int valueCount = 0;
-        // TODO FIXME for ValueRatioTabuSizeStrategy (or reuse maximumValueCount() for that variable descriptor?)
-        throw new UnsupportedOperationException(
-                "getValueCount is not yet supported - this blocks ValueRatioTabuSizeStrategy");
-        // return valueCount;
-    }
-
-    /**
      * Calculates an indication on how big this problem instance is.
      * This is intentionally very loosely defined for now.
      *
