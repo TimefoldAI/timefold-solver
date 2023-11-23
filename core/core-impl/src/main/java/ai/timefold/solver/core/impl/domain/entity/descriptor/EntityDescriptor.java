@@ -567,6 +567,7 @@ public class EntityDescriptor<Solution_> {
     }
 
     public long getProblemScale(Solution_ solution, Object entity) {
+        int genuineEntityCount = getSolutionDescriptor().getGenuineEntityCount(solution);
         long problemScale = 1L;
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
             long valueCount = variableDescriptor.getValueCount(solution, entity);
@@ -576,7 +577,7 @@ public class EntityDescriptor<Solution_> {
                 // chained and list variable models.
                 // TODO fix https://issues.redhat.com/browse/PLANNER-2623 to get rid of this.
                 problemScale *= valueCount;
-                problemScale /= getSolutionDescriptor().getEntityCount(solution);
+                problemScale /= genuineEntityCount;
                 problemScale += valueCount;
             }
         }

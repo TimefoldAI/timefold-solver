@@ -59,6 +59,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
+    private int workingGenuineEntityCount = 0;
     private boolean allChangesWillBeUndoneBeforeStepEnds = false;
     private long calculationCount = 0L;
     protected Solution_ workingSolution;
@@ -110,6 +111,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public int getWorkingGenuineEntityCount() {
+        return workingGenuineEntityCount;
+    }
+
+    @Override
     public void setAllChangesWillBeUndoneBeforeStepEnds(boolean allChangesWillBeUndoneBeforeStepEnds) {
         this.allChangesWillBeUndoneBeforeStepEnds = allChangesWillBeUndoneBeforeStepEnds;
     }
@@ -152,6 +158,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution);
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
+        workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         if (lookUpEnabled) {
             lookUpManager.reset();
             solutionDescriptor.visitAll(workingSolution, c -> {
@@ -405,6 +412,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         workingInitScore -= entityDescriptor.countUninitializedVariables(entity);
+        if (entityDescriptor.isGenuine()) {
+            workingGenuineEntityCount++;
+        }
         if (lookUpEnabled) {
             lookUpManager.addWorkingObject(entity);
         }
@@ -474,6 +484,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     public void afterEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
+        if (entityDescriptor.isGenuine()) {
+            workingGenuineEntityCount--;
+        }
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(entity);
         }

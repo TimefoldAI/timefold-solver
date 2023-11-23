@@ -123,7 +123,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         if (!warmUp) {
             SolverScope<Solution_> solverScope = solver.getSolverScope();
             SolutionDescriptor<Solution_> solutionDescriptor = solverScope.getSolutionDescriptor();
-            problemBenchmarkResult.registerScale(solutionDescriptor.getEntityCount(solution),
+            problemBenchmarkResult.registerScale(solutionDescriptor.getGenuineEntityCount(solution),
                     solutionDescriptor.getGenuineVariableCount(solution),
                     solutionDescriptor.getMaximumValueCount(solution),
                     solutionDescriptor.getProblemScale(solution));

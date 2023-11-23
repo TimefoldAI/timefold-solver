@@ -395,7 +395,7 @@ class SolutionDescriptorTest {
         SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
         assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(entityCount * valueCount);
@@ -409,7 +409,7 @@ class SolutionDescriptorTest {
         SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
         TestdataChainedSolution solution = generateChainedSolution(anchorCount, entityCount);
         assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
             softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(entityCount + anchorCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);
@@ -437,7 +437,7 @@ class SolutionDescriptorTest {
         SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         TestdataListSolution solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
         assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);

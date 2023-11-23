@@ -871,11 +871,15 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public int getEntityCount(Solution_ solution) {
+    public int getGenuineEntityCount(Solution_ solution) {
         MutableInt entityCount = new MutableInt();
-        visitAllEntities(solution,
-                fact -> entityCount.increment(),
-                collection -> entityCount.add(collection.size()));
+        // Need to go over every element in every entity collection, as some of the entities may not be genuine.
+        visitAllEntities(solution, fact -> {
+            var entityDescriptor = findEntityDescriptorOrFail(fact.getClass());
+            if (entityDescriptor.isGenuine()) {
+                entityCount.increment();
+            }
+        });
         return entityCount.intValue();
     }
 
