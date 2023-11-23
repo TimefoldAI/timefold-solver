@@ -1027,8 +1027,12 @@ public class SolutionDescriptor<Solution_> {
      */
     public long getProblemScale(Solution_ solution) {
         MutableLong result = new MutableLong();
-        visitAllEntities(solution,
-                entity -> result.add(findEntityDescriptorOrFail(entity.getClass()).getProblemScale(solution, entity)));
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                result.add(entityDescriptor.getProblemScale(solution, entity));
+            }
+        });
         return result.longValue();
     }
 

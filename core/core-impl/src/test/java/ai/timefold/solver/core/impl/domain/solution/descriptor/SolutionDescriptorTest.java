@@ -342,8 +342,7 @@ class SolutionDescriptorTest {
 
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
         assertThat(initializationStats.genuineEntityCount()).isEqualTo(entityCount);
-        // TODO uncomment when we properly count genuine entities
-        //assertThat(initializationStats.shadowEntityCount()).isEqualTo(valueCount);
+        assertThat(initializationStats.shadowEntityCount()).isEqualTo(valueCount);
     }
 
     @Test
