@@ -46,13 +46,12 @@ import ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
-@TestExecutionListeners(listeners = { SpringBootDependencyInjectionTestExecutionListener.class })
+@TestExecutionListeners
 class TimefoldAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
