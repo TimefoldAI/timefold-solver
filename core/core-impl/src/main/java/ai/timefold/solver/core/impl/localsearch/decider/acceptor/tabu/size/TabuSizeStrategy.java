@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public interface TabuSizeStrategy<Solution_> {
+public sealed interface TabuSizeStrategy<Solution_> permits AbstractTabuSizeStrategy {
 
     /**
      * @param stepScope never null

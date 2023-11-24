@@ -334,29 +334,45 @@ class SolutionDescriptorTest {
     }
 
     @Test
-    void countUninitializedVariables() {
-        int valueCount = 10;
-        int entityCount = 3;
-        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+    void countEntities() {
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
 
-        assertThat(solutionDescriptor.countUninitialized(solution)).isZero();
+        var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.genuineEntityCount()).isEqualTo(entityCount);
+        assertThat(initializationStats.shadowEntityCount()).isEqualTo(valueCount);
+    }
+
+    @Test
+    void countUninitializedVariables() {
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+
+        var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.uninitializedVariableCount()).isZero();
 
         solution.getEntityList().get(0).setValue(null);
-        assertThat(solutionDescriptor.countUninitialized(solution)).isOne();
+        initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.uninitializedVariableCount()).isOne();
 
         solution.getEntityList().forEach(entity -> entity.setValue(null));
-        assertThat(solutionDescriptor.countUninitialized(solution)).isEqualTo(entityCount);
+        initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.uninitializedVariableCount()).isEqualTo(entityCount);
     }
 
     @Test
     void countUnassignedValues() {
-        int valueCount = 10;
-        int entityCount = 3;
-        TestdataListSolution solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
-        SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
 
-        assertThat(solutionDescriptor.countUninitialized(solution)).isZero();
+        var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.unassignedValueCount()).isZero();
 
         List<TestdataListValue> valueList = solution.getEntityList().get(0).getValueList();
         int unassignedValueCount = valueList.size();
@@ -366,7 +382,9 @@ class SolutionDescriptorTest {
             value.setIndex(null);
         });
         valueList.clear();
-        assertThat(solutionDescriptor.countUninitialized(solution)).isEqualTo(unassignedValueCount);
+
+        initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
+        assertThat(initializationStats.unassignedValueCount()).isEqualTo(unassignedValueCount);
     }
 
     @Test
@@ -376,7 +394,7 @@ class SolutionDescriptorTest {
         SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
         assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(entityCount * valueCount);
@@ -390,7 +408,7 @@ class SolutionDescriptorTest {
         SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
         TestdataChainedSolution solution = generateChainedSolution(anchorCount, entityCount);
         assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
             softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(entityCount + anchorCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);
@@ -418,7 +436,7 @@ class SolutionDescriptorTest {
         SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         TestdataListSolution solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
         assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);

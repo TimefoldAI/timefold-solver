@@ -108,6 +108,7 @@ class VehicleRoutingConstraintProviderTest
 
     @Override
     protected ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutingSolution> createConstraintVerifier() {
-        return ConstraintVerifier.build(new VehicleRoutingConstraintProvider(), VehicleRoutingSolution.class, Vehicle.class);
+        return ConstraintVerifier.build(new VehicleRoutingConstraintProvider(),
+                VehicleRoutingSolution.class, Vehicle.class, Customer.class);
     }
 }

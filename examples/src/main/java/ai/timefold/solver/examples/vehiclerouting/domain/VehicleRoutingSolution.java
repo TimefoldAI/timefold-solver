@@ -86,7 +86,7 @@ public class VehicleRoutingSolution extends AbstractPersistable {
         this.vehicleList = vehicleList;
     }
 
-    @ProblemFactCollectionProperty
+    @PlanningEntityCollectionProperty
     @ValueRangeProvider
     public List<Customer> getCustomerList() {
         return customerList;

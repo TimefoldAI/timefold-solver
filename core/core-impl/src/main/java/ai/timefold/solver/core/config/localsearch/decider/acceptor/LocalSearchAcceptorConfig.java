@@ -107,10 +107,18 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.valueTabuSize = valueTabuSize;
     }
 
+    /**
+     * @deprecated Deprecated on account of never having worked in the first place.
+     */
+    @Deprecated(forRemoval = true, since = "1.5.0")
     public Double getValueTabuRatio() {
         return valueTabuRatio;
     }
 
+    /**
+     * @deprecated Deprecated on account of never having worked in the first place.
+     */
+    @Deprecated(forRemoval = true, since = "1.5.0")
     public void setValueTabuRatio(Double valueTabuRatio) {
         this.valueTabuRatio = valueTabuRatio;
     }
@@ -123,10 +131,18 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.fadingValueTabuSize = fadingValueTabuSize;
     }
 
+    /**
+     * @deprecated Deprecated on account of never having worked in the first place.
+     */
+    @Deprecated(forRemoval = true, since = "1.5.0")
     public Double getFadingValueTabuRatio() {
         return fadingValueTabuRatio;
     }
 
+    /**
+     * @deprecated Deprecated on account of never having worked in the first place.
+     */
+    @Deprecated(forRemoval = true, since = "1.5.0")
     public void setFadingValueTabuRatio(Double fadingValueTabuRatio) {
         this.fadingValueTabuRatio = fadingValueTabuRatio;
     }

@@ -133,11 +133,7 @@ public class SolverScope<Solution_> {
     }
 
     public int getWorkingEntityCount() {
-        return getSolutionDescriptor().getEntityCount(getWorkingSolution());
-    }
-
-    public int getWorkingValueCount() {
-        return getSolutionDescriptor().getValueCount(getWorkingSolution());
+        return scoreDirector.getWorkingGenuineEntityCount();
     }
 
     public Score calculateScore() {

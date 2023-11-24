@@ -48,9 +48,8 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
 
     @Override
     public Solution_ cloneSolution(Solution_ originalSolution) {
-        int entityCount = solutionDescriptor.getEntityCount(originalSolution);
-        Map<Object, Object> originalToCloneMap = new IdentityHashMap<>(entityCount + 1);
-        Queue<Unprocessed> unprocessedQueue = new ArrayDeque<>(entityCount + 1);
+        Map<Object, Object> originalToCloneMap = new IdentityHashMap<>();
+        Queue<Unprocessed> unprocessedQueue = new ArrayDeque<>();
         Solution_ cloneSolution = clone(originalSolution, originalToCloneMap, unprocessedQueue,
                 retrieveClassMetadata(originalSolution.getClass()));
         while (!unprocessedQueue.isEmpty()) {

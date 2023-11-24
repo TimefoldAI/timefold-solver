@@ -871,11 +871,15 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public int getEntityCount(Solution_ solution) {
+    public int getGenuineEntityCount(Solution_ solution) {
         MutableInt entityCount = new MutableInt();
-        visitAllEntities(solution,
-                fact -> entityCount.increment(),
-                collection -> entityCount.add(collection.size()));
+        // Need to go over every element in every entity collection, as some of the entities may not be genuine.
+        visitAllEntities(solution, fact -> {
+            var entityDescriptor = findEntityDescriptorOrFail(fact.getClass());
+            if (entityDescriptor.isGenuine()) {
+                entityCount.increment();
+            }
+        });
         return entityCount.intValue();
     }
 
@@ -1003,27 +1007,23 @@ public class SolutionDescriptor<Solution_> {
      */
     public long getGenuineVariableCount(Solution_ solution) {
         MutableLong result = new MutableLong();
-        visitAllEntities(solution,
-                entity -> result.add(findEntityDescriptorOrFail(entity.getClass()).getGenuineVariableCount()));
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                result.add(entityDescriptor.getGenuineVariableCount());
+            }
+        });
         return result.longValue();
     }
 
     public long getMaximumValueCount(Solution_ solution) {
         return extractAllEntitiesStream(solution)
-                .mapToLong(entity -> findEntityDescriptorOrFail(entity.getClass()).getMaximumValueCount(solution, entity))
-                .max().orElse(0L);
-    }
-
-    /**
-     * @param solution never null
-     * @return {@code >= 0}
-     */
-    public int getValueCount(Solution_ solution) {
-        int valueCount = 0;
-        // TODO FIXME for ValueRatioTabuSizeStrategy (or reuse maximumValueCount() for that variable descriptor?)
-        throw new UnsupportedOperationException(
-                "getValueCount is not yet supported - this blocks ValueRatioTabuSizeStrategy");
-        // return valueCount;
+                .mapToLong(entity -> {
+                    var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+                    return entityDescriptor.isGenuine() ? entityDescriptor.getMaximumValueCount(solution, entity) : 0L;
+                })
+                .max()
+                .orElse(0L);
     }
 
     /**
@@ -1035,58 +1035,61 @@ public class SolutionDescriptor<Solution_> {
      */
     public long getProblemScale(Solution_ solution) {
         MutableLong result = new MutableLong();
-        visitAllEntities(solution,
-                entity -> result.add(findEntityDescriptorOrFail(entity.getClass()).getProblemScale(solution, entity)));
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                result.add(entityDescriptor.getProblemScale(solution, entity));
+            }
+        });
         return result.longValue();
     }
 
-    /**
-     * Calculates the number of elements that need to be processed in the Construction Heuristics phase.
-     * The negative value of this is the {@code initScore}. It represents how many Construction Heuristics steps need to
-     * be taken before the solution is fully initialized.
-     *
-     * @param solution never null
-     * @return {@code >= 0}
-     */
-    public int countUninitialized(Solution_ solution) {
-        int uninitializedVariableCount = countUninitializedVariables(solution);
-        int uninitializedValueCount = countUnassignedListVariableValues(solution);
-        return uninitializedValueCount + uninitializedVariableCount;
+    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {
+        return computeInitializationStatistics(solution, null);
     }
 
-    /**
-     * Counts the number of uninitialized basic planning variables on all entities.
-     */
-    private int countUninitializedVariables(Solution_ solution) {
-        MutableInt result = new MutableInt();
-        visitAllEntities(solution,
-                entity -> result.add(findEntityDescriptorOrFail(entity.getClass()).countUninitializedVariables(entity)));
-        return result.intValue();
-    }
-
-    /**
-     * Counts the number of elements from list variable value ranges, that are not assigned to any list variable.
-     */
-    private int countUnassignedListVariableValues(Solution_ solution) {
-        int unassignedValueCount = 0;
-        for (ListVariableDescriptor<Solution_> listVariableDescriptor : listVariableDescriptors) {
-            unassignedValueCount += countUnassignedListVariableValues(solution, listVariableDescriptor);
+    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution, Consumer<Object> finisher) {
+        /*
+         * The score director requires all of these data points,
+         * so we calculate them all in a single pass over the entities.
+         * This is an important performance improvement,
+         * as there are potentially thousands of entities.
+         */
+        var uninitializedVariableCount = new MutableInt();
+        var unassignedValueCount = new MutableInt();
+        var genuineEntityCount = new MutableInt();
+        var shadowEntityCount = new MutableInt();
+        for (var listVariableDescriptor : listVariableDescriptors) {
+            unassignedValueCount.add((int) listVariableDescriptor.getValueCount(solution, null));
         }
-        return unassignedValueCount;
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                genuineEntityCount.increment();
+            } else {
+                shadowEntityCount.increment();
+            }
+            uninitializedVariableCount.add(entityDescriptor.countUninitializedVariables(entity));
+            if (finisher != null) {
+                finisher.accept(entity);
+            }
+            if (!entityDescriptor.hasAnyGenuineListVariables()) {
+                return;
+            }
+            for (var listVariableDescriptor : listVariableDescriptors) {
+                var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+                if (listVariableEntityDescriptor.matchesEntity(entity)) {
+                    unassignedValueCount.subtract(listVariableDescriptor.getListSize(entity));
+                }
+                // TODO maybe detect duplicates and elements that are outside the value range
+            }
+        });
+        return new SolutionInitializationStatistics(genuineEntityCount.intValue(), shadowEntityCount.intValue(),
+                uninitializedVariableCount.intValue(), unassignedValueCount.intValue());
     }
 
-    private int countUnassignedListVariableValues(Solution_ solution, ListVariableDescriptor<Solution_> variableDescriptor) {
-        long totalValueCount = variableDescriptor.getValueCount(solution, null);
-        MutableInt assignedValuesCount = new MutableInt();
-        visitAllEntities(solution,
-                entity -> {
-                    EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
-                    if (entityDescriptor.matchesEntity(entity)) {
-                        assignedValuesCount.add(variableDescriptor.getListSize(entity));
-                    }
-                });
-        // TODO maybe detect duplicates and elements that are outside the value range
-        return Math.toIntExact(totalValueCount - assignedValuesCount.intValue());
+    public record SolutionInitializationStatistics(int genuineEntityCount, int shadowEntityCount,
+            int uninitializedVariableCount, int unassignedValueCount) {
     }
 
     private Stream<Object> extractAllEntitiesStream(Solution_ solution) {

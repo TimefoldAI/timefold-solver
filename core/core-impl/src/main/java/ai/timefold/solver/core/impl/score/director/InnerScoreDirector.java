@@ -132,6 +132,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     long getWorkingEntityListRevision();
 
+    int getWorkingGenuineEntityCount();
+
     /**
      * @param move never null
      * @param assertMoveScoreFromScratch true will hurt performance

@@ -59,6 +59,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
+    private int workingGenuineEntityCount = 0;
     private boolean allChangesWillBeUndoneBeforeStepEnds = false;
     private long calculationCount = 0L;
     protected Solution_ workingSolution;
@@ -110,6 +111,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public int getWorkingGenuineEntityCount() {
+        return workingGenuineEntityCount;
+    }
+
+    @Override
     public void setAllChangesWillBeUndoneBeforeStepEnds(boolean allChangesWillBeUndoneBeforeStepEnds) {
         this.allChangesWillBeUndoneBeforeStepEnds = allChangesWillBeUndoneBeforeStepEnds;
     }
@@ -148,19 +154,30 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         this.workingSolution = requireNonNull(workingSolution);
-        SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        workingInitScore = -solutionDescriptor.countUninitialized(workingSolution);
+        var solutionDescriptor = getSolutionDescriptor();
+
+        /*
+         * Both problem facts and entities need to be asserted,
+         * which requires iterating over all of them,
+         * possibly many thousands of objects.
+         * Providing the init score and genuine entity count requires another pass over the entities.
+         * The following code does all of those operations in a single pass.
+         */
+        Consumer<Object> visitor = this::assertNonNullPlanningId; // Every fact and entity will get this done.
         if (lookUpEnabled) {
             lookUpManager.reset();
-            solutionDescriptor.visitAll(workingSolution, c -> {
-                lookUpManager.addWorkingObject(c);
-                assertNonNullPlanningId(c);
-            });
-        } else {
-            solutionDescriptor.visitAll(workingSolution, this::assertNonNullPlanningId);
+            visitor = visitor.andThen(lookUpManager::addWorkingObject);
         }
-        variableListenerSupport.resetWorkingSolution();
+        // This visits all the problem facts, applying the visitor.
+        solutionDescriptor.visitAllProblemFacts(workingSolution, visitor);
+        // This visits all the entities, applying the visitor.
+        var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution, visitor);
         setWorkingEntityListDirty();
+
+        workingInitScore =
+                -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
+        workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
+        variableListenerSupport.resetWorkingSolution();
     }
 
     @Override
@@ -403,6 +420,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         workingInitScore -= entityDescriptor.countUninitializedVariables(entity);
+        if (entityDescriptor.isGenuine()) {
+            workingGenuineEntityCount++;
+        }
         if (lookUpEnabled) {
             lookUpManager.addWorkingObject(entity);
         }
@@ -472,6 +492,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     public void afterEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
+        if (entityDescriptor.isGenuine()) {
+            workingGenuineEntityCount--;
+        }
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(entity);
         }
