@@ -28,8 +28,8 @@ import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements SequenceChain<Value_, Difference_> {
 
-    private final BiFunction<Point_, Point_, Difference_> differenceFunction;
-    private final BiFunction<Point_, Point_, Difference_> sequenceLengthFunction;
+    final BiFunction<Point_, Point_, Difference_> differenceFunction;
+    final BiFunction<Point_, Point_, Difference_> sequenceLengthFunction;
     private final Difference_ maxDifference;
     private final Difference_ zeroDifference;
     private final Map<Value_, ValueCount<ComparableValue<Value_, Point_>>> valueCountMap = new HashMap<>();
@@ -140,9 +140,9 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                     prevBag.setEnd(addingItem);
                 } else {
                     // Start a new bag of consecutive items
-                    var newBag = new SequenceImpl<>(this, addingItem, sequenceLengthFunction);
+                    var newBag = new SequenceImpl<>(this, addingItem);
                     startItemToSequence.put(addingItem, newBag);
-                    startItemToPreviousBreak.put(addingItem, new BreakImpl<>(prevBag, newBag, differenceFunction));
+                    startItemToPreviousBreak.put(addingItem, new BreakImpl<>(newBag, prevBag));
                 }
             }
         } else {
@@ -158,13 +158,13 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                 } else {
                     // Start a new bag of consecutive items
                     var afterBag = startItemToSequence.get(firstAfterItem);
-                    var newBag = new SequenceImpl<>(this, addingItem, sequenceLengthFunction);
+                    var newBag = new SequenceImpl<>(this, addingItem);
                     startItemToSequence.put(addingItem, newBag);
-                    startItemToPreviousBreak.put(firstAfterItem, new BreakImpl<>(newBag, afterBag, differenceFunction));
+                    startItemToPreviousBreak.put(firstAfterItem, new BreakImpl<>(afterBag, newBag));
                 }
             } else {
                 // Start a new bag of consecutive items
-                var newBag = new SequenceImpl<>(this, addingItem, sequenceLengthFunction);
+                var newBag = new SequenceImpl<>(this, addingItem);
                 startItemToSequence.put(addingItem, newBag);
                 // Bag have no other items, so no break
             }
@@ -212,11 +212,12 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                 startItemToPreviousBreak.put(comparableItem, prevBreak);
             } else {
                 // Start a new bag of consecutive items
-                var newBag = new SequenceImpl<>(this, comparableItem, sequenceLengthFunction);
+                var newBag = new SequenceImpl<>(this, comparableItem);
                 startItemToSequence.put(comparableItem, newBag);
                 startItemToPreviousBreak.get(firstAfterItem).setPreviousSequence(newBag);
+                SequenceImpl<Value_, Point_, Difference_> previousSequence = startItemToSequence.get(firstBeforeItem);
                 startItemToPreviousBreak.put(comparableItem,
-                        new BreakImpl<>(startItemToSequence.get(firstBeforeItem), newBag, differenceFunction));
+                        new BreakImpl<>(newBag, previousSequence));
             }
         }
     }
@@ -305,7 +306,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         var splitBag = bag.split(item);
         var firstSplitItem = splitBag.firstItem;
         startItemToSequence.put(firstSplitItem, splitBag);
-        startItemToPreviousBreak.put(firstSplitItem, new BreakImpl<>(bag, splitBag, differenceFunction));
+        startItemToPreviousBreak.put(firstSplitItem, new BreakImpl<>(splitBag, bag));
         var maybeNextBreak = startItemToPreviousBreak.higherEntry(firstAfterItem);
         if (maybeNextBreak != null) {
             maybeNextBreak.getValue().setPreviousSequence(splitBag);
