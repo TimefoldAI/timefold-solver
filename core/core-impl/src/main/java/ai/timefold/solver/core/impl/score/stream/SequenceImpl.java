@@ -8,6 +8,13 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
+/**
+ * When adding fields, remember to add them to the JSON serialization code as well, if you want them exposed.
+ *
+ * @param <Value_>
+ * @param <Point_>
+ * @param <Difference_>
+ */
 final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements Sequence<Value_, Difference_> {
 

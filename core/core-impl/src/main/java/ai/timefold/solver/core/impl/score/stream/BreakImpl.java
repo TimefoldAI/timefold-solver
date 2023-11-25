@@ -2,6 +2,13 @@ package ai.timefold.solver.core.impl.score.stream;
 
 import ai.timefold.solver.core.api.score.stream.common.Break;
 
+/**
+ * When adding fields, remember to add them to the JSON serialization code as well, if you want them exposed.
+ *
+ * @param <Value_>
+ * @param <Point_>
+ * @param <Difference_>
+ */
 final class BreakImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements Break<Value_, Difference_> {
 
