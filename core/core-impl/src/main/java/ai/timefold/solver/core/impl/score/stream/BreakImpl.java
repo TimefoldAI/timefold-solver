@@ -20,14 +20,32 @@ final class BreakImpl<Value_, Point_ extends Comparable<Point_>, Difference_ ext
         setPreviousSequence(previousSequence);
     }
 
-    @Override
     public Sequence<Value_, Difference_> getPreviousSequence() {
         return previousSequence;
     }
 
-    @Override
     public Sequence<Value_, Difference_> getNextSequence() {
         return nextSequence;
+    }
+
+    @Override
+    public boolean isFirst() {
+        return previousSequence.isFirst();
+    }
+
+    @Override
+    public boolean isLast() {
+        return nextSequence.isLast();
+    }
+
+    @Override
+    public Value_ getPreviousSequenceEnd() {
+        return previousSequence.lastItem.value();
+    }
+
+    @Override
+    public Value_ getNextSequenceStart() {
+        return nextSequence.firstItem.value();
     }
 
     @Override
