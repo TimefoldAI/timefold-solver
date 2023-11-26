@@ -1,8 +1,8 @@
 package ai.timefold.solver.jackson.api.score.stream.common;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
@@ -24,7 +24,7 @@ public final class SequenceChainJacksonSerializer<Value_, Difference_ extends Co
                 .stream()
                 .map(s -> new SerializedSequence<>(breakToSerializedBreakMap.get(s.getPreviousBreak()),
                         breakToSerializedBreakMap.get(s.getNextBreak()),
-                        new ArrayList<>(s.getItems())))
+                        List.copyOf(s.getItems())))
                 .toList();
         jsonGenerator.writeObject(new SerializedSequenceChain<>(serializedSequenceList,
                 // The map does not maintain consistent insertion order, so we create a new list.

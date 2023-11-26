@@ -1,7 +1,7 @@
 package ai.timefold.solver.jackson.api.score.stream.common;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
@@ -19,7 +19,7 @@ public final class SequenceJacksonSerializer<Value_, Difference_ extends Compara
                 new SerializedSequence<>(
                         SerializedBreak.of(sequence.getPreviousBreak()),
                         SerializedBreak.of(sequence.getNextBreak()),
-                        new ArrayList<>(sequence.getItems())));
+                        List.copyOf(sequence.getItems())));
     }
 
 }
