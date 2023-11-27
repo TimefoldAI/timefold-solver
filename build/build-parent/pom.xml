@@ -23,9 +23,10 @@
     <version.ch.qos.logback>1.4.11</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.22.0</version.org.apache.logging.log4j>
     <version.io.quarkus>3.6.0</version.io.quarkus>
+    <version.org.apache.commons.compress>1.25.0</version.org.apache.commons.compress>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.commons.text>1.11.0</version.org.apache.commons.text>
-    <version.org.apache.poi>5.2.4</version.org.apache.poi>
+    <version.org.apache.poi>5.2.5</version.org.apache.poi>
     <version.org.assertj>3.24.2</version.org.assertj>
     <version.org.freemarker>2.3.32</version.org.freemarker>
     <version.org.jdom2>2.0.6.1</version.org.jdom2>
