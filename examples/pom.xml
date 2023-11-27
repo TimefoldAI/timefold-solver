@@ -81,6 +81,11 @@
     <dependencies>
       <dependency>
         <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${version.org.apache.commons.compress}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
         <artifactId>commons-text</artifactId>
         <version>${version.org.apache.commons.text}</version>
       </dependency>
