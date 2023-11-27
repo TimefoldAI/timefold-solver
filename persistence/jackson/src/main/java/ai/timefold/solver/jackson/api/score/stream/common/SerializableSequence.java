@@ -9,7 +9,8 @@ record SerializableSequence<Value_>(
         @JsonProperty("next_break") SerializableBreak<Value_> nextBreak,
         boolean first, boolean last, List<Value_> items) {
 
-    public SerializableSequence(SerializableBreak<Value_> previousBreak, SerializableBreak<Value_> nextBreak, List<Value_> items) {
+    public SerializableSequence(SerializableBreak<Value_> previousBreak, SerializableBreak<Value_> nextBreak,
+            List<Value_> items) {
         this(previousBreak, nextBreak, previousBreak == null, nextBreak == null, items);
     }
 
