@@ -1,37 +1,43 @@
 package ai.timefold.solver.core.impl.score.stream;
 
-import java.util.Iterator;
-import java.util.NavigableSet;
-import java.util.function.BiFunction;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.NavigableMap;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
+/**
+ * When adding fields, remember to add them to the JSON serialization code as well, if you want them exposed.
+ *
+ * @param <Value_>
+ * @param <Point_>
+ * @param <Difference_>
+ */
 final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements Sequence<Value_, Difference_> {
 
-    private final BiFunction<Point_, Point_, Difference_> lengthFunction;
     private final ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree;
     ComparableValue<Value_, Point_> firstItem;
     ComparableValue<Value_, Point_> lastItem;
 
     // Memorized calculations
     private Difference_ length;
-    private NavigableSet<ComparableValue<Value_, Point_>> items;
+    private NavigableMap<ComparableValue<Value_, Point_>, Value_> comparableItems;
+    private Collection<Value_> items;
 
-    SequenceImpl(ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree, ComparableValue<Value_, Point_> item,
-            BiFunction<Point_, Point_, Difference_> lengthFunction) {
-        this(sourceTree, item, item, lengthFunction);
+    SequenceImpl(ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree, ComparableValue<Value_, Point_> item) {
+        this(sourceTree, item, item);
     }
 
     SequenceImpl(ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree, ComparableValue<Value_, Point_> firstItem,
-            ComparableValue<Value_, Point_> lastItem, BiFunction<Point_, Point_, Difference_> lengthFunction) {
-        this.lengthFunction = lengthFunction;
+            ComparableValue<Value_, Point_> lastItem) {
         this.sourceTree = sourceTree;
         this.firstItem = firstItem;
         this.lastItem = lastItem;
         length = null;
+        comparableItems = null;
         items = null;
     }
 
@@ -66,29 +72,19 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     }
 
     @Override
-    public Iterable<Value_> getItems() {
-        return () -> new Iterator<>() {
+    public Collection<Value_> getItems() {
+        if (items == null) {
+            return items = getComparableItems().values();
+        }
+        return Collections.unmodifiableCollection(items);
 
-            private final Iterator<ComparableValue<Value_, Point_>> iterator = getComparableItems().iterator();
-
-            @Override
-            public boolean hasNext() {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public Value_ next() {
-                return iterator.next().value();
-            }
-        };
     }
 
-    NavigableSet<ComparableValue<Value_, Point_>> getComparableItems() {
-        if (items == null) {
-            return items = sourceTree.getItemSet()
-                    .subSet(firstItem, true, lastItem, true);
+    NavigableMap<ComparableValue<Value_, Point_>, Value_> getComparableItems() {
+        if (comparableItems == null) {
+            return comparableItems = sourceTree.getComparableItems(firstItem, lastItem);
         }
-        return items;
+        return comparableItems;
     }
 
     @Override
@@ -101,9 +97,13 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
         if (length == null) {
             // memoize length for later calls
             // (assignment returns the right hand side)
-            return length = lengthFunction.apply(firstItem.index(), lastItem.index());
+            return length = sourceTree.sequenceLengthFunction.apply(firstItem.index(), lastItem.index());
         }
         return length;
+    }
+
+    Difference_ computeDifference(SequenceImpl<Value_, Point_, Difference_> to) {
+        return sourceTree.differenceFunction.apply(this.lastItem.index(), to.firstItem.index());
     }
 
     void setStart(ComparableValue<Value_, Point_> item) {
@@ -120,15 +120,16 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     // need to be invalidated
     void invalidate() {
         length = null;
+        comparableItems = null;
         items = null;
     }
 
     SequenceImpl<Value_, Point_, Difference_> split(ComparableValue<Value_, Point_> fromElement) {
         var itemSet = getComparableItems();
-        var newSequenceStart = itemSet.higher(fromElement);
+        var newSequenceStart = itemSet.higherKey(fromElement);
         var newSequenceEnd = lastItem;
-        setEnd(itemSet.lower(fromElement));
-        return new SequenceImpl<>(sourceTree, newSequenceStart, newSequenceEnd, lengthFunction);
+        setEnd(itemSet.lowerKey(fromElement));
+        return new SequenceImpl<>(sourceTree, newSequenceStart, newSequenceEnd);
     }
 
     // This Sequence is ALWAYS before other Sequence
@@ -139,8 +140,8 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
 
     @Override
     public String toString() {
-        return getComparableItems().stream()
-                .map(s -> s.value().toString())
+        return getItems().stream()
+                .map(Object::toString)
                 .collect(Collectors.joining(", ", "Sequence [", "]"));
     }
 }

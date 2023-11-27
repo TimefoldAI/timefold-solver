@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import java.util.Collection;
+
 /**
  * Contains info regarding the consecutive sequences and breaks in a collection of points.
  *
@@ -11,12 +13,12 @@ public interface SequenceChain<Value_, Difference_ extends Comparable<Difference
     /**
      * @return never null; the sequences contained in the collection in ascending order.
      */
-    Iterable<Sequence<Value_, Difference_>> getConsecutiveSequences();
+    Collection<Sequence<Value_, Difference_>> getConsecutiveSequences();
 
     /**
      * @return never null; the breaks contained in the collection in ascending order.
      */
-    Iterable<Break<Value_, Difference_>> getBreaks();
+    Collection<Break<Value_, Difference_>> getBreaks();
 
     /**
      * Returns the first sequence of consecutive values.

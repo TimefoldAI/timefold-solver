@@ -15,6 +15,9 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.analysis.ScoreAnalysisJacksonSerializer;
@@ -44,6 +47,12 @@ import ai.timefold.solver.jackson.api.score.buildin.simplelong.SimpleLongScoreJa
 import ai.timefold.solver.jackson.api.score.buildin.simplelong.SimpleLongScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.constraint.ConstraintRefJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.constraint.ConstraintRefJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.BreakJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.BreakJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonSerializer;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 
 import com.fasterxml.jackson.databind.Module;
@@ -107,6 +116,14 @@ public class TimefoldJacksonModule extends SimpleModule {
         addSerializer(ConstraintRef.class, new ConstraintRefJacksonSerializer());
         addDeserializer(ConstraintRef.class, new ConstraintRefJacksonDeserializer());
         addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
+
+        // Constraint collectors
+        addSerializer(Break.class, new BreakJacksonSerializer());
+        addDeserializer(Break.class, new BreakJacksonDeserializer());
+        addSerializer(Sequence.class, new SequenceJacksonSerializer());
+        addDeserializer(Sequence.class, new SequenceJacksonDeserializer());
+        addSerializer(SequenceChain.class, new SequenceChainJacksonSerializer());
+        addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer());
     }
 
 }

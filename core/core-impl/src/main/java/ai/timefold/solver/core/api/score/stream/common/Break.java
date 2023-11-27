@@ -11,28 +11,14 @@ package ai.timefold.solver.core.api.score.stream.common;
 public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
 
     /**
-     * @return never null; the sequence leading directly into this
-     */
-    Sequence<Value_, Difference_> getPreviousSequence();
-
-    /**
-     * @return never null; the sequence immediately following this
-     */
-    Sequence<Value_, Difference_> getNextSequence();
-
-    /**
      * @return true if and only if this is the first break
      */
-    default boolean isFirst() {
-        return getPreviousSequence().isFirst();
-    }
+    boolean isFirst();
 
     /**
      * @return true if and only if this is the last break
      */
-    default boolean isLast() {
-        return getNextSequence().isLast();
-    }
+    boolean isLast();
 
     /**
      * Return the end of the sequence before this break. For the
@@ -40,11 +26,7 @@ public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
      *
      * @return never null; the item this break is directly after
      */
-    default Value_ getPreviousSequenceEnd() {
-        return getPreviousSequence().getLastItem();
-    }
-
-    ;
+    Value_ getPreviousSequenceEnd();
 
     /**
      * Return the start of the sequence after this break. For the
@@ -52,9 +34,7 @@ public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
      *
      * @return never null; the item this break is directly before
      */
-    default Value_ getNextSequenceStart() {
-        return getNextSequence().getFirstItem();
-    }
+    Value_ getNextSequenceStart();
 
     /**
      * Return the length of the break, which is the difference
@@ -64,4 +44,5 @@ public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
      * @return never null; the length of this break
      */
     Difference_ getLength();
+
 }

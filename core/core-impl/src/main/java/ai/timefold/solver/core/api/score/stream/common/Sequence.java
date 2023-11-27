@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import java.util.Collection;
+
 /**
  * Represents a series of consecutive values.
  * For instance, the list [1,2,4,5,6,10] has three sequences: [1,2], [4,5,6], and [10].
@@ -42,7 +44,7 @@ public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
     /**
      * @return never null; items in this sequence
      */
-    Iterable<Value_> getItems();
+    Collection<Value_> getItems();
 
     /**
      * @return the number of items in this sequence
