@@ -14,7 +14,7 @@ public final class BreakJacksonSerializer<Value_, Difference_ extends Comparable
     @Override
     public void serialize(Break<Value_, Difference_> brk, JsonGenerator jsonGenerator,
             SerializerProvider serializerProvider) throws IOException {
-        jsonGenerator.writeObject(SerializedBreak.of(brk));
+        jsonGenerator.writeObject(SerializableBreak.of(brk));
     }
 
 }

@@ -16,9 +16,9 @@ public final class SequenceJacksonSerializer<Value_, Difference_ extends Compara
     public void serialize(Sequence<Value_, Difference_> sequence, JsonGenerator jsonGenerator,
             SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeObject(
-                new SerializedSequence<>(
-                        SerializedBreak.of(sequence.getPreviousBreak()),
-                        SerializedBreak.of(sequence.getNextBreak()),
+                new SerializableSequence<>(
+                        SerializableBreak.of(sequence.getPreviousBreak()),
+                        SerializableBreak.of(sequence.getNextBreak()),
                         List.copyOf(sequence.getItems())));
     }
 

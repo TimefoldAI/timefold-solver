@@ -16,6 +16,7 @@ import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -54,63 +55,48 @@ class SequenceRoundTripTest {
 
         ObjectMapper objectMapper = JsonMapper.builder()
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .addModule(TimefoldJacksonModule.createModule())
                 .build();
 
         assertSequenceChainRoundTrip(objectMapper, sequenceChain, """
                 {
-                  "breaks" : [ {
-                    "@id" : 1,
-                    "first" : true,
-                    "last" : false,
-                    "next_sequence_start" : {
-                      "id" : "sequence2Item1",
-                      "index" : 3
-                    },
-                    "previous_sequence_end" : {
-                      "id" : "sequence1Item2",
-                      "index" : 1
-                    }
-                  }, {
-                    "@id" : 2,
-                    "first" : false,
-                    "last" : true,
-                    "next_sequence_start" : {
-                      "id" : "sequence3Item1",
-                      "index" : 7
-                    },
-                    "previous_sequence_end" : {
-                      "id" : "sequence2Item3",
-                      "index" : 5
-                    }
-                  } ],
                   "sequences" : [ {
-                    "@id" : 1,
+                    "first" : true,
                     "items" : [ {
                       "id" : "sequence1Item1",
                       "index" : 0
-                    }, "sequence1Item2" ],
-                    "next_break" : 1,
-                    "previous_break" : null
+                    }, {
+                      "id" : "sequence1Item2",
+                      "index" : 1
+                    } ],
+                    "last" : false
                   }, {
-                    "@id" : 2,
-                    "items" : [ "sequence2Item1", {
+                    "first" : false,
+                    "items" : [ {
+                      "id" : "sequence2Item1",
+                      "index" : 3
+                    }, {
                       "id" : "sequence2Item2",
                       "index" : 4
-                    }, "sequence2Item3" ],
-                    "next_break" : 2,
-                    "previous_break" : 1
+                    }, {
+                      "id" : "sequence2Item3",
+                      "index" : 5
+                    } ],
+                    "last" : false
                   }, {
-                    "@id" : 3,
-                    "items" : [ "sequence3Item1" ],
-                    "next_break" : null,
-                    "previous_break" : 2
+                    "first" : false,
+                    "items" : [ {
+                      "id" : "sequence3Item1",
+                      "index" : 7
+                    } ],
+                    "last" : true
                   } ]
                 }""");
 
         assertSequenceRoundTrip(objectMapper, sequences[0], """
                 {
-                  "@id" : 1,
+                  "first" : true,
                   "items" : [ {
                     "id" : "sequence1Item1",
                     "index" : 0
@@ -118,8 +104,8 @@ class SequenceRoundTripTest {
                     "id" : "sequence1Item2",
                     "index" : 1
                   } ],
+                  "last": false,
                   "next_break" : {
-                    "@id" : 1,
                     "first" : true,
                     "last" : false,
                     "next_sequence_start" : {
@@ -127,12 +113,11 @@ class SequenceRoundTripTest {
                       "index" : 3
                     },
                     "previous_sequence_end" : "sequence1Item2"
-                  },
-                  "previous_break" : null
+                  }
                 }""");
         assertSequenceRoundTrip(objectMapper, sequences[1], """
                 {
-                  "@id" : 1,
+                  "first" : false,
                   "items" : [ {
                     "id" : "sequence2Item1",
                     "index" : 3
@@ -143,8 +128,8 @@ class SequenceRoundTripTest {
                     "id" : "sequence2Item3",
                     "index" : 5
                   } ],
+                  "last": false,
                   "next_break" : {
-                    "@id" : 1,
                     "first" : false,
                     "last" : true,
                     "next_sequence_start" : {
@@ -154,7 +139,6 @@ class SequenceRoundTripTest {
                     "previous_sequence_end" : "sequence2Item3"
                   },
                   "previous_break" : {
-                    "@id" : 2,
                     "first" : true,
                     "last" : false,
                     "next_sequence_start" : "sequence2Item1",
@@ -166,14 +150,13 @@ class SequenceRoundTripTest {
                 }""");
         assertSequenceRoundTrip(objectMapper, sequences[2], """
                 {
-                  "@id" : 1,
+                  "first" : false,
                   "items" : [ {
                     "id" : "sequence3Item1",
                     "index" : 7
                   } ],
-                  "next_break" : null,
+                  "last": true,
                   "previous_break" : {
-                    "@id" : 1,
                     "first" : false,
                     "last" : true,
                     "next_sequence_start" : "sequence3Item1",
@@ -186,7 +169,6 @@ class SequenceRoundTripTest {
 
         assertBreakRoundTrip(objectMapper, breaks[0], """
                 {
-                  "@id" : 1,
                   "first" : true,
                   "last" : false,
                   "next_sequence_start" : {
@@ -200,7 +182,6 @@ class SequenceRoundTripTest {
                 }""");
         assertBreakRoundTrip(objectMapper, breaks[1], """
                 {
-                  "@id" : 1,
                   "first" : false,
                   "last" : true,
                   "next_sequence_start" : {
@@ -223,8 +204,8 @@ class SequenceRoundTripTest {
         assertSoftly(softly -> {
             softly.assertThat(deserialized.getConsecutiveSequences())
                     .hasSize(original.getConsecutiveSequences().size());
-            softly.assertThat(deserialized.getBreaks())
-                    .hasSize(original.getBreaks().size());
+            softly.assertThatThrownBy(deserialized::getBreaks)
+                    .isInstanceOf(UnsupportedOperationException.class);
         });
     }
 

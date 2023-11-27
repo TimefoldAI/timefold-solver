@@ -16,7 +16,7 @@ public final class SequenceChainJacksonDeserializer<Value_, Difference_ extends 
     public SequenceChain<Value_, Difference_> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
             throws IOException {
         JsonNode jsonNode = jsonParser.readValueAsTree();
-        return deserializationContext.readTreeAsValue(jsonNode, DeserializedSequenceChain.class);
+        return deserializationContext.readTreeAsValue(jsonNode, DeserializableSequenceChain.class);
     }
 
 }

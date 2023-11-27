@@ -20,27 +20,35 @@
  * {@link com.fasterxml.jackson.annotation.JsonIdentityInfo}
  *
  * <p>
- * The implementation converts {@link ai.timefold.solver.core.api.score.stream.common.Break} instances
- * to {@link ai.timefold.solver.jackson.api.score.stream.common.SerializedBreak} instances,
+ * The implementation converts {@link ai.timefold.solver.core.api.score.stream.common.Sequence} instances
+ * to {@link ai.timefold.solver.jackson.api.score.stream.common.SerializableSequence} instances,
  * which can then be directly serialized.
  * During deserialization,
- * the implementation first reads {@link ai.timefold.solver.jackson.api.score.stream.common.SerializedBreak} instances
- * and then converts them to {@link ai.timefold.solver.jackson.api.score.stream.common.DeserializedBreak} instances,
+ * the implementation first reads {@link ai.timefold.solver.jackson.api.score.stream.common.SerializableSequence} instances
+ * and then converts them to {@link ai.timefold.solver.jackson.api.score.stream.common.DeserializableSequence} instances,
  * which are returned to the user.
- * It is only the latter that implements {@link ai.timefold.solver.core.api.score.stream.common.Break},
+ * It is only the latter that implements {@link ai.timefold.solver.core.api.score.stream.common.Sequence},
  * as otherwise an endless loop would occur during serialization.
- * We never create instances of the original Break-implementing class from solver-core,
+ * We never create instances of the original Sequence-implementing class from solver-core,
  * as those require much more than just the pure data.
+ *
+ * <p>
+ * For {@link ai.timefold.solver.core.api.score.stream.common.Sequence} instances
+ * and for the entire {@link ai.timefold.solver.core.api.score.stream.common.SequenceChain},
+ * we follow the same pattern.
+ * {@link ai.timefold.solver.core.api.score.stream.common.Break} instances are only serialized
+ * when {@link ai.timefold.solver.core.api.score.stream.common.Sequence} is being serialized directly.
+ * When {@link ai.timefold.solver.core.api.score.stream.common.SequenceChain} is being serialized,
+ * {@link ai.timefold.solver.core.api.score.stream.common.Break} instances between sequences are not included,
+ * but the JSON has been designed in such a way that this can later be added in a backwards compatible manner.
+ *
+ * <p>
  * {@link ai.timefold.solver.core.api.score.stream.common.Break#getLength() Break length} is not available after
  * deserialization,
  * as it would require the user to specify a custom deserializer for the custom Difference_ type
  * and would have considerably complicated the entire deserialization process.
  * Since the user can easily compute the length from the endpoints,
  * we decided to avoid the overhead.
- *
- * <p>
- * For {@link ai.timefold.solver.core.api.score.stream.common.Sequence} instances
- * and for the entire {@link ai.timefold.solver.core.api.score.stream.common.SequenceChain},
- * we follow the same pattern.
+ * The same deserialization treatment is applied to {@link ai.timefold.solver.core.api.score.stream.common.SequenceChain}.
  */
 package ai.timefold.solver.jackson.api.score.stream.common;

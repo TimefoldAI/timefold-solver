@@ -16,7 +16,7 @@ public final class BreakJacksonDeserializer<Value_, Difference_ extends Comparab
     public Break<Value_, Difference_> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
             throws IOException {
         JsonNode jsonNode = jsonParser.readValueAsTree();
-        return deserializationContext.readTreeAsValue(jsonNode, DeserializedBreak.class);
+        return deserializationContext.readTreeAsValue(jsonNode, DeserializableBreak.class);
     }
 
 }

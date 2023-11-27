@@ -8,9 +8,8 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
-record DeserializedSequenceChain<Value_, Difference_ extends Comparable<Difference_>>(
-        List<DeserializedSequence<Value_, Difference_>> sequences,
-        List<DeserializedBreak<Value_, Difference_>> breaks)
+record DeserializableSequenceChain<Value_, Difference_ extends Comparable<Difference_>>(
+        List<DeserializableSequence<Value_, Difference_>> sequences)
         implements
             SequenceChain<Value_, Difference_> {
 
@@ -21,7 +20,10 @@ record DeserializedSequenceChain<Value_, Difference_ extends Comparable<Differen
 
     @Override
     public Collection<Break<Value_, Difference_>> getBreaks() {
-        return Collections.unmodifiableCollection(breaks());
+        throw new UnsupportedOperationException("""
+                Deserialized %s does not carry break information.
+                It can be computed from the sequences."""
+                .formatted(getClass().getSimpleName()));
     }
 
     @Override
@@ -36,17 +38,17 @@ record DeserializedSequenceChain<Value_, Difference_ extends Comparable<Differen
 
     @Override
     public Break<Value_, Difference_> getFirstBreak() {
-        if (breaks().isEmpty()) {
-            return null;
-        }
-        return breaks().get(0);
+        throw new UnsupportedOperationException("""
+                Deserialized %s does not carry break information.
+                It can be computed from the sequences."""
+                .formatted(getClass().getSimpleName()));
     }
 
     @Override
     public Break<Value_, Difference_> getLastBreak() {
-        if (breaks().isEmpty()) {
-            return null;
-        }
-        return breaks().get(breaks().size() - 1);
+        throw new UnsupportedOperationException("""
+                Deserialized %s does not carry break information.
+                It can be computed from the sequences."""
+                .formatted(getClass().getSimpleName()));
     }
 }

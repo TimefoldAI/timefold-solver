@@ -16,7 +16,7 @@ public final class SequenceJacksonDeserializer<Value_, Difference_ extends Compa
     public Sequence<Value_, Difference_> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
             throws IOException {
         JsonNode jsonNode = jsonParser.readValueAsTree();
-        return deserializationContext.readTreeAsValue(jsonNode, DeserializedSequence.class);
+        return deserializationContext.readTreeAsValue(jsonNode, DeserializableSequence.class);
     }
 
 }

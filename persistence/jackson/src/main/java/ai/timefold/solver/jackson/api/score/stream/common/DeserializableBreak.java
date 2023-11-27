@@ -2,12 +2,9 @@ package ai.timefold.solver.jackson.api.score.stream.common;
 
 import ai.timefold.solver.core.api.score.stream.common.Break;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-@JsonIdentityInfo(scope = SerializedBreak.class, generator = ObjectIdGenerators.IntSequenceGenerator.class)
-record DeserializedBreak<Value_, Difference_ extends Comparable<Difference_>>(
+record DeserializableBreak<Value_, Difference_ extends Comparable<Difference_>>(
         @JsonProperty("previous_sequence_end") Value_ previousSequenceEnd,
         @JsonProperty("next_sequence_start") Value_ nextSequenceStart,
         boolean first, boolean last)

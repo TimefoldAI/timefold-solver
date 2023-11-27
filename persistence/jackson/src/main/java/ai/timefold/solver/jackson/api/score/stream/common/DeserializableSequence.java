@@ -6,15 +6,12 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-@JsonIdentityInfo(scope = SerializedSequence.class, generator = ObjectIdGenerators.IntSequenceGenerator.class)
-record DeserializedSequence<Value_, Difference_ extends Comparable<Difference_>>(
-        @JsonProperty("previous_break") DeserializedBreak<Value_, Difference_> previousBreak,
-        @JsonProperty("next_break") DeserializedBreak<Value_, Difference_> nextBreak,
-        List<Value_> items)
+record DeserializableSequence<Value_, Difference_ extends Comparable<Difference_>>(
+        @JsonProperty("previous_break") DeserializableBreak<Value_, Difference_> previousBreak,
+        @JsonProperty("next_break") DeserializableBreak<Value_, Difference_> nextBreak,
+        boolean first, boolean last, List<Value_> items)
         implements
             Sequence<Value_, Difference_> {
 
@@ -30,12 +27,12 @@ record DeserializedSequence<Value_, Difference_ extends Comparable<Difference_>>
 
     @Override
     public boolean isFirst() {
-        return previousBreak == null;
+        return first();
     }
 
     @Override
     public boolean isLast() {
-        return nextBreak == null;
+        return last();
     }
 
     @Override
