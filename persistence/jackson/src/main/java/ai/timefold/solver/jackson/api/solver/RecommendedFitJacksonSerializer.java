@@ -15,7 +15,7 @@ public final class RecommendedFitJacksonSerializer<Proposition_, Score_ extends 
     public void serialize(RecommendedFit<Proposition_, Score_> value, JsonGenerator gen, SerializerProvider serializerProvider)
             throws IOException {
         gen.writeStartObject();
-        gen.writeObjectField("proposition", value.result());
+        gen.writeObjectField("proposition", value.proposition());
         gen.writeObjectField("scoreDiff", value.scoreAnalysisDiff());
         gen.writeEndObject();
     }

@@ -588,7 +588,7 @@ represented here by the necessary backend code:
 [source,java,options="nowrap"]
 ----
 RecommendedFit<Employee, HardSoftScore> bestRecommendation = recommendations.get(0);
-Employee bestEmployee = bestRecommendation.result();
+Employee bestEmployee = bestRecommendation.proposition();
 unassignedShift.setEmployee(bestEmployee);
 ----
 

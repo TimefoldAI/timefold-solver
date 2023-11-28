@@ -309,20 +309,20 @@ public class SolutionManagerTest {
          */
         var firstRecommendation = recommendationList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstRecommendation.result()).isEqualTo(unassignedValue);
+            softly.assertThat(firstRecommendation.proposition()).isEqualTo(unassignedValue);
             softly.assertThat(firstRecommendation.scoreAnalysisDiff()
                     .score()).isEqualTo(SimpleScore.of(-1));
         });
         // The other two recommendations need to come in order of the placer; so value #0, then value #1.
         var secondRecommendation = recommendationList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondRecommendation.result()).isEqualTo(solution.getValueList().get(0));
+            softly.assertThat(secondRecommendation.proposition()).isEqualTo(solution.getValueList().get(0));
             softly.assertThat(secondRecommendation.scoreAnalysisDiff()
                     .score()).isEqualTo(SimpleScore.of(-3));
         });
         var thirdRecommendation = recommendationList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(thirdRecommendation.result()).isEqualTo(solution.getValueList().get(1));
+            softly.assertThat(thirdRecommendation.proposition()).isEqualTo(solution.getValueList().get(1));
             softly.assertThat(thirdRecommendation.scoreAnalysisDiff()
                     .score()).isEqualTo(SimpleScore.of(-3));
         });
@@ -357,7 +357,7 @@ public class SolutionManagerTest {
         // First recommendation is to be added to the "a" chain, as that results in the shortest chain.
         var firstRecommendation = recommendationList.get(0);
         assertSoftly(softly -> {
-            var clonedAnchor = (TestdataShadowingChainedAnchor) firstRecommendation.result();
+            var clonedAnchor = (TestdataShadowingChainedAnchor) firstRecommendation.proposition();
             // The anchor is cloned...
             softly.assertThat(clonedAnchor).isNotEqualTo(a0);
             softly.assertThat(clonedAnchor.getCode()).isEqualTo(a0.getCode());
@@ -369,7 +369,7 @@ public class SolutionManagerTest {
         // Second recommendation is to be added to the start of the "b" chain.
         var secondRecommendation = recommendationList.get(1);
         assertSoftly(softly -> {
-            var clonedAnchor = (TestdataShadowingChainedAnchor) secondRecommendation.result();
+            var clonedAnchor = (TestdataShadowingChainedAnchor) secondRecommendation.proposition();
             softly.assertThat(clonedAnchor).isNotEqualTo(b0);
             softly.assertThat(clonedAnchor.getCode()).isEqualTo(b0.getCode());
             softly.assertThat(clonedAnchor.getNextEntity().getCode()).isEqualTo(b1.getCode());
@@ -379,7 +379,7 @@ public class SolutionManagerTest {
         // Third recommendation is to be added to the end of the "b" chain.
         var thirdRecommendation = recommendationList.get(2);
         assertSoftly(softly -> {
-            var clonedEntity = (TestdataShadowingChainedEntity) thirdRecommendation.result();
+            var clonedEntity = (TestdataShadowingChainedEntity) thirdRecommendation.proposition();
             softly.assertThat(clonedEntity).isNotEqualTo(b1);
             softly.assertThat(clonedEntity.getCode()).isEqualTo(b1.getCode());
             softly.assertThat(clonedEntity.getNextEntity()).isNull();
@@ -389,7 +389,7 @@ public class SolutionManagerTest {
         // Fourth recommendation is to be added to the start of the "c" chain and so on...
         var fourthRecommendation = recommendationList.get(3);
         assertSoftly(softly -> {
-            var clonedAnchor = (TestdataShadowingChainedAnchor) fourthRecommendation.result();
+            var clonedAnchor = (TestdataShadowingChainedAnchor) fourthRecommendation.proposition();
             softly.assertThat(clonedAnchor).isNotEqualTo(c0);
             softly.assertThat(clonedAnchor.getCode()).isEqualTo(c0.getCode());
             softly.assertThat(clonedAnchor.getNextEntity().getCode()).isEqualTo(c1.getCode());
@@ -425,7 +425,7 @@ public class SolutionManagerTest {
         // First recommendation is to be added to the "a" list variable, as that results in the shortest list.
         var firstRecommendation = recommendationList.get(0);
         assertSoftly(softly -> {
-            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) firstRecommendation.result();
+            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) firstRecommendation.proposition();
             softly.assertThat(result.value()).isEqualTo(0); // Beginning of the list.
             // The entity is cloned...
             var entity = result.key();
@@ -439,7 +439,7 @@ public class SolutionManagerTest {
         // Second recommendation is to be added to the start of the "b" list variable.
         var secondRecommendation = recommendationList.get(1);
         assertSoftly(softly -> {
-            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) secondRecommendation.result();
+            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) secondRecommendation.proposition();
             softly.assertThat(result.value()).isEqualTo(0); // Beginning of the list.
             var entity = result.key();
             softly.assertThat(entity).isNotEqualTo(b);
@@ -451,7 +451,7 @@ public class SolutionManagerTest {
         // Third recommendation is to be added to the end of the "b" list variable.
         var thirdRecommendation = recommendationList.get(2);
         assertSoftly(softly -> {
-            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) thirdRecommendation.result();
+            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) thirdRecommendation.proposition();
             softly.assertThat(result.value()).isEqualTo(1); // End of the list.
             var entity = result.key();
             softly.assertThat(entity).isNotEqualTo(b);
@@ -463,7 +463,7 @@ public class SolutionManagerTest {
         // Fourth recommendation is to be added to the "c" list variable and so on...
         var fourthRecommendation = recommendationList.get(3);
         assertSoftly(softly -> {
-            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) fourthRecommendation.result();
+            var result = (Pair<TestdataListEntityWithShadowHistory, Integer>) fourthRecommendation.proposition();
             softly.assertThat(result.value()).isEqualTo(0); // Beginning of the list.
             var entity = result.key();
             softly.assertThat(entity.getCode()).isNotEqualTo(c);

@@ -4,14 +4,14 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 
-public record DefaultRecommendedFit<Result_, Score_ extends Score<Score_>>(long index, Result_ result,
+public record DefaultRecommendedFit<Proposition_, Score_ extends Score<Score_>>(long index, Proposition_ proposition,
         ScoreAnalysis<Score_> scoreAnalysisDiff)
         implements
-            RecommendedFit<Result_, Score_>,
-            Comparable<DefaultRecommendedFit<Result_, Score_>> {
+            RecommendedFit<Proposition_, Score_>,
+            Comparable<DefaultRecommendedFit<Proposition_, Score_>> {
 
     @Override
-    public int compareTo(DefaultRecommendedFit<Result_, Score_> other) {
+    public int compareTo(DefaultRecommendedFit<Proposition_, Score_> other) {
         int scoreComparison = scoreAnalysisDiff.score().compareTo(other.scoreAnalysisDiff.score());
         if (scoreComparison != 0) {
             return -scoreComparison; // Better scores first.
