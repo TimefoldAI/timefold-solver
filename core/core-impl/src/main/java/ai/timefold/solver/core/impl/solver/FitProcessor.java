@@ -73,6 +73,14 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
     private EntityPlacer<Solution_> buildEntityPlacer() {
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         var phaseList = solver.getPhaseList();
+        long constructionHeuristicCount = phaseList.stream()
+                .filter(s -> (s instanceof DefaultConstructionHeuristicPhase))
+                .count();
+        if (constructionHeuristicCount != 1) {
+            throw new IllegalStateException(
+                    "Fit Recommendation API requires the solver config to have exactly one construction heuristic phase, but it has (%s) instead."
+                            .formatted(constructionHeuristicCount));
+        }
         var phase = phaseList.get(0);
         if (phase instanceof DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase) {
             return constructionHeuristicPhase.getEntityPlacer();

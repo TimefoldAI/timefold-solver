@@ -602,8 +602,7 @@ as it uses that construction heuristic to find the best fit.
 If there are multiple construction heuristics phases in the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
 or if the first phase is not a construction heuristic
 (perhaps a xref:optimization-algorithms/optimization-algorithms.adoc#customSolverPhase[custom initializer]),
-the API will likely detect the situation and fail fast;
-if it should fail at that, the result returned by the API will be incorrect.
+the API will fail fast.
 ====
 
 
