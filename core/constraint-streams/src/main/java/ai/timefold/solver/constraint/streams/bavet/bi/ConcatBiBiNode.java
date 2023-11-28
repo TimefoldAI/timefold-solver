@@ -15,12 +15,16 @@ final class ConcatBiBiNode<A, B>
 
     @Override
     protected BiTuple<A, B> getOutTupleFromLeft(BiTuple<A, B> leftTuple) {
-        return new BiTuple<>(leftTuple.factA, leftTuple.factB, outputStoreSize);
+        A factA = leftTuple.factA;
+        B factB = leftTuple.factB;
+        return new BiTuple<>(factA, factB, outputStoreSize);
     }
 
     @Override
     protected BiTuple<A, B> getOutTupleFromRight(BiTuple<A, B> rightTuple) {
-        return new BiTuple<>(rightTuple.factA, rightTuple.factB, outputStoreSize);
+        A factA = rightTuple.factA;
+        B factB = rightTuple.factB;
+        return new BiTuple<>(factA, factB, outputStoreSize);
     }
 
     @Override
