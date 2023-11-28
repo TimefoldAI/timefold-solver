@@ -542,7 +542,7 @@ together with xref:constraints-and-score/performance.adoc#incrementalScoreCalcul
 This combination allows the API to find the best possible fit within the existing solution in a matter of milliseconds,
 even for large planning problems.
 
-Once the customer has accepted of the available options
+Once the customer has accepted one of the available options
 and the change has been reflected in the solution,
 the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm]
 can be used to optimize the entire solution around this change.
