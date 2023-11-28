@@ -1082,10 +1082,11 @@ public class SolutionDescriptor<Solution_> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
                 genuineEntityCount.increment();
-                if (!entityDescriptor.isInitialized(entity)) {
+                var uninitializedVariableCountForEntity = entityDescriptor.countUninitializedVariables(entity);
+                if (uninitializedVariableCountForEntity > 0) {
                     uninitializedEntityCount.increment();
+                    uninitializedVariableCount.add(uninitializedVariableCountForEntity);
                 }
-                uninitializedVariableCount.add(entityDescriptor.countUninitializedVariables(entity));
             } else {
                 shadowEntityCount.increment();
             }
