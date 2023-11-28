@@ -1,5 +1,5 @@
 package ai.timefold.solver.benchmark.impl.aggregator;
-
+import ai.timefold.solver.benchmark.impl.aggregator.BenchmarkReportGenerator;
 import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -20,10 +20,21 @@ import org.slf4j.LoggerFactory;
 public class BenchmarkAggregator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkAggregator.class);
+        // Add a field for BenchmarkReportGenerator
+    private BenchmarkReportGenerator reportGenerator;
+
 
     private File benchmarkDirectory = null;
     private BenchmarkReportConfig benchmarkReportConfig = null;
 
+        // Constructor to initialize BenchmarkReportGenerator
+        public BenchmarkAggregator(BenchmarkReportConfig benchmarkReportConfig) {
+            this.reportGenerator = new BenchmarkReportGenerator(benchmarkReportConfig);
+        }
+
+public BenchmarkAggregator(){
+
+}
     public File getBenchmarkDirectory() {
         return benchmarkDirectory;
     }
@@ -84,14 +95,16 @@ public class BenchmarkAggregator {
         plannerBenchmarkResult.setStartingTimestamp(startingTimestamp);
         plannerBenchmarkResult.initBenchmarkReportDirectory(benchmarkDirectory);
 
-        BenchmarkReportFactory benchmarkReportFactory = new BenchmarkReportFactory(benchmarkReportConfig);
-        BenchmarkReport benchmarkReport = benchmarkReportFactory.buildBenchmarkReport(plannerBenchmarkResult);
-        plannerBenchmarkResult.accumulateResults(benchmarkReport);
-        benchmarkReport.writeReport();
 
-        LOGGER.info("Aggregation ended: statistic html overview ({}).",
-                benchmarkReport.getHtmlOverviewFile().getAbsolutePath());
-        return benchmarkReport.getHtmlOverviewFile().getAbsoluteFile();
+        // Existing logic commenting it out...
+        // BenchmarkReportFactory benchmarkReportFactory = new BenchmarkReportFactory(benchmarkReportConfig);
+        // BenchmarkReport benchmarkReport = benchmarkReportFactory.buildBenchmarkReport(plannerBenchmarkResult);
+        // plannerBenchmarkResult.accumulateResults(benchmarkReport);
+        // benchmarkReport.writeReport();
+        
+        // Generate and write the report using BenchmarkReportGenerator
+        return reportGenerator.generateReport(plannerBenchmarkResult);
+
     }
 
 }
