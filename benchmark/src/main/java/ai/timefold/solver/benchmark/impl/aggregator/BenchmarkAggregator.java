@@ -13,6 +13,8 @@ import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
+import ai.timefold.solver.benchmark.impl.aggregator.SolverBenchmarkRenamingStrategy;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,13 @@ public class BenchmarkAggregator {
 
     private File benchmarkDirectory = null;
     private BenchmarkReportConfig benchmarkReportConfig = null;
+
+    private SolverBenchmarkRenamingStrategy renamingStrategy;
+
+    public BenchmarkAggregator(SolverBenchmarkRenamingStrategy renamingStrategy) {
+        this.renamingStrategy = renamingStrategy;
+    }
+
 
         // Constructor to initialize BenchmarkReportGenerator
         public BenchmarkAggregator(BenchmarkReportConfig benchmarkReportConfig) {
@@ -82,14 +91,9 @@ public BenchmarkAggregator(){
         // original solver benchmarks' names)
         if (solverBenchmarkResultNameMap != null) {
             for (Entry<SolverBenchmarkResult, String> entry : solverBenchmarkResultNameMap.entrySet()) {
-                SolverBenchmarkResult result = entry.getKey();
-                String newName = entry.getValue();
-                if (!result.getName().equals(newName)) {
-                    result.setName(newName);
-                }
+                renamingStrategy.rename(entry.getKey(), entry.getValue());
             }
         }
-
         PlannerBenchmarkResult plannerBenchmarkResult = PlannerBenchmarkResult.createMergedResult(
                 singleBenchmarkResultList);
         plannerBenchmarkResult.setStartingTimestamp(startingTimestamp);
