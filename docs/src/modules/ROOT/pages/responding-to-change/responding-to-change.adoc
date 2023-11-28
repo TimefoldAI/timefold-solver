@@ -522,6 +522,109 @@ A `BestSolutionChangedEvent` does not guarantee that every `ProblemChange` has b
 
 . Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions, but do accept infeasible solutions too.
 
+
+[#recommendedFitAPI]
+== Responding to adhoc changes
+
+With <<realTimePlanning,real-time planning>>, we can respond to a continuous stream of external changes.
+However, it is often necessary to respond to adhoc changes too,
+for example when a call center operator needs to arrange an appointment with a customer.
+In such cases, it is not necessary to use the full power of real-time planning.
+Instead, immediate response to the customer and a selection of available time windows are more important.
+This is where _Recommended Fit API_ comes in.
+
+The Recommended Fit API is a simple API that allows you to quickly respond to adhoc changes,
+while providing a selection of the best available options for fitting the change in the existing schedule.
+It doesn't use the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm].
+Instead,
+it uses a simple xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[greedy algorithm]
+together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental calculation].
+This combination allows the API to find the best possible fit within the existing solution in a matter of milliseconds,
+even for large planning problems.
+
+Once the customer has accepted of the available options
+and the change has been reflected in the solution,
+the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm]
+can be used to optimize the entire solution around this change.
+This would be an example of <<continuousPlanning,continuous planning>>.
+
+[#usingRecommendedFitAPI]
+=== Using the Recommended Fit API
+
+The Recommended Fit API requires one uninitialized entity to be present in the solution:
+
+[source,java,options="nowrap"]
+----
+NurseRoster nurseRoster = ...; // Our planning solution.
+ShiftAssignment unassignedShift = new ShiftAssignment(...); // A new shift needs to be assigned.
+nurseRoster.getShiftAssignmentList().add(unassignedShift);
+----
+
+The `SolutionManager` is then used to retrieve the recommended fit for the uninitialized entity:
+
+[source,java,options="nowrap"]
+----
+SolutionManager<NurseRoster, HardSoftScore> solutionManager = ...;
+List<RecommendedFit<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendFit(nurseRoster, unassignedShift, ShiftAssignment::getEmployee);
+----
+
+Breaking this down, we have:
+
+- `nurseRoster`, the planning solution.
+- `unassignedShift`, the uninitialized entity, which is part of the planning solution.
+- `ShiftAssignment::getEmployee`, a function extracting the planning variable from the entity,
+also called a "proposition function".
+- `List<RecommendedFit<Employee, HardSoftScore>>`, the list of recommended employees to assign to the shift,
+in the order of decreasing preference.
+Each recommendation contains the employee and the difference in score caused by assigning the employee to the shift.
+This difference has the full explanatory power of xref:constraints-and-score/understanding-the-score.adoc#scoreAnalysis[score analysis].
+
+This list of recommendations can be used to present the operator with a selection of available options,
+as it is fully serializable to JSON and can be sent to a web browser or mobile app.
+The operator can then select the best available recommendation and assign the employee to the shift,
+represented here by the necessary backend code:
+
+[source,java,options="nowrap"]
+----
+RecommendedFit<Employee, HardSoftScore> bestRecommendation = recommendations.get(0);
+Employee bestEmployee = bestRecommendation.result();
+unassignedShift.setEmployee(bestEmployee);
+----
+
+If required, <<continuousPlanning,continuous planning>> can be used to optimize the entire solution afterwards.
+
+[#usingMutableTypesInPropositionFunction]
+=== Using mutable types in the proposition function
+
+In the previous example,
+we used a simple proposition function that extracts the planning variable from the entity.
+However,
+it is also possible to use a more complex proposition function that extracts the entire planning entity,
+or any values that will mutate as the solver tries to find the best fit.
+In that case, there are some caveats to consider.
+
+The solver will try to find the best fit for the uninitialized entity,
+and it will start from the solution it received on input.
+Before trying the next value to assign, it will first return to that original solution.
+The consequence of this is that if our proposition function returns any values that change during this process,
+those changes will also affect the previously processed propositions.
+
+In other words, if we decide to return the entire entity from the proposition function,
+we will find that each of the final recommendations is the same.
+More precisely, each recommendation will contain the original uninitialized entity,
+as the API resets the solution to its original uninitialized state in the end.
+This is not what we want, as we have effectively received no new information;
+the information about the assigned value is gone,
+and we only ever received the original uninitialized entity.
+
+To avoid this,
+the proposition function should preferably return a value that does not change during the process,
+such as the planning variable instead of the entire entity.
+If it's necessary to return a value that could be mutated by the solver,
+we should make a defensive copy.
+
+
 [#multiStagePlanning]
 == Multi-stage planning
 
