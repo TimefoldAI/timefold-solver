@@ -2,59 +2,19 @@ package ai.timefold.solver.core.impl.testdata.domain.chained.shadow;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
-import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 
 public class TestdataShadowingChainedIncrementalScoreCalculator
         implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataShadowingChainedSolution, SimpleScore> {
 
-    private int score = 0;
-    private DefaultConstraintMatchTotal<SimpleScore> constraintMatchTotal;
-    private Map<Object, Indictment<SimpleScore>> indictmentMap;
-
-    @Override
-    public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution) {
-        score = 0;
-        constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of("ai.timefold.solver.core.impl.testdata.domain.chained.shadow", "testConstraint"),
-                SimpleScore.ONE);
-        indictmentMap = new HashMap<>();
-        for (TestdataShadowingChainedEntity left : workingSolution.getChainedEntityList()) {
-            String code = left.getCode();
-            if (code == null) {
-                continue;
-            }
-            for (TestdataShadowingChainedEntity right : workingSolution.getChainedEntityList()) {
-                if (Objects.equals(right.getCode(), code)) {
-                    score -= 1;
-                    ConstraintMatch<SimpleScore> constraintMatch =
-                            constraintMatchTotal.addConstraintMatch(List.of(left, right), SimpleScore.ONE);
-                    Stream.of(left, right)
-                            .forEach(entity -> indictmentMap
-                                    .computeIfAbsent(entity, key -> new DefaultIndictment<>(key, SimpleScore.ZERO))
-                                    .getConstraintMatchSet()
-                                    .add(constraintMatch));
-                }
-            }
-        }
-    }
-
-    @Override
-    public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution, boolean constraintMatchEnabled) {
-        resetWorkingSolution(workingSolution);
-    }
+    private TestdataShadowingChainedSolution workingSolution;
 
     @Override
     public void beforeEntityAdded(Object entity) {
@@ -88,16 +48,47 @@ public class TestdataShadowingChainedIncrementalScoreCalculator
 
     @Override
     public SimpleScore calculateScore() {
-        return SimpleScore.of(score);
+        var constraintMatchTotal = update(workingSolution);
+        return constraintMatchTotal.getScore();
+    }
+
+    @Override
+    public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution, boolean constraintMatchEnabled) {
+        this.workingSolution = workingSolution;
+    }
+
+    @Override
+    public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution) {
+        resetWorkingSolution(workingSolution, true);
+    }
+
+    private DefaultConstraintMatchTotal<SimpleScore> update(TestdataShadowingChainedSolution workingSolution) {
+        var constraintRef = ConstraintRef.of(getClass().getPackageName(), "testConstraint");
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintRef, SimpleScore.ONE);
+        for (var anchor : workingSolution.getChainedAnchorList()) {
+            var value = countChainLength(anchor);
+            constraintMatchTotal.addConstraintMatch(Collections.singletonList(anchor), SimpleScore.of(-value));
+        }
+        return constraintMatchTotal;
+    }
+
+    private int countChainLength(TestdataShadowingChainedObject object) {
+        if (object.getNextEntity() == null) {
+            return 1;
+        } else { // Penalize increasing lengths increasingly more.
+            return (int) Math.pow(1 + countChainLength(object.getNextEntity()), 2);
+        }
     }
 
     @Override
     public Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
+        var constraintMatchTotal = update(workingSolution);
         return Collections.singleton(constraintMatchTotal);
     }
 
     @Override
     public Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
-        return indictmentMap;
+        throw new UnsupportedOperationException();
     }
+
 }

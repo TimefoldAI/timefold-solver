@@ -18,6 +18,8 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
+import ai.timefold.solver.core.api.solver.RecommendedFit;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.analysis.ScoreAnalysisJacksonSerializer;
@@ -53,6 +55,7 @@ import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonDe
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonSerializer;
+import ai.timefold.solver.jackson.api.solver.RecommendedFitJacksonSerializer;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 
 import com.fasterxml.jackson.databind.Module;
@@ -116,6 +119,9 @@ public class TimefoldJacksonModule extends SimpleModule {
         addSerializer(ConstraintRef.class, new ConstraintRefJacksonSerializer());
         addDeserializer(ConstraintRef.class, new ConstraintRefJacksonDeserializer());
         addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
+        var serializer = new RecommendedFitJacksonSerializer();
+        addSerializer(RecommendedFit.class, serializer);
+        addSerializer(DefaultRecommendedFit.class, serializer);
 
         // Constraint collectors
         addSerializer(Break.class, new BreakJacksonSerializer());

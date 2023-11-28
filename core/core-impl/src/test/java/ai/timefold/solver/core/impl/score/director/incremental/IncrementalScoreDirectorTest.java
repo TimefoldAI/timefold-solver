@@ -114,9 +114,9 @@ class IncrementalScoreDirectorTest {
         when(factory.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         SolutionDescriptor<Object> solutionDescriptor = mock(SolutionDescriptor.class);
         when(solutionDescriptor.computeInitializationStatistics(any()))
-                .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0));
+                .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0, 0));
         when(solutionDescriptor.computeInitializationStatistics(any(), any()))
-                .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0));
+                .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0, 0));
         when(factory.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         return factory;
     }

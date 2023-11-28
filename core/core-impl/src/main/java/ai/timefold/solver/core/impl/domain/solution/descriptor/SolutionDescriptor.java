@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -924,11 +925,19 @@ public class SolutionDescriptor<Solution_> {
         }
     }
 
-    public void visitEntitiesByEntityClass(Solution_ solution, Class<?> entityClass, Consumer<Object> visitor) {
+    /**
+     *
+     * @param solution solution to extract the entities from
+     * @param entityClass class of the entity to be visited, including subclasses
+     * @param visitor never null; applied to every entity, iteration stops if it returns true
+     */
+    public void visitEntitiesByEntityClass(Solution_ solution, Class<?> entityClass, Predicate<Object> visitor) {
         for (MemberAccessor entityMemberAccessor : entityMemberAccessorMap.values()) {
             Object entity = extractMemberObject(entityMemberAccessor, solution);
             if (entityClass.isInstance(entity)) {
-                visitor.accept(entity);
+                if (visitor.test(entity)) {
+                    return;
+                }
             }
         }
         for (MemberAccessor entityCollectionMemberAccessor : entityCollectionMemberAccessorMap.values()) {
@@ -948,7 +957,11 @@ public class SolutionDescriptor<Solution_> {
                  */
                 Collection<Object> entityCollection =
                         extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution, false);
-                entityCollection.forEach(visitor);
+                for (Object o : entityCollection) {
+                    if (visitor.test(o)) {
+                        return;
+                    }
+                }
                 continue;
             }
             // The collection now is either raw, or it is not of an entity type, such as perhaps a parent interface.
@@ -964,7 +977,9 @@ public class SolutionDescriptor<Solution_> {
                     extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution, false);
             for (Object entity : entityCollection) {
                 if (entityClass.isInstance(entity)) {
-                    visitor.accept(entity);
+                    if (visitor.test(entity)) {
+                        return;
+                    }
                 }
             }
         }
@@ -1055,6 +1070,7 @@ public class SolutionDescriptor<Solution_> {
          * This is an important performance improvement,
          * as there are potentially thousands of entities.
          */
+        var uninitializedEntityCount = new MutableInt();
         var uninitializedVariableCount = new MutableInt();
         var unassignedValueCount = new MutableInt();
         var genuineEntityCount = new MutableInt();
@@ -1066,10 +1082,14 @@ public class SolutionDescriptor<Solution_> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
                 genuineEntityCount.increment();
+                var uninitializedVariableCountForEntity = entityDescriptor.countUninitializedVariables(entity);
+                if (uninitializedVariableCountForEntity > 0) {
+                    uninitializedEntityCount.increment();
+                    uninitializedVariableCount.add(uninitializedVariableCountForEntity);
+                }
             } else {
                 shadowEntityCount.increment();
             }
-            uninitializedVariableCount.add(entityDescriptor.countUninitializedVariables(entity));
             if (finisher != null) {
                 finisher.accept(entity);
             }
@@ -1085,11 +1105,11 @@ public class SolutionDescriptor<Solution_> {
             }
         });
         return new SolutionInitializationStatistics(genuineEntityCount.intValue(), shadowEntityCount.intValue(),
-                uninitializedVariableCount.intValue(), unassignedValueCount.intValue());
+                uninitializedEntityCount.intValue(), uninitializedVariableCount.intValue(), unassignedValueCount.intValue());
     }
 
     public record SolutionInitializationStatistics(int genuineEntityCount, int shadowEntityCount,
-            int uninitializedVariableCount, int unassignedValueCount) {
+            int uninitializedEntityCount, int uninitializedVariableCount, int unassignedValueCount) {
     }
 
     private Stream<Object> extractAllEntitiesStream(Solution_ solution) {

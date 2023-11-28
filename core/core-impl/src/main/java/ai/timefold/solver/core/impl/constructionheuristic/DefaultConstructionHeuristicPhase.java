@@ -28,6 +28,10 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         decider = builder.decider;
     }
 
+    public EntityPlacer<Solution_> getEntityPlacer() {
+        return entityPlacer;
+    }
+
     @Override
     public String getPhaseTypeString() {
         return "Construction Heuristics";

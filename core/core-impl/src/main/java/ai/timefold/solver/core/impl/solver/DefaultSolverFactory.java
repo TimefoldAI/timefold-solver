@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -109,7 +110,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setScoreDirector(innerScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(innerScoreDirector));
 
-        var moveThreadCount = new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount());
+        var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
         var configPolicy = new HeuristicConfigPolicy.Builder<>(
                 environmentMode,
@@ -129,6 +130,16 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
                 termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
+    }
+
+    public Integer resolveMoveThreadCount(boolean enforceMaximum) {
+        var maybeCount =
+                new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount(), enforceMaximum);
+        if (maybeCount.isPresent()) {
+            return maybeCount.getAsInt();
+        } else {
+            return null;
+        }
     }
 
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {
@@ -168,7 +179,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 solutionDescriptor);
     }
 
-    private RandomFactory buildRandomFactory(EnvironmentMode environmentMode_) {
+    public RandomFactory buildRandomFactory(EnvironmentMode environmentMode_) {
         RandomFactory randomFactory;
         if (solverConfig.getRandomFactoryClass() != null) {
             if (solverConfig.getRandomType() != null || solverConfig.getRandomSeed() != null) {
@@ -189,7 +200,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return randomFactory;
     }
 
-    private List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
+    public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
             BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> termination) {
         List<PhaseConfig> phaseConfigList_ = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList_)) {
@@ -235,25 +246,29 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     // Required for testability as final classes cannot be mocked.
-    protected static class MoveThreadCountResolver {
+    static class MoveThreadCountResolver {
 
-        protected Integer resolveMoveThreadCount(String moveThreadCount) {
+        protected OptionalInt resolveMoveThreadCount(String moveThreadCount) {
+            return resolveMoveThreadCount(moveThreadCount, true);
+        }
+
+        protected OptionalInt resolveMoveThreadCount(String moveThreadCount, boolean enforceMaximum) {
             int availableProcessorCount = getAvailableProcessors();
-            Integer resolvedMoveThreadCount;
+            int resolvedMoveThreadCount;
             if (moveThreadCount == null || moveThreadCount.equals(SolverConfig.MOVE_THREAD_COUNT_NONE)) {
-                return null;
+                return OptionalInt.empty();
             } else if (moveThreadCount.equals(SolverConfig.MOVE_THREAD_COUNT_AUTO)) {
                 // Leave one for the Operating System and 1 for the solver thread, take the rest
                 resolvedMoveThreadCount = (availableProcessorCount - 2);
-                // A moveThreadCount beyond 4 is currently typically slower
-                // TODO remove limitation after fixing https://issues.redhat.com/browse/PLANNER-2449
-                if (resolvedMoveThreadCount > 4) {
+                if (enforceMaximum && resolvedMoveThreadCount > 4) {
+                    // A moveThreadCount beyond 4 is currently typically slower
+                    // TODO remove limitation after fixing https://issues.redhat.com/browse/PLANNER-2449
                     resolvedMoveThreadCount = 4;
                 }
                 if (resolvedMoveThreadCount <= 1) {
                     // Fall back to single threaded solving with no move threads.
                     // To deliberately enforce 1 moveThread, set the moveThreadCount explicitly to 1.
-                    return null;
+                    return OptionalInt.empty();
                 }
             } else {
                 resolvedMoveThreadCount = ConfigUtils.resolvePoolSize("moveThreadCount", moveThreadCount,
@@ -270,7 +285,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                         resolvedMoveThreadCount, availableProcessorCount);
                 // Still allow it, to reproduce issues of a high-end server machine on a low-end developer machine
             }
-            return resolvedMoveThreadCount;
+            return OptionalInt.of(resolvedMoveThreadCount);
         }
 
         protected int getAvailableProcessors() {

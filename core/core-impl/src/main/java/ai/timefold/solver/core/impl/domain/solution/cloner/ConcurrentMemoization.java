@@ -9,7 +9,7 @@ import java.util.function.Function;
  * @param <K> the parameter of the calculation
  * @param <V> the result of the calculation
  */
-final class ConcurrentMemoization<K, V> extends ConcurrentHashMap<K, V> {
+public final class ConcurrentMemoization<K, V> extends ConcurrentHashMap<K, V> {
 
     /**
      * An overridden implementation that heavily favors read access over write access speed.

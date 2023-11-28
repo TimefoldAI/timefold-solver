@@ -13,7 +13,19 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 
 /**
  * Specifies that the class is a planning entity.
- * Each planning entity must have at least 1 {@link PlanningVariable} property.
+ * There are two types of entities:
+ *
+ * <dl>
+ * <dt>Genuine entity</dt>
+ * <dd>Must have at least 1 genuine {@link PlanningVariable planning variable},
+ * and 0 or more shadow variables.</dd>
+ * <dt>Shadow entity</dt>
+ * <dd>Must have at least 1 shadow variable, and no genuine variables.</dd>
+ * </dl>
+ *
+ * If a planning entity has neither a genuine nor a shadow variable,
+ * it is not a planning entity and the solver will fail fast.
+ *
  * <p>
  * The class should have a public no-arg constructor, so it can be cloned
  * (unless the {@link PlanningSolution#solutionCloner()} is specified).
