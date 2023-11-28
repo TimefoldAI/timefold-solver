@@ -533,7 +533,7 @@ In such cases, it is not necessary to use the full power of real-time planning.
 Instead, immediate response to the customer and a selection of available time windows are more important.
 This is where _Recommended Fit API_ comes in.
 
-The Recommended Fit API is a simple API that allows you to quickly respond to adhoc changes,
+The Recommended Fit API allows you to quickly respond to adhoc changes,
 while providing a selection of the best available options for fitting the change in the existing schedule.
 It doesn't use the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm].
 Instead,
