@@ -594,6 +594,19 @@ unassignedShift.setEmployee(bestEmployee);
 
 If required, <<continuousPlanning,continuous planning>> can be used to optimize the entire solution afterwards.
 
+[NOTE]
+====
+Recommendation Fit API requires the `SolutionManager` to be configured
+with a xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[construction heuristic] as the first phase,
+as it uses that construction heuristic to find the best fit.
+If there are multiple construction heuristics phases in the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
+or if the first phase is not a construction heuristic
+(perhaps a xref:optimization-algorithms/optimization-algorithms.adoc#customSolverPhase[custom initializer]),
+the API will likely detect the situation and fail fast;
+if it should fail at that, the result returned by the API will be incorrect.
+====
+
+
 [#usingMutableTypesInPropositionFunction]
 === Using mutable types in the proposition function
 
@@ -609,14 +622,26 @@ and it will start from the solution it received on input.
 Before trying the next value to assign, it will first return to that original solution.
 The consequence of this is that if our proposition function returns any values that change during this process,
 those changes will also affect the previously processed propositions.
-
 In other words, if we decide to return the entire entity from the proposition function,
 we will find that each of the final recommendations is the same.
-More precisely, each recommendation will contain the original uninitialized entity,
-as the API resets the solution to its original uninitialized state in the end.
-This is not what we want, as we have effectively received no new information;
-the information about the assigned value is gone,
-and we only ever received the original uninitialized entity.
+And because the solver will return to the original solution after trying the last value,
+the final recommendation will be unassigned,
+defeating the purpose of the API.
+Consider the following example:
+
+[source,java,options="nowrap"]
+----
+SolutionManager<NurseRoster, HardSoftScore> solutionManager = ...;
+List<RecommendedFit<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendFit(nurseRoster, unassignedShift, shift -> shift);
+----
+
+The proposition function (`shift -> shift`) returns the entire `ShiftAssignment` entity.
+Because of the behavior described above,
+every `RecommendedFit` in the `recommendations` list will point to the same `unassignedShift`,
+and its `employee` variable will be `null`.
+This is not what we want,
+because none of the `RecommendedFit` instances give us the `Employee` we need to assign to the shift.
 
 To avoid this,
 the proposition function should preferably return a value that does not change during the process,
