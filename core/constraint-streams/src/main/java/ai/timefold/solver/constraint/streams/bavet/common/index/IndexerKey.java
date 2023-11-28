@@ -26,6 +26,6 @@ record IndexerKey(Object... properties) {
 
     @Override
     public String toString() {
-        return "[" + Arrays.toString(properties) + "]";
+        return Arrays.toString(properties);
     }
 }
