@@ -5,12 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedIncrementalScoreCalculator;
@@ -20,6 +22,10 @@ import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.Testdata
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListWithShadowHistoryIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultivarIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedIncrementalScoreCalculator;
@@ -43,6 +49,13 @@ public class SolutionManagerTest {
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
                                     TestdataShadowedIncrementalScoreCalculator.class)));
+    public static final SolverFactory<TestdataMultiVarSolution> SOLVER_FACTORY_MULTIVAR = SolverFactory.create(
+            new SolverConfig()
+                    .withSolutionClass(TestdataMultiVarSolution.class)
+                    .withEntityClasses(TestdataMultiVarEntity.class)
+                    .withScoreDirectorFactory(
+                            new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
+                                    TestdataMultivarIncrementalScoreCalculator.class)));
     public static final SolverFactory<TestdataShadowingChainedSolution> SOLVER_FACTORY_CHAINED = SolverFactory.create(
             new SolverConfig()
                     .withSolutionClass(TestdataShadowingChainedSolution.class)
@@ -333,6 +346,101 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getEntityList().get(1).getValue()).isEqualTo(solution.getValueList().get(1));
             softly.assertThat(solution.getScore()).isNull();
         });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void recommendFitMultivar(SolutionManagerSource SolutionManagerSource) {
+        var solution = new TestdataMultiVarSolution("solution");
+        var firstValue = new TestdataValue("firstValue");
+        var secondValue = new TestdataValue("secondValue");
+        solution.setValueList(List.of(firstValue, secondValue));
+        var firstOtherValue = new TestdataOtherValue("firstOtherValue");
+        solution.setOtherValueList(List.of(firstOtherValue));
+        var uninitializedEntity = new TestdataMultiVarEntity("uninitialized");
+        solution.setMultiVarEntityList(List.of(uninitializedEntity));
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_MULTIVAR);
+        var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity,
+                entity -> new Triple<>(entity.getPrimaryValue(), entity.getSecondaryValue(),
+                        entity.getTertiaryNullableValue()));
+        assertThat(recommendationList).hasSize(8);
+
+        var firstRecommendation = recommendationList.get(0);
+        assertSoftly(softly -> {
+            var propositition = firstRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(firstValue);
+            softly.assertThat(propositition.b()).isSameAs(firstValue);
+            softly.assertThat(propositition.c()).isNull();
+            softly.assertThat(firstRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(0));
+        });
+
+        var secondRecommendation = recommendationList.get(1);
+        assertSoftly(softly -> {
+            var propositition = secondRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(secondValue);
+            softly.assertThat(propositition.b()).isSameAs(secondValue);
+            softly.assertThat(propositition.c()).isNull();
+            softly.assertThat(secondRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(0));
+        });
+
+        var thirdRecommendation = recommendationList.get(2);
+        assertSoftly(softly -> {
+            var propositition = thirdRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(firstValue);
+            softly.assertThat(propositition.b()).isSameAs(firstValue);
+            softly.assertThat(propositition.c()).isSameAs(firstOtherValue);
+            softly.assertThat(thirdRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-1));
+        });
+
+        var fourthRecommendation = recommendationList.get(3);
+        assertSoftly(softly -> {
+            var propositition = fourthRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(firstValue);
+            softly.assertThat(propositition.b()).isSameAs(secondValue);
+            softly.assertThat(propositition.c()).isNull();
+            softly.assertThat(fourthRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-1));
+        });
+
+        var fifthRecommendation = recommendationList.get(4);
+        assertSoftly(softly -> {
+            var propositition = fifthRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(secondValue);
+            softly.assertThat(propositition.b()).isSameAs(firstValue);
+            softly.assertThat(propositition.c()).isNull();
+            softly.assertThat(fifthRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-1));
+        });
+
+        var sixthRecommendation = recommendationList.get(5);
+        assertSoftly(softly -> {
+            var propositition = sixthRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(secondValue);
+            softly.assertThat(propositition.b()).isSameAs(secondValue);
+            softly.assertThat(propositition.c()).isSameAs(firstOtherValue);
+            softly.assertThat(sixthRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-1));
+        });
+
+        var seventhRecommendation = recommendationList.get(6);
+        assertSoftly(softly -> {
+            var propositition = seventhRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(firstValue);
+            softly.assertThat(propositition.b()).isSameAs(secondValue);
+            softly.assertThat(propositition.c()).isSameAs(firstOtherValue);
+            softly.assertThat(seventhRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-2));
+        });
+
+        var eighthRecommendation = recommendationList.get(7);
+        assertSoftly(softly -> {
+            var propositition = eighthRecommendation.proposition();
+            softly.assertThat(propositition.a()).isSameAs(secondValue);
+            softly.assertThat(propositition.b()).isSameAs(firstValue);
+            softly.assertThat(propositition.c()).isSameAs(firstOtherValue);
+            softly.assertThat(eighthRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-2));
+        });
+    }
+
+    record Triple<A, B, C>(A a, B b, C c) {
+
     }
 
     @ParameterizedTest

@@ -65,7 +65,7 @@ public class TestdataMultiVarEntity extends TestdataObject {
         this.secondaryValue = secondaryValue;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", nullable = true)
     public TestdataOtherValue getTertiaryNullableValue() {
         return tertiaryNullableValue;
     }

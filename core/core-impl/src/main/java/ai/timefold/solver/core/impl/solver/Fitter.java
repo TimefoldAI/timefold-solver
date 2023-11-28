@@ -32,7 +32,7 @@ final class Fitter<Solution_, In_, Out_, Score_ extends Score<Score_>>
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
         var initializationStatistics = solutionDescriptor.computeInitializationStatistics(originalSolution);
         var uninitializedCount =
-                initializationStatistics.uninitializedVariableCount() + initializationStatistics.unassignedValueCount();
+                initializationStatistics.uninitializedEntityCount() + initializationStatistics.unassignedValueCount();
         if (uninitializedCount > 1) {
             throw new IllegalStateException("""
                     Solution (%s) has (%d) uninitialized elements.

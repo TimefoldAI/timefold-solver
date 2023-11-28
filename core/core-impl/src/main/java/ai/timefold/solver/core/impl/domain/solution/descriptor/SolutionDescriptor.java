@@ -1070,6 +1070,7 @@ public class SolutionDescriptor<Solution_> {
          * This is an important performance improvement,
          * as there are potentially thousands of entities.
          */
+        var uninitializedEntityCount = new MutableInt();
         var uninitializedVariableCount = new MutableInt();
         var unassignedValueCount = new MutableInt();
         var genuineEntityCount = new MutableInt();
@@ -1081,10 +1082,13 @@ public class SolutionDescriptor<Solution_> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
                 genuineEntityCount.increment();
+                if (!entityDescriptor.isInitialized(entity)) {
+                    uninitializedEntityCount.increment();
+                }
+                uninitializedVariableCount.add(entityDescriptor.countUninitializedVariables(entity));
             } else {
                 shadowEntityCount.increment();
             }
-            uninitializedVariableCount.add(entityDescriptor.countUninitializedVariables(entity));
             if (finisher != null) {
                 finisher.accept(entity);
             }
@@ -1100,11 +1104,11 @@ public class SolutionDescriptor<Solution_> {
             }
         });
         return new SolutionInitializationStatistics(genuineEntityCount.intValue(), shadowEntityCount.intValue(),
-                uninitializedVariableCount.intValue(), unassignedValueCount.intValue());
+                uninitializedEntityCount.intValue(), uninitializedVariableCount.intValue(), unassignedValueCount.intValue());
     }
 
     public record SolutionInitializationStatistics(int genuineEntityCount, int shadowEntityCount,
-            int uninitializedVariableCount, int unassignedValueCount) {
+            int uninitializedEntityCount, int uninitializedVariableCount, int unassignedValueCount) {
     }
 
     private Stream<Object> extractAllEntitiesStream(Solution_ solution) {
