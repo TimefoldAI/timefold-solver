@@ -1,5 +1,5 @@
 package ai.timefold.solver.benchmark.impl.aggregator;
-
+import ai.timefold.solver.benchmark.impl.aggregator.BenchmarkReportGenerator;
 import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -13,6 +13,8 @@ import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
+import ai.timefold.solver.benchmark.impl.aggregator.SolverBenchmarkRenamingStrategy;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +22,28 @@ import org.slf4j.LoggerFactory;
 public class BenchmarkAggregator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkAggregator.class);
+        // Add a field for BenchmarkReportGenerator
+    private BenchmarkReportGenerator reportGenerator;
+
 
     private File benchmarkDirectory = null;
     private BenchmarkReportConfig benchmarkReportConfig = null;
 
+    private SolverBenchmarkRenamingStrategy renamingStrategy;
+
+    public BenchmarkAggregator(SolverBenchmarkRenamingStrategy renamingStrategy) {
+        this.renamingStrategy = renamingStrategy;
+    }
+
+
+        // Constructor to initialize BenchmarkReportGenerator
+        public BenchmarkAggregator(BenchmarkReportConfig benchmarkReportConfig) {
+            this.reportGenerator = new BenchmarkReportGenerator(benchmarkReportConfig);
+        }
+
+public BenchmarkAggregator(){
+
+}
     public File getBenchmarkDirectory() {
         return benchmarkDirectory;
     }
@@ -71,27 +91,24 @@ public class BenchmarkAggregator {
         // original solver benchmarks' names)
         if (solverBenchmarkResultNameMap != null) {
             for (Entry<SolverBenchmarkResult, String> entry : solverBenchmarkResultNameMap.entrySet()) {
-                SolverBenchmarkResult result = entry.getKey();
-                String newName = entry.getValue();
-                if (!result.getName().equals(newName)) {
-                    result.setName(newName);
-                }
+                renamingStrategy.rename(entry.getKey(), entry.getValue());
             }
         }
-
         PlannerBenchmarkResult plannerBenchmarkResult = PlannerBenchmarkResult.createMergedResult(
                 singleBenchmarkResultList);
         plannerBenchmarkResult.setStartingTimestamp(startingTimestamp);
         plannerBenchmarkResult.initBenchmarkReportDirectory(benchmarkDirectory);
 
-        BenchmarkReportFactory benchmarkReportFactory = new BenchmarkReportFactory(benchmarkReportConfig);
-        BenchmarkReport benchmarkReport = benchmarkReportFactory.buildBenchmarkReport(plannerBenchmarkResult);
-        plannerBenchmarkResult.accumulateResults(benchmarkReport);
-        benchmarkReport.writeReport();
 
-        LOGGER.info("Aggregation ended: statistic html overview ({}).",
-                benchmarkReport.getHtmlOverviewFile().getAbsolutePath());
-        return benchmarkReport.getHtmlOverviewFile().getAbsoluteFile();
+        // Existing logic commenting it out...
+        // BenchmarkReportFactory benchmarkReportFactory = new BenchmarkReportFactory(benchmarkReportConfig);
+        // BenchmarkReport benchmarkReport = benchmarkReportFactory.buildBenchmarkReport(plannerBenchmarkResult);
+        // plannerBenchmarkResult.accumulateResults(benchmarkReport);
+        // benchmarkReport.writeReport();
+        
+        // Generate and write the report using BenchmarkReportGenerator
+        return reportGenerator.generateReport(plannerBenchmarkResult);
+
     }
 
 }

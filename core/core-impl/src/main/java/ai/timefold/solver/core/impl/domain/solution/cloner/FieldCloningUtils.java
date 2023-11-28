@@ -13,7 +13,7 @@ final class FieldCloningUtils {
         try {
             return field.getBoolean(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -21,7 +21,7 @@ final class FieldCloningUtils {
         try {
             field.setBoolean(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -34,7 +34,7 @@ final class FieldCloningUtils {
         try {
             return field.getByte(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -42,7 +42,7 @@ final class FieldCloningUtils {
         try {
             field.setByte(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -55,7 +55,7 @@ final class FieldCloningUtils {
         try {
             return field.getChar(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -63,7 +63,7 @@ final class FieldCloningUtils {
         try {
             field.setChar(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -76,7 +76,7 @@ final class FieldCloningUtils {
         try {
             return field.getShort(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -84,7 +84,7 @@ final class FieldCloningUtils {
         try {
             field.setShort(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -97,7 +97,7 @@ final class FieldCloningUtils {
         try {
             return field.getInt(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -105,7 +105,7 @@ final class FieldCloningUtils {
         try {
             field.setInt(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -118,7 +118,7 @@ final class FieldCloningUtils {
         try {
             return field.getLong(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -126,7 +126,7 @@ final class FieldCloningUtils {
         try {
             field.setLong(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -139,7 +139,7 @@ final class FieldCloningUtils {
         try {
             return field.getFloat(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -147,7 +147,7 @@ final class FieldCloningUtils {
         try {
             field.setFloat(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
@@ -160,7 +160,7 @@ final class FieldCloningUtils {
         try {
             return field.getDouble(bean);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnRead(bean, field, e);
+            throw createExceptionOnRead(bean, field, e);
         }
     }
 
@@ -168,13 +168,13 @@ final class FieldCloningUtils {
         try {
             field.setDouble(bean, value);
         } catch (IllegalAccessException e) {
-            throw FieldCloningUtils.createExceptionOnWrite(bean, field, value, e);
+            throw createExceptionOnWrite(bean, field, value, e);
         }
     }
 
     static void copyObject(Field field, Object original, Object clone) {
-        Object originalValue = FieldCloningUtils.getObjectFieldValue(original, field);
-        FieldCloningUtils.setObjectFieldValue(clone, field, originalValue);
+        Object originalValue = getObjectFieldValue(original, field);
+        setObjectFieldValue(clone, field, originalValue);
     }
 
     static Object getObjectFieldValue(Object bean, Field field) {
@@ -207,4 +207,24 @@ final class FieldCloningUtils {
         // No external instances.
     }
 
+    static void copyPrimitiveValue(Field field, Object original, Object clone) {
+        if (field.getType() == boolean.class) {
+            copyBoolean(field, original, clone);
+        } else if (field.getType() == byte.class) {
+            copyByte(field, original, clone);
+        } else if (field.getType() == char.class) {
+            copyChar(field, original, clone);
+        } else if (field.getType() == short.class) {
+            copyShort(field, original, clone);
+        } else if (field.getType() == int.class) {
+            copyInt(field, original, clone);
+        } else if (field.getType() == long.class) {
+            copyLong(field, original, clone);
+        } else if (field.getType() == float.class) {
+            copyFloat(field, original, clone);
+        } else if (field.getType() == double.class) {
+            copyDouble(field, original, clone);
+        }
+    }
 }
+
