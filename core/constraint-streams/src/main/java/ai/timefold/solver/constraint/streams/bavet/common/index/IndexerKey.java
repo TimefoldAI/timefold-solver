@@ -24,4 +24,8 @@ record IndexerKey(Object... properties) {
         return Arrays.deepHashCode(properties);
     }
 
+    @Override
+    public String toString() {
+        return "[" + Arrays.toString(properties) + "]";
+    }
 }
