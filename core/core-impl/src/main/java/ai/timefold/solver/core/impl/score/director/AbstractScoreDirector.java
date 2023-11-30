@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,14 +25,12 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.AllVariablesAssert;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
+import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
-import ai.timefold.solver.core.impl.util.Pair;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,18 +65,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private long calculationCount = 0L;
     protected Solution_ workingSolution;
     protected Integer workingInitScore = null;
-    private AllVariablesAssert<Solution_> beforeMoveSnapshot;
-    private Solution_ beforeMoveSolution;
-    private AllVariablesAssert<Solution_> afterMoveSnapshot;
-    private Solution_ afterMoveSolution;
-    private final List<Pair<VariableDescriptor<Solution_>, Object>> beforeVariableChangedForwardEvents = new ArrayList<>();
-    private final List<Pair<VariableDescriptor<Solution_>, Object>> afterVariableChangedForwardEvents = new ArrayList<>();
-    private final List<Pair<VariableDescriptor<Solution_>, Object>> beforeVariableChangedUndoEvents = new ArrayList<>();
-    private final List<Pair<VariableDescriptor<Solution_>, Object>> afterVariableChangedUndoEvents = new ArrayList<>();
-
-    // These points to either ...ForwardEvents or ...UndoEvents, or null if not in an assert mode
-    private List<Pair<VariableDescriptor<Solution_>, Object>> beforeVariableChangedEvents = null;
-    private List<Pair<VariableDescriptor<Solution_>, Object>> afterVariableChangedEvents = null;
+    private final SolutionTracker<Solution_> solutionTracker;
     private String undoMoveText;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
@@ -93,6 +79,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
+        this.solutionTracker = new SolutionTracker<>(this);
     }
 
     @Override
@@ -219,23 +206,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
         if (assertMoveScoreFromScratch) {
-            beforeVariableChangedForwardEvents.clear();
-            afterVariableChangedForwardEvents.clear();
-            beforeVariableChangedUndoEvents.clear();
-            afterVariableChangedUndoEvents.clear();
-            beforeVariableChangedEvents = beforeVariableChangedForwardEvents;
-            afterVariableChangedEvents = afterVariableChangedForwardEvents;
-            beforeMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
-            beforeMoveSolution = cloneSolution(workingSolution);
+            solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
-            beforeVariableChangedEvents = beforeVariableChangedUndoEvents;
-            afterVariableChangedEvents = afterVariableChangedUndoEvents;
-            afterMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
-            afterMoveSolution = cloneSolution(workingSolution);
+            solutionTracker.setAfterMoveSolution(workingSolution);
             assertWorkingScoreFromScratch(score, move);
         }
         undoMove.doMoveOnly(this);
@@ -245,23 +222,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
         if (assertMoveScoreFromScratch) {
-            beforeVariableChangedForwardEvents.clear();
-            afterVariableChangedForwardEvents.clear();
-            beforeVariableChangedUndoEvents.clear();
-            afterVariableChangedUndoEvents.clear();
-            beforeVariableChangedEvents = beforeVariableChangedForwardEvents;
-            afterVariableChangedEvents = afterVariableChangedForwardEvents;
-            beforeMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
-            beforeMoveSolution = cloneSolution(workingSolution);
+            solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
-            beforeVariableChangedEvents = beforeVariableChangedUndoEvents;
-            afterVariableChangedEvents = afterVariableChangedUndoEvents;
-            afterMoveSnapshot = AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
-            afterMoveSolution = cloneSolution(workingSolution);
+            solutionTracker.setAfterMoveSolution(workingSolution);
             assertWorkingScoreFromScratch(score, move);
         }
         moveProcessor.accept(score);
@@ -474,18 +441,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             workingInitScore++;
         }
         variableListenerSupport.beforeVariableChanged(variableDescriptor, entity);
-        if (beforeVariableChangedEvents != null) {
-            beforeVariableChangedEvents.add(new Pair<>(variableDescriptor, entity));
-        }
     }
 
     @Override
     public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore--;
-        }
-        if (afterVariableChangedEvents != null) {
-            afterVariableChangedEvents.add(new Pair<>(variableDescriptor, entity));
         }
     }
 
@@ -521,18 +482,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        if (beforeVariableChangedEvents != null) {
-            beforeVariableChangedEvents.add(new Pair<>(variableDescriptor, entity));
-        }
     }
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        if (afterVariableChangedEvents != null) {
-            afterVariableChangedEvents.add(new Pair<>(variableDescriptor, entity));
-        }
     }
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
@@ -716,15 +671,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (!undoScore.equals(beforeMoveScore)) {
             logger.trace("        Corruption detected. Diagnosing...");
 
-            AllVariablesAssert<Solution_> afterUndoSnapshot =
-                    AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
-            Solution_ afterUndoSolution = cloneSolution(workingSolution);
+            solutionTracker.setAfterUndoSolution(workingSolution);
             // Precondition: assert that there are probably no corrupted constraints
             assertWorkingScoreFromScratch(undoScore, undoMoveText);
             // Precondition: assert that shadow variables aren't stale after doing the undoMove
             assertShadowVariablesAreNotStale(undoScore, undoMoveText);
+            solutionTracker.setFromScratchSolution(workingSolution);
 
-            String differentVariables = buildVariableDiff(afterUndoSnapshot);
+            String differentVariables = solutionTracker.buildVariableDiff();
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
 
             throw new UndoScoreCorruptionException("UndoMove corruption (" + scoreDifference
@@ -738,144 +692,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     + "  3) Check your custom " + VariableListener.class.getSimpleName() + "s (if you have any)"
                     + " for shadow variables that are used by score constraints that could cause"
                     + " the scoreDifference (" + scoreDifference + ").",
-                    beforeMoveSolution,
-                    afterMoveSolution,
-                    afterUndoSolution,
+                    solutionTracker.getBeforeMoveSolution(),
+                    solutionTracker.getAfterMoveSolution(),
+                    solutionTracker.getAfterUndoSolution(),
                     move,
                     scoreDirectorFactory);
-        }
-    }
-
-    private String buildVariableDiff(AllVariablesAssert<Solution_> afterUndoMoveSnapshot) {
-        if (beforeMoveSnapshot == null) {
-            return "";
-        }
-        final int VIOLATION_LIMIT = 5;
-        ShadowVariablesAssert.resetShadowVariables(getSolutionDescriptor(), workingSolution);
-        variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
-        AllVariablesAssert<Solution_> recalculatedFromScratch =
-                AllVariablesAssert.takeSnapshot(getSolutionDescriptor(), workingSolution);
-
-        StringBuilder out = new StringBuilder();
-        var changedBetweenBeforeAndUndo = afterUndoMoveSnapshot.changedVariablesFrom(beforeMoveSnapshot);
-        if (!changedBetweenBeforeAndUndo.isEmpty()) {
-            appendVariableChangedViolations(out,
-                    "Undo variables do not match before variables",
-                    changedBetweenBeforeAndUndo,
-                    beforeMoveSnapshot,
-                    afterUndoMoveSnapshot,
-                    VIOLATION_LIMIT);
-        }
-
-        var changedBetweenBeforeUndoAndScratch = beforeMoveSnapshot.changedVariablesFrom(recalculatedFromScratch);
-        var changedBetweenAfterUndoAndScratch = afterUndoMoveSnapshot.changedVariablesFrom(recalculatedFromScratch);
-
-        if (!changedBetweenBeforeUndoAndScratch.isEmpty()) {
-            appendVariableChangedViolations(out,
-                    "Before shadow variables do not match recalculated from scratch shadow variables",
-                    changedBetweenBeforeUndoAndScratch,
-                    recalculatedFromScratch,
-                    beforeMoveSnapshot,
-                    VIOLATION_LIMIT);
-        }
-
-        if (!changedBetweenAfterUndoAndScratch.isEmpty()) {
-            appendVariableChangedViolations(out,
-                    "After Undo shadow variables do not match recalculated from scratch shadow variables",
-                    changedBetweenAfterUndoAndScratch,
-                    recalculatedFromScratch,
-                    afterUndoMoveSnapshot,
-                    VIOLATION_LIMIT);
-        }
-
-        var expectedBeforeAfterCalls = beforeMoveSnapshot.changedVariablesFrom(afterMoveSnapshot);
-        if (!beforeVariableChangedForwardEvents.containsAll(expectedBeforeAfterCalls)) {
-            appendVariableChangedEventViolations(out, "Missing beforeVariableChanged events for actual move",
-                    "before", expectedBeforeAfterCalls, beforeVariableChangedForwardEvents,
-                    VIOLATION_LIMIT);
-        }
-        if (!afterVariableChangedForwardEvents.containsAll(expectedBeforeAfterCalls)) {
-            appendVariableChangedEventViolations(out, "Missing afterVariableChanged events for actual move",
-                    "after", expectedBeforeAfterCalls, afterVariableChangedForwardEvents,
-                    VIOLATION_LIMIT);
-        }
-
-        if (!beforeVariableChangedUndoEvents.containsAll(expectedBeforeAfterCalls)) {
-            appendVariableChangedEventViolations(out, "Missing beforeVariableChanged events for undo move",
-                    "before", expectedBeforeAfterCalls, beforeVariableChangedUndoEvents,
-                    VIOLATION_LIMIT);
-        }
-        if (!afterVariableChangedUndoEvents.containsAll(expectedBeforeAfterCalls)) {
-            appendVariableChangedEventViolations(out, "Missing afterVariableChanged events for undo move",
-                    "after", expectedBeforeAfterCalls, afterVariableChangedUndoEvents,
-                    VIOLATION_LIMIT);
-        }
-
-        if (out.isEmpty()) {
-            return "Genuine and shadow variables agree with from scratch calculation after the undo move and match the state prior to the move.";
-        }
-
-        return out.toString();
-    }
-
-    private void appendVariableChangedViolations(StringBuilder out, String prefix,
-            List<Pair<VariableDescriptor<Solution_>, Object>> changedVariables,
-            AllVariablesAssert<Solution_> expectedSnapshot,
-            AllVariablesAssert<Solution_> actualSnapshot, int limit) {
-        out.append(prefix);
-        out.append(":\n");
-        int violationCount = 0;
-        for (var changedVariable : changedVariables) {
-            var expectedSnapshotVariable = expectedSnapshot.getVariableSnapshot(changedVariable);
-            var actualSnapshotVariable = actualSnapshot.getVariableSnapshot(changedVariable);
-            out.append("    ");
-            out.append(expectedSnapshotVariable.getVariableDescriptor().getSimpleEntityAndVariableName());
-            out.append(" (");
-            out.append(expectedSnapshotVariable.getEntity());
-            out.append(") expected (");
-            out.append(expectedSnapshotVariable.getValue());
-            out.append(") actual (");
-            out.append(actualSnapshotVariable.getValue());
-            out.append(")\n");
-            violationCount++;
-            if (violationCount >= limit) {
-                return;
-            }
-        }
-    }
-
-    private void appendVariableChangedEventViolations(StringBuilder out, String prefix,
-            String kind,
-            List<Pair<VariableDescriptor<Solution_>, Object>> expectedEvents,
-            List<Pair<VariableDescriptor<Solution_>, Object>> actualEvents,
-            int limit) {
-        out.append(prefix);
-        out.append(":\n");
-        int violationCount = 0;
-        for (var variable : expectedEvents) {
-            if (!actualEvents.contains(variable)) {
-                boolean isListVariable = variable.key().isGenuineListVariable();
-                out.append("    ");
-                out.append("Missing ");
-                out.append(kind);
-                if (isListVariable) {
-                    out.append("ListVariableChanged(");
-                } else {
-                    out.append("VariableChanged(");
-                }
-                out.append(variable.value());
-                out.append(", \"");
-                out.append(variable.key().getVariableName());
-                out.append("\"");
-                if (isListVariable) {
-                    out.append(", ...");
-                }
-                out.append(")\n");
-                violationCount++;
-                if (violationCount >= limit) {
-                    return;
-                }
-            }
         }
     }
 

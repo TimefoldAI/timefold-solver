@@ -141,6 +141,8 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.beforeVariableChanged(entity, "value");
             entity.setValue(null);
             scoreDirector.afterVariableChanged(entity, "value");
+            // FULL_ASSERT add variable listeners for tracking
+            scoreDirector.triggerVariableListeners();
             var score2 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
                 softly.assertThat(score2.isSolutionInitialized()).isFalse();

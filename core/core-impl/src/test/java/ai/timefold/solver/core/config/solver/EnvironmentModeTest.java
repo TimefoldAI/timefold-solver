@@ -115,10 +115,10 @@ class EnvironmentModeTest {
                         solverConfig,
                         TestdataCorruptedUndoMoveFactory.class);
                 assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove",
-                        "Undo variables do not match before variables",
-                        "TestdataEntity.value (e2) expected (v1) actual (v2)",
-                        "Before shadow variables do not match recalculated from scratch shadow variables",
-                        "TestdataEntity.value (e2) expected (v2) actual (v1)");
+                        "Variables that are different between before and undo",
+                        "Actual value (v2) of variable value on TestdataEntity entity (e2) differs from expected (v1)",
+                        "Variables that are different between from scratch and before",
+                        "Actual value (v1) of variable value on TestdataEntity entity (e2) differs from expected (v2)");
                 break;
             case FAST_ASSERT:
                 setSolverConfigMoveListFactoryClassToCorrupted(
@@ -159,12 +159,13 @@ class EnvironmentModeTest {
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
                                 new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
                         .withMessageContainingAll("corrupted undoMove",
-                                "Undo variables do not match before variables",
-                                "After Undo shadow variables do not match recalculated from scratch shadow variables",
-                                "Missing beforeVariableChanged events for undo move",
-                                "Missing afterVariableChanged events for undo move",
-                                "CorruptedUndoShadowEntity.valueClone (CorruptedUndoShadowEntity) expected (null) actual (v1)",
-                                "Missing beforeVariableChanged(CorruptedUndoShadowEntity, \"valueClone\")");
+                                "Variables that are different between before and undo",
+                                "Actual value (v1) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (null)",
+                                "Variables that are different between from scratch and before",
+                                "Actual value (null) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)",
+                                "Missing variable listener events for undo move",
+                                "Entity (CorruptedUndoShadowEntity) is missing a beforeVariableChanged call for variable (valueClone)",
+                                "Entity (CorruptedUndoShadowEntity) is missing a afterVariableChanged call for variable (valueClone)");
             case FAST_ASSERT:
                 // FAST_ASSERT does not create snapshots since it does not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it

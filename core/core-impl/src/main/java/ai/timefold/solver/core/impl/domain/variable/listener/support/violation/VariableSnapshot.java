@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.util.Pair;
 
 public class VariableSnapshot<Solution_> {
     private final VariableDescriptor<Solution_> variableDescriptor;
     private final Object entity;
     private final Object value;
-    private final Pair<VariableDescriptor<Solution_>, Object> variableId;
+    private final VariableId<Solution_> variableId;
 
-    public VariableSnapshot(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
+    public VariableSnapshot(SolutionDescriptor<Solution_> solutionDescriptor, VariableDescriptor<Solution_> variableDescriptor,
+            Object entity) {
         this.variableDescriptor = variableDescriptor;
         this.entity = entity;
-        this.variableId = new Pair<>(variableDescriptor, entity);
+        this.variableId = new VariableId<>(variableDescriptor, entity);
 
         // If it is a genuine list variable, we need to create a copy
         // of the value in order to create a snapshot (since the contents
@@ -37,7 +38,7 @@ public class VariableSnapshot<Solution_> {
         return value;
     }
 
-    public Pair<VariableDescriptor<Solution_>, Object> getVariableId() {
+    public VariableId<Solution_> getVariableId() {
         return variableId;
     }
 
