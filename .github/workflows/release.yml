@@ -45,7 +45,7 @@ jobs:
           git config user.email "release@timefold.ai"
           git checkout -b ${{ github.event.inputs.releaseBranch }}
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
