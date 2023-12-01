@@ -4,7 +4,7 @@
    inkscape:export-xdpi="96"
    inkscape:export-filename="maintenanceSchedulingClassDiagram.png"
    sodipodi:docname="maintenanceSchedulingClassDiagram.svg"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
    version="1.1"
    id="svg2"
    height="600"
@@ -243,9 +243,9 @@
      inkscape:snap-bbox="false"
      inkscape:snap-grids="true"
      inkscape:window-maximized="1"
-     inkscape:window-y="34"
+     inkscape:window-y="0"
      inkscape:window-x="0"
-     inkscape:window-height="1009"
+     inkscape:window-height="995"
      inkscape:window-width="1920"
      gridtolerance="10"
      borderlayer="true"
@@ -254,8 +254,8 @@
      inkscape:current-layer="layer4"
      inkscape:document-units="px"
      inkscape:cy="300"
-     inkscape:cx="399.86301"
-     inkscape:zoom="1.2166667"
+     inkscape:cx="400.40161"
+     inkscape:zoom="1.245"
      inkscape:pageshadow="2"
      inkscape:pageopacity="1"
      borderopacity="1.0"
@@ -265,7 +265,8 @@
      inkscape:snap-global="true"
      inkscape:showpageshadow="2"
      inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1">
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:export-bgcolor="#ffffffff">
     <inkscape:grid
        originy="0"
        originx="0"
@@ -277,7 +278,8 @@
        snapvisiblegridlinesonly="true"
        enabled="true"
        visible="true"
-       empspacing="10" />
+       empspacing="10"
+       units="px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -295,127 +297,70 @@
   </metadata>
   <g
      style="display:inline"
-     inkscape:label="PlanningEntity annotations"
-     id="layer4"
-     inkscape:groupmode="layer">
-    <rect
-       ry="5"
-       rx="4.999999"
-       y="150.5"
-       x="420.49997"
-       height="269"
-       width="359"
-       id="rect4619"
-       style="display:inline;opacity:0.5;fill:#8ae234;stroke:none;stroke-width:0.999999" />
+     transform="translate(0,-452.36218)"
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Problem fact base">
     <flowRoot
-       transform="translate(153.54976,76.223237)"
+       transform="translate(-20,262.36198)"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
+       id="flowRoot4302"
+       xml:space="preserve"><flowRegion
+         id="flowRegion4304"><rect
+           style="font-size:36px;text-align:center;text-anchor:middle"
+           y="220.0002"
+           x="50"
+           height="90"
+           width="740"
+           id="rect4306" /></flowRegion><flowPara
+         style="font-size:36px;line-height:1.25"
+         id="flowPara4621">Maintenance scheduling class diagram</flowPara></flowRoot>
+    <g
+       transform="translate(0,19.999997)"
+       id="g3709" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect3898"
+       width="139"
+       height="89"
+       x="20.500429"
+       y="732.86224"
+       rx="4.9999986"
+       ry="5" />
+    <flowRoot
+       transform="translate(-375.26715,698.5852)"
        xml:space="preserve"
-       id="flowRoot4348-6"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#4e9a06;fill-opacity:1;stroke:none"><flowRegion
-         id="flowRegion4350-8"><rect
-           id="rect4352-5"
-           width="210.00043"
-           height="30"
+       id="flowRoot3906"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion3902"><rect
+           id="rect3900"
+           width="249.47112"
+           height="29.5"
            x="340"
-           y="43.77676"
-           style="font-style:italic;font-size:20px;fill:#4e9a06" /></flowRegion><flowPara
+           y="33.777069"
+           style="font-size:20px" /></flowRegion><flowPara
+         id="flowPara3904"
+         style="font-size:20px;line-height:1.25">Crew</flowPara></flowRoot>
+    <path
+       sodipodi:nodetypes="cc"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="M 20.308,761.86227 H 159.6911"
+       id="path3908"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       transform="translate(-309.99957,728.5852)"
+       xml:space="preserve"
+       id="flowRoot3920"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion3912"><rect
+           id="rect3910"
+           width="230"
+           height="110"
+           x="340"
+           y="33.777069"
+           style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
          style="font-size:20px;line-height:1.25"
-         id="flowPara4354-9">@PlanningEntity</flowPara></flowRoot>
-    <rect
-       ry="5"
-       rx="4.999999"
-       y="300.00024"
-       x="310"
-       height="30"
-       width="90"
-       id="rect3858"
-       style="display:inline;opacity:0.5;fill:#fcaf3e;stroke:none" />
-    <flowRoot
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
-       id="flowRoot3866"
-       xml:space="preserve"
-       transform="translate(-200,196.22317)"><flowRegion
-         id="flowRegion3862"><rect
-           style="font-style:italic;font-size:20px;text-align:end;text-anchor:end;fill:#ce5c00"
-           y="73.777069"
-           x="420"
-           height="30"
-           width="180"
-           id="rect3860" /></flowRegion><flowPara
-         id="flowPara3864"
-         style="font-size:20px;line-height:1.25">@PlanningVariable</flowPara></flowRoot>
-    <flowRoot
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0.01%;font-family:'Liberation Sans';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
-       id="flowRoot137"
-       xml:space="preserve"
-       transform="translate(-277.75688,16.222588)"><flowRegion
-         style="font-size:16px"
-         id="flowRegion133"><rect
-           style="font-style:italic;font-size:16px;text-align:end;text-anchor:end;fill:#ce5c00"
-           y="73.777412"
-           x="339.99997"
-           height="80"
-           width="435.17093"
-           id="rect131" /></flowRegion><flowPara
-         id="flowPara145"
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle" /><flowPara
-         id="flowPara161"
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle">The crew, startDate and endDate fields</flowPara><flowPara
-         id="flowPara167"
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle">are normally null before solving</flowPara><flowPara
-         id="flowPara165"
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle">and non-null after solving</flowPara></flowRoot>
-    <rect
-       ry="5"
-       rx="4.999999"
-       y="352.7468"
-       x="425.55701"
-       height="27.253187"
-       width="91.183861"
-       id="rect160"
-       style="display:inline;opacity:0.5;fill:#fcaf3e;stroke:none;stroke-width:1" />
-    <rect
-       ry="5"
-       rx="4.999999"
-       y="380"
-       x="425.55701"
-       height="25.866913"
-       width="84.874138"
-       id="rect459"
-       style="display:inline;opacity:0.5;fill:#fce94f;stroke:none;stroke-width:0.999994" />
-    <flowRoot
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
-       id="flowRoot467"
-       xml:space="preserve"
-       transform="translate(-5.5562744,253.75517)"><flowRegion
-         id="flowRegion463"><rect
-           style="font-style:italic;font-size:20px;text-align:end;text-anchor:end;fill:#ce5c00"
-           y="73.777069"
-           x="420"
-           height="30"
-           width="180"
-           id="rect461" /></flowRegion><flowPara
-         id="flowPara465"
-         style="font-size:20px;line-height:1.25">@PlanningVariable</flowPara></flowRoot>
-    <flowRoot
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0.01%;font-family:'Liberation Sans';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#c4a000;fill-opacity:1;stroke:none"
-       id="flowRoot481"
-       xml:space="preserve"
-       transform="translate(42.363469,353.40434)"><flowRegion
-         style="font-size:16px;text-align:center;text-anchor:middle;fill:#c4a000"
-         id="flowRegion471"><rect
-           style="font-style:italic;font-size:16px;text-align:center;text-anchor:middle;fill:#c4a000"
-           y="73.777412"
-           x="339.99997"
-           height="80"
-           width="435.17093"
-           id="rect469" /></flowRegion><flowPara
-         id="flowPara473"
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle;fill:#c4a000" /><flowPara
-         id="flowPara479"
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle;fill:#c4a000">endDate = startDate + durationInDays</flowPara><flowPara
-         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle;fill:#c4a000"
-         id="flowPara488">(without weekends)</flowPara></flowRoot>
+         id="flowPara3918">name : String</flowPara></flowRoot>
   </g>
   <g
      style="display:inline"
@@ -583,83 +528,238 @@
   </g>
   <g
      style="display:inline"
-     transform="translate(0,-452.36218)"
-     id="layer1"
-     inkscape:groupmode="layer"
-     inkscape:label="Problem fact base">
-    <flowRoot
-       transform="translate(-20,262.36198)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
-       id="flowRoot4302"
-       xml:space="preserve"><flowRegion
-         id="flowRegion4304"><rect
-           style="font-size:36px;text-align:center;text-anchor:middle"
-           y="220.0002"
-           x="50"
-           height="90"
-           width="740"
-           id="rect4306" /></flowRegion><flowPara
-         style="font-size:36px;line-height:1.25"
-         id="flowPara4621">Maintenance scheduling class diagram</flowPara></flowRoot>
-    <g
-       transform="translate(0,19.999997)"
-       id="g3709" />
-    <flowRoot
-       style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-       id="flowRoot4157"
-       xml:space="preserve"><flowRegion
-         style="font-family:sans-serif"
-         id="flowRegion4159"><rect
-           style="font-family:sans-serif"
-           y="-53.932568"
-           x="16.011236"
-           height="72.471909"
-           width="10.955056"
-           id="rect4161" /></flowRegion><flowPara
-         style="font-size:40px;line-height:1.25;font-family:sans-serif"
-         id="flowPara4163"> </flowPara></flowRoot>
+     inkscape:label="PlanningEntity annotations"
+     id="layer4"
+     inkscape:groupmode="layer">
     <rect
-       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-       id="rect3898"
-       width="139"
-       height="89"
-       x="20.500429"
-       y="732.86224"
-       rx="4.9999986"
-       ry="5" />
+       ry="5"
+       rx="4.999999"
+       y="150.5"
+       x="420.49997"
+       height="269"
+       width="359"
+       id="rect4619"
+       style="display:inline;opacity:0.5;fill:#8ae234;stroke:none;stroke-width:0.999999" />
     <flowRoot
-       transform="translate(-375.26715,698.5852)"
+       transform="translate(153.54976,76.223237)"
        xml:space="preserve"
-       id="flowRoot3906"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
-         id="flowRegion3902"><rect
-           id="rect3900"
-           width="249.47112"
-           height="29.5"
+       id="flowRoot4348-6"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#4e9a06;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion4350-8"><rect
+           id="rect4352-5"
+           width="210.00043"
+           height="30"
            x="340"
-           y="33.777069"
-           style="font-size:20px" /></flowRegion><flowPara
-         id="flowPara3904"
-         style="font-size:20px;line-height:1.25">Crew</flowPara></flowRoot>
-    <path
-       sodipodi:nodetypes="cc"
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-       d="M 20.308,761.86227 H 159.6911"
-       id="path3908"
-       inkscape:connector-curvature="0" />
+           y="43.77676"
+           style="font-style:italic;font-size:20px;fill:#4e9a06" /></flowRegion><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara4354-9">@PlanningEntity</flowPara></flowRoot>
+    <rect
+       ry="5"
+       rx="4.999999"
+       y="300.00024"
+       x="310"
+       height="30"
+       width="90"
+       id="rect3858"
+       style="display:inline;opacity:0.5;fill:#fcaf3e;stroke:none" />
     <flowRoot
-       transform="translate(-309.99957,728.5852)"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
+       id="flowRoot3866"
        xml:space="preserve"
-       id="flowRoot3920"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
-         id="flowRegion3912"><rect
-           id="rect3910"
-           width="230"
-           height="110"
+       transform="translate(-200,196.22317)"><flowRegion
+         id="flowRegion3862"><rect
+           style="font-style:italic;font-size:20px;text-align:end;text-anchor:end;fill:#ce5c00"
+           y="73.777069"
+           x="420"
+           height="30"
+           width="180"
+           id="rect3860" /></flowRegion><flowPara
+         id="flowPara3864"
+         style="font-size:20px;line-height:1.25">@PlanningVariable</flowPara></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0.01%;font-family:'Liberation Sans';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
+       id="flowRoot137"
+       xml:space="preserve"
+       transform="translate(-277.75688,16.222588)"><flowRegion
+         style="font-size:16px"
+         id="flowRegion133"><rect
+           style="font-style:italic;font-size:16px;text-align:end;text-anchor:end;fill:#ce5c00"
+           y="73.777412"
+           x="339.99997"
+           height="80"
+           width="435.17093"
+           id="rect131" /></flowRegion><flowPara
+         id="flowPara145"
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle" /><flowPara
+         id="flowPara161"
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle">The crew, startDate and endDate fields</flowPara><flowPara
+         id="flowPara167"
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle">are normally null before solving</flowPara><flowPara
+         id="flowPara165"
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle">and non-null after solving</flowPara></flowRoot>
+    <rect
+       ry="5"
+       rx="4.999999"
+       y="352.7468"
+       x="425.55701"
+       height="27.253187"
+       width="91.183861"
+       id="rect160"
+       style="display:inline;opacity:0.5;fill:#fcaf3e;stroke:none;stroke-width:1" />
+    <rect
+       ry="5"
+       rx="4.999999"
+       y="380"
+       x="425.55701"
+       height="25.866913"
+       width="84.874138"
+       id="rect459"
+       style="display:inline;opacity:0.5;fill:#fce94f;stroke:none;stroke-width:0.999994" />
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
+       id="flowRoot467"
+       xml:space="preserve"
+       transform="translate(-5.5562744,253.75517)"><flowRegion
+         id="flowRegion463"><rect
+           style="font-style:italic;font-size:20px;text-align:end;text-anchor:end;fill:#ce5c00"
+           y="73.777069"
+           x="420"
+           height="30"
+           width="180"
+           id="rect461" /></flowRegion><flowPara
+         id="flowPara465"
+         style="font-size:20px;line-height:1.25">@PlanningVariable</flowPara></flowRoot>
+    <flowRoot
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:0.01%;font-family:'Liberation Sans';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#c4a000;fill-opacity:1;stroke:none"
+       id="flowRoot481"
+       xml:space="preserve"
+       transform="translate(42.363469,353.40434)"><flowRegion
+         style="font-size:16px;text-align:center;text-anchor:middle;fill:#c4a000"
+         id="flowRegion471"><rect
+           style="font-style:italic;font-size:16px;text-align:center;text-anchor:middle;fill:#c4a000"
+           y="73.777412"
+           x="339.99997"
+           height="80"
+           width="435.17093"
+           id="rect469" /></flowRegion><flowPara
+         id="flowPara473"
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle;fill:#c4a000" /><flowPara
+         id="flowPara479"
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle;fill:#c4a000">endDate = startDate + durationInDays</flowPara><flowPara
+         style="font-style:normal;font-size:16px;line-height:1.25;text-align:center;text-anchor:middle;fill:#c4a000"
+         id="flowPara488">(without weekends)</flowPara></flowRoot>
+    <flowRoot
+       transform="translate(89.999995,146.22293)"
+       xml:space="preserve"
+       id="flowRoot4358-3"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion4360-6"><rect
+           id="rect4362-7"
+           width="359.99997"
+           height="230"
            x="340"
            y="33.777069"
            style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
          style="font-size:20px;line-height:1.25"
-         id="flowPara3918">name : String</flowPara></flowRoot>
+         id="flowPara4364-5">name : String</flowPara><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara4366-3">readyDate : LocalDate</flowPara><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara4370-5">dueDate : LocalDate</flowPara><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara140-6">durationInDays : int</flowPara><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara146-2">mutuallyExclusiveTagSet : Set&lt;String&gt;</flowPara><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara148-9" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara150-1" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara152-2" /></flowRoot>
+    <rect
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.999999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect4346-7"
+       width="359"
+       height="269"
+       x="420.49997"
+       y="150.5"
+       rx="4.999999"
+       ry="5" />
+    <flowRoot
+       transform="translate(155.55666,116.22293)"
+       xml:space="preserve"
+       id="flowRoot4348-0"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion4350-9"><rect
+           id="rect4352-3"
+           width="209.41463"
+           height="29.5"
+           x="340"
+           y="33.777069"
+           style="font-size:20px" /></flowRegion><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara4354-6">Job</flowPara></flowRoot>
+    <path
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="M 420.94296,179.49999 H 779.05709"
+       id="path4356-0"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+       id="flowRoot3896-6"
+       xml:space="preserve"
+       transform="translate(-160.00023,236.22309)"><flowRegion
+         id="flowRegion3892-2"><rect
+           style="font-size:20px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1"
+           y="63.777149"
+           x="470.00024"
+           height="30.000015"
+           width="89.999954"
+           id="rect3890-6" /></flowRegion><flowPara
+         id="flowPara3894-1"
+         style="font-size:20px;line-height:1.25;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1">crew</flowPara></flowRoot>
+    <flowRoot
+       transform="translate(89.999995,321.72939)"
+       xml:space="preserve"
+       id="flowRoot302-8"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion282-7"><rect
+           id="rect280-9"
+           width="359.99997"
+           height="230"
+           x="340"
+           y="33.777069"
+           style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara292-2" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara294-0" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara296-2" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara300-3">startDate : LocalDate</flowPara></flowRoot>
+    <flowRoot
+       transform="translate(89.999995,348.28946)"
+       xml:space="preserve"
+       id="flowRoot488-7"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
+         id="flowRegion476-5"><rect
+           id="rect474-9"
+           width="359.99997"
+           height="230"
+           x="340"
+           y="33.777069"
+           style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara478-2" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara480-2" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara482-8" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara484-9" /><flowPara
+         style="font-size:20px;line-height:1.25"
+         id="flowPara486-7">endDate : LocalDate</flowPara></flowRoot>
   </g>
 </svg>
