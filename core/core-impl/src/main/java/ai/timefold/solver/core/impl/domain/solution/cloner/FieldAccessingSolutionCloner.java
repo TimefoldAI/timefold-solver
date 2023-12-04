@@ -72,10 +72,11 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         }
         Queue<Unprocessed> unprocessedQueue = new ArrayDeque<>();
         Class<?> fieldType = originalValue.getClass();
-        if (originalValue instanceof Collection<?> collection) {
-            return cloneCollection(fieldType, collection, originalToCloneMap, unprocessedQueue);
-        } else if (originalValue instanceof Map<?, ?> map) {
-            return cloneMap(fieldType, map, originalToCloneMap, unprocessedQueue);
+        if (originalValue instanceof Collection<?>) {
+            return cloneCollection(fieldType, (Collection<? extends Object>) originalValue, originalToCloneMap,
+                    unprocessedQueue);
+        } else if (originalValue instanceof Map<?, ?>) {
+            return cloneMap(fieldType, (Map<?, ?>) originalValue, originalToCloneMap, unprocessedQueue);
         } else if (originalValue.getClass().isArray()) {
             return cloneArray(fieldType, originalValue, originalToCloneMap, unprocessedQueue);
         } else {
