@@ -79,7 +79,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
-        this.solutionTracker = new SolutionTracker<>(this);
+        this.solutionTracker = new SolutionTracker<>(getSolutionDescriptor(),
+                getSupplyManager());
     }
 
     @Override
@@ -678,7 +679,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             assertShadowVariablesAreNotStale(undoScore, undoMoveText);
             solutionTracker.setFromScratchSolution(workingSolution);
 
-            String differentVariables = solutionTracker.buildVariableDiff();
+            String differentVariables = solutionTracker.buildScoreCorruptionMessage();
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
 
             throw new UndoScoreCorruptionException("UndoMove corruption (" + scoreDifference

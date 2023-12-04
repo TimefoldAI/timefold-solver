@@ -10,7 +10,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public final class SolutionTracker<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -27,11 +26,12 @@ public final class SolutionTracker<Solution_> {
     Solution_ fromScratchSolution;
     AllVariablesAssert<Solution_> scratchVariables;
 
-    public SolutionTracker(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        solutionDescriptor = scoreDirector.getSolutionDescriptor();
+    public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor,
+            SupplyManager supplyManager) {
+        this.solutionDescriptor = solutionDescriptor;
         normalVariableTrackers = new ArrayList<>();
         listVariableTrackers = new ArrayList<>();
-        for (EntityDescriptor<Solution_> entityDescriptor : scoreDirector.getSolutionDescriptor().getEntityDescriptors()) {
+        for (EntityDescriptor<Solution_> entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
             for (VariableDescriptor<Solution_> variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
                     listVariableTrackers.add(new ListVariableTracker<>(listVariableDescriptor));
@@ -40,7 +40,6 @@ public final class SolutionTracker<Solution_> {
                 }
             }
         }
-        SupplyManager supplyManager = scoreDirector.getSupplyManager();
         for (NormalVariableTracker<Solution_> normalVariableTracker : normalVariableTrackers) {
             supplyManager.demand(normalVariableTracker.demand());
         }
@@ -81,7 +80,7 @@ public final class SolutionTracker<Solution_> {
         undoVariables = AllVariablesAssert.takeSnapshot(solutionDescriptor, workingSolution);
         afterUndoSolution = cloneSolution(workingSolution);
         if (beforeVariables != null) {
-            missingEventsBackward = getEntitiesMissingBeforeAfterEvents(afterVariables, beforeVariables);
+            missingEventsBackward = getEntitiesMissingBeforeAfterEvents(undoVariables, afterVariables);
         } else {
             missingEventsBackward = Collections.emptyList();
         }
@@ -109,7 +108,7 @@ public final class SolutionTracker<Solution_> {
         return out;
     }
 
-    public String buildVariableDiff() {
+    public String buildScoreCorruptionMessage() {
         if (beforeMoveSolution == null) {
             return "";
         }
@@ -125,27 +124,27 @@ public final class SolutionTracker<Solution_> {
                 undoVariables);
 
         if (!changedBetweenBeforeAndUndo.isEmpty()) {
-            out.append("Variables that are different between before and undo:")
+            out.append("Variables that are different between before and undo:\n")
                     .append(formatList(changedBetweenBeforeAndUndo));
         }
 
         if (!changedBetweenBeforeAndScratch.isEmpty()) {
-            out.append("Variables that are different between from scratch and before:")
+            out.append("Variables that are different between from scratch and before:\n")
                     .append(formatList(changedBetweenBeforeAndScratch));
         }
 
         if (!changedBetweenUndoAndScratch.isEmpty()) {
-            out.append("Variables that are different between from scratch and undo:")
+            out.append("Variables that are different between from scratch and undo:\n")
                     .append(formatList(changedBetweenUndoAndScratch));
         }
 
         if (!missingEventsForward.isEmpty()) {
-            out.append("Missing variable listener events for actual move:")
+            out.append("Missing variable listener events for actual move:\n")
                     .append(formatList(missingEventsForward));
         }
 
         if (!missingEventsBackward.isEmpty()) {
-            out.append("Missing variable listener events for undo move:")
+            out.append("Missing variable listener events for undo move:\n")
                     .append(formatList(missingEventsBackward));
         }
 
@@ -156,12 +155,10 @@ public final class SolutionTracker<Solution_> {
         return out.toString();
     }
 
-    private List<String> getVariableChangedViolations(
+    static <Solution_> List<String> getVariableChangedViolations(
             AllVariablesAssert<Solution_> expectedSnapshot,
             AllVariablesAssert<Solution_> actualSnapshot) {
-        final int VIOLATION_LIMIT = 5;
         List<String> out = new ArrayList<>();
-        int violationCount = 0;
         var changedVariables = expectedSnapshot.changedVariablesFrom(actualSnapshot);
         for (var changedVariable : changedVariables) {
             var expectedSnapshotVariable = expectedSnapshot.getVariableSnapshot(changedVariable);
@@ -173,16 +170,23 @@ public final class SolutionTracker<Solution_> {
                                     .getSimpleName(),
                             expectedSnapshotVariable.getEntity(),
                             expectedSnapshotVariable.getValue()));
-            violationCount++;
-            if (violationCount >= VIOLATION_LIMIT) {
-                break;
-            }
         }
         return out;
     }
 
-    private String formatList(List<String> messages) {
-        return messages.stream().collect(Collectors.joining("\n  - ",
-                "\n  - ", "\n"));
+    static String formatList(List<String> messages) {
+        final int LIMIT = 5;
+        if (messages.isEmpty()) {
+            return "";
+        }
+        if (messages.size() <= LIMIT) {
+            return messages.stream()
+                    .collect(Collectors.joining("\n  - ",
+                            "  - ", "\n"));
+        }
+        return messages.stream()
+                .limit(LIMIT)
+                .collect(Collectors.joining("\n  - ",
+                        "  - ", "\n  ...(" + (messages.size() - LIMIT) + " more)\n"));
     }
 }

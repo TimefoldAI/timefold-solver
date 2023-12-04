@@ -162,10 +162,7 @@ class EnvironmentModeTest {
                                 "Variables that are different between before and undo",
                                 "Actual value (v1) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (null)",
                                 "Variables that are different between from scratch and before",
-                                "Actual value (null) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)",
-                                "Missing variable listener events for undo move",
-                                "Entity (CorruptedUndoShadowEntity) is missing a beforeVariableChanged call for variable (valueClone)",
-                                "Entity (CorruptedUndoShadowEntity) is missing a afterVariableChanged call for variable (valueClone)");
+                                "Actual value (null) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
             case FAST_ASSERT:
                 // FAST_ASSERT does not create snapshots since it does not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
