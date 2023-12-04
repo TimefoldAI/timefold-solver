@@ -852,7 +852,7 @@ public class GizmoSolutionClonerImplementor {
         List<Class<?>> deepClonedSubclasses = deepClonedClassesSortedSet.stream()
                 .filter(deeplyClonedFieldClass::isAssignableFrom)
                 .filter(type -> DeepCloningUtils.isClassDeepCloned(solutionDescriptor.getSolutionDescriptor(), type))
-                .toList();
+                .collect(Collectors.toList());
         BytecodeCreator currentBranch = bytecodeCreator;
         // If the field holds an instance of one of the field's declared type's subtypes, clone the subtype instead.
         for (Class<?> deepClonedSubclass : deepClonedSubclasses) {
@@ -870,10 +870,10 @@ public class GizmoSolutionClonerImplementor {
         // We are certain that the instance is of the same type as the declared field type.
         // (Or is an undeclared subclass of the planning entity)
         switch (unhandledCloneType) {
-            case SHALLOW -> {
+            case SHALLOW:
                 currentBranch.assign(cloneResultHolder, toClone);
-            }
-            case DEEP -> {
+                break;
+            case DEEP:
                 ResultHandle cloneObj = currentBranch.invokeStaticMethod(
                         MethodDescriptor.ofMethod(
                                 GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor.getSolutionDescriptor()),
@@ -881,7 +881,7 @@ public class GizmoSolutionClonerImplementor {
                                 deeplyClonedFieldClass, Map.class),
                         toClone, createdCloneMap);
                 currentBranch.assign(cloneResultHolder, cloneObj);
-            }
+                break;
         }
     }
 

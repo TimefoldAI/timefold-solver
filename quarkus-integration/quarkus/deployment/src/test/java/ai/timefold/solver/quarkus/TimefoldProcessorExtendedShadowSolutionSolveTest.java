@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import java.util.concurrent.ExecutionException;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;

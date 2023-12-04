@@ -589,8 +589,8 @@ public class SolutionDescriptor<Solution_> {
                 .get(GizmoSolutionClonerFactory.getGeneratedClassName(this))
                 : solutionCloner;
 
-        if (solutionCloner instanceof GizmoSolutionCloner<Solution_> gizmoSolutionCloner) {
-            gizmoSolutionCloner.setSolutionDescriptor(this);
+        if (solutionCloner instanceof GizmoSolutionCloner) {
+            ((GizmoSolutionCloner<Solution_>) solutionCloner).setSolutionDescriptor(this);
         }
         if (solutionCloner == null) {
             switch (descriptorPolicy.getDomainAccessType()) {
