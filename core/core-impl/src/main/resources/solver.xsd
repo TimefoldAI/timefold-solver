@@ -1459,6 +1459,8 @@
         
     <xs:restriction base="xs:string">
             
+      <xs:enumeration value="FULL_ASSERT_WITH_TRACKING"/>
+            
       <xs:enumeration value="FULL_ASSERT"/>
             
       <xs:enumeration value="NON_INTRUSIVE_FULL_ASSERT"/>

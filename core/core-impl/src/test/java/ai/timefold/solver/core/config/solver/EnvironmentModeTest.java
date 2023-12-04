@@ -40,7 +40,6 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -88,17 +87,16 @@ class EnvironmentModeTest {
         Solver<TestdataSolution> solver2 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         switch (environmentMode) {
-            case NON_REPRODUCIBLE:
+            case NON_REPRODUCIBLE -> {
                 assertNonReproducibility(solver1, solver2);
-                break;
-            case FULL_ASSERT:
-            case FAST_ASSERT:
-            case NON_INTRUSIVE_FULL_ASSERT:
-            case REPRODUCIBLE:
+            }
+            case FULL_ASSERT_WITH_TRACKING,
+                    FULL_ASSERT,
+                    FAST_ASSERT,
+                    NON_INTRUSIVE_FULL_ASSERT,
+                    REPRODUCIBLE -> {
                 assertReproducibility(solver1, solver2);
-                break;
-            default:
-                Assertions.fail("Environment mode not covered: " + environmentMode);
+            }
         }
     }
 
@@ -110,7 +108,7 @@ class EnvironmentModeTest {
         setSolverConfigCalculatorClass(solverConfig, TestdataDifferentValuesCalculator.class);
 
         switch (environmentMode) {
-            case FULL_ASSERT:
+            case FULL_ASSERT_WITH_TRACKING -> {
                 setSolverConfigMoveListFactoryClassToCorrupted(
                         solverConfig,
                         TestdataCorruptedUndoMoveFactory.class);
@@ -119,25 +117,24 @@ class EnvironmentModeTest {
                         "Actual value (v2) of variable value on TestdataEntity entity (e2) differs from expected (v1)",
                         "Variables that are different between from scratch and before",
                         "Actual value (v1) of variable value on TestdataEntity entity (e2) differs from expected (v2)");
-                break;
-            case FAST_ASSERT:
+            }
+            case FULL_ASSERT,
+                    FAST_ASSERT -> {
                 setSolverConfigMoveListFactoryClassToCorrupted(
                         solverConfig,
                         TestdataCorruptedUndoMoveFactory.class);
                 assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove");
-                break;
-            case NON_INTRUSIVE_FULL_ASSERT:
+            }
+            case NON_INTRUSIVE_FULL_ASSERT -> {
                 setSolverConfigMoveListFactoryClassToCorrupted(
                         solverConfig,
                         TestdataCorruptedEntityUndoMoveFactory.class);
                 assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
-                break;
-            case REPRODUCIBLE:
-            case NON_REPRODUCIBLE:
+            }
+            case REPRODUCIBLE,
+                    NON_REPRODUCIBLE -> {
                 // No exception expected
-                break;
-            default:
-                Assertions.fail("Environment mode not covered: " + environmentMode);
+            }
         }
     }
 
@@ -154,7 +151,7 @@ class EnvironmentModeTest {
                         .withScoreCalculationCountLimit(10L));
 
         switch (environmentMode) {
-            case FULL_ASSERT:
+            case FULL_ASSERT_WITH_TRACKING -> {
                 assertThatExceptionOfType(IllegalStateException.class)
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
                                 new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
@@ -163,21 +160,21 @@ class EnvironmentModeTest {
                                 "Actual value (v1) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (null)",
                                 "Variables that are different between from scratch and before",
                                 "Actual value (null) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
-            case FAST_ASSERT:
+            }
+            case FULL_ASSERT,
+                    FAST_ASSERT -> {
                 // FAST_ASSERT does not create snapshots since it does not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
                 assertThatExceptionOfType(IllegalStateException.class)
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
                                 new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
                         .withMessageContainingAll("corrupted undoMove");
-                break;
-            case REPRODUCIBLE:
-            case NON_REPRODUCIBLE:
-            case NON_INTRUSIVE_FULL_ASSERT:
+            }
+            case REPRODUCIBLE,
+                    NON_REPRODUCIBLE,
+                    NON_INTRUSIVE_FULL_ASSERT -> {
                 // No exception expected
-                break;
-            default:
-                Assertions.fail("Environment mode not covered: " + environmentMode);
+            }
         }
     }
 
@@ -189,23 +186,26 @@ class EnvironmentModeTest {
         setSolverConfigCalculatorClass(solverConfig, TestdataCorruptedDifferentValuesCalculator.class);
 
         switch (environmentMode) {
-            case FULL_ASSERT:
-            case NON_INTRUSIVE_FULL_ASSERT:
+            case FULL_ASSERT_WITH_TRACKING -> {
                 assertIllegalStateExceptionWhileSolving(
                         solverConfig,
                         "not the uncorruptedScore");
-                break;
-            case FAST_ASSERT:
+            }
+            case FULL_ASSERT,
+                    NON_INTRUSIVE_FULL_ASSERT -> {
+                assertIllegalStateExceptionWhileSolving(
+                        solverConfig,
+                        "not the uncorruptedScore");
+            }
+            case FAST_ASSERT -> {
                 assertIllegalStateExceptionWhileSolving(
                         solverConfig,
                         "Score corruption analysis could not be generated ");
-                break;
-            case REPRODUCIBLE:
-            case NON_REPRODUCIBLE:
+            }
+            case REPRODUCIBLE,
+                    NON_REPRODUCIBLE -> {
                 // No exception expected
-                break;
-            default:
-                Assertions.fail("Environment mode not covered: " + environmentMode);
+            }
         }
     }
 

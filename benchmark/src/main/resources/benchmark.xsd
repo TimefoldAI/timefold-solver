@@ -2444,6 +2444,9 @@
     <xs:restriction base="xs:string">
                   
       
+      <xs:enumeration value="FULL_ASSERT_WITH_TRACKING"/>
+                  
+      
       <xs:enumeration value="FULL_ASSERT"/>
                   
       

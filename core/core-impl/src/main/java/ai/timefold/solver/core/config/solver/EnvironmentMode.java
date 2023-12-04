@@ -20,6 +20,26 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 @XmlEnum
 public enum EnvironmentMode {
     /**
+     * This mode turns on variable tracking and all assertions to fail-fast on a bug in a {@link Move} implementation, a
+     * constraint, the engine itself or something else at an appalling performance cost.
+     * <p>
+     * Because it tracks genuine and shadow variables, it is able to report precisely what variables caused the corruption and
+     * report any missed {@link ai.timefold.solver.core.api.domain.variable.VariableListener} events.
+     * <p>
+     * When undo score corruption is detected, it throws an
+     * {@link ai.timefold.solver.core.api.solver.exception.UndoScoreCorruptionException}, which can be used to inspect the
+     * working solution state before, after and after the undo of a {@link Move}.
+     * <p>
+     * This mode is reproducible (see {@link #REPRODUCIBLE} mode).
+     * <p>
+     * This mode is intrusive because it calls the {@link InnerScoreDirector#calculateScore()} more frequently than a non assert
+     * mode.
+     * <p>
+     * This mode is appallingly slow.
+     */
+    FULL_ASSERT_WITH_TRACKING(true),
+
+    /**
      * This mode turns on all assertions
      * to fail-fast on a bug in a {@link Move} implementation, a constraint, the engine itself or something else
      * at a horrible performance cost.
@@ -111,4 +131,7 @@ public enum EnvironmentMode {
         return this != NON_REPRODUCIBLE;
     }
 
+    public boolean isTracking() {
+        return this == FULL_ASSERT_WITH_TRACKING;
+    }
 }

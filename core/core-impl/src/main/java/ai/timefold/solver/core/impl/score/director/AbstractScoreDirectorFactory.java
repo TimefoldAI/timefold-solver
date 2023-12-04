@@ -28,6 +28,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     protected InnerScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory = null;
 
     protected boolean assertClonedSolution = false;
+    protected boolean trackingWorkingSolution = false;
 
     public AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = solutionDescriptor;
@@ -66,6 +67,14 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     public void setAssertClonedSolution(boolean assertClonedSolution) {
         this.assertClonedSolution = assertClonedSolution;
+    }
+
+    public boolean isTrackingWorkingSolution() {
+        return trackingWorkingSolution;
+    }
+
+    public void setTrackingWorkingSolution(boolean trackingWorkingSolution) {
+        this.trackingWorkingSolution = trackingWorkingSolution;
     }
 
     // ************************************************************************
