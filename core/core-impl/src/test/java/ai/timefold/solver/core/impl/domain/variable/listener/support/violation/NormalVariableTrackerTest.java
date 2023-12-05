@@ -18,7 +18,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingBeforeEvents() {
-        NormalVariableTracker<TestdataSolution> tracker = new NormalVariableTracker<>(VARIABLE_DESCRIPTOR);
+        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
         TestdataEntity a = new TestdataEntity("a");
         TestdataEntity b = new TestdataEntity("b");
@@ -37,7 +37,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingAfterEvents() {
-        NormalVariableTracker<TestdataSolution> tracker = new NormalVariableTracker<>(VARIABLE_DESCRIPTOR);
+        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
         TestdataEntity a = new TestdataEntity("a");
         TestdataEntity b = new TestdataEntity("b");
@@ -56,7 +56,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingBeforeAndAfterEvents() {
-        NormalVariableTracker<TestdataSolution> tracker = new NormalVariableTracker<>(VARIABLE_DESCRIPTOR);
+        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
         TestdataEntity a = new TestdataEntity("a");
         TestdataEntity b = new TestdataEntity("b");
@@ -73,7 +73,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testNoMissingEvents() {
-        NormalVariableTracker<TestdataSolution> tracker = new NormalVariableTracker<>(VARIABLE_DESCRIPTOR);
+        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
         TestdataEntity a = new TestdataEntity("a");
         TestdataEntity b = new TestdataEntity("b");
@@ -90,7 +90,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testEventsResetAfterCall() {
-        NormalVariableTracker<TestdataSolution> tracker = new NormalVariableTracker<>(VARIABLE_DESCRIPTOR);
+        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
         TestdataEntity a = new TestdataEntity("a");
         TestdataEntity b = new TestdataEntity("b");
@@ -117,7 +117,7 @@ public class NormalVariableTrackerTest {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     void testDoesNotIncludeMissingEventsForOtherVariables() {
 
-        NormalVariableTracker<TestdataSolution> tracker = new NormalVariableTracker<>(VARIABLE_DESCRIPTOR);
+        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
         VariableDescriptor<TestdataLavishSolution> otherVariableDescriptor =
                 TestdataLavishEntity.buildVariableDescriptorForValue();
 

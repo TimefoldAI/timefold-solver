@@ -21,7 +21,7 @@ public class AllVariablesAssertTest {
                 solutionDescriptor.getEntityDescriptorStrict(TestdataEntity.class).getGenuineVariableDescriptor("value");
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
-        AllVariablesAssert<TestdataSolution> snapshot = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> snapshot = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         workingSolution.getEntityList().get(0).setValue(null);
@@ -61,7 +61,7 @@ public class AllVariablesAssertTest {
                         .getGenuineVariableDescriptor("valueList");
 
         var workingSolution = TestdataListSolution.generateInitializedSolution(9, 3);
-        AllVariablesAssert<TestdataListSolution> snapshot = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataListSolution> snapshot = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         setValueList(workingSolution.getEntityList().get(0),
@@ -113,13 +113,13 @@ public class AllVariablesAssertTest {
                 solutionDescriptor.getEntityDescriptorStrict(TestdataEntity.class).getGenuineVariableDescriptor("value");
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
-        AllVariablesAssert<TestdataSolution> before = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> before = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         workingSolution.getEntityList().get(0).setValue(null);
         workingSolution.getEntityList().get(1).setValue(workingSolution.getValueList().get(0));
 
-        AllVariablesAssert<TestdataSolution> after = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> after = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         var diff = after.changedVariablesFrom(before);
@@ -137,7 +137,7 @@ public class AllVariablesAssertTest {
                         .getGenuineVariableDescriptor("valueList");
 
         var workingSolution = TestdataListSolution.generateInitializedSolution(9, 3);
-        AllVariablesAssert<TestdataListSolution> before = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataListSolution> before = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         setValueList(workingSolution.getEntityList().get(0),
@@ -149,7 +149,7 @@ public class AllVariablesAssertTest {
                 workingSolution.getValueList().get(6),
                 workingSolution.getValueList().get(7));
 
-        AllVariablesAssert<TestdataListSolution> after = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataListSolution> after = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         var diff = after.changedVariablesFrom(before);

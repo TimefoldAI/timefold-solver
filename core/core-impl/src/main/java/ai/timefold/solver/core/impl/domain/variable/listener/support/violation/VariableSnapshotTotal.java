@@ -10,33 +10,35 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 /**
- * Serves for detecting undo move corruption. When a snapshot is created, it records the state of all variables (genuine and
- * shadow) for all entities.
+ * Serves for detecting undo move corruption.
+ * When a snapshot is created, it records the state of all variables (genuine and shadow) for all entities.
  */
-public class AllVariablesAssert<Solution_> {
+public final class VariableSnapshotTotal<Solution_> {
     private final Map<VariableId<Solution_>, VariableSnapshot<Solution_>> variableIdToSnapshot =
             new HashMap<>();
 
-    public static <Solution_> AllVariablesAssert<Solution_> takeSnapshot(
+    private VariableSnapshotTotal() {
+    }
+
+    public static <Solution_> VariableSnapshotTotal<Solution_> takeSnapshot(
             SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ workingSolution) {
-        AllVariablesAssert<Solution_> out = new AllVariablesAssert<>();
+        VariableSnapshotTotal<Solution_> out = new VariableSnapshotTotal<>();
         solutionDescriptor.visitAllEntities(workingSolution, entity -> {
             EntityDescriptor<Solution_> entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
-            for (VariableDescriptor<Solution_> variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
-                out.recordVariable(solutionDescriptor, variableDescriptor, entity);
+            for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
+                out.recordVariable(variableDescriptor, entity);
             }
         });
         return out;
     }
 
-    private void recordVariable(SolutionDescriptor<Solution_> solutionDescriptor,
-            VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        VariableSnapshot<Solution_> snapshot = new VariableSnapshot<>(solutionDescriptor, variableDescriptor, entity);
+    private void recordVariable(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
+        VariableSnapshot<Solution_> snapshot = new VariableSnapshot<>(variableDescriptor, entity);
         variableIdToSnapshot.put(snapshot.getVariableId(), snapshot);
     }
 
-    public List<VariableId<Solution_>> changedVariablesFrom(AllVariablesAssert<Solution_> before) {
+    public List<VariableId<Solution_>> changedVariablesFrom(VariableSnapshotTotal<Solution_> before) {
         List<VariableId<Solution_>> out = new ArrayList<>();
         for (VariableId<Solution_> variableId : variableIdToSnapshot.keySet()) {
             VariableSnapshot<Solution_> variableBefore = before.variableIdToSnapshot.get(variableId);

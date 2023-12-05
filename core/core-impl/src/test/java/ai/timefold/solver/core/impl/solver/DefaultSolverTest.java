@@ -38,7 +38,6 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
@@ -50,7 +49,6 @@ import ai.timefold.solver.core.impl.phase.custom.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -111,23 +109,6 @@ class DefaultSolverTest {
         solution = solver.solve(solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
-    }
-
-    @Test
-    void solveTest() {
-        SolverConfig solverConfig = new SolverConfig();
-        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT_WITH_TRACKING);
-        solverConfig.setSolutionClass(TestdataSolution.class);
-        solverConfig.setEntityClassList(List.of(TestdataEntity.class));
-        solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(30L));
-        solverConfig.setScoreDirectorFactoryConfig(new ScoreDirectorFactoryConfig()
-                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class));
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
-
-        TestdataSolution solution = TestdataSolution.generateSolution(100, 100);
-
-        solver.solve(solution);
     }
 
     @Test

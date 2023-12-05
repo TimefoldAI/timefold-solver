@@ -13,18 +13,18 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class SolutionTracker<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final List<NormalVariableTracker<Solution_>> normalVariableTrackers;
+    private final List<VariableTracker<Solution_>> normalVariableTrackers;
     private final List<ListVariableTracker<Solution_>> listVariableTrackers;
     private List<String> missingEventsForward;
     private List<String> missingEventsBackward;
     Solution_ beforeMoveSolution;
-    AllVariablesAssert<Solution_> beforeVariables;
+    VariableSnapshotTotal<Solution_> beforeVariables;
     Solution_ afterMoveSolution;
-    AllVariablesAssert<Solution_> afterVariables;
+    VariableSnapshotTotal<Solution_> afterVariables;
     Solution_ afterUndoSolution;
-    AllVariablesAssert<Solution_> undoVariables;
+    VariableSnapshotTotal<Solution_> undoVariables;
     Solution_ fromScratchSolution;
-    AllVariablesAssert<Solution_> scratchVariables;
+    VariableSnapshotTotal<Solution_> scratchVariables;
 
     public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor,
             SupplyManager supplyManager) {
@@ -36,16 +36,12 @@ public final class SolutionTracker<Solution_> {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
                     listVariableTrackers.add(new ListVariableTracker<>(listVariableDescriptor));
                 } else {
-                    normalVariableTrackers.add(new NormalVariableTracker<>(variableDescriptor));
+                    normalVariableTrackers.add(new VariableTracker<>(variableDescriptor));
                 }
             }
         }
-        for (NormalVariableTracker<Solution_> normalVariableTracker : normalVariableTrackers) {
-            supplyManager.demand(normalVariableTracker.demand());
-        }
-        for (ListVariableTracker<Solution_> listVariableTracker : listVariableTrackers) {
-            supplyManager.demand(listVariableTracker.demand());
-        }
+        normalVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
+        listVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
     }
 
     public Solution_ getBeforeMoveSolution() {
@@ -61,12 +57,12 @@ public final class SolutionTracker<Solution_> {
     }
 
     public void setBeforeMoveSolution(Solution_ workingSolution) {
-        beforeVariables = AllVariablesAssert.takeSnapshot(solutionDescriptor, workingSolution);
+        beforeVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
         beforeMoveSolution = cloneSolution(workingSolution);
     }
 
     public void setAfterMoveSolution(Solution_ workingSolution) {
-        afterVariables = AllVariablesAssert.takeSnapshot(solutionDescriptor, workingSolution);
+        afterVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
         afterMoveSolution = cloneSolution(workingSolution);
 
         if (beforeVariables != null) {
@@ -77,7 +73,7 @@ public final class SolutionTracker<Solution_> {
     }
 
     public void setAfterUndoSolution(Solution_ workingSolution) {
-        undoVariables = AllVariablesAssert.takeSnapshot(solutionDescriptor, workingSolution);
+        undoVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
         afterUndoSolution = cloneSolution(workingSolution);
         if (beforeVariables != null) {
             missingEventsBackward = getEntitiesMissingBeforeAfterEvents(undoVariables, afterVariables);
@@ -87,7 +83,7 @@ public final class SolutionTracker<Solution_> {
     }
 
     public void setFromScratchSolution(Solution_ workingSolution) {
-        scratchVariables = AllVariablesAssert.takeSnapshot(solutionDescriptor, workingSolution);
+        scratchVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
         fromScratchSolution = cloneSolution(workingSolution);
     }
 
@@ -95,11 +91,11 @@ public final class SolutionTracker<Solution_> {
         return solutionDescriptor.getSolutionCloner().cloneSolution(workingSolution);
     }
 
-    private List<String> getEntitiesMissingBeforeAfterEvents(AllVariablesAssert<Solution_> beforeSolution,
-            AllVariablesAssert<Solution_> afterSolution) {
+    private List<String> getEntitiesMissingBeforeAfterEvents(VariableSnapshotTotal<Solution_> beforeSolution,
+            VariableSnapshotTotal<Solution_> afterSolution) {
         List<String> out = new ArrayList<>();
         var changes = afterSolution.changedVariablesFrom(beforeSolution);
-        for (NormalVariableTracker<Solution_> normalVariableTracker : normalVariableTrackers) {
+        for (VariableTracker<Solution_> normalVariableTracker : normalVariableTrackers) {
             out.addAll(normalVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
         }
         for (ListVariableTracker<Solution_> listVariableTracker : listVariableTrackers) {
@@ -124,28 +120,38 @@ public final class SolutionTracker<Solution_> {
                 undoVariables);
 
         if (!changedBetweenBeforeAndUndo.isEmpty()) {
-            out.append("Variables that are different between before and undo:\n")
-                    .append(formatList(changedBetweenBeforeAndUndo));
+            out.append("""
+                    Variables that are different between before and undo:
+                    %s
+                    """.formatted(formatList(changedBetweenBeforeAndUndo)));
         }
 
         if (!changedBetweenBeforeAndScratch.isEmpty()) {
-            out.append("Variables that are different between from scratch and before:\n")
-                    .append(formatList(changedBetweenBeforeAndScratch));
+            out.append("""
+                    Variables that are different between from scratch and before:
+                    %s
+                    """.formatted(formatList(changedBetweenBeforeAndScratch)));
         }
 
         if (!changedBetweenUndoAndScratch.isEmpty()) {
-            out.append("Variables that are different between from scratch and undo:\n")
-                    .append(formatList(changedBetweenUndoAndScratch));
+            out.append("""
+                    Variables that are different between from scratch and undo:
+                    %s
+                    """.formatted(formatList(changedBetweenUndoAndScratch)));
         }
 
         if (!missingEventsForward.isEmpty()) {
-            out.append("Missing variable listener events for actual move:\n")
-                    .append(formatList(missingEventsForward));
+            out.append("""
+                    Missing variable listener events for actual move:
+                    %s
+                    """.formatted(formatList(missingEventsForward)));
         }
 
         if (!missingEventsBackward.isEmpty()) {
-            out.append("Missing variable listener events for undo move:\n")
-                    .append(formatList(missingEventsBackward));
+            out.append("""
+                    Missing variable listener events for undo move:")
+                    %s
+                    """.formatted(formatList(missingEventsBackward)));
         }
 
         if (out.isEmpty()) {
@@ -156,8 +162,8 @@ public final class SolutionTracker<Solution_> {
     }
 
     static <Solution_> List<String> getVariableChangedViolations(
-            AllVariablesAssert<Solution_> expectedSnapshot,
-            AllVariablesAssert<Solution_> actualSnapshot) {
+            VariableSnapshotTotal<Solution_> expectedSnapshot,
+            VariableSnapshotTotal<Solution_> actualSnapshot) {
         List<String> out = new ArrayList<>();
         var changedVariables = expectedSnapshot.changedVariablesFrom(actualSnapshot);
         for (var changedVariable : changedVariables) {

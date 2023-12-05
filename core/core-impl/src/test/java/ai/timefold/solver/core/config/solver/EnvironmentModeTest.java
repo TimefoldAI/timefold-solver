@@ -90,7 +90,7 @@ class EnvironmentModeTest {
             case NON_REPRODUCIBLE -> {
                 assertNonReproducibility(solver1, solver2);
             }
-            case FULL_ASSERT_WITH_TRACKING,
+            case TRACKED_FULL_ASSERT,
                     FULL_ASSERT,
                     FAST_ASSERT,
                     NON_INTRUSIVE_FULL_ASSERT,
@@ -108,7 +108,7 @@ class EnvironmentModeTest {
         setSolverConfigCalculatorClass(solverConfig, TestdataDifferentValuesCalculator.class);
 
         switch (environmentMode) {
-            case FULL_ASSERT_WITH_TRACKING -> {
+            case TRACKED_FULL_ASSERT -> {
                 setSolverConfigMoveListFactoryClassToCorrupted(
                         solverConfig,
                         TestdataCorruptedUndoMoveFactory.class);
@@ -151,7 +151,7 @@ class EnvironmentModeTest {
                         .withScoreCalculationCountLimit(10L));
 
         switch (environmentMode) {
-            case FULL_ASSERT_WITH_TRACKING -> {
+            case TRACKED_FULL_ASSERT -> {
                 assertThatExceptionOfType(IllegalStateException.class)
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
                                 new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
@@ -186,7 +186,7 @@ class EnvironmentModeTest {
         setSolverConfigCalculatorClass(solverConfig, TestdataCorruptedDifferentValuesCalculator.class);
 
         switch (environmentMode) {
-            case FULL_ASSERT_WITH_TRACKING -> {
+            case TRACKED_FULL_ASSERT -> {
                 assertIllegalStateExceptionWhileSolving(
                         solverConfig,
                         "not the uncorruptedScore");

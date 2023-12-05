@@ -10,14 +10,19 @@ import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableList
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-public class NormalVariableTracker<Solution_>
+/**
+ * Tracks variable listener events for a given genuine or shadow variable
+ * (except {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}).
+ */
+public class VariableTracker<Solution_>
         implements SourcedVariableListener<Solution_>, VariableListener<Solution_, Object>, Supply {
     private final VariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
 
-    public NormalVariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
+    public VariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
         this.variableDescriptor = variableDescriptor;
         beforeVariableChangedEntityList = new ArrayList<>();
         afterVariableChangedEntityList = new ArrayList<>();
@@ -90,10 +95,17 @@ public class NormalVariableTracker<Solution_>
         return new TrackerDemand();
     }
 
-    public class TrackerDemand implements Demand<NormalVariableTracker<Solution_>> {
+    /**
+     * In order for the {@link VariableTracker} to be registered as a variable listener,
+     * it needs to be passed to the {@link InnerScoreDirector#getSupplyManager()}, which requires a {@link Demand}.
+     * <p>
+     * Unlike most other {@link Demand}s, there will only be one instance of
+     * {@link VariableTracker} in the {@link InnerScoreDirector} for each variable.
+     */
+    public class TrackerDemand implements Demand<VariableTracker<Solution_>> {
         @Override
-        public NormalVariableTracker<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
-            return NormalVariableTracker.this;
+        public VariableTracker<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
+            return VariableTracker.this;
         }
     }
 }

@@ -52,13 +52,13 @@ public class SolutionTrackerTest {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
-        AllVariablesAssert<TestdataSolution> before = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> before = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         workingSolution.getEntityList().get(0).setValue(null);
         workingSolution.getEntityList().get(1).setValue(workingSolution.getValueList().get(0));
 
-        AllVariablesAssert<TestdataSolution> after = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> after = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         assertThat(SolutionTracker.getVariableChangedViolations(before, after)).containsExactlyInAnyOrder(
@@ -76,10 +76,10 @@ public class SolutionTrackerTest {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
-        AllVariablesAssert<TestdataSolution> before = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> before = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
-        AllVariablesAssert<TestdataSolution> after = AllVariablesAssert.takeSnapshot(solutionDescriptor,
+        VariableSnapshotTotal<TestdataSolution> after = VariableSnapshotTotal.takeSnapshot(solutionDescriptor,
                 workingSolution);
 
         assertThat(SolutionTracker.getVariableChangedViolations(before, after)).isEmpty();

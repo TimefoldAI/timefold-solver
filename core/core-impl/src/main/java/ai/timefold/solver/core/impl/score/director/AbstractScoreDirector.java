@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
@@ -30,6 +29,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.S
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 import org.slf4j.Logger;
@@ -66,7 +66,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected Solution_ workingSolution;
     protected Integer workingInitScore = null;
     private String undoMoveText;
+
     // Null when tracking disabled
+    private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
@@ -83,8 +85,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (scoreDirectorFactory.isTrackingWorkingSolution()) {
             this.solutionTracker = new SolutionTracker<>(getSolutionDescriptor(),
                     getSupplyManager());
+            this.trackingWorkingSolution = true;
         } else {
             this.solutionTracker = null;
+            this.trackingWorkingSolution = false;
         }
     }
 
@@ -211,14 +215,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
-        if (solutionTracker != null) {
+        if (trackingWorkingSolution) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
-            if (solutionTracker != null) {
+            if (trackingWorkingSolution) {
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
             assertWorkingScoreFromScratch(score, move);
@@ -229,14 +233,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
-        if (solutionTracker != null) {
+        if (trackingWorkingSolution) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
-            if (solutionTracker != null) {
+            if (trackingWorkingSolution) {
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
             assertWorkingScoreFromScratch(score, move);
@@ -621,7 +625,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     + "s were triggered without changes to the genuine variables"
                     + " after completedAction (" + completedAction + ").\n"
                     + "But all the shadow variable values are still the same, so this is impossible.\n"
-                    + "Maybe run with " + EnvironmentMode.FULL_ASSERT_WITH_TRACKING
+                    + "Maybe run with " + EnvironmentMode.TRACKED_FULL_ASSERT
                     + " if you aren't already, to fail earlier.");
         }
     }
@@ -682,7 +686,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (!undoScore.equals(beforeMoveScore)) {
             logger.trace("        Corruption detected. Diagnosing...");
 
-            if (solutionTracker != null) {
+            if (trackingWorkingSolution) {
                 solutionTracker.setAfterUndoSolution(workingSolution);
             }
             // Precondition: assert that there are probably no corrupted constraints
@@ -690,30 +694,34 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // Precondition: assert that shadow variables aren't stale after doing the undoMove
             assertShadowVariablesAreNotStale(undoScore, undoMoveText);
             String corruptionDiagnosis = "";
-            if (solutionTracker != null) {
+            if (trackingWorkingSolution) {
                 solutionTracker.setFromScratchSolution(workingSolution);
                 corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
             }
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
-            String corruptionMessage = ("UndoMove corruption (" + scoreDifference
-                    + "): the beforeMoveScore (" + beforeMoveScore + ") is not the undoScore (" + undoScore
-                    + ") which is the uncorruptedScore (" + undoScore + ") of the workingSolution.\n"
-                    + corruptionDiagnosis
-                    + "  1) Enable EnvironmentMode " + EnvironmentMode.FULL_ASSERT_WITH_TRACKING
-                    + " (if you haven't already) to fail-faster in case there's a score corruption or variable listener corruption.\n"
-                    + "  2) Check the Move.createUndoMove(...) method of the moveClass (" + move.getClass() + ")."
-                    + " The move (" + move + ") might have a corrupted undoMove (" + undoMoveText + ").\n"
-                    + "  3) Check your custom " + VariableListener.class.getSimpleName() + "s (if you have any)"
-                    + " for shadow variables that are used by score constraints that could cause"
-                    + " the scoreDifference (" + scoreDifference + ").");
+            String corruptionMessage =
+                    """
+                            UndoMove corruption (%s): the beforeMoveScore (%s) is not the undoScore (%s) which is the uncorruptedScore (%s) of the workingSolution.
+                            %s
+                            1) Enable EnvironmentMode %s
+                            (if you haven't already) to fail-faster in case there's a score corruption or variable listener corruption.
+                            2) Check the Move.createUndoMove(...) method of the moveClass (%s).
+                            The move (%s) might have a corrupted undoMove (%s).
+                            3) Check your custom %ss (if you have any)
+                            for shadow variables that are used by score constraints that could cause
+                            the scoreDifference (%s).
+                            """
+                            .formatted(scoreDifference, beforeMoveScore, undoScore, undoScore,
+                                    corruptionDiagnosis,
+                                    EnvironmentMode.TRACKED_FULL_ASSERT,
+                                    move.getClass().getSimpleName(), move, undoMoveText,
+                                    VariableListener.class.getSimpleName(), scoreDifference);
 
-            if (solutionTracker != null) {
+            if (trackingWorkingSolution) {
                 throw new UndoScoreCorruptionException(corruptionMessage,
                         solutionTracker.getBeforeMoveSolution(),
                         solutionTracker.getAfterMoveSolution(),
-                        solutionTracker.getAfterUndoSolution(),
-                        move,
-                        scoreDirectorFactory);
+                        solutionTracker.getAfterUndoSolution());
             } else {
                 throw new IllegalStateException(corruptionMessage);
             }

@@ -69,6 +69,12 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
         this.assertClonedSolution = assertClonedSolution;
     }
 
+    /**
+     * When true, a snapshot of the solution is created before, after and after the undo of a move.
+     * In {@link ai.timefold.solver.core.config.solver.EnvironmentMode#TRACKED_FULL_ASSERT},
+     * the snapshots are compared when corruption is detected,
+     * allowing us to report exactly what variables are different.
+     */
     public boolean isTrackingWorkingSolution() {
         return trackingWorkingSolution;
     }
