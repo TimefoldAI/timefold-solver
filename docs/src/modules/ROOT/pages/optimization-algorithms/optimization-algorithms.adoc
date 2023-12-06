@@ -2335,7 +2335,7 @@ For example in examination scheduling, changing the period of an exam A
 would also change the period of all the other exams that need to coincide with exam A.
 
 A custom `Move` is far more work to implement and much harder to avoid bugs than a generic ``Move``.
-After implementing a custom ``Move``, turn on `environmentMode` ``FULL_ASSERT`` to check for score corruptions.
+After implementing a custom ``Move``, turn on `environmentMode` ``TRACED_FULL_ASSERT`` to check for score corruptions.
 
 
 [#theInterfaceMove]
