@@ -695,7 +695,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             assertShadowVariablesAreNotStale(undoScore, undoMoveText);
             String corruptionDiagnosis = "";
             if (trackingWorkingSolution) {
-                solutionTracker.setFromScratchSolution(workingSolution);
+                // Recalculate all shadow variables from scratch
+                variableListenerSupport.recalculateAllShadowVariablesFromScratch(workingSolution);
+                solutionTracker.setUndoFromScratchSolution(workingSolution);
+
+                // Also calculate from scratch for the before solution, since it might
+                // have been corrupted but was only detected now
+                solutionTracker.restoreBeforeSolution();
+                variableListenerSupport.recalculateAllShadowVariablesFromScratch(workingSolution);
+                solutionTracker.setBeforeFromScratchSolution(workingSolution);
+
                 corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
             }
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();

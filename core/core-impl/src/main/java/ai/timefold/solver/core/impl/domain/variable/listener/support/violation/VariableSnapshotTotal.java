@@ -53,4 +53,8 @@ public final class VariableSnapshotTotal<Solution_> {
     public VariableSnapshot<Solution_> getVariableSnapshot(VariableId<Solution_> variableId) {
         return variableIdToSnapshot.get(variableId);
     }
+
+    public void restore() {
+        variableIdToSnapshot.values().forEach(VariableSnapshot::restore);
+    }
 }

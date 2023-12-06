@@ -114,9 +114,7 @@ class EnvironmentModeTest {
                         TestdataCorruptedUndoMoveFactory.class);
                 assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove",
                         "Variables that are different between before and undo",
-                        "Actual value (v2) of variable value on TestdataEntity entity (e2) differs from expected (v1)",
-                        "Variables that are different between from scratch and before",
-                        "Actual value (v1) of variable value on TestdataEntity entity (e2) differs from expected (v2)");
+                        "Actual value (v2) of variable value on TestdataEntity entity (e2) differs from expected (v1)");
             }
             case FULL_ASSERT,
                     FAST_ASSERT -> {
@@ -157,9 +155,7 @@ class EnvironmentModeTest {
                                 new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
                         .withMessageContainingAll("corrupted undoMove",
                                 "Variables that are different between before and undo",
-                                "Actual value (v1) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (null)",
-                                "Variables that are different between from scratch and before",
-                                "Actual value (null) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
+                                "Actual value (v1) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (null)");
             }
             case FULL_ASSERT,
                     FAST_ASSERT -> {

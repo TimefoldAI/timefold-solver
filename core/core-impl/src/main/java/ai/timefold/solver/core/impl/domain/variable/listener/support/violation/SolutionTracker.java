@@ -23,8 +23,8 @@ public final class SolutionTracker<Solution_> {
     VariableSnapshotTotal<Solution_> afterVariables;
     Solution_ afterUndoSolution;
     VariableSnapshotTotal<Solution_> undoVariables;
-    Solution_ fromScratchSolution;
-    VariableSnapshotTotal<Solution_> scratchVariables;
+    VariableSnapshotTotal<Solution_> undoFromScratchVariables;
+    VariableSnapshotTotal<Solution_> beforeFromScratchVariables;
 
     public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor,
             SupplyManager supplyManager) {
@@ -82,13 +82,20 @@ public final class SolutionTracker<Solution_> {
         }
     }
 
-    public void setFromScratchSolution(Solution_ workingSolution) {
-        scratchVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
-        fromScratchSolution = cloneSolution(workingSolution);
+    public void setUndoFromScratchSolution(Solution_ workingSolution) {
+        undoFromScratchVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
+    }
+
+    public void setBeforeFromScratchSolution(Solution_ workingSolution) {
+        beforeFromScratchVariables = VariableSnapshotTotal.takeSnapshot(solutionDescriptor, workingSolution);
     }
 
     private Solution_ cloneSolution(Solution_ workingSolution) {
         return solutionDescriptor.getSolutionCloner().cloneSolution(workingSolution);
+    }
+
+    public void restoreBeforeSolution() {
+        beforeVariables.restore();
     }
 
     private List<String> getEntitiesMissingBeforeAfterEvents(VariableSnapshotTotal<Solution_> beforeSolution,
@@ -113,10 +120,10 @@ public final class SolutionTracker<Solution_> {
         var changedBetweenBeforeAndUndo = getVariableChangedViolations(beforeVariables,
                 undoVariables);
 
-        var changedBetweenBeforeAndScratch = getVariableChangedViolations(scratchVariables,
+        var changedBetweenBeforeAndScratch = getVariableChangedViolations(beforeFromScratchVariables,
                 beforeVariables);
 
-        var changedBetweenUndoAndScratch = getVariableChangedViolations(scratchVariables,
+        var changedBetweenUndoAndScratch = getVariableChangedViolations(undoFromScratchVariables,
                 undoVariables);
 
         if (!changedBetweenBeforeAndUndo.isEmpty()) {

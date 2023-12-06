@@ -106,7 +106,8 @@ public class SolutionTrackerTest {
 
         workingSolution.getEntityList().get(1).setValue(null);
 
-        tracker.setFromScratchSolution(workingSolution);
+        tracker.setUndoFromScratchSolution(workingSolution);
+        tracker.setBeforeFromScratchSolution(workingSolution);
 
         assertThat(tracker.buildScoreCorruptionMessage())
                 .contains("Variables that are different between before and undo:",
@@ -174,7 +175,8 @@ public class SolutionTrackerTest {
 
         workingSolution.getEntityList().get(1).setValue(null);
 
-        tracker.setFromScratchSolution(workingSolution);
+        tracker.setUndoFromScratchSolution(workingSolution);
+        tracker.setBeforeFromScratchSolution(workingSolution);
 
         assertThat(tracker.buildScoreCorruptionMessage())
                 .contains("Variables that are different between before and undo:",
@@ -236,7 +238,8 @@ public class SolutionTrackerTest {
 
         workingSolution.getEntityList().get(1).setValue(null);
 
-        tracker.setFromScratchSolution(workingSolution);
+        tracker.setUndoFromScratchSolution(workingSolution);
+        tracker.setBeforeFromScratchSolution(workingSolution);
 
         assertThat(tracker.buildScoreCorruptionMessage())
                 .contains("Variables that are different between before and undo:",
@@ -289,7 +292,8 @@ public class SolutionTrackerTest {
 
         workingSolution.getEntityList().get(1).setValue(null);
 
-        tracker.setFromScratchSolution(workingSolution);
+        tracker.setUndoFromScratchSolution(workingSolution);
+        tracker.setBeforeFromScratchSolution(workingSolution);
 
         assertThat(tracker.buildScoreCorruptionMessage())
                 .contains("Variables that are different between before and undo:",

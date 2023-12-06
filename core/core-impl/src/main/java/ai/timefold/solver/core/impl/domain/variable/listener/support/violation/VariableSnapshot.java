@@ -38,6 +38,10 @@ public record VariableSnapshot<Solution_>(VariableId<Solution_> variableId, Obje
         return variableId;
     }
 
+    public void restore() {
+        variableId.variableDescriptor().setValue(variableId.entity(), value);
+    }
+
     public boolean isDifferentFrom(VariableSnapshot<Solution_> other) {
         if (!Objects.equals(variableId, other.variableId)) {
             throw new IllegalArgumentException(
