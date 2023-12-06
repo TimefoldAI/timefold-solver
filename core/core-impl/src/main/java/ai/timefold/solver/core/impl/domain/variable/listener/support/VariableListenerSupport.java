@@ -267,9 +267,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private void resetShadowVariables(Object entity) {
         var entityDescriptor = scoreDirector.getSolutionDescriptor()
                 .findEntityDescriptorOrFail(entity.getClass());
-        if (entityDescriptor.isGenuine()) {
-            return;
-        }
+
         for (var variableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
             if (!variableDescriptor.getVariablePropertyType().isPrimitive()) {
                 variableDescriptor.setValue(entity, null);
