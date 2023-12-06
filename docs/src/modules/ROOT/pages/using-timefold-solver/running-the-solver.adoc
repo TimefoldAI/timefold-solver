@@ -98,7 +98,8 @@ These are the environment modes:
 
 The FULL_ASSERT mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
-This mode is reproducible (see the reproducible mode). It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
+This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
 The FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
 
@@ -150,7 +151,7 @@ Any variable that changed between the "before move" solution and the "after move
 Any variable that changed between the "after move" solution and "after undo move" solution without either a
 `beforeVariableChanged` or `afterVariableChanged` would be reported here.
 
-This mode is reproducible (see the reproducible mode).
+This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
 The `TRACED_FULL_ASSERT` mode is by far the slowest mode,
@@ -162,7 +163,8 @@ because it clones solutions before and after each move.
 
 The NON_INTRUSIVE_FULL_ASSERT turns on several assertions to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
-This mode is reproducible (see the reproducible mode). It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
+This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
 
 The NON_INTRUSIVE_FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
 
@@ -172,7 +174,8 @@ The NON_INTRUSIVE_FULL_ASSERT mode is horribly slow (because it does not rely on
 
 The FAST_ASSERT mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
-This mode is reproducible (see the reproducible mode). It is also intrusive because it calls the method `calculateScore()` more frequently than a non assert mode.
+This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+It is also intrusive because it calls the method `calculateScore()` more frequently than a non assert mode.
 
 The FAST_ASSERT mode is slow.
 
