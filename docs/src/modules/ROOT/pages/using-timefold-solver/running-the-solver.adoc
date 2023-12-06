@@ -105,10 +105,10 @@ The FULL_ASSERT mode is horribly slow (because it does not rely on incremental s
 [#environmentModeTracedFullAssert]
 === `TRACED_FULL_ASSERT`
 
-The TRACED_FULL_ASSERT mode turns on all the <<environmentModeFullAssert, FULL_ASSERT>> assertions and additionally track changes to the working solution.
+The TRACED_FULL_ASSERT mode turns on all the <<environmentModeFullAssert, FULL_ASSERT>> assertions and additionally tracks changes to the working solution.
 This allows the solver to report exactly what variables were corrupted and what variable listener events are missing.
 
-For instance, when this incorrect move is evaluated
+Consider the following incorrectly implemented move:
 
 ```java
     @Override
@@ -124,7 +124,7 @@ For instance, when this incorrect move is evaluated
     }
 ```
 
-the exception thrown by the solver will have the following in its message:
+When it is evaluated by the solver, an exception will be thrown with the following in its message:
 
 ```
 Variables that are different between before and undo:
@@ -133,27 +133,28 @@ Variables that are different between before and undo:
 
 In particular, the solver will recalculate all shadow variables from scratch on the solution after the undo and then report:
 
-- Genuine and shadow variables that are different between before and undo.
+- Genuine and shadow variables that are different between "before" and "undo".
 After an undo move is evaluated, it is expected to exactly match the original working solution.
 
-- Variables that are different between from scratch and before.
+- Variables that are different between "from scratch" and "before".
 This is to detect if the solution was corrupted before the move was evaluated due to shadow variable corruption.
 
-- Variables that are different between from scratch and undo.
+- Variables that are different between "from scratch" and "undo".
 This is to detect if recalculating the shadow variables from scratch is different from the incremental shadow variable calculation.
 
-- Missing variable listener events for actual move.
-Any variable that changed between the before move solution and after move solution without either a
+- Missing variable listener events for the actual move.
+Any variable that changed between the "before move" solution and the "after move" solution without either a
 `beforeVariableChanged` or `afterVariableChanged` would be reported here.
 
 - Missing variable listener events for undo move.
-Any variable that changed between the after move solution and after undo move solution without either a
+Any variable that changed between the "after move" solution and "after undo move" solution without either a
 `beforeVariableChanged` or `afterVariableChanged` would be reported here.
 
 This mode is reproducible (see the reproducible mode).
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
-The TRACED_FULL_ASSERT mode is by far the slowest mode (because it clones solutions before and after each move).
+The `TRACED_FULL_ASSERT` mode is by far the slowest mode,
+because it clones solutions before and after each move.
 
 
 [#environmentModeNonIntrusiveFullAssert]
