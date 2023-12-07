@@ -96,17 +96,19 @@ These are the environment modes:
 [#environmentModeFullAssert]
 === `FULL_ASSERT`
 
-The FULL_ASSERT mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+The `FULL_ASSERT` mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
-This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+This mode is <<environmentModeReproducible,reproducible>>.
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
-The FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
+The `FULL_ASSERT` mode is horribly slow,
+because it does not rely on incremental score calculation.
 
-[#environmentModeTracedFullAssert]
-=== `TRACED_FULL_ASSERT`
+[#environmentModeTrackedFullAssert]
+=== `TRACKED_FULL_ASSERT`
 
-The TRACED_FULL_ASSERT mode turns on all the <<environmentModeFullAssert, FULL_ASSERT>> assertions and additionally tracks changes to the working solution.
+The `TRACKED_FULL_ASSERT` mode turns on all the <<environmentModeFullAssert, `FULL_ASSERT`>> assertions
+and additionally tracks changes to the working solution.
 This allows the solver to report exactly what variables were corrupted and what variable listener events are missing.
 
 Consider the following incorrectly implemented move:
@@ -154,32 +156,35 @@ Any variable that changed between the "after move" solution and "after undo move
 This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
-The `TRACED_FULL_ASSERT` mode is by far the slowest mode,
+The `TRACKED_FULL_ASSERT` mode is by far the slowest mode,
 because it clones solutions before and after each move.
 
 
 [#environmentModeNonIntrusiveFullAssert]
 === `NON_INTRUSIVE_FULL_ASSERT`
 
-The NON_INTRUSIVE_FULL_ASSERT turns on several assertions to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+The `NON_INTRUSIVE_FULL_ASSERT` turns on several assertions to fail-fast on a bug in a Move implementation,
+a constraint, the engine itself, ...
 
-This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+This mode is <<environmentModeReproducible,reproducible>>.
 It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
 
-The NON_INTRUSIVE_FULL_ASSERT mode is horribly slow (because it does not rely on incremental score calculation).
+The `NON_INTRUSIVE_FULL_ASSERT` mode is horribly slow,
+because it does not rely on incremental score calculation.
 
 
 [#environmentModeFastAssert]
 === `FAST_ASSERT`
 
-The FAST_ASSERT mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+The `FAST_ASSERT` mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move)
+to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
-This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+This mode is <<environmentModeReproducible,reproducible>>.
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non assert mode.
 
-The FAST_ASSERT mode is slow.
+The `FAST_ASSERT` mode is slow.
 
-It is recommended to write a test case that does a short run of your planning problem with the FAST_ASSERT mode on.
+It is recommended to write a test case that does a short run of your planning problem with the `FAST_ASSERT` mode on.
 
 
 [#environmentModeReproducible]
@@ -195,15 +200,20 @@ It also allows you to benchmark certain refactorings (such as a score constraint
 ====
 Despite the reproducible mode, your application might still not be fully reproducible because of:
 
-* Use of `HashSet` (or another `Collection` which has an inconsistent order between JVM runs) for collections of planning entities or planning values (but not normal problem facts), especially in the solution implementation. Replace it with ``LinkedHashSet``.
-* Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination. A sufficiently large difference in allocated CPU time will influence the time gradient values. Replace Simulated Annealing with Late Acceptance. Or instead, replace time spent termination with step count termination.
+* Use of `HashSet` (or another `Collection` which has an inconsistent order between JVM runs)
+for collections of planning entities or planning values (but not normal problem facts),
+especially in the solution implementation. Replace it with ``LinkedHashSet``.
+* Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination.
+A sufficiently large difference in allocated CPU time will influence the time gradient values.
+Replace Simulated Annealing with Late Acceptance, or replace time spent termination with step count termination.
 
 ====
 
 The reproducible mode can be slightly slower than the non-reproducible mode.
 If your production environment can benefit from reproducibility, use this mode in production.
 
-In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified, and it also disables certain concurrency optimizations (such as work stealing).
+In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified,
+and it also disables certain concurrency optimizations, such as work stealing.
 
 
 [#environmentModeProduction]
