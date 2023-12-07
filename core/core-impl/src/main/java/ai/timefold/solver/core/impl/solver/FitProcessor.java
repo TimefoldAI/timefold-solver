@@ -50,19 +50,21 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
         entityPlacer.stepStarted(stepScope);
 
         try (scoreDirector) {
-            for (var placement : entityPlacer) {
-                var recommendedFitList = new ArrayList<RecommendedFit<Out_, Score_>>();
-                var moveIndex = 0L;
-                for (var move : placement) {
-                    recommendedFitList.add(execute(scoreDirector, move, moveIndex, clonedElement, valueResultFunction));
-                    moveIndex++;
-                }
-                recommendedFitList.sort(null);
-                return recommendedFitList;
+            var placementIterator = entityPlacer.iterator();
+            if (!placementIterator.hasNext()) {
+                throw new IllegalStateException("""
+                        Impossible state: entity placer (%s) has no placements.
+                        """.formatted(entityPlacer));
             }
-            throw new IllegalStateException("""
-                    Impossible state: entity placer (%s) has no placements.
-                    """.formatted(entityPlacer));
+            var placement = placementIterator.next();
+            var recommendedFitList = new ArrayList<RecommendedFit<Out_, Score_>>();
+            var moveIndex = 0L;
+            for (var move : placement) {
+                recommendedFitList.add(execute(scoreDirector, move, moveIndex, clonedElement, valueResultFunction));
+                moveIndex++;
+            }
+            recommendedFitList.sort(null);
+            return recommendedFitList;
         } finally {
             entityPlacer.stepEnded(stepScope);
             entityPlacer.phaseEnded(phaseScope);
