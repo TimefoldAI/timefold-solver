@@ -28,6 +28,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     protected InnerScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory = null;
 
     protected boolean assertClonedSolution = false;
+    protected boolean trackingWorkingSolution = false;
 
     public AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = solutionDescriptor;
@@ -66,6 +67,20 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     public void setAssertClonedSolution(boolean assertClonedSolution) {
         this.assertClonedSolution = assertClonedSolution;
+    }
+
+    /**
+     * When true, a snapshot of the solution is created before, after and after the undo of a move.
+     * In {@link ai.timefold.solver.core.config.solver.EnvironmentMode#TRACKED_FULL_ASSERT},
+     * the snapshots are compared when corruption is detected,
+     * allowing us to report exactly what variables are different.
+     */
+    public boolean isTrackingWorkingSolution() {
+        return trackingWorkingSolution;
+    }
+
+    public void setTrackingWorkingSolution(boolean trackingWorkingSolution) {
+        this.trackingWorkingSolution = trackingWorkingSolution;
     }
 
     // ************************************************************************

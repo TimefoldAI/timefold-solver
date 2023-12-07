@@ -94,7 +94,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                         Maybe run %s environment mode to check for score corruptions.
                         Otherwise enable %s.%s to update the stale score.
                         """
-                        .formatted(currentScore, calculatedScore, solution, EnvironmentMode.FULL_ASSERT,
+                        .formatted(currentScore, calculatedScore, solution, EnvironmentMode.TRACKED_FULL_ASSERT,
                                 SolutionUpdatePolicy.class.getSimpleName(),
                                 SolutionUpdatePolicy.UPDATE_ALL));
             }

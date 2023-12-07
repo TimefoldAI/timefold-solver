@@ -20,6 +20,23 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 @XmlEnum
 public enum EnvironmentMode {
     /**
+     * This mode turns on {@link #FULL_ASSERT} and enables variable tracking to fail-fast on a bug in a {@link Move}
+     * implementation,
+     * a constraint, the engine itself or something else at the highest performance cost.
+     * <p>
+     * Because it tracks genuine and shadow variables, it is able to report precisely what variables caused the corruption and
+     * report any missed {@link ai.timefold.solver.core.api.domain.variable.VariableListener} events.
+     * <p>
+     * This mode is reproducible (see {@link #REPRODUCIBLE} mode).
+     * <p>
+     * This mode is intrusive because it calls the {@link InnerScoreDirector#calculateScore()} more frequently than a non assert
+     * mode.
+     * <p>
+     * This mode is by far the slowest of all the modes.
+     */
+    TRACKED_FULL_ASSERT(true),
+
+    /**
      * This mode turns on all assertions
      * to fail-fast on a bug in a {@link Move} implementation, a constraint, the engine itself or something else
      * at a horrible performance cost.
@@ -111,4 +128,7 @@ public enum EnvironmentMode {
         return this != NON_REPRODUCIBLE;
     }
 
+    public boolean isTracking() {
+        return this == TRACKED_FULL_ASSERT;
+    }
 }

@@ -56,6 +56,9 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             scoreDirectorFactory.setAssertClonedSolution(true);
         }
+        if (environmentMode.isTracking()) {
+            scoreDirectorFactory.setTrackingWorkingSolution(true);
+        }
         return scoreDirectorFactory;
     }
 
