@@ -44,7 +44,7 @@ class PlannerBenchmarkFactoryTest {
     }
 
     // ************************************************************************
-    // Static creation methods: SolverConfig
+    // Static creation methods: SolverConfig XML
     // ************************************************************************
 
     @Test
@@ -265,6 +265,25 @@ class PlannerBenchmarkFactoryTest {
         PlannerBenchmark plannerBenchmark = plannerBenchmarkFactory.buildPlannerBenchmark();
         assertThat(plannerBenchmark).isNotNull();
         assertThat(plannerBenchmark.benchmark()).exists();
+    }
+
+    // ************************************************************************
+    // Static creation methods: PlannerBenchmarkConfig and SolverConfig
+    // ************************************************************************
+
+    @Test
+    void createFromSolverConfig() {
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+
+        TestdataSolution solution = new TestdataSolution("s1");
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3")));
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+
+        PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfig(solverConfig);
+        assertThat(benchmarkFactory.buildPlannerBenchmark(solution)).isNotNull();
+
+        benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfig(solverConfig, benchmarkOutputTestDir);
+        assertThat(benchmarkFactory.buildPlannerBenchmark(solution)).isNotNull();
     }
 
     // ************************************************************************
