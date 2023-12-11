@@ -4,8 +4,8 @@
 [#scoreCalculationPerformanceTricksOverview]
 == Overview
 
-The `Solver` will normally spend most of its execution time running the score calculation
-(which is called in its deepest loops).
+The `Solver` will normally spend most of its execution time running score calculation,
+which is called in its deepest loops.
 Faster score calculation will return the same solution in less time with the same algorithm,
 which normally means a better solution in equal time.
 
@@ -15,21 +15,23 @@ which normally means a better solution in equal time.
 
 After solving a problem, the `Solver` will log the __score calculation speed per second__.
 This is a good measurement of Score calculation performance,
-despite that it is affected by non score calculation execution time.
+despite that it is affected by non-score calculation execution time.
 It depends on the problem scale of the problem dataset.
-Normally, even for high scale problems, it is higher than ``1000``, except if you are using an ``EasyScoreCalculator``.
+Normally, even for large scale problems, it is higher than ``1000``,
+except if you are using xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[``EasyScoreCalculator``].
 
 [IMPORTANT]
 ====
-When improving your score calculation, focus on maximizing the score calculation speed, instead of maximizing the best score.
-A big improvement in score calculation can sometimes yield little or no best score improvement, for example when the algorithm is stuck in a local or global optima.
+When improving your score calculation, focus on maximizing the score calculation speed,
+instead of maximizing the best score.
+A big improvement in score calculation can sometimes yield little or no best score improvement,
+for example when the algorithm is stuck in a local or global optima.
 If you are watching the calculation speed instead, score calculation improvements are far more visible.
 
 Furthermore, watching the calculation speed allows you to remove or add score constraints,
 and still compare it with the original's calculation speed.
 Comparing the best score with the original's best score is pointless: it's comparing apples and oranges.
 ====
-
 
 [#incrementalScoreCalculation]
 == Incremental score calculation (with deltas)
@@ -58,7 +60,9 @@ making incremental score calculation far more scalable.
 [#avoidCallingRemoteServicesDuringScoreCalculation]
 == Avoid calling remote services during score calculation
 
-Do not call remote services in your score calculation (except if you are bridging `EasyScoreCalculator` to a legacy system). The network latency will kill your score calculation performance.
+Do not call remote services in your score calculation,
+except if you are bridging `EasyScoreCalculator` to a legacy system.
+The network latency will kill your score calculation performance.
 Cache the results of those remote services if possible.
 
 If some parts of a constraint can be calculated once, when the `Solver` starts, and never change during solving,
@@ -68,16 +72,22 @@ then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#c
 [#pointlessConstraints]
 == Pointless constraints
 
-If you know a certain constraint can never be broken (or it is always broken), do not write a score constraint for it.
+If you know a certain constraint can never be broken, or it is always broken,
+do not write a score constraint for it.
 For example in n queens, the score calculation does not check if multiple queens occupy the same column,
 because a ``Queen``'s `column` never changes and every solution starts with each `Queen` on a different ``column``.
 
 [NOTE]
 ====
 Do not go overboard with this.
-If some datasets do not use a specific constraint but others do, just return out of the constraint as soon as you can.
+If some datasets do not use a specific constraint but others do,
+just return out of the constraint as soon as you can.
 There is no need to dynamically change your score calculation based on the dataset.
 ====
+
+In xref:.constraints-and-score.adoc/score-calculation.adoc#constraintStreams[Constraint Streams],
+if you set xref:constraints-and-score/constraint-configuration.adoc#constraintWeight[constraint weight] to zero,
+the constraint will be disabled and have no performance impact at all.
 
 
 [#buildInHardConstraint]
@@ -90,7 +100,7 @@ Use xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeProvide
 
 This can give a good performance gain in some use cases, not just because the score calculation is faster,
 but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
-However, usually this is not a good idea because there is a real risk of trading short term benefits for long term harm:
+However, usually this is not a good idea because there is a real risk of trading short-term benefits for long-term harm:
 
 * Many optimization algorithms rely on the freedom to break hard constraints when changing planning entities,
 to get out of local optima.
@@ -98,17 +108,177 @@ to get out of local optima.
 as explained in their documentation.
 
 
+[#largeCrossProducts]
+== Large cross-products
+
+In order for constraints to scale well, it is necessary to limit the amount of data that flows through them.
+In Constraint Streams, it starts with
+xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[joins].
+Consider a school timetabling problem, where a teacher must not have two overlapping lessons.
+This is how the lesson could look in Java:
+
+[source, java]
+----
+    @PlanningEntity
+    class Lesson {
+
+        ...
+
+        Teacher getTeacher() { ... }
+
+        boolean overlaps(Lesson anotherLesson) { ... }
+
+        boolean isCancelled() { ... }
+
+        ...
+
+    }
+----
+
+The simplest possible Constraint Stream we could write to penalize all overlapping lessons would then look like:
+
+[source, java]
+----
+    constraintFactory.forEach(Lesson.class)
+        .join(Lesson.class)
+        .filter((leftLesson, rightLesson) ->
+            !leftLesson.isCancelled()
+	        && !rightLesson.isCancelled()
+            && leftLesson.getTeacher()
+                .equals(rightLesson.getTeacher())
+            && leftLesson.overlaps(rightLesson))
+        .penalize(HardSoftScore.ONE_HARD)
+        .asConstraint("Teacher lesson overlap")
+----
+
+The join creates a cross-product between lessons,
+producing a match (also called a tuple) for every possible combination of two lessons,
+even though we know that many of these matches will not be penalized.
+This shows the problem in numbers:
+
+.Fast growth of cross-product
+|===
+|Number of lessons|Number of possible pairs
+
+|10
+|100
+
+|100
+|10 000
+
+|1 000
+|1 000 000
+|===
+
+To process a thousand lessons, the constraint first creates a cross-product of one million pairs,
+only to throw away pretty much all of them before penalizing.
+Reducing the size of the cross-product by half will therefore double the score calculation speed.
+
+=== Filters before joins
+
+As the example shows, canceled lessons are eventually filtered out after the join.
+Let's instead remove them from the cross-product entirely.
+For the first lesson in the join, also called “left,”
+we put the cancellation check before the join like so:
+
+[source, java]
+----
+    constraintFactory.forEach(Lesson.class)
+        .filter(lesson -> !lesson.isCancelled())
+        .join(Lesson.class)
+        .filter((leftLesson, rightLesson) ->
+            !rightLesson.isCancelled()
+            && leftLesson.getTeacher() == rightLesson.getTeacher()
+            && leftLesson.overlaps(rightLesson))
+        ...
+----
+
+The canceled lessons are no longer coming in from the left, which reduces the cross-product.
+However, some canceled lessons are still coming in from the right through the join.
+They can be eliminated using a filtered nested stream:
+
+[source, java]
+----
+    constraintFactory.forEach(Lesson.class)
+        .filter(lesson -> !lesson.isCancelled())
+        .join(
+            constraintFactory.forEach(Lesson.class)
+                .filter(lesson -> !lesson.isCancelled()))
+        .filter((leftLesson, rightLesson) ->
+            leftLesson.getTeacher() == rightLesson.getTeacher()
+            && leftLesson.overlaps(rightLesson))
+        ...
+----
+
+We've created a new Constraint Stream from `Lesson`, filtering before it entered our join.
+We have now applied the same improvement on both the left and right sides of the join,
+making sure it only creates a cross-product of lessons which we care about.
+
+=== Joiners over filters
+
+Filters are just a simple check if a tuple matches a predicate.
+If it does, it is propagated downstream, otherwise it is no longer evaluated.
+Each tuple needs to go through this check, and that means every pair of lessons will be evaluated.
+When a `Lesson` changes, all pairs with that `Lesson` will be wastefully re-evaluated.
+Let's move the `Teacher` equality check moved from the final filter to a `Joiner`:
+
+
+[source, java]
+----
+    constraintFactory.forEach(Lesson.class)
+        .filter(lesson -> !lesson.isCancelled())
+        .join(
+            constraintFactory.forEach(Lesson.class)
+                .filter(lesson -> !lesson.isCancelled()),
+	        Joiners.equal(Lesson::getTeacher))
+        .filter(Lesson::overlaps)
+        ...
+----
+
+The constraint still says the same thing:
+a `Lesson` pair will only be sent downstream if they share the same `Teacher`.
+Unlike the filter, this brings the performance benefit of indexing.
+Now when a `Lesson` changes, only the pairs with the matching `Teacher` will be re-evaluated.
+So even though the cross-product remains the same, we are doing much less work processing it.
+
+The final `filter(Lesson::overlaps)` now only performs one operation on the final cross product,
+and the number of `Lesson` pairs that get this far is already reduced as much as possible.
+
+=== Removing more and earlier
+
+If at all possible, the Joiner that will remove more tuples than the others should be put first.
+The size of cross-products will be the same, but the processing will happen more quickly.
+
+Consider a new situation, where lessons also have rooms in which they happen.
+Although there are possibly dozens of teachers, there are only three rooms.
+Therefore, the join should look like this:
+
+[source, java]
+----
+    constraintFactory.forEach(Lesson.class)
+        .join(Lesson.class,
+            Joiners.equal(Lesson::getTeacher),
+            Joiners.equal(Lesson::getRoom))
+    ...
+----
+
+This way, we first create “buckets” for each of the many teachers,
+and these buckets will only contain a relatively small number of lessons per room.
+If done the other way around, there would be a small number of large buckets,
+leading to much more iteration every time a lesson changes.
+
+For that reason, it is generally recommended putting Joiners based on enum fields or boolean fields last.
+
+
 [#otherScoreCalculationPerformanceTricks]
 == Other score calculation performance tricks
 
 * Verify that your score calculation happens in the correct `Number` type.
 If you are making the sum of `int` values, do not sum it in a `double` which takes longer.
-* For optimal performance, always use server mode (``java -server``).
-We have seen performance increases of 50% by turning on server mode.
 * For optimal performance, use the latest Java version.
-For example, in the past we have seen performance increases of 30% by switching from java 1.5 to 1.6.
+We often see significant performance improvements by switching to new Java versions.
 * Always remember that premature optimization is the root of all evil.
-Make sure your design is flexible enough to allow configuration based tweaking.
+Make sure your design is flexible enough to allow configuration-based tweaking.
 
 
 [#scoreTrap]
