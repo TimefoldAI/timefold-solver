@@ -28,6 +28,7 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedmove.factory.Test
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEasyScoreCalculator;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEntity;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowSolution;
+import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
@@ -142,7 +143,7 @@ class EnvironmentModeTest {
         SolverConfig solverConfig = new SolverConfig()
                 .withEnvironmentMode(environmentMode)
                 .withSolutionClass(CorruptedUndoShadowSolution.class)
-                .withEntityClasses(CorruptedUndoShadowEntity.class)
+                .withEntityClasses(CorruptedUndoShadowEntity.class, CorruptedUndoShadowValue.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                         .withEasyScoreCalculatorClass(CorruptedUndoShadowEasyScoreCalculator.class))
                 .withTerminationConfig(new TerminationConfig()
@@ -150,20 +151,46 @@ class EnvironmentModeTest {
 
         switch (environmentMode) {
             case TRACKED_FULL_ASSERT -> {
+                var e1 = new CorruptedUndoShadowEntity("e1");
+                var e2 = new CorruptedUndoShadowEntity("e2");
+                var v1 = new CorruptedUndoShadowValue("v1");
+                var v2 = new CorruptedUndoShadowValue("v2");
+
+                e1.setValue(v1);
+                e1.setValueClone(v1);
+                v1.setEntities(new ArrayList<>(List.of(e1)));
+
+                e2.setValue(v2);
+                e2.setValueClone(v2);
+                v2.setEntities(new ArrayList<>(List.of(e2)));
                 assertThatExceptionOfType(IllegalStateException.class)
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
-                                new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
+                                new CorruptedUndoShadowSolution(List.of(e1, e2),
+                                        List.of(v1, v2))))
                         .withMessageContainingAll("corrupted undoMove",
                                 "Variables that are different between before and undo",
-                                "Actual value (v1) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (null)");
+                                "Actual value (v2) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
             }
             case FULL_ASSERT,
                     FAST_ASSERT -> {
                 // FAST_ASSERT does not create snapshots since it does not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
+                var e1 = new CorruptedUndoShadowEntity("e1");
+                var e2 = new CorruptedUndoShadowEntity("e2");
+                var v1 = new CorruptedUndoShadowValue("v1");
+                var v2 = new CorruptedUndoShadowValue("v2");
+
+                e1.setValue(v1);
+                e1.setValueClone(v1);
+                v1.setEntities(new ArrayList<>(List.of(e1)));
+
+                e2.setValue(v2);
+                e2.setValueClone(v2);
+                v2.setEntities(new ArrayList<>(List.of(e2)));
                 assertThatExceptionOfType(IllegalStateException.class)
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
-                                new CorruptedUndoShadowSolution(List.of(new CorruptedUndoShadowEntity()), List.of("v1"))))
+                                new CorruptedUndoShadowSolution(List.of(e1, e2),
+                                        List.of(v1, v2))))
                         .withMessageContainingAll("corrupted undoMove");
             }
             case REPRODUCIBLE,

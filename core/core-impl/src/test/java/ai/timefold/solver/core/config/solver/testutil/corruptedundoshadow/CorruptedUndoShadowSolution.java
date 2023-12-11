@@ -13,8 +13,9 @@ public class CorruptedUndoShadowSolution {
     @PlanningEntityCollectionProperty
     List<CorruptedUndoShadowEntity> entityList;
 
+    @PlanningEntityCollectionProperty
     @ValueRangeProvider
-    List<String> valueList;
+    List<CorruptedUndoShadowValue> valueList;
 
     @PlanningScore
     SimpleScore score;
@@ -22,7 +23,7 @@ public class CorruptedUndoShadowSolution {
     public CorruptedUndoShadowSolution() {
     }
 
-    public CorruptedUndoShadowSolution(List<CorruptedUndoShadowEntity> entityList, List<String> valueList) {
+    public CorruptedUndoShadowSolution(List<CorruptedUndoShadowEntity> entityList, List<CorruptedUndoShadowValue> valueList) {
         this.entityList = entityList;
         this.valueList = valueList;
     }

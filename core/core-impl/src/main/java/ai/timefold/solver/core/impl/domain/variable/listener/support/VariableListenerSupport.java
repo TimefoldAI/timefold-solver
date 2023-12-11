@@ -236,15 +236,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         triggerVariableListenersInNotificationQueues();
     }
 
-    /**
-     * Sets all shadow variables to null and then force triggers all variable listeners.
-     * This effectively recalculates the shadow variables from scratch.
-     */
-    public void recalculateAllShadowVariablesFromScratch(Solution_ workingSolution) {
-        scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, this::resetShadowVariables);
-        forceTriggerAllVariableListeners(workingSolution);
-    }
-
     private void simulateGenuineVariableChange(Object entity) {
         var entityDescriptor = scoreDirector.getSolutionDescriptor()
                 .findEntityDescriptorOrFail(entity.getClass());
@@ -260,17 +251,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             } else {
                 // Triggering before...() is enough, as that will add the after...() call to the queue automatically.
                 beforeVariableChanged(variableDescriptor, entity);
-            }
-        }
-    }
-
-    private void resetShadowVariables(Object entity) {
-        var entityDescriptor = scoreDirector.getSolutionDescriptor()
-                .findEntityDescriptorOrFail(entity.getClass());
-
-        for (var variableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
-            if (!variableDescriptor.getVariablePropertyType().isPrimitive()) {
-                variableDescriptor.setValue(entity, null);
             }
         }
     }
