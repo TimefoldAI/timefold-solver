@@ -16,7 +16,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 public abstract class PlannerBenchmarkFactory {
 
     // ************************************************************************
-    // Static creation methods: SolverConfig
+    // Static creation methods: SolverConfig XML
     // ************************************************************************
 
     /**
@@ -151,7 +151,7 @@ public abstract class PlannerBenchmarkFactory {
     // ************************************************************************
 
     /**
-     * Reads an Freemarker template from the classpath that generates an XML benchmark configuration
+     * Reads a Freemarker template from the classpath that generates an XML benchmark configuration
      * and uses that {@link PlannerBenchmarkConfig} to build a {@link PlannerBenchmarkFactory}.
      * The generated XML root element must be {@code <plannerBenchmark>}.
      *
@@ -208,7 +208,7 @@ public abstract class PlannerBenchmarkFactory {
     }
 
     /**
-     * Reads an Freemarker template rom the file system that generates an XML benchmark configuration
+     * Reads a Freemarker template rom the file system that generates an XML benchmark configuration
      * and uses that {@link PlannerBenchmarkConfig} to build a {@link PlannerBenchmarkFactory}.
      * The generated XML root element must be {@code <plannerBenchmark>}.
      * <p>
@@ -265,7 +265,7 @@ public abstract class PlannerBenchmarkFactory {
     }
 
     // ************************************************************************
-    // Static creation methods: PlannerBenchmarkConfig
+    // Static creation methods: PlannerBenchmarkConfig and SolverConfig
     // ************************************************************************
 
     /**
@@ -278,6 +278,27 @@ public abstract class PlannerBenchmarkFactory {
      */
     public static PlannerBenchmarkFactory create(PlannerBenchmarkConfig benchmarkConfig) {
         return new DefaultPlannerBenchmarkFactory(benchmarkConfig);
+    }
+
+    /**
+     * @param solverConfig never null
+     * @return never null
+     */
+    public static PlannerBenchmarkFactory createFromSolverConfig(SolverConfig solverConfig) {
+        PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromSolverConfig(solverConfig);
+        return create(benchmarkConfig);
+    }
+
+    /**
+     * @param solverConfig never null
+     * @param benchmarkDirectory never null
+     * @return never null
+     */
+    public static PlannerBenchmarkFactory createFromSolverConfig(SolverConfig solverConfig,
+            File benchmarkDirectory) {
+        PlannerBenchmarkConfig benchmarkConfig =
+                PlannerBenchmarkConfig.createFromSolverConfig(solverConfig, benchmarkDirectory);
+        return create(benchmarkConfig);
     }
 
     // ************************************************************************
