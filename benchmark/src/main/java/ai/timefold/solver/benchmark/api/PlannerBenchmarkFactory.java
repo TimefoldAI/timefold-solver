@@ -295,8 +295,9 @@ public abstract class PlannerBenchmarkFactory {
      * @return never null
      */
     public static PlannerBenchmarkFactory createFromSolverConfig(SolverConfig solverConfig,
-                File benchmarkDirectory) {
-        PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromSolverConfig(solverConfig, benchmarkDirectory);
+            File benchmarkDirectory) {
+        PlannerBenchmarkConfig benchmarkConfig =
+                PlannerBenchmarkConfig.createFromSolverConfig(solverConfig, benchmarkDirectory);
         return create(benchmarkConfig);
     }
 
