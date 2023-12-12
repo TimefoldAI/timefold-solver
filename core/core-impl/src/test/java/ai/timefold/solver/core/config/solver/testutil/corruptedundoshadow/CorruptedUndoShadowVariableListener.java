@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
@@ -43,7 +45,7 @@ public class CorruptedUndoShadowVariableListener
 
     private void update(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
             CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
-        if (corruptedUndoShadowEntity.value != null) {
+        if (corruptedUndoShadowEntity.valueClone == null || !Objects.equals("v1", corruptedUndoShadowEntity.value.value)) {
             scoreDirector.beforeVariableChanged(corruptedUndoShadowEntity, "valueClone");
             corruptedUndoShadowEntity.valueClone = corruptedUndoShadowEntity.value;
             scoreDirector.afterVariableChanged(corruptedUndoShadowEntity, "valueClone");

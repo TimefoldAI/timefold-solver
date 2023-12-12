@@ -8,14 +8,37 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 @PlanningEntity
 public class CorruptedUndoShadowEntity {
     @PlanningId
-    String id = CorruptedUndoShadowEntity.class.getSimpleName();
+    String id;
 
     @PlanningVariable
-    String value;
+    CorruptedUndoShadowValue value;
 
     @ShadowVariable(sourceVariableName = "value",
             variableListenerClass = CorruptedUndoShadowVariableListener.class)
-    String valueClone;
+    CorruptedUndoShadowValue valueClone;
+
+    public CorruptedUndoShadowEntity() {
+    }
+
+    public CorruptedUndoShadowEntity(String id) {
+        this.id = id;
+    }
+
+    public CorruptedUndoShadowValue getValue() {
+        return value;
+    }
+
+    public void setValue(CorruptedUndoShadowValue value) {
+        this.value = value;
+    }
+
+    public CorruptedUndoShadowValue getValueClone() {
+        return valueClone;
+    }
+
+    public void setValueClone(CorruptedUndoShadowValue valueClone) {
+        this.valueClone = valueClone;
+    }
 
     @Override
     public String toString() {
