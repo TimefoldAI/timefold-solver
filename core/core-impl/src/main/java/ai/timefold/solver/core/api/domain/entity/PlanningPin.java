@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.domain.entity;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -16,7 +18,8 @@ import java.lang.annotation.Target;
  * The boolean is false if the planning entity is movable and true if the planning entity is pinned.
  * <p>
  * It applies to all the planning variables of that planning entity.
- * To make individual variables pinned, see https://issues.redhat.com/browse/PLANNER-124
+ * If set on an entity with {@link PlanningListVariable},
+ * this will pin the entire list of planning values as well.
  * <p>
  * This is syntactic sugar for {@link PlanningEntity#pinningFilter()},
  * which is a more flexible and verbose way to pin a planning entity.

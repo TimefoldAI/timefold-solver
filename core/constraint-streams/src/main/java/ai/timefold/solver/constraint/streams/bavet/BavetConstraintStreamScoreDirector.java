@@ -49,7 +49,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public Score_ calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
-        Score_ score = session.calculateScore(workingInitScore);
+        Score_ score = session.calculateScore(getWorkingInitScore());
         setCalculatedScore(score);
         return score;
     }

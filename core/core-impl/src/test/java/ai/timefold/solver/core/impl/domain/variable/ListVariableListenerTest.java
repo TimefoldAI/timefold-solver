@@ -171,13 +171,16 @@ class ListVariableListenerTest {
 
     @Test
     void addAndRemoveElement() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var solution = buildSolution(ann);
+        solution.getValueList().add(x);
 
-        scoreDirector.setWorkingSolution(buildSolution(ann));
+        scoreDirector.setWorkingSolution(solution);
+        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.ofUninitialized(-1, 0));
 
         new ListAssignMove<>(variableDescriptor, x, ann, 2).doMoveOnly(scoreDirector);
 

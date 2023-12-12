@@ -64,7 +64,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private boolean allChangesWillBeUndoneBeforeStepEnds = false;
     private long calculationCount = 0L;
     protected Solution_ workingSolution;
-    protected Integer workingInitScore = null;
+    private Integer workingInitScore = null;
     private String undoMoveText;
 
     // Null when tracking disabled
@@ -115,6 +115,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public Solution_ getWorkingSolution() {
         return workingSolution;
+    }
+
+    protected int getWorkingInitScore() {
+        return workingInitScore == null ? 0 : workingInitScore;
     }
 
     @Override
@@ -188,8 +192,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
+        assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         variableListenerSupport.resetWorkingSolution();
+    }
+
+    private void assertInitScoreZeroOrLess() {
+        if (workingInitScore != null && workingInitScore > 0) {
+            throw new IllegalStateException("Impossible state: workingInitScore > 0 (%d)".formatted(workingInitScore));
+        }
     }
 
     @Override
@@ -454,6 +465,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore++;
         }
+        assertInitScoreZeroOrLess();
         variableListenerSupport.beforeVariableChanged(variableDescriptor, entity);
     }
 
@@ -479,6 +491,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         workingInitScore++;
+        assertInitScoreZeroOrLess();
     }
 
     @Override
@@ -506,6 +519,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         workingInitScore += entityDescriptor.countUninitializedVariables(entity);
+        assertInitScoreZeroOrLess();
         variableListenerSupport.beforeEntityRemoved(entityDescriptor, entity);
     }
 

@@ -74,6 +74,7 @@ public class IncrementalScoreDirector<Solution_, Score_ extends Score<Score_>>
                     + "Maybe the score calculator (" + incrementalScoreCalculator.getClass() + ") is calculating "
                     + "the initScore too, although it's the score director's responsibility.");
         }
+        int workingInitScore = getWorkingInitScore();
         if (workingInitScore != 0) {
             score = score.withInitScore(workingInitScore);
         }

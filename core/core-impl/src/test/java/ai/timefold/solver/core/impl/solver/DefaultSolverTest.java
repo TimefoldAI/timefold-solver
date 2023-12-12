@@ -70,6 +70,9 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.Testdata
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEntitySolution;
@@ -78,6 +81,10 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolutio
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -88,10 +95,23 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.fail;
 
 @ExtendWith(SoftAssertionsExtension.class)
 class DefaultSolverTest {
@@ -962,6 +982,29 @@ class DefaultSolverTest {
         solution = solver.solve(solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void solveWithPlanningListVariableEntityPin() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class, TestdataPinnedListValue.class);
+        var solverFactory = SolverFactory.<TestdataPinnedListSolution>create(solverConfig);
+        var solver = (DefaultSolver<TestdataPinnedListSolution>) solverFactory.buildSolver();
+
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedEntity.setPinned(true);
+        pinnedEntity.getValueList().add(pinnedValue);
+
+        solution = solver.solve(solution);
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
+        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
+        int actualValueCount = solution.getEntityList().stream()
+                .mapToInt(e -> e.getValueList().size())
+                .sum();
+        assertThat(actualValueCount).isEqualTo(expectedValueCount);
     }
 
     public static class CorruptedEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
