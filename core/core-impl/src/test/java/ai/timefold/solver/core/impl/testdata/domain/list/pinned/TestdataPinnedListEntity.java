@@ -1,15 +1,15 @@
 package ai.timefold.solver.core.impl.testdata.domain.list.pinned;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @PlanningEntity
 public class TestdataPinnedListEntity extends TestdataObject {
@@ -19,7 +19,8 @@ public class TestdataPinnedListEntity extends TestdataObject {
     }
 
     public static ListVariableDescriptor<TestdataPinnedListSolution> buildVariableDescriptorForValueList() {
-        return (ListVariableDescriptor<TestdataPinnedListSolution>) buildEntityDescriptor().getGenuineVariableDescriptor("valueList");
+        return (ListVariableDescriptor<TestdataPinnedListSolution>) buildEntityDescriptor()
+                .getGenuineVariableDescriptor("valueList");
     }
 
     public static TestdataPinnedListEntity createWithValues(String code, TestdataPinnedListValue... values) {
@@ -55,6 +56,10 @@ public class TestdataPinnedListEntity extends TestdataObject {
 
     public List<TestdataPinnedListValue> getValueList() {
         return valueList;
+    }
+
+    public void setValueList(List<TestdataPinnedListValue> valueList) {
+        this.valueList = valueList;
     }
 
     public boolean isPinned() {

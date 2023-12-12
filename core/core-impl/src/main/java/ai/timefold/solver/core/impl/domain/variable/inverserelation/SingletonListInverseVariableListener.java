@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 
-import java.util.List;
-
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -21,13 +19,25 @@ public class SingletonListInverseVariableListener<Solution_>
     }
 
     @Override
+    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+        var entityDescriptor = sourceVariableDescriptor.getEntityDescriptor();
+        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
+        solutionDescriptor.visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(),
+                entityDescriptor.getEntityClass(), entity -> {
+                    beforeEntityAdded(scoreDirector, entity);
+                    afterEntityAdded(scoreDirector, entity);
+                    return false;
+                });
+    }
+
+    @Override
     public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
         // Do nothing
     }
 
     @Override
     public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        for (Object element : sourceVariableDescriptor.getListVariable(entity)) {
+        for (var element : sourceVariableDescriptor.getListVariable(entity)) {
             setInverse((InnerScoreDirector<Solution_, ?>) scoreDirector, element, entity, null);
         }
     }
@@ -39,15 +49,15 @@ public class SingletonListInverseVariableListener<Solution_>
 
     @Override
     public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        for (Object element : sourceVariableDescriptor.getListVariable(entity)) {
+        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        for (var element : sourceVariableDescriptor.getListVariable(entity)) {
             setInverse(innerScoreDirector, element, null, entity);
         }
     }
 
     @Override
     public void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Object element) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         innerScoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
         shadowVariableDescriptor.setValue(element, null);
         innerScoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
@@ -60,11 +70,11 @@ public class SingletonListInverseVariableListener<Solution_>
 
     @Override
     public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> listVariable = sourceVariableDescriptor.getListVariable(entity);
-        for (int i = fromIndex; i < toIndex; i++) {
-            Object element = listVariable.get(i);
-            if (shadowVariableDescriptor.getValue(element) != entity) {
+        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var listVariable = sourceVariableDescriptor.getListVariable(entity);
+        for (var i = fromIndex; i < toIndex; i++) {
+            var element = listVariable.get(i);
+            if (getInverseSingleton(element) != entity) {
                 innerScoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
                 shadowVariableDescriptor.setValue(element, entity);
                 innerScoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
@@ -74,7 +84,7 @@ public class SingletonListInverseVariableListener<Solution_>
 
     private void setInverse(InnerScoreDirector<Solution_, ?> scoreDirector,
             Object element, Object inverseEntity, Object expectedOldInverseEntity) {
-        Object oldInverseEntity = shadowVariableDescriptor.getValue(element);
+        var oldInverseEntity = getInverseSingleton(element);
         if (oldInverseEntity == inverseEntity) {
             return;
         }

@@ -23,6 +23,18 @@ public class IndexVariableListener<Solution_> implements ListVariableListener<So
     }
 
     @Override
+    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+        var entityDescriptor = sourceVariableDescriptor.getEntityDescriptor();
+        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
+        solutionDescriptor.visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(),
+                entityDescriptor.getEntityClass(), entity -> {
+                    beforeEntityAdded(scoreDirector, entity);
+                    afterEntityAdded(scoreDirector, entity);
+                    return false;
+                });
+    }
+
+    @Override
     public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
         // Do nothing
     }

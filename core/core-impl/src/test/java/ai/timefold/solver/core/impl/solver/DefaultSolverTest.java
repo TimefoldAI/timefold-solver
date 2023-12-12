@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.Collection;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -87,31 +87,13 @@ import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
 import org.assertj.core.api.Assertions;
+
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.fail;
 
 @ExtendWith(SoftAssertionsExtension.class)
 class DefaultSolverTest {
@@ -353,8 +335,6 @@ class DefaultSolverTest {
                                 Meter.Type.COUNTER));
     }
 
-    // TODO: Enable with Micrometer 1.7.8 or later.
-    @Disabled("https://github.com/micrometer-metrics/micrometer/issues/2947")
     @Test
     void solveMetrics() {
         TestMeterRegistry meterRegistry = new TestMeterRegistry();
@@ -685,40 +665,6 @@ class DefaultSolverTest {
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
     }
 
-    // TODO https://issues.redhat.com/browse/PLANNER-1738
-    @Test
-    @Disabled("We currently don't support an empty value list yet if the entity list is not empty.")
-    void solveEmptyValueList() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
-
-        TestdataSolution solution = new TestdataSolution("s1");
-        solution.setValueList(Collections.emptyList());
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        solution = solver.solve(solution);
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isFalse();
-    }
-
-    @Test
-    @Disabled("We currently don't support an empty value list yet if the entity list is not empty.")
-    void solveChainedEmptyValueList() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataChainedSolution.class,
-                TestdataChainedEntity.class);
-        SolverFactory<TestdataChainedSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataChainedSolution> solver = solverFactory.buildSolver();
-
-        TestdataChainedSolution solution = new TestdataChainedSolution("s1");
-        solution.setChainedAnchorList(Collections.emptyList());
-        solution.setChainedEntityList(Arrays.asList(new TestdataChainedEntity("e1"), new TestdataChainedEntity("e2")));
-
-        solution = solver.solve(solution);
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isFalse();
-    }
-
     @Test
     void solveEmptyEntityListAndEmptyValueList() {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
@@ -986,18 +932,20 @@ class DefaultSolverTest {
 
     @Test
     void solveWithPlanningListVariableEntityPin() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class, TestdataPinnedListValue.class);
-        var solverFactory = SolverFactory.<TestdataPinnedListSolution>create(solverConfig);
-        var solver = (DefaultSolver<TestdataPinnedListSolution>) solverFactory.buildSolver();
-
         var expectedValueCount = 4;
         var solution = TestdataPinnedListSolution.generateUninitializedSolution(expectedValueCount, 3);
         var pinnedEntity = solution.getEntityList().get(0);
         var pinnedValue = solution.getValueList().get(0);
         pinnedEntity.setPinned(true);
-        pinnedEntity.getValueList().add(pinnedValue);
+        var pinnedList = pinnedEntity.getValueList();
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setValueList(Collections.unmodifiableList(pinnedList)); // Throw on any attempt to modify the list.
 
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class, TestdataPinnedListValue.class);
+        var solverFactory = SolverFactory.<TestdataPinnedListSolution>create(solverConfig);
+        var solver = (DefaultSolver<TestdataPinnedListSolution>) solverFactory.buildSolver();
         solution = solver.solve(solution);
+
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
         assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
