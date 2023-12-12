@@ -19,24 +19,29 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * [A, B, C, D, E, F, G, H]. The edge (B, E) became (B, C), and the edge (C, F) became (E, F)
  * (the first edge end point became the second edge start point and vice-versa). It is used to fix crossings;
  * for instance, it can change:
+ *
+ * <pre>{@code
  * ... -> A B <- ...
  * ....... x .......
  * ... <- C D -> ...
+ * }</pre>
  *
  * to
  *
+ * <pre>{@code
  * ... -> A -> B -> ...
  * ... <- C <- D <- ...
+ * }</pre>
  *
  * Note the sub-path D...B was reversed. The 2-opt works be reversing the path between the two edges being removed.
- *
+ * <p>
  * When the edges are assigned to different entities, it results in a tail swap.
  * For instance, let r1 = [A, B, C, D], and r2 = [E, F, G, H]. Doing a
  * 2-opt on (B, C) + (F, G) will result in r1 = [A, B, G, H] and r2 = [E, F, C, D].
  *
  * @param <Solution_>
  */
-final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
+public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final Object firstEntity;
     private final Object secondEntity;
@@ -192,6 +197,19 @@ final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
+        if (firstEntity == secondEntity) {
+            if (shift != 0) {
+                // A shift will rotate the entire list, changing the visiting order
+                return true;
+            }
+            int chainLength = Math.abs(secondEdgeEndpoint - firstEdgeEndpoint);
+
+            // The chain flipped by a K-Opt only changes if there are at least 2 values
+            // in the chain
+            return chainLength >= 2;
+        }
+        // This is a tail-swap move otherwise, which always changes at least one element
+        // (the element where the tail begins for each entity)
         return true;
     }
 

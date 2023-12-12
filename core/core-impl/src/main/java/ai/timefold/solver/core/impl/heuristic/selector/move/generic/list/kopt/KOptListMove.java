@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.util.Pair;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
+public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final KOptDescriptor<?> descriptor;
@@ -27,7 +27,7 @@ final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     private final int[] newEndIndices;
     private final Object[] originalEntities;
 
-    public KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+    KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             KOptDescriptor<?> descriptor,
             List<FlipSublistAction> equivalent2Opts,
@@ -59,7 +59,7 @@ final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
     }
 
-    public KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+    KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             KOptDescriptor<?> descriptor,
             List<FlipSublistAction> equivalent2Opts,
             MultipleDelegateList<?> combinedList,
