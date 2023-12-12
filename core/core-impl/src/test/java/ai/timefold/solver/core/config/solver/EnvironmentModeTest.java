@@ -173,7 +173,7 @@ class EnvironmentModeTest {
             }
             case FULL_ASSERT,
                     FAST_ASSERT -> {
-                // FAST_ASSERT does not create snapshots since it does not intrusive, and hence it can only
+                // FAST_ASSERT does not create snapshots since it is not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
                 var e1 = new CorruptedUndoShadowEntity("e1");
                 var e2 = new CorruptedUndoShadowEntity("e2");
