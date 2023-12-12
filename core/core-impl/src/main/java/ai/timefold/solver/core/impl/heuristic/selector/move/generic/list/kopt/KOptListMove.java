@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.util.Pair;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
+public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final KOptDescriptor<?> descriptor;

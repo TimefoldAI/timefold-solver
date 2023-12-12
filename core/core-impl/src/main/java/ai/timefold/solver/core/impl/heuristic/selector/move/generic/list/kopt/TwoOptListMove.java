@@ -36,7 +36,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  *
  * @param <Solution_>
  */
-final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
+public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final Object firstEntity;
     private final Object secondEntity;
@@ -192,6 +192,19 @@ final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
+        if (firstEntity == secondEntity) {
+            if (shift != 0) {
+                // A shift will rotate the entire list, changing the visiting order
+                return true;
+            }
+            int chainLength = Math.abs(secondEdgeEndpoint - firstEdgeEndpoint);
+
+            // The chain flipped by a K-Opt only changes if there are at least 2 values
+            // in the chain
+            return chainLength >= 2;
+        }
+        // This is a tail-swap move otherwise, which always changes at least one element
+        // (the element where the tail begins for each entity)
         return true;
     }
 

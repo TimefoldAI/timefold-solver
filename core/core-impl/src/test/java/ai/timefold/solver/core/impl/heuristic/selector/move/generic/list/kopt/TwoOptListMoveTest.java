@@ -53,6 +53,72 @@ class TwoOptListMoveTest {
     }
 
     @Test
+    void isMoveDoable() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v5, v4, v3, v6, v7, v8);
+
+        // 2-Opt((v2, v5), (v3, v6))
+        TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
+                e1, e1, 2, 5);
+        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+
+        // 2-Opt((v2, v3), (v2, v3))
+        move = new TwoOptListMove<>(variableDescriptor,
+                e1, e1, 2, 2);
+        assertThat(move.isMoveDoable(scoreDirector)).isFalse();
+
+        // 2-Opt((v2, v3), (v3, v4))
+        move = new TwoOptListMove<>(variableDescriptor,
+                e1, e1, 2, 3);
+        assertThat(move.isMoveDoable(scoreDirector)).isFalse();
+
+        // 2-Opt((v2, v3), (v4, v5))
+        move = new TwoOptListMove<>(variableDescriptor,
+                e1, e1, 2, 4);
+        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+
+        // 2-Opt((v2, v3), (v1, v2))
+        move = new TwoOptListMove<>(variableDescriptor,
+                e1, e1, 2, 1);
+        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+    }
+
+    @Test
+    void isMoveDoableTailSwap() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListValue v9 = new TestdataListValue("9");
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v5, v6, v7, v8, v9);
+
+        // 2-Opt((v2, v3), (v6, v7))
+        TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
+                e1, e2, 2, 2);
+        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+
+        move = new TwoOptListMove<>(variableDescriptor,
+                e1, e2, 1, 2);
+        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+
+        move = new TwoOptListMove<>(variableDescriptor,
+                e1, e2, 2, 1);
+        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+    }
+
+    @Test
     void doTailSwap() {
         TestdataListValue v1 = new TestdataListValue("1");
         TestdataListValue v2 = new TestdataListValue("2");
