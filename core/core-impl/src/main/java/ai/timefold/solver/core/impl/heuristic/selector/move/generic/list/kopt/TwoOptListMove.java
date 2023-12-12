@@ -19,17 +19,22 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * [A, B, C, D, E, F, G, H]. The edge (B, E) became (B, C), and the edge (C, F) became (E, F)
  * (the first edge end point became the second edge start point and vice-versa). It is used to fix crossings;
  * for instance, it can change:
+ *
+ * <pre>{@code
  * ... -> A B <- ...
  * ....... x .......
  * ... <- C D -> ...
+ * }</pre>
  *
  * to
  *
+ * <pre>{@code
  * ... -> A -> B -> ...
  * ... <- C <- D <- ...
+ * }</pre>
  *
  * Note the sub-path D...B was reversed. The 2-opt works be reversing the path between the two edges being removed.
- *
+ * <p>
  * When the edges are assigned to different entities, it results in a tail swap.
  * For instance, let r1 = [A, B, C, D], and r2 = [E, F, G, H]. Doing a
  * 2-opt on (B, C) + (F, G) will result in r1 = [A, B, G, H] and r2 = [E, F, C, D].
