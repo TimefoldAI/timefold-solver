@@ -698,7 +698,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 // Recalculate all shadow variables from scratch.
                 // We cannot set all shadow variables to null, since some variable listeners
                 // may expect them to be non-null.
-                //
                 // Instead, we just simulate a change to all genuine variables.
                 variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
                 solutionTracker.setUndoFromScratchSolution(workingSolution);
