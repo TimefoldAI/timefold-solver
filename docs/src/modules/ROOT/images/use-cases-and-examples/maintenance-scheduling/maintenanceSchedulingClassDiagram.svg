@@ -251,11 +251,11 @@
      borderlayer="true"
      width="800px"
      showgrid="true"
-     inkscape:current-layer="layer4"
+     inkscape:current-layer="layer3"
      inkscape:document-units="px"
-     inkscape:cy="300"
-     inkscape:cx="400.40161"
-     inkscape:zoom="1.245"
+     inkscape:cy="300.33076"
+     inkscape:cx="400"
+     inkscape:zoom="1.13375"
      inkscape:pageshadow="2"
      inkscape:pageopacity="1"
      borderopacity="1.0"
@@ -388,7 +388,7 @@
          style="font-size:20px;line-height:1.25"
          id="flowPara140">durationInDays : int</flowPara><flowPara
          style="font-size:20px;line-height:1.25"
-         id="flowPara146">mutuallyExclusiveTagSet : Set&lt;String&gt;</flowPara><flowPara
+         id="flowPara146">tagSet : Set&lt;String&gt;</flowPara><flowPara
          style="font-size:20px;line-height:1.25"
          id="flowPara148" /><flowPara
          style="font-size:20px;line-height:1.25"
@@ -670,7 +670,7 @@
          style="font-size:20px;line-height:1.25"
          id="flowPara140-6">durationInDays : int</flowPara><flowPara
          style="font-size:20px;line-height:1.25"
-         id="flowPara146-2">mutuallyExclusiveTagSet : Set&lt;String&gt;</flowPara><flowPara
+         id="flowPara146-2">tagSet : Set&lt;String&gt;</flowPara><flowPara
          style="font-size:20px;line-height:1.25"
          id="flowPara148-9" /><flowPara
          style="font-size:20px;line-height:1.25"
