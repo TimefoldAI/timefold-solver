@@ -18,11 +18,14 @@ public class FilteringValueSelector<Solution_>
         implements ValueSelector<Solution_> {
 
     public static <Solution_> ValueSelector<Solution_> create(ValueSelector<Solution_> valueSelector,
+            SelectionFilter<Solution_, Object> filter) {
+        return create(valueSelector, List.of(filter));
+    }
+
+    public static <Solution_> ValueSelector<Solution_> create(ValueSelector<Solution_> valueSelector,
             List<SelectionFilter<Solution_, Object>> filterList) {
-        if (valueSelector instanceof EntityIndependentValueSelector) {
-            return new EntityIndependentFilteringValueSelector<>(
-                    (EntityIndependentValueSelector<Solution_>) valueSelector,
-                    filterList);
+        if (valueSelector instanceof EntityIndependentValueSelector<Solution_> entityIndependentValueSelector) {
+            return new EntityIndependentFilteringValueSelector<>(entityIndependentValueSelector, filterList);
         } else {
             return new FilteringValueSelector<>(valueSelector, filterList);
         }

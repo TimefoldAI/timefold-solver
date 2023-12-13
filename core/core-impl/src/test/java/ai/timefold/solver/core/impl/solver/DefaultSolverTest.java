@@ -932,16 +932,26 @@ class DefaultSolverTest {
 
     @Test
     void solveWithPlanningListVariableEntityPin() {
+        // TODO CH can not select from pinned
+        // TODO CH can not select to pinned
+        // TODO change move can not select from pinned
+        // TODO change move can not select to pinned
+        // TODO swap move can not select from pinned
+        // TODO swap move can not select to pinned
+        // TODO sublist move can not select from pinned
+        // TODO sublist move can not select to pinned
+        // TODO k-opt move can not select from pinned
+        // TODO k-opt move can not select to pinned
         var expectedValueCount = 4;
         var solution = TestdataPinnedListSolution.generateUninitializedSolution(expectedValueCount, 3);
         var pinnedEntity = solution.getEntityList().get(0);
-        var pinnedValue = solution.getValueList().get(0);
-        pinnedEntity.setPinned(true);
         var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
         pinnedList.add(pinnedValue);
-        pinnedEntity.setValueList(Collections.unmodifiableList(pinnedList)); // Throw on any attempt to modify the list.
+        pinnedEntity.setPinned(true);
 
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class, TestdataPinnedListValue.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class, TestdataPinnedListValue.class)
+                .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedListSolution>create(solverConfig);
         var solver = (DefaultSolver<TestdataPinnedListSolution>) solverFactory.buildSolver();
         solution = solver.solve(solution);
@@ -953,6 +963,20 @@ class DefaultSolverTest {
                 .mapToInt(e -> e.getValueList().size())
                 .sum();
         assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    public static final class MaximizeUnusedEntitiesEasyScoreCalculator implements EasyScoreCalculator<TestdataPinnedListSolution, SimpleScore> {
+
+        @Override
+        public SimpleScore calculateScore(TestdataPinnedListSolution testdataPinnedListSolution) {
+            int unusedEntities = 0;
+            for (var entity: testdataPinnedListSolution.getEntityList()) {
+                if (entity.getValueList().isEmpty()) {
+                    unusedEntities++;
+                }
+            }
+            return SimpleScore.of(unusedEntities);
+        }
     }
 
     public static class CorruptedEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {

@@ -7,16 +7,17 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     private final EntityIndependentValueSelector<Solution_> sourceValueSelector;
+    private EntityIndependentValueSelector<Solution_> movableSourceValueSelector;
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
 
@@ -38,23 +39,44 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
-        SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
+        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
+        movableSourceValueSelector = filterPinnedListPlanningVariableValues(sourceValueSelector, inverseVariableSupply);
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+    }
+
+    public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValues(
+            EntityIndependentValueSelector<Solution_> sourceValueSelector,
+            SingletonInverseVariableSupply inverseVariableSupply) {
+        var entityDescriptor = sourceValueSelector.getVariableDescriptor().getEntityDescriptor();
+        var hasMovableSelectionFilter = entityDescriptor.hasEffectiveMovableEntitySelectionFilter();
+        if (!hasMovableSelectionFilter) {
+            // Don't incur the overhead of filtering movable entities if there is no movable entity selection filter.
+            return sourceValueSelector;
+        }
+        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.create(sourceValueSelector,
+                (scoreDirector, selection) -> {
+                    var entity = inverseVariableSupply.getInverseSingleton(selection);
+                    if (entity == null) { // Unassigned.
+                        return true;
+                    }
+                    System.out.println("Selection " + selection + " " + entity + " " + entityDescriptor.isMovable(scoreDirector, entity));
+                    return entityDescriptor.isMovable(scoreDirector, entity);
+                });
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         inverseVariableSupply = null;
+        movableSourceValueSelector = null;
         indexVariableSupply = null;
     }
 
     @Override
     public long getSize() {
-        return sourceValueSelector.getSize() * destinationSelector.getSize();
+        return movableSourceValueSelector.getSize() * destinationSelector.getSize();
     }
 
     @Override
@@ -63,25 +85,25 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
             return new RandomListChangeIterator<>(
                     inverseVariableSupply,
                     indexVariableSupply,
-                    sourceValueSelector,
+                    movableSourceValueSelector,
                     destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
                     inverseVariableSupply,
                     indexVariableSupply,
-                    sourceValueSelector,
+                    movableSourceValueSelector,
                     destinationSelector);
         }
     }
 
     @Override
     public boolean isCountable() {
-        return sourceValueSelector.isCountable() && destinationSelector.isCountable();
+        return movableSourceValueSelector.isCountable() && destinationSelector.isCountable();
     }
 
     @Override
     public boolean isNeverEnding() {
-        return randomSelection || sourceValueSelector.isNeverEnding() || destinationSelector.isNeverEnding();
+        return randomSelection || movableSourceValueSelector.isNeverEnding() || destinationSelector.isNeverEnding();
     }
 
     @Override

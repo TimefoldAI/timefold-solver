@@ -44,8 +44,8 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
         return new SubListChangeMove<>(
                 listVariableDescriptor,
                 subList,
-                destination.getEntity(),
-                destination.getIndex(),
+                destination.entity(),
+                destination.index(),
                 reversing);
     }
 }

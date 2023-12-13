@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.testdata.domain.list.pinned;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -36,7 +37,6 @@ public class TestdataPinnedListEntity extends TestdataObject {
         return this;
     }
 
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange")
     private List<TestdataPinnedListValue> valueList;
 
     @PlanningPin
@@ -54,7 +54,11 @@ public class TestdataPinnedListEntity extends TestdataObject {
         this(code, new ArrayList<>(Arrays.asList(values)));
     }
 
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange")
     public List<TestdataPinnedListValue> getValueList() {
+        if (pinned) {
+            return Collections.unmodifiableList(valueList); // Hard fail when something tries to modify the list.
+        }
         return valueList;
     }
 

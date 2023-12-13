@@ -21,6 +21,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
 
     private SingletonInverseVariableSupply inverseVariableSupply;
     private IndexVariableSupply indexVariableSupply;
+    private EntityIndependentValueSelector<Solution_> movableLeftValueSelector;
+    private EntityIndependentValueSelector<Solution_> movableRightValueSelector;
 
     public ListSwapMoveSelector(
             EntityIndependentValueSelector<Solution_> leftValueSelector,
@@ -44,6 +46,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        movableLeftValueSelector = ListChangeMoveSelector.filterPinnedListPlanningVariableValues(leftValueSelector, inverseVariableSupply);
+        movableRightValueSelector = ListChangeMoveSelector.filterPinnedListPlanningVariableValues(rightValueSelector, inverseVariableSupply);
     }
 
     @Override
@@ -51,6 +55,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         super.solvingEnded(solverScope);
         inverseVariableSupply = null;
         indexVariableSupply = null;
+        movableLeftValueSelector = null;
+        movableRightValueSelector = null;
     }
 
     @Override
@@ -59,30 +65,30 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
             return new RandomListSwapIterator<>(
                     inverseVariableSupply,
                     indexVariableSupply,
-                    leftValueSelector,
-                    rightValueSelector);
+                    movableLeftValueSelector,
+                    movableRightValueSelector);
         } else {
             return new OriginalListSwapIterator<>(
                     inverseVariableSupply,
                     indexVariableSupply,
-                    leftValueSelector,
-                    rightValueSelector);
+                    movableLeftValueSelector,
+                    movableRightValueSelector);
         }
     }
 
     @Override
     public boolean isCountable() {
-        return leftValueSelector.isCountable() && rightValueSelector.isCountable();
+        return movableLeftValueSelector.isCountable() && movableRightValueSelector.isCountable();
     }
 
     @Override
     public boolean isNeverEnding() {
-        return randomSelection || leftValueSelector.isNeverEnding() || rightValueSelector.isNeverEnding();
+        return randomSelection || movableLeftValueSelector.isNeverEnding() || movableRightValueSelector.isNeverEnding();
     }
 
     @Override
     public long getSize() {
-        return leftValueSelector.getSize() * rightValueSelector.getSize();
+        return movableLeftValueSelector.getSize() * movableRightValueSelector.getSize();
     }
 
     @Override
