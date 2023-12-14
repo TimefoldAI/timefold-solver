@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValues;
+
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -21,6 +23,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
 
     private TriangleElementFactory triangleElementFactory;
     private SingletonInverseVariableSupply inverseVariableSupply;
+    private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
     public RandomSubListSelector(
             EntitySelector<Solution_> entitySelector,
@@ -50,6 +53,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
         inverseVariableSupply = solverScope.getScoreDirector().getSupplyManager()
                 .demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
+        movableValueSelector = filterPinnedListPlanningVariableValues(valueSelector, inverseVariableSupply);
     }
 
     @Override
@@ -93,12 +97,12 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     @Override
     public Iterator<Object> endingValueIterator() {
         // Child value selector is entity independent, so passing null entity is OK.
-        return valueSelector.endingIterator(null);
+        return movableValueSelector.endingIterator(null);
     }
 
     @Override
     public long getValueCount() {
-        return valueSelector.getSize();
+        return movableValueSelector.getSize();
     }
 
     @Override
@@ -116,7 +120,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 }
             };
         }
-        return new RandomSubListIterator(valueSelector.iterator());
+        return new RandomSubListIterator(movableValueSelector.iterator());
     }
 
     private final class RandomSubListIterator extends UpcomingSelectionIterator<SubList> {

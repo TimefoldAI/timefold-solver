@@ -39,10 +39,6 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solution_>
         implements DestinationSelector<Solution_> {
 
-    /**
-     * Only selects entities that are not pinned.
-     * Pinned entities have their entire list variables pinned, therefore are not useful as destinations.
-     */
     private final EntitySelector<Solution_> entitySelector;
     private final EntityIndependentValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;

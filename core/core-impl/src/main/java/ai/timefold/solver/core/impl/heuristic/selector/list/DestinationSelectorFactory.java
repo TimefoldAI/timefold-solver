@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
-import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
@@ -13,7 +12,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
@@ -47,14 +45,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             SelectionOrder selectionOrder) {
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
-        var entityDescriptor = entitySelector.getEntityDescriptor();
-        if (entityDescriptor.hasEffectiveMovableEntitySelectionFilter()) { // Don't allow selecting pinned entities.
-            entitySelector = new FilteringEntitySelector<>(entitySelector, List.of(entityDescriptor::isMovable));
-        }
-
-        var valueSelector =
-                buildEntityIndependentValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
-
+        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
+                minimumCacheType, selectionOrder);
         return new ElementDestinationSelector<>(
                 entitySelector,
                 valueSelector,
