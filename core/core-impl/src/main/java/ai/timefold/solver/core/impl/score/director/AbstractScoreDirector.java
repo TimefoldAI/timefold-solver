@@ -199,7 +199,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     private void assertInitScoreZeroOrLess() {
         if (workingInitScore > 0) {
-            throw new IllegalStateException("Impossible state: workingInitScore > 0 (%d)".formatted(workingInitScore));
+            throw new IllegalStateException("""
+                    workingInitScore > 0 (%d).
+                    Maybe a custom move is removing more entities than were ever added?
+                    """.formatted(workingInitScore));
         }
     }
 
