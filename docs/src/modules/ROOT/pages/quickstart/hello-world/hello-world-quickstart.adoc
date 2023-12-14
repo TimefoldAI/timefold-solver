@@ -94,7 +94,7 @@ Create a Maven or Gradle build file and add these dependencies:
 Maven::
 +
 --
-If you choose Maven, your `pom.xml` file has the following content:
+Your `pom.xml` file has the following content:
 
 [source,xml,subs=attributes+]
 ----
@@ -167,7 +167,7 @@ If you choose Maven, your `pom.xml` file has the following content:
 Gradle::
 +
 --
-In Gradle, your `build.gradle` file has this content:
+Your `build.gradle` file has this content:
 
 [source,groovy,subs=attributes+]
 ----
