@@ -140,17 +140,6 @@ If you choose Maven, your `pom.xml` file has the following content:
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-quarkus-jackson</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-junit5</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-test</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -242,7 +231,7 @@ Therefore, the Quarkus extension injects a `SolverManager` instance,
 which runs solvers in a separate thread pool
 and can solve multiple datasets in parallel.
 
-Create the `src/main/java/org/acme/schooltimetabling/rest/TimeTableResource.java` class:
+Create the `src/main/java/org/acme/schooltimetabling/rest/TimetableResource.java` class:
 
 [source,java]
 ----
@@ -254,23 +243,23 @@ import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
-import org.acme.schooltimetabling.domain.TimeTable;
+import org.acme.schooltimetabling.domain.Timetable;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 
-@Path("/timeTable")
-public class TimeTableResource {
+@Path("/timetables")
+public class TimetableResource {
 
     @Inject
-    SolverManager<TimeTable, UUID> solverManager;
+    SolverManager<Timetable, UUID> solverManager;
 
     @POST
     @Path("/solve")
-    public TimeTable solve(TimeTable problem) {
+    public Timetable solve(Timetable problem) {
         UUID problemId = UUID.randomUUID();
         // Submit the problem to start solving
-        SolverJob<TimeTable, UUID> solverJob = solverManager.solve(problemId, problem);
-        TimeTable solution;
+        SolverJob<Timetable, UUID> solverJob = solverManager.solve(problemId, problem);
+        Timetable solution;
         try {
             // Wait until the solving ends
             solution = solverJob.getFinalBestSolution();
@@ -324,7 +313,7 @@ The following example uses the Linux command `curl` to send a POST request:
 
 [source,shell]
 ----
-$ curl -i -X POST http://localhost:8080/timeTable/solve -H "Content-Type:application/json" -d '{"timeslots":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"rooms":[{"name":"Room A"},{"name":"Room B"}],"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
+$ curl -i -X POST http://localhost:8080/timetables/solve -H "Content-Type:application/json" -d '{"timeslots":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"rooms":[{"name":"Room A"},{"name":"Room B"}],"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
 ----
 
 After about five seconds, according to the termination spent time defined in your `application.properties`,
@@ -367,13 +356,25 @@ Add a `timefold-solver-test` dependency in your `pom.xml`:
 [source,xml]
 ----
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-test</artifactId>
       <scope>test</scope>
     </dependency>
 ----
 
-Create the `src/test/java/org/acme/schooltimetabling/solver/TimeTableConstraintProviderTest.java` class:
+For Gradle, add the subsequent dependencies to your `build.gradle`:
+[source,groovy,subs=attributes+]
+----
+    testImplementation "io.quarkus:quarkus-junit5"
+    testImplementation "ai.timefold.solver:timefold-solver-test"
+----
+
+Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
 
 [source,java]
 ----
@@ -387,37 +388,27 @@ import javax.inject.Inject;
 import io.quarkus.test.junit.QuarkusTest;
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
+import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 @QuarkusTest
-class TimeTableConstraintProviderTest {
+class TimetableConstraintProviderTest {
 
     private static final Room ROOM = new Room("Room1");
     private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9,0), LocalTime.NOON);
     private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9,0), LocalTime.NOON);
 
     @Inject
-    ConstraintVerifier<TimeTableConstraintProvider, TimeTable> constraintVerifier;
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
 
     @Test
     void roomConflict() {
-        Lesson firstLesson = new Lesson(1, "Subject1", "Teacher1", "Group1");
-        Lesson conflictingLesson = new Lesson(2, "Subject2", "Teacher2", "Group2");
-        Lesson nonConflictingLesson = new Lesson(3, "Subject3", "Teacher3", "Group3");
-
-        firstLesson.setRoom(ROOM);
-        firstLesson.setTimeslot(TIMESLOT1);
-
-        conflictingLesson.setRoom(ROOM);
-        conflictingLesson.setTimeslot(TIMESLOT1);
-
-        nonConflictingLesson.setRoom(ROOM);
-        nonConflictingLesson.setTimeslot(TIMESLOT2);
-
-        constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
+        Lesson firstLesson = new Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
+        Lesson conflictingLesson = new Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
+        Lesson nonConflictingLesson = new Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
+        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
                 .given(firstLesson, conflictingLesson, nonConflictingLesson)
                 .penalizesBy(1);
     }
@@ -425,7 +416,7 @@ class TimeTableConstraintProviderTest {
 }
 ----
 
-This test verifies that the constraint `TimeTableConstraintProvider::roomConflict`,
+This test verifies that the constraint `TimetableConstraintProvider::roomConflict`,
 when given three lessons in the same room, where two lessons have the same timeslot,
 it penalizes with a match weight of `1`.
 So with a constraint weight of `10hard` it would reduce the score by `-10hard`.
@@ -437,9 +428,9 @@ This way, constraint weight tweaking does not break the unit tests.
 
 ==== Test the solver
 
-In a JUnit test, generate a test dataset and send it to the `TimeTableResource` to solve.
+In a JUnit test, generate a test dataset and send it to the `TimetableResource` to solve.
 
-Create the `src/test/java/org/acme/schooltimetabling/rest/TimeTableResourceTest.java` class:
+Create the `src/test/java/org/acme/schooltimetabling/rest/TimetableResourceTest.java` class:
 
 [source,java]
 ----
@@ -456,8 +447,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.TimeTable;
-import org.acme.schooltimetabling.rest.TimeTableResource;
+import org.acme.schooltimetabling.domain.Timetable;
+import org.acme.schooltimetabling.rest.TimetableResource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -466,16 +457,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class TimeTableResourceTest {
+public class TimetableResourceTest {
 
     @Inject
-    TimeTableResource timeTableResource;
+    TimetableResource timetableResource;
 
     @Test
     @Timeout(600_000)
     public void solve() {
-        TimeTable problem = generateProblem();
-        TimeTable solution = timeTableResource.solve(problem);
+        Timetable problem = generateProblem();
+        Timetable solution = timetableResource.solve(problem);
         assertFalse(solution.getLessons().isEmpty());
         for (Lesson lesson : solution.getLessons()) {
             assertNotNull(lesson.getTimeslot());
@@ -484,7 +475,7 @@ public class TimeTableResourceTest {
         assertTrue(solution.getScore().isFeasible());
     }
 
-    private TimeTable generateProblem() {
+    private Timetable generateProblem() {
         List<Timeslot> timeslots = new ArrayList<>();
         timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
         timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
@@ -509,7 +500,7 @@ public class TimeTableResourceTest {
         lessons.add(new Lesson(203L, "History", "I. Jones", "10th grade"));
         lessons.add(new Lesson(204L, "English", "P. Cruz", "10th grade"));
         lessons.add(new Lesson(205L, "French", "M. Curie", "10th grade"));
-        return new TimeTable(timeslots, rooms, lessons);
+        return new Timetable(timeslots, rooms, lessons);
     }
 
 }
@@ -580,7 +571,7 @@ Now try adding database and UI integration:
 
 . https://quarkus.io/guides/rest-json[Expose them through REST].
 
-. Adjust the `TimeTableResource` to read and write a `TimeTable` instance in a single transaction
+. Adjust the `TimetableResource` to read and write a `Timetable` instance in a single transaction
 and use those accordingly:
 +
 [source,java]
@@ -596,30 +587,30 @@ import javax.ws.rs.Path;
 import io.quarkus.panache.common.Sort;
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
+import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 
-@Path("/timeTable")
-public class TimeTableResource {
+@Path("/timetable")
+public class TimetableResource {
 
     public static final Long SINGLETON_TIME_TABLE_ID = 1L;
 
     @Inject
-    SolverManager<TimeTable, Long> solverManager;
+    SolverManager<Timetable, Long> solverManager;
     @Inject
-    SolutionManager<TimeTable, HardSoftScore> solutionManager;
+    SolutionManager<Timetable, HardSoftScore> solutionManager;
 
-    // To try, open http://localhost:8080/timeTable
+    // To try, open http://localhost:8080/timetable
     @GET
-    public TimeTable getTimeTable() {
+    public Timetable getTimetable() {
         // Get the solver status before loading the solution
         // to avoid the race condition that the solver terminates between them
         SolverStatus solverStatus = getSolverStatus();
-        TimeTable solution = findById(SINGLETON_TIME_TABLE_ID);
+        Timetable solution = findById(SINGLETON_TIME_TABLE_ID);
         solutionManager.update(solution); // Sets the score
         solution.setSolverStatus(solverStatus);
         return solution;
@@ -644,21 +635,21 @@ public class TimeTableResource {
     }
 
     @Transactional
-    protected TimeTable findById(Long id) {
+    protected Timetable findById(Long id) {
         if (!SINGLETON_TIME_TABLE_ID.equals(id)) {
-            throw new IllegalStateException("There is no timeTable with id (" + id + ").");
+            throw new IllegalStateException("There is no timetable with id (" + id + ").");
         }
         // Occurs in a single transaction, so each initialized lesson references the same timeslot/room instance
-        // that is contained by the timeTable's timeslots/rooms.
-        return new TimeTable(
+        // that is contained by the timetable's timeslots/rooms.
+        return new Timetable(
                 Timeslot.listAll(Sort.by("dayOfWeek").and("startTime").and("endTime").and("id")),
                 Room.listAll(Sort.by("name").and("id")),
                 Lesson.listAll(Sort.by("subject").and("teacher").and("studentGroup").and("id")));
     }
 
     @Transactional
-    protected void save(TimeTable timeTable) {
-        for (Lesson lesson : timeTable.getLessons()) {
+    protected void save(Timetable timetable) {
+        for (Lesson lesson : timetable.getLessons()) {
             // TODO this is awfully naive: optimistic locking causes issues if called by the SolverManager
             Lesson attachedLesson = Lesson.findById(lesson.getId());
             attachedLesson.setTimeslot(lesson.getTimeslot());
@@ -669,10 +660,10 @@ public class TimeTableResource {
 }
 ----
 +
-For simplicity's sake, this code handles only one `TimeTable` instance,
-but it is straightforward to enable multi-tenancy and handle multiple `TimeTable` instances of different high schools in parallel.
+For simplicity's sake, this code handles only one `Timetable` instance,
+but it is straightforward to enable multi-tenancy and handle multiple `Timetable` instances of different high schools in parallel.
 +
-The `getTimeTable()` method returns the latest timetable from the database.
+The `getTimetable()` method returns the latest timetable from the database.
 It uses the `SolutionManager` (which is automatically injected)
 to calculate the score of that timetable, so the UI can show the score.
 +
@@ -681,7 +672,7 @@ It uses the `SolverManager.solveAndListen()` method to listen to intermediate be
 and update the database accordingly.
 This enables the UI to show progress while the backend is still solving.
 
-. Adjust the `TimeTableResourceTest` instance accordingly, now that the `solve()` method returns immediately.
+. Adjust the `TimetableResourceTest` instance accordingly, now that the `solve()` method returns immediately.
 Poll for the latest solution until the solver finishes solving:
 +
 [source,java]
@@ -692,7 +683,7 @@ import javax.inject.Inject;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.TimeTable;
+import org.acme.schooltimetabling.domain.Timetable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import ai.timefold.solver.core.api.solver.SolverStatus;
@@ -702,28 +693,28 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class TimeTableResourceTest {
+public class TimetableResourceTest {
 
     @Inject
-    TimeTableResource timeTableResource;
+    TimetableResource timetableResource;
 
     @Test
     @Timeout(600_000)
     public void solveDemoDataUntilFeasible() throws InterruptedException {
-        timeTableResource.solve();
-        TimeTable timeTable = timeTableResource.getTimeTable();
-        while (timeTable.getSolverStatus() != SolverStatus.NOT_SOLVING) {
+        timetableResource.solve();
+        Timetable timetable = timetableResource.getTimetable();
+        while (timetable.getSolverStatus() != SolverStatus.NOT_SOLVING) {
             // Quick polling (not a Test Thread Sleep anti-pattern)
             // Test is still fast on fast machines and doesn't randomly fail on slow machines.
             Thread.sleep(20L);
-            timeTable = timeTableResource.getTimeTable();
+            timetable = timetableResource.getTimetable();
         }
-        assertFalse(timeTable.getLessons().isEmpty());
-        for (Lesson lesson : timeTable.getLessons()) {
+        assertFalse(timetable.getLessons().isEmpty());
+        for (Lesson lesson : timetable.getLessons()) {
             assertNotNull(lesson.getTimeslot());
             assertNotNull(lesson.getRoom());
         }
-        assertTrue(timeTable.getScore().isFeasible());
+        assertTrue(timetable.getScore().isFeasible());
     }
 
 }
@@ -731,4 +722,4 @@ public class TimeTableResourceTest {
 
 . Build an attractive web UI on top of these REST methods to visualize the timetable.
 
-Take a look at {quarkus-quickstart-url}[the quickstart source code] to see how this all turns out.
+For a full implementation with a web UI and in-memory storage, check out {quarkus-quickstart-url}[the Quarkus quickstart source code].

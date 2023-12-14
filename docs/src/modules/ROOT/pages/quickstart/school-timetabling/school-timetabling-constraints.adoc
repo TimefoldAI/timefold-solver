@@ -20,11 +20,11 @@ To calculate the score, you could implement an `EasyScoreCalculator` class:
 
 [source,java]
 ----
-public class TimeTableEasyScoreCalculator implements EasyScoreCalculator<TimeTable, HardSoftScore> {
+public class TimetableEasyScoreCalculator implements EasyScoreCalculator<Timetable, HardSoftScore> {
 
     @Override
-    public HardSoftScore calculateScore(TimeTable timeTable) {
-        List<Lesson> lessons = timeTable.getLessons();
+    public HardSoftScore calculateScore(Timetable timetable) {
+        List<Lesson> lessons = timetable.getLessons();
         int hardScore = 0;
         for (Lesson a : lessons) {
             for (Lesson b : lessons) {
@@ -57,7 +57,7 @@ Unfortunately **that does not scale well**, because it is non-incremental:
 every time a lesson is assigned to a different time slot or room,
 all lessons are re-evaluated to calculate the new score.
 
-Instead, create a `src/main/java/org/acme/schooltimetabling/solver/TimeTableConstraintProvider.java` class
+Instead, create a `src/main/java/org/acme/schooltimetabling/solver/TimetableConstraintProvider.java` class
 to perform incremental score calculation.
 It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
 which is inspired by Java Streams and SQL:
@@ -73,7 +73,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 
-public class TimeTableConstraintProvider implements ConstraintProvider {
+public class TimetableConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
@@ -88,41 +88,34 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
 
     private Constraint roomConflict(ConstraintFactory constraintFactory) {
         // A room can accommodate at most one lesson at the same time.
-
-        // Select a lesson ...
         return constraintFactory
-                .forEach(Lesson.class)
-                // ... and pair it with another lesson ...
-                .join(Lesson.class,
+                // Select each pair of 2 different lessons ...
+                .forEachUniquePair(Lesson.class,
                         // ... in the same timeslot ...
                         Joiners.equal(Lesson::getTimeslot),
                         // ... in the same room ...
-                        Joiners.equal(Lesson::getRoom),
-                        // ... and the pair is unique (different id, no reverse pairs) ...
-                        Joiners.lessThan(Lesson::getId))
-                // ... then penalize each pair with a hard weight.
+                        Joiners.equal(Lesson::getRoom))
+                // ... and penalize each pair with a hard weight.
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Room conflict");
     }
 
     private Constraint teacherConflict(ConstraintFactory constraintFactory) {
         // A teacher can teach at most one lesson at the same time.
-        return constraintFactory.forEach(Lesson.class)
-                .join(Lesson.class,
+        return constraintFactory
+                .forEachUniquePair(Lesson.class,
                         Joiners.equal(Lesson::getTimeslot),
-                        Joiners.equal(Lesson::getTeacher),
-                        Joiners.lessThan(Lesson::getId))
+                        Joiners.equal(Lesson::getTeacher))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Teacher conflict");
     }
 
     private Constraint studentGroupConflict(ConstraintFactory constraintFactory) {
         // A student can attend at most one lesson at the same time.
-        return constraintFactory.forEach(Lesson.class)
-                .join(Lesson.class,
+        return constraintFactory
+                .forEachUniquePair(Lesson.class,
                         Joiners.equal(Lesson::getTimeslot),
-                        Joiners.equal(Lesson::getStudentGroup),
-                        Joiners.lessThan(Lesson::getId))
+                        Joiners.equal(Lesson::getStudentGroup))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Student group conflict");
     }

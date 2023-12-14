@@ -124,7 +124,7 @@ If you choose Maven, your `pom.xml` file has the following content:
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.2.3</version>
+        <version>1.4.14</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -155,7 +155,7 @@ If you choose Maven, your `pom.xml` file has the following content:
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.0.0</version>
         <configuration>
-          <mainClass>org.acme.schooltimetabling.TimeTableApp</mainClass>
+          <mainClass>org.acme.schooltimetabling.TimetableApp</mainClass>
         </configuration>
       </plugin>
     </plugins>
@@ -177,7 +177,7 @@ plugins {
 }
 
 def timefoldSolverVersion = "{timefold-solver-version}"
-def logbackVersion = "1.4.7"
+def logbackVersion = "1.4.14"
 
 group = "org.acme"
 version = "1.0-SNAPSHOT"
@@ -209,7 +209,7 @@ compileTestJava {
 }
 
 application {
-    mainClass = "org.acme.schooltimetabling.TimeTableApp"
+    mainClass = "org.acme.schooltimetabling.TimetableApp"
 }
 
 test {
@@ -241,7 +241,7 @@ to build a new `Solver` instance for each problem dataset to solve.
 A `SolverFactory` is thread-safe, but a `Solver` is not.
 In this case, there is only one dataset, so only one `Solver` instance.
 
-Create the `src/main/java/org/acme/schooltimetabling/TimeTableApp.java` class:
+Create the `src/main/java/org/acme/schooltimetabling/TimetableApp.java` class:
 
 [source,java]
 ----
@@ -254,44 +254,45 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
-import org.acme.schooltimetabling.domain.Timeslot;
-import org.acme.schooltimetabling.solver.TimeTableConstraintProvider;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.Room;
+import org.acme.schooltimetabling.domain.Timeslot;
+import org.acme.schooltimetabling.domain.Timetable;
+import org.acme.schooltimetabling.solver.TimetableConstraintProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TimeTableApp {
+public class TimetableApp {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TimeTableApp.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimetableApp.class);
 
     public static void main(String[] args) {
-        SolverFactory<TimeTable> solverFactory = SolverFactory.create(new SolverConfig()
-                .withSolutionClass(TimeTable.class)
+        SolverFactory<Timetable> solverFactory = SolverFactory.create(new SolverConfig()
+                .withSolutionClass(Timetable.class)
                 .withEntityClasses(Lesson.class)
-                .withConstraintProviderClass(TimeTableConstraintProvider.class)
+                .withConstraintProviderClass(TimetableConstraintProvider.class)
                 // The solver runs only for 5 seconds on this small dataset.
                 // It's recommended to run for at least 5 minutes ("5m") otherwise.
                 .withTerminationSpentLimit(Duration.ofSeconds(5)));
 
         // Load the problem
-        TimeTable problem = generateDemoData();
+        Timetable problem = generateDemoData();
 
         // Solve the problem
-        Solver<TimeTable> solver = solverFactory.buildSolver();
-        TimeTable solution = solver.solve(problem);
+        Solver<Timetable> solver = solverFactory.buildSolver();
+        Timetable solution = solver.solve(problem);
 
         // Visualize the solution
         printTimetable(solution);
     }
 
-    public static TimeTable generateDemoData() {
+    public static Timetable generateDemoData() {
         List<Timeslot> timeslotList = new ArrayList<>(10);
         timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
         timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
@@ -311,43 +312,43 @@ public class TimeTableApp {
         roomList.add(new Room("Room C"));
 
         List<Lesson> lessonList = new ArrayList<>();
-        long id = 0;
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "9th grade"));
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "9th grade"));
-        lessonList.add(new Lesson(id++, "Physics", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(id++, "Chemistry", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(id++, "Biology", "C. Darwin", "9th grade"));
-        lessonList.add(new Lesson(id++, "History", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(id++, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(id++, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(id++, "Spanish", "P. Cruz", "9th grade"));
-        lessonList.add(new Lesson(id++, "Spanish", "P. Cruz", "9th grade"));
+        long nextLessonId = 0L;
+        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Physics", "M. Curie", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Chemistry", "M. Curie", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Biology", "C. Darwin", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "History", "I. Jones", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "English", "I. Jones", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "English", "I. Jones", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"));
 
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(id++, "Physics", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(id++, "Chemistry", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(id++, "French", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(id++, "Geography", "C. Darwin", "10th grade"));
-        lessonList.add(new Lesson(id++, "History", "I. Jones", "10th grade"));
-        lessonList.add(new Lesson(id++, "English", "P. Cruz", "10th grade"));
-        lessonList.add(new Lesson(id++, "Spanish", "P. Cruz", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Physics", "M. Curie", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Chemistry", "M. Curie", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "French", "M. Curie", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Geography", "C. Darwin", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "History", "I. Jones", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "English", "P. Cruz", "10th grade"));
+        lessonList.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "10th grade"));
 
-        return new TimeTable(timeslotList, roomList, lessonList);
+        return new Timetable(timeslotList, roomList, lessonList);
     }
 
-    private static void printTimetable(TimeTable timeTable) {
-        LOGGER.info("");
-        List<Room> roomList = timeTable.getRooms();
-        List<Lesson> lessonList = timeTable.getLessons();
+    private static void printTimetable(Timetable timetable) {
+               LOGGER.info("");
+        List<Room> roomList = timetable.getRooms();
+        List<Lesson> lessonList = timetable.getLessons();
         Map<Timeslot, Map<Room, List<Lesson>>> lessonMap = lessonList.stream()
                 .filter(lesson -> lesson.getTimeslot() != null && lesson.getRoom() != null)
                 .collect(Collectors.groupingBy(Lesson::getTimeslot, Collectors.groupingBy(Lesson::getRoom)));
         LOGGER.info("|            | " + roomList.stream()
                 .map(room -> String.format("%-10s", room.getName())).collect(Collectors.joining(" | ")) + " |");
         LOGGER.info("|" + "------------|".repeat(roomList.size() + 1));
-        for (Timeslot timeslot : timeTable.getTimeslots()) {
+        for (Timeslot timeslot : timetable.getTimeslots()) {
             List<List<Lesson>> cellList = roomList.stream()
                     .map(room -> {
                         Map<Room, List<Lesson>> byRoomMap = lessonMap.get(timeslot);
@@ -355,12 +356,8 @@ public class TimeTableApp {
                             return Collections.<Lesson>emptyList();
                         }
                         List<Lesson> cellLessonList = byRoomMap.get(room);
-                        if (cellLessonList == null) {
-                            return Collections.<Lesson>emptyList();
-                        }
-                        return cellLessonList;
-                    })
-                    .collect(Collectors.toList());
+                        return Objects.requireNonNullElse(cellLessonList, Collections.<Lesson>emptyList());
+                    }).toList();
 
             LOGGER.info("| " + String.format("%-10s",
                     timeslot.getDayOfWeek().toString().substring(0, 3) + " " + timeslot.getStartTime()) + " | "
@@ -382,7 +379,7 @@ public class TimeTableApp {
         }
         List<Lesson> unassignedLessons = lessonList.stream()
                 .filter(lesson -> lesson.getTimeslot() == null || lesson.getRoom() == null)
-                .collect(Collectors.toList());
+                .toList();
         if (!unassignedLessons.isEmpty()) {
             LOGGER.info("");
             LOGGER.info("Unassigned lessons");
@@ -399,10 +396,10 @@ The `main()` method first creates the `SolverFactory`:
 
 [source,java]
 ----
-SolverFactory<TimeTable> solverFactory = SolverFactory.create(new SolverConfig()
-        .withSolutionClass(TimeTable.class)
+SolverFactory<Timetable> solverFactory = SolverFactory.create(new SolverConfig()
+        .withSolutionClass(Timetable.class)
         .withEntityClasses(Lesson.class)
-        .withConstraintProviderClass(TimeTableConstraintProvider.class)
+        .withConstraintProviderClass(TimetableConstraintProvider.class)
         // The solver runs only for 5 seconds on this small dataset.
         // It's recommended to run for at least 5 minutes ("5m") otherwise.
         .withTerminationSpentLimit(Duration.ofSeconds(5)));
@@ -414,16 +411,16 @@ and the `ConstraintProvider` class, all of which you created earlier.
 Without a termination setting or a `terminationEarly()` event, the solver runs forever.
 To avoid that, the solver limits the solving time to five seconds.
 
-After five seconds, the `main()` method loads the problem, solves it, and prints the solution:
+The `main()` method loads the problem, solves it, and prints the solution after just over five seconds.
 
 [source,java]
 ----
         // Load the problem
-        TimeTable problem = generateDemoData();
+        Timetable problem = generateDemoData();
 
         // Solve the problem
-        Solver<TimeTable> solver = solverFactory.buildSolver();
-        TimeTable solution = solver.solve(problem);
+        Solver<Timetable> solver = solverFactory.buildSolver();
+        Timetable solution = solver.solve(problem);
 
         // Visualize the solution
         printTimetable(solution);
@@ -472,7 +469,7 @@ Create the `src/main/resource/logback.xml` file:
 
 === Run the application in IDE
 
-Run that `TimeTableApp` class as the main class of a normal Java application:
+Run that `TimetableApp` class as the main class of a normal Java application:
 
 ----
 ...
@@ -489,7 +486,7 @@ INFO  |            | 9th grade  | 10th grade |            |
 ----
 
 Verify the console output. Does it conform to all hard constraints?
-What happens if you comment out the `roomConflict` constraint in `TimeTableConstraintProvider`?
+What happens if you comment out the `roomConflict` constraint in `TimetableConstraintProvider`?
 
 The `info` log shows what Timefold Solver did in those five seconds:
 
@@ -511,7 +508,7 @@ To test each constraint in isolation, use a `ConstraintVerifier` in unit tests.
 This tests each constraint's corner cases in isolation from the other tests,
 which lowers maintenance when adding a new constraint with proper test coverage.
 
-Create the `src/test/java/org/acme/schooltimetabling/solver/TimeTableConstraintProviderTest.java` class:
+Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
 
 [source,java]
 ----
@@ -522,26 +519,26 @@ import java.time.LocalTime;
 
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
+import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
-class TimeTableConstraintProviderTest {
+class TimetableConstraintProviderTest {
 
     private static final Room ROOM1 = new Room("Room1");
     private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.NOON);
     private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON);
 
-    ConstraintVerifier<TimeTableConstraintProvider, TimeTable> constraintVerifier = ConstraintVerifier.build(
-            new TimeTableConstraintProvider(), TimeTable.class, Lesson.class);
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier = ConstraintVerifier.build(
+            new TimetableConstraintProvider(), Timetable.class, Lesson.class);
 
     @Test
     void roomConflict() {
         Lesson firstLesson = new Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
         Lesson conflictingLesson = new Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
         Lesson nonConflictingLesson = new Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
-        constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
+        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
                 .given(firstLesson, conflictingLesson, nonConflictingLesson)
                 .penalizesBy(1);
     }
@@ -549,7 +546,7 @@ class TimeTableConstraintProviderTest {
 }
 ----
 
-This test verifies that the constraint `TimeTableConstraintProvider::roomConflict` penalizes with a match weight of `1`
+This test verifies that the constraint `TimetableConstraintProvider::roomConflict` penalizes with a match weight of `1`
 when given three lessons in the same room, where two lessons have the same timeslot.
 Therefore, a constraint weight of `10hard` would reduce the score by `-10hard`.
 
@@ -616,7 +613,7 @@ In Maven, add the following to your `pom.xml`:
           </descriptors>
           <archive>
             <manifestEntries>
-              <Main-Class>org.acme.schooltimetabling.TimeTableApp</Main-Class>
+              <Main-Class>org.acme.schooltimetabling.TimetableApp</Main-Class>
               <Multi-Release>true</Multi-Release>
             </manifestEntries>
           </archive>
@@ -671,7 +668,7 @@ This enables the https://maven.apache.org/plugins/maven-assembly-plugin/[Maven A
 * Take all dependencies of your project and put their classes and resources into a new JAR.
 ** If any of the dependencies use https://docs.oracle.com/javase/tutorial/ext/basics/spi.html[Java SPI], it properly bundles all the service descriptors.
 ** If any of the dependencies are https://openjdk.org/jeps/238[multi-release JARs], it takes that into account.
-* Set that JAR's main class to be `org.acme.schooltimetabling.TimeTableApp`.
+* Set that JAR's main class to be `org.acme.schooltimetabling.TimetableApp`.
 * Make that JAR available as `hello-world-run.jar` in your project's build directory, most likely `target/`.
 
 This executable JAR can be run like any other JAR:
@@ -690,7 +687,7 @@ In Gradle, add the following to your `build.gradle`:
 [source,gradle,options="nowrap"]
 ----
 application {
-    mainClass = "org.acme.schooltimetabling.TimeTableApp"
+    mainClass = "org.acme.schooltimetabling.TimetableApp"
 }
 ----
 
