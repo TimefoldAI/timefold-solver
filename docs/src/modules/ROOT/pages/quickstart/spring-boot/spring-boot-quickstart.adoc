@@ -67,7 +67,12 @@ Create a Spring Boot application with the following dependencies:
 * Spring Web (`spring-boot-starter-web`)
 * Timefold Solver (`timefold-solver-spring-boot-starter`)
 
-If you choose Maven, your `pom.xml` file has the following content:
+[tabs]
+====
+Maven::
++
+--
+Your `pom.xml` file has the following content:
 
 [source,xml,subs=attributes+]
 ----
@@ -126,8 +131,11 @@ If you choose Maven, your `pom.xml` file has the following content:
     </build>
 </project>
 ----
-
-On the other hand, in Gradle, your `build.gradle` file has this content:
+--
+Gradle::
++
+--
+Your `build.gradle` file has this content:
 
 [source,groovy,subs=attributes+]
 ----
@@ -159,6 +167,8 @@ test {
     useJUnitPlatform()
 }
 ----
+--
+====
 
 include::../school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
 include::../school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
@@ -312,7 +322,11 @@ To test each constraint in isolation, use a `ConstraintVerifier` in unit tests.
 It tests each constraint's corner cases in isolation from the other tests,
 which lowers maintenance when adding a new constraint with proper test coverage.
 
-
+[tabs]
+====
+Maven::
++
+--
 Add the folllowing dependencies to your `pom.xml`:
 [source,xml]
 ----
@@ -327,13 +341,18 @@ Add the folllowing dependencies to your `pom.xml`:
         <scope>test</scope>
     </dependency>
 ----
-
-For Gradle, add the subsequent dependencies to your `build.gradle`:
+--
+Gradle::
++
+--
+Add the subsequent dependencies to your `build.gradle`:
 [source,groovy,subs=attributes+]
 ----
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("ai.timefold.solver:timefold-solver-test")
 ----
+--
+====
 
 
 Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:

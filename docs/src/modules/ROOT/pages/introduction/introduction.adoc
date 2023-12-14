@@ -183,7 +183,12 @@ but we're just not entirely comfortable yet to write their signatures in stone.
 
 The Timefold Solver jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
 
-If you use Maven, add a dependency to `timefold-solver-core` in your `pom.xml`:
+[tabs]
+====
+Maven::
++
+--
+Add a dependency to `timefold-solver-core` in your `pom.xml`:
 
 [source,xml,options="nowrap"]
 ----
@@ -225,8 +230,11 @@ when adding other timefold dependencies later on:
   </dependencies>
 </project>
 ----
-
-If you use Gradle, add a dependency to `timefold-solver-core` in your `build.gradle`:
+--
+Gradle::
++
+--
+Add a dependency to `timefold-solver-core` in your `build.gradle`:
 
 [source,groovy,options="nowrap"]
 ----
@@ -234,7 +242,8 @@ dependencies {
   implementation 'ai.timefold.solver:timefold-solver-core:...'
 }
 ----
-
+--
+====
 See also how to xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[switch To Enterprise Edition].
 
 [#useWithOtherBuildTools]
@@ -244,23 +253,29 @@ See also how to xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpri
 Quickly upgrade your source code to the latest and greatest version of Timefold Solver,
 run this command:
 
-Maven:
-
+[tabs]
+====
+Maven::
++
+--
 [source,shell,subs=attributes+]
 ----
 $ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
   -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} \
   -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
 ----
-
-Gradle:
-
+--
+Gradle::
++
+--
 [source,shell,subs=attributes+]
 ----
 $ curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle
 $ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version}
 $ rm upgrade-timefold.gradle
 ----
+--
+====
 
 It automatically replaces deprecated methods with better alternatives.
 Run your tests and commit the changes.
