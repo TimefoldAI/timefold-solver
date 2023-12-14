@@ -1,7 +1,7 @@
 = Gather the domain objects in a planning solution
 :imagesdir: ../..
 
-A `TimeTable` wraps all `Timeslot`, `Room`, and `Lesson` instances of a single dataset.
+A `Timetable` wraps all `Timeslot`, `Room`, and `Lesson` instances of a single dataset.
 Furthermore, because it contains all lessons, each with a specific planning variable state,
 it is a _planning solution_ and it has a score:
 
@@ -12,7 +12,7 @@ for example, a solution with the score `-2hard/-3soft`.
 * If it adheres to all hard constraints, then it is a _feasible_ solution,
 for example, a solution with the score `0hard/-7soft`.
 
-Create the `src/main/java/org/acme/schooltimetabling/domain/TimeTable.java` class:
+Create the `src/main/java/org/acme/schooltimetabling/domain/Timetable.java` class:
 
 [source,java]
 ----
@@ -28,7 +28,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 
 @PlanningSolution
-public class TimeTable {
+public class Timetable {
 
     @ValueRangeProvider
     @ProblemFactCollectionProperty
@@ -42,10 +42,10 @@ public class TimeTable {
     @PlanningScore
     private HardSoftScore score;
 
-    public TimeTable() {
+    public Timetable() {
     }
 
-    public TimeTable(List<Timeslot> timeslots, List<Room> rooms, List<Lesson> lessons) {
+    public Timetable(List<Timeslot> timeslots, List<Room> rooms, List<Lesson> lessons) {
         this.timeslots = timeslots;
         this.rooms = rooms;
         this.lessons = lessons;
@@ -70,16 +70,16 @@ public class TimeTable {
 }
 ----
 
-The `TimeTable` class has an `@PlanningSolution` annotation,
+The `Timetable` class has an `@PlanningSolution` annotation,
 so Timefold Solver knows that this class contains all of the input and output data.
 
-Specifically, this class is the input of the problem:
+Specifically, these classes are the input of the problem:
 
-* A `timeslots` field with all time slots
+* The `timeslots` field with all time slots
 ** This is a list of problem facts, because they do not change during solving.
-* A `rooms` field with all rooms
+* The `rooms` field with all rooms
 ** This is a list of problem facts, because they do not change during solving.
-* A `lessons` field with all lessons
+* The `lessons` field with all lessons
 ** This is a list of planning entities, because they change during solving.
 ** Of each `Lesson`:
 *** The values of the `timeslot` and `room` fields are typically still `null`, so unassigned.
@@ -89,8 +89,8 @@ These fields are problem properties.
 
 However, this class is also the output of the solution:
 
-* A `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving
-* A `score` field that represents the quality of the output solution, for example, `0hard/-5soft`
+* The `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving.
+* The `score` field that represents the quality of the output solution, for example, `0hard/-5soft`.
 
 == The value range providers
 
@@ -105,11 +105,11 @@ Following the same logic, the `rooms` field also has an `@ValueRangeProvider` an
 
 Furthermore, Timefold Solver needs to know which `Lesson` instances it can change
 as well as how to retrieve the `Timeslot` and `Room` instances used for score calculation
-by your `TimeTableConstraintProvider`.
+by your `TimetableConstraintProvider`.
 
 The `timeslots` and `rooms` fields have an `@ProblemFactCollectionProperty` annotation,
-so your `TimeTableConstraintProvider` can select _from_ those instances.
+so your `TimetableConstraintProvider` can select _from_ those instances.
 
 The `lessons` has an `@PlanningEntityCollectionProperty` annotation,
 so Timefold Solver can change them during solving
-and your `TimeTableConstraintProvider` can select _from_ those too.
+and your `TimetableConstraintProvider` can select _from_ those too.
