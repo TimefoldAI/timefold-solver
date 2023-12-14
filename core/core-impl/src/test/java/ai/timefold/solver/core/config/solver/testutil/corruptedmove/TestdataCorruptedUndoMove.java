@@ -15,6 +15,6 @@ public class TestdataCorruptedUndoMove extends AbstractTestdataMove {
     @Override
     protected AbstractMove<TestdataSolution> createUndoMove(ScoreDirector<TestdataSolution> scoreDirector) {
         // Corrupts the undo move by not undo-ing the value
-        return new TestdataCorruptedEntityUndoMove(entity, toValue);
+        return new TestdataCorruptedUndoMove(entity, toValue);
     }
 }

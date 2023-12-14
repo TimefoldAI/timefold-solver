@@ -27,7 +27,12 @@ public class AbstractTestdataCorruptedUndoMoveTotalMappingFactory implements Mov
         for (TestdataEntity entity : solution.getEntityList()) {
             for (TestdataValue value : solution.getValueList()) {
                 if (corruptEntityAsWell) {
-                    moveList.add(new TestdataCorruptedEntityUndoMove(entity, value));
+                    for (TestdataEntity undoEntity : solution.getEntityList()) {
+                        if (entity == undoEntity) {
+                            continue;
+                        }
+                        moveList.add(new TestdataCorruptedEntityUndoMove(entity, undoEntity, value));
+                    }
                 } else {
                     moveList.add(new TestdataCorruptedUndoMove(entity, value));
                 }
