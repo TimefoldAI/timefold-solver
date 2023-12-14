@@ -140,17 +140,6 @@ If you choose Maven, your `pom.xml` file has the following content:
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-quarkus-jackson</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-junit5</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-test</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -367,10 +356,22 @@ Add a `timefold-solver-test` dependency in your `pom.xml`:
 [source,xml]
 ----
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-test</artifactId>
       <scope>test</scope>
     </dependency>
+----
+
+For Gradle, add the subsequent dependencies to your `build.gradle`:
+[source,groovy,subs=attributes+]
+----
+    testImplementation "io.quarkus:quarkus-junit5"
+    testImplementation "ai.timefold.solver:timefold-solver-test"
 ----
 
 Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:

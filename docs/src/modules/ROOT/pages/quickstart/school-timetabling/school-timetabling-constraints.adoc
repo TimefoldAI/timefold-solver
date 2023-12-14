@@ -23,8 +23,8 @@ To calculate the score, you could implement an `EasyScoreCalculator` class:
 public class TimetableEasyScoreCalculator implements EasyScoreCalculator<Timetable, HardSoftScore> {
 
     @Override
-    public HardSoftScore calculateScore(Timetable timeTable) {
-        List<Lesson> lessons = timeTable.getLessons();
+    public HardSoftScore calculateScore(Timetable timetable) {
+        List<Lesson> lessons = timetable.getLessons();
         int hardScore = 0;
         for (Lesson a : lessons) {
             for (Lesson b : lessons) {
