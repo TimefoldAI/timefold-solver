@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
-import static ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef.elementRef;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockDestinationSelector;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockEntityIndependentValueSelector;
@@ -12,6 +11,7 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCod
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -36,12 +36,12 @@ class ListChangeMoveSelectorTest {
         ListChangeMoveSelector<TestdataListSolution> moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v2),
                 mockDestinationSelector(
-                        elementRef(a, 0),
-                        elementRef(b, 0),
-                        elementRef(c, 0),
-                        elementRef(c, 1),
-                        elementRef(a, 2),
-                        elementRef(a, 1)),
+                        new ElementRef(a, 0),
+                        new ElementRef(b, 0),
+                        new ElementRef(c, 0),
+                        new ElementRef(c, 1),
+                        new ElementRef(a, 2),
+                        new ElementRef(a, 1)),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -92,11 +92,11 @@ class ListChangeMoveSelectorTest {
         ListChangeMoveSelector<TestdataListSolution> moveSelector = new ListChangeMoveSelector<>(
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v2, v1, v3, v3, v3),
                 mockNeverEndingDestinationSelector(
-                        elementRef(b, 0),
-                        elementRef(a, 2),
-                        elementRef(a, 0),
-                        elementRef(a, 1),
-                        elementRef(a, 2)),
+                        new ElementRef(b, 0),
+                        new ElementRef(a, 2),
+                        new ElementRef(a, 0),
+                        new ElementRef(a, 1),
+                        new ElementRef(a, 2)),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -134,10 +134,10 @@ class ListChangeMoveSelectorTest {
         ListChangeMoveSelector<TestdataListSolution> moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v4, v2, v5),
                 mockDestinationSelector(
-                        elementRef(a, 0),
-                        elementRef(b, 0),
-                        elementRef(c, 0),
-                        elementRef(c, 1)),
+                        new ElementRef(a, 0),
+                        new ElementRef(b, 0),
+                        new ElementRef(c, 0),
+                        new ElementRef(c, 1)),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);

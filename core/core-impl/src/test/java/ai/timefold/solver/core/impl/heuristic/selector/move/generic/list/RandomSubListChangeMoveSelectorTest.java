@@ -60,7 +60,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementRef.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, new ElementRef(b, 0)),
                 false);
 
         TestRandom random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1);
@@ -108,7 +108,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementRef.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, new ElementRef(b, 0)),
                 true);
 
         // Each row is consumed by 1 createUpcomingSelection() call.
@@ -165,7 +165,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementRef.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, new ElementRef(b, 0)),
                 false);
 
         TestRandom random = new TestRandom(0, 1, 2, 3, 4, -1);
@@ -234,7 +234,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v4, v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementRef.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, new ElementRef(b, 0)),
                 false);
 
         TestRandom random = new TestRandom(0, 1, -1);
@@ -277,7 +277,7 @@ class RandomSubListChangeMoveSelectorTest {
                                 v1, v2, v3, v4, v5),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementRef.of(b, -1)),
+                mockNeverEndingDestinationSelector(destinationSize, new ElementRef(b, -1)),
                 false);
 
         TestRandom random = new TestRandom(0, 0);
@@ -322,7 +322,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementRef.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, new ElementRef(b, 0)),
                 false);
 
         TestRandom random = new TestRandom(0);

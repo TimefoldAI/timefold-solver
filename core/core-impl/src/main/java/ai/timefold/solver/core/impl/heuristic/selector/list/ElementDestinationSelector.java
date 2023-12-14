@@ -100,12 +100,12 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 public ElementRef next() {
                     long entitySize = entitySelector.getSize();
                     if (RandomUtils.nextLong(workingRandom, totalSize) < entitySize) {
-                        return ElementRef.of(entityIterator.next(), 0);
+                        Object entity = entityIterator.next();
+                        return new ElementRef(entity, 0);
                     }
                     Object value = valueIterator.next();
-                    return ElementRef.of(
-                            inverseVariableSupply.getInverseSingleton(value),
-                            indexVariableSupply.getIndex(value) + 1);
+                    Object entity = inverseVariableSupply.getInverseSingleton(value);
+                    return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
                 }
             };
         } else {
@@ -114,11 +114,12 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             }
             return Stream.concat(
                     StreamSupport.stream(entitySelector.spliterator(), false)
-                            .map(entity -> ElementRef.of(entity, 0)),
+                            .map(entity -> new ElementRef(entity, 0)),
                     StreamSupport.stream(valueSelector.spliterator(), false)
-                            .map(value -> ElementRef.of(
-                                    inverseVariableSupply.getInverseSingleton(value),
-                                    indexVariableSupply.getIndex(value) + 1)))
+                            .map(value -> {
+                                Object entity = inverseVariableSupply.getInverseSingleton(value);
+                                return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
+                            }))
                     .iterator();
         }
     }
