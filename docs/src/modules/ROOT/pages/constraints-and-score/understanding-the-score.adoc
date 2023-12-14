@@ -14,7 +14,7 @@ The easiest way to do that during development is to print the score summary:
 [source,java,options="nowrap"]
 ----
 SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
-System.out.println(solutionManager.getSummary(solution));
+System.out.println(solutionManager.explain(solution));
 ----
 
 For example in conference scheduling,
@@ -196,7 +196,7 @@ get the `Indictment` map from the ``ScoreExplanation``:
 [source,java,options="nowrap"]
 ----
 SolutionManager<CloudBalance, HardSoftScore> scoreManager = SolutionManager.create(solverFactory);
-ScoreExplanation<CloudBalance, HardSoftScore> scoreExplanation = solutionManager.explainScore(cloudBalance);
+ScoreExplanation<CloudBalance, HardSoftScore> scoreExplanation = solutionManager.explain(cloudBalance);
 Map<Object, Indictment<HardSoftScore>> indictmentMap = scoreExplanation.getIndictmentMap();
 for (CloudProcess process : cloudBalance.getProcessList()) {
     Indictment<HardSoftScore> indictment = indictmentMap.get(process);
