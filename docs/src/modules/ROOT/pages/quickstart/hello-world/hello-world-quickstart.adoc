@@ -411,7 +411,7 @@ and the `ConstraintProvider` class, all of which you created earlier.
 Without a termination setting or a `terminationEarly()` event, the solver runs forever.
 To avoid that, the solver limits the solving time to five seconds.
 
-After five seconds, the `main()` method loads the problem, solves it, and prints the solution:
+The `main()` method loads the problem, solves it, and prints the solution after just over five seconds.
 
 [source,java]
 ----
@@ -601,7 +601,7 @@ In Maven, add the following to your `pom.xml`:
   ...
   <build>
     <plugins>
-       <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${version.assembly.plugin}</version>

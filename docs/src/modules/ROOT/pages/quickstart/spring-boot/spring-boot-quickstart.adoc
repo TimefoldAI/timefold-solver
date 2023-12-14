@@ -668,4 +668,4 @@ public class TimetableControllerTest {
 
 . Build an attractive web UI on top of these REST methods to visualize the timetable.
 
-For an implementation with UI-integrated and in-memory storage, check out {spring-boot-quickstart-url}[the Spring-boot quickstart source code].
+For a full implementation with a web UI and in-memory storage, check out {spring-boot-quickstart-url}[the Spring-boot quickstart source code].
