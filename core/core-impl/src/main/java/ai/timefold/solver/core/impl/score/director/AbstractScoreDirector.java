@@ -1,5 +1,15 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
@@ -21,18 +31,9 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Abstract superclass for {@link ScoreDirector}.
@@ -71,7 +72,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final SolutionTracker<Solution_> solutionTracker;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
-                                    boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
@@ -506,13 +507,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
-                                          Object entity, int fromIndex, int toIndex) {
+            Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
-                                         Object entity, int fromIndex, int toIndex) {
+            Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
@@ -759,7 +760,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * @return never null
      */
     protected String buildScoreCorruptionAnalysis(InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector,
-                                                  boolean predicted) {
+            boolean predicted) {
         if (!isConstraintMatchEnabled() || !uncorruptedScoreDirector.isConstraintMatchEnabled()) {
             return """
                     Score corruption analysis could not be generated because either corrupted constraintMatchEnabled (%s) \
@@ -829,7 +830,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private void appendAnalysis(StringBuilder analysis, String workingLabel, String suffix,
-                                Set<MatchAnalysis<Score_>> matches) {
+            Set<MatchAnalysis<Score_>> matches) {
         if (matches.isEmpty()) {
             analysis.append("""
                       The %s scoreDirector has no ConstraintMatch(es) which %s.
@@ -851,14 +852,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private void updateExcessAndMissingConstraintMatches(List<MatchAnalysis<Score_>> uncorruptedList,
-                                                         List<MatchAnalysis<Score_>> corruptedList, Set<MatchAnalysis<Score_>> excessSet,
-                                                         Set<MatchAnalysis<Score_>> missingSet) {
+            List<MatchAnalysis<Score_>> corruptedList, Set<MatchAnalysis<Score_>> excessSet,
+            Set<MatchAnalysis<Score_>> missingSet) {
         iterateAndAddIfFound(corruptedList, uncorruptedList, excessSet);
         iterateAndAddIfFound(uncorruptedList, corruptedList, missingSet);
     }
 
     private void iterateAndAddIfFound(List<MatchAnalysis<Score_>> referenceList, List<MatchAnalysis<Score_>> lookupList,
-                                      Set<MatchAnalysis<Score_>> targetSet) {
+            Set<MatchAnalysis<Score_>> targetSet) {
         if (referenceList.isEmpty()) {
             return;
         }

@@ -46,8 +46,10 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableLeftValueSelector = ListChangeMoveSelector.filterPinnedListPlanningVariableValues(leftValueSelector, inverseVariableSupply);
-        movableRightValueSelector = ListChangeMoveSelector.filterPinnedListPlanningVariableValues(rightValueSelector, inverseVariableSupply);
+        movableLeftValueSelector =
+                ListChangeMoveSelector.filterPinnedListPlanningVariableValues(leftValueSelector, inverseVariableSupply);
+        movableRightValueSelector =
+                ListChangeMoveSelector.filterPinnedListPlanningVariableValues(rightValueSelector, inverseVariableSupply);
     }
 
     @Override

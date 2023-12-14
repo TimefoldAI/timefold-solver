@@ -61,7 +61,6 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     if (entity == null) { // Unassigned.
                         return true;
                     }
-                    System.out.println("Selection " + selection + " " + entity + " " + entityDescriptor.isMovable(scoreDirector, entity));
                     return entityDescriptor.isMovable(scoreDirector, entity);
                 });
     }

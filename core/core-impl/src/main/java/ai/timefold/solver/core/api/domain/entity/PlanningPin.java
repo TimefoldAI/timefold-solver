@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.api.domain.entity;
 
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 /**
  * Specifies that a boolean property (or field) of a {@link PlanningEntity} determines if the planning entity is pinned.

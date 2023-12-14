@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonLis
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -38,12 +39,17 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solution_>
         implements DestinationSelector<Solution_> {
 
+    /**
+     * Only selects entities that are not pinned.
+     * Pinned entities have their entire list variables pinned, therefore are not useful as destinations.
+     */
     private final EntitySelector<Solution_> entitySelector;
     private final EntityIndependentValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
 
     private SingletonInverseVariableSupply inverseVariableSupply;
     private IndexVariableSupply indexVariableSupply;
+    private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
     public ElementDestinationSelector(
             EntitySelector<Solution_> entitySelector,
@@ -63,6 +69,8 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
         ListVariableDescriptor<?> listVariableDescriptor = (ListVariableDescriptor<?>) valueSelector.getVariableDescriptor();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
+        movableValueSelector =
+                ListChangeMoveSelector.filterPinnedListPlanningVariableValues(valueSelector, inverseVariableSupply);
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
     }
 
@@ -71,6 +79,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         super.solvingEnded(solverScope);
         inverseVariableSupply = null;
         indexVariableSupply = null;
+        movableValueSelector = null;
     }
 
     @Override
@@ -78,7 +87,15 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         if (entitySelector.getSize() == 0) {
             return 0;
         }
-        return entitySelector.getSize() + valueSelector.getSize();
+        return entitySelector.getSize() + getEffectiveValueSelector().getSize();
+    }
+
+    private EntityIndependentValueSelector<Solution_> getEffectiveValueSelector() { // Simplify tests.
+        if (movableValueSelector == null) {
+            return valueSelector;
+        } else {
+            return movableValueSelector;
+        }
     }
 
     @Override
@@ -86,7 +103,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         if (randomSelection) {
             long totalSize = Math.addExact(entitySelector.getSize(), valueSelector.getSize());
             Iterator<Object> entityIterator = entitySelector.iterator();
-            Iterator<Object> valueIterator = valueSelector.iterator();
+            Iterator<Object> valueIterator = getEffectiveValueSelector().iterator();
 
             return new Iterator<>() {
                 @Override
@@ -115,7 +132,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             return Stream.concat(
                     StreamSupport.stream(entitySelector.spliterator(), false)
                             .map(entity -> new ElementRef(entity, 0)),
-                    StreamSupport.stream(valueSelector.spliterator(), false)
+                    StreamSupport.stream(getEffectiveValueSelector().spliterator(), false)
                             .map(value -> {
                                 Object entity = inverseVariableSupply.getInverseSingleton(value);
                                 return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
@@ -126,16 +143,16 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
     @Override
     public boolean isCountable() {
-        return entitySelector.isCountable() && valueSelector.isCountable();
+        return entitySelector.isCountable() && getEffectiveValueSelector().isCountable();
     }
 
     @Override
     public boolean isNeverEnding() {
-        return randomSelection || entitySelector.isNeverEnding() || valueSelector.isNeverEnding();
+        return randomSelection || entitySelector.isNeverEnding() || getEffectiveValueSelector().isNeverEnding();
     }
 
     public ListVariableDescriptor<Solution_> getVariableDescriptor() {
-        return (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
+        return (ListVariableDescriptor<Solution_>) getEffectiveValueSelector().getVariableDescriptor();
     }
 
     public EntityDescriptor<Solution_> getEntityDescriptor() {
@@ -143,11 +160,12 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     public Iterator<Object> endingIterator() {
+        EntityIndependentValueSelector<Solution_> effectiveValueSelector = getEffectiveValueSelector();
         return Stream.concat(
                 StreamSupport.stream(Spliterators.spliterator(entitySelector.endingIterator(),
                         entitySelector.getSize(), 0), false),
-                StreamSupport.stream(Spliterators.spliterator(valueSelector.endingIterator(null),
-                        valueSelector.getSize(), 0), false))
+                StreamSupport.stream(Spliterators.spliterator(effectiveValueSelector.endingIterator(null),
+                        effectiveValueSelector.getSize(), 0), false))
                 .iterator();
     }
 
