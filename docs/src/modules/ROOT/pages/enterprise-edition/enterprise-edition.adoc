@@ -24,7 +24,13 @@ source code of the Enterprise Edition https://github.com/TimefoldAI/timefold-sol
 
 In order to switch from Timefold Solver Community Edition to Enterprise Edition,
 first reference the Enterprise Edition Maven repository in your project.
-If you use Maven, add the following repository to your `pom.xml`:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following repository to your `pom.xml`:
 
 [source,xml,options="nowrap"]
 ----
@@ -40,8 +46,11 @@ If you use Maven, add the following repository to your `pom.xml`:
   ...
 </project>
 ----
-
-If you use Gradle, add the following in your `build.gradle`:
+--
+Gradle::
++
+--
+Add the following in your `build.gradle`:
 
 [source,groovy,options="nowrap"]
 ----
@@ -52,6 +61,8 @@ repositories {
   }
 }
 ----
+--
+====
 
 Having done that the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
 as shown in the table below.
