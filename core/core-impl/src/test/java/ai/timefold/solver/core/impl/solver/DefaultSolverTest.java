@@ -73,6 +73,9 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEntitySolution;
@@ -931,7 +934,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithPlanningListVariableEntityFair() {
+    void solveWithPlanningListVariableEntityPinFair() {
         var expectedValueCount = 4;
         var solution = TestdataPinnedListSolution.generateUninitializedSolution(expectedValueCount, 3);
         var pinnedEntity = solution.getEntityList().get(0);
@@ -945,7 +948,7 @@ class DefaultSolverTest {
                         TestdataPinnedListValue.class)
                 .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedListSolution> create(solverConfig);
-        var solver = (DefaultSolver<TestdataPinnedListSolution>) solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         solution = solver.solve(solution);
 
         assertThat(solution).isNotNull();
@@ -972,7 +975,82 @@ class DefaultSolverTest {
                         TestdataPinnedListValue.class)
                 .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedListSolution> create(solverConfig);
-        var solver = (DefaultSolver<TestdataPinnedListSolution>) solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
+        solution = solver.solve(solution);
+
+        assertThat(solution).isNotNull();
+        // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(1));
+        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
+        int actualValueCount = solution.getEntityList().stream()
+                .mapToInt(e -> e.getValueList().size())
+                .sum();
+        assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    @Test
+    void solveWithPlanningListVariablePinIndexFair() {
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        // Pin the first list entirely.
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setPinned(true);
+        // In the second list, pin only the first value.
+        var partiallyPinnedEntity = solution.getEntityList().get(1);
+        var partiallyPinnedList = partiallyPinnedEntity.getValueList();
+        var partiallyPinnedValue1 = solution.getValueList().get(1);
+        var partiallyPinnedValue2 = solution.getValueList().get(2);
+        partiallyPinnedList.add(partiallyPinnedValue1);
+        partiallyPinnedList.add(partiallyPinnedValue2);
+        partiallyPinnedEntity.setPinIndex(0); // The first value is pinned.
+        partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
+                        TestdataPinnedWithIndexListValue.class)
+                .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+        solution = solver.solve(solution);
+
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
+        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
+        int actualValueCount = solution.getEntityList().stream()
+                .mapToInt(e -> e.getValueList().size())
+                .sum();
+        assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    @Test
+    void solveWithPlanningListVariablePinIndexUnfair() {
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        // Pin the first list entirely.
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setPinned(true);
+        // In the second list, pin only the first value.
+        var partiallyPinnedEntity = solution.getEntityList().get(1);
+        var partiallyPinnedList = partiallyPinnedEntity.getValueList();
+        var partiallyPinnedValue1 = solution.getValueList().get(1);
+        var partiallyPinnedValue2 = solution.getValueList().get(2);
+        partiallyPinnedList.add(partiallyPinnedValue1);
+        partiallyPinnedList.add(partiallyPinnedValue2);
+        partiallyPinnedEntity.setPinIndex(0); // The first value is pinned.
+        partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
+                        TestdataPinnedWithIndexListValue.class)
+                .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
         solution = solver.solve(solution);
 
         assertThat(solution).isNotNull();
@@ -986,26 +1064,38 @@ class DefaultSolverTest {
     }
 
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator
-            implements EasyScoreCalculator<TestdataPinnedListSolution, SimpleScore> {
+            implements EasyScoreCalculator<Object, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataPinnedListSolution testdataPinnedListSolution) {
-            return new MaximizeUnusedEntitiesEasyScoreCalculator().calculateScore(testdataPinnedListSolution).negate();
+        public SimpleScore calculateScore(Object solution) {
+            return new MaximizeUnusedEntitiesEasyScoreCalculator().calculateScore(solution).negate();
         }
     }
 
     public static final class MaximizeUnusedEntitiesEasyScoreCalculator
-            implements EasyScoreCalculator<TestdataPinnedListSolution, SimpleScore> {
+            implements EasyScoreCalculator<Object, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataPinnedListSolution testdataPinnedListSolution) {
-            int unusedEntities = 0;
-            for (var entity : testdataPinnedListSolution.getEntityList()) {
-                if (entity.getValueList().isEmpty()) {
-                    unusedEntities++;
+        public SimpleScore calculateScore(Object solution) {
+            if (solution instanceof TestdataPinnedListSolution testdataPinnedListSolution) {
+                int unusedEntities = 0;
+                for (var entity : testdataPinnedListSolution.getEntityList()) {
+                    if (entity.getValueList().isEmpty()) {
+                        unusedEntities++;
+                    }
                 }
+                return SimpleScore.of(unusedEntities);
+            } else if (solution instanceof TestdataPinnedWithIndexListSolution testdataPinnedWithIndexListSolution) {
+                int unusedEntities = 0;
+                for (var entity : testdataPinnedWithIndexListSolution.getEntityList()) {
+                    if (entity.getValueList().isEmpty()) {
+                        unusedEntities++;
+                    }
+                }
+                return SimpleScore.of(unusedEntities);
+            } else {
+                throw new UnsupportedOperationException();
             }
-            return SimpleScore.of(unusedEntities);
         }
     }
 
