@@ -13,7 +13,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -512,6 +511,10 @@ public class EntityDescriptor<Solution_> {
         return effectiveMovableEntitySelectionFilter != null;
     }
 
+    public boolean supportsPinning() {
+        return hasEffectiveMovableEntitySelectionFilter() || effectivePlanningPinIndexReader != null;
+    }
+
     public SelectionFilter<Solution_, Object> getEffectiveMovableEntitySelectionFilter() {
         return effectiveMovableEntitySelectionFilter;
     }
@@ -629,11 +632,40 @@ public class EntityDescriptor<Solution_> {
         return entityList;
     }
 
-    public OptionalInt extractEffectivePlanningPinIndex(ScoreDirector<Solution_> solution, Object entity) {
-        if (effectivePlanningPinIndexReader == null) {
-            return OptionalInt.empty();
+    public PinningStatus extractEffectivePlanningPinIndex(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        if (!supportsPinning()) {
+            return PinningStatus.ofUnpinned();
+        } else if (!isMovable(scoreDirector, entity)) {
+            // Skipping due to @PlanningPing
+            return PinningStatus.ofFullyPinned();
         }
-        return effectivePlanningPinIndexReader.apply(solution, entity);
+        if (effectivePlanningPinIndexReader == null) {
+            // There is no @PlanningPinIndex.
+            return PinningStatus.ofUnpinned();
+        } else {
+            var maybePinIndex = effectivePlanningPinIndexReader.apply(scoreDirector, entity);
+            if (maybePinIndex.isEmpty()) {
+                return PinningStatus.ofUnpinned();
+            } else {
+                return PinningStatus.ofPinIndex(maybePinIndex.getAsInt());
+            }
+        }
+    }
+
+    public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int pinIndex) {
+
+        public static PinningStatus ofUnpinned() {
+            return new PinningStatus(false, false, -1);
+        }
+
+        public static PinningStatus ofFullyPinned() {
+            return new PinningStatus(true,true, -1);
+        }
+
+        public static PinningStatus ofPinIndex(int pinIndex) {
+            return new PinningStatus(true, false, pinIndex);
+        }
+
     }
 
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {

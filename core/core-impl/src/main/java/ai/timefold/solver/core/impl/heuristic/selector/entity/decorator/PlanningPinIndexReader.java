@@ -20,18 +20,17 @@ public record PlanningPinIndexReader<Solution_>(SelectionFilter<Solution_, Objec
     public OptionalInt apply(ScoreDirector<Solution_> solution, Object o) {
         var planningListVariable = planningListVariableAccessor.apply(o);
         var planningListVariableSize = planningListVariable.size();
-        if (movableEntityFilter != null && !movableEntityFilter.accept(solution, 0)) {
-            return OptionalInt.of(planningListVariableSize);
-        }
         var effectivePlanningPinIndex = -1;
         for (var planningPinIndexAccessor : planningPinIndexAccessors) {
             var planningPinIndex = (Integer) planningPinIndexAccessor.executeGetter(o);
-            if (planningPinIndex >= planningListVariableSize) {
+            if (planningPinIndex == null || planningPinIndex < 0) {
+                continue;
+            } if (planningPinIndex >= planningListVariableSize) {
                 throw new IllegalStateException(
                         "The entity (%s) has a @%s annotated property (%s) that returns a value (%s) that is higher than the size of the list variable (%s)."
                                 .formatted(o, PlanningPinIndex.class.getSimpleName(), planningPinIndexAccessor,
                                         planningPinIndex, planningListVariableSize));
-            } else if (planningPinIndex >= 0) {
+            } else {
                 effectivePlanningPinIndex = Math.max(effectivePlanningPinIndex, planningPinIndex);
             }
         }

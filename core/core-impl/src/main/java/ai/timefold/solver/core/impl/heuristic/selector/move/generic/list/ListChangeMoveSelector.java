@@ -42,8 +42,8 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        movableSourceValueSelector = filterPinnedListPlanningVariableValues(sourceValueSelector, inverseVariableSupply);
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        movableSourceValueSelector = filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValues(
@@ -65,12 +65,40 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                 });
     }
 
+    public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
+            EntityIndependentValueSelector<Solution_> sourceValueSelector,
+            SingletonInverseVariableSupply inverseVariableSupply,
+            IndexVariableSupply indexVariableSupply) {
+        var entityDescriptor = sourceValueSelector.getVariableDescriptor().getEntityDescriptor();
+        var supportsPinning = entityDescriptor.supportsPinning();
+        if (!supportsPinning) {
+            // Don't incur the overhead of filtering values if there is no pinning support.
+            return sourceValueSelector;
+        }
+        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.create(sourceValueSelector,
+                (scoreDirector, selection) -> {
+                    var entity = inverseVariableSupply.getInverseSingleton(selection);
+                    if (entity == null) { // Unassigned.
+                        return true;
+                    }
+                    var pinningStatus = entityDescriptor.extractEffectivePlanningPinIndex(scoreDirector, entity);
+                    if (!pinningStatus.hasPin()) {
+                        return true;
+                    } else if (pinningStatus.entireEntityPinned()) {
+                        return false;
+                    }
+                    var pinIndex = pinningStatus.pinIndex();
+                    var index = indexVariableSupply.getIndex(selection);
+                    return index > pinIndex;
+                });
+    }
+
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         inverseVariableSupply = null;
-        movableSourceValueSelector = null;
         indexVariableSupply = null;
+        movableSourceValueSelector = null;
     }
 
     @Override

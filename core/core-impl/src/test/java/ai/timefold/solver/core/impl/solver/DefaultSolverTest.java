@@ -1018,7 +1018,9 @@ class DefaultSolverTest {
 
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
-        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
+        assertThat(solution.getEntityList().get(0).getValueList()).containsExactly(solution.getValueList().get(0));
+        assertThat(solution.getEntityList().get(1).getValueList()).containsExactly(solution.getValueList().get(1));
+        assertThat(solution.getEntityList().get(2).getValueList()).containsExactly(solution.getValueList().get(2));
         int actualValueCount = solution.getEntityList().stream()
                 .mapToInt(e -> e.getValueList().size())
                 .sum();

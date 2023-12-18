@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
@@ -17,7 +19,6 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonLis
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -65,9 +66,8 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
         ListVariableDescriptor<?> listVariableDescriptor = (ListVariableDescriptor<?>) valueSelector.getVariableDescriptor();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        movableValueSelector =
-                ListChangeMoveSelector.filterPinnedListPlanningVariableValues(valueSelector, inverseVariableSupply);
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     @Override
     public Iterator<ElementRef> iterator() {
         if (randomSelection) {
-            long totalSize = Math.addExact(entitySelector.getSize(), valueSelector.getSize());
+            long totalSize = Math.addExact(entitySelector.getSize(), getEffectiveValueSelector().getSize());
             Iterator<Object> entityIterator = entitySelector.iterator();
             Iterator<Object> valueIterator = getEffectiveValueSelector().iterator();
 
