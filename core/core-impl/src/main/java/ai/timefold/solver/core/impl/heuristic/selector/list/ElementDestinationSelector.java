@@ -16,7 +16,6 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -63,11 +62,12 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        ListVariableDescriptor<?> listVariableDescriptor = (ListVariableDescriptor<?>) valueSelector.getVariableDescriptor();
+        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var listVariableDescriptor = (ListVariableDescriptor<?>) valueSelector.getVariableDescriptor();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
+        movableValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     @Override
@@ -97,9 +97,9 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     @Override
     public Iterator<ElementRef> iterator() {
         if (randomSelection) {
-            long totalSize = Math.addExact(entitySelector.getSize(), getEffectiveValueSelector().getSize());
-            Iterator<Object> entityIterator = entitySelector.iterator();
-            Iterator<Object> valueIterator = getEffectiveValueSelector().iterator();
+            var totalSize = Math.addExact(entitySelector.getSize(), getEffectiveValueSelector().getSize());
+            var entityIterator = entitySelector.iterator();
+            var valueIterator = getEffectiveValueSelector().iterator();
 
             return new Iterator<>() {
                 @Override
@@ -111,14 +111,19 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
                 @Override
                 public ElementRef next() {
-                    long entitySize = entitySelector.getSize();
+                    var entitySize = entitySelector.getSize();
                     if (RandomUtils.nextLong(workingRandom, totalSize) < entitySize) {
-                        Object entity = entityIterator.next();
-                        return new ElementRef(entity, 0);
+                        // Start with the first unpinned value of each entity, or zero if no pinning.
+                        // Entity selector is guaranteed to return only unpinned entities.
+                        var entity = entityIterator.next();
+                        return new ElementRef(entity,
+                                getFirstUnpinnedIndex(entitySelector.getEntityDescriptor(), entity));
+                    } else {
+                        // Value selector already returns only unpinned values.
+                        var value = valueIterator.next();
+                        var entity = inverseVariableSupply.getInverseSingleton(value);
+                        return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
                     }
-                    Object value = valueIterator.next();
-                    Object entity = inverseVariableSupply.getInverseSingleton(value);
-                    return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
                 }
             };
         } else {
@@ -126,15 +131,24 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 return Collections.emptyIterator();
             }
             return Stream.concat(
+                    // Start with the first unpinned value of each entity, or zero if no pinning.
+                    // Entity selector is guaranteed to return only unpinned entities.
                     StreamSupport.stream(entitySelector.spliterator(), false)
-                            .map(entity -> new ElementRef(entity, 0)),
+                            .map(entity -> new ElementRef(entity,
+                                    getFirstUnpinnedIndex(entitySelector.getEntityDescriptor(), entity))),
                     StreamSupport.stream(getEffectiveValueSelector().spliterator(), false)
                             .map(value -> {
-                                Object entity = inverseVariableSupply.getInverseSingleton(value);
+                                // Value selector already returns only unpinned values.
+                                var entity = inverseVariableSupply.getInverseSingleton(value);
                                 return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
                             }))
                     .iterator();
         }
+    }
+
+    public static int getFirstUnpinnedIndex(EntityDescriptor<?> entityDescriptor, Object entity) {
+        var pinningStatus = entityDescriptor.extractLastUnpinnedIndex(entity);
+        return pinningStatus.hasPin() ? pinningStatus.pinIndex() + 1 : 0;
     }
 
     @Override

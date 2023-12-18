@@ -17,7 +17,8 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 public class TestdataPinnedWithIndexListEntity extends TestdataObject {
 
     public static EntityDescriptor<TestdataPinnedWithIndexListSolution> buildEntityDescriptor() {
-        return TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().findEntityDescriptorOrFail(TestdataPinnedWithIndexListEntity.class);
+        return TestdataPinnedWithIndexListSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataPinnedWithIndexListEntity.class);
     }
 
     public static ListVariableDescriptor<TestdataPinnedWithIndexListSolution> buildVariableDescriptorForValueList() {

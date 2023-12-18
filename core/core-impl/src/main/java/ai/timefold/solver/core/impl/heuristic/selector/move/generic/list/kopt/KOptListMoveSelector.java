@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
+
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -7,10 +9,8 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -52,13 +52,13 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
         movableOriginSelector =
-                ListChangeMoveSelector.filterPinnedListPlanningVariableValues(originSelector, inverseVariableSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(originSelector, inverseVariableSupply, indexVariableSupply);
         movableValueSelector =
-                ListChangeMoveSelector.filterPinnedListPlanningVariableValues(valueSelector, inverseVariableSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     @Override

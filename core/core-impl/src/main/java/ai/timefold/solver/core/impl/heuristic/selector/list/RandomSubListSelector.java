@@ -1,10 +1,12 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
-import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValues;
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
@@ -23,6 +25,8 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
 
     private TriangleElementFactory triangleElementFactory;
     private SingletonInverseVariableSupply inverseVariableSupply;
+    private IndexVariableSupply indexVariableSupply;
+
     private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
     public RandomSubListSelector(
@@ -51,9 +55,11 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
-        inverseVariableSupply = solverScope.getScoreDirector().getSupplyManager()
-                .demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        movableValueSelector = filterPinnedListPlanningVariableValues(valueSelector, inverseVariableSupply);
+        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
+        indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        movableValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     @Override
@@ -136,19 +142,21 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
             Object sourceEntity = null;
             int listSize = 0;
 
+            var firstUnpinnedIndex =
+                    ElementDestinationSelector.getFirstUnpinnedIndex(entitySelector.getEntityDescriptor(), sourceEntity);
             while (listSize < minimumSubListSize) {
                 if (!valueIterator.hasNext()) {
                     throw new IllegalStateException("The valueIterator (" + valueIterator + ") should never end.");
                 }
-                // Using valueSelector instead of entitySelector is more fair because entities with bigger list variables
-                // will be selected more often.
+                // Using valueSelector instead of entitySelector is fairer
+                // because entities with bigger list variables will be selected more often.
                 sourceEntity = inverseVariableSupply.getInverseSingleton(valueIterator.next());
-                listSize = listVariableDescriptor.getListSize(sourceEntity);
+                listSize = listVariableDescriptor.getListSize(sourceEntity) - firstUnpinnedIndex;
             }
 
             TriangleElementFactory.TriangleElement triangleElement = triangleElementFactory.nextElement(listSize);
             int subListLength = listSize - triangleElement.getLevel() + 1;
-            int sourceIndex = triangleElement.getIndexOnLevel() - 1;
+            int sourceIndex = triangleElement.getIndexOnLevel() - 1 + firstUnpinnedIndex;
 
             return new SubList(sourceEntity, sourceIndex, subListLength);
         }

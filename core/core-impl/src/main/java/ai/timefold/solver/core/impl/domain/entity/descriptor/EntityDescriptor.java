@@ -632,6 +632,15 @@ public class EntityDescriptor<Solution_> {
         return entityList;
     }
 
+    /**
+     * Returns the {@link PinningStatus} of the entity.
+     * If {@link PlanningPin} is enabled on the entity, the entity is fully pinned.
+     * Otherwise if {@link PlanningPinIndex} is specified, returns the value of it.
+     *
+     * @param scoreDirector
+     * @param entity
+     * @return
+     */
     public PinningStatus extractEffectivePlanningPinIndex(ScoreDirector<Solution_> scoreDirector, Object entity) {
         if (!supportsPinning()) {
             return PinningStatus.ofUnpinned();
@@ -639,11 +648,22 @@ public class EntityDescriptor<Solution_> {
             // Skipping due to @PlanningPing
             return PinningStatus.ofFullyPinned();
         }
+        return extractLastUnpinnedIndex(entity);
+    }
+
+    /**
+     * Ignores {@link PlanningPin} on the entire entity.
+     * If it should be taken into account as well, use {@link #extractEffectivePlanningPinIndex(ScoreDirector, Object)}.
+     *
+     * @param entity never null
+     * @return never null
+     */
+    public PinningStatus extractLastUnpinnedIndex(Object entity) {
         if (effectivePlanningPinIndexReader == null) {
             // There is no @PlanningPinIndex.
             return PinningStatus.ofUnpinned();
         } else {
-            var maybePinIndex = effectivePlanningPinIndexReader.apply(scoreDirector, entity);
+            var maybePinIndex = effectivePlanningPinIndexReader.apply(null, entity);
             if (maybePinIndex.isEmpty()) {
                 return PinningStatus.ofUnpinned();
             } else {
@@ -659,7 +679,7 @@ public class EntityDescriptor<Solution_> {
         }
 
         public static PinningStatus ofFullyPinned() {
-            return new PinningStatus(true,true, -1);
+            return new PinningStatus(true, true, -1);
         }
 
         public static PinningStatus ofPinIndex(int pinIndex) {

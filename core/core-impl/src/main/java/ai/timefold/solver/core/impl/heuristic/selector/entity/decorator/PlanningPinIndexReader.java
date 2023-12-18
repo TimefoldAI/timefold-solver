@@ -17,7 +17,7 @@ public record PlanningPinIndexReader<Solution_>(SelectionFilter<Solution_, Objec
             BiFunction<ScoreDirector<Solution_>, Object, OptionalInt> {
 
     @Override
-    public OptionalInt apply(ScoreDirector<Solution_> solution, Object o) {
+    public OptionalInt apply(ScoreDirector<Solution_> scoreDirector, Object o) {
         var planningListVariable = planningListVariableAccessor.apply(o);
         var planningListVariableSize = planningListVariable.size();
         var effectivePlanningPinIndex = -1;
@@ -25,7 +25,8 @@ public record PlanningPinIndexReader<Solution_>(SelectionFilter<Solution_, Objec
             var planningPinIndex = (Integer) planningPinIndexAccessor.executeGetter(o);
             if (planningPinIndex == null || planningPinIndex < 0) {
                 continue;
-            } if (planningPinIndex >= planningListVariableSize) {
+            }
+            if (planningPinIndex >= planningListVariableSize) {
                 throw new IllegalStateException(
                         "The entity (%s) has a @%s annotated property (%s) that returns a value (%s) that is higher than the size of the list variable (%s)."
                                 .formatted(o, PlanningPinIndex.class.getSimpleName(), planningPinIndexAccessor,

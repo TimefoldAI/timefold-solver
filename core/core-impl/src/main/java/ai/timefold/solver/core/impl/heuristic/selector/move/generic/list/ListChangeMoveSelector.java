@@ -43,26 +43,8 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableSourceValueSelector = filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, inverseVariableSupply, indexVariableSupply);
-    }
-
-    public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValues(
-            EntityIndependentValueSelector<Solution_> sourceValueSelector,
-            SingletonInverseVariableSupply inverseVariableSupply) {
-        var entityDescriptor = sourceValueSelector.getVariableDescriptor().getEntityDescriptor();
-        var hasMovableSelectionFilter = entityDescriptor.hasEffectiveMovableEntitySelectionFilter();
-        if (!hasMovableSelectionFilter) {
-            // Don't incur the overhead of filtering movable entities if there is no movable entity selection filter.
-            return sourceValueSelector;
-        }
-        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.create(sourceValueSelector,
-                (scoreDirector, selection) -> {
-                    var entity = inverseVariableSupply.getInverseSingleton(selection);
-                    if (entity == null) { // Unassigned.
-                        return true;
-                    }
-                    return entityDescriptor.isMovable(scoreDirector, entity);
-                });
+        movableSourceValueSelector = filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, inverseVariableSupply,
+                indexVariableSupply);
     }
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(

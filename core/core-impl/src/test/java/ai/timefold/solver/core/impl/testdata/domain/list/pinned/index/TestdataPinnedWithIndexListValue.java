@@ -12,10 +12,12 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 public class TestdataPinnedWithIndexListValue extends TestdataObject {
 
     public static EntityDescriptor<TestdataPinnedWithIndexListSolution> buildEntityDescriptor() {
-        return TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().findEntityDescriptorOrFail(TestdataPinnedWithIndexListValue.class);
+        return TestdataPinnedWithIndexListSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataPinnedWithIndexListValue.class);
     }
 
-    public static InverseRelationShadowVariableDescriptor<TestdataPinnedWithIndexListSolution> buildVariableDescriptorForEntity() {
+    public static InverseRelationShadowVariableDescriptor<TestdataPinnedWithIndexListSolution>
+            buildVariableDescriptorForEntity() {
         return (InverseRelationShadowVariableDescriptor<TestdataPinnedWithIndexListSolution>) buildEntityDescriptor()
                 .getShadowVariableDescriptor("entity");
     }

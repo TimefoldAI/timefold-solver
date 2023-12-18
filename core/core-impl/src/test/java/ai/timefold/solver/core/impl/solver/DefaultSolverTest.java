@@ -953,7 +953,8 @@ class DefaultSolverTest {
 
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
-        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
+        assertThat(solution.getEntityList().get(0).getValueList())
+                .containsExactly(solution.getValueList().get(0));
         int actualValueCount = solution.getEntityList().stream()
                 .mapToInt(e -> e.getValueList().size())
                 .sum();
@@ -981,7 +982,8 @@ class DefaultSolverTest {
         assertThat(solution).isNotNull();
         // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(1));
-        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
+        assertThat(solution.getEntityList().get(0).getValueList())
+                .containsExactly(solution.getValueList().get(0));
         int actualValueCount = solution.getEntityList().stream()
                 .mapToInt(e -> e.getValueList().size())
                 .sum();
@@ -1019,8 +1021,9 @@ class DefaultSolverTest {
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
         assertThat(solution.getEntityList().get(0).getValueList()).containsExactly(solution.getValueList().get(0));
-        assertThat(solution.getEntityList().get(1).getValueList()).containsExactly(solution.getValueList().get(1));
-        assertThat(solution.getEntityList().get(2).getValueList()).containsExactly(solution.getValueList().get(2));
+        assertThat(solution.getEntityList().get(1).getValueList())
+                .first()
+                .isEqualTo(solution.getValueList().get(1));
         int actualValueCount = solution.getEntityList().stream()
                 .mapToInt(e -> e.getValueList().size())
                 .sum();
@@ -1050,7 +1053,7 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
                         TestdataPinnedWithIndexListValue.class)
-                .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
         solution = solver.solve(solution);
@@ -1058,11 +1061,13 @@ class DefaultSolverTest {
         assertThat(solution).isNotNull();
         // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(1));
-        assertThat(pinnedEntity.getValueList()).containsExactly(pinnedValue);
-        int actualValueCount = solution.getEntityList().stream()
-                .mapToInt(e -> e.getValueList().size())
-                .sum();
-        assertThat(actualValueCount).isEqualTo(expectedValueCount);
+        assertThat(solution.getEntityList().get(0).getValueList()).containsExactly(solution.getValueList().get(0));
+        assertThat(solution.getEntityList().get(1).getValueList())
+                .containsExactlyInAnyOrder(solution.getValueList().get(1),
+                        solution.getValueList().get(2),
+                        solution.getValueList().get(3));
+        assertThat(solution.getEntityList().get(2).getValueList())
+                .isEmpty();
     }
 
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator
