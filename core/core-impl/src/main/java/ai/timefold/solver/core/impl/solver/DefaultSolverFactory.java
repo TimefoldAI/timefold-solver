@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -81,7 +83,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     @Override
-    public Solver<Solution_> buildSolver() {
+    public Solver<Solution_> buildSolver(SolverConfigOverride configOverride) {
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
         var solverScope = new SolverScope<Solution_>();
@@ -120,7 +122,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 scoreDirectorFactory.getInitializingScoreTrend(),
                 solutionDescriptor,
                 ClassInstanceCache.create()).build();
-        var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
+        var terminationConfig = Optional.ofNullable(configOverride).map(SolverConfigOverride::getTerminationConfig)
+                .orElseGet(() -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = TerminationFactory.<Solution_> create(terminationConfig)
                 .buildTermination(configPolicy, basicPlumbingTermination);

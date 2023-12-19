@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import org.slf4j.Logger;
@@ -71,8 +72,10 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     public SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return solve(getProblemIdOrThrow(problemId), problemFinder, null, finalBestSolutionConsumer, exceptionHandler);
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            SolverConfigOverride configOverride) {
+        return solve(getProblemIdOrThrow(problemId), problemFinder, null, finalBestSolutionConsumer, exceptionHandler,
+                configOverride);
     }
 
     @Override
@@ -80,17 +83,19 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            SolverConfigOverride configOverride) {
         return solve(getProblemIdOrThrow(problemId), problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                exceptionHandler);
+                exceptionHandler, configOverride);
     }
 
     protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        Solver<Solution_> solver = solverFactory.buildSolver();
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            SolverConfigOverride configOverride) {
+        Solver<Solution_> solver = solverFactory.buildSolver(configOverride);
         ((DefaultSolver<Solution_>) solver).setMonitorTagMap(Map.of("problem.id", problemId.toString()));
         BiConsumer<? super ProblemId_, ? super Throwable> finalExceptionHandler = (exceptionHandler != null)
                 ? exceptionHandler
