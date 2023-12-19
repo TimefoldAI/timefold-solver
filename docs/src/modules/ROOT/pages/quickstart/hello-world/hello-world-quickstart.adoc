@@ -293,91 +293,91 @@ public class TimetableApp {
     }
 
     public static Timetable generateDemoData() {
-        List<Timeslot> timeslotList = new ArrayList<>(10);
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
+        List<Timeslot> timeslots = new ArrayList<>(10);
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
 
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
 
-        List<Room> roomList = new ArrayList<>(3);
-        roomList.add(new Room("Room A"));
-        roomList.add(new Room("Room B"));
-        roomList.add(new Room("Room C"));
+        List<Room> rooms = new ArrayList<>(3);
+        rooms.add(new Room("Room A"));
+        rooms.add(new Room("Room B"));
+        rooms.add(new Room("Room C"));
 
-        List<Lesson> lessonList = new ArrayList<>();
+        List<Lesson> lessons = new ArrayList<>();
         long nextLessonId = 0L;
-        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Physics", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Chemistry", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Biology", "C. Darwin", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "History", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Physics", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Chemistry", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Biology", "C. Darwin", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "History", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "English", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "English", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"));
 
-        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Physics", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Chemistry", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "French", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Geography", "C. Darwin", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "History", "I. Jones", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "English", "P. Cruz", "10th grade"));
-        lessonList.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Physics", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Chemistry", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "French", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Geography", "C. Darwin", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "History", "I. Jones", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "English", "P. Cruz", "10th grade"));
+        lessons.add(new Lesson(nextLessonId++, "Spanish", "P. Cruz", "10th grade"));
 
-        return new Timetable(timeslotList, roomList, lessonList);
+        return new Timetable(timeslots, rooms, lessons);
     }
 
     private static void printTimetable(Timetable timetable) {
                LOGGER.info("");
-        List<Room> roomList = timetable.getRooms();
-        List<Lesson> lessonList = timetable.getLessons();
-        Map<Timeslot, Map<Room, List<Lesson>>> lessonMap = lessonList.stream()
+        List<Room> rooms = timetable.getRooms();
+        List<Lesson> lessons = timetable.getLessons();
+        Map<Timeslot, Map<Room, List<Lesson>>> lessonMap = lessons.stream()
                 .filter(lesson -> lesson.getTimeslot() != null && lesson.getRoom() != null)
                 .collect(Collectors.groupingBy(Lesson::getTimeslot, Collectors.groupingBy(Lesson::getRoom)));
-        LOGGER.info("|            | " + roomList.stream()
+        LOGGER.info("|            | " + rooms.stream()
                 .map(room -> String.format("%-10s", room.getName())).collect(Collectors.joining(" | ")) + " |");
-        LOGGER.info("|" + "------------|".repeat(roomList.size() + 1));
+        LOGGER.info("|" + "------------|".repeat(rooms.size() + 1));
         for (Timeslot timeslot : timetable.getTimeslots()) {
-            List<List<Lesson>> cellList = roomList.stream()
+            List<List<Lesson>> cells = rooms.stream()
                     .map(room -> {
                         Map<Room, List<Lesson>> byRoomMap = lessonMap.get(timeslot);
                         if (byRoomMap == null) {
                             return Collections.<Lesson>emptyList();
                         }
-                        List<Lesson> cellLessonList = byRoomMap.get(room);
-                        return Objects.requireNonNullElse(cellLessonList, Collections.<Lesson>emptyList());
+                        List<Lesson> cellLessons = byRoomMap.get(room);
+                        return Objects.requireNonNullElse(cellLessons, Collections.<Lesson>emptyList());
                     }).toList();
 
             LOGGER.info("| " + String.format("%-10s",
                     timeslot.getDayOfWeek().toString().substring(0, 3) + " " + timeslot.getStartTime()) + " | "
-                    + cellList.stream().map(cellLessonList -> String.format("%-10s",
-                            cellLessonList.stream().map(Lesson::getSubject).collect(Collectors.joining(", "))))
+                    + cells.stream().map(cellLessons -> String.format("%-10s",
+                            cellLessons.stream().map(Lesson::getSubject).collect(Collectors.joining(", "))))
                             .collect(Collectors.joining(" | "))
                     + " |");
             LOGGER.info("|            | "
-                    + cellList.stream().map(cellLessonList -> String.format("%-10s",
-                            cellLessonList.stream().map(Lesson::getTeacher).collect(Collectors.joining(", "))))
+                    + cells.stream().map(cellLessons -> String.format("%-10s",
+                            cellLessons.stream().map(Lesson::getTeacher).collect(Collectors.joining(", "))))
                             .collect(Collectors.joining(" | "))
                     + " |");
             LOGGER.info("|            | "
-                    + cellList.stream().map(cellLessonList -> String.format("%-10s",
-                            cellLessonList.stream().map(Lesson::getStudentGroup).collect(Collectors.joining(", "))))
+                    + cells.stream().map(cellLessons -> String.format("%-10s",
+                            cellLessons.stream().map(Lesson::getStudentGroup).collect(Collectors.joining(", "))))
                             .collect(Collectors.joining(" | "))
                     + " |");
-            LOGGER.info("|" + "------------|".repeat(roomList.size() + 1));
+            LOGGER.info("|" + "------------|".repeat(rooms.size() + 1));
         }
-        List<Lesson> unassignedLessons = lessonList.stream()
+        List<Lesson> unassignedLessons = lessons.stream()
                 .filter(lesson -> lesson.getTimeslot() == null || lesson.getRoom() == null)
                 .toList();
         if (!unassignedLessons.isEmpty()) {

@@ -13,7 +13,7 @@ that uses a functional approach:
 ----
     private int doNotAssignAnn() {
         int softScore = 0;
-        schedule.getShiftList().stream()
+        schedule.getShifts().stream()
                 .filter(Shift::isEmployeeAnn)
                 .forEach(shift -> {
                     softScore -= 1;
@@ -766,9 +766,9 @@ Constraint consecutiveWorkingDays(ConstraintFactory constraintFactory) {
                         (contract, shift) -> shift.getShiftDate(),
                         ShiftDate::getDayIndex))
         .flattenLast(SequenceChain::getConsecutiveSequences)
-        .map((employee, contract, shiftList) -> employee,
-                (employee, contract, shiftList) -> contract,
-                (employee, contract, shiftList) -> contract.getViolationAmount(shiftList.getLength()))
+        .map((employee, contract, shifts) -> employee,
+                (employee, contract, shifts) -> contract,
+                (employee, contract, shifts) -> contract.getViolationAmount(shifts.getLength()))
         .filter((contract, employee, violationAmount) -> violationAmount != 0)
         .penalize(HardSoftScore.ONE_SOFT,
                 (contract, employee, violationAmount) -> violationAmount)
@@ -787,9 +787,9 @@ Let's take a closer look at the crucial part of this constraint:
                 (contract, shift) -> shift.getShiftDate(),
                 ShiftDate::getDayIndex))
 .flattenLast(SequenceChain::getConsecutiveSequences)
-.map((employee, contract, shiftList) -> employee,
-        (employee, contract, shiftList) -> contract,
-        (employee, contract, shiftList) -> contract.getViolationAmount(shiftList.getLength()))
+.map((employee, contract, shifts) -> employee,
+        (employee, contract, shifts) -> contract,
+        (employee, contract, shifts) -> contract.getViolationAmount(shifts.getLength()))
 .filter((contract, employee, violationAmount) -> violationAmount != 0)
 ----
 
@@ -807,7 +807,7 @@ and we use <<constraintStreamsFlattening,flattening>> to convert each to its own
 
 Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the violation amount for each sequence.
 For example, if the contract says that an employee can work at most 5 consecutive days,
-and `shiftList` contains 6 shifts, then `violationAmount` will be `1`.
+and `shifts` contains 6 shifts, then `violationAmount` will be `1`.
 If the amount is `0`, then the sequence is not violating the contract and we can filter it out.
 
 
