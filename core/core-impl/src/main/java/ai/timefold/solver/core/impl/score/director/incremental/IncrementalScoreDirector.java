@@ -52,10 +52,14 @@ public class IncrementalScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
+        resetIncrementalCalculator(workingSolution);
         super.setWorkingSolution(workingSolution);
-        if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator) {
-            ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, ?>) incrementalScoreCalculator)
-                    .resetWorkingSolution(workingSolution, constraintMatchEnabledPreference);
+    }
+
+    private void resetIncrementalCalculator(Solution_ workingSolution) {
+        if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_> constraintMatchAwareIncrementalScoreCalculator) {
+            constraintMatchAwareIncrementalScoreCalculator.resetWorkingSolution(workingSolution,
+                    constraintMatchEnabledPreference);
         } else {
             incrementalScoreCalculator.resetWorkingSolution(workingSolution);
         }
