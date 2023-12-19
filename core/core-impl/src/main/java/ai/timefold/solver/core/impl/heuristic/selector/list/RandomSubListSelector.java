@@ -128,7 +128,8 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         return new RandomSubListIterator(movableValueSelector.iterator());
     }
 
-    private static <Solution_> int getEffectiveListSize(ListVariableDescriptor<Solution_> listVariableDescriptor, Object entity) {
+    private static <Solution_> int getEffectiveListSize(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            Object entity) {
         var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
         return listVariableDescriptor.getListSize(entity) - firstUnpinnedIndex;
     }

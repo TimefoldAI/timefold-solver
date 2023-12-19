@@ -261,7 +261,9 @@ public final class PlannerAssert {
     }
 
     public static void assertAllCodesOfIterableSelector(IterableSelector<?, ?> selector, long size, String... codes) {
-        assertAllCodesOfIterator(selector.iterator(), codes);
+        var iterator = selector.iterator();
+        assertAllCodesOfIterator(iterator, codes);
+        assertThat(iterator).isExhausted();
         assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isFalse();
         if (size != DO_NOT_ASSERT_SIZE) {
@@ -297,6 +299,10 @@ public final class PlannerAssert {
 
     public static void assertAllCodesOfMoveSelector(MoveSelector<?> moveSelector, String... codes) {
         assertAllCodesOfIterableSelector(moveSelector, codes.length, codes);
+    }
+
+    public static void assertAllCodesOfMoveSelectorWithoutSize(MoveSelector<?> moveSelector, String... codes) {
+        assertAllCodesOfIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE, codes);
     }
 
     public static void assertAllCodesOfMoveSelector(MoveSelector<?> moveSelector, long size, String... codes) {

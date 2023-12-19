@@ -56,8 +56,10 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataPinnedWithIndexListSolution> mockNeverEndingEntityIndependentValueSelector(
-            ListVariableDescriptor<TestdataPinnedWithIndexListSolution> listVariableDescriptor, TestdataPinnedWithIndexListValue... values) {
+    public static EntityIndependentValueSelector<TestdataPinnedWithIndexListSolution>
+            mockNeverEndingEntityIndependentValueSelector(
+                    ListVariableDescriptor<TestdataPinnedWithIndexListSolution> listVariableDescriptor,
+                    TestdataPinnedWithIndexListValue... values) {
         var valueSelector = mockEntityIndependentValueSelector(listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
@@ -69,9 +71,14 @@ public final class TestdataListUtils {
         return mockNeverEndingDestinationSelector(elementRefs.length, elementRefs);
     }
 
-    public static DestinationSelector<TestdataListSolution> mockNeverEndingDestinationSelector(long size,
+    public static DestinationSelector<TestdataPinnedWithIndexListSolution> mockPinnedNeverEndingDestinationSelector(
             ElementRef... elementRefs) {
-        DestinationSelector<TestdataListSolution> destinationSelector = mock(DestinationSelector.class);
+        return mockNeverEndingDestinationSelector(elementRefs.length, elementRefs);
+    }
+
+    public static <Solution_> DestinationSelector<Solution_> mockNeverEndingDestinationSelector(long size,
+            ElementRef... elementRefs) {
+        var destinationSelector = mock(DestinationSelector.class);
         when(destinationSelector.isCountable()).thenReturn(true);
         when(destinationSelector.isNeverEnding()).thenReturn(true);
         when(destinationSelector.getSize()).thenReturn(size);
