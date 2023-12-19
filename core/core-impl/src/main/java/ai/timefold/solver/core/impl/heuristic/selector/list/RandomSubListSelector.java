@@ -7,7 +7,6 @@ import java.util.Iterator;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
@@ -26,7 +25,6 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
 
     private TriangleElementFactory triangleElementFactory;
     private SingletonInverseVariableSupply inverseVariableSupply;
-    private IndexVariableSupply indexVariableSupply;
 
     private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
@@ -58,7 +56,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        var indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
         movableValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
     }
@@ -88,7 +86,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     public long getSize() {
         long subListCount = 0;
         for (Object entity : ((Iterable<Object>) entitySelector::endingIterator)) {
-            int listSize = listVariableDescriptor.getListSize(entity);
+            int listSize = getEffectiveListSize(listVariableDescriptor, entity);
             // Add subLists bigger than minimum subList size.
             if (listSize >= minimumSubListSize) {
                 subListCount += TriangularNumbers.nthTriangle(listSize - minimumSubListSize + 1);
@@ -117,7 +115,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         // TODO make this incremental https://issues.redhat.com/browse/PLANNER-2507
         int biggestListSize = 0;
         for (Object entity : ((Iterable<Object>) entitySelector::endingIterator)) {
-            biggestListSize = Math.max(biggestListSize, listVariableDescriptor.getListSize(entity));
+            biggestListSize = Math.max(biggestListSize, getEffectiveListSize(listVariableDescriptor, entity));
         }
         if (biggestListSize < minimumSubListSize) {
             return new UpcomingSelectionIterator<>() {
@@ -128,6 +126,11 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
             };
         }
         return new RandomSubListIterator(movableValueSelector.iterator());
+    }
+
+    private static <Solution_> int getEffectiveListSize(ListVariableDescriptor<Solution_> listVariableDescriptor, Object entity) {
+        var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
+        return listVariableDescriptor.getListSize(entity) - firstUnpinnedIndex;
     }
 
     private final class RandomSubListIterator extends UpcomingSelectionIterator<SubList> {
@@ -144,8 +147,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
             int listSize = 0;
 
             EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
-            var firstUnpinnedIndex =
-                    entityDescriptor.extractFirstUnpinnedIndex(sourceEntity);
+            var firstUnpinnedIndex = 0;
             while (listSize < minimumSubListSize) {
                 if (!valueIterator.hasNext()) {
                     throw new IllegalStateException("The valueIterator (" + valueIterator + ") should never end.");
@@ -153,6 +155,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 // Using valueSelector instead of entitySelector is fairer
                 // because entities with bigger list variables will be selected more often.
                 sourceEntity = inverseVariableSupply.getInverseSingleton(valueIterator.next());
+                firstUnpinnedIndex = entityDescriptor.extractFirstUnpinnedIndex(sourceEntity);
                 listSize = listVariableDescriptor.getListSize(sourceEntity) - firstUnpinnedIndex;
             }
 

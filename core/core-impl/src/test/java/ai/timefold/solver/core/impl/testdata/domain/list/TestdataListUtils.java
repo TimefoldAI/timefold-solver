@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
 
 public final class TestdataListUtils {
 
@@ -24,6 +25,10 @@ public final class TestdataListUtils {
     }
 
     public static int listSize(TestdataListEntity entity) {
+        return entity.getValueList().size();
+    }
+
+    public static int listSize(TestdataPinnedWithIndexListEntity entity) {
         return entity.getValueList().size();
     }
 
@@ -43,9 +48,17 @@ public final class TestdataListUtils {
     }
 
     public static EntityIndependentValueSelector<TestdataListSolution> mockNeverEndingEntityIndependentValueSelector(
-            ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, Object... values) {
-        EntityIndependentValueSelector<TestdataListSolution> valueSelector = mockEntityIndependentValueSelector(
-                listVariableDescriptor, values);
+            ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, TestdataListValue... values) {
+        var valueSelector = mockEntityIndependentValueSelector(
+                listVariableDescriptor, (Object[]) values);
+        when(valueSelector.isNeverEnding()).thenReturn(true);
+        when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
+        return valueSelector;
+    }
+
+    public static EntityIndependentValueSelector<TestdataPinnedWithIndexListSolution> mockNeverEndingEntityIndependentValueSelector(
+            ListVariableDescriptor<TestdataPinnedWithIndexListSolution> listVariableDescriptor, TestdataPinnedWithIndexListValue... values) {
+        var valueSelector = mockEntityIndependentValueSelector(listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
         return valueSelector;

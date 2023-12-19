@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
+import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getPinnedListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.listSize;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockEntitySelector;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockNeverEndingEntityIndependentValueSelector;
@@ -16,16 +17,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
 import ai.timefold.solver.core.impl.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -34,30 +31,29 @@ class RandomSubListSelectorTest {
 
     @Test
     void randomUnrestricted() {
-        TestdataListValue v1 = new TestdataListValue("1");
-        TestdataListValue v2 = new TestdataListValue("2");
-        TestdataListValue v3 = new TestdataListValue("3");
-        TestdataListValue v4 = new TestdataListValue("4");
-        TestdataListEntity a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4);
-        TestdataListEntity b = TestdataListEntity.createWithValues("B");
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
+        var v4 = new TestdataListValue("4");
+        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4);
+        var b = TestdataListEntity.createWithValues("B");
 
-        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
-                mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
-        int minimumSubListSize = 1;
-        int maximumSubListSize = Integer.MAX_VALUE;
-        int subListCount = 10;
+        var minimumSubListSize = 1;
+        var maximumSubListSize = Integer.MAX_VALUE;
+        var subListCount = 10;
 
         // The number of subLists of [1, 2, 3, 4] is the 4th triangular number (10).
         assertThat(subListCount).isEqualTo(nthTriangle(listSize(a)) + nthTriangle(listSize(b)));
 
-        RandomSubListSelector<TestdataListSolution> selector = new RandomSubListSelector<>(
+        var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a, b),
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                 minimumSubListSize,
                 maximumSubListSize);
 
-        TestRandom random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99);
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99);
 
         solvingStarted(selector, scoreDirector, random);
 
@@ -71,29 +67,65 @@ class RandomSubListSelectorTest {
     }
 
     @Test
+    void randomWithPinning() {
+        var v1 = new TestdataPinnedWithIndexListValue("1");
+        var v2 = new TestdataPinnedWithIndexListValue("2");
+        var v3 = new TestdataPinnedWithIndexListValue("3");
+        var v4 = new TestdataPinnedWithIndexListValue("4");
+        var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v1, v2, v3, v4);
+        a.setPlanningPinToIndex(1); // Ignore v1.
+        var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
+
+        var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+
+        var minimumSubListSize = 1;
+        var maximumSubListSize = Integer.MAX_VALUE;
+        var subListCount = 6;
+
+        // The number of subLists of [2, 3, 4] is the 3rd triangular number (6).
+        assertThat(subListCount).isEqualTo(nthTriangle(listSize(a) - 1) + nthTriangle(listSize(b)));
+
+        var selector = new RandomSubListSelector<>(
+                mockEntitySelector(a, b),
+                mockNeverEndingEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v1, v2),
+                minimumSubListSize,
+                maximumSubListSize);
+
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99);
+
+        solvingStarted(selector, scoreDirector, random);
+
+        // Every possible subList is selected.
+        assertCodesOfNeverEndingIterableSelector(selector, subListCount,
+                "A[1+3]",
+                "A[1+2]", "A[2+2]",
+                "A[1+1]", "A[2+1]", "A[3+1]");
+        random.assertIntBoundJustRequested(subListCount);
+    }
+
+    @Test
     void randomWithSubListSizeBounds() {
-        TestdataListValue v1 = new TestdataListValue("1");
-        TestdataListValue v2 = new TestdataListValue("2");
-        TestdataListValue v3 = new TestdataListValue("3");
-        TestdataListValue v4 = new TestdataListValue("4");
-        TestdataListValue v5 = new TestdataListValue("5");
-        TestdataListEntity a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4, v5);
-        TestdataListEntity b = TestdataListEntity.createWithValues("B");
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
+        var v4 = new TestdataListValue("4");
+        var v5 = new TestdataListValue("5");
+        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4, v5);
+        var b = TestdataListEntity.createWithValues("B");
 
-        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
-                mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
-        int minimumSubListSize = 2;
-        int maximumSubListSize = 3;
-        int subListCount = 15 - 5 - 3;
+        var minimumSubListSize = 2;
+        var maximumSubListSize = 3;
+        var subListCount = 15 - 5 - 3;
 
-        RandomSubListSelector<TestdataListSolution> selector = new RandomSubListSelector<>(
+        var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a, b),
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                 minimumSubListSize,
                 maximumSubListSize);
 
-        TestRandom random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 99);
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 99);
 
         solvingStarted(selector, scoreDirector, random);
 
@@ -106,18 +138,17 @@ class RandomSubListSelectorTest {
 
     @Test
     void emptyWhenMinimumSubListSizeGreaterThanListSize() {
-        TestdataListValue v1 = new TestdataListValue("1");
-        TestdataListValue v2 = new TestdataListValue("2");
-        TestdataListValue v3 = new TestdataListValue("3");
-        TestdataListEntity a = TestdataListEntity.createWithValues("A", v1, v2, v3);
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
+        var a = TestdataListEntity.createWithValues("A", v1, v2, v3);
 
-        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
-                mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
-        int minimumSubListSize = 4;
-        int maximumSubListSize = Integer.MAX_VALUE;
+        var minimumSubListSize = 4;
+        var maximumSubListSize = Integer.MAX_VALUE;
 
-        RandomSubListSelector<TestdataListSolution> selector = new RandomSubListSelector<>(
+        var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a),
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector)),
                 minimumSubListSize,
@@ -130,29 +161,27 @@ class RandomSubListSelectorTest {
 
     @Test
     void phaseLifecycle() {
-        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
-                mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
-        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector(new TestdataListEntity[0]);
-        EntityIndependentValueSelector<TestdataListSolution> valueSelector =
-                mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector));
+        var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
+        var valueSelector = mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector));
 
-        int minimumSubListSize = 1;
-        int maximumSubListSize = Integer.MAX_VALUE;
+        var minimumSubListSize = 1;
+        var maximumSubListSize = Integer.MAX_VALUE;
 
-        RandomSubListSelector<TestdataListSolution> selector = new RandomSubListSelector<>(
+        var selector = new RandomSubListSelector<>(
                 entitySelector,
                 valueSelector,
                 minimumSubListSize,
                 maximumSubListSize);
 
-        SolverScope<TestdataListSolution> solverScope = solvingStarted(selector, scoreDirector);
-        AbstractPhaseScope<TestdataListSolution> phaseScope = phaseStarted(selector, solverScope);
+        var solverScope = solvingStarted(selector, scoreDirector);
+        var phaseScope = phaseStarted(selector, solverScope);
 
-        AbstractStepScope<TestdataListSolution> stepScope1 = stepStarted(selector, phaseScope);
+        var stepScope1 = stepStarted(selector, phaseScope);
         selector.stepEnded(stepScope1);
 
-        AbstractStepScope<TestdataListSolution> stepScope2 = stepStarted(selector, phaseScope);
+        var stepScope2 = stepStarted(selector, phaseScope);
         selector.stepEnded(stepScope2);
 
         selector.phaseEnded(phaseScope);
@@ -164,9 +193,8 @@ class RandomSubListSelectorTest {
 
     @Test
     void validateConstructorArguments() {
-        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector(new TestdataListEntity[0]);
-        EntityIndependentValueSelector<TestdataListSolution> valueSelector =
-                mockNeverEndingEntityIndependentValueSelector(TestdataListEntity.buildVariableDescriptorForValueList());
+        var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
+        var valueSelector = mockNeverEndingEntityIndependentValueSelector(TestdataListEntity.buildVariableDescriptorForValueList());
 
         assertThatIllegalArgumentException().isThrownBy(() -> new RandomSubListSelector<>(
                 entitySelector, valueSelector, 0, 5))

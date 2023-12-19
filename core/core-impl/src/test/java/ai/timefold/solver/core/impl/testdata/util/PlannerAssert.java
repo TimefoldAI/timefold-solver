@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.constructionheuristic.event.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.ListIterableSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -263,17 +262,6 @@ public final class PlannerAssert {
 
     public static void assertAllCodesOfIterableSelector(IterableSelector<?, ?> selector, long size, String... codes) {
         assertAllCodesOfIterator(selector.iterator(), codes);
-        assertThat(selector.isCountable()).isTrue();
-        assertThat(selector.isNeverEnding()).isFalse();
-        if (size != DO_NOT_ASSERT_SIZE) {
-            assertThat(selector.getSize()).isEqualTo(size);
-        }
-    }
-
-    public static void assertAllCodesOfListIterableSelector(ListIterableSelector<?, ?> selector, long size, String... codes) {
-        ListIterator<?> listIterator = selector.listIterator();
-        assertAllCodesOfIterator(listIterator, codes);
-        assertAllReverseCodesOfIterator(listIterator, codes);
         assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isFalse();
         if (size != DO_NOT_ASSERT_SIZE) {
