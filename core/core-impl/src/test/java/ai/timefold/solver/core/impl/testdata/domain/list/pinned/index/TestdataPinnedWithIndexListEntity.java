@@ -83,7 +83,7 @@ public class TestdataPinnedWithIndexListEntity extends TestdataObject {
         return pinIndex;
     }
 
-    public void setPinIndex(int pinIndex) {
+    public void setPlanningPinToIndex(int pinIndex) {
         this.pinIndex = pinIndex;
     }
 

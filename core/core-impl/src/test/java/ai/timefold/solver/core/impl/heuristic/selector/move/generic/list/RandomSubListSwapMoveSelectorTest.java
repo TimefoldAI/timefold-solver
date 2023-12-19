@@ -413,7 +413,7 @@ class RandomSubListSwapMoveSelectorTest {
 
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor = getListVariableDescriptor(scoreDirector);
 
-        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector();
+        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         EntityIndependentValueSelector<TestdataListSolution> leftValueSelector =
                 mockNeverEndingEntityIndependentValueSelector(listVariableDescriptor);
         EntityIndependentValueSelector<TestdataListSolution> rightValueSelector =

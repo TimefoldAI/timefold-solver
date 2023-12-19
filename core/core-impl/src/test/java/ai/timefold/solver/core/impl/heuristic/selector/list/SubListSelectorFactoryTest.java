@@ -42,7 +42,7 @@ class SubListSelectorFactoryTest {
 
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor =
                 TestdataListEntity.buildVariableDescriptorForValueList();
-        EntitySelector<TestdataListSolution> entitySelector = TestdataListUtils.mockEntitySelector();
+        EntitySelector<TestdataListSolution> entitySelector = TestdataListUtils.mockEntitySelector(new TestdataListEntity[0]);
         when(entitySelector.getEntityDescriptor()).thenReturn(listVariableDescriptor.getEntityDescriptor());
 
         RandomSubListSelector<TestdataListSolution> subListSelector =
@@ -66,7 +66,7 @@ class SubListSelectorFactoryTest {
 
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor =
                 TestdataListEntity.buildVariableDescriptorForValueList();
-        EntitySelector<TestdataListSolution> entitySelector = TestdataListUtils.mockEntitySelector();
+        EntitySelector<TestdataListSolution> entitySelector = TestdataListUtils.mockEntitySelector(new TestdataListEntity[0]);
         when(entitySelector.getEntityDescriptor()).thenReturn(listVariableDescriptor.getEntityDescriptor());
 
         SubListSelectorFactory<TestdataListSolution> selectorFactory = SubListSelectorFactory.create(config);
@@ -84,7 +84,7 @@ class SubListSelectorFactoryTest {
 
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor =
                 TestdataListEntity.buildVariableDescriptorForValueList();
-        EntitySelector<TestdataListSolution> entitySelector = TestdataListUtils.mockEntitySelector();
+        EntitySelector<TestdataListSolution> entitySelector = TestdataListUtils.mockEntitySelector(new TestdataListEntity[0]);
         when(entitySelector.getEntityDescriptor()).thenReturn(listVariableDescriptor.getEntityDescriptor());
 
         SubListMimicRecorder<TestdataListSolution> subListMimicRecorder = mock(SubListMimicRecorder.class);

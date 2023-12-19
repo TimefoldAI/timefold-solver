@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
 public final class TestdataListUtils {
 
@@ -27,8 +27,14 @@ public final class TestdataListUtils {
         return entity.getValueList().size();
     }
 
-    public static EntitySelector<TestdataListSolution> mockEntitySelector(Object... entities) {
-        return SelectorTestUtils.mockEntitySelector(TestdataListEntity.buildEntityDescriptor(), entities);
+    public static EntitySelector<TestdataListSolution> mockEntitySelector(TestdataListEntity... entities) {
+        return SelectorTestUtils.mockEntitySelector(TestdataListEntity.buildEntityDescriptor(), (Object[]) entities);
+    }
+
+    public static EntitySelector<TestdataPinnedWithIndexListSolution>
+            mockEntitySelector(TestdataPinnedWithIndexListEntity... entities) {
+        return SelectorTestUtils.mockEntitySelector(TestdataPinnedWithIndexListEntity.buildEntityDescriptor(),
+                (Object[]) entities);
     }
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> mockEntityIndependentValueSelector(
@@ -78,11 +84,11 @@ public final class TestdataListUtils {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static ListVariableDescriptor<TestdataPinnedListSolution> getPinnedListVariableDescriptor(
-            InnerScoreDirector<TestdataPinnedListSolution, ?> scoreDirector) {
-        return (ListVariableDescriptor<TestdataPinnedListSolution>) scoreDirector
+    public static ListVariableDescriptor<TestdataPinnedWithIndexListSolution> getPinnedListVariableDescriptor(
+            InnerScoreDirector<TestdataPinnedWithIndexListSolution, ?> scoreDirector) {
+        return (ListVariableDescriptor<TestdataPinnedWithIndexListSolution>) scoreDirector
                 .getSolutionDescriptor()
-                .getEntityDescriptorStrict(TestdataPinnedListEntity.class)
+                .getEntityDescriptorStrict(TestdataPinnedWithIndexListEntity.class)
                 .getGenuineVariableDescriptor("valueList");
     }
 

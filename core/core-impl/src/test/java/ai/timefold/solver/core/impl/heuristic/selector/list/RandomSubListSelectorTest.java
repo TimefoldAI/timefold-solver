@@ -133,7 +133,7 @@ class RandomSubListSelectorTest {
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
                 mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
-        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector();
+        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         EntityIndependentValueSelector<TestdataListSolution> valueSelector =
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector));
 
@@ -164,7 +164,7 @@ class RandomSubListSelectorTest {
 
     @Test
     void validateConstructorArguments() {
-        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector();
+        EntitySelector<TestdataListSolution> entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         EntityIndependentValueSelector<TestdataListSolution> valueSelector =
                 mockNeverEndingEntityIndependentValueSelector(TestdataListEntity.buildVariableDescriptorForValueList());
 

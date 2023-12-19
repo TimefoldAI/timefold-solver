@@ -35,7 +35,7 @@ class OriginalListChangeIteratorTest {
         assertEmptyIterator(singletonList(new TestdataListValue("v1")), emptyList());
     }
 
-    static void assertEmptyIterator(List<Object> values, List<Object> entities) {
+    static void assertEmptyIterator(List<Object> values, List<TestdataListEntity> entities) {
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
                 mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor = getListVariableDescriptor(scoreDirector);
@@ -46,7 +46,7 @@ class OriginalListChangeIteratorTest {
                 scoreDirector.getSupplyManager().demand(new IndexVariableDemand<>(listVariableDescriptor)),
                 valueSelector,
                 new ElementDestinationSelector<>(
-                        mockEntitySelector(entities.toArray()),
+                        mockEntitySelector(entities.toArray(TestdataListEntity[]::new)),
                         valueSelector,
                         false));
 
