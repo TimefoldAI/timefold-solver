@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.entity.PlanningPinIndex;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 
 /**
  * Specifies that a bean property (or a field) can be changed and should be optimized by the optimization algorithms.
@@ -40,7 +40,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinIndex;
  * <p>
  * <strong>Overconstrained planning is currently not supported for list variables.</strong>
  *
- * @see PlanningPinIndex
+ * @see PlanningPinToIndex
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

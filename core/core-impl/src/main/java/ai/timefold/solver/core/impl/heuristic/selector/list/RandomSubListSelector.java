@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 
 import java.util.Iterator;
 
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
@@ -142,8 +143,9 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
             Object sourceEntity = null;
             int listSize = 0;
 
+            EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
             var firstUnpinnedIndex =
-                    ElementDestinationSelector.getFirstUnpinnedIndex(entitySelector.getEntityDescriptor(), sourceEntity);
+                    entityDescriptor.extractFirstUnpinnedIndex(sourceEntity);
             while (listSize < minimumSubListSize) {
                 if (!valueIterator.hasNext()) {
                     throw new IllegalStateException("The valueIterator (" + valueIterator + ") should never end.");

@@ -7,7 +7,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
-import ai.timefold.solver.core.api.domain.entity.PlanningPinIndex;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -44,8 +44,8 @@ public class TestdataPinnedWithIndexListEntity extends TestdataObject {
     @PlanningPin
     private boolean pinned;
 
-    @PlanningPinIndex
-    private Integer pinIndex;
+    @PlanningPinToIndex
+    private int pinIndex;
 
     public TestdataPinnedWithIndexListEntity() {
     }

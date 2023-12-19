@@ -116,8 +116,8 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                         // Start with the first unpinned value of each entity, or zero if no pinning.
                         // Entity selector is guaranteed to return only unpinned entities.
                         var entity = entityIterator.next();
-                        return new ElementRef(entity,
-                                getFirstUnpinnedIndex(entitySelector.getEntityDescriptor(), entity));
+                        EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
+                        return new ElementRef(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
                     } else {
                         // Value selector already returns only unpinned values.
                         var value = valueIterator.next();
@@ -134,8 +134,10 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                     // Start with the first unpinned value of each entity, or zero if no pinning.
                     // Entity selector is guaranteed to return only unpinned entities.
                     StreamSupport.stream(entitySelector.spliterator(), false)
-                            .map(entity -> new ElementRef(entity,
-                                    getFirstUnpinnedIndex(entitySelector.getEntityDescriptor(), entity))),
+                            .map(entity -> {
+                                EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
+                                return new ElementRef(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
+                            }),
                     StreamSupport.stream(getEffectiveValueSelector().spliterator(), false)
                             .map(value -> {
                                 // Value selector already returns only unpinned values.
@@ -144,11 +146,6 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                             }))
                     .iterator();
         }
-    }
-
-    public static int getFirstUnpinnedIndex(EntityDescriptor<?> entityDescriptor, Object entity) {
-        var pinningStatus = entityDescriptor.extractLastUnpinnedIndex(entity);
-        return pinningStatus.hasPin() ? pinningStatus.pinIndex() + 1 : 0;
     }
 
     @Override

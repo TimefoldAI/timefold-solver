@@ -63,15 +63,15 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     if (entity == null) { // Unassigned.
                         return true;
                     }
-                    var pinningStatus = entityDescriptor.extractEffectivePlanningPinIndex(scoreDirector, entity);
+                    var pinningStatus = entityDescriptor.extractPinningStatus(scoreDirector, entity);
                     if (!pinningStatus.hasPin()) {
                         return true;
                     } else if (pinningStatus.entireEntityPinned()) {
                         return false;
                     }
-                    var pinIndex = pinningStatus.pinIndex();
+                    var firstUnpinnedIndex = pinningStatus.firstUnpinnedIndex();
                     var index = indexVariableSupply.getIndex(selection);
-                    return index > pinIndex;
+                    return index >= firstUnpinnedIndex;
                 });
     }
 

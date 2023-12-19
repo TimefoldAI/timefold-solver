@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
-import ai.timefold.solver.core.api.domain.entity.PlanningPinIndex;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
@@ -60,7 +60,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PlanningPinIndexReader;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PlanningPinToIndexReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +105,7 @@ public class EntityDescriptor<Solution_> {
 
     // Caches the inherited, declared and descending movable filters (including @PlanningPin filters) as a composite filter
     private SelectionFilter<Solution_, Object> effectiveMovableEntitySelectionFilter;
-    private PlanningPinIndexReader<Solution_> effectivePlanningPinIndexReader;
+    private PlanningPinToIndexReader<Solution_> effectivePlanningPinToIndexReader;
 
     // Caches the inherited and declared variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorMap;
@@ -336,24 +336,20 @@ public class EntityDescriptor<Solution_> {
 
     private void processPlanningPinIndexAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
         var annotatedMember = ((AnnotatedElement) member);
-        if (annotatedMember.isAnnotationPresent(PlanningPinIndex.class)) {
+        if (annotatedMember.isAnnotationPresent(PlanningPinToIndex.class)) {
             if (!hasAnyGenuineListVariables()) {
                 throw new IllegalStateException(
                         "The entityClass (%s) has a %s annotated member (%s) but no %s annotated member."
-                                .formatted(entityClass, PlanningPinIndex.class.getSimpleName(), member,
+                                .formatted(entityClass, PlanningPinToIndex.class.getSimpleName(), member,
                                         PlanningListVariable.class.getSimpleName()));
             }
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                    FIELD_OR_READ_METHOD, PlanningPinIndex.class, descriptorPolicy.getDomainAccessType());
+                    FIELD_OR_READ_METHOD, PlanningPinToIndex.class, descriptorPolicy.getDomainAccessType());
             var type = memberAccessor.getType();
-            if (!Integer.class.isAssignableFrom(type)) {
-                /*
-                 * We don't support primitive int as the default value of that is 0,
-                 * and that would mean the first element in the list is pinned.
-                 */
+            if (!Integer.TYPE.isAssignableFrom(type)) {
                 throw new IllegalStateException(
-                        "The entityClass (%s) has a %s annotated member (%s) that is not an Integer."
-                                .formatted(entityClass, PlanningPinIndex.class.getSimpleName(), member));
+                        "The entityClass (%s) has a %s annotated member (%s) that is not a primitive int."
+                                .formatted(entityClass, PlanningPinToIndex.class.getSimpleName(), member));
             }
             declaredPlanningPinIndexMemberAccessorList.add(memberAccessor);
         }
@@ -444,7 +440,7 @@ public class EntityDescriptor<Solution_> {
                 .map(l -> (ListVariableDescriptor<Solution_>) l)
                 .findFirst();
         if (maybeListVariableDescriptor.isEmpty()) {
-            effectivePlanningPinIndexReader = null;
+            effectivePlanningPinToIndexReader = null;
             return;
         }
 
@@ -459,16 +455,16 @@ public class EntityDescriptor<Solution_> {
 
         var planningPinIndexMemberAccessorList = new ArrayList<MemberAccessor>();
         for (EntityDescriptor<Solution_> inheritedEntityDescriptor : inheritedEntityDescriptorList) {
-            if (inheritedEntityDescriptor.effectivePlanningPinIndexReader != null) {
+            if (inheritedEntityDescriptor.effectivePlanningPinToIndexReader != null) {
                 planningPinIndexMemberAccessorList.addAll(inheritedEntityDescriptor.declaredPlanningPinIndexMemberAccessorList);
             }
         }
         planningPinIndexMemberAccessorList.addAll(declaredPlanningPinIndexMemberAccessorList);
 
         if (planningPinIndexMemberAccessorList.isEmpty()) {
-            effectivePlanningPinIndexReader = null;
+            effectivePlanningPinToIndexReader = null;
         } else {
-            effectivePlanningPinIndexReader = new PlanningPinIndexReader<>(effectiveMovableEntitySelectionFilter,
+            effectivePlanningPinToIndexReader = new PlanningPinToIndexReader<>(effectiveMovableEntitySelectionFilter,
                     planningListVariableReader, planningPinIndexMemberAccessorList.toArray(MemberAccessor[]::new));
         }
     }
@@ -512,7 +508,7 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean supportsPinning() {
-        return hasEffectiveMovableEntitySelectionFilter() || effectivePlanningPinIndexReader != null;
+        return hasEffectiveMovableEntitySelectionFilter() || effectivePlanningPinToIndexReader != null;
     }
 
     public SelectionFilter<Solution_, Object> getEffectiveMovableEntitySelectionFilter() {
@@ -635,44 +631,42 @@ public class EntityDescriptor<Solution_> {
     /**
      * Returns the {@link PinningStatus} of the entity.
      * If {@link PlanningPin} is enabled on the entity, the entity is fully pinned.
-     * Otherwise if {@link PlanningPinIndex} is specified, returns the value of it.
+     * Otherwise if {@link PlanningPinToIndex} is specified, returns the value of it.
      *
      * @param scoreDirector
      * @param entity
      * @return
      */
-    public PinningStatus extractEffectivePlanningPinIndex(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public PinningStatus extractPinningStatus(ScoreDirector<Solution_> scoreDirector, Object entity) {
         if (!supportsPinning()) {
             return PinningStatus.ofUnpinned();
-        } else if (!isMovable(scoreDirector, entity)) {
-            // Skipping due to @PlanningPing
+        } else if (!isMovable(scoreDirector, entity)) { // Skipping due to @PlanningPin.
             return PinningStatus.ofFullyPinned();
         }
-        return extractLastUnpinnedIndex(entity);
+        var firstUnpinnedIndex = extractFirstUnpinnedIndex(entity);
+        if (firstUnpinnedIndex == 0) {
+            return PinningStatus.ofUnpinned();
+        } else {
+            return PinningStatus.ofPinIndex(firstUnpinnedIndex);
+        }
     }
 
     /**
      * Ignores {@link PlanningPin} on the entire entity.
-     * If it should be taken into account as well, use {@link #extractEffectivePlanningPinIndex(ScoreDirector, Object)}.
+     * If it should be taken into account as well, use {@link #extractPinningStatus(ScoreDirector, Object)}.
      *
      * @param entity never null
      * @return never null
      */
-    public PinningStatus extractLastUnpinnedIndex(Object entity) {
-        if (effectivePlanningPinIndexReader == null) {
-            // There is no @PlanningPinIndex.
-            return PinningStatus.ofUnpinned();
+    public int extractFirstUnpinnedIndex(Object entity) {
+        if (effectivePlanningPinToIndexReader == null) { // There is no @PlanningPinToIndex.
+            return 0;
         } else {
-            var maybePinIndex = effectivePlanningPinIndexReader.apply(null, entity);
-            if (maybePinIndex.isEmpty()) {
-                return PinningStatus.ofUnpinned();
-            } else {
-                return PinningStatus.ofPinIndex(maybePinIndex.getAsInt());
-            }
+            return effectivePlanningPinToIndexReader.applyAsInt(null, entity);
         }
     }
 
-    public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int pinIndex) {
+    public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int firstUnpinnedIndex) {
 
         public static PinningStatus ofUnpinned() {
             return new PinningStatus(false, false, -1);
@@ -682,8 +676,8 @@ public class EntityDescriptor<Solution_> {
             return new PinningStatus(true, true, -1);
         }
 
-        public static PinningStatus ofPinIndex(int pinIndex) {
-            return new PinningStatus(true, false, pinIndex);
+        public static PinningStatus ofPinIndex(int firstUnpinnedIndex) {
+            return new PinningStatus(true, false, firstUnpinnedIndex);
         }
 
     }
