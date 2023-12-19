@@ -1,14 +1,6 @@
 package ai.timefold.solver.core.api.solver;
 
-import static ai.timefold.solver.core.api.solver.SolverStatus.NOT_SOLVING;
-import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_ACTIVE;
-import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_SCHEDULED;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertSolutionInitialized;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
-
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +25,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -40,11 +33,22 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import static ai.timefold.solver.core.api.solver.SolverStatus.NOT_SOLVING;
+import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_ACTIVE;
+import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_SCHEDULED;
+import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertSolutionInitialized;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class SolverManagerTest {
 
@@ -211,6 +215,59 @@ class SolverManagerTest {
         SolverJob<TestdataSolution, Long> solverJob = solverManager.solve(1L, problemFinder, finalBestSolutionConsumer,
                 exceptionHandler);
         solverJob.getFinalBestSolution();
+    }
+
+    @Test
+    void solveWithOverride() throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(2);
+        PhaseConfig<?> customPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
+                scoreDirector -> {
+                    await().pollDelay(Duration.ofSeconds(5L)).until(() -> true);
+                    countDownLatch.countDown();
+                });
+
+        // Default spent limit is 30s
+        TerminationConfig terminationConfig = new TerminationConfig()
+                .withSpentLimit(Duration.ofSeconds(30));
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(customPhaseConfig, customPhaseConfig) // Two steps that sleeps 5s each
+                .withTerminationConfig(terminationConfig);
+        solverConfig.withTerminationConfig(terminationConfig);
+
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+        Consumer<Object> finalBestSolutionConsumer = o -> {
+            await().pollDelay(Duration.ofSeconds(1L)).until(() -> true);
+                countDownLatch.countDown();
+        };
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        // Override spent time is 5s
+        TerminationConfig overrideTerminationConfig = new TerminationConfig()
+                .withSpentLimit(Duration.ofSeconds(5));
+        SolverConfigOverride configOverride = new SolverConfigOverride()
+                .withTerminationConfig(overrideTerminationConfig);
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solve(1L, problemFinder, finalBestSolutionConsumer,
+                exceptionHandler, configOverride);
+        // The updated execution time is 5 seconds. The solver executes only one custom step and ended afterwards
+        countDownLatch.await();
+        assertEquals(NOT_SOLVING, solverJob.getSolverStatus());
+
+        // Override spent time is 40s
+        TerminationConfig overrideTerminationConfig2 = new TerminationConfig()
+                .withSpentLimit(Duration.ofSeconds(40));
+        SolverConfigOverride configOverride2 = new SolverConfigOverride()
+                .withTerminationConfig(overrideTerminationConfig2);
+        SolverJob<TestdataSolution, Long> solverJob2 = solverManager.solve(1L, problemFinder, finalBestSolutionConsumer,
+                exceptionHandler, configOverride2);
+        // The updated execution time is now 40 seconds. The solver will attempt to execute all custom steps and remain
+        // active after the first custom step
+        countDownLatch.await();
+        assertNotEquals(NOT_SOLVING, solverJob2.getSolverStatus());
     }
 
     @Test
@@ -452,7 +509,7 @@ class SolverManagerTest {
                         (finalBestSolution) -> {
                             consumedBestSolutions.add(finalBestSolution);
                             finalBestSolutionConsumed.countDown();
-                        }, null));
+                        }, null, null));
             }
             solutionMap.put(id, consumedBestSolutions);
         }
