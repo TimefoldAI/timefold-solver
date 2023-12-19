@@ -7,8 +7,6 @@ import static org.mockito.Mockito.verify;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -243,9 +241,6 @@ class TwoOptListMoveTest {
                         { e1, destinationE1 },
                 });
         doReturn(scoreDirector.getSupplyManager()).when(destinationScoreDirector).getSupplyManager();
-
-        IndexVariableSupply indexVariableSupply =
-                scoreDirector.getSupplyManager().demand(new IndexVariableDemand<>(variableDescriptor));
 
         assertSameProperties(
                 destinationE1, 0, 1,
