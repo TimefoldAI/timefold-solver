@@ -14,43 +14,27 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 
-final class KOptDescriptor<Node_> {
-
-    /**
-     * The number of edges being added
-     */
-    private final int k;
-
-    /**
-     * A sequence of 2K nodes that forms the sequence of edges being removed
-     */
-    private final Node_[] removedEdges;
-
-    /**
-     * The order each node is visited when the tour is travelled in the successor direction. This forms
-     * a 2K-cycle representing the permutation performed by the K-opt move.
-     */
-    private final int[] removedEdgeIndexToTourOrder;
-
-    /**
-     * The order each node is visited when the tour is travelled in the predecessor direction. It the
-     * inverse of {@link KOptDescriptor#removedEdgeIndexToTourOrder} (i.e.
-     * {@link KOptDescriptor#removedEdgeIndexToTourOrder}[inverseRemovedEdgeIndexToTourOrder[i]] == i
-     *
-     */
-    private final int[] inverseRemovedEdgeIndexToTourOrder;
-
-    /**
-     * Maps the index of a removed edge endpoint to its corresponding added edge other endpoint. For instance,
-     * if the removed edges are (a, b), (c, d), (e, f) and the added edges are (a, d), (c, f), (e, b), then
-     * <br />
-     * removedEdges = [null, a, b, c, d, e, f] <br />
-     * addedEdgeToOtherEndpoint = [null, 4, 5, 6, 1, 2, 3] <br />
-     * <br />
-     * For any valid removedEdges index, (removedEdges[index], removedEdges[addedEdgeToOtherEndpoint[index]])
-     * is an edge added by this K-Opt move.
-     */
-    private final int[] addedEdgeToOtherEndpoint;
+/**
+ *
+ * @param k the number of edges being added
+ * @param removedEdges sequence of 2k nodes that forms the sequence of edges being removed
+ * @param removedEdgeIndexToTourOrder node visit order when the tour is traveled in the successor direction.
+ *        This forms a 2k-cycle representing the permutation performed by the K-opt move.
+ * @param inverseRemovedEdgeIndexToTourOrder node visit order when the tour is traveled in the predecessor direction.
+ *        It is the inverse of {@link KOptDescriptor#removedEdgeIndexToTourOrder}
+ *        (i.e. {@link KOptDescriptor#removedEdgeIndexToTourOrder}[inverseRemovedEdgeIndexToTourOrder[i]] == i
+ * @param addedEdgeToOtherEndpoint maps the index of a removed edge endpoint to its corresponding added edge other endpoint.
+ *        For instance, if the removed edges are (a, b), (c, d), (e, f) and the added edges are (a, d), (c, f), (e, b), then
+ *        <br />
+ *        removedEdges = [null, a, b, c, d, e, f] <br />
+ *        addedEdgeToOtherEndpoint = [null, 4, 5, 6, 1, 2, 3] <br />
+ *        <br />
+ *        For any valid removedEdges index, (removedEdges[index], removedEdges[addedEdgeToOtherEndpoint[index]])
+ *        is an edge added by this K-Opt move.
+ * @param <Node_>
+ */
+record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndexToTourOrder,
+        int[] inverseRemovedEdgeIndexToTourOrder, int[] addedEdgeToOtherEndpoint) {
 
     static <Node_> int[] computeInEdgesForSequentialMove(Node_[] removedEdges) {
         int[] out = new int[removedEdges.length];
@@ -99,11 +83,8 @@ final class KOptDescriptor<Node_> {
             int[] addedEdgeToOtherEndpoint,
             Function<Node_, Node_> endpointToSuccessorFunction,
             TriPredicate<Node_, Node_, Node_> betweenPredicate) {
-        this.k = (removedEdges.length - 1) >> 1;
-        this.removedEdges = removedEdges;
-        this.removedEdgeIndexToTourOrder = new int[removedEdges.length];
-        this.inverseRemovedEdgeIndexToTourOrder = new int[removedEdges.length];
-        this.addedEdgeToOtherEndpoint = addedEdgeToOtherEndpoint;
+        this((removedEdges.length - 1) >> 1, removedEdges, new int[removedEdges.length], new int[removedEdges.length],
+                addedEdgeToOtherEndpoint);
 
         // Compute the permutation as described in FindPermutation
         // (Section 5.3 "Determination of the feasibility of a move",
@@ -132,29 +113,6 @@ final class KOptDescriptor<Node_> {
         for (int i = 1; i <= 2 * k; i++) {
             inverseRemovedEdgeIndexToTourOrder[removedEdgeIndexToTourOrder[i]] = i;
         }
-    }
-
-    // ****************************************************
-    // Simple Getters (only accessible from kopt package)
-    // ****************************************************
-    int getK() {
-        return k;
-    }
-
-    Node_[] getRemovedEdges() {
-        return removedEdges;
-    }
-
-    int[] getRemovedEdgeIndexToTourOrder() {
-        return removedEdgeIndexToTourOrder;
-    }
-
-    int[] getInverseRemovedEdgeIndexToTourOrder() {
-        return inverseRemovedEdgeIndexToTourOrder;
-    }
-
-    int[] getAddedEdgeToOtherEndpoint() {
-        return addedEdgeToOtherEndpoint;
     }
 
     // ****************************************************

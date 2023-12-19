@@ -81,13 +81,13 @@ public class KOptListMoveIteratorTest {
 
         public void verify(KOptListMove<?> kOptListMove) {
             KOptDescriptor<?> descriptor = kOptListMove.getDescriptor();
-            assertThat(descriptor.getK()).isEqualTo(removedEdgeList.size() / 2);
-            List<Object> expectedRemoveEdges = new ArrayList<>(descriptor.getK() * 2 + 1);
+            assertThat(descriptor.k()).isEqualTo(removedEdgeList.size() / 2);
+            List<Object> expectedRemoveEdges = new ArrayList<>(descriptor.k() * 2 + 1);
             expectedRemoveEdges.add(null);
             expectedRemoveEdges.addAll(removedEdgeList);
-            assertThat((Object[]) descriptor.getRemovedEdges()).containsExactly(expectedRemoveEdges.toArray());
+            assertThat((Object[]) descriptor.removedEdges()).containsExactly(expectedRemoveEdges.toArray());
 
-            assertThat(descriptor.getAddedEdgeToOtherEndpoint()).containsExactly(addedEdgeIndexToOtherEndpoint);
+            assertThat(descriptor.addedEdgeToOtherEndpoint()).containsExactly(addedEdgeIndexToOtherEndpoint);
         }
     }
 

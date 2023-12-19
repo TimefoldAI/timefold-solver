@@ -9,32 +9,24 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 
-public final class EntityOrderInfo {
-    final Object[] entities;
-    final int[] offsets;
-    final Map<Object, Integer> entityToEntityIndex;
+public record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
 
-    public <Node_> EntityOrderInfo(Node_[] pickedValues, SingletonInverseVariableSupply inverseVariableSupply,
+    public static <Node_> EntityOrderInfo of(Node_[] pickedValues, SingletonInverseVariableSupply inverseVariableSupply,
             ListVariableDescriptor<?> listVariableDescriptor) {
-        entityToEntityIndex = new IdentityHashMap<>();
+        var entityToEntityIndex = new IdentityHashMap<Object, Integer>();
         for (int i = 1; i < pickedValues.length && pickedValues[i] != null; i++) {
             entityToEntityIndex.computeIfAbsent(inverseVariableSupply.getInverseSingleton(pickedValues[i]),
                     entity -> entityToEntityIndex.size());
         }
-        entities = new Object[entityToEntityIndex.size()];
-        offsets = new int[entities.length];
-        for (Map.Entry<Object, Integer> entry : entityToEntityIndex.entrySet()) {
+        var entities = new Object[entityToEntityIndex.size()];
+        var offsets = new int[entities.length];
+        for (var entry : entityToEntityIndex.entrySet()) {
             entities[entry.getValue()] = entry.getKey();
         }
         for (int i = 1; i < offsets.length; i++) {
             offsets[i] = offsets[i - 1] + listVariableDescriptor.getListSize(entities[i - 1]);
         }
-    }
-
-    public EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
-        this.entities = entities;
-        this.entityToEntityIndex = entityToEntityIndex;
-        this.offsets = offsets;
+        return new EntityOrderInfo(entities, entityToEntityIndex, offsets);
     }
 
     public <Node_> EntityOrderInfo withNewNode(Node_ node, ListVariableDescriptor<?> listVariableDescriptor,

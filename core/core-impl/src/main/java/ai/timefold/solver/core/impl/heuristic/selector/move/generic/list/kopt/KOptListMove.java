@@ -163,7 +163,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public String getSimpleMoveTypeDescription() {
-        return descriptor.getK() + "-opt(" + listVariableDescriptor.getSimpleEntityAndVariableName() + ")";
+        return descriptor.k() + "-opt(" + listVariableDescriptor.getSimpleEntityAndVariableName() + ")";
     }
 
     @Override

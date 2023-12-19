@@ -19,7 +19,7 @@ final class KOptUtils {
     }
 
     /**
-     * Calculate the disjoint k-cycles for {@link KOptDescriptor#getRemovedEdgeIndexToTourOrder()}. <br />
+     * Calculate the disjoint k-cycles for {@link KOptDescriptor#removedEdgeIndexToTourOrder()}. <br />
      * <br />
      * Any permutation can be expressed as combination of k-cycles. A k-cycle is a sequence of
      * unique elements (p_1, p_2, ..., p_k) where
@@ -41,14 +41,14 @@ final class KOptUtils {
      * can be expressed as `(1, 2, 3)(4, 5)`.
      *
      * @return The {@link KOptCycle} corresponding to the permutation described by
-     *         {@link KOptDescriptor#getRemovedEdgeIndexToTourOrder()}.
+     *         {@link KOptDescriptor#removedEdgeIndexToTourOrder()}.
      * @param kOptDescriptor The descriptor to calculate cycles for
      */
     static KOptCycle getCyclesForPermutation(KOptDescriptor<?> kOptDescriptor) {
         int cycleCount = 0;
-        int[] removedEdgeIndexToTourOrder = kOptDescriptor.getRemovedEdgeIndexToTourOrder();
-        int[] addedEdgeToOtherEndpoint = kOptDescriptor.getAddedEdgeToOtherEndpoint();
-        int[] inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.getInverseRemovedEdgeIndexToTourOrder();
+        int[] removedEdgeIndexToTourOrder = kOptDescriptor.removedEdgeIndexToTourOrder();
+        int[] addedEdgeToOtherEndpoint = kOptDescriptor.addedEdgeToOtherEndpoint();
+        int[] inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.inverseRemovedEdgeIndexToTourOrder();
 
         int[] indexToCycle = new int[removedEdgeIndexToTourOrder.length];
         BitSet remaining = new BitSet(removedEdgeIndexToTourOrder.length);
@@ -77,14 +77,14 @@ final class KOptUtils {
     }
 
     static <Node_> List<Pair<Node_, Node_>> getAddedEdgeList(KOptDescriptor<Node_> kOptDescriptor) {
-        int k = kOptDescriptor.getK();
+        int k = kOptDescriptor.k();
         List<Pair<Node_, Node_>> out = new ArrayList<>(2 * k);
         int currentEndpoint = 1;
 
-        Node_[] removedEdges = kOptDescriptor.getRemovedEdges();
-        int[] addedEdgeToOtherEndpoint = kOptDescriptor.getAddedEdgeToOtherEndpoint();
-        int[] removedEdgeIndexToTourOrder = kOptDescriptor.getRemovedEdgeIndexToTourOrder();
-        int[] inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.getInverseRemovedEdgeIndexToTourOrder();
+        Node_[] removedEdges = kOptDescriptor.removedEdges();
+        int[] addedEdgeToOtherEndpoint = kOptDescriptor.addedEdgeToOtherEndpoint();
+        int[] removedEdgeIndexToTourOrder = kOptDescriptor.removedEdgeIndexToTourOrder();
+        int[] inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.inverseRemovedEdgeIndexToTourOrder();
 
         // This loop iterates through the new tour created
         while (currentEndpoint != 2 * k + 1) {
@@ -97,8 +97,8 @@ final class KOptUtils {
     }
 
     static <Node_> List<Pair<Node_, Node_>> getRemovedEdgeList(KOptDescriptor<Node_> kOptDescriptor) {
-        int k = kOptDescriptor.getK();
-        Node_[] removedEdges = kOptDescriptor.getRemovedEdges();
+        int k = kOptDescriptor.k();
+        Node_[] removedEdges = kOptDescriptor.removedEdges();
         List<Pair<Node_, Node_>> out = new ArrayList<>(2 * k);
         for (int i = 1; i <= k; i++) {
             out.add(new Pair<>(removedEdges[2 * i - 1], removedEdges[2 * i]));
@@ -128,7 +128,7 @@ final class KOptUtils {
             ListVariableDescriptor<?> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             IndexVariableSupply indexVariableSupply) {
-        EntityOrderInfo entityOrderInfo = new EntityOrderInfo(pickedValues, inverseVariableSupply, listVariableDescriptor);
+        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
         return node -> entityOrderInfo.successor(node, listVariableDescriptor, indexVariableSupply, inverseVariableSupply);
     }
 
@@ -152,7 +152,7 @@ final class KOptUtils {
             ListVariableDescriptor<?> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             IndexVariableSupply indexVariableSupply) {
-        EntityOrderInfo entityOrderInfo = new EntityOrderInfo(pickedValues, inverseVariableSupply, listVariableDescriptor);
+        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
         return (start, middle, end) -> entityOrderInfo.between(start, middle, end, indexVariableSupply, inverseVariableSupply);
     }
 
