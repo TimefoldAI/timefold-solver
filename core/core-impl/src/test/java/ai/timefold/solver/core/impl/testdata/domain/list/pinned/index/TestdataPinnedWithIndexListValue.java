@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.testdata.domain.list.pinned.index;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -29,8 +28,6 @@ public class TestdataPinnedWithIndexListValue extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
     private TestdataPinnedWithIndexListEntity entity;
-    @IndexShadowVariable(sourceVariableName = "valueList")
-    private Integer index;
 
     public TestdataPinnedWithIndexListValue() {
     }
@@ -47,11 +44,4 @@ public class TestdataPinnedWithIndexListValue extends TestdataObject {
         this.entity = entity;
     }
 
-    public Integer getIndex() {
-        return index;
-    }
-
-    public void setIndex(Integer index) {
-        this.index = index;
-    }
 }

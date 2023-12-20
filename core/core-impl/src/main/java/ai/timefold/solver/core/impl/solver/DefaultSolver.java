@@ -16,6 +16,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
@@ -220,6 +221,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
+        assertCorrectSolutionState(solverScope);
         solverScope.startingNow();
         solverScope.getScoreDirector().resetCalculationCount();
         super.solvingStarted(solverScope);
@@ -233,6 +235,41 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 environmentMode.name(),
                 moveThreadCountDescription,
                 (randomFactory != null ? randomFactory : "not fixed"));
+    }
+
+    private static <Solution_> void assertCorrectSolutionState(SolverScope<Solution_> solverScope) {
+        solverScope.getSolutionDescriptor().visitAll(solverScope.getBestSolution(), fact -> {
+            var scoreDirector = (AbstractScoreDirector<Solution_, ?, ?>) solverScope.getScoreDirector();
+            scoreDirector.assertNonNullPlanningId(fact);
+            // Ensure correct state of pinning properties.
+            var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+            var entityDescriptor = solutionDescriptor.findEntityDescriptor(fact.getClass());
+            if (entityDescriptor == null || !entityDescriptor.supportsPinning()
+                    || !entityDescriptor.hasAnyGenuineListVariables()) {
+                return;
+            }
+            int pinIndex = entityDescriptor.extractFirstUnpinnedIndex(fact);
+            if (entityDescriptor.isMovable(scoreDirector, fact)) {
+                if (pinIndex < 0) {
+                    throw new IllegalStateException("The movable planning entity (%s) has a pin index (%s) which is negative."
+                            .formatted(fact, pinIndex));
+                }
+                var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+                var listSize = listVariableDescriptor.getListSize(fact);
+                if (pinIndex > listSize) {
+                    // pinIndex == listSize is allowed, as that says the pin is at the end of the list,
+                    // allowing additions to the list.
+                    throw new IllegalStateException(
+                            "The movable planning entity (%s) has a pin index (%s) which is greater than the list size (%s)."
+                                    .formatted(fact, pinIndex, listSize));
+                }
+            } else {
+                if (pinIndex != 0) {
+                    throw new IllegalStateException("The immovable planning entity (%s) has a pin index (%s) which is not 0."
+                            .formatted(fact, pinIndex));
+                }
+            }
+        });
     }
 
     @Override

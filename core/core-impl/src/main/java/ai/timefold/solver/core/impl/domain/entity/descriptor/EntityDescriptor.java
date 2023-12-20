@@ -113,6 +113,7 @@ public class EntityDescriptor<Solution_> {
     private Map<String, VariableDescriptor<Solution_>> effectiveVariableDescriptorMap;
     // Duplicate of effectiveGenuineVariableDescriptorMap.values() for faster iteration on the hot path.
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
+    private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -406,6 +407,10 @@ public class EntityDescriptor<Solution_> {
         effectiveVariableDescriptorMap.putAll(effectiveGenuineVariableDescriptorMap);
         effectiveVariableDescriptorMap.putAll(effectiveShadowVariableDescriptorMap);
         effectiveGenuineVariableDescriptorList = new ArrayList<>(effectiveGenuineVariableDescriptorMap.values());
+        effectiveGenuineListVariableDescriptorList = effectiveGenuineVariableDescriptorList.stream()
+                .filter(GenuineVariableDescriptor::isListVariable)
+                .map(l -> (ListVariableDescriptor<Solution_>) l)
+                .toList();
     }
 
     private void createEffectiveMovableEntitySelectionFilter() {
@@ -434,17 +439,12 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void createEffectivePlanningPinIndexReader() {
-        var maybeListVariableDescriptor = getGenuineVariableDescriptorList()
-                .stream()
-                .filter(GenuineVariableDescriptor::isListVariable)
-                .map(l -> (ListVariableDescriptor<Solution_>) l)
-                .findFirst();
-        if (maybeListVariableDescriptor.isEmpty()) {
+        if (!hasAnyGenuineListVariables()) {
             effectivePlanningPinToIndexReader = null;
             return;
         }
 
-        var listVariableDescriptor = maybeListVariableDescriptor.get();
+        var listVariableDescriptor = getGenuineListVariableDescriptor();
         var planningListVariableReader = new Function<Object, List<?>>() {
 
             @Override
@@ -535,11 +535,19 @@ public class EntityDescriptor<Solution_> {
         if (!isGenuine()) {
             return false;
         }
-        return effectiveGenuineVariableDescriptorList.stream().anyMatch(GenuineVariableDescriptor::isListVariable);
+        return getGenuineListVariableDescriptor() != null;
     }
 
     public boolean isGenuine() {
         return hasAnyGenuineVariables();
+    }
+
+    public ListVariableDescriptor<Solution_> getGenuineListVariableDescriptor() {
+        if (effectiveGenuineListVariableDescriptorList.isEmpty()) {
+            return null;
+        }
+        // Earlier validation guarantees there will only ever be one.
+        return effectiveGenuineListVariableDescriptorList.get(0);
     }
 
     public List<GenuineVariableDescriptor<Solution_>> getGenuineVariableDescriptorList() {

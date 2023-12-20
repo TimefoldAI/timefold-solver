@@ -37,8 +37,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
-        resetConstraintStreamingSession();
         super.setWorkingSolution(workingSolution);
+        resetConstraintStreamingSession();
     }
 
     private void resetConstraintStreamingSession() {
@@ -161,4 +161,11 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         super.afterProblemFactRemoved(problemFact);
     }
 
+    // ************************************************************************
+    // Getters/setters
+    // ************************************************************************
+
+    public BavetConstraintSession<Score_> getSession() {
+        return session;
+    }
 }

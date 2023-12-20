@@ -179,14 +179,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
          * Providing the init score and genuine entity count requires another pass over the entities.
          * The following code does all of those operations in a single pass.
          */
-        Consumer<Object> visitor = this::assertNonNullPlanningId; // Every fact and entity will get this done.
+        Consumer<Object> visitor = null;
         if (lookUpEnabled) {
             lookUpManager.reset();
-            visitor = visitor.andThen(lookUpManager::addWorkingObject);
+            visitor = lookUpManager::addWorkingObject;
+            // This visits all the problem facts, applying the visitor.
+            solutionDescriptor.visitAllProblemFacts(workingSolution, visitor);
         }
-        // This visits all the problem facts, applying the visitor.
-        solutionDescriptor.visitAllProblemFacts(workingSolution, visitor);
-        // This visits all the entities, applying the visitor.
+        // This visits all the entities, applying the visitor if non-null.
         var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution, visitor);
         setWorkingEntityListDirty();
 
@@ -211,7 +211,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         getSolutionDescriptor().visitAll(workingSolution, this::assertNonNullPlanningId);
     }
 
-    private void assertNonNullPlanningId(Object fact) {
+    public void assertNonNullPlanningId(Object fact) {
         Class<?> factClass = fact.getClass();
         MemberAccessor planningIdAccessor = getSolutionDescriptor().getPlanningIdAccessor(factClass);
         if (planningIdAccessor == null) { // There is no planning ID annotation.
