@@ -100,6 +100,65 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     }
 
     // ************************************************************************
+    // Builder methods
+    // ************************************************************************
+
+    /**
+     * Creates a Builder that allows to customize and submit a planning problem to solve.
+     *
+     * @param problemId never null, a ID for each planning problem. This must be unique.
+     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
+     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
+     * @return never null
+     */
+    default SolverJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId, Solution_ problem) {
+        return builder(problemId, (problemId_) -> problem);
+    }
+
+
+    /**
+     * As defined by {@link #builder(Object, Object)}
+     *
+     * @param problemId never null, a ID for each planning problem. This must be unique.
+     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
+     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
+     * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
+     *                      variables
+     * @return never null
+     */
+    SolverJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId,
+                                                    Function<? super ProblemId_, ? extends Solution_> problemFinder);
+
+    /**
+     * Creates a Builder that allows to customize and submit a planning problem to solve and listen to intermediate
+     * best solutions.
+     *
+     * @param problemId never null, a ID for each planning problem. This must be unique.
+     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
+     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
+     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
+     * @return never null
+     */
+    default SolverAndListenerJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId, Solution_ problem,
+                                                               Consumer<? super Solution_> bestSolutionConsumer) {
+        return builder(problemId, (problemId_) -> problem, bestSolutionConsumer);
+    }
+
+    /**
+     * Creates a Builder that allows to customize and submit a planning problem to solve and listen to intermediate
+     * best solutions.
+     *
+     * @param problemId never null, a ID for each planning problem. This must be unique.
+     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
+     * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
+     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
+     * @return never null
+     */
+    SolverAndListenerJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId,
+                                                               Function<? super ProblemId_, ? extends Solution_> problemFinder,
+                                                               Consumer<? super Solution_> bestSolutionConsumer);
+
+    // ************************************************************************
     // Interface methods
     // ************************************************************************
 
@@ -122,22 +181,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @return never null
      */
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem) {
-        return solve(problemId, (problemId_) -> problem, null, null, null);
-    }
-
-    /**
-     * As defined by {@link #solve(Object, Object)}.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
-     * @param configOverride sometimes null, includes settings that override the default configuration
-     * @return never null
-     */
-    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem,
-                                                   SolverConfigOverride configOverride) {
-        return solve(problemId, (problemId_) -> problem, null, null, configOverride);
+        return builder(problemId, problem)
+                .solve();
     }
 
     /**
@@ -152,24 +197,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      */
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return solve(problemId, (problemId_) -> problem, finalBestSolutionConsumer, null, null);
-    }
-
-    /**
-     * As defined by {@link #solve(Object, Object, Consumer)}.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
-     * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
-     * @param configOverride sometimes null, includes settings that override the default configuration
-     * @return never null
-     */
-    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
-            Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer,
-            SolverConfigOverride configOverride) {
-        return solve(problemId, (problemId_) -> problem, finalBestSolutionConsumer, null, configOverride);
+        return builder(problemId, problem)
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .solve();
     }
 
     /**
@@ -187,27 +217,10 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return solve(problemId, (problemId_) -> problem, finalBestSolutionConsumer, exceptionHandler);
-    }
-
-    /**
-     * As defined by {@link #solve(Object, Object, Consumer, BiConsumer)}.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
-     * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
-     * @param exceptionHandler sometimes null, called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @param configOverride sometimes null, includes settings that override the default configuration
-     * @return never null
-     */
-    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
-            Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
-            SolverConfigOverride configOverride) {
-        return solve(problemId, (problemId_) -> problem, finalBestSolutionConsumer, exceptionHandler, configOverride);
+        return builder(problemId, problem)
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .solve();
     }
 
     /**
@@ -233,26 +246,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return solve(problemId, problemFinder, finalBestSolutionConsumer, null, null);
-    }
-
-    /**
-     * As defined by {@link #solve(Object, Function, Consumer)}.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder never null, a function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
-     * @param configOverride sometimes null, includes settings that override the default configuration
-     * @return never null
-     */
-    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
-            Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            SolverConfigOverride configOverride) {
-        return solve(problemId, problemFinder, finalBestSolutionConsumer, null, configOverride);
+        return builder(problemId, problemFinder)
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .solve();
     }
 
     /**
@@ -272,7 +268,10 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
                                            Function<? super ProblemId_, ? extends Solution_> problemFinder,
                                            Consumer<? super Solution_> finalBestSolutionConsumer,
                                            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return solve(problemId, problemFinder, finalBestSolutionConsumer, exceptionHandler, null);
+        return builder(problemId, problemFinder)
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .solve();
     }
 
     /**
@@ -317,25 +316,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      */
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder, Consumer<? super Solution_> bestSolutionConsumer) {
-        return solveAndListen(problemId, problemFinder, bestSolutionConsumer, null, null, null);
-    }
-
-    /**
-     * As defined by {@link #solveAndListen(Object, Function, Consumer)}.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder never null, a function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
-     * @param configOverride sometimes null, includes settings that override the default configuration
-     * @return never null
-     */
-    default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
-            Function<? super ProblemId_, ? extends Solution_> problemFinder, Consumer<? super Solution_> bestSolutionConsumer,
-            SolverConfigOverride configOverride) {
-        return solveAndListen(problemId, problemFinder, bestSolutionConsumer, null, null, configOverride);
+        return builder(problemId, problemFinder, bestSolutionConsumer)
+                .solveAndListen();
     }
 
     /**
@@ -355,30 +337,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return solveAndListen(problemId, problemFinder, bestSolutionConsumer, null, exceptionHandler);
-    }
-
-    /**
-     * As defined by {@link #solveAndListen(Object, Function, Consumer, BiConsumer)}.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
-     * @param exceptionHandler sometimes null, called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @param configOverride sometimes null, includes settings that override the default configuration
-     * @return never null
-     */
-    default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
-            Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> bestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
-            SolverConfigOverride configOverride) {
-        return solveAndListen(problemId, problemFinder, bestSolutionConsumer, null, exceptionHandler,
-                configOverride);
+        return builder(problemId, problemFinder, bestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .solveAndListen();
     }
 
     /**
@@ -408,8 +369,10 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return solveAndListen(problemId, problemFinder, bestSolutionConsumer, finalBestSolutionConsumer, exceptionHandler,
-                null);
+        return builder(problemId, problemFinder, bestSolutionConsumer)
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .solveAndListen();
     }
 
     /**
