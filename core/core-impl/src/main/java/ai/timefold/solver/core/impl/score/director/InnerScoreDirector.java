@@ -509,4 +509,31 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     }
 
+    /*
+     * The following methods are copied here from ScoreDirector because they are deprecated there for removal.
+     * They will only be supported on this type, which serves for internal use only,
+     * as opposed to ScoreDirector, which is a public type.
+     * This way, we can ensure that these methods are used correctly and in a safe manner.
+     */
+
+    void beforeEntityAdded(Object entity);
+
+    void afterEntityAdded(Object entity);
+
+    void beforeEntityRemoved(Object entity);
+
+    void afterEntityRemoved(Object entity);
+
+    void beforeProblemFactAdded(Object problemFact);
+
+    void afterProblemFactAdded(Object problemFact);
+
+    void beforeProblemPropertyChanged(Object problemFactOrEntity);
+
+    void afterProblemPropertyChanged(Object problemFactOrEntity);
+
+    void beforeProblemFactRemoved(Object problemFact);
+
+    void afterProblemFactRemoved(Object problemFact);
+
 }

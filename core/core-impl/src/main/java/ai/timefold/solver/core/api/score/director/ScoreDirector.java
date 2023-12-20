@@ -24,10 +24,6 @@ public interface ScoreDirector<Solution_> {
      */
     Solution_ getWorkingSolution();
 
-    void beforeEntityAdded(Object entity);
-
-    void afterEntityAdded(Object entity);
-
     void beforeVariableChanged(Object entity, String variableName);
 
     void afterVariableChanged(Object entity, String variableName);
@@ -46,22 +42,74 @@ public interface ScoreDirector<Solution_> {
 
     void triggerVariableListeners();
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
+    void beforeEntityAdded(Object entity);
+
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
+    void afterEntityAdded(Object entity);
+
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void beforeEntityRemoved(Object entity);
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void afterEntityRemoved(Object entity);
 
-    // TODO extract this set of methods into a separate interface, only used by ProblemFactChange
-
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void beforeProblemFactAdded(Object problemFact);
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void afterProblemFactAdded(Object problemFact);
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void beforeProblemPropertyChanged(Object problemFactOrEntity);
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void afterProblemPropertyChanged(Object problemFactOrEntity);
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void beforeProblemFactRemoved(Object problemFact);
 
+    /**
+     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
+     *             Use {@link ProblemChange} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.6.0")
     void afterProblemFactRemoved(Object problemFact);
 
     /**
