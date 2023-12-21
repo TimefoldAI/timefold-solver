@@ -20,6 +20,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverConfigOverride;
+import ai.timefold.solver.core.config.solver.SolverExecutionConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import org.slf4j.Logger;
@@ -71,22 +72,22 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     @Override
     public SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
-            SolverConfigOverride configOverride) {
-        return solve(getProblemIdOrThrow(problemId), problemFinder, null, finalBestSolutionConsumer, exceptionHandler,
-                configOverride);
+            SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig) {
+
+        return solve(getProblemIdOrThrow(problemId), problemFinder, null, solverExecutionConfig.getFinalBestSolutionConsumer(),
+                solverExecutionConfig.getExceptionHandler(), new SolverConfigOverride<>(solverExecutionConfig));
     }
 
     @Override
     public SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
-            SolverConfigOverride configOverride) {
-        return solve(getProblemIdOrThrow(problemId), problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                exceptionHandler, configOverride);
+            SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig) {
+        if (solverExecutionConfig.getBestSolutionConsumer() == null) {
+            throw new IllegalStateException("The consumer bestSolutionConsumer is required.");
+        }
+        return solve(getProblemIdOrThrow(problemId), problemFinder, solverExecutionConfig.getBestSolutionConsumer(),
+                solverExecutionConfig.getFinalBestSolutionConsumer(), solverExecutionConfig.getExceptionHandler(),
+                new SolverConfigOverride<>(solverExecutionConfig));
     }
 
     protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,

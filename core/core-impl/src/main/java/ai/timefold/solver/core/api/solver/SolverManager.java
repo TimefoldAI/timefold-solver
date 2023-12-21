@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverConfigOverride;
+import ai.timefold.solver.core.config.solver.SolverExecutionConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 
@@ -100,65 +101,6 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     }
 
     // ************************************************************************
-    // Builder methods
-    // ************************************************************************
-
-    /**
-     * Creates a Builder that allows to customize and submit a planning problem to solve.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
-     * @return never null
-     */
-    default SolverJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId, Solution_ problem) {
-        return builder(problemId, (problemId_) -> problem);
-    }
-
-
-    /**
-     * As defined by {@link #builder(Object, Object)}
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *                      variables
-     * @return never null
-     */
-    SolverJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId,
-                                                    Function<? super ProblemId_, ? extends Solution_> problemFinder);
-
-    /**
-     * Creates a Builder that allows to customize and submit a planning problem to solve and listen to intermediate
-     * best solutions.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
-     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
-     * @return never null
-     */
-    default SolverAndListenerJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId, Solution_ problem,
-                                                               Consumer<? super Solution_> bestSolutionConsumer) {
-        return builder(problemId, (problemId_) -> problem, bestSolutionConsumer);
-    }
-
-    /**
-     * Creates a Builder that allows to customize and submit a planning problem to solve and listen to intermediate
-     * best solutions.
-     *
-     * @param problemId never null, a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
-     * @return never null
-     */
-    SolverAndListenerJobFactory<Solution_, ProblemId_> builder(ProblemId_ problemId,
-                                                               Function<? super ProblemId_, ? extends Solution_> problemFinder,
-                                                               Consumer<? super Solution_> bestSolutionConsumer);
-
-    // ************************************************************************
     // Interface methods
     // ************************************************************************
 
@@ -181,8 +123,21 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @return never null
      */
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem) {
-        return builder(problemId, problem)
-                .solve();
+        return solve(problemId, (problemId_) -> problem, new SolverExecutionConfig<>());
+    }
+
+    /**
+     * Submits a planning problem to solve and returns immediately.
+     * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
+     * To retrieve the final best solution, use {@link SolverJob#getFinalBestSolution()}.
+     * <p>
+     * The problem ID is generated dynamically by getting the current system time {@link System#currentTimeMillis()}.
+     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
+     * @param solverExecutionConfig never null, settings required to solve the problem
+     * @return never null
+     */
+    default SolverJob<Solution_, ProblemId_> solve(Solution_ problem, SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig) {
+        return solve((ProblemId_) Long.valueOf(System.currentTimeMillis()), (problemId_) -> problem, solverExecutionConfig);
     }
 
     /**
@@ -197,9 +152,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      */
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return builder(problemId, problem)
-                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
-                .solve();
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer);
+        return solve(problemId, (problemId_) -> problem, solverExecutionConfig);
     }
 
     /**
@@ -217,10 +172,10 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return builder(problemId, problem)
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .solve();
+                .withExceptionHandler(exceptionHandler);
+        return solve(problemId, (problemId_) -> problem, solverExecutionConfig);
     }
 
     /**
@@ -246,9 +201,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return builder(problemId, problemFinder)
-                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
-                .solve();
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer);
+        return solve(problemId, problemFinder, solverExecutionConfig);
     }
 
     /**
@@ -268,31 +223,31 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
                                            Function<? super ProblemId_, ? extends Solution_> problemFinder,
                                            Consumer<? super Solution_> finalBestSolutionConsumer,
                                            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return builder(problemId, problemFinder)
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .solve();
+                .withExceptionHandler(exceptionHandler);
+        return solve(problemId, problemFinder, solverExecutionConfig);
     }
 
     /**
-     * As defined by {@link #solve(Object, Function, Consumer, BiConsumer)}.
+     * Submits a planning problem to solve and returns immediately.
+     * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
+     * To retrieve the final best solution, use {@link SolverJob#getFinalBestSolution()}.
+     * <p>
+     * All settings needed by {@link ai.timefold.solver.core.api.solver.SolverManager} for solving a problem is given
+     * by {@link SolverExecutionConfig}.
      *
      * @param problemId never null, a ID for each planning problem. This must be unique.
      *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
      *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
      * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
      *        variables
-     * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
-     * @param exceptionHandler sometimes null, called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @param configOverride sometimes null, includes settings that override the default configuration
+     * @param solverExecutionConfig never null, settings required to solve the problem
      * @return never null
      */
     SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
                                            Function<? super ProblemId_, ? extends Solution_> problemFinder,
-                                           Consumer<? super Solution_> finalBestSolutionConsumer,
-                                           BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
-                                           SolverConfigOverride configOverride);
+                                           SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig);
 
     /**
      * Submits a planning problem to solve and returns immediately.
@@ -316,8 +271,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      */
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder, Consumer<? super Solution_> bestSolutionConsumer) {
-        return builder(problemId, problemFinder, bestSolutionConsumer)
-                .solveAndListen();
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
+                .withBestSolutionConsumer(bestSolutionConsumer);
+        return solveAndListen(problemId, problemFinder, solverExecutionConfig);
     }
 
     /**
@@ -337,9 +293,10 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return builder(problemId, problemFinder, bestSolutionConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .solveAndListen();
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
+                .withBestSolutionConsumer(bestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler);
+        return solveAndListen(problemId, problemFinder, solverExecutionConfig);
     }
 
     /**
@@ -369,10 +326,11 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return builder(problemId, problemFinder, bestSolutionConsumer)
+        SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
+                .withBestSolutionConsumer(bestSolutionConsumer)
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .solveAndListen();
+                .withExceptionHandler(exceptionHandler);
+        return solveAndListen(problemId, problemFinder, solverExecutionConfig);
     }
 
     /**
@@ -390,20 +348,12 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
      * @param problemFinder never null, function that returns a {@link PlanningSolution}, usually with uninitialized planning
      *        variables
-     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
-     * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread.
-     *        That final best solution is already consumed by the bestSolutionConsumer earlier.
-     * @param exceptionHandler sometimes null, called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @param configOverride sometimes null, includes settings that override the default configuration
+     * @param solverExecutionConfig never null, settings required to solve the problem
      * @return never null
      */
     SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
-            SolverConfigOverride configOverride);
+            SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig);
 
     /**
      * Returns if the {@link Solver} is scheduled to solve, actively solving or not.

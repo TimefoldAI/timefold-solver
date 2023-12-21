@@ -137,24 +137,23 @@ class SolverFactoryTest {
 
     @Test
     void create() {
-        { // No config override
-            SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-            SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-            Solver<TestdataSolution> solver = solverFactory.buildSolver();
-            assertThat(solver).isNotNull();
-        }
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        assertThat(solver).isNotNull();
+    }
 
-        { // Config override
-            SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-            SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-            SolverConfigOverride configOverride = mock(SolverConfigOverride.class);
-            TerminationConfig terminationConfig = new TerminationConfig();
-            terminationConfig.withSpentLimit(Duration.ofSeconds(60));
-            doReturn(terminationConfig).when(configOverride).getTerminationConfig();
-            Solver<TestdataSolution> solver = solverFactory.buildSolver(configOverride);
-            assertThat(solver).isNotNull();
-            verify(configOverride, times(1)).getTerminationConfig();
-        }
+    @Test
+    void createAndOverrideSettings() {
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        SolverConfigOverride configOverride = mock(SolverConfigOverride.class);
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.withSpentLimit(Duration.ofSeconds(60));
+        doReturn(terminationConfig).when(configOverride).getTerminationConfig();
+        Solver<TestdataSolution> solver = solverFactory.buildSolver(configOverride);
+        assertThat(solver).isNotNull();
+        verify(configOverride, times(1)).getTerminationConfig();
     }
 
     @Test

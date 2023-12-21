@@ -26,6 +26,7 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverConfigOverride;
+import ai.timefold.solver.core.config.solver.SolverExecutionConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -222,13 +223,13 @@ class SolverManagerTest {
         CountDownLatch countDownLatch = new CountDownLatch(2);
         PhaseConfig<?> customPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
                 scoreDirector -> {
-                    await().pollDelay(Duration.ofSeconds(5L)).until(() -> true);
+                    await().pollDelay(Duration.ofMillis(250L)).until(() -> true);
                     countDownLatch.countDown();
                 });
 
-        // Default spent limit is 30s
+        // Default spent limit is 1L
         TerminationConfig terminationConfig = new TerminationConfig()
-                .withSpentLimit(Duration.ofSeconds(30));
+                .withSpentLimit(Duration.ofSeconds(1L));
         SolverConfig solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(customPhaseConfig, customPhaseConfig) // Two steps that sleeps 5s each
@@ -240,31 +241,25 @@ class SolverManagerTest {
 
         BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
         Consumer<Object> finalBestSolutionConsumer = o -> {
-            await().pollDelay(Duration.ofSeconds(1L)).until(() -> true);
-                countDownLatch.countDown();
+            await().pollDelay(Duration.ofMillis(100L)).until(() -> true);
+            countDownLatch.countDown();
         };
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
+        TestdataUnannotatedExtendedSolution problem = new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
 
-        // Override spent time is 5s
-        TerminationConfig overrideTerminationConfig = new TerminationConfig()
-                .withSpentLimit(Duration.ofSeconds(5));
-        SolverConfigOverride configOverride = new SolverConfigOverride()
-                .withTerminationConfig(overrideTerminationConfig);
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solve(1L, problemFinder, finalBestSolutionConsumer,
-                exceptionHandler, configOverride);
-        // The updated execution time is 5 seconds. The solver executes only one custom step and ended afterwards
+        // Override spent time is 200ms
+        SolverExecutionConfig solverExecutionConfig = new SolverExecutionConfig()
+                .withTimeSpentTermination(Duration.ofMillis(200L))
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler);
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solve(problem, solverExecutionConfig);
+        // The updated execution time is 350ms. The solver executes only one custom step and ended afterward
         countDownLatch.await();
         assertEquals(NOT_SOLVING, solverJob.getSolverStatus());
 
-        // Override spent time is 40s
-        TerminationConfig overrideTerminationConfig2 = new TerminationConfig()
-                .withSpentLimit(Duration.ofSeconds(40));
-        SolverConfigOverride configOverride2 = new SolverConfigOverride()
-                .withTerminationConfig(overrideTerminationConfig2);
-        SolverJob<TestdataSolution, Long> solverJob2 = solverManager.solve(1L, problemFinder, finalBestSolutionConsumer,
-                exceptionHandler, configOverride2);
-        // The updated execution time is now 40 seconds. The solver will attempt to execute all custom steps and remain
+        // Override spent time is 2s
+        solverExecutionConfig.withTimeSpentTermination(Duration.ofSeconds(2L));
+        SolverJob<TestdataSolution, Long> solverJob2 = solverManager.solve(problem, solverExecutionConfig);
+        // The updated execution time is now 2s. The solver will attempt to execute all custom steps and remain
         // active after the first custom step
         countDownLatch.await();
         assertNotEquals(NOT_SOLVING, solverJob2.getSolverStatus());
@@ -509,7 +504,7 @@ class SolverManagerTest {
                         (finalBestSolution) -> {
                             consumedBestSolutions.add(finalBestSolution);
                             finalBestSolutionConsumed.countDown();
-                        }, null, null));
+                        }, null));
             }
             solutionMap.put(id, consumedBestSolutions);
         }

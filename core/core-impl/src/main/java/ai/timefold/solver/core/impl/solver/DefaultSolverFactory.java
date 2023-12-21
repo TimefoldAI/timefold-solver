@@ -7,7 +7,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -48,11 +47,11 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
-
+import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.micrometer.core.instrument.Tags;
+import static java.util.Optional.ofNullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -83,7 +82,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     @Override
-    public Solver<Solution_> buildSolver(SolverConfigOverride configOverride) {
+    public Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride) {
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
         var solverScope = new SolverScope<Solution_>();
@@ -112,7 +111,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setScoreDirector(innerScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(innerScoreDirector));
 
-        var moveThreadCount = resolveMoveThreadCount(true);
+        var moveThreadCount = resolveMoveThreadCount(true, configOverride);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
         var configPolicy = new HeuristicConfigPolicy.Builder<>(
                 environmentMode,
@@ -122,7 +121,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 scoreDirectorFactory.getInitializingScoreTrend(),
                 solutionDescriptor,
                 ClassInstanceCache.create()).build();
-        var terminationConfig = Optional.ofNullable(configOverride).map(SolverConfigOverride::getTerminationConfig)
+        var terminationConfig = ofNullable(configOverride).map(SolverConfigOverride::getTerminationConfig)
                 .orElseGet(() -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = TerminationFactory.<Solution_> create(terminationConfig)
@@ -135,9 +134,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
-    public Integer resolveMoveThreadCount(boolean enforceMaximum) {
-        var maybeCount =
-                new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount(), enforceMaximum);
+    public Integer resolveMoveThreadCount(boolean enforceMaximum, SolverConfigOverride<Solution_> configOverride) {
+        var moveThreadCount = ofNullable(configOverride.getMoveThreadCount())
+                .orElseGet(solverConfig::getMoveThreadCount);
+        var maybeCount = new MoveThreadCountResolver().resolveMoveThreadCount(moveThreadCount, enforceMaximum);
         if (maybeCount.isPresent()) {
             return maybeCount.getAsInt();
         } else {
