@@ -23,8 +23,8 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-
 import ai.timefold.solver.core.impl.solver.termination.Termination;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

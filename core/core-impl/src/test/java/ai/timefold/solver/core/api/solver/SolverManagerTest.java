@@ -238,9 +238,9 @@ class SolverManagerTest {
         SolverScope solverScope = mock(SolverScope.class);
         doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
-        DefaultSolverJob<TestdataSolution, Long> solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(problem, new SolverExecutionConfig<>());
+        DefaultSolverJob<TestdataSolution, Long> solverJob =
+                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(problem, new SolverExecutionConfig<>());
         assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
-
 
         // Spent limit overridden by 100L
         SolverExecutionConfig solverExecutionConfig = new SolverExecutionConfig()
