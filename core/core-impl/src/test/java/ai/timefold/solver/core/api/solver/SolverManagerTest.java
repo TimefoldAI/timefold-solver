@@ -1,5 +1,17 @@
 package ai.timefold.solver.core.api.solver;
 
+import static ai.timefold.solver.core.api.solver.SolverStatus.NOT_SOLVING;
+import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_ACTIVE;
+import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_SCHEDULED;
+import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertSolutionInitialized;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +37,6 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.SolverExecutionConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -34,22 +45,11 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
-import static ai.timefold.solver.core.api.solver.SolverStatus.NOT_SOLVING;
-import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_ACTIVE;
-import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_SCHEDULED;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertSolutionInitialized;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class SolverManagerTest {
 
@@ -244,7 +244,8 @@ class SolverManagerTest {
             await().pollDelay(Duration.ofMillis(100L)).until(() -> true);
             countDownLatch.countDown();
         };
-        TestdataUnannotatedExtendedSolution problem = new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
+        TestdataUnannotatedExtendedSolution problem =
+                new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
 
         // Override spent time is 200ms
         SolverExecutionConfig solverExecutionConfig = new SolverExecutionConfig()

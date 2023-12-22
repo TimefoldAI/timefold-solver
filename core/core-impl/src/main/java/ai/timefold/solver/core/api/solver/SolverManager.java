@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.SolverExecutionConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
@@ -132,11 +131,13 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * To retrieve the final best solution, use {@link SolverJob#getFinalBestSolution()}.
      * <p>
      * The problem ID is generated dynamically by getting the current system time {@link System#currentTimeMillis()}.
+     *
      * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
      * @param solverExecutionConfig never null, settings required to solve the problem
      * @return never null
      */
-    default SolverJob<Solution_, ProblemId_> solve(Solution_ problem, SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig) {
+    default SolverJob<Solution_, ProblemId_> solve(Solution_ problem,
+            SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig) {
         return solve((ProblemId_) Long.valueOf(System.currentTimeMillis()), (problemId_) -> problem, solverExecutionConfig);
     }
 
@@ -220,9 +221,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @return never null
      */
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
-                                           Function<? super ProblemId_, ? extends Solution_> problemFinder,
-                                           Consumer<? super Solution_> finalBestSolutionConsumer,
-                                           BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+            Function<? super ProblemId_, ? extends Solution_> problemFinder,
+            Consumer<? super Solution_> finalBestSolutionConsumer,
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig = new SolverExecutionConfig<Solution_, ProblemId_>()
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
                 .withExceptionHandler(exceptionHandler);
@@ -246,8 +247,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @return never null
      */
     SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
-                                           Function<? super ProblemId_, ? extends Solution_> problemFinder,
-                                           SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig);
+            Function<? super ProblemId_, ? extends Solution_> problemFinder,
+            SolverExecutionConfig<Solution_, ProblemId_> solverExecutionConfig);
 
     /**
      * Submits a planning problem to solve and returns immediately.

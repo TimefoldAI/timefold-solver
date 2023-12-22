@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
 /**
- * Settings used by {@link ai.timefold.solver.core.api.solver.SolverManager}  to submit and solve problems. It also
+ * Settings used by {@link ai.timefold.solver.core.api.solver.SolverManager} to submit and solve problems. It also
  * includes settings to override default {@link ai.timefold.solver.core.api.solver.Solver} configuration.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -62,9 +62,11 @@ public class SolverExecutionConfig<Solution_, ProblemId_> {
     // ************************************************************************
 
     /**
-     * It is never null for {@link ai.timefold.solver.core.api.solver.SolutionManager#}, called multiple times, on a consumer thread
+     * It is never null for {@link ai.timefold.solver.core.api.solver.SolutionManager}, called multiple times, on a consumer
+     * thread
      */
-    public SolverExecutionConfig<Solution_, ProblemId_> withBestSolutionConsumer(Consumer<? super Solution_> bestSolutionConsumer) {
+    public SolverExecutionConfig<Solution_, ProblemId_>
+            withBestSolutionConsumer(Consumer<? super Solution_> bestSolutionConsumer) {
         this.bestSolutionConsumer = bestSolutionConsumer;
         return this;
     }
@@ -72,12 +74,14 @@ public class SolverExecutionConfig<Solution_, ProblemId_> {
     /**
      * May be null, called only once, at the end, on a consumer thread.
      */
-    public SolverExecutionConfig<Solution_, ProblemId_> withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer) {
+    public SolverExecutionConfig<Solution_, ProblemId_>
+            withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer) {
         this.finalBestSolutionConsumer = finalBestSolutionConsumer;
         return this;
     }
 
-    public SolverExecutionConfig<Solution_, ProblemId_> withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+    public SolverExecutionConfig<Solution_, ProblemId_>
+            withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
         return this;
     }
