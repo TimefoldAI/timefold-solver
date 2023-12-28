@@ -42,11 +42,11 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
             combinedList = new MultipleDelegateList<>();
         } else if (postShiftAmount != 0) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).getCombinedList().size());
-            combinedList = equivalent2Opts.get(0).getCombinedList();
+            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).combinedList().size());
+            combinedList = equivalent2Opts.get(0).combinedList();
         } else {
             KOptAffectedElements currentAffectedElements = equivalent2Opts.get(0).getAffectedElements();
-            combinedList = equivalent2Opts.get(0).getCombinedList();
+            combinedList = equivalent2Opts.get(0).combinedList();
             for (int i = 1; i < equivalent2Opts.size(); i++) {
                 currentAffectedElements = currentAffectedElements.merge(equivalent2Opts.get(i).getAffectedElements());
             }
@@ -75,7 +75,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         if (equivalent2Opts.isEmpty()) {
             affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
         } else if (postShiftAmount != 0) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).getCombinedList().size());
+            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).combinedList().size());
         } else {
             KOptAffectedElements currentAffectedElements = equivalent2Opts.get(0).getAffectedElements();
             for (int i = 1; i < equivalent2Opts.size(); i++) {
@@ -175,11 +175,11 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     public Collection<?> getPlanningValues() {
         List<Object> out = new ArrayList<>();
 
-        if (affectedElementsInfo.getWrappedStartIndex() != -1) {
-            out.addAll(combinedList.subList(affectedElementsInfo.getWrappedStartIndex(), combinedList.size()));
-            out.addAll(combinedList.subList(0, affectedElementsInfo.getWrappedEndIndex()));
+        if (affectedElementsInfo.wrappedStartIndex() != -1) {
+            out.addAll(combinedList.subList(affectedElementsInfo.wrappedStartIndex(), combinedList.size()));
+            out.addAll(combinedList.subList(0, affectedElementsInfo.wrappedEndIndex()));
         }
-        for (Pair<Integer, Integer> affectedInterval : affectedElementsInfo.getAffectedMiddleRangeList()) {
+        for (Pair<Integer, Integer> affectedInterval : affectedElementsInfo.affectedMiddleRangeList()) {
             out.addAll(combinedList.subList(affectedInterval.key(), affectedInterval.value()));
         }
 
@@ -216,7 +216,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             this.descriptor = descriptor;
             this.equivalent2Opts = equivalent2Opts;
             this.preShiftAmount = preShiftAmount;
-            this.combinedList = equivalent2Opts.get(0).getCombinedList();
+            this.combinedList = equivalent2Opts.get(0).combinedList();
             this.newEndIndices = newEndIndices;
             this.originalEntities = originalEntities;
         }

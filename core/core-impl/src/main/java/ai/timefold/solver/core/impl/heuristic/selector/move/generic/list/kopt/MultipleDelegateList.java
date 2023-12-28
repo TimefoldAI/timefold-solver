@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
  *
  * @param <T>
  */
-public final class MultipleDelegateList<T> implements List<T>, RandomAccess {
+final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     final List<T>[] delegates;
     final int[] delegateSizes;
     final int[] offsets;

@@ -1,7 +1,6 @@
 /**
  * Contains classes relevant to K-Opt moves.
- * A K-Opt move is a move that removes K edges,
- * and add K new edges that are composed of the removal edges endpoints.
+ * A K-Opt move is a move that removes K edges and adds K new edges that are composed of the removal edges endpoints.
  * The classes in this package implement the algorithms described in
  * <a href="http://webhotel4.ruc.dk/~keld/research/LKH/KoptReport.pdf">
  * "An Effective Implementation of K-opt Moves for the Lin-Kernighan TSP Heuristic"
@@ -9,7 +8,7 @@
  * <br />
  * The paper changes the problem of performing a K-Opt
  * to the problem of transforming a signed permutation that consists of a single K-cycle to the identity permutation.
- * A signed permutation is a permutation where each element have a sign.
+ * A signed permutation is a permutation where each element has a sign.
  * Let the removed edges be (t_1, t_2), (t_3, t_4), ..., (t_(2k - 1), t_2k).
  * Let s_1, s_2, ..., s_k be segments from the original tour that starts and end at two different endpoints of two different
  * removed edges.
@@ -63,8 +62,8 @@
  * <li>(+1, +2, +3, +4)</li>
  * </ol>
  *
- * Each signed reversal directly corresponds to a 2-opt move (which reverses a sub-path of the tour). For the
- * above signed reversals, they are:
+ * Each signed reversal directly corresponds to a 2-opt move (which reverses a sub-path of the tour).
+ * For the signed reversals above, they are:
  *
  * <ol>
  * <li>2-opt(t2, t1, t8, t7)</li>

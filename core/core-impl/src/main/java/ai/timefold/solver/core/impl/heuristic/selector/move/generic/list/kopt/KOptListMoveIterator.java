@@ -225,8 +225,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         int[] removedEdgeIndexToTourOrder = descriptor.removedEdgeIndexToTourOrder();
         Iterator<Node_> valueIterator = getValuesOnSelectedEntitiesIterator(oldRemovedEdges);
         KOptCycle cycleInfo = KOptUtils.getCyclesForPermutation(descriptor);
-        int cycleCount = cycleInfo.cycleCount;
-        int[] cycle = cycleInfo.indexToCycleIdentifier;
+        int cycleCount = cycleInfo.cycleCount();
+        int[] cycle = cycleInfo.indexToCycleIdentifier();
 
         if (cycleCount == 1 || cycleCount > maxCyclesPatchedInInfeasibleMove) {
             return descriptor;

@@ -1,49 +1,21 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 
-final class KOptAffectedElements {
-    private final int wrappedStartIndex;
-    private final int wrappedEndIndex;
-    private final List<Pair<Integer, Integer>> affectedMiddleRangeList;
-
-    private KOptAffectedElements(int wrappedStartIndex, int wrappedEndIndex,
-            List<Pair<Integer, Integer>> affectedMiddleRangeList) {
-        this.wrappedStartIndex = wrappedStartIndex;
-        this.wrappedEndIndex = wrappedEndIndex;
-        this.affectedMiddleRangeList = affectedMiddleRangeList;
-    }
+record KOptAffectedElements(int wrappedStartIndex, int wrappedEndIndex, List<Pair<Integer, Integer>> affectedMiddleRangeList) {
 
     static KOptAffectedElements forMiddleRange(int startInclusive, int endExclusive) {
         return new KOptAffectedElements(-1, -1, List.of(new Pair<>(startInclusive, endExclusive)));
     }
 
     static KOptAffectedElements forWrappedRange(int startInclusive, int endExclusive) {
-        return new KOptAffectedElements(startInclusive, endExclusive, List.of());
+        return new KOptAffectedElements(startInclusive, endExclusive, Collections.emptyList());
     }
 
-    // ***********************************************
-    // Simple getters
-    // ***********************************************
-
-    public int getWrappedStartIndex() {
-        return wrappedStartIndex;
-    }
-
-    public int getWrappedEndIndex() {
-        return wrappedEndIndex;
-    }
-
-    public List<Pair<Integer, Integer>> getAffectedMiddleRangeList() {
-        return affectedMiddleRangeList;
-    }
-
-    // ***********************************************
-    // Complex methods
-    // ***********************************************
     public KOptAffectedElements merge(KOptAffectedElements other) {
         int newWrappedStartIndex = this.wrappedStartIndex;
         int newWrappedEndIndex = this.wrappedEndIndex;
@@ -87,12 +59,4 @@ final class KOptAffectedElements {
         return new KOptAffectedElements(newWrappedStartIndex, newWrappedEndIndex, newAffectedMiddleRangeList);
     }
 
-    @Override
-    public String toString() {
-        return "KOptAffectedElementsInfo{" +
-                "wrappedStartIndex=" + wrappedStartIndex +
-                ", wrappedEndIndex=" + wrappedEndIndex +
-                ", affectedMiddleRangeList=" + affectedMiddleRangeList +
-                '}';
-    }
 }

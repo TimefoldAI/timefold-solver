@@ -15,29 +15,11 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
  * For instance, given [0, 1, 2, 3, 4, 5, 6], fromIndexInclusive = 5, toIndexExclusive = 2,
  * the list after the move would be [6, 5, 2, 3, 4, 1, 0] (and not [0, 6, 5, 2, 3, 4, 1]).
  */
-final class FlipSublistAction {
-
-    private final ListVariableDescriptor<?> variableDescriptor;
-
-    private final MultipleDelegateList<Object> combinedList;
-
-    private final int fromIndexInclusive;
-    private final int toIndexExclusive;
-
-    public FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
-            MultipleDelegateList<Object> combinedList,
-            int fromIndexInclusive, int toIndexExclusive) {
-        this.variableDescriptor = variableDescriptor;
-        this.combinedList = combinedList;
-        this.fromIndexInclusive = fromIndexInclusive;
-        this.toIndexExclusive = toIndexExclusive;
-    }
+record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor, MultipleDelegateList<Object> combinedList,
+        int fromIndexInclusive, int toIndexExclusive) {
 
     FlipSublistAction createUndoMove() {
-        return new FlipSublistAction(variableDescriptor,
-                combinedList,
-                fromIndexInclusive,
-                toIndexExclusive);
+        return new FlipSublistAction(variableDescriptor, combinedList, fromIndexInclusive, toIndexExclusive);
     }
 
     public KOptAffectedElements getAffectedElements() {
@@ -46,10 +28,6 @@ final class FlipSublistAction {
         } else {
             return KOptAffectedElements.forWrappedRange(fromIndexInclusive, toIndexExclusive);
         }
-    }
-
-    MultipleDelegateList<Object> getCombinedList() {
-        return combinedList;
     }
 
     void doMoveOnGenuineVariables() {
