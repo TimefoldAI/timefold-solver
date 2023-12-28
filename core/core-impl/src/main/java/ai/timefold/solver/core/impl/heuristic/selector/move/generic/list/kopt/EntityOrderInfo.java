@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 
-record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
+record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) { // FIXME Chris hint.
 
     public static <Node_> EntityOrderInfo of(Node_[] pickedValues, SingletonInverseVariableSupply inverseVariableSupply,
             ListVariableDescriptor<?> listVariableDescriptor) {

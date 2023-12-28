@@ -90,7 +90,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     @SuppressWarnings("unchecked")
-    private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) {
+    private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) { // FIXME Chris' hint.
         EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
         IntStream pickedEntityIndexStream = workingRandom.ints(0, entityOrderInfo.entities().length);
         return (Iterator<Node_>) pickedEntityIndexStream
