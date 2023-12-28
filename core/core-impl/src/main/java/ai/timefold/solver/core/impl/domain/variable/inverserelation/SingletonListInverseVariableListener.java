@@ -24,11 +24,12 @@ public class SingletonListInverseVariableListener<Solution_>
         if (entityDescriptor.supportsPinning()) {
             // Required for variable pinning, otherwise pinned values have their inverse set to null.
             entityDescriptor.getSolutionDescriptor()
-                    .visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(), entityDescriptor.getEntityClass(), entity -> {
-                        beforeEntityAdded(scoreDirector, entity);
-                        afterEntityAdded(scoreDirector, entity);
-                        return false;
-                    });
+                    .visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(), entityDescriptor.getEntityClass(),
+                            entity -> {
+                                beforeEntityAdded(scoreDirector, entity);
+                                afterEntityAdded(scoreDirector, entity);
+                                return false;
+                            });
         }
     }
 

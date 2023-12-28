@@ -10,14 +10,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
@@ -162,10 +163,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     /**
      * Note: resetting the working solution does NOT substitute the calls to before/after methods of
-     * the {@link ai.timefold.solver.core.api.solver.change.ProblemChangeDirector} during
-     * {@link ai.timefold.solver.core.api.solver.change.ProblemChange problem changes},
-     * as these calls are propagated to {@link VariableListener variable listeners}, which update shadow variables
-     * in the {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution working solution} to keep it consistent.
+     * the {@link ProblemChangeDirector} during {@link ProblemChange problem changes},
+     * as these calls are propagated to {@link VariableListener variable listeners},
+     * which update shadow variables in the {@link PlanningSolution working solution} to keep it consistent.
      */
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
@@ -207,28 +207,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void assertNonNullPlanningIds() {
-        getSolutionDescriptor().visitAll(workingSolution, this::assertNonNullPlanningId);
-    }
-
-    public void assertNonNullPlanningId(Object fact) {
-        Class<?> factClass = fact.getClass();
-        MemberAccessor planningIdAccessor = getSolutionDescriptor().getPlanningIdAccessor(factClass);
-        if (planningIdAccessor == null) { // There is no planning ID annotation.
-            return;
-        }
-        Object id = planningIdAccessor.executeGetter(fact);
-        if (id == null) { // Fail fast as planning ID is null.
-            throw new IllegalStateException("The planningId (" + id + ") of the member (" + planningIdAccessor
-                    + ") of the class (" + factClass + ") on object (" + fact + ") must not be null.\n"
-                    + "Maybe initialize the planningId of the class (" + planningIdAccessor.getDeclaringClass()
-                    + ") instance (" + fact + ") before solving.\n" +
-                    "Maybe remove the @" + PlanningId.class.getSimpleName() + " annotation.");
-        }
-    }
-
-    @Override
-    public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+    public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
         if (trackingWorkingSolution) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
@@ -240,27 +219,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
             assertWorkingScoreFromScratch(score, move);
+        }
+        if (moveProcessor != null) {
+            moveProcessor.accept(score);
         }
         undoMove.doMoveOnly(this);
         return score;
-    }
-
-    @Override
-    public void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
-        if (trackingWorkingSolution) {
-            solutionTracker.setBeforeMoveSolution(workingSolution);
-        }
-        Move<Solution_> undoMove = move.doMove(this);
-        Score_ score = calculateScore();
-        if (assertMoveScoreFromScratch) {
-            undoMoveText = undoMove.toString();
-            if (trackingWorkingSolution) {
-                solutionTracker.setAfterMoveSolution(workingSolution);
-            }
-            assertWorkingScoreFromScratch(score, move);
-        }
-        moveProcessor.accept(score);
-        undoMove.doMoveOnly(this);
     }
 
     @Override
