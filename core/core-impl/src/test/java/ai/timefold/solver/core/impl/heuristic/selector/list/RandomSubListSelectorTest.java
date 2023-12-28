@@ -17,6 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.util.List;
+
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -75,8 +77,12 @@ class RandomSubListSelectorTest {
         var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v1, v2, v3, v4);
         a.setPlanningPinToIndex(1); // Ignore v1.
         var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(v1, v2, v3, v4));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var minimumSubListSize = 1;
         var maximumSubListSize = Integer.MAX_VALUE;

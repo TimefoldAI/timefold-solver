@@ -9,6 +9,8 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAll
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
 
+import java.util.List;
+
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -67,9 +69,13 @@ class ListSwapMoveSelectorTest {
         a.setPlanningPinToIndex(1); // Ignore v2
         var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
         b.setPinned(true); // Ignore entirely.
-        TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
         var listVariableDescriptor = getPinnedListVariableDescriptor(scoreDirector);
         var moveSelector = new ListSwapMoveSelector<>(
                 mockEntityIndependentValueSelector(listVariableDescriptor, v3, v1, v2),
@@ -134,9 +140,13 @@ class ListSwapMoveSelectorTest {
         a.setPlanningPinToIndex(1); // Ignore v1
         var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
         b.setPinned(true); // Ignore entirely.
-        TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
         var listVariableDescriptor = getPinnedListVariableDescriptor(scoreDirector);
         var moveSelector = new ListSwapMoveSelector<>(
                 // Value selectors are longer than the number of expected codes because they're expected

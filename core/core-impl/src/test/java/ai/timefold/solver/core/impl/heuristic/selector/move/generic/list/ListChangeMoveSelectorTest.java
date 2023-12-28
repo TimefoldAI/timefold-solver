@@ -13,6 +13,8 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAll
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
 
+import java.util.List;
+
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -91,8 +93,12 @@ class ListChangeMoveSelectorTest {
         var b = TestdataPinnedWithIndexListEntity.createWithValues("B", v4);
         b.setPinned(true); // Ignore entirely.
         var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3, v4));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v4, v3, v1, v2),
@@ -177,8 +183,12 @@ class ListChangeMoveSelectorTest {
         var b = TestdataPinnedWithIndexListEntity.createWithValues("B", v4);
         b.setPinned(true); // Ignore entirely.
         var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3, v4));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var moveSelector = new ListChangeMoveSelector<>(
                 mockNeverEndingEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v2, v1, v4, v3,
@@ -271,8 +281,12 @@ class ListChangeMoveSelectorTest {
         b.setPinned(true); // Ignore entirely.
         var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v5);
         c.setPlanningPinToIndex(1); // Ignore v5.
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3, v4, v5));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v3, v1, v4, v2, v5),

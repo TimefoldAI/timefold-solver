@@ -19,6 +19,20 @@ public class SingletonListInverseVariableListener<Solution_>
     }
 
     @Override
+    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+        var entityDescriptor = sourceVariableDescriptor.getEntityDescriptor();
+        if (entityDescriptor.supportsPinning()) {
+            // Required for variable pinning, otherwise pinned values have their inverse set to null.
+            entityDescriptor.getSolutionDescriptor()
+                    .visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(), entityDescriptor.getEntityClass(), entity -> {
+                        beforeEntityAdded(scoreDirector, entity);
+                        afterEntityAdded(scoreDirector, entity);
+                        return false;
+                    });
+        }
+    }
+
+    @Override
     public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
         // Do nothing
     }
