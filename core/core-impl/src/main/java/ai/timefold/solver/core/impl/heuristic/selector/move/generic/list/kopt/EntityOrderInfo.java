@@ -2,26 +2,30 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import java.util.Arrays;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 
-record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) { // FIXME Chris hint.
+record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
 
     public static <Node_> EntityOrderInfo of(Node_[] pickedValues, SingletonInverseVariableSupply inverseVariableSupply,
             ListVariableDescriptor<?> listVariableDescriptor) {
         var entityToEntityIndex = new IdentityHashMap<Object, Integer>();
         for (int i = 1; i < pickedValues.length && pickedValues[i] != null; i++) {
-            entityToEntityIndex.computeIfAbsent(inverseVariableSupply.getInverseSingleton(pickedValues[i]),
-                    entity -> entityToEntityIndex.size());
+            var value = pickedValues[i];
+            var entity = inverseVariableSupply.getInverseSingleton(value);
+            if (!listVariableDescriptor.getEntityDescriptor().isMovable(null, entity)) {
+                throw new IllegalStateException("Impossible state: immovable entity (%s) picked through value (%s)."
+                        .formatted(entity, value));
+            }
+            entityToEntityIndex.computeIfAbsent(entity, __ -> entityToEntityIndex.size());
         }
         var entities = new Object[entityToEntityIndex.size()];
         var offsets = new int[entities.length];
-        for (var entry : entityToEntityIndex.entrySet()) {
-            entities[entry.getValue()] = entry.getKey();
+        for (var entityAndIndex : entityToEntityIndex.entrySet()) {
+            entities[entityAndIndex.getValue()] = entityAndIndex.getKey();
         }
         for (int i = 1; i < offsets.length; i++) {
             offsets[i] = offsets[i - 1] + listVariableDescriptor.getListSize(entities[i - 1]);
@@ -50,12 +54,16 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     @SuppressWarnings("unchecked")
     public <Node_> Node_ successor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
             IndexVariableSupply indexVariableSupply, SingletonInverseVariableSupply inverseVariableSupply) {
-        Object entity = inverseVariableSupply.getInverseSingleton(object);
-        int indexInEntityList = indexVariableSupply.getIndex(object);
-        List<Object> listVariable = listVariableDescriptor.getListVariable(entity);
+        var entity = inverseVariableSupply.getInverseSingleton(object);
+        var indexInEntityList = indexVariableSupply.getIndex(object);
+        var listVariable = listVariableDescriptor.getListVariable(entity);
         if (indexInEntityList == listVariable.size() - 1) {
-            int nextEntityIndex = (entityToEntityIndex.get(entity) + 1) % entities.length;
-            return (Node_) listVariableDescriptor.getListVariable(entities[nextEntityIndex]).get(0);
+            var nextEntityIndex = (entityToEntityIndex.get(entity) + 1) % entities.length;
+            var nextEntity = entities[nextEntityIndex];
+            var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
+                    .extractFirstUnpinnedIndex(nextEntity);
+            return (Node_) listVariableDescriptor.getListVariable(nextEntity)
+                    .get(firstUnpinnedIndexInList);
         } else {
             return (Node_) listVariable.get(indexInEntityList + 1);
         }
@@ -64,10 +72,12 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     @SuppressWarnings("unchecked")
     public <Node_> Node_ predecessor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
             IndexVariableSupply indexVariableSupply, SingletonInverseVariableSupply inverseVariableSupply) {
-        Object entity = inverseVariableSupply.getInverseSingleton(object);
-        int indexInEntityList = indexVariableSupply.getIndex(object);
-        List<Object> listVariable = listVariableDescriptor.getListVariable(entity);
-        if (indexInEntityList == 0) {
+        var entity = inverseVariableSupply.getInverseSingleton(object);
+        var indexInEntityList = indexVariableSupply.getIndex(object);
+        var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
+                .extractFirstUnpinnedIndex(entity);
+        var listVariable = listVariableDescriptor.getListVariable(entity);
+        if (indexInEntityList == firstUnpinnedIndexInList) {
             // add entities.length to ensure modulo result is positive
             int previousEntityIndex = (entityToEntityIndex.get(entity) - 1 + entities.length) % entities.length;
             listVariable = listVariableDescriptor.getListVariable(entities[previousEntityIndex]);
