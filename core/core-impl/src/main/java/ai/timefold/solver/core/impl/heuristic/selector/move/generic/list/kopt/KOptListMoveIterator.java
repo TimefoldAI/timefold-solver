@@ -229,7 +229,6 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         return null;
     }
 
-
     KOptDescriptor<Node_> patchCycles(KOptDescriptor<Node_> descriptor, EntityOrderInfo entityOrderInfo,
             Node_[] oldRemovedEdges, int k) {
         Node_ s1, s2;

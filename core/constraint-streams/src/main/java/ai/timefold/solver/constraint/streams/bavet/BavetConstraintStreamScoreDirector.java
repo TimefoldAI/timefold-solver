@@ -24,7 +24,7 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
 
-    protected BavetConstraintSession<Score_> session;
+    private BavetConstraintSession<Score_> session;
 
     public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
             boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
@@ -37,13 +37,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
-        super.setWorkingSolution(workingSolution);
-        resetConstraintStreamingSession();
-    }
-
-    private void resetConstraintStreamingSession() {
         session = scoreDirectorFactory.newSession(constraintMatchEnabledPreference, workingSolution);
         getSolutionDescriptor().visitAll(workingSolution, session::insert);
+        super.setWorkingSolution(workingSolution);
     }
 
     @Override
@@ -161,11 +157,13 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         super.afterProblemFactRemoved(problemFact);
     }
 
-    // ************************************************************************
-    // Getters/setters
-    // ************************************************************************
-
+    /**
+     * Exposed for debugging purposes, so that we can hook into it from tests and while reproducing issues.
+     * @return null before first {@link #setWorkingSolution(Object)} or after {@link #close()}.
+     */
+    @SuppressWarnings("unused")
     public BavetConstraintSession<Score_> getSession() {
         return session;
     }
+
 }
