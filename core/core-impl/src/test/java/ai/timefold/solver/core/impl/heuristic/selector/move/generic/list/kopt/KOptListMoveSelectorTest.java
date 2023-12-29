@@ -125,6 +125,7 @@ class KOptListMoveSelectorTest {
 
     // Broken due to fail-fasts.
     // A: K-Opt goes to k=5 even if maxK=4.
+    // (Is this a correct fail-fast? I think it is, but I'm not sure.)
     // B: When A is removed, it still touches pinned indexes.
     // My guess is that B is because K-Opt tries to put things before the pin index
     // as it is joining the end of the list to the beginning.
@@ -175,6 +176,7 @@ class KOptListMoveSelectorTest {
 
     // Broken due to fail-fasts.
     // A: K-Opt goes to k=5 even if maxK=4.
+    // (Is this a correct fail-fast? I think it is, but I'm not sure.)
     // B: When A is removed, it still touches pinned indexes.
     // My guess is that B is because K-Opt tries to put things before the pin index
     // as it is joining the end of the list to the beginning.
