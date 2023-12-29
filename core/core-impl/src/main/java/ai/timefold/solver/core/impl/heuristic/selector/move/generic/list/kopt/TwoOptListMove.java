@@ -200,17 +200,6 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        if (!isEntityMovable(scoreDirector, firstEntity) || !isEntityMovable(scoreDirector, secondEntity)) {
-            // TODO remove once K-Opt is sufficiently tested.
-            throw new IllegalStateException("Impossible state: one of the entities (%s, %s) is not movable."
-                    .formatted(firstEntity, secondEntity));
-        }
-        int firstUnpinnedIndexFirstEntity = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(firstEntity);
-        if (firstEdgeEndpoint < firstUnpinnedIndexFirstEntity) {
-            // TODO remove once K-Opt is sufficiently tested.
-            throw new IllegalStateException("Impossible state: first entity (%s) edge point (%s) is before the pin (%s)."
-                    .formatted(firstEntity, firstEdgeEndpoint, firstUnpinnedIndexFirstEntity));
-        }
         if (firstEntity == secondEntity) {
             if (shift != 0) {
                 // A shift will rotate the entire list, changing the visiting order
@@ -221,12 +210,6 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             // The chain flipped by a K-Opt only changes if there are at least 2 values
             // in the chain
             return chainLength >= 2;
-        }
-        int firstUnpinnedIndexSecondEntity = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(secondEntity);
-        if (secondEdgeEndpoint < firstUnpinnedIndexSecondEntity) {
-            // TODO remove once K-Opt is sufficiently tested.
-            throw new IllegalStateException("Impossible state: second entity (%s) edge point (%s) is before the pin (%s)."
-                    .formatted(secondEdgeEndpoint, secondEdgeEndpoint, firstUnpinnedIndexSecondEntity));
         }
         // This is a tail-swap move otherwise, which always changes at least one element
         // (the element where the tail begins for each entity)

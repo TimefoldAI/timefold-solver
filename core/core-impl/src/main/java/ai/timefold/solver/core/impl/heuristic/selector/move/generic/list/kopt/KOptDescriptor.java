@@ -60,7 +60,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      *        argument is between its first and last argument when the tour is
      *        taken in the successor direction.
      */
-    public KOptDescriptor(
+    KOptDescriptor(
             Node_[] removedEdges,
             Function<Node_, Node_> endpointToSuccessorFunction,
             TriPredicate<Node_, Node_, Node_> betweenPredicate) {
@@ -78,7 +78,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      *        argument is between its first and last argument when the tour is
      *        taken in the successor direction.
      */
-    public KOptDescriptor(
+    KOptDescriptor(
             Node_[] removedEdges,
             int[] addedEdgeToOtherEndpoint,
             Function<Node_, Node_> endpointToSuccessorFunction,
@@ -281,10 +281,20 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * Return true if and only if performing the K-opt move described by this {@link KOptDescriptor} will result in a
      * single cycle.
      *
+     * @param minK
+     * @param maxK
      * @return true if and only if performing the K-opt move described by this {@link KOptDescriptor} will result in a
      *         single cycle, false otherwise.
      */
-    public boolean isFeasible() {
+    public boolean isFeasible(int minK, int maxK) {
+        if (k < minK || k > maxK) {
+            throw new IllegalStateException("Impossible state: The k-opt move k-value (%d) is not in the range [%d, %d]."
+                    .formatted(k, minK, maxK));
+        }
+        return isFeasible();
+    }
+
+    private boolean isFeasible() {
         int count = 0;
         int currentEndpoint = 2 * k;
 

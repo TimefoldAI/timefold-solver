@@ -946,10 +946,11 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class,
                         TestdataPinnedListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedListSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
-        solution = solver.solve(solution);
+        solution = solver.solve(updateSolution(solverFactory, solution));
 
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
@@ -959,6 +960,12 @@ class DefaultSolverTest {
                 .mapToInt(e -> e.getValueList().size())
                 .sum();
         assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    private static <Solution_> Solution_ updateSolution(SolverFactory<Solution_> solverFactory, Solution_ solution) {
+        SolutionManager<Solution_, ?> solutionManager = SolutionManager.create(solverFactory);
+        solutionManager.update(solution);
+        return solution;
     }
 
     @Test
@@ -974,10 +981,11 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class,
                         TestdataPinnedListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedListSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
-        solution = solver.solve(solution);
+        solution = solver.solve(updateSolution(solverFactory, solution));
 
         assertThat(solution).isNotNull();
         // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.
@@ -1007,16 +1015,17 @@ class DefaultSolverTest {
         var partiallyPinnedValue2 = solution.getValueList().get(2);
         partiallyPinnedList.add(partiallyPinnedValue1);
         partiallyPinnedList.add(partiallyPinnedValue2);
-        partiallyPinnedEntity.setPlanningPinToIndex(0); // The first value is pinned.
+        partiallyPinnedEntity.setPlanningPinToIndex(1); // The first value is pinned.
         partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
 
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
                         TestdataPinnedWithIndexListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
-        solution = solver.solve(solution);
+        solution = solver.solve(updateSolution(solverFactory, solution));
 
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
@@ -1047,16 +1056,17 @@ class DefaultSolverTest {
         var partiallyPinnedValue2 = solution.getValueList().get(2);
         partiallyPinnedList.add(partiallyPinnedValue1);
         partiallyPinnedList.add(partiallyPinnedValue2);
-        partiallyPinnedEntity.setPlanningPinToIndex(0); // The first value is pinned.
+        partiallyPinnedEntity.setPlanningPinToIndex(1); // The first value is pinned.
         partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
 
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
                         TestdataPinnedWithIndexListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
         var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
-        solution = solver.solve(solution);
+        solution = solver.solve(updateSolution(solverFactory, solution));
 
         assertThat(solution).isNotNull();
         // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.

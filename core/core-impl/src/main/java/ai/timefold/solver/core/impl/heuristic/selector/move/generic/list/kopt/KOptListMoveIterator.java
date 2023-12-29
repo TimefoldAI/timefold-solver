@@ -200,7 +200,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             if (pickedSoFar < k) {
                 KOptDescriptor<Node_> descriptor = pickKOptMoveRec(valueIterator, newEntityOrderInfo, pickedValues,
                         pickedSoFar + 1, k, canSelectNewEntities);
-                if (descriptor != null && descriptor.isFeasible()) {
+                if (descriptor != null && descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 }
             } else {
@@ -213,14 +213,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                                 listVariableDescriptor,
                                 inverseVariableSupply,
                                 indexVariableSupply));
-                if (descriptor.isFeasible()) {
+                if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 } else {
                     descriptor = patchCycles(
                             descriptor,
                             newEntityOrderInfo, pickedValues,
                             pickedSoFar);
-                    if (descriptor.isFeasible()) {
+                    if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                         return descriptor;
                     }
                 }
@@ -228,6 +228,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         }
         return null;
     }
+
 
     KOptDescriptor<Node_> patchCycles(KOptDescriptor<Node_> descriptor, EntityOrderInfo entityOrderInfo,
             Node_[] oldRemovedEdges, int k) {
@@ -265,7 +266,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                     KOptDescriptor<Node_> newMove = patchCyclesRec(valueIterator, descriptor, entityOrderInfo, removedEdges,
                             addedEdgeToOtherEndpoint, cycle, currentCycle,
                             k, 2, cycleCount);
-                    if (newMove.isFeasible()) {
+                    if (newMove.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                         return newMove;
                     }
                 }
@@ -325,7 +326,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                     patchCyclesRec(valueIterator, originalMove, entityOrderInfo, removedEdges, addedEdgeToOtherEndpoint, cycle,
                             currentCycle,
                             k, patchedCycleCount + 1, cycleCount - 1);
-            if (recursiveCall.isFeasible()) {
+            if (recursiveCall.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                 return recursiveCall;
             }
             for (i = 1; i <= 2 * k; i++) {
