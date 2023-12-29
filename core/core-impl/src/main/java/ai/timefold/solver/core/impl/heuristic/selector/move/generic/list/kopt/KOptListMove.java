@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.util.Pair;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -173,14 +172,14 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public Collection<?> getPlanningValues() {
-        List<Object> out = new ArrayList<>();
+        var out = new ArrayList<>();
 
         if (affectedElementsInfo.wrappedStartIndex() != -1) {
             out.addAll(combinedList.subList(affectedElementsInfo.wrappedStartIndex(), combinedList.size()));
             out.addAll(combinedList.subList(0, affectedElementsInfo.wrappedEndIndex()));
         }
-        for (Pair<Integer, Integer> affectedInterval : affectedElementsInfo.affectedMiddleRangeList()) {
-            out.addAll(combinedList.subList(affectedInterval.key(), affectedInterval.value()));
+        for (var affectedRange : affectedElementsInfo.affectedMiddleRangeList()) {
+            out.addAll(combinedList.subList(affectedRange.startInclusive(), affectedRange.endExclusive()));
         }
 
         return out;

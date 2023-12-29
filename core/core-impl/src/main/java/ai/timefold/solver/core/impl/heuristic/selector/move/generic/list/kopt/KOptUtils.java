@@ -112,11 +112,12 @@ final class KOptUtils {
             SingletonInverseVariableSupply inverseVariableSupply,
             IndexVariableSupply indexVariableSupply) {
         return (node) -> {
-            List<Node_> valueList =
-                    (List<Node_>) listVariableDescriptor.getListVariable(inverseVariableSupply.getInverseSingleton(node));
-            int index = indexVariableSupply.getIndex(node);
+            var entity = inverseVariableSupply.getInverseSingleton(node);
+            var valueList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
+            var index = indexVariableSupply.getIndex(node);
             if (index == valueList.size() - 1) {
-                return valueList.get(0);
+                var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
+                return valueList.get(firstUnpinnedIndex);
             } else {
                 return valueList.get(index + 1);
             }
