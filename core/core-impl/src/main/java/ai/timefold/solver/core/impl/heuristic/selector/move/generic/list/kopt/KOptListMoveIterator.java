@@ -2,9 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
@@ -90,15 +88,18 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     @SuppressWarnings("unchecked")
-    private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) { // FIXME Chris' hint.
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
-        IntStream pickedEntityIndexStream = workingRandom.ints(0, entityOrderInfo.entities().length);
-        return (Iterator<Node_>) pickedEntityIndexStream
+    private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) {
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
+        return (Iterator<Node_>) workingRandom.ints(0, entityOrderInfo.entities().length)
                 .mapToObj(index -> {
-                    Object entity = entityOrderInfo.entities()[index];
-                    List<Object> listVariable = listVariableDescriptor.getListVariable(entity);
-                    return listVariable.get(workingRandom.nextInt(listVariable.size()));
-                }).iterator();
+                    var entity = entityOrderInfo.entities()[index];
+                    var listVariable = listVariableDescriptor.getListVariable(entity);
+                    var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor()
+                            .extractFirstUnpinnedIndex(entity);
+                    return listVariable
+                            .get(workingRandom.nextInt(listVariable.size() - firstUnpinnedIndex) + firstUnpinnedIndex);
+                })
+                .iterator();
     }
 
     @SuppressWarnings("unchecked")
@@ -110,7 +111,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         pickedValues[1] = originIterator.next();
         int remainingAttempts = 20;
         while (remainingAttempts > 0
-                && listVariableDescriptor.getListSize(inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
+                && getEffectiveListSize(listVariableDescriptor,
+                        inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
             pickedValues[1] = originIterator.next();
             remainingAttempts--;
         }
@@ -130,6 +132,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         } else {
             return pickKOptMoveRec((Iterator<Node_>) valueSelector.iterator(), entityOrderInfo, pickedValues, 2, k, true);
         }
+    }
+
+    private static <Solution_> int getEffectiveListSize(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            Object entity) {
+        var listSize = listVariableDescriptor.getListSize(entity);
+        var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor()
+                .extractFirstUnpinnedIndex(entity);
+        return listSize - firstUnpinnedIndex;
     }
 
     private KOptDescriptor<Node_> pickKOptMoveRec(Iterator<Node_> valueIterator,
@@ -414,8 +424,13 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private boolean isNodeEndpointOfList(Object node) {
         int index = indexVariableSupply.getIndex(node);
+        int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor()
+                .extractFirstUnpinnedIndex(inverseVariableSupply.getInverseSingleton(node));
+        if (index == firstUnpinnedIndex) {
+            return true;
+        }
         int size = listVariableDescriptor.getListSize(inverseVariableSupply.getInverseSingleton(node));
-        return index == 0 || (index == size - 1);
+        return index == size - 1;
     }
 
     private Node_ getNodeSuccessor(EntityOrderInfo entityOrderInfo, Node_ node) {
