@@ -126,6 +126,8 @@ class KOptListMoveSelectorTest {
     // Broken due to fail-fasts.
     // A: K-Opt goes to k=5 even if maxK=4.
     // B: When A is removed, it still touches pinned indexes.
+    // My guess is that B is because K-Opt tries to put things before the pin index
+    // as it is joining the end of the list to the beginning.
     @Test
     void solveWithPlanningListVariablePinIndexFair() {
         var expectedEntityCount = 3;
@@ -174,6 +176,8 @@ class KOptListMoveSelectorTest {
     // Broken due to fail-fasts.
     // A: K-Opt goes to k=5 even if maxK=4.
     // B: When A is removed, it still touches pinned indexes.
+    // My guess is that B is because K-Opt tries to put things before the pin index
+    // as it is joining the end of the list to the beginning.
     @Test
     void solveWithPlanningListVariablePinIndexUnfair() {
         var expectedEntityCount = 3;
