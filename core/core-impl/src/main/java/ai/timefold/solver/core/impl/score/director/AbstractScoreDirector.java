@@ -25,6 +25,8 @@ import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -463,7 +465,26 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        // Do nothing
+        // TODO remove once K-Opt is sufficiently tested.
+        var entityDescriptor = variableDescriptor.getEntityDescriptor();
+        if (entityDescriptor.supportsPinning()) {
+            var inverseVariableDemand =
+                    variableListenerSupport.demand(new SingletonListInverseVariableDemand<>(variableDescriptor));
+            var entity = inverseVariableDemand.getInverseSingleton(element);
+            if (!entityDescriptor.isMovable(this, entity)) {
+                throw new IllegalStateException(
+                        "Impossible state: unassigning element (%s) of list variable (%s) on a pinned entity (%s)."
+                                .formatted(element, variableDescriptor, entity));
+            }
+            var indexDemand = variableListenerSupport.demand(new IndexVariableDemand<>(variableDescriptor));
+            int elementIndex = indexDemand.getIndex(element);
+            int firstUnpinnedIndex = entityDescriptor.extractFirstUnpinnedIndex(entity);
+            if (elementIndex < firstUnpinnedIndex) {
+                throw new IllegalStateException(
+                        "Impossible state: unassigning element (%s) of list variable (%s) on an entity (%s) with a starting index (%s) before the pin (%s)."
+                                .formatted(element, variableDescriptor, entity, elementIndex, firstUnpinnedIndex));
+            }
+        }
     }
 
     @Override
@@ -475,6 +496,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
+        // TODO remove once K-Opt is sufficiently tested.
+        var entityDescriptor = variableDescriptor.getEntityDescriptor();
+        if (entityDescriptor.supportsPinning()) {
+            if (!entityDescriptor.isMovable(this, entity)) {
+                throw new IllegalStateException("Impossible state: changing list variable (%s) on a pinned entity (%s)."
+                        .formatted(variableDescriptor, entity));
+            }
+            int firstUnpinnedIndex = entityDescriptor.extractFirstUnpinnedIndex(entity);
+            if (fromIndex < firstUnpinnedIndex) {
+                throw new IllegalStateException(
+                        "Impossible state: changing list variable (%s) on an entity (%s) with a starting index (%s) before the pin (%s)."
+                                .formatted(variableDescriptor, entity, fromIndex, firstUnpinnedIndex));
+            }
+        }
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 

@@ -15,10 +15,11 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
 /**
  * A 2-opt move for list variables, which takes two edges and swap their endpoints.
  * For instance, let [A, B, E, D, C, F, G, H] be the route assigned to an entity.
- * Select (B, E) and (C, F) as the edges to swap. Then the resulting route after this operation would be
- * [A, B, C, D, E, F, G, H]. The edge (B, E) became (B, C), and the edge (C, F) became (E, F)
- * (the first edge end point became the second edge start point and vice-versa). It is used to fix crossings;
- * for instance, it can change:
+ * Select (B, E) and (C, F) as the edges to swap.
+ * Then the resulting route after this operation would be [A, B, C, D, E, F, G, H].
+ * The edge (B, E) became (B, C), and the edge (C, F) became (E, F)
+ * (the first edge end point became the second edge start point and vice versa).
+ * It is used to fix crossings; for instance, it can change:
  *
  * <pre>{@code
  * ... -> A B <- ...
@@ -33,11 +34,13 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * ... <- C <- D <- ...
  * }</pre>
  *
- * Note the sub-path D...B was reversed. The 2-opt works be reversing the path between the two edges being removed.
+ * Note the sub-path D...B was reversed.
+ * The 2-opt works by reversing the path between the two edges being removed.
  * <p>
- * When the edges are assigned to different entities, it results in a tail swap.
- * For instance, let r1 = [A, B, C, D], and r2 = [E, F, G, H]. Doing a
- * 2-opt on (B, C) + (F, G) will result in r1 = [A, B, G, H] and r2 = [E, F, C, D].
+ * When the edges are assigned to different entities,
+ * it results in a tail swap.
+ * For instance, let r1 = [A, B, C, D], and r2 = [E, F, G, H].
+ * Doing a 2-opt on (B, C) + (F, G) will result in r1 = [A, B, G, H] and r2 = [E, F, C, D].
  *
  * @param <Solution_>
  */
@@ -76,7 +79,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
     }
 
-    public TwoOptListMove(ListVariableDescriptor<Solution_> variableDescriptor,
+    private TwoOptListMove(ListVariableDescriptor<Solution_> variableDescriptor,
             Object firstEntity, Object secondEntity,
             int firstEdgeEndpoint,
             int secondEdgeEndpoint,
@@ -197,6 +200,17 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
+        if (!isEntityMovable(scoreDirector, firstEntity) || !isEntityMovable(scoreDirector, secondEntity)) {
+            // TODO remove once K-Opt is sufficiently tested.
+            throw new IllegalStateException("Impossible state: one of the entities (%s, %s) is not movable."
+                    .formatted(firstEntity, secondEntity));
+        }
+        int firstUnpinnedIndexFirstEntity = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(firstEntity);
+        if (firstEdgeEndpoint < firstUnpinnedIndexFirstEntity) {
+            // TODO remove once K-Opt is sufficiently tested.
+            throw new IllegalStateException("Impossible state: first entity (%s) edge point (%s) is before the pin (%s)."
+                    .formatted(firstEntity, firstEdgeEndpoint, firstUnpinnedIndexFirstEntity));
+        }
         if (firstEntity == secondEntity) {
             if (shift != 0) {
                 // A shift will rotate the entire list, changing the visiting order
@@ -208,9 +222,20 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             // in the chain
             return chainLength >= 2;
         }
+        int firstUnpinnedIndexSecondEntity = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(secondEntity);
+        if (secondEdgeEndpoint < firstUnpinnedIndexSecondEntity) {
+            // TODO remove once K-Opt is sufficiently tested.
+            throw new IllegalStateException("Impossible state: second entity (%s) edge point (%s) is before the pin (%s)."
+                    .formatted(secondEdgeEndpoint, secondEdgeEndpoint, firstUnpinnedIndexSecondEntity));
+        }
         // This is a tail-swap move otherwise, which always changes at least one element
         // (the element where the tail begins for each entity)
         return true;
+    }
+
+    private boolean isEntityMovable(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        var entityDescriptor = variableDescriptor.getEntityDescriptor();
+        return entityDescriptor.isMovable(scoreDirector, entity);
     }
 
     @Override

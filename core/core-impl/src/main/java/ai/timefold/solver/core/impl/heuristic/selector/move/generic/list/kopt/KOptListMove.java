@@ -58,7 +58,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
     }
 
-    KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+    private KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             KOptDescriptor<?> descriptor,
             List<FlipSublistAction> equivalent2Opts,
             MultipleDelegateList<?> combinedList,
