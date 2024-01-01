@@ -48,13 +48,12 @@
     <version.dependency.plugin>3.6.1</version.dependency.plugin>
     <version.exec.plugin>3.1.1</version.exec.plugin>
     <version.enforcer.plugin>3.4.1</version.enforcer.plugin>
-    <version.formatter.plugin>2.23.0</version.formatter.plugin>
-    <version.impsort.plugin>1.9.0</version.impsort.plugin>
     <version.jacoco.plugin>0.8.11</version.jacoco.plugin>
     <version.jar.plugin>3.3.0</version.jar.plugin>
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sonar.plugin>3.10.0.2594</version.sonar.plugin>
+    <version.spotless.plugin>2.41.1</version.spotless.plugin>
     <version.surefire.plugin>3.2.3</version.surefire.plugin>
     <version.versions.plugin>2.16.2</version.versions.plugin>
 
@@ -64,10 +63,8 @@
     <!-- This property needs to be defined in all modules that use the packaging 'jar'.
          It is used by different plugins to make sure the module/bundle names are consistent. -->
     <java.module.name/>
-    <formatter.skip>false</formatter.skip>
-    <formatter.goal>format</formatter.goal>
-    <!-- TODO name impsort should indicate it's related to formatting -->
-    <impsort.goal>sort</impsort.goal>
+    <spotless.skip>false</spotless.skip>
+    <spotless.goal>apply</spotless.goal>
     <!-- JaCoCo coverage data file location -->
     <jacoco.exec.file>${project.root.dir}/target/jacoco.exec</jacoco.exec.file>
     <jacoco.agent.argLine/>
@@ -460,9 +457,9 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>net.revelc.code.formatter</groupId>
-          <artifactId>formatter-maven-plugin</artifactId>
-          <version>${version.formatter.plugin}</version>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${version.spotless.plugin}</version>
           <dependencies>
             <dependency>
               <groupId>ai.timefold.solver</groupId>
@@ -470,35 +467,31 @@
               <version>${project.version}</version>
             </dependency>
           </dependencies>
-          <configuration>
-            <configFile>eclipse-format.xml</configFile>
-            <lineEnding>LF</lineEnding>
-            <skip>${formatter.skip}</skip>
-          </configuration>
           <executions>
             <execution>
+              <id>spotless-formatting</id>
+              <phase>compile</phase>
               <goals>
-                <goal>${formatter.goal}</goal>
+                <goal>${spotless.goal}</goal>
               </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>net.revelc.code</groupId>
-          <artifactId>impsort-maven-plugin</artifactId>
-          <version>${version.impsort.plugin}</version>
-          <configuration>
-            <!-- keep in sync with the formatter-maven-plugin -->
-            <groups>java.,jakarta.,javax.,ai.timefold.,org.,com.</groups>
-            <staticGroups>*</staticGroups>
-            <skip>${formatter.skip}</skip>
-            <removeUnused>true</removeUnused>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>${impsort.goal}</goal>
-              </goals>
+              <configuration>
+                <skip>${spotless.skip}</skip>
+                <java>
+                  <eclipse>
+                    <file>eclipse-format.xml</file>
+                  </eclipse>
+                  <importOrder>
+                    <file>eclipse.importorder</file>
+                  </importOrder>
+                  <removeUnusedImports/>
+                  <replaceRegex> <!-- Wildcard imports will break the build. -->
+                    <name>Remove wildcard imports</name>
+                    <searchRegex>import\s+[^\*\s]+\*;(\r\n|\r|\n)</searchRegex>
+                    <replacement>$1</replacement>
+                  </replaceRegex>
+                </java>
+                <pom />
+              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -543,12 +536,8 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>net.revelc.code.formatter</groupId>
-        <artifactId>formatter-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>net.revelc.code</groupId>
-        <artifactId>impsort-maven-plugin</artifactId>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -616,8 +605,7 @@
         </property>
       </activation>
       <properties>
-        <formatter.goal>validate</formatter.goal>
-        <impsort.goal>check</impsort.goal>
+        <spotless.goal>check</spotless.goal>
       </properties>
     </profile>
     <!--
@@ -735,7 +723,7 @@
         <revapi.skip>true</revapi.skip>
         <skipTests>true</skipTests>
         <skipITs>true</skipITs>
-        <formatter.skip>true</formatter.skip>
+        <spotless.skip>true</spotless.skip>
       </properties>
     </profile>
   </profiles>
