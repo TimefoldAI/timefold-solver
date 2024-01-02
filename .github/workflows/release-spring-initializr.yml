@@ -21,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
         run: |
           cd timefold-solver
-          echo "TIMEFOLD_SOLVER_RELEASE=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)" >> $GITHUB_ENV
+          echo "TIMEFOLD_SOLVER_VERSION=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)" >> $GITHUB_ENV
           cd ..
 
       - name: Checkout start.spring.io
@@ -38,11 +38,11 @@ jobs:
         shell: bash
         run: |
           cd spring-initializr
-          echo "Will bump Spring Initializr to $TIMEFOLD_SOLVER_RELEASE"
+          echo "Will bump Spring Initializr to $TIMEFOLD_SOLVER_VERSION"
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
-          git checkout -b "v$TIMEFOLD_SOLVER_RELEASE"
+          git checkout -b "v$TIMEFOLD_SOLVER_VERSION"
           ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
           git add $SPRING_INITIALIZR_YAML_FILE_PATH
-          git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_RELEASE" 
-          gh pr create --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_RELEASE" --body "CC @triceo"
+          git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" 
+          gh pr create --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body "CC @triceo"
