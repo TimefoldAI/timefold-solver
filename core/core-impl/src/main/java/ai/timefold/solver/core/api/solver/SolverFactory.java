@@ -117,7 +117,7 @@ public interface SolverFactory<Solution_> {
      * @return never null
      */
     default Solver<Solution_> buildSolver() {
-        return this.buildSolver(new SolverConfigOverride<>());
+        return this.buildSolver(null);
     }
 
     /**

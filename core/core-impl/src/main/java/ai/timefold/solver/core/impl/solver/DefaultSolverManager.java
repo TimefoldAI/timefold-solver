@@ -80,6 +80,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
 
     @Override
     public SolverJob<Solution_, ProblemId_> solve(SolverJobConfig<Solution_, ProblemId_> solverJobConfig) {
+        Objects.requireNonNull(solverJobConfig, "Invalid solver config (null) given to SolverManager.");
         return solve(getProblemIdOrThrow(solverJobConfig.getProblemId()),
                 getProblemFinderOrThrow(solverJobConfig.getProblemFinder()),
                 solverJobConfig.getBestSolutionConsumer(), solverJobConfig.getFinalBestSolutionConsumer(),
