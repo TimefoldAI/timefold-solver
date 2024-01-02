@@ -2,7 +2,14 @@ package ai.timefold.solver.core.impl.solver;
 
 import static java.util.Optional.ofNullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -106,7 +113,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setScoreDirector(innerScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(innerScoreDirector));
 
-        var moveThreadCount = resolveMoveThreadCount(true, configOverride);
+        var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
         var configPolicy = new HeuristicConfigPolicy.Builder<>(
                 environmentMode,
@@ -129,10 +136,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
-    public Integer resolveMoveThreadCount(boolean enforceMaximum, SolverConfigOverride<Solution_> configOverride) {
-        var moveThreadCount = ofNullable(configOverride.getMoveThreadCount())
-                .orElseGet(solverConfig::getMoveThreadCount);
-        var maybeCount = new MoveThreadCountResolver().resolveMoveThreadCount(moveThreadCount, enforceMaximum);
+    public Integer resolveMoveThreadCount(boolean enforceMaximum) {
+        var maybeCount =
+                new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount(), enforceMaximum);
         if (maybeCount.isPresent()) {
             return maybeCount.getAsInt();
         } else {

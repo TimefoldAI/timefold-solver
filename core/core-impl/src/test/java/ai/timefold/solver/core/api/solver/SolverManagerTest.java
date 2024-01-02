@@ -36,7 +36,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverExecutionConfig;
+import ai.timefold.solver.core.config.solver.SolverJobConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
@@ -235,17 +235,22 @@ class SolverManagerTest {
         TestdataUnannotatedExtendedSolution problem =
                 new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
         doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
+        SolverJobConfig<TestdataSolution, Long> config = new SolverJobConfig<TestdataSolution, Long>()
+                .withProblemId(1L)
+                .withProblem(problem);
         DefaultSolverJob<TestdataSolution, Long> solverJob =
-                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(problem, new SolverExecutionConfig<>());
+                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(config);
         assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
 
         // Spent limit overridden by 100L
-        SolverExecutionConfig solverExecutionConfig = new SolverExecutionConfig()
-                .withTimeSpentTermination(Duration.ofMillis(100L));
-        solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(problem, solverExecutionConfig);
+        SolverJobConfig<TestdataSolution, Long> solverJobConfig = new SolverJobConfig<TestdataSolution, Long>()
+                .withProblemId(2L)
+                .withProblem(problem)
+                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
+        solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(solverJobConfig);
         assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
     }
 

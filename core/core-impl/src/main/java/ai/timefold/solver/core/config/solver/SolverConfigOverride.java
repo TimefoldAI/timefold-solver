@@ -11,9 +11,6 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 public class SolverConfigOverride<Solution_> {
 
     private TerminationConfig terminationConfig = null;
-    private boolean singleThread = true; // TODO - Understand how to use this variable
-    private boolean multiThread = false; // TODO - Understand how to use this variable
-    private String moveThreadCount;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -22,28 +19,14 @@ public class SolverConfigOverride<Solution_> {
     public SolverConfigOverride() {
     }
 
-    public SolverConfigOverride(SolverExecutionConfig<Solution_, ?> executionConfig) {
+    public SolverConfigOverride(SolverJobConfig<Solution_, ?> executionConfig) {
         this.terminationConfig = executionConfig.getTerminationConfig();
-        this.singleThread = executionConfig.isSingleThread();
-        this.multiThread = executionConfig.isMultiThread();
-        this.moveThreadCount = executionConfig.getMoveThreadCount();
     }
 
     public TerminationConfig getTerminationConfig() {
         return terminationConfig;
     }
 
-    public boolean isSingleThread() {
-        return singleThread;
-    }
-
-    public boolean isMultiThread() {
-        return multiThread;
-    }
-
-    public String getMoveThreadCount() {
-        return moveThreadCount;
-    }
 
     // ************************************************************************
     // With methods
@@ -51,25 +34,6 @@ public class SolverConfigOverride<Solution_> {
 
     public SolverConfigOverride<Solution_> withTerminationConfig(TerminationConfig terminationConfig) {
         this.terminationConfig = terminationConfig;
-        return this;
-    }
-
-    public SolverConfigOverride<Solution_> multiThreaded() {
-        this.multiThread = true;
-        this.singleThread = false;
-        return this;
-    }
-
-    public SolverConfigOverride<Solution_> multiThreaded(String moveThreadCount) {
-        multiThreaded();
-        this.moveThreadCount = moveThreadCount;
-        return this;
-    }
-
-    public SolverConfigOverride<Solution_> singleThreaded() {
-        this.multiThread = false;
-        this.moveThreadCount = null;
-        this.singleThread = true;
         return this;
     }
 }

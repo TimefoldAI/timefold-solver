@@ -145,7 +145,7 @@ class SolverFactoryTest {
     void createAndOverrideSettings() {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        SolverConfigOverride configOverride = mock(SolverConfigOverride.class);
+        SolverConfigOverride<TestdataSolution> configOverride = mock(SolverConfigOverride.class);
         TerminationConfig terminationConfig = new TerminationConfig();
         terminationConfig.withSpentLimit(Duration.ofSeconds(60));
         doReturn(terminationConfig).when(configOverride).getTerminationConfig();
@@ -187,7 +187,7 @@ class SolverFactoryTest {
 
         DefaultSolverFactory<TestdataSolution> solverFactory =
                 (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
-        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+        Assertions.assertThatThrownBy(() -> solverFactory.buildSolver())
                 .hasMessageContaining("unreachable phase");
     }
 
