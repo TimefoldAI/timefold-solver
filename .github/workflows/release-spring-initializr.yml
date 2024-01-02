@@ -33,7 +33,7 @@ jobs:
           TIMEFOLD_SOLVER_RELEASE=$(gh release list | head -n 1 | cut -f 3)
           export TIMEFOLD_SOLVER_RELEASE="${TIMEFOLD_SOLVER_RELEASE:1}"
           export SPRING_INITIALIZR_YAML_FILE_PATH="src/main/resources/application.yml"
-          cp ../spring-initializr          
+          cd ../spring-initializr          
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
           git checkout -b "v$TIMEFOLD_SOLVER_RELEASE"
