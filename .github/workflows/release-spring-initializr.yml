@@ -24,7 +24,7 @@ jobs:
           cd timefold-solver
           echo "TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list | head -n 1 | cut -f 3)" >> $GITHUB_ENV
           echo "TIMEFOLD_SOLVER_RELEASE=$(echo $TIMEFOLD_SOLVER_RELEASE_TAG | tail -c +2)" >> $GITHUB_ENV
-          echo $GITHUB_ENV
+          cat $GITHUB_ENV
 
       - name: Checkout Spring Initializr
         uses: actions/checkout@v4
