@@ -110,7 +110,6 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      */
     SolverJobBuilder<Solution_, ProblemId_> buildSolver();
 
-
     // ************************************************************************
     // Interface methods
     // ************************************************************************

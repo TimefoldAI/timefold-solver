@@ -22,13 +22,20 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     // With methods
     // ************************************************************************
     SolverJobBuilder<Solution_, ProblemId_> withProblemId(ProblemId_ id);
+
     default SolverJobBuilder<Solution_, ProblemId_> withProblem(Solution_ problem) {
         return withProblemFinder(id -> problem);
     }
+
     SolverJobBuilder<Solution_, ProblemId_> withProblemFinder(Function<? super ProblemId_, ? extends Solution_> problemFinder);
+
     SolverJobBuilder<Solution_, ProblemId_> withBestSolutionConsumer(Consumer<? super Solution_> bestSolutionConsumer);
-    SolverJobBuilder<Solution_, ProblemId_> withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer);
-    SolverJobBuilder<Solution_, ProblemId_> withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler);
+
+    SolverJobBuilder<Solution_, ProblemId_>
+            withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer);
+
+    SolverJobBuilder<Solution_, ProblemId_>
+            withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler);
 
     // ************************************************************************
     // Overriding settings
@@ -43,4 +50,3 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      */
     SolverJob<Solution_, ProblemId_> run();
 }
-

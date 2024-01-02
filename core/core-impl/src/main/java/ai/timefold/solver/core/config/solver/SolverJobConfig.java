@@ -61,7 +61,7 @@ public class SolverJobConfig<Solution_, ProblemId_> {
     }
 
     public SolverJobConfig<Solution_, ProblemId_> withProblem(Solution_ problem) {
-        return withProblemFinder((id) -> problem);
+        return withProblemFinder(id -> problem);
     }
 
     public SolverJobConfig<Solution_, ProblemId_>

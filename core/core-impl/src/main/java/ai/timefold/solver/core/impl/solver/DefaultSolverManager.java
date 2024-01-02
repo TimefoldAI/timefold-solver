@@ -17,8 +17,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
-import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverJobBuilder;
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverConfigOverride;
@@ -64,7 +64,8 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
         return Objects.requireNonNull(problemId, "Invalid problemId (null) given to SolverManager.");
     }
 
-    private Function<? super ProblemId_, ? extends Solution_> getProblemFinderOrThrow(Function<? super ProblemId_, ? extends Solution_> problemFinder) {
+    private Function<? super ProblemId_, ? extends Solution_>
+            getProblemFinderOrThrow(Function<? super ProblemId_, ? extends Solution_> problemFinder) {
         return Objects.requireNonNull(problemFinder, "Invalid problem finder (null) given to SolverManager.");
     }
 
@@ -79,7 +80,8 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
 
     @Override
     public SolverJob<Solution_, ProblemId_> solve(SolverJobConfig<Solution_, ProblemId_> solverJobConfig) {
-        return solve(getProblemIdOrThrow(solverJobConfig.getProblemId()), getProblemFinderOrThrow(solverJobConfig.getProblemFinder()),
+        return solve(getProblemIdOrThrow(solverJobConfig.getProblemId()),
+                getProblemFinderOrThrow(solverJobConfig.getProblemFinder()),
                 solverJobConfig.getBestSolutionConsumer(), solverJobConfig.getFinalBestSolutionConsumer(),
                 solverJobConfig.getExceptionHandler(), new SolverConfigOverride<>(solverJobConfig));
     }

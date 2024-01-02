@@ -43,7 +43,8 @@ public class DefaultSolverJobSession<Solution_, ProblemId_> implements SolverJob
     }
 
     @Override
-    public SolverJobBuilder<Solution_, ProblemId_> withProblemFinder(Function<? super ProblemId_, ? extends Solution_> problemFinder) {
+    public SolverJobBuilder<Solution_, ProblemId_>
+            withProblemFinder(Function<? super ProblemId_, ? extends Solution_> problemFinder) {
         this.solverJobConfig.withProblemFinder(problemFinder);
         return this;
     }
@@ -55,13 +56,15 @@ public class DefaultSolverJobSession<Solution_, ProblemId_> implements SolverJob
     }
 
     @Override
-    public SolverJobBuilder<Solution_, ProblemId_> withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer) {
+    public SolverJobBuilder<Solution_, ProblemId_>
+            withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer) {
         this.solverJobConfig.withFinalBestSolutionConsumer(finalBestSolutionConsumer);
         return this;
     }
 
     @Override
-    public SolverJobBuilder<Solution_, ProblemId_> withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+    public SolverJobBuilder<Solution_, ProblemId_>
+            withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverJobConfig.withExceptionHandler(exceptionHandler);
         return this;
     }
