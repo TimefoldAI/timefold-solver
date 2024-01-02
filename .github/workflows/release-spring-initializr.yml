@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           cd timefold-solver
-          export TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)
+          export TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list | head -n 1 | cut -f 3)
           export TIMEFOLD_SOLVER_RELEASE=$(echo $TIMEFOLD_SOLVER_RELEASE_TAG | tail -c +2)
           echo "Will bump Spring Initializr to $TIMEFOLD_SOLVER_RELEASE"
           export SPRING_INITIALIZR_YAML_FILE_PATH="start-site/src/main/resources/application.yml"
