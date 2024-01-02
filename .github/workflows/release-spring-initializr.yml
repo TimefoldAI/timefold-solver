@@ -14,7 +14,7 @@ jobs:
       - name: Set env
         shell: bash
         run: |
-          echo "TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list TimefoldAI/timefold-solver | head -n 1 | cut -f 3)" >> $GITHUB_ENV
+          echo "TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list --repo TimefoldAI/timefold-solver | head -n 1 | cut -f 3)" >> $GITHUB_ENV
           echo "TIMEFOLD_SOLVER_RELEASE=$(echo $TIMEFOLD_SOLVER_RELEASE_TAG | tail -c +2)" >> $GITHUB_ENV
           cat $GITHUB_ENV
 
