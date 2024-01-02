@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - 'v*'
+  pull_request: # Remove when tested
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
