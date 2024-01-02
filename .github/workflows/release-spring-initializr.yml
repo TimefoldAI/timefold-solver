@@ -21,7 +21,7 @@ jobs:
       - name: Set env
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
         run: |
           cd timefold-solver
           echo "TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list | head -n 1 | cut -f 3)" >> $GITHUB_ENV
