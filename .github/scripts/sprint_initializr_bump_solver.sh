@@ -14,12 +14,12 @@ found_keyword=false
 while IFS= read -r line
 do
     # Check if the 'timefold-solver' keyword is found
-    if [[ "$line" == *"timefold-solver"* ]]; then
+    if [[ "$line" =~ "timefold-solver" ]]; then
         found_keyword=true
     fi
 
     # Replace the first 'version' line after finding the keyword
-    if [[ $found_keyword == true && "$line" == *"version:"* ]]; then
+    if [[ $found_keyword == true && "$line" =~ "version:" ]]; then
         echo "${line/version:*/version: $TIMEFOLD_SOLVER_VERSION}" >> "$temp_file"
         found_keyword=false
     else

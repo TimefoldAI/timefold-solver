@@ -31,12 +31,14 @@ jobs:
         shell: bash
         run: |
           cd timefold-solver
-          export TIMEFOLD_SOLVER_RELEASE=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)
+          export TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)
+          export TIMEFOLD_SOLVER_RELEASE=$(echo $TIMEFOLD_SOLVER_RELEASE_TAG | tail -c +2)
+          echo "Will bump Spring Initializr to $TIMEFOLD_SOLVER_RELEASE"
           export SPRING_INITIALIZR_YAML_FILE_PATH="start-site/src/main/resources/application.yml"
           cd ../spring-initializr          
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
-          git checkout -b "v$TIMEFOLD_SOLVER_RELEASE"
+          git checkout -b $TIMEFOLD_SOLVER_RELEASE_TAG
           ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
           git add $SPRING_INITIALIZR_YAML_FILE_PATH
           git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_RELEASE" 
