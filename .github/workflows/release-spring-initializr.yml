@@ -25,6 +25,7 @@ jobs:
         run: |
           cd timefold-solver
           echo "TIMEFOLD_SOLVER_RELEASE=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)" >> $GITHUB_ENV
+          cd ..
 
       - name: Checkout start.spring.io
         uses: actions/checkout@v4
@@ -40,7 +41,6 @@ jobs:
         shell: bash
         run: |
           echo "Will bump Spring Initializr to $TIMEFOLD_SOLVER_RELEASE"
-          cd ../spring-initializr          
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
           git checkout -b "v$TIMEFOLD_SOLVER_RELEASE"
