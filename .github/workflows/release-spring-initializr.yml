@@ -18,26 +18,24 @@ jobs:
           tags: true
           fetch-depth: 0
 
-      - name: Set env
+      - name: Detect latest release
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
         run: |
           cd timefold-solver
-          echo "TIMEFOLD_SOLVER_RELEASE_TAG=$(gh release list | head -n 1 | cut -f 3)" >> $GITHUB_ENV
-          echo "TIMEFOLD_SOLVER_RELEASE=$(echo $TIMEFOLD_SOLVER_RELEASE_TAG | tail -c +2)" >> $GITHUB_ENV
-          cat $GITHUB_ENV
+          echo "TIMEFOLD_SOLVER_RELEASE=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)" >> $GITHUB_ENV
 
-      - name: Checkout Spring Initializr
+      - name: Checkout start.spring.io
         uses: actions/checkout@v4
         with:
           repository: spring-io/start.spring.io
           path: spring-initializr
           fetch-depth: 0
 
-      - name: Set the new version and create the PR
+      - name: Create the start.spring.io PR with the new version
         env:
-          GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
           SPRING_INITIALIZR_YAML_FILE_PATH: "start-site/src/main/resources/application.yml"
         shell: bash
         run: |
@@ -45,7 +43,7 @@ jobs:
           cd ../spring-initializr          
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
-          git checkout -b $TIMEFOLD_SOLVER_RELEASE_TAG
+          git checkout -b "v$TIMEFOLD_SOLVER_RELEASE"
           ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
           git add $SPRING_INITIALIZR_YAML_FILE_PATH
           git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_RELEASE" 
