@@ -27,5 +27,12 @@ do
     fi
 done < "$SPRING_INITIALIZR_YAML_FILE_PATH"
 
-# Replace the original file with the modified temporary file
-mv "$temp_file" "$SPRING_INITIALIZR_YAML_FILE_PATH"
+# Compare the original file with the modified temporary file
+if diff -q "$SPRING_INITIALIZR_YAML_FILE_PATH" "$temp_file" > /dev/null; then
+    rm "$temp_file"
+    echo "No changes were made to the file."
+    exit 1
+else
+    # Replace the original file with the modified temporary file
+    mv "$temp_file" "$SPRING_INITIALIZR_YAML_FILE_PATH"
+fi

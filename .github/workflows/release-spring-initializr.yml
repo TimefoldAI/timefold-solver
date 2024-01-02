@@ -1,0 +1,44 @@
+# Updates Spring Initializr when a new version of Timefold Solver is released.
+
+name: Update Spring Initializr
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Timefold Solver
+        uses: actions/checkout@v4
+        with:
+          path: timefold-solver
+          tags: true
+          fetch-depth: 0
+
+      - name: Checkout Spring Initializr
+        uses: actions/checkout@v4
+        with:
+          repository: spring-io/start.spring.io
+          path: spring-initializr
+          fetch-depth: 0
+
+      - name: Set the correct credentials
+        run: |
+          git config user.name "Timefold Release Bot"
+          git config user.email "release@timefold.ai"
+
+      - name: Set the new version and create the PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+        run: |
+          cd timefold-solver
+          TIMEFOLD_SOLVER_RELEASE=$(gh release list | head -n 1 | cut -f 3)
+          export TIMEFOLD_SOLVER_RELEASE="${TIMEFOLD_SOLVER_RELEASE:1}"
+          export SPRING_INITIALIZR_YAML_FILE_PATH="src/main/resources/application.yml"
+          cp ../spring-initializr          
+          git checkout -b "v$TIMEFOLD_SOLVER_RELEASE"
+          sh ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
+          git add $SPRING_INITIALIZR_YAML_FILE_PATH
+          git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_RELEASE" 
+          #gh pr create --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_RELEASE" --body "CC @triceo"
