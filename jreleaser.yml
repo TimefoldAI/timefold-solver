@@ -17,7 +17,7 @@ release:
     sign: true
     milestone:
       close: true
-      name: "{{projectVersion}}"
+      name: "v{{projectVersion}}"
     changelog:
       formatted: ALWAYS
       preset: "conventional-commits"
@@ -30,7 +30,6 @@ release:
           - build
           - ci
         contributors:
-          - "GitHub"
           - "Timefold Release Bot"
 
 deploy:

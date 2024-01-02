@@ -1,0 +1,48 @@
+# Updates Spring Initializr when a new version of Timefold Solver is released.
+name: Update Spring Initializr
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Timefold Solver
+        uses: actions/checkout@v4
+        with:
+          path: timefold-solver
+          tags: true
+          fetch-depth: 0
+
+      - name: Detect latest release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+        run: |
+          cd timefold-solver
+          echo "TIMEFOLD_SOLVER_VERSION=$(gh release list | head -n 1 | cut -f 3 | tail -c +2)" >> $GITHUB_ENV
+          cd ..
+
+      - name: Checkout start.spring.io
+        uses: actions/checkout@v4
+        with:
+          repository: spring-io/start.spring.io
+          path: spring-initializr
+          fetch-depth: 0
+
+      - name: Create the start.spring.io PR with the new version
+        env:
+          GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          SPRING_INITIALIZR_YAML_FILE_PATH: "start-site/src/main/resources/application.yml"
+        shell: bash
+        run: |
+          cd spring-initializr
+          echo "Will bump Spring Initializr to $TIMEFOLD_SOLVER_VERSION"
+          git config user.name "Timefold Release Bot"
+          git config user.email "release@timefold.ai"
+          git checkout -b "v$TIMEFOLD_SOLVER_VERSION"
+          ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
+          git add $SPRING_INITIALIZR_YAML_FILE_PATH
+          git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" 
+          gh pr create --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body "CC @triceo"
