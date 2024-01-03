@@ -189,7 +189,8 @@ use a xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[
 This pattern is implemented using either the xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained planning variable]
 or the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable].
 The two modeling approaches are equivalent because they both allow Timefold Solver to order elements in sequences of variable lengths.
-The planning list variable is easier to use than the chained planning variable, but it does not yet support all the advanced planning techniques.
+The planning list variable is easier to use than the chained planning variable,
+but it does not yet support all the advanced planning techniques.
 
 [#chainedThroughTimePatternChainedVariable]
 ==== Chained through time pattern using chained planning variable
