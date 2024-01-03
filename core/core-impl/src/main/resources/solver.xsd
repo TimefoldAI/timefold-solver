@@ -1435,18 +1435,6 @@
       
   </xs:complexType>
     
-  <xs:complexType name="solverConfigOverride">
-        
-    <xs:sequence/>
-      
-  </xs:complexType>
-    
-  <xs:complexType name="solverJobConfig">
-        
-    <xs:sequence/>
-      
-  </xs:complexType>
-    
   <xs:complexType name="solverManagerConfig">
         
     <xs:complexContent>

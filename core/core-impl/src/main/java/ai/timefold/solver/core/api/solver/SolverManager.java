@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverJobConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 
@@ -108,7 +107,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      *
      * @return never null
      */
-    SolverJobBuilder<Solution_, ProblemId_> buildSolver();
+    SolverJobBuilder<Solution_, ProblemId_> solveBuilder();
 
     // ************************************************************************
     // Interface methods
@@ -130,10 +129,12 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemId never null, a ID for each planning problem. This must be unique.
      *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
      * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
+     * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem)
                 .run();
@@ -151,7 +152,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      */
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem)
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
@@ -168,12 +169,14 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
      * @param exceptionHandler sometimes null, called if an exception or error occurs.
      *        If null it defaults to logging the exception as an error.
+     * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem)
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
@@ -199,12 +202,14 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemFinder never null, a function that returns a {@link PlanningSolution}, usually with uninitialized planning
      *        variables
      * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
+     * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblemFinder(problemFinder)
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
@@ -222,32 +227,21 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param finalBestSolutionConsumer sometimes null, called only once, at the end, on a consumer thread
      * @param exceptionHandler sometimes null, called if an exception or error occurs.
      *        If null it defaults to logging the exception as an error.
+     * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblemFinder(problemFinder)
                 .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
                 .withExceptionHandler(exceptionHandler)
                 .run();
     }
-
-    /**
-     * Submits a planning problem to solve and returns immediately.
-     * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
-     * To retrieve the final best solution, use {@link SolverJob#getFinalBestSolution()}.
-     * <p>
-     * All settings needed by {@link ai.timefold.solver.core.api.solver.SolverManager} for solving a problem is given
-     * by {@link SolverJobConfig}.
-     *
-     * @param solverJobConfig never null, settings required to solve the problem
-     * @return never null
-     */
-    SolverJob<Solution_, ProblemId_> solve(SolverJobConfig<Solution_, ProblemId_> solverJobConfig);
 
     /**
      * Submits a planning problem to solve and returns immediately.
@@ -267,13 +261,43 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemFinder never null, a function that returns a {@link PlanningSolution}, usually with uninitialized planning
      *        variables
      * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
+     * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder, Consumer<? super Solution_> bestSolutionConsumer) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblemFinder(problemFinder)
+                .withBestSolutionConsumer(bestSolutionConsumer)
+                .run();
+    }
+
+    /**
+     * Submits a planning problem to solve and returns immediately.
+     * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
+     * <p>
+     * When the solver finds a new best solution, the {@code bestSolutionConsumer} is called every time,
+     * on a consumer {@link Thread}, as soon as one is available (taking into account any throttling waiting time),
+     * unless a newer best solution is already available by then (in which case skip ahead discards it).
+     * <p>
+     * Defaults to logging exceptions as an error.
+     * <p>
+     * To stop a solver job before it naturally terminates, call {@link #terminateEarly(Object)}.
+     *
+     * @param problemId never null, a ID for each planning problem. This must be unique.
+     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
+     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
+     * @param problem never null, a {@link PlanningSolution} usually with uninitialized planning variables
+     * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
+     * @return never null
+     */
+    default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId, Solution_ problem,
+            Consumer<? super Solution_> bestSolutionConsumer) {
+        return solveBuilder()
+                .withProblemId(problemId)
+                .withProblem(problem)
                 .withBestSolutionConsumer(bestSolutionConsumer)
                 .run();
     }
@@ -289,13 +313,15 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param bestSolutionConsumer never null, called multiple times, on a consumer thread
      * @param exceptionHandler sometimes null, called if an exception or error occurs.
      *        If null it defaults to logging the exception as an error.
+     * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblemFinder(problemFinder)
                 .withBestSolutionConsumer(bestSolutionConsumer)
@@ -323,14 +349,16 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      *        That final best solution is already consumed by the bestSolutionConsumer earlier.
      * @param exceptionHandler sometimes null, called if an exception or error occurs.
      *        If null it defaults to logging the exception as an error.
+     * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
      * @return never null
      */
+    @Deprecated(forRemoval = true)
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return buildSolver()
+        return solveBuilder()
                 .withProblemId(problemId)
                 .withProblemFinder(problemFinder)
                 .withBestSolutionConsumer(bestSolutionConsumer)

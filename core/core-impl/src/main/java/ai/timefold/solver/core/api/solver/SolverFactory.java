@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 /**
@@ -117,13 +116,13 @@ public interface SolverFactory<Solution_> {
      * @return never null
      */
     default Solver<Solution_> buildSolver() {
-        return this.buildSolver(null);
+        return this.buildSolver(new SolverConfigOverride<>());
     }
 
     /**
      * As defined by {@link #buildSolver()}.
      *
-     * @param configOverride sometimes null, includes settings that override the default configuration
+     * @param configOverride never null, includes settings that override the default configuration
      * @return never null
      */
     Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride);

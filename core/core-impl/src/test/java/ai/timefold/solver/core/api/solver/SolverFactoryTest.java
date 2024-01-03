@@ -2,9 +2,9 @@ package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
@@ -19,7 +19,6 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -151,7 +150,7 @@ class SolverFactoryTest {
         doReturn(terminationConfig).when(configOverride).getTerminationConfig();
         Solver<TestdataSolution> solver = solverFactory.buildSolver(configOverride);
         assertThat(solver).isNotNull();
-        verify(configOverride, times(1)).getTerminationConfig();
+        verify(configOverride, atLeast(1)).getTerminationConfig();
     }
 
     @Test

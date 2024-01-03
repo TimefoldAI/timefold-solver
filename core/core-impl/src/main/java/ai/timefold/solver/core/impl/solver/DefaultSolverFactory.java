@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.solver;
 
-import static java.util.Optional.ofNullable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,6 +14,7 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
@@ -25,7 +24,6 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -85,6 +83,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     @Override
     public Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride) {
+        Objects.requireNonNull(configOverride, "Invalid config override (null) given to SolverFactory.");
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
         var solverScope = new SolverScope<Solution_>();
@@ -123,11 +122,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 scoreDirectorFactory.getInitializingScoreTrend(),
                 solutionDescriptor,
                 ClassInstanceCache.create()).build();
-        var terminationConfig = ofNullable(configOverride).map(SolverConfigOverride::getTerminationConfig)
-                .orElseGet(() -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
-        var termination = TerminationFactory.<Solution_> create(terminationConfig)
-                .buildTermination(configPolicy, basicPlumbingTermination);
+        var termination = buildTerminationConfig(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         var randomFactory = buildRandomFactory(environmentMode);
@@ -144,6 +140,17 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         } else {
             return null;
         }
+    }
+
+    private Termination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
+            HeuristicConfigPolicy<Solution_> configPolicy,
+            SolverConfigOverride<Solution_> solverConfigOverride) {
+        var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
+        if (solverConfigOverride.getTerminationConfig() != null) {
+            terminationConfig = solverConfigOverride.getTerminationConfig();
+        }
+        return TerminationFactory.<Solution_> create(terminationConfig)
+                .buildTermination(configPolicy, basicPlumbingTermination);
     }
 
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {

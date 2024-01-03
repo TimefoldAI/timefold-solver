@@ -15,14 +15,13 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverJobBuilder;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.config.solver.SolverConfigOverride;
-import ai.timefold.solver.core.config.solver.SolverJobConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import org.slf4j.Logger;
@@ -64,27 +63,26 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
         return Objects.requireNonNull(problemId, "Invalid problemId (null) given to SolverManager.");
     }
 
-    private Function<? super ProblemId_, ? extends Solution_>
-            getProblemFinderOrThrow(Function<? super ProblemId_, ? extends Solution_> problemFinder) {
-        return Objects.requireNonNull(problemFinder, "Invalid problem finder (null) given to SolverManager.");
-    }
-
     private DefaultSolverJob<Solution_, ProblemId_> getSolverJob(ProblemId_ problemId) {
         return problemIdToSolverJobMap.get(getProblemIdOrThrow(problemId));
     }
 
     @Override
-    public SolverJobBuilder<Solution_, ProblemId_> buildSolver() {
-        return new DefaultSolverJobSession<>(this);
+    public SolverJobBuilder<Solution_, ProblemId_> solveBuilder() {
+        return new DefaultSolverJobBuilder<>(this);
     }
 
-    @Override
-    public SolverJob<Solution_, ProblemId_> solve(SolverJobConfig<Solution_, ProblemId_> solverJobConfig) {
-        Objects.requireNonNull(solverJobConfig, "Invalid solver config (null) given to SolverManager.");
-        return solve(getProblemIdOrThrow(solverJobConfig.getProblemId()),
-                getProblemFinderOrThrow(solverJobConfig.getProblemFinder()),
-                solverJobConfig.getBestSolutionConsumer(), solverJobConfig.getFinalBestSolutionConsumer(),
-                solverJobConfig.getExceptionHandler(), new SolverConfigOverride<>(solverJobConfig));
+    protected SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
+            Function<? super ProblemId_, ? extends Solution_> problemFinder,
+            Consumer<? super Solution_> bestSolutionConsumer,
+            Consumer<? super Solution_> finalBestSolutionConsumer,
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            SolverConfigOverride<Solution_> solverConfigOverride) {
+        if (bestSolutionConsumer == null) {
+            throw new IllegalStateException("The consumer bestSolutionConsumer is required.");
+        }
+        return solve(getProblemIdOrThrow(problemId), problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
+                exceptionHandler, solverConfigOverride);
     }
 
     protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,

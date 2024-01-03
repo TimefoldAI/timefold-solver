@@ -36,7 +36,6 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverJobConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
@@ -238,19 +237,18 @@ class SolverManagerTest {
         SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
         doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
-        SolverJobConfig<TestdataSolution, Long> config = new SolverJobConfig<TestdataSolution, Long>()
-                .withProblemId(1L)
-                .withProblem(problem);
         DefaultSolverJob<TestdataSolution, Long> solverJob =
-                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(config);
+                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(1L, problem);
         assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
 
         // Spent limit overridden by 100L
-        SolverJobConfig<TestdataSolution, Long> solverJobConfig = new SolverJobConfig<TestdataSolution, Long>()
+        SolverConfigOverride<TestdataSolution> configOverride = new SolverConfigOverride<TestdataSolution>()
+                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
+        solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
                 .withProblemId(2L)
                 .withProblem(problem)
-                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
-        solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(solverJobConfig);
+                .withConfigOverride(configOverride)
+                .run();
         assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
     }
 
