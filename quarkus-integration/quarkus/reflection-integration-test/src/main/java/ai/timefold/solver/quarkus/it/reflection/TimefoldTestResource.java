@@ -40,4 +40,28 @@ public class TimefoldTestResource {
             throw new IllegalStateException("Solving failed.", e);
         }
     }
+
+    @POST
+    @Path("/solver-factory/builder")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String solveWithSolverBuilderFactory() {
+        TestdataReflectionSolution planningProblem = new TestdataReflectionSolution();
+        planningProblem.setEntityList(Arrays.asList(
+                new TestdataReflectionEntity(),
+                new TestdataReflectionEntity()));
+        planningProblem.setFieldValueList(Arrays.asList("a", "bb", "ccc"));
+        planningProblem.setMethodValueList(Arrays.asList("a", "bb", "ccc", "ddd"));
+        SolverJob<TestdataReflectionSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblem(planningProblem)
+                .run();
+        try {
+            return solverJob.getFinalBestSolution().getScore().toString();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Solving was interrupted.", e);
+        } catch (ExecutionException e) {
+            throw new IllegalStateException("Solving failed.", e);
+        }
+    }
 }

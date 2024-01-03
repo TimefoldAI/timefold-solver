@@ -280,6 +280,30 @@ class TimefoldAutoConfigurationTest {
     }
 
     @Test
+    void solveWithBuilder() {
+        contextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> {
+                    SolverManager<TestdataSpringSolution, Long> solverManager = context.getBean(SolverManager.class);
+                    TestdataSpringSolution problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .collect(Collectors.toList()));
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .collect(Collectors.toList()));
+                    SolverJob<TestdataSpringSolution, Long> solverJob = solverManager.solveBuilder()
+                            .withProblemId(1L)
+                            .withProblem(problem)
+                            .run();
+                    TestdataSpringSolution solution = solverJob.getFinalBestSolution();
+                    assertThat(solution).isNotNull();
+                    assertThat(solution.getScore().score()).isGreaterThanOrEqualTo(0);
+                });
+    }
+
+    @Test
     void multimoduleSolve() {
         multimoduleRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
