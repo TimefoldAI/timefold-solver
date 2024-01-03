@@ -8,8 +8,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -46,6 +51,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -250,6 +256,156 @@ class SolverManagerTest {
                 .withConfigOverride(configOverride)
                 .run();
         assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
+    }
+
+    @Test
+    void testSolveBuilderForExistingSolvingMethods() {
+        SolverJobBuilder<TestdataSolution, Long> solverJobBuilder = mock(SolverJobBuilder.class);
+        SolverManager<TestdataSolution, Long> solverManager = mock(SolverManager.class);
+
+        doReturn(solverJobBuilder).when(solverManager).solveBuilder();
+        doReturn(solverJobBuilder).when(solverJobBuilder).withProblemId(anyLong());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withProblem(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withFinalBestSolutionConsumer(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withExceptionHandler(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withProblemFinder(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class));
+        solverManager.solve(1L, mock(TestdataSolution.class));
+        verify(solverJobBuilder, times(1)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(1)).withProblem(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class), any(Consumer.class));
+        solverManager.solve(1L, mock(TestdataSolution.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(2)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(2)).withProblem(any());
+        verify(solverJobBuilder, times(1)).withFinalBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class), any(Consumer.class),
+                any(BiConsumer.class));
+        solverManager.solve(1L, mock(TestdataSolution.class), mock(Consumer.class), mock(BiConsumer.class));
+        verify(solverJobBuilder, times(3)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(3)).withProblem(any());
+        verify(solverJobBuilder, times(2)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(1)).withExceptionHandler(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(Function.class), any(Consumer.class));
+        solverManager.solve(1L, mock(Function.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(4)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(1)).withProblemFinder(any());
+        verify(solverJobBuilder, times(3)).withFinalBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(Function.class), any(Consumer.class),
+                any(BiConsumer.class));
+        solverManager.solve(1L, mock(Function.class), mock(Consumer.class), mock(BiConsumer.class));
+        verify(solverJobBuilder, times(5)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(2)).withProblemFinder(any());
+        verify(solverJobBuilder, times(4)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(2)).withExceptionHandler(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class));
+        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(6)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(3)).withProblemFinder(any());
+        verify(solverJobBuilder, times(1)).withBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(TestdataSolution.class),
+                any(Consumer.class));
+        solverManager.solveAndListen(1L, mock(TestdataSolution.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(7)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(4)).withProblem(any());
+        verify(solverJobBuilder, times(2)).withBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class),
+                any(BiConsumer.class));
+        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class), mock(BiConsumer.class));
+        verify(solverJobBuilder, times(8)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(4)).withProblemFinder(any());
+        verify(solverJobBuilder, times(3)).withBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(3)).withExceptionHandler(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class),
+                any(Consumer.class), any(BiConsumer.class));
+        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class), mock(Consumer.class),
+                mock(BiConsumer.class));
+        verify(solverJobBuilder, times(9)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(5)).withProblemFinder(any());
+        verify(solverJobBuilder, times(4)).withBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(5)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(4)).withExceptionHandler(any());
+    }
+
+    @Test
+    @Timeout(60)
+    void solveWithBuilder() throws InterruptedException, BrokenBarrierException {
+        CyclicBarrier startedBarrier = new CyclicBarrier(2);
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+        MutableObject finalBestSolution = new MutableObject();
+        Consumer<Object> finalBestConsumer = o -> {
+            finalBestSolution.setValue(o);
+            try {
+                startedBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFinalBestSolutionConsumer(finalBestConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .run();
+
+        startedBarrier.await();
+        assertThat(finalBestSolution.getValue()).isNotNull();
+    }
+
+    @Test
+    @Timeout(60)
+    void solveAndListenWithBuilder() throws InterruptedException, BrokenBarrierException {
+        CyclicBarrier startedBarrier = new CyclicBarrier(2);
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+        MutableObject finalBestSolution = new MutableObject();
+        Consumer<Object> finalBestConsumer = o -> {
+            finalBestSolution.setValue(o);
+            try {
+                startedBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        MutableObject bestSolution = new MutableObject();
+        Consumer<Object> bestConsumer = o -> {
+            bestSolution.setValue(o);
+        };
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFinalBestSolutionConsumer(finalBestConsumer)
+                .withBestSolutionConsumer(bestConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .run();
+
+        startedBarrier.await();
+        assertThat(finalBestSolution.getValue()).isNotNull();
+        assertThat(bestSolution.getValue()).isNotNull();
     }
 
     @Test
