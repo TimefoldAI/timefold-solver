@@ -83,7 +83,7 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/TimetableApp.kt` class:
 
 [source,kotlin]
 ----
-package org.acme.schooltimetabling.domain
+package org.acme.kotlin.schooltimetabling.domain
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.PlanningScore
@@ -95,43 +95,39 @@ import ai.timefold.solver.core.api.solver.SolverStatus
 
 @PlanningSolution
 class Timetable {
-    // ************************************************************************
-    // Getters and setters
-    // ************************************************************************
-    var name: String? = null
-        private set
+
+    lateinit var name: String
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
-    var timeslots: List<Timeslot>? = null
-        private set
+    lateinit var timeslots: List<Timeslot>
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
-    var rooms: List<Room>? = null
-        private set
+    lateinit var rooms: List<Room>
 
     @PlanningEntityCollectionProperty
-    var lessons: List<Lesson>? = null
-        private set
+    lateinit var lessons: List<Lesson>
 
     @PlanningScore
     var score: HardSoftScore? = null
-        private set
 
     // Ignored by Timefold, used by the UI to display solve or stop solving button
     var solverStatus: SolverStatus? = null
 
     // No-arg constructor required for Timefold
-    constructor()
+    constructor() {}
 
-    constructor(name: String?, score: HardSoftScore?, solverStatus: SolverStatus?) {
+    constructor(name: String, score: HardSoftScore?, solverStatus: SolverStatus) {
         this.name = name
         this.score = score
         this.solverStatus = solverStatus
+        this.timeslots = emptyList()
+        this.rooms = emptyList()
+        this.lessons = emptyList()
     }
 
-    constructor(name: String?, timeslots: List<Timeslot>?, rooms: List<Room>?, lessons: List<Lesson>?) {
+    constructor(name: String, timeslots: List<Timeslot>, rooms: List<Room>, lessons: List<Lesson>) {
         this.name = name
         this.timeslots = timeslots
         this.rooms = rooms
