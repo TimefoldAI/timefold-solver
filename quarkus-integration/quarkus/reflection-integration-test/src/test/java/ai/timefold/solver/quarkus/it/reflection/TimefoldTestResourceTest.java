@@ -26,17 +26,4 @@ class TimefoldTestResourceTest {
                 .body(is(
                         "0hard/6soft"));
     }
-
-    @Test
-    @Timeout(600)
-    void solveWithSolverBuilderFactory() throws Exception {
-        RestAssured.given()
-                .header("Content-Type", "application/json")
-                .when()
-                .post("/timefold/test/solver-factory/builder")
-                .then()
-                .body(is(
-                        "0hard/6soft"));
-    }
-
 }

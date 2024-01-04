@@ -132,7 +132,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem) {
         return solveBuilder()
                 .withProblemId(problemId)
@@ -172,7 +172,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Solution_ problem, Consumer<? super Solution_> finalBestSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
@@ -205,7 +205,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer) {
@@ -230,7 +230,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()}
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> finalBestSolutionConsumer,
@@ -264,7 +264,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder, Consumer<? super Solution_> bestSolutionConsumer) {
         return solveBuilder()
@@ -316,7 +316,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
@@ -352,7 +352,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
      * @return never null
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "1.6.0")
     default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,

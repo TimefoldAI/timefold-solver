@@ -8,11 +8,13 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
 /**
- * Provides a fluid contract that allows customization and submission of planning problems to solve.
+ * Provides a fluent contract that allows customization and submission of planning problems to solve.
  * <p>
  * A {@link SolverManager} can solve multiple planning problems and can be used across different threads. The builder is
- * responsible for constructing and solving a specific configuration problem. Hence, it is possible to
- * have multiple distinct build configurations that are scheduled to run by the {@link SolverManager} implementation.
+ * responsible for constructing and solving a specific configuration problem.
+ * <p>
+ * Hence, it is possible to have multiple distinct build configurations that are scheduled to run by the {@link SolverManager}
+ * instance.
  * <p>
  * To solve a planning problem, set the problem configuration: {@link #withProblemId(Object)},
  * {@link #withProblemFinder(Function)} and {@link #withProblem(Object)}. Then solve it by calling {@link #run()}.
@@ -52,16 +54,16 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     /**
      * Sets the best solution consumer, which may be called multiple times during the solving process.
      *
-     * @param bestSolutionConsumer called multiple times for each new best solution on a consumer thread
+     * @param bestSolutionConsumer never null, called multiple times for each new best solution on a consumer thread
      * @return this, never null
      */
     SolverJobBuilder<Solution_, ProblemId_> withBestSolutionConsumer(Consumer<? super Solution_> bestSolutionConsumer);
 
     /**
-     * Sets the final best solution consumer, which is called at the end of the solving process and return the final
+     * Sets the final best solution consumer, which is called at the end of the solving process and returns the final
      * best solution.
      *
-     * @param finalBestSolutionConsumer called only once at the end of the solving process on a consumer thread
+     * @param finalBestSolutionConsumer never null, called only once at the end of the solving process on a consumer thread
      * @return this, never null
      */
     SolverJobBuilder<Solution_, ProblemId_>
@@ -70,8 +72,8 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     /**
      * Sets the custom exception handler.
      *
-     * @param exceptionHandler called if an exception or error occurs. If null it defaults to logging the exception as
-     *        an error.
+     * @param exceptionHandler never null, called if an exception or error occurs. If null it defaults to logging the
+     *        exception as an error.
      * @return this, never null
      */
     SolverJobBuilder<Solution_, ProblemId_>
@@ -80,7 +82,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     /**
      * Sets the solver config override.
      *
-     * @param solverConfigOverride allows overriding the default behavior of {@link Solver}
+     * @param solverConfigOverride never null, allows overriding the default behavior of {@link Solver}
      * @return this, never null
      */
     SolverJobBuilder<Solution_, ProblemId_> withConfigOverride(SolverConfigOverride<Solution_> solverConfigOverride);

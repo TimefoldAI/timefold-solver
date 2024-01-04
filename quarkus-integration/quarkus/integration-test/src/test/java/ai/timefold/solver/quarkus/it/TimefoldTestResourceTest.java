@@ -29,14 +29,15 @@ class TimefoldTestResourceTest {
 
     @Test
     @Timeout(600)
-    void solveWithSolverBuilderFactory() throws Exception {
+    void solveWithTimeOverride() throws Exception {
+        // Spent-time is 30s by default, but it is overridden with 10
         RestAssured.given()
                 .header("Content-Type", "application/json")
                 .when()
-                .post("/timefold/test/solver-factory/builder")
+                .get("/timefold/test/solver-factory/override?seconds=10")
                 .then()
                 .body(is(
-                        "0hard/5soft"));
+                        "0hard/5soft,0.50"));
     }
 
 }

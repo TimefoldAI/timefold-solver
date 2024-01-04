@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.solver;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
@@ -23,7 +25,8 @@ public final class SolverConfigOverride<Solution_> {
      * @return this, never null
      */
     public SolverConfigOverride<Solution_> withTerminationConfig(TerminationConfig terminationConfig) {
-        this.terminationConfig = terminationConfig;
+        this.terminationConfig =
+                Objects.requireNonNull(terminationConfig, "Invalid terminationConfig (null) given to SolverConfigOverride.");
         return this;
     }
 }

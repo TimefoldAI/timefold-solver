@@ -83,7 +83,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     @Override
     public Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride) {
-        Objects.requireNonNull(configOverride, "Invalid config override (null) given to SolverFactory.");
+        Objects.requireNonNull(configOverride, "Invalid configOverride (null) given to SolverFactory.");
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
         var solverScope = new SolverScope<Solution_>();
