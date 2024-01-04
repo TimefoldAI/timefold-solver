@@ -12,6 +12,11 @@ for example, a solution with the score `-2hard/-3soft`.
 * If it adheres to all hard constraints, then it is a _feasible_ solution,
 for example, a solution with the score `0hard/-7soft`.
 
+[tabs]
+====
+Java::
++
+--
 Create the `src/main/java/org/acme/schooltimetabling/domain/Timetable.java` class:
 
 [source,java]
@@ -69,6 +74,74 @@ public class Timetable {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/TimetableApp.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling.domain
+
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
+import ai.timefold.solver.core.api.domain.solution.PlanningScore
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore
+import ai.timefold.solver.core.api.solver.SolverStatus
+
+@PlanningSolution
+class Timetable {
+    // ************************************************************************
+    // Getters and setters
+    // ************************************************************************
+    var name: String? = null
+        private set
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    var timeslots: List<Timeslot>? = null
+        private set
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    var rooms: List<Room>? = null
+        private set
+
+    @PlanningEntityCollectionProperty
+    var lessons: List<Lesson>? = null
+        private set
+
+    @PlanningScore
+    var score: HardSoftScore? = null
+        private set
+
+    // Ignored by Timefold, used by the UI to display solve or stop solving button
+    var solverStatus: SolverStatus? = null
+
+    // No-arg constructor required for Timefold
+    constructor()
+
+    constructor(name: String?, score: HardSoftScore?, solverStatus: SolverStatus?) {
+        this.name = name
+        this.score = score
+        this.solverStatus = solverStatus
+    }
+
+    constructor(name: String?, timeslots: List<Timeslot>?, rooms: List<Room>?, lessons: List<Lesson>?) {
+        this.name = name
+        this.timeslots = timeslots
+        this.rooms = rooms
+        this.lessons = lessons
+    }
+}
+----
+--
+====
+
 
 The `Timetable` class has an `@PlanningSolution` annotation,
 so Timefold Solver knows that this class contains all of the input and output data.
