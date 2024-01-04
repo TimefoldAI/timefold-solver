@@ -282,7 +282,7 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/rest/TimetableResource.kt
 
 [source,kotlin]
 ----
-package org.acme.kotlin.schooltimetabling.rest
+package org.acme.schooltimetabling.rest
 
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore
@@ -301,9 +301,9 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.QueryParam
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
-import org.acme.kotlin.schooltimetabling.domain.Timetable
-import org.acme.kotlin.schooltimetabling.rest.exception.ErrorInfo
-import org.acme.kotlin.schooltimetabling.rest.exception.TimetableSolverException
+import org.acme.schooltimetabling.domain.Timetable
+import org.acme.schooltimetabling.rest.exception.ErrorInfo
+import org.acme.schooltimetabling.rest.exception.TimetableSolverException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -616,15 +616,15 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstrain
 
 [source,kotlin]
 ----
-package org.acme.kotlin.schooltimetabling.solver
+package org.acme.schooltimetabling.solver
 
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import org.acme.kotlin.schooltimetabling.domain.Lesson
-import org.acme.kotlin.schooltimetabling.domain.Room
-import org.acme.kotlin.schooltimetabling.domain.Timeslot
-import org.acme.kotlin.schooltimetabling.domain.Timetable
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -756,16 +756,16 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/rest/TimetableResourceTes
 
 [source,kotlin]
 ----
-package org.acme.kotlin.schooltimetabling.rest
+package org.acme.schooltimetabling.rest
 
 import ai.timefold.solver.core.api.solver.SolverStatus
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.get
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
-import org.acme.kotlin.schooltimetabling.domain.Room
-import org.acme.kotlin.schooltimetabling.domain.Timeslot
-import org.acme.kotlin.schooltimetabling.domain.Timetable
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull

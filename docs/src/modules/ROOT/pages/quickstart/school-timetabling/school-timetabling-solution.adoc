@@ -83,7 +83,7 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/TimetableApp.kt` class:
 
 [source,kotlin]
 ----
-package org.acme.kotlin.schooltimetabling.domain
+package org.acme.schooltimetabling.domain
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.PlanningScore
@@ -95,8 +95,6 @@ import ai.timefold.solver.core.api.solver.SolverStatus
 
 @PlanningSolution
 class Timetable {
-
-    lateinit var name: String
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
@@ -112,23 +110,9 @@ class Timetable {
     @PlanningScore
     var score: HardSoftScore? = null
 
-    // Ignored by Timefold, used by the UI to display solve or stop solving button
-    var solverStatus: SolverStatus? = null
-
-    // No-arg constructor required for Timefold
     constructor() {}
 
-    constructor(name: String, score: HardSoftScore?, solverStatus: SolverStatus) {
-        this.name = name
-        this.score = score
-        this.solverStatus = solverStatus
-        this.timeslots = emptyList()
-        this.rooms = emptyList()
-        this.lessons = emptyList()
-    }
-
-    constructor(name: String, timeslots: List<Timeslot>, rooms: List<Room>, lessons: List<Lesson>) {
-        this.name = name
+    constructor(timeslots: List<Timeslot>, rooms: List<Room>, lessons: List<Lesson>) {
         this.timeslots = timeslots
         this.rooms = rooms
         this.lessons = lessons
