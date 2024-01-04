@@ -20,11 +20,13 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
  *        it is equal to the {@link ConstraintWeight#value()}.
  * @param constraintId Always derived from {@code packageName} and {@code constraintName}.
  */
-public record ConstraintRef(String packageName, String constraintName, String constraintId)
-        implements
-            Comparable<ConstraintRef> {
+public class ConstraintRef implements Comparable<ConstraintRef> {
 
     private static final char PACKAGE_SEPARATOR = '/';
+
+    private final String packageName;
+    private final String constraintName;
+    private final String constraintId;
 
     public static ConstraintRef of(String packageName, String constraintName) {
         return new ConstraintRef(packageName, constraintName, null);
@@ -47,16 +49,16 @@ public record ConstraintRef(String packageName, String constraintName, String co
         return packageName + PACKAGE_SEPARATOR + constraintName;
     }
 
-    public ConstraintRef {
-        packageName = validate(packageName, "constraint package");
-        constraintName = validate(constraintName, "constraint name");
+    public ConstraintRef(String packageName, String constraintName, String constraintId) {
+        this.packageName = validate(packageName, "constraint package");
+        this.constraintName = validate(constraintName, "constraint name");
         var expectedConstraintId = composeConstraintId(packageName, constraintName);
         if (constraintId != null && !constraintId.equals(expectedConstraintId)) {
             throw new IllegalArgumentException(
                     "Specifying custom constraintId (%s) is not allowed."
                             .formatted(constraintId));
         }
-        constraintId = expectedConstraintId;
+        this.constraintId = expectedConstraintId;
     }
 
     private static String validate(String identifier, String type) {
@@ -71,6 +73,18 @@ public record ConstraintRef(String packageName, String constraintName, String co
         return sanitized;
     }
 
+    public String packageName() {
+        return packageName;
+    }
+
+    public String constraintName() {
+        return constraintName;
+    }
+
+    public String constraintId() {
+        return constraintId;
+    }
+
     @Override
     public String toString() {
         return constraintId;
@@ -81,4 +95,19 @@ public record ConstraintRef(String packageName, String constraintName, String co
         return constraintId.compareTo(other.constraintId);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ConstraintRef that = (ConstraintRef) o;
+        return Objects.equals(packageName, that.packageName) && Objects.equals(constraintName,
+                that.constraintName) && Objects.equals(constraintId, that.constraintId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(packageName, constraintName, constraintId);
+    }
 }

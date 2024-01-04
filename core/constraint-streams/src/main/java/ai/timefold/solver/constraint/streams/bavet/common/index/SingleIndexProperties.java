@@ -1,6 +1,18 @@
 package ai.timefold.solver.constraint.streams.bavet.common.index;
 
-record SingleIndexProperties<A>(A property) implements IndexProperties {
+import java.util.Objects;
+
+final class SingleIndexProperties<A> implements IndexProperties {
+
+    private final A property;
+
+    public SingleIndexProperties(A property) {
+        this.property = property;
+    }
+
+    public A property() {
+        return property;
+    }
 
     @Override
     public <Type_> Type_ toKey(int id) {
@@ -10,4 +22,18 @@ record SingleIndexProperties<A>(A property) implements IndexProperties {
         return (Type_) property;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        SingleIndexProperties<?> that = (SingleIndexProperties<?>) o;
+        return Objects.equals(property, that.property);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(property);
+    }
 }

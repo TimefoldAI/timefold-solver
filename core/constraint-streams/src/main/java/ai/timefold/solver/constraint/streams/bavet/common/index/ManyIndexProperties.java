@@ -2,7 +2,12 @@ package ai.timefold.solver.constraint.streams.bavet.common.index;
 
 import java.util.Arrays;
 
-record ManyIndexProperties(Object... properties) implements IndexProperties {
+final class ManyIndexProperties implements IndexProperties {
+    private final Object[] properties;
+
+    public ManyIndexProperties(Object... properties) {
+        this.properties = properties;
+    }
 
     @Override
     public <Type_> Type_ toKey(int id) {
