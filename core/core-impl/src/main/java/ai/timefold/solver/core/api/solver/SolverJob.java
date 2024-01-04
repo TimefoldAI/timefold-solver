@@ -5,7 +5,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -19,8 +18,8 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 public interface SolverJob<Solution_, ProblemId_> {
 
     /**
-     * @return never null, a value given to {@link SolverManager#solve(Object, Function, Consumer)}
-     *         or {@link SolverManager#solveAndListen(Object, Function, Consumer)}
+     * @return never null, a value given to {@link SolverManager#solve(Object, Object, Consumer)}
+     *         or {@link SolverManager#solveAndListen(Object, Object, Consumer)}
      */
     ProblemId_ getProblemId();
 
