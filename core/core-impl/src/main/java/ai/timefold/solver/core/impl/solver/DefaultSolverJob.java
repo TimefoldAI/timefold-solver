@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,6 +220,10 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             endingSystemTimeMillis = System.currentTimeMillis();
         }
         return Duration.ofMillis(endingSystemTimeMillis - startingSystemTimeMillis);
+    }
+
+    public Termination<Solution_> getSolverTermination() {
+        return solver.solverTermination;
     }
 
     void close() {

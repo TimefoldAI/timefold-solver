@@ -27,4 +27,17 @@ class TimefoldTestResourceTest {
                         "0hard/5soft"));
     }
 
+    @Test
+    @Timeout(600)
+    void solveWithTimeOverride() throws Exception {
+        // Spent-time is 30s by default, but it is overridden with 10
+        RestAssured.given()
+                .header("Content-Type", "application/json")
+                .when()
+                .get("/timefold/test/solver-factory/override?seconds=10")
+                .then()
+                .body(is(
+                        "0hard/5soft,0.50"));
+    }
+
 }
