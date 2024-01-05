@@ -1,5 +1,7 @@
 package ai.timefold.solver.quarkus.it;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
@@ -78,9 +80,12 @@ public class TimefoldTestResource {
         customScope.setBestScore(HardSoftScore.of(-1, -1));
         try {
             String score = solverJob.getFinalBestSolution().getScore().toString();
+            DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+            decimalFormatSymbols.setDecimalSeparator('.');
+            DecimalFormat decimalFormat = new DecimalFormat("0.00", decimalFormatSymbols);
             double gradientTime = solverJob.getSolverTermination().calculateSolverTimeGradient(customScope);
             solverManager.terminateEarly(1L);
-            return String.format("%s,%.2f", score, gradientTime);
+            return String.format("%s,%s", score, decimalFormat.format(gradientTime));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Solving was interrupted.", e);
