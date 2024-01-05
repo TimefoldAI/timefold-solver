@@ -19,20 +19,20 @@ import org.openrewrite.java.tree.J;
 public final class SolverManagerBuilderRecipe extends Recipe {
 
     private static final MatcherMeta[] MATCHER_METAS = {
-            new MatcherMeta("solve(Object,Object,java.util.function.Consumer,java.util.function.BiConsumer)",
-                    ".solveBuilder().withProblemId(#{any()}).withProblem(#{any()}).withFinalBestSolutionConsumer(#{any(java.util.function.Consumer)}).withExceptionHandler(#{any(java.util.function.BiConsumer)}).run()"),
-            new MatcherMeta("solve(Object,java.util.function.Function,java.util.function.Consumer)",
-                    ".solveBuilder().withProblemId(#{any()}).withProblemFinder(#{any()}).withFinalBestSolutionConsumer(#{any(java.util.function.Consumer)}).run()"),
             new MatcherMeta(
-                    "solve(Object,java.util.function.Function,java.util.function.Consumer,java.util.function.BiConsumer)",
+                    "solve(*..*,java.util.function.Function,java.util.function.Consumer,java.util.function.BiConsumer)",
                     ".solveBuilder().withProblemId(#{any()}).withProblemFinder(#{any()}).withFinalBestSolutionConsumer(#{any(java.util.function.Consumer)}).withExceptionHandler(#{any(java.util.function.BiConsumer)}).run()"),
-            new MatcherMeta("solveAndListen(Object,java.util.function.Function,java.util.function.Consumer)",
+            new MatcherMeta("solve(*..*,*..*,java.util.function.Consumer,java.util.function.BiConsumer)",
+                    ".solveBuilder().withProblemId(#{any()}).withProblem(#{any()}).withFinalBestSolutionConsumer(#{any(java.util.function.Consumer)}).withExceptionHandler(#{any(java.util.function.BiConsumer)}).run()"),
+            new MatcherMeta("solve(*..*,java.util.function.Function,java.util.function.Consumer)",
+                    ".solveBuilder().withProblemId(#{any()}).withProblemFinder(#{any()}).withFinalBestSolutionConsumer(#{any(java.util.function.Consumer)}).run()"),
+            new MatcherMeta("solveAndListen(*..*,java.util.function.Function,java.util.function.Consumer)",
                     ".solveBuilder().withProblemId(#{any()}).withProblemFinder(#{any()}).withBestSolutionConsumer(#{any(java.util.function.Consumer)}).run()"),
             new MatcherMeta(
-                    "solveAndListen(Object,java.util.function.Function,java.util.function.Consumer,java.util.function.BiConsumer)",
+                    "solveAndListen(*..*,java.util.function.Function,java.util.function.Consumer,java.util.function.BiConsumer)",
                     ".solveBuilder().withProblemId(#{any()}).withProblemFinder(#{any()}).withBestSolutionConsumer(#{any(java.util.function.Consumer)}).withExceptionHandler(#{any(java.util.function.BiConsumer)}).run()"),
             new MatcherMeta(
-                    "solveAndListen(Object,java.util.function.Function,java.util.function.Consumer,java.util.function.Consumer,java.util.function.BiConsumer)",
+                    "solveAndListen(*..*,java.util.function.Function,java.util.function.Consumer,java.util.function.Consumer,java.util.function.BiConsumer)",
                     ".solveBuilder().withProblemId(#{any()}).withProblemFinder(#{any()}).withBestSolutionConsumer(#{any(java.util.function.Consumer)}).withFinalBestSolutionConsumer(#{any(java.util.function.Consumer)}).withExceptionHandler(#{any(java.util.function.BiConsumer)}).run()"),
     };
 
