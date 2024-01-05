@@ -159,6 +159,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     /**
      * Exposed for debugging purposes, so that we can hook into it from tests and while reproducing issues.
+     * 
      * @return null before first {@link #setWorkingSolution(Object)} or after {@link #close()}.
      */
     @SuppressWarnings("unused")
