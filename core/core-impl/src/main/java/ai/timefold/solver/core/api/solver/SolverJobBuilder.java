@@ -10,14 +10,15 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 /**
  * Provides a fluent contract that allows customization and submission of planning problems to solve.
  * <p>
- * A {@link SolverManager} can solve multiple planning problems and can be used across different threads. The builder is
- * responsible for constructing and solving a specific configuration problem.
+ * A {@link SolverManager} can solve multiple planning problems and can be used across different threads.
  * <p>
  * Hence, it is possible to have multiple distinct build configurations that are scheduled to run by the {@link SolverManager}
  * instance.
  * <p>
  * To solve a planning problem, set the problem configuration: {@link #withProblemId(Object)},
- * {@link #withProblemFinder(Function)} and {@link #withProblem(Object)}. Then solve it by calling {@link #run()}.
+ * {@link #withProblemFinder(Function)} and {@link #withProblem(Object)}.
+ * <p>
+ * Then solve it by calling {@link #run()}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <ProblemId_> the ID type of submitted problem, such as {@link Long} or {@link UUID}.
