@@ -87,8 +87,6 @@ Create a Maven or Gradle build file and add these dependencies:
 * `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
 * A xref:using-timefold-solver/running-the-solver.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
-
-
 [tabs]
 ====
 Maven::
@@ -241,6 +239,12 @@ to build a new `Solver` instance for each problem dataset to solve.
 A `SolverFactory` is thread-safe, but a `Solver` is not.
 In this case, there is only one dataset, so only one `Solver` instance.
 
+[tabs]
+====
+Java::
++
+--
+
 Create the `src/main/java/org/acme/schooltimetabling/TimetableApp.java` class:
 
 [source,java]
@@ -391,12 +395,299 @@ public class TimetableApp {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/TimetableApp.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling
+
+import ai.timefold.solver.core.api.solver.SolverFactory
+import ai.timefold.solver.core.config.solver.SolverConfig
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
+import org.acme.schooltimetabling.solver.TimetableConstraintProvider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.DayOfWeek
+import java.time.Duration
+import java.time.LocalTime
+import java.util.Objects
+import java.util.function.Function
+import java.util.stream.Collectors
+
+object TimetableApp {
+    private val LOGGER: Logger = LoggerFactory.getLogger(TimetableApp::class.java)
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val solverFactory = SolverFactory.create<Timetable>(
+            SolverConfig()
+                .withSolutionClass(Timetable::class.java)
+                .withEntityClasses(Lesson::class.java)
+                .withConstraintProviderClass(TimetableConstraintProvider::class.java)
+                // The solver runs only for 5 seconds on this small dataset.
+                // It's recommended to run for at least 5 minutes ("5m") otherwise.
+                .withTerminationSpentLimit(Duration.ofSeconds(5))
+        )
+
+        // Load the problem
+        val problem = generateDemoData(DemoData.SMALL)
+
+        // Solve the problem
+        val solver = solverFactory.buildSolver()
+        val solution = solver.solve(problem)
+
+        // Visualize the solution
+        printTimetable(solution)
+    }
+
+    fun generateDemoData(demoData: DemoData): Timetable {
+        val timeslots: MutableList<Timeslot> = ArrayList(10)
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+        if (demoData == DemoData.LARGE) {
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+        }
+
+        val rooms: MutableList<Room> = ArrayList(3)
+        rooms.add(Room("Room A"))
+        rooms.add(Room("Room B"))
+        rooms.add(Room("Room C"))
+        if (demoData == DemoData.LARGE) {
+            rooms.add(Room("Room D"))
+            rooms.add(Room("Room E"))
+            rooms.add(Room("Room F"))
+        }
+
+        val lessons: MutableList<Lesson> = ArrayList()
+        var nextLessonId = 0L
+        lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "Chemistry", "M. Curie", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "Biology", "C. Darwin", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "English", "I. Jones", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "English", "I. Jones", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"))
+        lessons.add(Lesson(nextLessonId++, "Spanish", "P. Cruz", "9th grade"))
+        if (demoData == DemoData.LARGE) {
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "ICT", "A. Turing", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geography", "C. Darwin", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geology", "C. Darwin", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "I. Jones", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Drama", "I. Jones", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "9th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "9th grade"))
+        }
+
+        lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "Chemistry", "M. Curie", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "French", "M. Curie", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "Geography", "C. Darwin", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "10th grade"))
+        lessons.add(Lesson(nextLessonId++, "Spanish", "P. Cruz", "10th grade"))
+        if (demoData == DemoData.LARGE) {
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "ICT", "A. Turing", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Biology", "C. Darwin", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geology", "C. Darwin", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Drama", "I. Jones", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "10th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "10th grade"))
+
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "ICT", "A. Turing", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Chemistry", "M. Curie", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "French", "M. Curie", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geography", "C. Darwin", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Biology", "C. Darwin", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geology", "C. Darwin", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Spanish", "P. Cruz", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Drama", "P. Cruz", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "11th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "11th grade"))
+
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Math", "A. Turing", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "ICT", "A. Turing", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Chemistry", "M. Curie", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "French", "M. Curie", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physics", "M. Curie", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geography", "C. Darwin", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Biology", "C. Darwin", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Geology", "C. Darwin", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "History", "I. Jones", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "English", "P. Cruz", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Spanish", "P. Cruz", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Drama", "P. Cruz", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Art", "S. Dali", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "12th grade"))
+            lessons.add(Lesson(nextLessonId++, "Physical education", "C. Lewis", "12th grade"))
+            lessons.add(Lesson(nextLessonId, "Physical education", "C. Lewis", "12th grade"))
+        }
+        return Timetable(demoData.name, timeslots, rooms, lessons)
+    }
+
+    private fun printTimetable(timeTable: Timetable) {
+        LOGGER.info("")
+        val rooms = timeTable.rooms
+        val lessons = timeTable.lessons
+        val lessonMap = lessons.stream()
+            .filter { lesson: Lesson -> lesson.timeslot != null && lesson.room != null }
+            .collect(
+                Collectors.groupingBy<Lesson, Timeslot, Any, Map<Room, List<Lesson>>>(
+                    Function { obj: Lesson -> obj.timeslot }, Collectors.groupingBy(
+                        Function { obj: Lesson -> obj.room })
+                )
+            )
+        LOGGER.info("|            | " + rooms.stream()
+            .map { room: Room -> String.format("%-10s", room.name) }.collect(Collectors.joining(" | ")) + " |"
+        )
+        LOGGER.info("|" + "------------|".repeat(rooms.size + 1))
+        for (timeslot in timeTable.timeslots) {
+            val cells = rooms.stream()
+                .map { room: Room ->
+                    val byRoomMap = lessonMap[timeslot]
+                        ?: return@map emptyList<Lesson>()
+                    val cellLessons = byRoomMap[room]!!
+                    Objects.requireNonNullElse(cellLessons, emptyList())
+                }.toList()
+
+            LOGGER.info("| " + String.format(
+                "%-10s",
+                timeslot.dayOfWeek.toString().substring(0, 3) + " " + timeslot.startTime
+            ) + " | "
+                    + cells.stream().map { cellLessons: List<Lesson> ->
+                String.format("%-10s",
+                    cellLessons.stream().map { obj: Lesson -> obj.subject }.collect(Collectors.joining(", "))
+                )
+            }
+                .collect(Collectors.joining(" | "))
+                    + " |")
+            LOGGER.info("|            | "
+                    + cells.stream().map { cellLessons: List<Lesson> ->
+                String.format("%-10s",
+                    cellLessons.stream().map { obj: Lesson -> obj.teacher }.collect(Collectors.joining(", "))
+                )
+            }
+                .collect(Collectors.joining(" | "))
+                    + " |")
+            LOGGER.info("|            | "
+                    + cells.stream().map { cellLessons: List<Lesson> ->
+                String.format("%-10s",
+                    cellLessons.stream().map { obj: Lesson -> obj.studentGroup }
+                        .collect(Collectors.joining(", ")))
+            }
+                .collect(Collectors.joining(" | "))
+                    + " |")
+            LOGGER.info("|" + "------------|".repeat(rooms.size + 1))
+        }
+        val unassignedLessons = lessons.stream()
+            .filter { lesson: Lesson -> lesson.timeslot == null || lesson.room == null }
+            .toList()
+        if (!unassignedLessons.isEmpty()) {
+            LOGGER.info("")
+            LOGGER.info("Unassigned lessons")
+            for (lesson in unassignedLessons) {
+                LOGGER.info("  " + lesson.subject + " - " + lesson.teacher + " - " + lesson.studentGroup)
+            }
+        }
+    }
+
+    enum class DemoData {
+        SMALL,
+        LARGE
+    }
+}
+----
+--
+====
 
 The `main()` method first creates the `SolverFactory`:
 
+[tabs]
+====
+Java::
++
+--
+
 [source,java]
 ----
-SolverFactory<Timetable> solverFactory = SolverFactory.create(new SolverConfig()
+SolverFactory<Timetable> solverFactory = SolverFactory.create(
+    new SolverConfig()
         .withSolutionClass(Timetable.class)
         .withEntityClasses(Lesson.class)
         .withConstraintProviderClass(TimetableConstraintProvider.class)
@@ -404,6 +695,24 @@ SolverFactory<Timetable> solverFactory = SolverFactory.create(new SolverConfig()
         // It's recommended to run for at least 5 minutes ("5m") otherwise.
         .withTerminationSpentLimit(Duration.ofSeconds(5)));
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin]
+----
+val solverFactory = SolverFactory.create<Timetable>(
+    SolverConfig()
+        .withSolutionClass(Timetable::class.java)
+        .withEntityClasses(Lesson::class.java)
+        .withConstraintProviderClass(TimetableConstraintProvider::class.java)
+        // The solver runs only for 5 seconds on this small dataset.
+        // It's recommended to run for at least 5 minutes ("5m") otherwise.
+        .withTerminationSpentLimit(Duration.ofSeconds(5)))
+----
+--
+====
 
 This registers the `@PlanningSolution` class, the `@PlanningEntity` classes,
 and the `ConstraintProvider` class, all of which you created earlier.
@@ -413,18 +722,43 @@ To avoid that, the solver limits the solving time to five seconds.
 
 The `main()` method loads the problem, solves it, and prints the solution after just over five seconds.
 
+[tabs]
+====
+Java::
++
+--
+
 [source,java]
 ----
-        // Load the problem
-        Timetable problem = generateDemoData();
+// Load the problem
+Timetable problem = generateDemoData();
 
-        // Solve the problem
-        Solver<Timetable> solver = solverFactory.buildSolver();
-        Timetable solution = solver.solve(problem);
+// Solve the problem
+Solver<Timetable> solver = solverFactory.buildSolver();
+Timetable solution = solver.solve(problem);
 
-        // Visualize the solution
-        printTimetable(solution);
+// Visualize the solution
+printTimetable(solution);
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin]
+----
+// Load the problem
+val problem = generateDemoData(DemoData.SMALL)
+
+// Solve the problem
+val solver = solverFactory.buildSolver()
+val solution = solver.solve(problem)
+
+// Visualize the solution
+printTimetable(solution)
+----
+--
+====
 
 The `solve()` method doesn't return instantly.
 It runs for five seconds before returning the best solution.
@@ -437,7 +771,7 @@ Increase the termination time to potentially find a better solution.
 The `generateDemoData()` method generates the school timetable problem to solve.
 
 The `printTimetable()` method pretty prints the timetable to the console,
-so it's easy to determine visually whether or not it's a good schedule.
+allowing to determine visually whether it's a good schedule.
 
 === Configure logging
 
@@ -508,6 +842,13 @@ To test each constraint in isolation, use a `ConstraintVerifier` in unit tests.
 This tests each constraint's corner cases in isolation from the other tests,
 which lowers maintenance when adding a new constraint with proper test coverage.
 
+
+[tabs]
+====
+Java::
++
+--
+
 Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
 
 [source,java]
@@ -545,6 +886,56 @@ class TimetableConstraintProviderTest {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+
+Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling.solver
+
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory
+import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
+import org.junit.jupiter.api.Test
+import java.time.DayOfWeek
+import java.time.LocalTime
+
+internal class TimetableConstraintProviderTest {
+    var constraintVerifier: ConstraintVerifier<TimetableConstraintProvider, Timetable> = ConstraintVerifier.build(
+        TimetableConstraintProvider(), Timetable::class.java, Lesson::class.java
+    )
+
+    @Test
+    fun roomConflict() {
+        val firstLesson = Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
+        val conflictingLesson = Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
+        val nonConflictingLesson = Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+        constraintVerifier.verifyThat { obj: TimetableConstraintProvider, constraintFactory: ConstraintFactory? ->
+            obj.roomConflict(
+                constraintFactory
+            )
+        }
+            .given(firstLesson, conflictingLesson, nonConflictingLesson)
+            .penalizesBy(1)
+    }
+
+    companion object {
+        private val ROOM1 = Room("Room1")
+        private val TIMESLOT1 = Timeslot(DayOfWeek.MONDAY, LocalTime.NOON)
+        private val TIMESLOT2 = Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON)
+    }
+}
+----
+--
+====
 
 This test verifies that the constraint `TimetableConstraintProvider::roomConflict` penalizes with a match weight of `1`
 when given three lessons in the same room, where two lessons have the same timeslot.
@@ -588,12 +979,16 @@ Use `debug` logging to show every _step_:
 
 Use `trace` logging to show every _step_ and every _move_ per step.
 
+
 === Make a standalone application
 
 In order to run the application outside an IDE easily, you will need to make some changes to the configuration of your build tool.
 
-==== Executable JAR in Maven
-
+[tabs]
+====
+Maven::
++
+--
 In Maven, add the following to your `pom.xml`:
 
 [source,xml,options="nowrap"]
@@ -679,9 +1074,11 @@ $ mvn clean install
 ...
 $ java -jar target/hello-world-run.jar
 ----
+--
 
-==== Executable application in Gradle
-
+Gradle::
++
+--
 In Gradle, add the following to your `build.gradle`:
 
 [source,gradle,options="nowrap"]
@@ -691,7 +1088,18 @@ application {
 }
 ----
 
-After building the project, you can find an archive with a runnable application inside the `build/distributions/` directory.
+After building the project,
+you can find an archive with a runnable application inside the `build/libs/` directory.
+
+[source,options="nowrap"]
+----
+$ gradle build
+...
+$ java -jar build/libs/hello-world-1.0-SNAPSHOT.jar
+----
+--
+====
+
 
 == Summary
 

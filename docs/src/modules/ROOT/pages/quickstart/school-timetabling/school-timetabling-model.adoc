@@ -16,6 +16,11 @@ and there are no time slots during lunch or other breaks.
 A time slot has no date, because a high school schedule just repeats every week.
 So there is no need for xref:responding-to-change/responding-to-change.adoc#continuousPlanning[continuous planning].
 
+[tabs]
+====
+Java::
++
+--
 Create the `src/main/java/org/acme/schooltimetabling/domain/Timeslot.java` class:
 
 [source,java]
@@ -59,6 +64,42 @@ public class Timeslot {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Timeslot.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling.domain
+
+import java.time.DayOfWeek
+import java.time.LocalTime
+
+class Timeslot {
+
+    lateinit var dayOfWeek: DayOfWeek
+    lateinit var startTime: LocalTime
+    lateinit var endTime: LocalTime
+
+    // No-arg constructor required for Hibernate
+    constructor()
+
+    constructor(dayOfWeek: DayOfWeek, startTime: LocalTime, endTime: LocalTime) {
+        this.dayOfWeek = dayOfWeek
+        this.startTime = startTime
+        this.endTime = endTime
+    }
+
+    override fun toString(): String = "$dayOfWeek $startTime"
+
+}
+----
+--
+====
+
 
 Because no `Timeslot` instances change during solving, a `Timeslot` is called a _problem fact_.
 Such classes do not require any Timefold Solver specific annotations.
@@ -73,6 +114,11 @@ for example, `Room A` or `Room B`.
 For simplicity's sake, all rooms are without capacity limits
 and they can accommodate all lessons.
 
+[tabs]
+====
+Java::
++
+--
 Create the `src/main/java/org/acme/schooltimetabling/domain/Room.java` class:
 
 [source,java]
@@ -101,6 +147,35 @@ public class Room {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Room.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling.domain
+
+class Room {
+
+    lateinit var name: String
+
+    // No-arg constructor required for Hibernate
+    constructor()
+
+    constructor(name: String) {
+        this.name = name
+    }
+
+    override fun toString(): String = name
+
+}
+----
+--
+====
+
 
 `Room` instances do not change during solving, so `Room` is also a _problem fact_.
 
@@ -128,6 +203,11 @@ In order for Timefold Solver to recognize them,
 both the `timeslot` and `room` fields require an `@PlanningVariable` annotation.
 Their containing class, `Lesson`, requires an `@PlanningEntity` annotation.
 
+[tabs]
+====
+Java::
++
+--
 Create the `src/main/java/org/acme/schooltimetabling/domain/Lesson.java` class:
 
 [source,java]
@@ -202,6 +282,60 @@ public class Lesson {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Lesson.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling.domain
+
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity
+import ai.timefold.solver.core.api.domain.lookup.PlanningId
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable
+
+@PlanningEntity
+class Lesson {
+
+    @PlanningId
+    var id: Long? = null
+
+    lateinit var subject: String
+    lateinit var teacher: String
+    lateinit var studentGroup: String
+
+    @PlanningVariable
+    var timeslot: Timeslot? = null
+
+    @PlanningVariable
+    var room: Room? = null
+
+    // No-arg constructor required for Hibernate and Timefold
+    constructor()
+
+    constructor(id: Long?, subject: String, teacher: String, studentGroup: String) {
+        this.id = id
+        this.subject = subject.trim()
+        this.teacher = teacher.trim()
+        this.studentGroup = studentGroup.trim()
+    }
+
+    constructor(id: Long?, subject: String, teacher: String, studentGroup: String, timeslot: Timeslot?, room: Room?)
+            : this(id, subject, teacher, studentGroup) {
+        this.timeslot = timeslot
+        this.room = room
+    }
+
+
+    override fun toString(): String = "$subject($id)"
+
+}
+----
+--
+====
 
 The `Lesson` class has an `@PlanningEntity` annotation,
 so Timefold Solver knows that this class changes during solving
