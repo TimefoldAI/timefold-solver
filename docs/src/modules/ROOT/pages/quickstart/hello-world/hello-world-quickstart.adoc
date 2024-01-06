@@ -1088,7 +1088,15 @@ application {
 }
 ----
 
-After building the project, you can find an archive with a runnable application inside the `build/distributions/` directory.
+After building the project,
+you can find an archive with a runnable application inside the `build/libs/` directory.
+
+[source,options="nowrap"]
+----
+$ gradle build
+...
+$ java -jar build/libs/hello-world-1.0-SNAPSHOT.jar
+----
 --
 ====
 
