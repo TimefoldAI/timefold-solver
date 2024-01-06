@@ -8,7 +8,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,12 +43,15 @@ import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -156,9 +167,11 @@ class SolverManagerTest {
                 solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
 
         AtomicInteger exceptionCount = new AtomicInteger();
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solve(1L,
-                problemId -> PlannerTestUtils.generateTestdataSolution("s1"),
-                null, (problemId, throwable) -> exceptionCount.incrementAndGet());
+        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1"))
+                .withExceptionHandler((problemId, throwable) -> exceptionCount.incrementAndGet())
+                .run();
         assertThatThrownBy(solverJob1::getFinalBestSolution)
                 .isInstanceOf(ExecutionException.class)
                 .hasRootCauseMessage("exceptionInSolver");
@@ -177,14 +190,17 @@ class SolverManagerTest {
 
         CountDownLatch consumerInvoked = new CountDownLatch(1);
         AtomicReference<Throwable> errorInConsumer = new AtomicReference<>();
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solve(1L,
-                problemId -> PlannerTestUtils.generateTestdataSolution("s1"),
-                bestSolution -> {
+        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1"))
+                .withFinalBestSolutionConsumer(bestSolution -> {
                     throw new IllegalStateException("exceptionInConsumer");
-                }, (problemId, throwable) -> {
+                })
+                .withExceptionHandler((problemId, throwable) -> {
                     errorInConsumer.set(throwable);
                     consumerInvoked.countDown();
-                });
+                })
+                .run();
 
         consumerInvoked.await();
         assertThat(errorInConsumer.get())
@@ -208,9 +224,197 @@ class SolverManagerTest {
         Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
                 PlannerTestUtils.generateTestdataSolution("s1"));
 
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solve(1L, problemFinder, finalBestSolutionConsumer,
-                exceptionHandler);
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .run();
         solverJob.getFinalBestSolution();
+    }
+
+    @Test
+    void solveWithOverride() {
+        // Default spent limit is 1L
+        TerminationConfig terminationConfig = new TerminationConfig()
+                .withSpentLimit(Duration.ofSeconds(1L));
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withTerminationConfig(terminationConfig);
+        solverConfig.withTerminationConfig(terminationConfig);
+
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        TestdataUnannotatedExtendedSolution problem =
+                new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
+
+        DefaultSolverJob<TestdataSolution, Long> solverJob =
+                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(1L, problem);
+        assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
+
+        // Spent limit overridden by 100L
+        SolverConfigOverride<TestdataSolution> configOverride = new SolverConfigOverride<TestdataSolution>()
+                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
+        solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                .withProblemId(2L)
+                .withProblem(problem)
+                .withConfigOverride(configOverride)
+                .run();
+        assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
+    }
+
+    @Test
+    void testSolveBuilderForExistingSolvingMethods() {
+        SolverJobBuilder<TestdataSolution, Long> solverJobBuilder = mock(SolverJobBuilder.class);
+        SolverManager<TestdataSolution, Long> solverManager = mock(SolverManager.class);
+
+        doReturn(solverJobBuilder).when(solverManager).solveBuilder();
+        doReturn(solverJobBuilder).when(solverJobBuilder).withProblemId(anyLong());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withProblem(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withFinalBestSolutionConsumer(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withExceptionHandler(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withProblemFinder(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class));
+        solverManager.solve(1L, mock(TestdataSolution.class));
+        verify(solverJobBuilder, times(1)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(1)).withProblem(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class), any(Consumer.class));
+        solverManager.solve(1L, mock(TestdataSolution.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(2)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(2)).withProblem(any());
+        verify(solverJobBuilder, times(1)).withFinalBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class), any(Consumer.class),
+                any(BiConsumer.class));
+        solverManager.solve(1L, mock(TestdataSolution.class), mock(Consumer.class), mock(BiConsumer.class));
+        verify(solverJobBuilder, times(3)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(3)).withProblem(any());
+        verify(solverJobBuilder, times(2)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(1)).withExceptionHandler(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(Function.class), any(Consumer.class));
+        solverManager.solve(1L, mock(Function.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(4)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(1)).withProblemFinder(any());
+        verify(solverJobBuilder, times(3)).withFinalBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solve(any(Long.class), any(Function.class), any(Consumer.class),
+                any(BiConsumer.class));
+        solverManager.solve(1L, mock(Function.class), mock(Consumer.class), mock(BiConsumer.class));
+        verify(solverJobBuilder, times(5)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(2)).withProblemFinder(any());
+        verify(solverJobBuilder, times(4)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(2)).withExceptionHandler(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class));
+        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(6)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(3)).withProblemFinder(any());
+        verify(solverJobBuilder, times(1)).withBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(TestdataSolution.class),
+                any(Consumer.class));
+        solverManager.solveAndListen(1L, mock(TestdataSolution.class), mock(Consumer.class));
+        verify(solverJobBuilder, times(7)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(4)).withProblem(any());
+        verify(solverJobBuilder, times(2)).withBestSolutionConsumer(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class),
+                any(BiConsumer.class));
+        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class), mock(BiConsumer.class));
+        verify(solverJobBuilder, times(8)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(4)).withProblemFinder(any());
+        verify(solverJobBuilder, times(3)).withBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(3)).withExceptionHandler(any());
+
+        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class),
+                any(Consumer.class), any(BiConsumer.class));
+        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class), mock(Consumer.class),
+                mock(BiConsumer.class));
+        verify(solverJobBuilder, times(9)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(5)).withProblemFinder(any());
+        verify(solverJobBuilder, times(4)).withBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(5)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(4)).withExceptionHandler(any());
+    }
+
+    @Test
+    @Timeout(60)
+    void solveWithBuilder() throws InterruptedException, BrokenBarrierException {
+        CyclicBarrier startedBarrier = new CyclicBarrier(2);
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+        MutableObject finalBestSolution = new MutableObject();
+        Consumer<Object> finalBestConsumer = o -> {
+            finalBestSolution.setValue(o);
+            try {
+                startedBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFinalBestSolutionConsumer(finalBestConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .run();
+
+        startedBarrier.await();
+        assertThat(finalBestSolution.getValue()).isNotNull();
+    }
+
+    @Test
+    @Timeout(60)
+    void solveAndListenWithBuilder() throws InterruptedException, BrokenBarrierException {
+        CyclicBarrier startedBarrier = new CyclicBarrier(2);
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+        MutableObject finalBestSolution = new MutableObject();
+        Consumer<Object> finalBestConsumer = o -> {
+            finalBestSolution.setValue(o);
+            try {
+                startedBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        MutableObject bestSolution = new MutableObject();
+        Consumer<Object> bestConsumer = o -> {
+            bestSolution.setValue(o);
+        };
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFinalBestSolutionConsumer(finalBestConsumer)
+                .withBestSolutionConsumer(bestConsumer)
+                .withExceptionHandler(exceptionHandler)
+                .run();
+
+        startedBarrier.await();
+        assertThat(finalBestSolution.getValue()).isNotNull();
+        assertThat(bestSolution.getValue()).isNotNull();
     }
 
     @Test
@@ -257,9 +461,10 @@ class SolverManagerTest {
         AtomicInteger finalBestSolutionCount = new AtomicInteger();
         AtomicReference<Throwable> consumptionError = new AtomicReference<>();
         CountDownLatch finalBestSolutionConsumed = new CountDownLatch(1);
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveAndListen(1L,
-                problemId -> PlannerTestUtils.generateTestdataSolution("s1", 4),
-                bestSolution -> {
+        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                .withBestSolutionConsumer(bestSolution -> {
                     boolean isFirstReceivedSolution = bestSolutionCount.incrementAndGet() == 1;
                     if (bestSolution.getEntityList().get(1).getValue() == null) {
                         // This best solution may be skipped as well.
@@ -271,12 +476,13 @@ class SolverManagerTest {
                     } else if (bestSolution.getEntityList().get(2).getValue() == null && !isFirstReceivedSolution) {
                         fail("No skip ahead occurred: both e2 and e3 are null in a best solution event.");
                     }
-                },
-                finalBestSolution -> {
+                })
+                .withFinalBestSolutionConsumer(finalBestSolution -> {
                     finalBestSolutionCount.incrementAndGet();
                     finalBestSolutionConsumed.countDown();
-                },
-                (problemId, throwable) -> consumptionError.set(throwable));
+                })
+                .withExceptionHandler((problemId, throwable) -> consumptionError.set(throwable))
+                .run();
         assertSolutionInitialized(solverJob1.getFinalBestSolution());
         // EventCount can be 2 or 3, depending on the race, but it can never be 4.
         assertThat(bestSolutionCount).hasValueLessThan(4);
@@ -439,20 +645,23 @@ class SolverManagerTest {
             List<TestdataSolution> consumedBestSolutions = Collections.synchronizedList(new ArrayList<>());
             String solutionName = String.format("s%d", id);
             if (listenWhileSolving) {
-                jobs.add(solverManager.solveAndListen(
-                        id,
-                        problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2),
-                        consumedBestSolutions::add, (finalBestSolution) -> {
+                jobs.add(solverManager.solveBuilder()
+                        .withProblemId(id)
+                        .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2))
+                        .withBestSolutionConsumer(consumedBestSolutions::add)
+                        .withFinalBestSolutionConsumer((finalBestSolution) -> {
                             finalBestSolutionConsumed.countDown();
-                        }, null));
+                        })
+                        .run());
             } else {
-                jobs.add(solverManager.solve(
-                        id,
-                        problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2),
-                        (finalBestSolution) -> {
+                jobs.add(solverManager.solveBuilder()
+                        .withProblemId(id)
+                        .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2))
+                        .withFinalBestSolutionConsumer((finalBestSolution) -> {
                             consumedBestSolutions.add(finalBestSolution);
                             finalBestSolutionConsumed.countDown();
-                        }, null));
+                        })
+                        .run());
             }
             solutionMap.put(id, consumedBestSolutions);
         }
@@ -531,9 +740,11 @@ class SolverManagerTest {
 
         final int entityAndValueCount = 4;
         AtomicReference<TestdataSolution> bestSolution = new AtomicReference<>();
-        solverManager.solveAndListen(problemId,
-                id -> PlannerTestUtils.generateTestdataSolution("s1", entityAndValueCount),
-                bestSolution::set);
+        solverManager.solveBuilder()
+                .withProblemId(problemId)
+                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", entityAndValueCount))
+                .withBestSolutionConsumer(bestSolution::set)
+                .run();
 
         CompletableFuture<Void> futureChange = solverManager
                 .addProblemChange(problemId, (workingSolution, problemChangeDirector) -> {
@@ -552,8 +763,13 @@ class SolverManagerTest {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverManager = SolverManager.create(solverConfig);
 
-        solverManager.solveAndListen(1L, id -> PlannerTestUtils.generateTestdataSolution("s1", 4), testdataSolution -> {
-        });
+        solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                .withBestSolutionConsumer(testdataSolution -> {
+                })
+                .run();
+
         final long nonExistingProblemId = 999L;
         assertThatIllegalStateException()
                 .isThrownBy(() -> solverManager.addProblemChange(nonExistingProblemId,
@@ -589,8 +805,11 @@ class SolverManagerTest {
         final long secondProblemId = 2L;
         final int entityAndValueCount = 4;
         AtomicReference<TestdataSolution> bestSolution = new AtomicReference<>();
-        solverManager.solveAndListen(secondProblemId,
-                id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount), bestSolution::set);
+        solverManager.solveBuilder()
+                .withProblemId(secondProblemId)
+                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
+                .withBestSolutionConsumer(bestSolution::set)
+                .run();
 
         CompletableFuture<Void> futureChange = solverManager
                 .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {

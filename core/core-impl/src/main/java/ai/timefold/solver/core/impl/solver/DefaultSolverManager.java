@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,8 +15,10 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverJobBuilder;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -57,10 +60,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     }
 
     private ProblemId_ getProblemIdOrThrow(ProblemId_ problemId) {
-        if (problemId != null) {
-            return problemId;
-        }
-        throw new NullPointerException("Invalid problemId (null) given to SolverManager.");
+        return Objects.requireNonNull(problemId, "Invalid problemId (null) given to SolverManager.");
     }
 
     private DefaultSolverJob<Solution_, ProblemId_> getSolverJob(ProblemId_ problemId) {
@@ -68,29 +68,30 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     }
 
     @Override
-    public SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
-            Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        return solve(getProblemIdOrThrow(problemId), problemFinder, null, finalBestSolutionConsumer, exceptionHandler);
+    public SolverJobBuilder<Solution_, ProblemId_> solveBuilder() {
+        return new DefaultSolverJobBuilder<>(this);
     }
 
-    @Override
-    public SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
+    protected SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            SolverConfigOverride<Solution_> solverConfigOverride) {
+        if (bestSolutionConsumer == null) {
+            throw new IllegalStateException("The consumer bestSolutionConsumer is required.");
+        }
         return solve(getProblemIdOrThrow(problemId), problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                exceptionHandler);
+                exceptionHandler, solverConfigOverride);
     }
 
     protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        Solver<Solution_> solver = solverFactory.buildSolver();
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            SolverConfigOverride<Solution_> configOverride) {
+        Solver<Solution_> solver = solverFactory.buildSolver(configOverride);
         ((DefaultSolver<Solution_>) solver).setMonitorTagMap(Map.of("problem.id", problemId.toString()));
         BiConsumer<? super ProblemId_, ? super Throwable> finalExceptionHandler = (exceptionHandler != null)
                 ? exceptionHandler

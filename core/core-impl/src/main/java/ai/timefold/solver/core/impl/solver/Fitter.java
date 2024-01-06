@@ -36,11 +36,11 @@ final class Fitter<Solution_, In_, Out_, Score_ extends Score<Score_>>
         if (uninitializedCount > 1) {
             throw new IllegalStateException("""
                     Solution (%s) has (%d) uninitialized elements.
-                    Fit Recommendation API requires at most one uninitialized element in the solution.
-                    """
+                    Fit Recommendation API requires at most one uninitialized element in the solution."""
                     .formatted(originalSolution, uninitializedCount));
         }
-        var originalScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL, true);
+        var originalScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL,
+                InnerScoreDirector.ScoreAnalysisMode.RECOMMENDATION_API);
         var clonedElement = scoreDirector.lookUpWorkingObject(originalElement);
         var processor =
                 new FitProcessor<>(solverFactory, propositionFunction, originalScoreAnalysis, clonedElement, fetchPolicy);

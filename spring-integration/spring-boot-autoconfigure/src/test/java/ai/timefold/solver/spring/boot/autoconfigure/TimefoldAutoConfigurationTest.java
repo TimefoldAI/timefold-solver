@@ -14,9 +14,11 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.ScoreManager;
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -25,7 +27,9 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.ChainedSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.TestdataChainedSpringConstraintProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringEntity;
@@ -276,6 +280,49 @@ class TimefoldAutoConfigurationTest {
                     TestdataSpringSolution solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isGreaterThanOrEqualTo(0);
+                });
+    }
+
+    @Test
+    void solveWithTimeOverride() {
+        contextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0",
+                        "timefold.solver.termination.spent-limit=30s")
+                .run(context -> {
+                    SolverManager<TestdataSpringSolution, Long> solverManager = context.getBean(SolverManager.class);
+                    TestdataSpringSolution problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .collect(Collectors.toList()));
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .collect(Collectors.toList()));
+                    DefaultSolverJob<TestdataSpringSolution, Long> solverJob =
+                            (DefaultSolverJob<TestdataSpringSolution, Long>) solverManager.solveBuilder()
+                                    .withProblemId(1L)
+                                    .withProblem(problem)
+                                    .withConfigOverride(
+                                            new SolverConfigOverride<TestdataSpringSolution>()
+                                                    .withTerminationConfig(new TerminationConfig()
+                                                            .withSpentLimit(Duration.ofSeconds(10L))))
+                                    .run();
+                    SolverScope<TestdataSpringSolution> customScope = new SolverScope<>() {
+                        @Override
+                        public long calculateTimeMillisSpentUpToNow() {
+                            // Return five seconds to make the time gradient predictable
+                            return 5000L;
+                        }
+                    };
+                    // We ensure the best-score limit won't take priority
+                    customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
+                    customScope.setBestScore(HardSoftScore.of(-1, -1));
+                    double gradientTime = solverJob.getSolverTermination().calculateSolverTimeGradient(customScope);
+                    TestdataSpringSolution solution = solverJob.getFinalBestSolution();
+                    assertThat(solution).isNotNull();
+                    assertThat(solution.getScore().score()).isGreaterThanOrEqualTo(0);
+                    // Spent-time is 30s by default, but it is overridden with 10. The gradient time must be 50%
+                    assertThat(gradientTime).isEqualTo(0.5);
                 });
     }
 
