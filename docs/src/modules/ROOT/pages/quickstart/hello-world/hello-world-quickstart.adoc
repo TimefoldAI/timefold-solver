@@ -450,45 +450,44 @@ object TimetableApp {
 
     fun generateDemoData(demoData: DemoData): Timetable {
         val timeslots: MutableList<Timeslot> = ArrayList(10)
-        var nextTimeslotId = 0L
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
 
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
-        timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
         if (demoData == DemoData.LARGE) {
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.WEDNESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.WEDNESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.WEDNESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.WEDNESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.WEDNESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.THURSDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.THURSDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.THURSDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.THURSDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.THURSDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.FRIDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.FRIDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.FRIDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
-            timeslots.add(Timeslot(nextTimeslotId++, DayOfWeek.FRIDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
-            timeslots.add(Timeslot(nextTimeslotId, DayOfWeek.FRIDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+            timeslots.add(Timeslot(DayOfWeek.WEDNESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+            timeslots.add(Timeslot(DayOfWeek.THURSDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+            timeslots.add(Timeslot(DayOfWeek.FRIDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
         }
 
         val rooms: MutableList<Room> = ArrayList(3)
         var nextRoomId = 0L
-        rooms.add(Room(nextRoomId++, "Room A"))
-        rooms.add(Room(nextRoomId++, "Room B"))
-        rooms.add(Room(nextRoomId++, "Room C"))
+        rooms.add(Room("Room A"))
+        rooms.add(Room("Room B"))
+        rooms.add(Room("Room C"))
         if (demoData == DemoData.LARGE) {
-            rooms.add(Room(nextRoomId++, "Room D"))
-            rooms.add(Room(nextRoomId++, "Room E"))
-            rooms.add(Room(nextRoomId, "Room F"))
+            rooms.add(Room("Room D"))
+            rooms.add(Room("Room E"))
+            rooms.add(Room("Room F"))
         }
 
         val lessons: MutableList<Lesson> = ArrayList()
@@ -930,9 +929,9 @@ internal class TimetableConstraintProviderTest {
     }
 
     companion object {
-        private val ROOM1 = Room(1, "Room1")
-        private val TIMESLOT1 = Timeslot(1, DayOfWeek.MONDAY, LocalTime.NOON)
-        private val TIMESLOT2 = Timeslot(2, DayOfWeek.TUESDAY, LocalTime.NOON)
+        private val ROOM1 = Room("Room1")
+        private val TIMESLOT1 = Timeslot(DayOfWeek.MONDAY, LocalTime.NOON)
+        private val TIMESLOT2 = Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON)
     }
 }
 ----
