@@ -480,7 +480,6 @@ object TimetableApp {
         }
 
         val rooms: MutableList<Room> = ArrayList(3)
-        var nextRoomId = 0L
         rooms.add(Room("Room A"))
         rooms.add(Room("Room B"))
         rooms.add(Room("Room C"))
