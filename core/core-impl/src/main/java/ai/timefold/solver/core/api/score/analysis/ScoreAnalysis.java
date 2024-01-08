@@ -1,11 +1,12 @@
 package ai.timefold.solver.core.api.score.analysis;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,9 +56,6 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
     public ScoreAnalysis {
         Objects.requireNonNull(score, "score");
         Objects.requireNonNull(constraintMap, "constraintMap");
-        if (constraintMap.isEmpty()) {
-            throw new IllegalArgumentException("The constraintMap must not be empty.");
-        }
         // Ensure consistent order and no external interference.
         var comparator = Comparator.<ConstraintAnalysis<Score_>, Score_> comparing(ConstraintAnalysis::weight)
                 .reversed()
@@ -130,8 +128,17 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
                             return ConstraintAnalysis.diff(constraintRef, constraintAnalysis, otherConstraintAnalysis);
                         },
                         (constraintRef, otherConstraintRef) -> constraintRef,
-                        TreeMap::new));
+                        HashMap::new));
         return new ScoreAnalysis<>(score.subtract(other.score()), result);
+    }
+
+    /**
+     * Returns individual {@link ConstraintAnalysis} instances that make up this {@link ScoreAnalysis}.
+     *
+     * @return equivalent to {@code constraintMap().values()}
+     */
+    public Collection<ConstraintAnalysis<Score_>> constraintAnalyses() {
+        return constraintMap.values();
     }
 
 }
