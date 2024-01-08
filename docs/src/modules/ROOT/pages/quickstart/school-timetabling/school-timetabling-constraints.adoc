@@ -9,8 +9,10 @@ It might be the _optimal_ solution.
 Because this use case has hard and soft constraints,
 use the `HardSoftScore` class to represent the score:
 
-* Hard constraints must not be broken. For example: _A room can have at most one lesson at the same time._
-* Soft constraints should not be broken. For example: _A teacher prefers to teach in a single room._
+* Hard constraints must not be broken.
+For example: _A room can have at most one lesson at the same time._
+* Soft constraints should not be broken.
+For example: _A teacher prefers to teach in a single room._
 
 Hard constraints are weighted against other hard constraints.
 Soft constraints are weighted too, against other soft constraints.
@@ -18,6 +20,11 @@ Soft constraints are weighted too, against other soft constraints.
 
 To calculate the score, you could implement an `EasyScoreCalculator` class:
 
+[tabs]
+====
+Java::
++
+--
 [source,java]
 ----
 public class TimetableEasyScoreCalculator implements EasyScoreCalculator<Timetable, HardSoftScore> {
@@ -52,15 +59,60 @@ public class TimetableEasyScoreCalculator implements EasyScoreCalculator<Timetab
 
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin]
+----
+class TimetableEasyScoreCalculator : EasyScoreCalculator<Timetable, HardSoftScore> {
+    override fun calculateScore(solution: Timetable): HardSoftScore {
+        val lessons = solution.lessons
+        var hardScore = 0
+        for (a in lessons) {
+            for (b in lessons) {
+                if (a.timeslot != null && a.timeslot == b.timeslot && a.id!! < b.id!!) {
+                    // A room can accommodate at most one lesson at the same time.
+                    if (a.room != null && a.room == b.room) {
+                        hardScore--
+                    }
+                    // A teacher can teach at most one lesson at the same time.
+                    if (a.teacher == b.teacher) {
+                        hardScore--
+                    }
+                    // A student can attend at most one lesson at the same time.
+                    if (a.studentGroup == b.studentGroup) {
+                        hardScore--
+                    }
+                }
+            }
+        }
+        val softScore = 0
+        // Soft constraints are only implemented in the timefold-quickstarts code
+        return HardSoftScore.of(hardScore, softScore)
+    }
+}
+----
+--
+====
+
 
 Unfortunately **that does not scale well**, because it is non-incremental:
 every time a lesson is assigned to a different time slot or room,
 all lessons are re-evaluated to calculate the new score.
 
-Instead, create a `src/main/java/org/acme/schooltimetabling/solver/TimetableConstraintProvider.java` class
+Instead, create a `TimetableConstraintProvider` class
 to perform incremental score calculation.
 It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
 which is inspired by Java Streams and SQL:
+
+[tabs]
+====
+Java::
++
+--
+Create a `src/main/java/org/acme/schooltimetabling/solver/TimetableConstraintProvider.java` class:
 
 [source,java]
 ----
@@ -122,5 +174,145 @@ public class TimetableConstraintProvider implements ConstraintProvider {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create a `src/main/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProvider.kt` class:
+
+[source,kotlin]
+----
+package org.acme.kotlin.schooltimetabling.solver
+
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore
+import ai.timefold.solver.core.api.score.stream.Constraint
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider
+import ai.timefold.solver.core.api.score.stream.Joiners
+import org.acme.kotlin.schooltimetabling.domain.Lesson
+import org.acme.kotlin.schooltimetabling.solver.justifications.*
+import java.time.Duration
+
+class TimeTableConstraintProvider : ConstraintProvider {
+
+    override fun defineConstraints(constraintFactory: ConstraintFactory): Array<Constraint> {
+        return arrayOf(
+            // Hard constraints
+            roomConflict(constraintFactory),
+            teacherConflict(constraintFactory),
+            studentGroupConflict(constraintFactory),
+            // Soft constraints
+            teacherRoomStability(constraintFactory),
+            teacherTimeEfficiency(constraintFactory),
+            studentGroupSubjectVariety(constraintFactory)
+        )
+    }
+
+    fun roomConflict(constraintFactory: ConstraintFactory): Constraint {
+        // A room can accommodate at most one lesson at the same time.
+        return constraintFactory
+            // Select each pair of 2 different lessons ...
+            .forEachUniquePair(
+                Lesson::class.java,
+                // ... in the same timeslot ...
+                Joiners.equal(Lesson::timeslot),
+                // ... in the same room ...
+                Joiners.equal(Lesson::room)
+            )
+            // ... and penalize each pair with a hard weight.
+            .penalize(HardSoftScore.ONE_HARD)
+            .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
+                RoomConflictJustification(lesson1.room, lesson1,lesson2)}
+            .asConstraint("Room conflict")
+    }
+
+    fun teacherConflict(constraintFactory: ConstraintFactory): Constraint {
+        // A teacher can teach at most one lesson at the same time.
+        return constraintFactory
+            .forEachUniquePair(
+                Lesson::class.java,
+                Joiners.equal(Lesson::timeslot),
+                Joiners.equal(Lesson::teacher)
+            )
+            .penalize(HardSoftScore.ONE_HARD)
+            .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
+                TeacherConflictJustification(lesson1.teacher, lesson1, lesson2)}
+            .asConstraint("Teacher conflict")
+    }
+
+    fun studentGroupConflict(constraintFactory: ConstraintFactory): Constraint {
+        // A student can attend at most one lesson at the same time.
+        return constraintFactory
+            .forEachUniquePair(
+                Lesson::class.java,
+                Joiners.equal(Lesson::timeslot),
+                Joiners.equal(Lesson::studentGroup)
+            )
+            .penalize(HardSoftScore.ONE_HARD)
+            .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
+                StudentGroupConflictJustification(lesson1.studentGroup, lesson1, lesson2)}
+            .asConstraint("Student group conflict")
+    }
+
+    fun teacherRoomStability(constraintFactory: ConstraintFactory): Constraint {
+        // A teacher prefers to teach in a single room.
+        return constraintFactory
+            .forEachUniquePair(
+                Lesson::class.java,
+                Joiners.equal(Lesson::teacher)
+            )
+            .filter { lesson1: Lesson, lesson2: Lesson -> lesson1.room !== lesson2.room }
+            .penalize(HardSoftScore.ONE_SOFT)
+            .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
+                TeacherRoomStabilityJustification(lesson1.teacher, lesson1, lesson2)}
+            .asConstraint("Teacher room stability")
+    }
+
+    fun teacherTimeEfficiency(constraintFactory: ConstraintFactory): Constraint {
+        // A teacher prefers to teach sequential lessons and dislikes gaps between lessons.
+        return constraintFactory
+            .forEach(Lesson::class.java)
+            .join(Lesson::class.java,
+                Joiners.equal(Lesson::teacher),
+                Joiners.equal { lesson: Lesson -> lesson.timeslot?.dayOfWeek })
+            .filter { lesson1: Lesson, lesson2: Lesson ->
+                val between = Duration.between(
+                    lesson1.timeslot?.endTime,
+                    lesson2.timeslot?.startTime
+                )
+                !between.isNegative && between <= Duration.ofMinutes(30)
+            }
+            .reward(HardSoftScore.ONE_SOFT)
+            .justifyWith{ lesson1: Lesson, lesson2: Lesson, _ ->
+                TeacherTimeEfficiencyJustification(lesson1.teacher, lesson1, lesson2)}
+            .asConstraint("Teacher time efficiency")
+    }
+
+    fun studentGroupSubjectVariety(constraintFactory: ConstraintFactory): Constraint {
+        // A student group dislikes sequential lessons on the same subject.
+        return constraintFactory
+            .forEach(Lesson::class.java)
+            .join(Lesson::class.java,
+                Joiners.equal(Lesson::subject),
+                Joiners.equal(Lesson::studentGroup),
+                Joiners.equal { lesson: Lesson -> lesson.timeslot?.dayOfWeek })
+            .filter { lesson1: Lesson, lesson2: Lesson ->
+                val between = Duration.between(
+                    lesson1.timeslot?.endTime,
+                    lesson2.timeslot?.startTime
+                )
+                !between.isNegative && between <= Duration.ofMinutes(30)
+            }
+            .penalize(HardSoftScore.ONE_SOFT)
+            .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
+                StudentGroupSubjectVarietyJustification(lesson1.studentGroup, lesson1, lesson2)}
+            .asConstraint("Student group subject variety")
+    }
+
+}
+----
+--
+====
 
 The `ConstraintProvider` scales an order of magnitude better than the `EasyScoreCalculator`: __O__(n) instead of __O__(n²).
