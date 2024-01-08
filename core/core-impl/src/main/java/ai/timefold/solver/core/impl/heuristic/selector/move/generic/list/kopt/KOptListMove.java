@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
@@ -18,6 +19,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+    private final SingletonInverseVariableSupply inverseVariableSupply;
     private final KOptDescriptor<?> descriptor;
     private final List<FlipSublistAction> equivalent2Opts;
     private final KOptAffectedElements affectedElementsInfo;
@@ -33,6 +35,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             int postShiftAmount,
             int[] newEndIndices) {
         this.listVariableDescriptor = listVariableDescriptor;
+        this.inverseVariableSupply = inverseVariableSupply;
         this.descriptor = descriptor;
         this.equivalent2Opts = equivalent2Opts;
         this.postShiftAmount = postShiftAmount;
@@ -59,6 +62,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     private KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            SingletonInverseVariableSupply inverseVariableSupply,
             KOptDescriptor<?> descriptor,
             List<FlipSublistAction> equivalent2Opts,
             MultipleDelegateList<?> combinedList,
@@ -66,6 +70,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             int[] newEndIndices,
             Object[] originalEntities) {
         this.listVariableDescriptor = listVariableDescriptor;
+        this.inverseVariableSupply = inverseVariableSupply;
         this.descriptor = descriptor;
         this.equivalent2Opts = equivalent2Opts;
         this.postShiftAmount = postShiftAmount;
@@ -157,6 +162,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         return new KOptListMove<>(listVariableDescriptor,
+                innerScoreDirector.getSupplyManager().demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor)),
                 descriptor, rebasedEquivalent2Opts, rebasedList, postShiftAmount, newEndIndices, newEntities);
     }
 

@@ -31,7 +31,7 @@ record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor, MultipleD
     }
 
     void doMoveOnGenuineVariables() {
-        flipSublist(combinedList, fromIndexInclusive, toIndexExclusive);
+        flipSublist(combinedList, 0, fromIndexInclusive, toIndexExclusive);
     }
 
     public FlipSublistAction rebase(MultipleDelegateList<Object> rebasedList) {
@@ -41,12 +41,13 @@ record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor, MultipleD
                 toIndexExclusive);
     }
 
-    public static <T> void flipSublist(List<T> originalList, int fromIndexInclusive, int toIndexExclusive) {
+    public static <T> void flipSublist(List<T> originalList, int entityFirstUnpinnedIndex, int fromIndexInclusive,
+            int toIndexExclusive) {
         if (fromIndexInclusive < toIndexExclusive) {
             Collections.reverse(originalList.subList(fromIndexInclusive, toIndexExclusive));
         } else {
             List<T> firstHalfReversedPath = originalList.subList(fromIndexInclusive, originalList.size());
-            List<T> secondHalfReversedPath = originalList.subList(0, toIndexExclusive);
+            List<T> secondHalfReversedPath = originalList.subList(entityFirstUnpinnedIndex, toIndexExclusive);
 
             // Reverse the combined list firstHalfReversedPath + secondHalfReversedPath
             // For instance, (1, 2, 3)(4, 5, 6, 7, 8, 9) becomes

@@ -324,7 +324,7 @@ public class KOptListMoveIteratorTest {
 
     @Test
     void testSequentialKOptOnSameEntity() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 4, new int[] { 1, 1, 1, 1 });
+        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 5, new int[] { 1, 1, 1, 1 });
 
         KOptMoveInfo kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 3, "e1", "e1", "e1");
         KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
@@ -337,7 +337,7 @@ public class KOptListMoveIteratorTest {
 
     @Test
     void testSequentialKOptOnDifferentEntities() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 4, new int[] { 1, 1, 1, 1 });
+        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 5, new int[] { 1, 1, 1, 1 });
 
         KOptMoveInfo kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 5, "e1", "e2", "e1", "e2", "e1");
         KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
@@ -346,7 +346,7 @@ public class KOptListMoveIteratorTest {
 
     @Test
     void testNonsequentialKOptOnSameEntity() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 4, new int[] { 1, 1, 1, 1 });
+        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 6, new int[] { 1, 1, 1, 1 });
 
         KOptMoveInfo kOptMoveInfo = setupValidNonsequential4OptMove(mocks, "e1", "e1", "e1", "e1", "e1");
         KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
@@ -355,7 +355,7 @@ public class KOptListMoveIteratorTest {
 
     @Test
     void testNonsequentialKOptOnDifferentEntity() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 4, new int[] { 1, 1, 1, 1 });
+        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 6, new int[] { 1, 1, 1, 1 });
 
         KOptMoveInfo kOptMoveInfo = setupValidNonsequential4OptMove(mocks, "e1", "e2", "e1", "e2", "e1");
         KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();

@@ -238,7 +238,12 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         int cycleCount = cycleInfo.cycleCount();
         int[] cycle = cycleInfo.indexToCycleIdentifier();
 
-        if (cycleCount == 1 || cycleCount > maxCyclesPatchedInInfeasibleMove) {
+        // If cycleCount != 1,
+        // we are changing an infeasible k-opt move that results in cycleCount cycles
+        // into a (k+cycleCount) move.
+        // If the k+cycleCount > maxK, we should ignore generating the move
+        // Note: maxCyclesPatchedInInfeasibleMove = maxK
+        if (cycleCount == 1 || k + cycleCount > maxCyclesPatchedInInfeasibleMove) {
             return descriptor;
         }
         int currentCycle =
