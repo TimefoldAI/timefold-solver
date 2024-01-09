@@ -253,7 +253,12 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             if (cycle[removedEdgeIndexToTourOrder[2 * i]] == currentCycle) {
                 Node_ sStart = oldRemovedEdges[removedEdgeIndexToTourOrder[2 * i]];
                 Node_ sStop = oldRemovedEdges[removedEdgeIndexToTourOrder[2 * i + 1]];
+                int attemptRemaining = k;
                 for (s1 = sStart; s1 != sStop; s1 = s2) {
+                    attemptRemaining--;
+                    if (attemptRemaining == 0) {
+                        break;
+                    }
                     Node_[] removedEdges = Arrays.copyOf(oldRemovedEdges, oldRemovedEdges.length + 2);
 
                     removedEdges[2 * k + 1] = s1;

@@ -66,6 +66,7 @@ class KOptListMoveSelectorTest {
     }
 
     private SolverConfig decorateSolverConfigWithPhases(SolverConfig solverConfig) {
+        // Use maxK = 6 so patchCycles is also tested
         return solverConfig
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withPhaseList(
@@ -81,7 +82,7 @@ class KOptListMoveSelectorTest {
                                         .withMoveSelectorConfig(
                                                 new KOptListMoveSelectorConfig()
                                                         .withMinimumK(2)
-                                                        .withMaximumK(4))));
+                                                        .withMaximumK(6))));
     }
 
     private static <Solution_> Solution_ updateSolution(SolverFactory<Solution_> solverFactory, Solution_ solution) {
