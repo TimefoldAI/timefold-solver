@@ -28,6 +28,7 @@ import io.quarkus.arc.Arc;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+// TODO - Adatper class to work with multiple solver configurations
 @ApplicationScoped
 public class TimefoldDevUIPropertiesRPCService {
 

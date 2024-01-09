@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class CollectionUtils {
 
@@ -86,6 +87,40 @@ public final class CollectionUtils {
                 var set = newHashSet(size);
                 for (T element : collection) {
                     if (set.add(element)) {
+                        resultList.add(element);
+                    }
+                }
+                resultList.trimToSize();
+                return resultList;
+            }
+        }
+    }
+
+    public static <T> List<T> toDistinctList(Collection<T> collection, Function<? super T, ?> keyExtractor) {
+        int size = collection.size();
+        switch (size) {
+            case 0 -> {
+                return Collections.emptyList();
+            }
+            case 1 -> {
+                if (collection instanceof List<T> list) {
+                    return list; // Optimization: not making a defensive copy.
+                } else {
+                    return Collections.singletonList(collection.iterator().next());
+                }
+            }
+            default -> {
+                if (collection instanceof Set<T> set) {
+                    return new ArrayList<>(set);
+                }
+                /*
+                 * The following is better than ArrayList(LinkedHashSet) because HashSet is cheaper,
+                 * while still maintaining the original order of the collection.
+                 */
+                var resultList = new ArrayList<T>(size);
+                var set = newHashSet(size);
+                for (T element : collection) {
+                    if (set.add(keyExtractor.apply(element))) {
                         resultList.add(element);
                     }
                 }

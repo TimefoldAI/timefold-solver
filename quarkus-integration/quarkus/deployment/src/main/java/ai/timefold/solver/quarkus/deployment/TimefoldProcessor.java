@@ -7,9 +7,14 @@ import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,11 +41,13 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
+import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
 import ai.timefold.solver.quarkus.devui.SolverConfigText;
 import ai.timefold.solver.quarkus.devui.TimefoldDevUIPropertiesRPCService;
@@ -120,11 +127,53 @@ class TimefoldProcessor {
         }
     }
 
+    private void assertSolverPropertiesConfiguration() {
+        // TODO - Add test case to hot reload of multiple solver config files
+        // TODO - Add test case to fail fast for multiple solvers -> set only solver config
+        // TODO - Add test case to fail fast for multiple solvers -> set only solver2 config
+        // TODO - Add test case to fail fast for multiple solvers -> set root and solver config
+        // TODO - Add test case to fail fast for multiple solvers -> set root config, solver and solver 2 config
+
+        // Enforce the config file is set at the correct place for the default solver
+        if (timefoldBuildTimeConfig.hasOnlyDefaultSolverConfig() &&
+                (timefoldBuildTimeConfig.solverConfigXml().isEmpty()
+                        && timefoldBuildTimeConfig.getDefaultSolverConfig().get().solverConfigXml().isPresent())
+                || (timefoldBuildTimeConfig.solverConfigXml().isPresent()
+                        && timefoldBuildTimeConfig.getDefaultSolverConfig().get().solverConfigXml().isPresent())) {
+            throw new ConfigurationException("The default Solver configuration is invalid. Only the property" +
+                    " quarkus.timefold.solverConfigXML can be set for the default Solver.");
+        }
+
+        // Enforce individual files when multiple solvers are defined
+        if (!timefoldBuildTimeConfig.hasOnlyDefaultSolverConfig() && timefoldBuildTimeConfig.solverConfigXml().isPresent()) {
+            throw new ConfigurationException("Invalid quarkus.timefold.solverConfigXML property ("
+                    + timefoldBuildTimeConfig.solverConfigXml().get()
+                    + "): the property must not be set when there are multiple Solvers.");
+        }
+
+        // Enforce mapped properties cannot be used to set a single solver other than the default
+        if (!timefoldBuildTimeConfig.hasOnlyDefaultSolverConfig() && timefoldBuildTimeConfig.solver().size() == 1) {
+            throw new ConfigurationException("Invalid use of mapped property (" +
+                    "quarkus.timefold.\"" + timefoldBuildTimeConfig.solver().keySet().iterator().next() + "\"" +
+                    "): the mapped properties must be used only to configure multiple solvers.");
+        }
+    }
+
     @BuildStep
-    HotDeploymentWatchedFileBuildItem watchSolverConfigXml() {
-        String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml
+    void watchSolverConfigXml(BuildProducer<HotDeploymentWatchedFileBuildItem> hotDeploymentWatchedFiles) {
+        // Validate the solver configuration properties
+        assertSolverPropertiesConfiguration();
+
+        String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml()
                 .orElse(TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL);
-        return new HotDeploymentWatchedFileBuildItem(solverConfigXML);
+
+        // Root config file
+        hotDeploymentWatchedFiles.produce(new HotDeploymentWatchedFileBuildItem(solverConfigXML));
+
+        // Config files from Solvers
+        timefoldBuildTimeConfig.solver().values().stream().filter(c -> c.solverConfigXml().isPresent())
+                .map(c -> c.solverConfigXml().get())
+                .forEach(c -> hotDeploymentWatchedFiles.produce(new HotDeploymentWatchedFileBuildItem(c)));
     }
 
     @BuildStep
@@ -155,21 +204,26 @@ class TimefoldProcessor {
             SolverConfigBuildItem solverConfigBuildItem,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
         CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
-        SolverConfig solverConfig = solverConfigBuildItem.getSolverConfig();
-        if (solverConfig != null) {
-            StringWriter effectiveSolverConfigWriter = new StringWriter();
-            SolverConfigIO solverConfigIO = new SolverConfigIO();
-            solverConfigIO.write(solverConfig, effectiveSolverConfigWriter);
-            syntheticBeans.produce(SyntheticBeanBuildItem.configure(SolverConfigText.class)
-                    .scope(ApplicationScoped.class)
-                    .supplier(devUIRecorder.solverConfigTextSupplier(effectiveSolverConfigWriter.toString()))
-                    .done());
-        } else {
-            syntheticBeans.produce(SyntheticBeanBuildItem.configure(SolverConfigText.class)
-                    .scope(ApplicationScoped.class)
-                    .supplier(devUIRecorder.solverConfigTextSupplier(""))
-                    .done());
-        }
+
+        // TODO - test default case, root config and no additional solver
+        // TODO - test multiples solvers config: two with config, only one with config
+        // We map each solver config according to the solver name
+        Map<String, String> solverConfigText = new HashMap<>();
+        solverConfigBuildItem.getSolverNames().forEach(solverName -> {
+            if (solverConfigBuildItem.getSolverConfig(solverName) != null) {
+                StringWriter effectiveSolverConfigWriter = new StringWriter();
+                SolverConfigIO solverConfigIO = new SolverConfigIO();
+                solverConfigIO.write(solverConfigBuildItem.getSolverConfig(solverName), effectiveSolverConfigWriter);
+                solverConfigText.put(solverName, effectiveSolverConfigWriter.toString());
+            } else {
+                solverConfigText.put(solverName, "");
+            }
+        });
+        syntheticBeans.produce(SyntheticBeanBuildItem.configure(SolverConfigText.class)
+                .scope(ApplicationScoped.class)
+                .supplier(devUIRecorder.solverConfigTextSupplier(solverConfigText))
+                .done());
+
         cardPageBuildItem.addPage(Page.webComponentPageBuilder()
                 .title("Configuration")
                 .icon("font-awesome-solid:wrench")
@@ -215,6 +269,8 @@ class TimefoldProcessor {
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         IndexView indexView = combinedIndex.getIndex();
 
+        // TODO - test skipping for the default case
+        // TODO - test skipping for multiple solvers, all configurations must be null
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
                 && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
@@ -225,78 +281,132 @@ class TimefoldProcessor {
                     + "application.properties entries (quarkus.index-dependency.<name>.group-id"
                     + " and quarkus.index-dependency.<name>.artifact-id).");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBeanProvider.class));
-            return new SolverConfigBuildItem(null);
+            Map<String, SolverConfig> solverConfig = new HashMap<>();
+            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfig.put(solverName, null));
+            return new SolverConfigBuildItem(solverConfig);
         }
 
+        // Validate the planning entities settings
+        assertNoMemberAnnotationWithoutClassAnnotation(indexView);
+
+        // TODO - test loading the default case
+        // TODO - test loading two solver configs with XMLs
+        // TODO - test override the XML generated config with solver properties file
+        // TODO - test loading the default file URL
+        // TODO - test config with same planning entities and solution to validate GIZMO
         // Quarkus extensions must always use getContextClassLoader()
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        SolverConfig solverConfig;
-        if (timefoldBuildTimeConfig.solverConfigXml.isPresent()) {
-            String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml.get();
-            if (classLoader.getResource(solverConfigXML) == null) {
-                throw new ConfigurationException("Invalid quarkus.timefold.solverConfigXML property ("
-                        + solverConfigXML + "): that classpath resource does not exist.");
-            }
-            solverConfig = SolverConfig.createFromXmlResource(solverConfigXML);
-        } else if (classLoader.getResource(TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL) != null) {
-            solverConfig = SolverConfig.createFromXmlResource(
-                    TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL);
-        } else {
-            solverConfig = new SolverConfig();
-        }
 
-        applySolverProperties(indexView, solverConfig);
-        assertNoMemberAnnotationWithoutClassAnnotation(indexView);
-
-        if (solverConfig.getSolutionClass() != null) {
-            // Need to register even when using GIZMO so annotations are preserved
-            Type jandexType = Type.create(DotName.createSimple(solverConfig.getSolutionClass().getName()), Type.Kind.CLASS);
-            reflectiveHierarchyClass.produce(new ReflectiveHierarchyBuildItem.Builder()
-                    .type(jandexType)
-                    // Ignore only the packages from timefold-solver-core
-                    // (Can cause a hard to diagnose issue when creating a test/example
-                    // in the package "ai.timefold.solver").
-                    .ignoreTypePredicate(
-                            dotName -> ReflectiveHierarchyBuildItem.DefaultIgnoreTypePredicate.INSTANCE.test(dotName)
-                                    || dotName.toString().startsWith("ai.timefold.solver.api")
-                                    || dotName.toString().startsWith("ai.timefold.solver.config")
-                                    || dotName.toString().startsWith("ai.timefold.solver.impl"))
-                    .build());
-        }
-
+        Map<String, SolverConfig> allSolverConfig = new HashMap<>();
         Set<Class<?>> reflectiveClassSet = new LinkedHashSet<>();
+        this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> {
+            // 1 - The solver configuration takes precedence over root and default settings
+            Optional<String> solverConfigXml = this.timefoldBuildTimeConfig.getSolverConfig(solverName)
+                    .flatMap(SolverBuildTimeConfig::solverConfigXml);
 
+            // 2 - Root settings
+            if (solverConfigXml.isEmpty()) {
+                solverConfigXml = this.timefoldBuildTimeConfig.solverConfigXml();
+            }
+
+            SolverConfig solverConfig;
+            if (solverConfigXml.isPresent()) {
+                String solverUrl = solverConfigXml.get();
+                if (classLoader.getResource(solverUrl) == null) {
+                    String message = "Invalid quarkus.timefold.solverConfigXML property ("
+                            + solverUrl + "): that classpath resource does not exist.";
+                    if (!solverName.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
+                        message = "Invalid quarkus.timefold.\"" + solverName + "\".solverConfigXML property ("
+                                + solverUrl + "): that classpath resource does not exist.";
+                    }
+                    throw new ConfigurationException(message);
+                }
+                solverConfig = SolverConfig.createFromXmlResource(solverUrl);
+            } else if (classLoader.getResource(TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL) != null) {
+                // 3 - Default file URL
+                solverConfig = SolverConfig.createFromXmlResource(
+                        TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL);
+            } else {
+                solverConfig = new SolverConfig();
+            }
+
+            applySolverProperties(indexView, solverName, solverConfig);
+
+            if (solverConfig.getSolutionClass() != null) {
+                // Need to register even when using GIZMO so annotations are preserved
+                Type jandexType = Type.create(DotName.createSimple(solverConfig.getSolutionClass().getName()), Type.Kind.CLASS);
+                reflectiveHierarchyClass.produce(new ReflectiveHierarchyBuildItem.Builder()
+                        .type(jandexType)
+                        // Ignore only the packages from timefold-solver-core
+                        // (Can cause a hard to diagnose issue when creating a test/example
+                        // in the package "ai.timefold.solver").
+                        .ignoreTypePredicate(
+                                dotName -> ReflectiveHierarchyBuildItem.DefaultIgnoreTypePredicate.INSTANCE.test(dotName)
+                                        || dotName.toString().startsWith("ai.timefold.solver.api")
+                                        || dotName.toString().startsWith("ai.timefold.solver.config")
+                                        || dotName.toString().startsWith("ai.timefold.solver.impl"))
+                        .build());
+            }
+            // Register solver's specific custom classes
+            registerCustomClassesFromSolverConfig(solverConfig, reflectiveClassSet);
+            allSolverConfig.put(solverName, solverConfig);
+        });
+
+        // Register all annotated domain model classes
         registerClassesFromAnnotations(indexView, reflectiveClassSet);
-        registerCustomClassesFromSolverConfig(solverConfig, reflectiveClassSet);
-        generateConstraintVerifier(solverConfig, syntheticBeanBuildItemBuildProducer);
-        GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(solverConfig, indexView, generatedBeans,
+
+        // Register only distinct constraint providers
+        List<Entry<String, SolverConfig>> distinctConstraintProviders = CollectionUtils.toDistinctList(
+                new LinkedList<>(allSolverConfig.entrySet())
+                        .stream()
+                        .filter(entryConfig -> entryConfig.getValue().getScoreDirectorFactoryConfig()
+                                .getConstraintProviderClass() != null)
+                        .toList(),
+                (Entry<String, SolverConfig> entryConfig) -> entryConfig.getValue().getScoreDirectorFactoryConfig()
+                        .getConstraintProviderClass().getName());
+        distinctConstraintProviders
+                .forEach(entryConfig -> generateConstraintVerifier(entryConfig.getKey(), entryConfig.getValue(),
+                        syntheticBeanBuildItemBuildProducer));
+
+        GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(allSolverConfig, indexView, generatedBeans,
                 generatedClasses, transformers, reflectiveClassSet);
 
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        allSolverConfig.forEach((key, value) -> {
+            // Register the SolverConfig for each mapped solver or to the default
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator configDescriptor =
+                    SyntheticBeanBuildItem.configure(SolverConfig.class)
+                            .scope(Singleton.class)
+                            .named(key + "Config") // We add a suffix to avoid ambiguous bean names
+                            .supplier(recorder.solverConfigSupplier(key, value,
+                                    GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
+                                            generatedGizmoClasses.generatedGizmoMemberAccessorClassSet),
+                                    GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
+                                            generatedGizmoClasses.generatedGizmoSolutionClonerClassSet)));
+            if (key.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
+                configDescriptor.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(configDescriptor.done());
 
-        syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
-                .scope(Singleton.class)
-                .defaultBean()
-                .supplier(recorder.solverConfigSupplier(solverConfig,
-                        GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                generatedGizmoClasses.generatedGizmoMemberAccessorClassSet),
-                        GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                generatedGizmoClasses.generatedGizmoSolutionClonerClassSet)))
-                .done());
-
-        syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
-                .scope(Singleton.class)
-                .defaultBean()
-                .supplier(recorder.solverManagerConfig(solverManagerConfig)).done());
+            SolverManagerConfig solverManagerDescriptor = new SolverManagerConfig();
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator configManagerSupplier =
+                    SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
+                            .scope(Singleton.class)
+                            .named(key + "ConfigManager") // We add a suffix to avoid ambiguous bean names
+                            .supplier(recorder.solverManagerConfig(solverManagerDescriptor));
+            if (key.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
+                configManagerSupplier.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(configManagerSupplier.done());
+        });
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
         additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
-        return new SolverConfigBuildItem(solverConfig);
+        return new SolverConfigBuildItem(allSolverConfig);
     }
 
-    private void generateConstraintVerifier(SolverConfig solverConfig,
+    private void generateConstraintVerifier(String solverName, SolverConfig solverConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer) {
         String constraintVerifierClassName = DotNames.CONSTRAINT_VERIFIER.toString();
         if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null &&
@@ -305,58 +415,69 @@ class TimefoldProcessor {
             final Class<?> planningSolutionClass = solverConfig.getSolutionClass();
             final List<Class<?>> planningEntityClasses = solverConfig.getEntityClassList();
             // TODO Don't duplicate defaults by using ConstraintVerifier.create(solverConfig) instead
-            syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
-                    .scope(Singleton.class)
-                    .creator(methodCreator -> {
-                        ResultHandle constraintProviderResultHandle =
-                                methodCreator.newInstance(MethodDescriptor.ofConstructor(constraintProviderClass));
-                        ResultHandle planningSolutionClassResultHandle = methodCreator.loadClass(planningSolutionClass);
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator constraintDescriptor =
+                    SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
+                            .scope(Singleton.class)
+                            .creator(methodCreator -> {
+                                ResultHandle constraintProviderResultHandle =
+                                        methodCreator.newInstance(MethodDescriptor.ofConstructor(constraintProviderClass));
+                                ResultHandle planningSolutionClassResultHandle = methodCreator.loadClass(planningSolutionClass);
 
-                        ResultHandle planningEntityClassesResultHandle =
-                                methodCreator.newArray(Class.class, planningEntityClasses.size());
-                        for (int i = 0; i < planningEntityClasses.size(); i++) {
-                            ResultHandle planningEntityClassResultHandle =
-                                    methodCreator.loadClass(planningEntityClasses.get(i));
-                            methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
-                                    planningEntityClassResultHandle);
-                        }
+                                ResultHandle planningEntityClassesResultHandle =
+                                        methodCreator.newArray(Class.class, planningEntityClasses.size());
+                                for (int i = 0; i < planningEntityClasses.size(); i++) {
+                                    ResultHandle planningEntityClassResultHandle =
+                                            methodCreator.loadClass(planningEntityClasses.get(i));
+                                    methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
+                                            planningEntityClassResultHandle);
+                                }
 
-                        // Got incompatible class change error when trying to invoke static method on
-                        // ConstraintVerifier.build(ConstraintProvider, Class, Class...)
-                        ResultHandle solutionDescriptorResultHandle = methodCreator.invokeStaticMethod(
-                                MethodDescriptor.ofMethod(SolutionDescriptor.class, "buildSolutionDescriptor",
-                                        SolutionDescriptor.class, Class.class, Class[].class),
-                                planningSolutionClassResultHandle, planningEntityClassesResultHandle);
-                        ResultHandle constraintVerifierResultHandle = methodCreator.newInstance(
-                                MethodDescriptor.ofConstructor(
-                                        "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier",
-                                        ConstraintProvider.class, SolutionDescriptor.class),
-                                constraintProviderResultHandle, solutionDescriptorResultHandle);
+                                // Got incompatible class change error when trying to invoke static method on
+                                // ConstraintVerifier.build(ConstraintProvider, Class, Class...)
+                                ResultHandle solutionDescriptorResultHandle = methodCreator.invokeStaticMethod(
+                                        MethodDescriptor.ofMethod(SolutionDescriptor.class, "buildSolutionDescriptor",
+                                                SolutionDescriptor.class, Class.class, Class[].class),
+                                        planningSolutionClassResultHandle, planningEntityClassesResultHandle);
+                                ResultHandle constraintVerifierResultHandle = methodCreator.newInstance(
+                                        MethodDescriptor.ofConstructor(
+                                                "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier",
+                                                ConstraintProvider.class, SolutionDescriptor.class),
+                                        constraintProviderResultHandle, solutionDescriptorResultHandle);
 
-                        methodCreator.returnValue(constraintVerifierResultHandle);
-                    })
-                    .addType(ParameterizedType.create(DotNames.CONSTRAINT_VERIFIER,
-                            new Type[] {
-                                    Type.create(DotName.createSimple(constraintProviderClass.getName()), Type.Kind.CLASS),
-                                    Type.create(DotName.createSimple(planningSolutionClass.getName()), Type.Kind.CLASS)
-                            }, null))
-                    .forceApplicationClass()
-                    .defaultBean()
-                    .done());
+                                methodCreator.returnValue(constraintVerifierResultHandle);
+                            })
+                            .addType(ParameterizedType.create(DotNames.CONSTRAINT_VERIFIER,
+                                    new Type[] {
+                                            Type.create(DotName.createSimple(constraintProviderClass.getName()),
+                                                    Type.Kind.CLASS),
+                                            Type.create(DotName.createSimple(planningSolutionClass.getName()), Type.Kind.CLASS)
+                                    }, null))
+                            .forceApplicationClass()
+                            .named(solverName + "ConstraintVerifier");
+            if (solverName.equals(TimefoldRuntimeConfig.DEFAULT_SOLVER_NAME)) {
+                constraintDescriptor.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(constraintDescriptor.done());
         }
     }
 
-    private void applySolverProperties(IndexView indexView, SolverConfig solverConfig) {
+    private void applySolverProperties(IndexView indexView, String solverName, SolverConfig solverConfig) {
         if (solverConfig.getSolutionClass() == null) {
             solverConfig.setSolutionClass(findSolutionClass(indexView));
         }
         if (solverConfig.getEntityClassList() == null) {
             solverConfig.setEntityClassList(findEntityClassList(indexView));
         }
+
         applyScoreDirectorFactoryProperties(indexView, solverConfig);
-        timefoldBuildTimeConfig.solver.environmentMode.ifPresent(solverConfig::setEnvironmentMode);
-        timefoldBuildTimeConfig.solver.daemon.ifPresent(solverConfig::setDaemon);
-        timefoldBuildTimeConfig.solver.domainAccessType.ifPresent(solverConfig::setDomainAccessType);
+
+        // Override the current configuration with values from the solver properties
+        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::environmentMode)
+                .ifPresent(solverConfig::setEnvironmentMode);
+        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::daemon)
+                .ifPresent(solverConfig::setDaemon);
+        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::domainAccessType)
+                .ifPresent(solverConfig::setDomainAccessType);
 
         if (solverConfig.getDomainAccessType() == null) {
             solverConfig.setDomainAccessType(DomainAccessType.GIZMO);
@@ -390,7 +511,7 @@ class TimefoldProcessor {
         }
         List<AnnotationTarget> targetList = annotationInstances.stream()
                 .map(AnnotationInstance::target)
-                .collect(Collectors.toList());
+                .toList();
         if (targetList.stream().anyMatch(target -> target.kind() != AnnotationTarget.Kind.CLASS)) {
             throw new IllegalStateException("All targets (" + targetList
                     + ") with a @" + PlanningEntity.class.getSimpleName() + " must be a class.");
@@ -534,7 +655,7 @@ class TimefoldProcessor {
         }
     }
 
-    private GeneratedGizmoClasses generateDomainAccessors(SolverConfig solverConfig, IndexView indexView,
+    private GeneratedGizmoClasses generateDomainAccessors(Map<String, SolverConfig> solverConfig, IndexView indexView,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
             BuildProducer<BytecodeTransformerBuildItem> transformers, Set<Class<?>> reflectiveClassSet) {
@@ -551,8 +672,9 @@ class TimefoldProcessor {
          * "entity" in this context means both "planning solution",
          * "planning entity" and other things as well.
          */
+        assertSolverDomainAccessType(solverConfig);
         GizmoMemberAccessorEntityEnhancer entityEnhancer = new GizmoMemberAccessorEntityEnhancer();
-        if (solverConfig.getDomainAccessType() == DomainAccessType.GIZMO) {
+        if (solverConfig.values().stream().anyMatch(c -> c.getDomainAccessType() == DomainAccessType.GIZMO)) {
             Collection<AnnotationInstance> membersToGeneratedAccessorsFor = new ArrayList<>();
 
             // Every entity and solution gets scanned for annotations.
@@ -634,14 +756,26 @@ class TimefoldProcessor {
                 }
             }
             // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
-            SolutionDescriptor solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
-                    solverConfig.getSolutionClass(), null, null, solverConfig.getEntityClassList());
-            gizmoSolutionClonerClassNameSet
-                    .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
+            solverConfig.values().forEach(c -> {
+                SolutionDescriptor solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
+                        c.getSolutionClass(), null, null, c.getEntityClassList());
+                gizmoSolutionClonerClassNameSet
+                        .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
+            });
         }
 
         entityEnhancer.generateGizmoBeanFactory(beanClassOutput, reflectiveClassSet, transformers);
         return new GeneratedGizmoClasses(generatedMemberAccessorsClassNameSet, gizmoSolutionClonerClassNameSet);
+    }
+
+    private void assertSolverDomainAccessType(Map<String, SolverConfig> solverConfig) {
+        // All solver must use the same domain access type
+        if (solverConfig.values().stream().map(SolverConfig::getDomainAccessType).distinct().count() > 1) {
+            throw new ConfigurationException("The domain access type must be unique across all Solver configurations.\n" +
+                    solverConfig.entrySet().stream().map(e -> String.format("quarkus.timefold.\"%s\".domain-access-type=%s",
+                            e.getKey(), e.getValue().getDomainAccessType()))
+                            .collect(Collectors.joining("\n")));
+        }
     }
 
     private boolean shouldIgnoreMember(AnnotationInstance annotationInstance) {

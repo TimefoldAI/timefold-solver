@@ -21,6 +21,8 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
+import java.util.Objects;
+
 class TimefoldBenchmarkProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldBenchmarkProcessor.class.getName());
@@ -46,7 +48,8 @@ class TimefoldBenchmarkProcessor {
             BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
             SolverConfigBuildItem solverConfigBuildItem,
             TimefoldBenchmarkRecorder recorder) {
-        if (solverConfigBuildItem.getSolverConfig() == null) {
+        // TODO - Test skipping benchmark building
+        if (solverConfigBuildItem.getSolverNames().stream().map(solverConfigBuildItem::getSolverConfig).noneMatch(Objects::nonNull)) {
             log.warn("Skipping Timefold Benchmark extension because the Timefold extension was skipped.");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBenchmarkBeanProvider.class));
             return;

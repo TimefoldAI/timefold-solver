@@ -9,7 +9,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
+import io.smallrye.config.WithDefault;
 
 /**
  * During build time, this is translated into Timefold's {@link SolverConfig}
@@ -18,37 +18,43 @@ import io.quarkus.runtime.annotations.ConfigItem;
  * See also {@link SolverRuntimeConfig}
  */
 @ConfigGroup
-public class SolverBuildTimeConfig {
+public interface SolverBuildTimeConfig {
+
+    /**
+     * A classpath resource to read the specific solver configuration XML.
+     *
+     * If this property isn't specified, that solverConfig.xml is optional.
+     */
+    Optional<String> solverConfigXml();
 
     /**
      * Enable runtime assertions to detect common bugs in your implementation during development.
      * Defaults to {@link EnvironmentMode#REPRODUCIBLE}.
      */
-    @ConfigItem
-    public Optional<EnvironmentMode> environmentMode;
+    @WithDefault("REPRODUCIBLE")
+    Optional<EnvironmentMode> environmentMode();
 
     /**
      * Enable daemon mode. In daemon mode, non-early termination pauses the solver instead of stopping it,
      * until the next problem fact change arrives. This is often useful for real-time planning.
      * Defaults to "false".
      */
-    @ConfigItem
-    public Optional<Boolean> daemon;
+    @WithDefault("false")
+    Optional<Boolean> daemon();
 
     /**
      * Determines how to access the fields and methods of domain classes.
      * Defaults to {@link DomainAccessType#GIZMO}.
      */
-    @ConfigItem
-    public Optional<DomainAccessType> domainAccessType;
+    @WithDefault("GIZMO")
+    Optional<DomainAccessType> domainAccessType();
 
     /**
      * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
      *
      * @deprecated Not used anymore.
      */
-    @ConfigItem
     @Deprecated(forRemoval = true, since = "1.4.0")
-    public Optional<ConstraintStreamImplType> constraintStreamImplType;
+    Optional<ConstraintStreamImplType> constraintStreamImplType();
 
 }

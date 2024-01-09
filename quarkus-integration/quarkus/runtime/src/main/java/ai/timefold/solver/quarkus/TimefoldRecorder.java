@@ -9,6 +9,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 
 import io.quarkus.arc.Arc;
@@ -18,13 +19,14 @@ import io.quarkus.runtime.annotations.Recorder;
 @Recorder
 public class TimefoldRecorder {
 
-    public Supplier<SolverConfig> solverConfigSupplier(final SolverConfig solverConfig,
+    public Supplier<SolverConfig> solverConfigSupplier(final String solverName,
+            final SolverConfig solverConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {
             TimefoldRuntimeConfig timefoldRuntimeConfig =
                     Arc.container().instance(TimefoldRuntimeConfig.class).get();
-            updateSolverConfigWithRuntimeProperties(solverConfig, timefoldRuntimeConfig);
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig, timefoldRuntimeConfig);
             Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
             Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
             generatedGizmoMemberAccessorMap
@@ -47,23 +49,26 @@ public class TimefoldRecorder {
         };
     }
 
-    private void updateSolverConfigWithRuntimeProperties(SolverConfig solverConfig,
+    private void updateSolverConfigWithRuntimeProperties(String solverName, SolverConfig solverConfig,
             TimefoldRuntimeConfig timefoldRunTimeConfig) {
         TerminationConfig terminationConfig = solverConfig.getTerminationConfig();
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
             solverConfig.setTerminationConfig(terminationConfig);
         }
-        timefoldRunTimeConfig.solver.termination.spentLimit.ifPresent(terminationConfig::setSpentLimit);
-        timefoldRunTimeConfig.solver.termination.unimprovedSpentLimit
+        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().spentLimit())
+                .ifPresent(terminationConfig::setSpentLimit);
+        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().unimprovedSpentLimit())
                 .ifPresent(terminationConfig::setUnimprovedSpentLimit);
-        timefoldRunTimeConfig.solver.termination.bestScoreLimit.ifPresent(terminationConfig::setBestScoreLimit);
-        timefoldRunTimeConfig.solver.moveThreadCount.ifPresent(solverConfig::setMoveThreadCount);
+        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().bestScoreLimit())
+                .ifPresent(terminationConfig::setBestScoreLimit);
+        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(SolverRuntimeConfig::moveThreadCount)
+                .ifPresent(solverConfig::setMoveThreadCount);
     }
 
     private void updateSolverManagerConfigWithRuntimeProperties(SolverManagerConfig solverManagerConfig,
             TimefoldRuntimeConfig timefoldRunTimeConfig) {
-        timefoldRunTimeConfig.solverManager.parallelSolverCount.ifPresent(solverManagerConfig::setParallelSolverCount);
+        timefoldRunTimeConfig.solverManager().parallelSolverCount().ifPresent(solverManagerConfig::setParallelSolverCount);
     }
 
 }
