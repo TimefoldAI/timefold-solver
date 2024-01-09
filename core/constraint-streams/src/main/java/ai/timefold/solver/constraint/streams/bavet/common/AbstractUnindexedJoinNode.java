@@ -44,7 +44,9 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
         ElementAwareList<OutTuple_> outTupleListLeft = new ElementAwareList<>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
-        rightTupleList.forEach(rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
+        for (UniTuple<Right_> tuple : rightTupleList) {
+            insertOutTupleFiltered(leftTuple, tuple);
+        }
     }
 
     @Override
@@ -80,7 +82,9 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         ElementAwareList<OutTuple_> outTupleListRight = new ElementAwareList<>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
-        leftTupleList.forEach(leftTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
+        for (LeftTuple_ tuple : leftTupleList) {
+            insertOutTupleFiltered(tuple, rightTuple);
+        }
     }
 
     @Override
