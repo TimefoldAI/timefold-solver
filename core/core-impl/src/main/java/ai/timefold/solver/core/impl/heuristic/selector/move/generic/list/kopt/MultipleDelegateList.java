@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,14 +23,16 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
  * @param <T>
  */
 final class MultipleDelegateList<T> implements List<T>, RandomAccess {
+    final Object[] delegateEntities;
     final List<T>[] delegates;
     final int[] delegateSizes;
     final int[] offsets;
     final int totalSize;
 
     @SafeVarargs
-    public MultipleDelegateList(List<T>... delegates) {
+    public MultipleDelegateList(Object[] delegateEntities, List<T>... delegates) {
         this.delegates = delegates;
+        this.delegateEntities = delegateEntities;
         this.delegateSizes = new int[delegates.length];
         this.offsets = new int[delegates.length];
 
@@ -43,22 +46,49 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         this.totalSize = sizeSoFar;
     }
 
+    @SafeVarargs
+    MultipleDelegateList(List<T>... delegates) {
+        this(new Object[delegates.length], delegates);
+    }
+
+    @SuppressWarnings("unchecked")
+    public MultipleDelegateList<T> copy() {
+        List<T>[] delegateClones = new List[delegates.length];
+        for (int i = 0; i < delegates.length; i++) {
+            delegateClones[i] = new ArrayList<>(delegates[i]);
+        }
+        return new MultipleDelegateList<>(delegateEntities, delegateClones);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void applyChangesFromCopy(MultipleDelegateList<?> copy) {
+        for (int i = 0; i < delegates.length; i++) {
+            delegates[i].clear();
+            delegates[i].addAll((List<T>) copy.delegates[i]);
+        }
+    }
+
     public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             IndexVariableSupply indexVariableSupply,
             Object value) {
-        List<Object> entityList = listVariableDescriptor.getListVariable(inverseVariableSupply.getInverseSingleton(value));
-        for (int i = 0; i < delegates.length; i++) {
-            if (delegates[i] == entityList) {
-                return offsets[i] + indexVariableSupply.getIndex(value);
+        Object entity = inverseVariableSupply.getInverseSingleton(value);
+        for (int i = 0; i < delegateEntities.length; i++) {
+            if (delegateEntities[i] == entity) {
+                int firstUnpinnedIndex =
+                        listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(delegateEntities[i]);
+                return offsets[i] + (indexVariableSupply.getIndex(value) - firstUnpinnedIndex);
             }
         }
         throw new IllegalArgumentException("Value (" + value + ") is not contained in any entity list");
     }
 
-    public void actOnAffectedElements(Object[] originalEntities, TriConsumer<Object, Integer, Integer> action) {
+    public void actOnAffectedElements(ListVariableDescriptor<?> listVariableDescriptor, Object[] originalEntities,
+            TriConsumer<Object, Integer, Integer> action) {
         for (int i = 0; i < originalEntities.length; i++) {
-            action.accept(originalEntities[i], 0, delegateSizes[i]);
+            action.accept(originalEntities[i],
+                    listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(originalEntities[i]),
+                    listVariableDescriptor.getListSize(originalEntities[i]));
         }
     }
 
@@ -249,7 +279,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         @SuppressWarnings("unchecked")
         List<T>[] out = new List[endDelegateIndex - startDelegateIndex + 1];
         if (out.length == 0) {
-            return new MultipleDelegateList<>();
+            return new MultipleDelegateList<>(delegateEntities);
         }
         if (startDelegateIndex == endDelegateIndex) {
             out[0] = delegates[startDelegateIndex].subList(startInclusive, endExclusive);
@@ -259,7 +289,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             System.arraycopy(delegates, startDelegateIndex + 1, out, 1, out.length - 2);
         }
 
-        return new MultipleDelegateList<>(out);
+        return new MultipleDelegateList<>(delegateEntities, out);
     }
 
     @Override

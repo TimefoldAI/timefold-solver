@@ -15,11 +15,11 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
  * For instance, given [0, 1, 2, 3, 4, 5, 6], fromIndexInclusive = 5, toIndexExclusive = 2,
  * the list after the move would be [6, 5, 2, 3, 4, 1, 0] (and not [0, 6, 5, 2, 3, 4, 1]).
  */
-record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor, MultipleDelegateList<Object> combinedList,
+record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
         int fromIndexInclusive, int toIndexExclusive) {
 
     FlipSublistAction createUndoMove() {
-        return new FlipSublistAction(variableDescriptor, combinedList, fromIndexInclusive, toIndexExclusive);
+        return new FlipSublistAction(variableDescriptor, fromIndexInclusive, toIndexExclusive);
     }
 
     public KOptAffectedElements getAffectedElements() {
@@ -30,13 +30,12 @@ record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor, MultipleD
         }
     }
 
-    void doMoveOnGenuineVariables() {
+    void doMoveOnGenuineVariables(MultipleDelegateList<?> combinedList) {
         flipSublist(combinedList, 0, fromIndexInclusive, toIndexExclusive);
     }
 
-    public FlipSublistAction rebase(MultipleDelegateList<Object> rebasedList) {
+    public FlipSublistAction rebase() {
         return new FlipSublistAction(variableDescriptor,
-                rebasedList,
                 fromIndexInclusive,
                 toIndexExclusive);
     }

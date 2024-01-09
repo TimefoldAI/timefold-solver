@@ -161,7 +161,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             SingletonInverseVariableSupply inverseVariableSupply) {
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it a no-op
-            return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, List.of(), 0, new int[] {});
+            return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, new MultipleDelegateList<>(),
+                    List.of(), 0, new int[] {});
         }
 
         MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, inverseVariableSupply);
@@ -274,7 +275,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                 .toArray();
 
         newEndIndices[newEndIndices.length - 1] = originalToCurrentIndexList.length - 1;
-        return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, out, startElementShift, newEndIndices);
+        return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, combinedList, out, startElementShift,
+                newEndIndices);
     }
 
     /**
@@ -422,8 +424,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
 
         KOptUtils.flipSubarray(originalToCurrentIndexList, firstEndpoint, secondEndpoint);
 
-        return new FlipSublistAction(listVariableDescriptor, (MultipleDelegateList<Object>) combinedList,
-                firstEndpoint, secondEndpoint);
+        return new FlipSublistAction(listVariableDescriptor, firstEndpoint, secondEndpoint);
     }
 
     @SuppressWarnings("unchecked")
@@ -435,12 +436,21 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                     entity -> entityToEntityIndex.size());
         }
 
-        List<Node_>[] entityLists = new List[entityToEntityIndex.size()];
+        Object[] entities = new Object[entityToEntityIndex.size()];
+        List<Node_>[] entityLists = new List[entities.length];
         for (Map.Entry<Object, Integer> entry : entityToEntityIndex.entrySet()) {
-            entityLists[entry.getValue()] = (List<Node_>) listVariableDescriptor.getListVariable(entry.getKey());
+            int index = entry.getValue();
+            Object entity = entry.getKey();
+            List<Node_> entityList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
+            int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
+            if (firstUnpinnedIndex != 0) {
+                entityList = entityList.subList(firstUnpinnedIndex, entityList.size());
+            }
+            entities[index] = entity;
+            entityLists[index] = entityList;
         }
 
-        return new MultipleDelegateList<>(entityLists);
+        return new MultipleDelegateList<>(entities, entityLists);
     }
 
     private static int indexOf(int[] search, int query) {

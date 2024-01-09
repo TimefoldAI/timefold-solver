@@ -23,7 +23,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     private final KOptDescriptor<?> descriptor;
     private final List<FlipSublistAction> equivalent2Opts;
     private final KOptAffectedElements affectedElementsInfo;
-    private final MultipleDelegateList<?> combinedList;
     private final int postShiftAmount;
     private final int[] newEndIndices;
     private final Object[] originalEntities;
@@ -31,6 +30,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             KOptDescriptor<?> descriptor,
+            MultipleDelegateList<?> combinedList,
             List<FlipSublistAction> equivalent2Opts,
             int postShiftAmount,
             int[] newEndIndices) {
@@ -42,30 +42,23 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         this.newEndIndices = newEndIndices;
         if (equivalent2Opts.isEmpty()) {
             affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
-            combinedList = new MultipleDelegateList<>();
         } else if (postShiftAmount != 0) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).combinedList().size());
-            combinedList = equivalent2Opts.get(0).combinedList();
+            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, combinedList.size());
         } else {
             KOptAffectedElements currentAffectedElements = equivalent2Opts.get(0).getAffectedElements();
-            combinedList = equivalent2Opts.get(0).combinedList();
             for (int i = 1; i < equivalent2Opts.size(); i++) {
                 currentAffectedElements = currentAffectedElements.merge(equivalent2Opts.get(i).getAffectedElements());
             }
             affectedElementsInfo = currentAffectedElements;
         }
 
-        originalEntities = new Object[combinedList.delegates.length];
-        for (int i = 0; i < originalEntities.length; i++) {
-            originalEntities[i] = inverseVariableSupply.getInverseSingleton(combinedList.delegates[i].get(0));
-        }
+        originalEntities = combinedList.delegateEntities;
     }
 
     private KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             KOptDescriptor<?> descriptor,
             List<FlipSublistAction> equivalent2Opts,
-            MultipleDelegateList<?> combinedList,
             int postShiftAmount,
             int[] newEndIndices,
             Object[] originalEntities) {
@@ -75,11 +68,11 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         this.equivalent2Opts = equivalent2Opts;
         this.postShiftAmount = postShiftAmount;
         this.newEndIndices = newEndIndices;
-        this.combinedList = combinedList;
         if (equivalent2Opts.isEmpty()) {
             affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
         } else if (postShiftAmount != 0) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, equivalent2Opts.get(0).combinedList().size());
+            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0,
+                    computeCombinedList(listVariableDescriptor, originalEntities).size());
         } else {
             KOptAffectedElements currentAffectedElements = equivalent2Opts.get(0).getAffectedElements();
             for (int i = 1; i < equivalent2Opts.size(); i++) {
@@ -105,6 +98,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
                 inverse2Opts.add(equivalent2Opts.get(i).createUndoMove());
             }
 
+            MultipleDelegateList<?> combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
             int[] originalEndIndices = new int[newEndIndices.length];
             for (int i = 0; i < originalEndIndices.length - 1; i++) {
                 originalEndIndices[i] = combinedList.offsets[i + 1] - 1;
@@ -120,20 +114,27 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
 
-        combinedList.actOnAffectedElements(originalEntities,
+        MultipleDelegateList<?> combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
+        combinedList.actOnAffectedElements(listVariableDescriptor,
+                originalEntities,
                 (entity, start, end) -> innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
                         start,
                         end));
 
+        // subLists will get corrupted by ConcurrentModifications, so do the operations
+        // on a clone
+        MultipleDelegateList<?> combinedListCopy = combinedList.copy();
         for (FlipSublistAction move : equivalent2Opts) {
-            move.doMoveOnGenuineVariables();
+            move.doMoveOnGenuineVariables(combinedListCopy);
         }
 
-        combinedList.moveElementsOfDelegates(newEndIndices);
+        combinedListCopy.moveElementsOfDelegates(newEndIndices);
 
-        Collections.rotate(combinedList, postShiftAmount);
+        Collections.rotate(combinedListCopy, postShiftAmount);
+        combinedList.applyChangesFromCopy(combinedListCopy);
 
-        combinedList.actOnAffectedElements(originalEntities,
+        combinedList.actOnAffectedElements(listVariableDescriptor,
+                originalEntities,
                 (entity, start, end) -> innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                         start,
                         end));
@@ -149,21 +150,17 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         List<FlipSublistAction> rebasedEquivalent2Opts = new ArrayList<>(equivalent2Opts.size());
         InnerScoreDirector<?, ?> innerScoreDirector = (InnerScoreDirector<?, ?>) destinationScoreDirector;
         Object[] newEntities = new Object[originalEntities.length];
-        @SuppressWarnings("unchecked")
-        List<Object>[] newDelegates = new List[originalEntities.length];
 
         for (int i = 0; i < newEntities.length; i++) {
             newEntities[i] = innerScoreDirector.lookUpWorkingObject(originalEntities[i]);
-            newDelegates[i] = listVariableDescriptor.getListVariable(newEntities[i]);
         }
-        MultipleDelegateList<Object> rebasedList = new MultipleDelegateList<>(newDelegates);
         for (FlipSublistAction twoOpt : equivalent2Opts) {
-            rebasedEquivalent2Opts.add(twoOpt.rebase(rebasedList));
+            rebasedEquivalent2Opts.add(twoOpt.rebase());
         }
 
         return new KOptListMove<>(listVariableDescriptor,
                 innerScoreDirector.getSupplyManager().demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor)),
-                descriptor, rebasedEquivalent2Opts, rebasedList, postShiftAmount, newEndIndices, newEntities);
+                descriptor, rebasedEquivalent2Opts, postShiftAmount, newEndIndices, newEntities);
     }
 
     @Override
@@ -180,6 +177,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     public Collection<?> getPlanningValues() {
         var out = new ArrayList<>();
 
+        MultipleDelegateList<?> combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
         if (affectedElementsInfo.wrappedStartIndex() != -1) {
             out.addAll(combinedList.subList(affectedElementsInfo.wrappedStartIndex(), combinedList.size()));
             out.addAll(combinedList.subList(0, affectedElementsInfo.wrappedEndIndex()));
@@ -195,6 +193,21 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         return descriptor.toString();
     }
 
+    private static <Solution_> MultipleDelegateList<?>
+            computeCombinedList(ListVariableDescriptor<Solution_> listVariableDescriptor, Object[] entities) {
+        @SuppressWarnings("unchecked")
+        List<Object>[] delegates = new List[entities.length];
+
+        for (int i = 0; i < entities.length; i++) {
+            delegates[i] = listVariableDescriptor.getListVariable(entities[i]);
+            int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entities[i]);
+            if (firstUnpinnedIndex != 0) {
+                delegates[i] = delegates[i].subList(firstUnpinnedIndex, delegates[i].size());
+            }
+        }
+        return new MultipleDelegateList<>(entities, delegates);
+    }
+
     /**
      * A K-Opt move that does the list rotation before performing the flips instead of after, allowing
      * it to act as the undo move of a K-Opt move that does the rotation after the flips.
@@ -205,7 +218,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         private final ListVariableDescriptor<Solution_> listVariableDescriptor;
         private final KOptDescriptor<Node_> descriptor;
         private final List<FlipSublistAction> equivalent2Opts;
-        private final MultipleDelegateList<?> combinedList;
         private final int preShiftAmount;
         private final int[] newEndIndices;
 
@@ -221,7 +233,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             this.descriptor = descriptor;
             this.equivalent2Opts = equivalent2Opts;
             this.preShiftAmount = preShiftAmount;
-            this.combinedList = equivalent2Opts.get(0).combinedList();
             this.newEndIndices = newEndIndices;
             this.originalEntities = originalEntities;
         }
@@ -240,18 +251,26 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
             InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
 
-            combinedList.actOnAffectedElements(originalEntities,
+            MultipleDelegateList<?> combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
+            combinedList.actOnAffectedElements(
+                    listVariableDescriptor,
+                    originalEntities,
                     (entity, start, end) -> innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
                             start,
                             end));
 
-            Collections.rotate(combinedList, preShiftAmount);
-            combinedList.moveElementsOfDelegates(newEndIndices);
+            // subLists will get corrupted by ConcurrentModifications, so do the operations
+            // on a clone
+            MultipleDelegateList<?> combinedListCopy = combinedList.copy();
+            Collections.rotate(combinedListCopy, preShiftAmount);
+            combinedListCopy.moveElementsOfDelegates(newEndIndices);
 
             for (FlipSublistAction move : equivalent2Opts) {
-                move.doMoveOnGenuineVariables();
+                move.doMoveOnGenuineVariables(combinedListCopy);
             }
-            combinedList.actOnAffectedElements(originalEntities,
+            combinedList.applyChangesFromCopy(combinedListCopy);
+            combinedList.actOnAffectedElements(listVariableDescriptor,
+                    originalEntities,
                     (entity, start, end) -> innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                             start,
                             end));
