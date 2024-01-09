@@ -31,6 +31,9 @@ record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
     }
 
     void doMoveOnGenuineVariables(MultipleDelegateList<?> combinedList) {
+        // MultipleDelegateList uses subLists starting from entityFirstUnpinnedIndex,
+        // so we should use 0 as the start of the list (as we are flipping the entire
+        // combinedList of sub-lists instead of a particular entity list).
         flipSublist(combinedList, 0, fromIndexInclusive, toIndexExclusive);
     }
 

@@ -77,6 +77,8 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 shift = 0;
             }
         } else {
+            // This is a tail swap move, so entityFirstUnpinnedIndex is unused as no
+            // flipping will be done
             entityFirstUnpinnedIndex = 0;
             shift = 0;
         }
