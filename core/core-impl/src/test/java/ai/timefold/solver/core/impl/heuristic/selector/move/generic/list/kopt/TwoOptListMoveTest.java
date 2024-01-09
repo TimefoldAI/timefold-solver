@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class TwoOptListMoveTest {
 
@@ -222,6 +224,37 @@ class TwoOptListMoveTest {
 
         undoMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v2, v1, v7, v4, v5, v6, v3);
+    }
+
+    @Test
+    void doMoveSecondEndsBeforeFirstPinned() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v8, v7, v3, v4, v5, v6, v2, v1);
+
+        var variableDescriptorSpy = Mockito.spy(variableDescriptor);
+        var entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
+
+        // 2-Opt((v6, v2), (v7, v3))
+        TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptorSpy,
+                e1, e1, 6, 2);
+        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v8, v2, v3, v4, v5, v6, v7, v1);
+
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 8);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 8);
+        verify(scoreDirector).triggerVariableListeners();
+
+        undoMove.doMoveOnly(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v8, v7, v3, v4, v5, v6, v2, v1);
     }
 
     @Test

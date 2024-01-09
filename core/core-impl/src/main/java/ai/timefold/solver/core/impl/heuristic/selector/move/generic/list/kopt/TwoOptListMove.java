@@ -168,13 +168,23 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             }
 
             if (firstEdgeEndpoint == 0 && shift > 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
 
             FlipSublistAction.flipSublist(listVariable, entityFirstUnpinnedIndex, firstEdgeEndpoint, secondEdgeEndpoint);
 
             if (firstEdgeEndpoint == 0 && shift < 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
 
             if (firstEdgeEndpoint > 0) {
@@ -192,13 +202,23 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                     listVariable.size());
 
             if (shift > 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
 
             FlipSublistAction.flipSublist(listVariable, entityFirstUnpinnedIndex, firstEdgeEndpoint, secondEdgeEndpoint);
 
             if (shift < 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
             innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
                     entityFirstUnpinnedIndex,
