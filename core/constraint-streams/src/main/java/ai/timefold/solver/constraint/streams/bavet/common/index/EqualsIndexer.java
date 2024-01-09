@@ -70,7 +70,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     public void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer) {
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null || downstreamIndexer.isEmpty()) {
+        if (downstreamIndexer == null) {
             return;
         }
         downstreamIndexer.forEach(indexProperties, tupleConsumer);
