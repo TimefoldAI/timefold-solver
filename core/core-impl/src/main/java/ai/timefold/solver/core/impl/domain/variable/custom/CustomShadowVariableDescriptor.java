@@ -30,9 +30,9 @@ public class CustomShadowVariableDescriptor<Solution_> extends ShadowVariableDes
     private final Map<Class<? extends AbstractVariableListener>, List<VariableDescriptor<Solution_>>> listenerClassToSourceDescriptorListMap =
             new HashMap<>();
 
-    public CustomShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public CustomShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

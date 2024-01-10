@@ -3,10 +3,8 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -17,23 +15,23 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 final class NotifiableRegistry<Solution_> {
 
     private final List<Notifiable> notifiableList = new ArrayList<>();
-    private final Map<EntityDescriptor<?>, Set<EntityNotifiable<Solution_>>> sourceEntityToNotifiableMap =
-            new LinkedHashMap<>();
-    private final Map<VariableDescriptor<?>, List<VariableListenerNotifiable<Solution_>>> sourceVariableToNotifiableMap =
-            new LinkedHashMap<>();
-    private final Map<VariableDescriptor<?>, List<ListVariableListenerNotifiable<Solution_>>> sourceListVariableToNotifiableMap =
-            new LinkedHashMap<>();
+    private final Set<EntityNotifiable<Solution_>>[] sourceEntityToNotifiableSetArray;
+    private final List<Notifiable>[][] sourceVariableToNotifiableListArray;
 
     NotifiableRegistry(SolutionDescriptor<Solution_> solutionDescriptor) {
-        for (EntityDescriptor<Solution_> entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
-            sourceEntityToNotifiableMap.put(entityDescriptor, new LinkedHashSet<>());
-            for (VariableDescriptor<Solution_> variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
-                if (variableDescriptor.isGenuineListVariable()) {
-                    sourceListVariableToNotifiableMap.put(variableDescriptor, new ArrayList<>());
-                } else {
-                    sourceVariableToNotifiableMap.put(variableDescriptor, new ArrayList<>());
-                }
+        var entityDescriptorList = solutionDescriptor.getEntityDescriptors();
+        int entityDescriptorListSize = entityDescriptorList.size();
+        sourceEntityToNotifiableSetArray = new Set[entityDescriptorListSize];
+        sourceVariableToNotifiableListArray = new List[entityDescriptorListSize][];
+        for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
+            var declaredVariableDescriptorList = entityDescriptor.getDeclaredVariableDescriptors();
+            var array = new List[declaredVariableDescriptorList.size()];
+            for (var variableDescriptor : declaredVariableDescriptorList) {
+                array[variableDescriptor.getId()] = new ArrayList<>();
             }
+            var entityDescriptorId = entityDescriptor.getId();
+            sourceVariableToNotifiableListArray[entityDescriptorId] = array;
+            sourceEntityToNotifiableSetArray[entityDescriptorId] = new LinkedHashSet<>();
         }
     }
 
@@ -43,12 +41,9 @@ final class NotifiableRegistry<Solution_> {
 
     void registerNotifiable(Collection<VariableDescriptor<Solution_>> sources, EntityNotifiable<Solution_> notifiable) {
         for (VariableDescriptor<?> source : sources) {
-            if (source.isGenuineListVariable()) {
-                sourceListVariableToNotifiableMap.get(source).add(((ListVariableListenerNotifiable<Solution_>) notifiable));
-            } else {
-                sourceVariableToNotifiableMap.get(source).add(((VariableListenerNotifiable<Solution_>) notifiable));
-            }
-            sourceEntityToNotifiableMap.get(source.getEntityDescriptor()).add(notifiable);
+            var entityDescriptorId = source.getEntityDescriptor().getId();
+            sourceVariableToNotifiableListArray[entityDescriptorId][source.getId()].add(notifiable);
+            sourceEntityToNotifiableSetArray[entityDescriptorId].add(notifiable);
         }
         notifiableList.add(notifiable);
     }
@@ -58,16 +53,26 @@ final class NotifiableRegistry<Solution_> {
     }
 
     Collection<EntityNotifiable<Solution_>> get(EntityDescriptor<?> entityDescriptor) {
-        return sourceEntityToNotifiableMap.get(entityDescriptor);
+        return sourceEntityToNotifiableSetArray[entityDescriptor.getId()];
     }
 
     Collection<VariableListenerNotifiable<Solution_>> get(VariableDescriptor<?> variableDescriptor) {
-        return sourceVariableToNotifiableMap.getOrDefault(variableDescriptor,
-                Collections.emptyList()); // Avoids null for chained swap move on an unchained var.
+        var notifiables =
+                sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getId()][variableDescriptor
+                        .getId()];
+        if (notifiables == null) {
+            return Collections.emptyList();
+        }
+        return (Collection) notifiables;
     }
 
     Collection<ListVariableListenerNotifiable<Solution_>> get(ListVariableDescriptor<?> variableDescriptor) {
-        return sourceListVariableToNotifiableMap.getOrDefault(variableDescriptor,
-                Collections.emptyList()); // Avoids null for chained swap move on an unchained var.
+        var notifiables =
+                sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getId()][variableDescriptor
+                        .getId()];
+        if (notifiables == null) {
+            return Collections.emptyList();
+        }
+        return (Collection) notifiables;
     }
 }

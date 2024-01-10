@@ -15,8 +15,9 @@ public class BasicVariableDescriptor<Solution_> extends GenuineVariableDescripto
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public BasicVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+    public BasicVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     // ************************************************************************

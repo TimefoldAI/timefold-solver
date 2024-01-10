@@ -13,7 +13,8 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
  * Specifies that an {@code int} property (or field) of a {@link PlanningEntity} determines
  * how far a {@link PlanningListVariable} is pinned.
  * <p>
- * This annotation can only be specified on the same entity which also specifies a {@link PlanningListVariable}.
+ * This annotation can only be specified on a field of the same entity,
+ * which also specifies a {@link PlanningListVariable}.
  * The annotated int field has the following semantics:
  *
  * <ul>
@@ -30,7 +31,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
  * <li>Negative int: fail fast.</li>
  * </ul>
  *
- * To pin the entire list and disallow any changes, use @PlanningPin instead.
+ * To pin the entire list and disallow any changes, use {@link PlanningPin} instead.
  *
  * <p>
  * Example: Assuming a list of values {@code [A, B, C]}:

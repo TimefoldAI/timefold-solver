@@ -13,10 +13,9 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 public class PreviousElementShadowVariableDescriptor<Solution_>
         extends AbstractNextPrevElementShadowVariableDescriptor<Solution_> {
 
-    public PreviousElementShadowVariableDescriptor(
-            EntityDescriptor<Solution_> entityDescriptor,
+    public PreviousElementShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

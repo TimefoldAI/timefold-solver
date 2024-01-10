@@ -44,9 +44,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public GenuineVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public GenuineVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     // ************************************************************************

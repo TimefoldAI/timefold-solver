@@ -32,9 +32,9 @@ public class InverseRelationShadowVariableDescriptor<Solution_> extends ShadowVa
     protected boolean singleton;
     protected boolean chained;
 
-    public InverseRelationShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public InverseRelationShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

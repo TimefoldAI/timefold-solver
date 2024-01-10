@@ -25,9 +25,9 @@ public class AnchorShadowVariableDescriptor<Solution_> extends ShadowVariableDes
 
     protected VariableDescriptor<Solution_> sourceVariableDescriptor;
 
-    public AnchorShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public AnchorShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

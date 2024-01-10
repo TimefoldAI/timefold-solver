@@ -21,10 +21,9 @@ public class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDesc
 
     protected ListVariableDescriptor<Solution_> sourceVariableDescriptor;
 
-    public IndexShadowVariableDescriptor(
-            EntityDescriptor<Solution_> entityDescriptor,
+    public IndexShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
         if (!variableMemberAccessor.getType().equals(Integer.class) && !variableMemberAccessor.getType().equals(Long.class)) {
             throw new IllegalStateException("The entityClass (" + entityDescriptor.getEntityClass()
                     + ") has an @" + IndexShadowVariable.class.getSimpleName()

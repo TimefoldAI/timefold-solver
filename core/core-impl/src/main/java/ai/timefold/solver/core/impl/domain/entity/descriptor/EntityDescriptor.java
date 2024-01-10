@@ -61,6 +61,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PlanningPinToIndexReader;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,11 +86,13 @@ public class EntityDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
+    private final int id;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-
     private final Class<?> entityClass;
     private final Predicate<Object> isInitializedPredicate;
     private final Predicate<Object> hasNoNullVariables;
+    private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
+
     // Only declared movable filter, excludes inherited and descending movable filters
     private SelectionFilter<Solution_, Object> declaredMovableEntitySelectionFilter;
     private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
@@ -99,8 +102,6 @@ public class EntityDescriptor<Solution_> {
     private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
 
     private List<SelectionFilter<Solution_, Object>> declaredPinEntityFilterList;
-    private List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
-
     private List<EntityDescriptor<Solution_>> inheritedEntityDescriptorList;
 
     // Caches the inherited, declared and descending movable filters (including @PlanningPin filters) as a composite filter
@@ -119,7 +120,8 @@ public class EntityDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public EntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+    public EntityDescriptor(int id, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+        this.id = id;
         SolutionDescriptor.assertMutable(entityClass, "entityClass");
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
@@ -128,6 +130,16 @@ public class EntityDescriptor<Solution_> {
         if (entityClass.getPackage() == null) {
             LOGGER.warn("The entityClass ({}) should be in a proper java package.", entityClass);
         }
+    }
+
+    /**
+     * A number unique within a {@link SolutionDescriptor}, increasing sequentially from zero.
+     * Used for indexing in arrays to avoid object hash lookups in maps.
+     *
+     * @return zero or higher
+     */
+    public int getId() {
+        return id;
     }
 
     /**
@@ -156,10 +168,11 @@ public class EntityDescriptor<Solution_> {
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
         declaredPinEntityFilterList = new ArrayList<>(2);
         // Only iterate declared fields and methods, not inherited members, to avoid registering the same one twice
-        List<Member> memberList = ConfigUtils.getDeclaredMembers(entityClass);
-        for (Member member : memberList) {
+        var memberList = ConfigUtils.getDeclaredMembers(entityClass);
+        var variableDescriptorCounter = new MutableInt(0);
+        for (var member : memberList) {
             processValueRangeProviderAnnotation(descriptorPolicy, member);
-            processPlanningVariableAnnotation(descriptorPolicy, member);
+            processPlanningVariableAnnotation(variableDescriptorCounter, descriptorPolicy, member);
             processPlanningPinAnnotation(descriptorPolicy, member);
         }
         if (declaredGenuineVariableDescriptorMap.isEmpty() && declaredShadowVariableDescriptorMap.isEmpty()) {
@@ -231,7 +244,8 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
-    private void processPlanningVariableAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
+    private void processPlanningVariableAnnotation(MutableInt variableDescriptorCounter, DescriptorPolicy descriptorPolicy,
+            Member member) {
         Class<? extends Annotation> variableAnnotationClass = ConfigUtils.extractAnnotationClass(
                 member, VARIABLE_ANNOTATION_CLASSES);
         if (variableAnnotationClass != null) {
@@ -246,77 +260,68 @@ public class EntityDescriptor<Solution_> {
             }
             MemberAccessor memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                     memberAccessorType, variableAnnotationClass, descriptorPolicy.getDomainAccessType());
-            registerVariableAccessor(variableAnnotationClass, memberAccessor);
+            registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
+            variableDescriptorCounter.increment();
         }
     }
 
-    private void registerVariableAccessor(Class<? extends Annotation> variableAnnotationClass,
+    private void registerVariableAccessor(int nextVariableDescriptorId, Class<? extends Annotation> variableAnnotationClass,
             MemberAccessor memberAccessor) {
-        String memberName = memberAccessor.getName();
+        var memberName = memberAccessor.getName();
         if (declaredGenuineVariableDescriptorMap.containsKey(memberName)
                 || declaredShadowVariableDescriptorMap.containsKey(memberName)) {
             VariableDescriptor<Solution_> duplicate = declaredGenuineVariableDescriptorMap.get(memberName);
             if (duplicate == null) {
                 duplicate = declaredShadowVariableDescriptorMap.get(memberName);
             }
-            throw new IllegalStateException("The entityClass (" + entityClass
-                    + ") has a @" + variableAnnotationClass.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") that is duplicated by another member for variableDescriptor (" + duplicate + ").\n"
-                    + "Maybe the annotation is defined on both the field and its getter.");
-        }
-        if (variableAnnotationClass.equals(PlanningVariable.class)) {
-            GenuineVariableDescriptor<Solution_> variableDescriptor = new BasicVariableDescriptor<>(
-                    this, memberAccessor);
+            throw new IllegalStateException("""
+                    The entityClass (%s) has a @%s annotated member (%s), duplicated by member for variableDescriptor (%s).
+                    Maybe the annotation is defined on both the field and its getter."""
+                    .formatted(entityClass, variableAnnotationClass.getSimpleName(), memberAccessor, duplicate));
+        } else if (variableAnnotationClass.equals(PlanningVariable.class)) {
+            var variableDescriptor = new BasicVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PlanningListVariable.class)) {
             if (List.class.isAssignableFrom(memberAccessor.getType())) {
-                GenuineVariableDescriptor<Solution_> variableDescriptor = new ListVariableDescriptor<>(
-                        this, memberAccessor);
+                var variableDescriptor = new ListVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
                 declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
             } else {
-                throw new IllegalStateException("The entityClass (" + entityClass
-                        + ") has a @" + PlanningListVariable.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") that has an unsupported type (" + memberAccessor.getType() + ").\n"
-                        + "Maybe use " + List.class.getCanonicalName() + ".");
+                throw new IllegalStateException("""
+                        The entityClass (%s) has a @%s annotated member (%s) that has an unsupported type (%s).
+                        Maybe use %s."""
+                        .formatted(entityClass, PlanningListVariable.class.getSimpleName(), memberAccessor,
+                                memberAccessor.getType(), List.class.getCanonicalName()));
             }
         } else if (variableAnnotationClass.equals(InverseRelationShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new InverseRelationShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor =
+                    new InverseRelationShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(AnchorShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new AnchorShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new AnchorShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(IndexShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new IndexShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new IndexShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PreviousElementShadowVariable.class)) {
-            PreviousElementShadowVariableDescriptor<Solution_> variableDescriptor =
-                    new PreviousElementShadowVariableDescriptor<>(this, memberAccessor);
+            var variableDescriptor =
+                    new PreviousElementShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(NextElementShadowVariable.class)) {
-            NextElementShadowVariableDescriptor<Solution_> variableDescriptor =
-                    new NextElementShadowVariableDescriptor<>(this, memberAccessor);
+            var variableDescriptor = new NextElementShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(ShadowVariable.class)
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new CustomShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new PiggybackShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CustomShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new LegacyCustomShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new LegacyCustomShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else {
-            throw new IllegalStateException("The variableAnnotationClass ("
-                    + variableAnnotationClass + ") is not implemented.");
+            throw new IllegalStateException("The variableAnnotationClass (%s) is not implemented."
+                    .formatted(variableAnnotationClass));
         }
     }
 

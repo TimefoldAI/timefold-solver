@@ -31,9 +31,9 @@ public class LegacyCustomShadowVariableDescriptor<Solution_> extends ShadowVaria
     protected Class<? extends VariableListener> variableListenerClass;
     protected List<VariableDescriptor<Solution_>> sourceVariableDescriptorList;
 
-    public LegacyCustomShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public LegacyCustomShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

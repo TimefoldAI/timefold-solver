@@ -24,9 +24,9 @@ public class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVariable
 
     protected CustomShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
 
-    public PiggybackShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public PiggybackShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

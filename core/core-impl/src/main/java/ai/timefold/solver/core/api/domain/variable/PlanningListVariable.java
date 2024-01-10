@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 
 /**
@@ -40,6 +41,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
  * <p>
  * <strong>Overconstrained planning is currently not supported for list variables.</strong>
  *
+ * @see PlanningPin
  * @see PlanningPinToIndex
  */
 @Target({ METHOD, FIELD })

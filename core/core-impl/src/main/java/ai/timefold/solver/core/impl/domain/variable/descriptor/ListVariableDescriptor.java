@@ -19,8 +19,8 @@ public class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public ListVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+    public ListVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     // ************************************************************************

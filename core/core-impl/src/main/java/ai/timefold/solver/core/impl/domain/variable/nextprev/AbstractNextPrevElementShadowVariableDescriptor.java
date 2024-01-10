@@ -17,10 +17,9 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
 
     protected ListVariableDescriptor<Solution_> sourceVariableDescriptor;
 
-    AbstractNextPrevElementShadowVariableDescriptor(
-            EntityDescriptor<Solution_> entityDescriptor,
+    AbstractNextPrevElementShadowVariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(id, entityDescriptor, variableMemberAccessor);
     }
 
     abstract String getSourceVariableName();
