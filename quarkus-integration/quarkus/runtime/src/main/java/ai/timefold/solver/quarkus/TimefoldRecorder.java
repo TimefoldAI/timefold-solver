@@ -12,7 +12,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 
-import io.quarkus.arc.Arc;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
 
@@ -21,11 +20,10 @@ public class TimefoldRecorder {
 
     public Supplier<SolverConfig> solverConfigSupplier(final String solverName,
             final SolverConfig solverConfig,
+            final TimefoldRuntimeConfig timefoldRuntimeConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {
-            TimefoldRuntimeConfig timefoldRuntimeConfig =
-                    Arc.container().instance(TimefoldRuntimeConfig.class).get();
             updateSolverConfigWithRuntimeProperties(solverName, solverConfig, timefoldRuntimeConfig);
             Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
             Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
@@ -40,10 +38,9 @@ public class TimefoldRecorder {
         };
     }
 
-    public Supplier<SolverManagerConfig> solverManagerConfig(final SolverManagerConfig solverManagerConfig) {
+    public Supplier<SolverManagerConfig> solverManagerConfig(final SolverManagerConfig solverManagerConfig,
+            final TimefoldRuntimeConfig timefoldRuntimeConfig) {
         return () -> {
-            TimefoldRuntimeConfig timefoldRuntimeConfig =
-                    Arc.container().instance(TimefoldRuntimeConfig.class).get();
             updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, timefoldRuntimeConfig);
             return solverManagerConfig;
         };

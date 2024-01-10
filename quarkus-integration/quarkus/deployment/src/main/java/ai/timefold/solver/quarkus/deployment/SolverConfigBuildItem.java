@@ -5,19 +5,20 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.config.solver.SolverConfig;
-
-import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
+
 import io.quarkus.builder.item.SimpleBuildItem;
 
 public final class SolverConfigBuildItem extends SimpleBuildItem {
     private final Map<String, SolverConfig> solverConfigurations;
+    private final GeneratedGizmoClasses generatedGizmoClasses;
 
     /**
      * Constructor for multiple solver configurations.
      */
-    public SolverConfigBuildItem(Map<String, SolverConfig> solverConfig) {
+    public SolverConfigBuildItem(Map<String, SolverConfig> solverConfig, GeneratedGizmoClasses generatedGizmoClasses) {
         this.solverConfigurations = solverConfig;
+        this.generatedGizmoClasses = generatedGizmoClasses;
     }
 
     /**
@@ -39,5 +40,13 @@ public final class SolverConfigBuildItem extends SimpleBuildItem {
 
     public Set<String> getSolverNames() {
         return this.solverConfigurations.keySet();
+    }
+
+    public Map<String, SolverConfig> getAllSolverConfigurations() {
+        return solverConfigurations;
+    }
+
+    public GeneratedGizmoClasses getGeneratedGizmoClasses() {
+        return generatedGizmoClasses;
     }
 }

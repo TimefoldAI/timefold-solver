@@ -1,5 +1,6 @@
 package ai.timefold.solver.quarkus.deployment;
 
+import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 
 import java.io.IOException;
@@ -257,9 +258,7 @@ class TimefoldProcessor {
     }
 
     @BuildStep
-    @Record(STATIC_INIT)
-    SolverConfigBuildItem recordAndRegisterBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
-            CombinedIndexBuildItem combinedIndex,
+    SolverConfigBuildItem recordAndRegisterBeans(CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
@@ -283,7 +282,7 @@ class TimefoldProcessor {
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBeanProvider.class));
             Map<String, SolverConfig> solverConfig = new HashMap<>();
             this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfig.put(solverName, null));
-            return new SolverConfigBuildItem(solverConfig);
+            return new SolverConfigBuildItem(solverConfig, null);
         }
 
         // Validate the planning entities settings
@@ -358,7 +357,7 @@ class TimefoldProcessor {
 
         // Register only distinct constraint providers
         List<Entry<String, SolverConfig>> distinctConstraintProviders = CollectionUtils.toDistinctList(
-                new LinkedList<>(allSolverConfig.entrySet())
+                new LinkedList<Entry<String, SolverConfig>>(allSolverConfig.entrySet())
                         .stream()
                         .filter(entryConfig -> entryConfig.getValue().getScoreDirectorFactoryConfig()
                                 .getConstraintProviderClass() != null)
@@ -372,17 +371,31 @@ class TimefoldProcessor {
         GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(allSolverConfig, indexView, generatedBeans,
                 generatedClasses, transformers, reflectiveClassSet);
 
-        allSolverConfig.forEach((key, value) -> {
+        additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
+        additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
+        unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
+        return new SolverConfigBuildItem(allSolverConfig, generatedGizmoClasses);
+    }
+
+    @BuildStep
+    @Record(RUNTIME_INIT)
+    void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
+            SolverConfigBuildItem solverConfigBuildItem,
+            TimefoldRuntimeConfig runtimeConfig) {
+
+        solverConfigBuildItem.getAllSolverConfigurations().forEach((key, value) -> {
             // Register the SolverConfig for each mapped solver or to the default
             SyntheticBeanBuildItem.ExtendedBeanConfigurator configDescriptor =
                     SyntheticBeanBuildItem.configure(SolverConfig.class)
                             .scope(Singleton.class)
                             .named(key + "Config") // We add a suffix to avoid ambiguous bean names
-                            .supplier(recorder.solverConfigSupplier(key, value,
+                            .setRuntimeInit()
+                            .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
                                     GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                            generatedGizmoClasses.generatedGizmoMemberAccessorClassSet),
+                                            solverConfigBuildItem.getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
                                     GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                            generatedGizmoClasses.generatedGizmoSolutionClonerClassSet)));
+                                            solverConfigBuildItem.getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)));
             if (key.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
                 configDescriptor.defaultBean();
             }
@@ -393,17 +406,13 @@ class TimefoldProcessor {
                     SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
                             .scope(Singleton.class)
                             .named(key + "ConfigManager") // We add a suffix to avoid ambiguous bean names
-                            .supplier(recorder.solverManagerConfig(solverManagerDescriptor));
+                            .setRuntimeInit()
+                            .supplier(recorder.solverManagerConfig(solverManagerDescriptor, runtimeConfig));
             if (key.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
                 configManagerSupplier.defaultBean();
             }
             syntheticBeanBuildItemBuildProducer.produce(configManagerSupplier.done());
         });
-
-        additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
-        additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
-        unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
-        return new SolverConfigBuildItem(allSolverConfig);
     }
 
     private void generateConstraintVerifier(String solverName, SolverConfig solverConfig,
