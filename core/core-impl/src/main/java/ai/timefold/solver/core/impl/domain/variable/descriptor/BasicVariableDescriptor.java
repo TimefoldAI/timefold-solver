@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 
-public class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
+public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
     private boolean chained;
     private boolean nullable;
@@ -15,8 +15,9 @@ public class BasicVariableDescriptor<Solution_> extends GenuineVariableDescripto
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public BasicVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+    public BasicVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
+        super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
     // ************************************************************************

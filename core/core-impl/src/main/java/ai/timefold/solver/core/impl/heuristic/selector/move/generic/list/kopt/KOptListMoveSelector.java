@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
+
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -7,7 +9,6 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -28,6 +29,8 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     private SingletonInverseVariableSupply inverseVariableSupply;
     private IndexVariableSupply indexVariableSupply;
+    private EntityIndependentValueSelector<Solution_> movableOriginSelector;
+    private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
     public KOptListMoveSelector(
             ListVariableDescriptor<Solution_> listVariableDescriptor,
@@ -49,9 +52,13 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        movableOriginSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(originSelector, inverseVariableSupply, indexVariableSupply);
+        movableValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     @Override
@@ -59,12 +66,14 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
         super.solvingEnded(solverScope);
         inverseVariableSupply = null;
         indexVariableSupply = null;
+        movableOriginSelector = null;
+        movableValueSelector = null;
     }
 
     @Override
     public long getSize() {
         long total = 0;
-        long valueSelectorSize = valueSelector.getSize();
+        long valueSelectorSize = movableValueSelector.getSize();
         for (int i = minK; i < Math.min(valueSelectorSize, maxK); i++) {
             if (valueSelectorSize > i) { // need more than k nodes in order to perform a k-opt
                 long kOptMoveTypes = KOptUtils.getPureKOptMoveTypes(i);
@@ -86,7 +95,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public Iterator<Move<Solution_>> iterator() {
         return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, inverseVariableSupply, indexVariableSupply,
-                originSelector, valueSelector, minK, maxK, pickedKDistribution);
+                movableOriginSelector, movableValueSelector, minK, maxK, pickedKDistribution);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
+
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -7,7 +9,6 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -21,6 +22,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
 
     private SingletonInverseVariableSupply inverseVariableSupply;
     private IndexVariableSupply indexVariableSupply;
+    private EntityIndependentValueSelector<Solution_> movableLeftValueSelector;
+    private EntityIndependentValueSelector<Solution_> movableRightValueSelector;
 
     public ListSwapMoveSelector(
             EntityIndependentValueSelector<Solution_> leftValueSelector,
@@ -39,11 +42,14 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
-        SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
+        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
         indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
+        movableLeftValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, inverseVariableSupply, indexVariableSupply);
+        movableRightValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, inverseVariableSupply, indexVariableSupply);
     }
 
     @Override
@@ -51,6 +57,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         super.solvingEnded(solverScope);
         inverseVariableSupply = null;
         indexVariableSupply = null;
+        movableLeftValueSelector = null;
+        movableRightValueSelector = null;
     }
 
     @Override
@@ -59,30 +67,30 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
             return new RandomListSwapIterator<>(
                     inverseVariableSupply,
                     indexVariableSupply,
-                    leftValueSelector,
-                    rightValueSelector);
+                    movableLeftValueSelector,
+                    movableRightValueSelector);
         } else {
             return new OriginalListSwapIterator<>(
                     inverseVariableSupply,
                     indexVariableSupply,
-                    leftValueSelector,
-                    rightValueSelector);
+                    movableLeftValueSelector,
+                    movableRightValueSelector);
         }
     }
 
     @Override
     public boolean isCountable() {
-        return leftValueSelector.isCountable() && rightValueSelector.isCountable();
+        return movableLeftValueSelector.isCountable() && movableRightValueSelector.isCountable();
     }
 
     @Override
     public boolean isNeverEnding() {
-        return randomSelection || leftValueSelector.isNeverEnding() || rightValueSelector.isNeverEnding();
+        return randomSelection || movableLeftValueSelector.isNeverEnding() || movableRightValueSelector.isNeverEnding();
     }
 
     @Override
     public long getSize() {
-        return leftValueSelector.getSize() * rightValueSelector.getSize();
+        return movableLeftValueSelector.getSize() * movableRightValueSelector.getSize();
     }
 
     @Override

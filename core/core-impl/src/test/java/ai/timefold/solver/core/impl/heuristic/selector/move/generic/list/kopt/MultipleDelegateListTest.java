@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -24,13 +25,15 @@ public class MultipleDelegateListTest {
         List<Object> delegate1 = new ArrayList<>(List.of("a", "b", "c"));
         List<Object> delegate2 = new ArrayList<>(List.of("d", "e"));
         List<Object> delegate3 = new ArrayList<>(List.of("f"));
-        MultipleDelegateList<Object> combined = new MultipleDelegateList<>(delegate1, delegate2, delegate3);
+        MultipleDelegateList<Object> combined =
+                new MultipleDelegateList<>(new String[] { "e1", "e2", "e3" }, delegate1, delegate2, delegate3);
 
-        ListVariableDescriptor<?> listVariableDescriptor = Mockito.mock(ListVariableDescriptor.class);
-        Mockito.when(listVariableDescriptor.getListVariable("e1")).thenReturn(delegate1);
-        Mockito.when(listVariableDescriptor.getListVariable("e2")).thenReturn(delegate2);
-        Mockito.when(listVariableDescriptor.getListVariable("e3")).thenReturn(delegate3);
-        Mockito.when(listVariableDescriptor.getListVariable("e4")).thenReturn(List.of("g"));
+        @SuppressWarnings("unchecked")
+        ListVariableDescriptor<Object> listVariableDescriptor = Mockito.mock(ListVariableDescriptor.class);
+        @SuppressWarnings("unchecked")
+        EntityDescriptor<Object> entityDescriptor = Mockito.mock(EntityDescriptor.class);
+
+        Mockito.when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
 
         SingletonInverseVariableSupply inverseVariableSupply = object -> {
             String value = (String) object;

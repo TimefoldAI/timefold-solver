@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.ListIterableSelector;
 
 /**
  * Selects instances of 1 {@link PlanningEntity} annotated class.
+ * Instances created via {@link EntitySelectorFactory} are guaranteed to exclude pinned entities.
  *
  * @see AbstractDemandEnabledSelector
  * @see FromSolutionEntitySelector

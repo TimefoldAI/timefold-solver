@@ -91,6 +91,10 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
 
     @Override
     public Object executeGetter(Object bean) {
+        if (bean == null) {
+            throw new IllegalArgumentException("Requested property (%s) getterMethod (%s) on a null bean."
+                    .formatted(propertyName, getterMethod));
+        }
         try {
             return getherMethodHandle.invoke(bean);
         } catch (Throwable e) {
@@ -106,6 +110,10 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
 
     @Override
     public void executeSetter(Object bean, Object value) {
+        if (bean == null) {
+            throw new IllegalArgumentException("Requested property (%s) setterMethod (%s) on a null bean."
+                    .formatted(propertyName, setterMethod));
+        }
         try {
             setterMethodHandle.invoke(bean, value);
         } catch (Throwable e) {

@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.constructionheuristic.event.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.ListIterableSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -262,18 +261,9 @@ public final class PlannerAssert {
     }
 
     public static void assertAllCodesOfIterableSelector(IterableSelector<?, ?> selector, long size, String... codes) {
-        assertAllCodesOfIterator(selector.iterator(), codes);
-        assertThat(selector.isCountable()).isTrue();
-        assertThat(selector.isNeverEnding()).isFalse();
-        if (size != DO_NOT_ASSERT_SIZE) {
-            assertThat(selector.getSize()).isEqualTo(size);
-        }
-    }
-
-    public static void assertAllCodesOfListIterableSelector(ListIterableSelector<?, ?> selector, long size, String... codes) {
-        ListIterator<?> listIterator = selector.listIterator();
-        assertAllCodesOfIterator(listIterator, codes);
-        assertAllReverseCodesOfIterator(listIterator, codes);
+        var iterator = selector.iterator();
+        assertAllCodesOfIterator(iterator, codes);
+        assertThat(iterator).isExhausted();
         assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isFalse();
         if (size != DO_NOT_ASSERT_SIZE) {
@@ -309,6 +299,10 @@ public final class PlannerAssert {
 
     public static void assertAllCodesOfMoveSelector(MoveSelector<?> moveSelector, String... codes) {
         assertAllCodesOfIterableSelector(moveSelector, codes.length, codes);
+    }
+
+    public static void assertAllCodesOfMoveSelectorWithoutSize(MoveSelector<?> moveSelector, String... codes) {
+        assertAllCodesOfIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE, codes);
     }
 
     public static void assertAllCodesOfMoveSelector(MoveSelector<?> moveSelector, long size, String... codes) {

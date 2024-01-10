@@ -15,29 +15,11 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
  * For instance, given [0, 1, 2, 3, 4, 5, 6], fromIndexInclusive = 5, toIndexExclusive = 2,
  * the list after the move would be [6, 5, 2, 3, 4, 1, 0] (and not [0, 6, 5, 2, 3, 4, 1]).
  */
-final class FlipSublistAction {
-
-    private final ListVariableDescriptor<?> variableDescriptor;
-
-    private final MultipleDelegateList<Object> combinedList;
-
-    private final int fromIndexInclusive;
-    private final int toIndexExclusive;
-
-    public FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
-            MultipleDelegateList<Object> combinedList,
-            int fromIndexInclusive, int toIndexExclusive) {
-        this.variableDescriptor = variableDescriptor;
-        this.combinedList = combinedList;
-        this.fromIndexInclusive = fromIndexInclusive;
-        this.toIndexExclusive = toIndexExclusive;
-    }
+record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
+        int fromIndexInclusive, int toIndexExclusive) {
 
     FlipSublistAction createUndoMove() {
-        return new FlipSublistAction(variableDescriptor,
-                combinedList,
-                fromIndexInclusive,
-                toIndexExclusive);
+        return new FlipSublistAction(variableDescriptor, fromIndexInclusive, toIndexExclusive);
     }
 
     public KOptAffectedElements getAffectedElements() {
@@ -48,27 +30,26 @@ final class FlipSublistAction {
         }
     }
 
-    MultipleDelegateList<Object> getCombinedList() {
-        return combinedList;
+    void doMoveOnGenuineVariables(MultipleDelegateList<?> combinedList) {
+        // MultipleDelegateList uses subLists starting from entityFirstUnpinnedIndex,
+        // so we should use 0 as the start of the list (as we are flipping the entire
+        // combinedList of sub-lists instead of a particular entity list).
+        flipSublist(combinedList, 0, fromIndexInclusive, toIndexExclusive);
     }
 
-    void doMoveOnGenuineVariables() {
-        flipSublist(combinedList, fromIndexInclusive, toIndexExclusive);
-    }
-
-    public FlipSublistAction rebase(MultipleDelegateList<Object> rebasedList) {
+    public FlipSublistAction rebase() {
         return new FlipSublistAction(variableDescriptor,
-                rebasedList,
                 fromIndexInclusive,
                 toIndexExclusive);
     }
 
-    public static <T> void flipSublist(List<T> originalList, int fromIndexInclusive, int toIndexExclusive) {
+    public static <T> void flipSublist(List<T> originalList, int entityFirstUnpinnedIndex, int fromIndexInclusive,
+            int toIndexExclusive) {
         if (fromIndexInclusive < toIndexExclusive) {
             Collections.reverse(originalList.subList(fromIndexInclusive, toIndexExclusive));
         } else {
             List<T> firstHalfReversedPath = originalList.subList(fromIndexInclusive, originalList.size());
-            List<T> secondHalfReversedPath = originalList.subList(0, toIndexExclusive);
+            List<T> secondHalfReversedPath = originalList.subList(entityFirstUnpinnedIndex, toIndexExclusive);
 
             // Reverse the combined list firstHalfReversedPath + secondHalfReversedPath
             // For instance, (1, 2, 3)(4, 5, 6, 7, 8, 9) becomes

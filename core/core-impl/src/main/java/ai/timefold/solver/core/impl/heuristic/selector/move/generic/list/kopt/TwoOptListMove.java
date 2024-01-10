@@ -15,10 +15,11 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
 /**
  * A 2-opt move for list variables, which takes two edges and swap their endpoints.
  * For instance, let [A, B, E, D, C, F, G, H] be the route assigned to an entity.
- * Select (B, E) and (C, F) as the edges to swap. Then the resulting route after this operation would be
- * [A, B, C, D, E, F, G, H]. The edge (B, E) became (B, C), and the edge (C, F) became (E, F)
- * (the first edge end point became the second edge start point and vice-versa). It is used to fix crossings;
- * for instance, it can change:
+ * Select (B, E) and (C, F) as the edges to swap.
+ * Then the resulting route after this operation would be [A, B, C, D, E, F, G, H].
+ * The edge (B, E) became (B, C), and the edge (C, F) became (E, F)
+ * (the first edge end point became the second edge start point and vice versa).
+ * It is used to fix crossings; for instance, it can change:
  *
  * <pre>{@code
  * ... -> A B <- ...
@@ -33,11 +34,13 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * ... <- C <- D <- ...
  * }</pre>
  *
- * Note the sub-path D...B was reversed. The 2-opt works be reversing the path between the two edges being removed.
+ * Note the sub-path D...B was reversed.
+ * The 2-opt works by reversing the path between the two edges being removed.
  * <p>
- * When the edges are assigned to different entities, it results in a tail swap.
- * For instance, let r1 = [A, B, C, D], and r2 = [E, F, G, H]. Doing a
- * 2-opt on (B, C) + (F, G) will result in r1 = [A, B, G, H] and r2 = [E, F, C, D].
+ * When the edges are assigned to different entities,
+ * it results in a tail swap.
+ * For instance, let r1 = [A, B, C, D], and r2 = [E, F, G, H].
+ * Doing a 2-opt on (B, C) + (F, G) will result in r1 = [A, B, G, H] and r2 = [E, F, C, D].
  *
  * @param <Solution_>
  */
@@ -49,6 +52,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     private final int secondEdgeEndpoint;
 
     private final int shift;
+    private final int entityFirstUnpinnedIndex;
 
     public TwoOptListMove(ListVariableDescriptor<Solution_> variableDescriptor,
             Object firstEntity, Object secondEntity,
@@ -60,6 +64,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         this.firstEdgeEndpoint = firstEdgeEndpoint;
         this.secondEdgeEndpoint = secondEdgeEndpoint;
         if (firstEntity == secondEntity) {
+            entityFirstUnpinnedIndex = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(firstEntity);
             if (firstEdgeEndpoint == 0) {
                 shift = -secondEdgeEndpoint;
             } else if (secondEdgeEndpoint < firstEdgeEndpoint) {
@@ -72,20 +77,25 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 shift = 0;
             }
         } else {
+            // This is a tail swap move, so entityFirstUnpinnedIndex is unused as no
+            // flipping will be done
+            entityFirstUnpinnedIndex = 0;
             shift = 0;
         }
     }
 
-    public TwoOptListMove(ListVariableDescriptor<Solution_> variableDescriptor,
+    private TwoOptListMove(ListVariableDescriptor<Solution_> variableDescriptor,
             Object firstEntity, Object secondEntity,
             int firstEdgeEndpoint,
             int secondEdgeEndpoint,
+            int entityFirstUnpinnedIndex,
             int shift) {
         this.variableDescriptor = variableDescriptor;
         this.firstEntity = firstEntity;
         this.secondEntity = secondEntity;
         this.firstEdgeEndpoint = firstEdgeEndpoint;
         this.secondEdgeEndpoint = secondEdgeEndpoint;
+        this.entityFirstUnpinnedIndex = entityFirstUnpinnedIndex;
         this.shift = shift;
     }
 
@@ -96,6 +106,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 secondEntity,
                 firstEdgeEndpoint,
                 secondEdgeEndpoint,
+                entityFirstUnpinnedIndex,
                 -shift);
     }
 
@@ -152,18 +163,28 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                         secondEdgeEndpoint);
             } else {
                 innerScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
-                        0,
+                        entityFirstUnpinnedIndex,
                         listVariable.size());
             }
 
             if (firstEdgeEndpoint == 0 && shift > 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
 
-            FlipSublistAction.flipSublist(listVariable, firstEdgeEndpoint, secondEdgeEndpoint);
+            FlipSublistAction.flipSublist(listVariable, entityFirstUnpinnedIndex, firstEdgeEndpoint, secondEdgeEndpoint);
 
             if (firstEdgeEndpoint == 0 && shift < 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
 
             if (firstEdgeEndpoint > 0) {
@@ -172,25 +193,35 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                         secondEdgeEndpoint);
             } else {
                 innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
-                        0,
+                        entityFirstUnpinnedIndex,
                         listVariable.size());
             }
         } else {
             innerScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
-                    0,
+                    entityFirstUnpinnedIndex,
                     listVariable.size());
 
             if (shift > 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
 
-            FlipSublistAction.flipSublist(listVariable, firstEdgeEndpoint, secondEdgeEndpoint);
+            FlipSublistAction.flipSublist(listVariable, entityFirstUnpinnedIndex, firstEdgeEndpoint, secondEdgeEndpoint);
 
             if (shift < 0) {
-                Collections.rotate(listVariable, shift);
+                if (entityFirstUnpinnedIndex == 0) {
+                    Collections.rotate(listVariable, shift);
+                } else {
+                    Collections.rotate(listVariable.subList(entityFirstUnpinnedIndex, listVariable.size()),
+                            shift);
+                }
             }
             innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
-                    0,
+                    entityFirstUnpinnedIndex,
                     listVariable.size());
         }
     }
@@ -220,6 +251,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 destinationScoreDirector.lookUpWorkingObject(secondEntity),
                 firstEdgeEndpoint,
                 secondEdgeEndpoint,
+                entityFirstUnpinnedIndex,
                 shift);
     }
 
@@ -244,7 +276,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 return new ArrayList<>(listVariable.subList(firstEdgeEndpoint, secondEdgeEndpoint));
             } else {
                 List<Object> firstHalfReversedPath = listVariable.subList(firstEdgeEndpoint, listVariable.size());
-                List<Object> secondHalfReversedPath = listVariable.subList(0, secondEdgeEndpoint);
+                List<Object> secondHalfReversedPath = listVariable.subList(entityFirstUnpinnedIndex, secondEdgeEndpoint);
                 return CollectionUtils.concat(firstHalfReversedPath, secondHalfReversedPath);
             }
         } else {

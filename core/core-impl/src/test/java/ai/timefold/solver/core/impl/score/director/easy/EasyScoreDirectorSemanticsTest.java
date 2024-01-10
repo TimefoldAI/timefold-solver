@@ -17,6 +17,10 @@ import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,11 +28,36 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
     @Override
     protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
+            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+                    SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataConstraintWeightEasyScoreCalculator.class);
         ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
+                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+    }
+
+    @Override
+    protected InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
+            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+                    SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withEasyScoreCalculatorClass(TestdataPinnedListEasyScoreCalculator.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
+                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+    }
+
+    @Override
+    protected InnerScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
+            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+                    SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withEasyScoreCalculatorClass(TestdataPinnedWithIndexListEasyScoreCalculator.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
                 EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }

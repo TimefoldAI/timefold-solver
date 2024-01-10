@@ -10,14 +10,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
@@ -64,7 +65,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private boolean allChangesWillBeUndoneBeforeStepEnds = false;
     private long calculationCount = 0L;
     protected Solution_ workingSolution;
-    protected Integer workingInitScore = null;
+    private int workingInitScore = 0;
     private String undoMoveText;
 
     // Null when tracking disabled
@@ -117,6 +118,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return workingSolution;
     }
 
+    protected int getWorkingInitScore() {
+        return workingInitScore;
+    }
+
     @Override
     public long getWorkingEntityListRevision() {
         return workingEntityListRevision;
@@ -158,10 +163,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     /**
      * Note: resetting the working solution does NOT substitute the calls to before/after methods of
-     * the {@link ai.timefold.solver.core.api.solver.change.ProblemChangeDirector} during
-     * {@link ai.timefold.solver.core.api.solver.change.ProblemChange problem changes},
-     * as these calls are propagated to {@link VariableListener variable listeners}, which update shadow variables
-     * in the {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution working solution} to keep it consistent.
+     * the {@link ProblemChangeDirector} during {@link ProblemChange problem changes},
+     * as these calls are propagated to {@link VariableListener variable listeners},
+     * which update shadow variables in the {@link PlanningSolution working solution} to keep it consistent.
      */
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
@@ -175,46 +179,35 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
          * Providing the init score and genuine entity count requires another pass over the entities.
          * The following code does all of those operations in a single pass.
          */
-        Consumer<Object> visitor = this::assertNonNullPlanningId; // Every fact and entity will get this done.
+        Consumer<Object> visitor = null;
         if (lookUpEnabled) {
             lookUpManager.reset();
-            visitor = visitor.andThen(lookUpManager::addWorkingObject);
+            visitor = lookUpManager::addWorkingObject;
+            // This visits all the problem facts, applying the visitor.
+            solutionDescriptor.visitAllProblemFacts(workingSolution, visitor);
         }
-        // This visits all the problem facts, applying the visitor.
-        solutionDescriptor.visitAllProblemFacts(workingSolution, visitor);
-        // This visits all the entities, applying the visitor.
+        // This visits all the entities, applying the visitor if non-null.
         var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution, visitor);
         setWorkingEntityListDirty();
 
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
+        assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         variableListenerSupport.resetWorkingSolution();
     }
 
-    @Override
-    public void assertNonNullPlanningIds() {
-        getSolutionDescriptor().visitAll(workingSolution, this::assertNonNullPlanningId);
-    }
-
-    private void assertNonNullPlanningId(Object fact) {
-        Class<?> factClass = fact.getClass();
-        MemberAccessor planningIdAccessor = getSolutionDescriptor().getPlanningIdAccessor(factClass);
-        if (planningIdAccessor == null) { // There is no planning ID annotation.
-            return;
-        }
-        Object id = planningIdAccessor.executeGetter(fact);
-        if (id == null) { // Fail fast as planning ID is null.
-            throw new IllegalStateException("The planningId (" + id + ") of the member (" + planningIdAccessor
-                    + ") of the class (" + factClass + ") on object (" + fact + ") must not be null.\n"
-                    + "Maybe initialize the planningId of the class (" + planningIdAccessor.getDeclaringClass()
-                    + ") instance (" + fact + ") before solving.\n" +
-                    "Maybe remove the @" + PlanningId.class.getSimpleName() + " annotation.");
+    private void assertInitScoreZeroOrLess() {
+        if (workingInitScore > 0) {
+            throw new IllegalStateException("""
+                    workingInitScore > 0 (%d).
+                    Maybe a custom move is removing more entities than were ever added?
+                    """.formatted(workingInitScore));
         }
     }
 
     @Override
-    public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+    public Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
         if (trackingWorkingSolution) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
@@ -226,27 +219,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
             assertWorkingScoreFromScratch(score, move);
+        }
+        if (moveProcessor != null) {
+            moveProcessor.accept(score);
         }
         undoMove.doMoveOnly(this);
         return score;
-    }
-
-    @Override
-    public void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor) {
-        if (trackingWorkingSolution) {
-            solutionTracker.setBeforeMoveSolution(workingSolution);
-        }
-        Move<Solution_> undoMove = move.doMove(this);
-        Score_ score = calculateScore();
-        if (assertMoveScoreFromScratch) {
-            undoMoveText = undoMove.toString();
-            if (trackingWorkingSolution) {
-                solutionTracker.setAfterMoveSolution(workingSolution);
-            }
-            assertWorkingScoreFromScratch(score, move);
-        }
-        moveProcessor.accept(score);
-        undoMove.doMoveOnly(this);
     }
 
     @Override
@@ -345,7 +323,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void close() {
         workingSolution = null;
-        workingInitScore = null;
+        workingInitScore = 0;
         if (lookUpEnabled) {
             lookUpManager.reset();
         }
@@ -454,6 +432,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore++;
         }
+        assertInitScoreZeroOrLess();
         variableListenerSupport.beforeVariableChanged(variableDescriptor, entity);
     }
 
@@ -479,6 +458,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         workingInitScore++;
+        assertInitScoreZeroOrLess();
     }
 
     @Override
@@ -493,8 +473,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
-            Object entity, int fromIndex, int toIndex) {
+    public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
+            int toIndex) {
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
@@ -506,6 +486,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         workingInitScore += entityDescriptor.countUninitializedVariables(entity);
+        assertInitScoreZeroOrLess();
         variableListenerSupport.beforeEntityRemoved(entityDescriptor, entity);
     }
 

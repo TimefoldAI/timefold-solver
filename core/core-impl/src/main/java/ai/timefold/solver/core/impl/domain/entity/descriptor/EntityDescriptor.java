@@ -14,11 +14,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
@@ -58,6 +60,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PlanningPinToIndexReader;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,11 +86,13 @@ public class EntityDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
+    private final int ordinal;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-
     private final Class<?> entityClass;
     private final Predicate<Object> isInitializedPredicate;
     private final Predicate<Object> hasNoNullVariables;
+    private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
+
     // Only declared movable filter, excludes inherited and descending movable filters
     private SelectionFilter<Solution_, Object> declaredMovableEntitySelectionFilter;
     private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
@@ -96,11 +102,11 @@ public class EntityDescriptor<Solution_> {
     private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
 
     private List<SelectionFilter<Solution_, Object>> declaredPinEntityFilterList;
-
     private List<EntityDescriptor<Solution_>> inheritedEntityDescriptorList;
 
     // Caches the inherited, declared and descending movable filters (including @PlanningPin filters) as a composite filter
     private SelectionFilter<Solution_, Object> effectiveMovableEntitySelectionFilter;
+    private PlanningPinToIndexReader<Solution_> effectivePlanningPinToIndexReader;
 
     // Caches the inherited and declared variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorMap;
@@ -108,12 +114,14 @@ public class EntityDescriptor<Solution_> {
     private Map<String, VariableDescriptor<Solution_>> effectiveVariableDescriptorMap;
     // Duplicate of effectiveGenuineVariableDescriptorMap.values() for faster iteration on the hot path.
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
+    private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public EntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+    public EntityDescriptor(int ordinal, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+        this.ordinal = ordinal;
         SolutionDescriptor.assertMutable(entityClass, "entityClass");
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
@@ -122,6 +130,16 @@ public class EntityDescriptor<Solution_> {
         if (entityClass.getPackage() == null) {
             LOGGER.warn("The entityClass ({}) should be in a proper java package.", entityClass);
         }
+    }
+
+    /**
+     * A number unique within a {@link SolutionDescriptor}, increasing sequentially from zero.
+     * Used for indexing in arrays to avoid object hash lookups in maps.
+     *
+     * @return zero or higher
+     */
+    public int getOrdinal() {
+        return ordinal;
     }
 
     /**
@@ -150,10 +168,11 @@ public class EntityDescriptor<Solution_> {
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
         declaredPinEntityFilterList = new ArrayList<>(2);
         // Only iterate declared fields and methods, not inherited members, to avoid registering the same one twice
-        List<Member> memberList = ConfigUtils.getDeclaredMembers(entityClass);
-        for (Member member : memberList) {
+        var memberList = ConfigUtils.getDeclaredMembers(entityClass);
+        var variableDescriptorCounter = new MutableInt(0);
+        for (var member : memberList) {
             processValueRangeProviderAnnotation(descriptorPolicy, member);
-            processPlanningVariableAnnotation(descriptorPolicy, member);
+            processPlanningVariableAnnotation(variableDescriptorCounter, descriptorPolicy, member);
             processPlanningPinAnnotation(descriptorPolicy, member);
         }
         if (declaredGenuineVariableDescriptorMap.isEmpty() && declaredShadowVariableDescriptorMap.isEmpty()) {
@@ -225,7 +244,8 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
-    private void processPlanningVariableAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
+    private void processPlanningVariableAnnotation(MutableInt variableDescriptorCounter, DescriptorPolicy descriptorPolicy,
+            Member member) {
         Class<? extends Annotation> variableAnnotationClass = ConfigUtils.extractAnnotationClass(
                 member, VARIABLE_ANNOTATION_CLASSES);
         if (variableAnnotationClass != null) {
@@ -240,92 +260,107 @@ public class EntityDescriptor<Solution_> {
             }
             MemberAccessor memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                     memberAccessorType, variableAnnotationClass, descriptorPolicy.getDomainAccessType());
-            registerVariableAccessor(variableAnnotationClass, memberAccessor);
+            registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
+            variableDescriptorCounter.increment();
         }
     }
 
-    private void registerVariableAccessor(Class<? extends Annotation> variableAnnotationClass,
-            MemberAccessor memberAccessor) {
-        String memberName = memberAccessor.getName();
+    private void registerVariableAccessor(int nextVariableDescriptorOrdinal,
+            Class<? extends Annotation> variableAnnotationClass, MemberAccessor memberAccessor) {
+        var memberName = memberAccessor.getName();
         if (declaredGenuineVariableDescriptorMap.containsKey(memberName)
                 || declaredShadowVariableDescriptorMap.containsKey(memberName)) {
             VariableDescriptor<Solution_> duplicate = declaredGenuineVariableDescriptorMap.get(memberName);
             if (duplicate == null) {
                 duplicate = declaredShadowVariableDescriptorMap.get(memberName);
             }
-            throw new IllegalStateException("The entityClass (" + entityClass
-                    + ") has a @" + variableAnnotationClass.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") that is duplicated by another member for variableDescriptor (" + duplicate + ").\n"
-                    + "Maybe the annotation is defined on both the field and its getter.");
-        }
-        if (variableAnnotationClass.equals(PlanningVariable.class)) {
-            GenuineVariableDescriptor<Solution_> variableDescriptor = new BasicVariableDescriptor<>(
-                    this, memberAccessor);
+            throw new IllegalStateException("""
+                    The entityClass (%s) has a @%s annotated member (%s), duplicated by member for variableDescriptor (%s).
+                    Maybe the annotation is defined on both the field and its getter."""
+                    .formatted(entityClass, variableAnnotationClass.getSimpleName(), memberAccessor, duplicate));
+        } else if (variableAnnotationClass.equals(PlanningVariable.class)) {
+            var variableDescriptor = new BasicVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PlanningListVariable.class)) {
             if (List.class.isAssignableFrom(memberAccessor.getType())) {
-                GenuineVariableDescriptor<Solution_> variableDescriptor = new ListVariableDescriptor<>(
-                        this, memberAccessor);
+                var variableDescriptor = new ListVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
                 declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
             } else {
-                throw new IllegalStateException("The entityClass (" + entityClass
-                        + ") has a @" + PlanningListVariable.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") that has an unsupported type (" + memberAccessor.getType() + ").\n"
-                        + "Maybe use " + List.class.getCanonicalName() + ".");
+                throw new IllegalStateException("""
+                        The entityClass (%s) has a @%s annotated member (%s) that has an unsupported type (%s).
+                        Maybe use %s."""
+                        .formatted(entityClass, PlanningListVariable.class.getSimpleName(), memberAccessor,
+                                memberAccessor.getType(), List.class.getCanonicalName()));
             }
         } else if (variableAnnotationClass.equals(InverseRelationShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new InverseRelationShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor =
+                    new InverseRelationShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(AnchorShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new AnchorShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new AnchorShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(IndexShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new IndexShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new IndexShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PreviousElementShadowVariable.class)) {
-            PreviousElementShadowVariableDescriptor<Solution_> variableDescriptor =
-                    new PreviousElementShadowVariableDescriptor<>(this, memberAccessor);
+            var variableDescriptor =
+                    new PreviousElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(NextElementShadowVariable.class)) {
-            NextElementShadowVariableDescriptor<Solution_> variableDescriptor =
-                    new NextElementShadowVariableDescriptor<>(this, memberAccessor);
+            var variableDescriptor =
+                    new NextElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(ShadowVariable.class)
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new CustomShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new PiggybackShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor =
+                    new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CustomShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor = new LegacyCustomShadowVariableDescriptor<>(
-                    this, memberAccessor);
+            var variableDescriptor =
+                    new LegacyCustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else {
-            throw new IllegalStateException("The variableAnnotationClass ("
-                    + variableAnnotationClass + ") is not implemented.");
+            throw new IllegalStateException("The variableAnnotationClass (%s) is not implemented."
+                    .formatted(variableAnnotationClass));
         }
     }
 
     private void processPlanningPinAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
-        if (((AnnotatedElement) member).isAnnotationPresent(PlanningPin.class)) {
-            MemberAccessor memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
+        var annotatedMember = ((AnnotatedElement) member);
+        if (annotatedMember.isAnnotationPresent(PlanningPin.class)) {
+            var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                     FIELD_OR_READ_METHOD, PlanningPin.class, descriptorPolicy.getDomainAccessType());
-            Class<?> type = memberAccessor.getType();
+            var type = memberAccessor.getType();
             if (!Boolean.TYPE.isAssignableFrom(type) && !Boolean.class.isAssignableFrom(type)) {
-                throw new IllegalStateException("The entityClass (" + entityClass
-                        + ") has a @" + PlanningPin.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") that is not a boolean or Boolean.");
+                throw new IllegalStateException(
+                        "The entityClass (%s) has a %s annotated member (%s) that is not a boolean or Boolean."
+                                .formatted(entityClass, PlanningPin.class.getSimpleName(), member));
             }
             declaredPinEntityFilterList.add(new PinEntityFilter<>(memberAccessor));
+        }
+    }
+
+    private void processPlanningPinIndexAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
+        var annotatedMember = ((AnnotatedElement) member);
+        if (annotatedMember.isAnnotationPresent(PlanningPinToIndex.class)) {
+            if (!hasAnyGenuineListVariables()) {
+                throw new IllegalStateException(
+                        "The entityClass (%s) has a %s annotated member (%s) but no %s annotated member."
+                                .formatted(entityClass, PlanningPinToIndex.class.getSimpleName(), member,
+                                        PlanningListVariable.class.getSimpleName()));
+            }
+            var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
+                    FIELD_OR_READ_METHOD, PlanningPinToIndex.class, descriptorPolicy.getDomainAccessType());
+            var type = memberAccessor.getType();
+            if (!Integer.TYPE.isAssignableFrom(type)) {
+                throw new IllegalStateException(
+                        "The entityClass (%s) has a %s annotated member (%s) that is not a primitive int."
+                                .formatted(entityClass, PlanningPinToIndex.class.getSimpleName(), member));
+            }
+            declaredPlanningPinIndexMemberAccessorList.add(memberAccessor);
         }
     }
 
@@ -380,6 +415,10 @@ public class EntityDescriptor<Solution_> {
         effectiveVariableDescriptorMap.putAll(effectiveGenuineVariableDescriptorMap);
         effectiveVariableDescriptorMap.putAll(effectiveShadowVariableDescriptorMap);
         effectiveGenuineVariableDescriptorList = new ArrayList<>(effectiveGenuineVariableDescriptorMap.values());
+        effectiveGenuineListVariableDescriptorList = effectiveGenuineVariableDescriptorList.stream()
+                .filter(GenuineVariableDescriptor::isListVariable)
+                .map(l -> (ListVariableDescriptor<Solution_>) l)
+                .toList();
     }
 
     private void createEffectiveMovableEntitySelectionFilter() {
@@ -407,6 +446,37 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
+    private void createEffectivePlanningPinIndexReader() {
+        if (!hasAnyGenuineListVariables()) {
+            effectivePlanningPinToIndexReader = null;
+            return;
+        }
+
+        var listVariableDescriptor = getGenuineListVariableDescriptor();
+        var planningListVariableReader = new Function<Object, List<?>>() {
+
+            @Override
+            public List<?> apply(Object o) {
+                return (List<?>) listVariableDescriptor.getValue(o);
+            }
+        };
+
+        var planningPinIndexMemberAccessorList = new ArrayList<MemberAccessor>();
+        for (EntityDescriptor<Solution_> inheritedEntityDescriptor : inheritedEntityDescriptorList) {
+            if (inheritedEntityDescriptor.effectivePlanningPinToIndexReader != null) {
+                planningPinIndexMemberAccessorList.addAll(inheritedEntityDescriptor.declaredPlanningPinIndexMemberAccessorList);
+            }
+        }
+        planningPinIndexMemberAccessorList.addAll(declaredPlanningPinIndexMemberAccessorList);
+
+        if (planningPinIndexMemberAccessorList.isEmpty()) {
+            effectivePlanningPinToIndexReader = null;
+        } else {
+            effectivePlanningPinToIndexReader = new PlanningPinToIndexReader<>(effectiveMovableEntitySelectionFilter,
+                    planningListVariableReader, planningPinIndexMemberAccessorList.toArray(MemberAccessor[]::new));
+        }
+    }
+
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : declaredGenuineVariableDescriptorMap.values()) {
             variableDescriptor.linkVariableDescriptors(descriptorPolicy);
@@ -414,6 +484,15 @@ public class EntityDescriptor<Solution_> {
         for (ShadowVariableDescriptor<Solution_> shadowVariableDescriptor : declaredShadowVariableDescriptorMap.values()) {
             shadowVariableDescriptor.linkVariableDescriptors(descriptorPolicy);
         }
+        /*
+         * We can only create the PlanningPinIndexReader after we have processed all list variable descriptors.
+         * Only iterate declared fields and methods, not inherited members,
+         * to avoid registering the same one twice.
+         */
+        for (Member member : ConfigUtils.getDeclaredMembers(entityClass)) {
+            processPlanningPinIndexAnnotation(descriptorPolicy, member);
+        }
+        createEffectivePlanningPinIndexReader();
     }
 
     // ************************************************************************
@@ -434,6 +513,10 @@ public class EntityDescriptor<Solution_> {
 
     public boolean hasEffectiveMovableEntitySelectionFilter() {
         return effectiveMovableEntitySelectionFilter != null;
+    }
+
+    public boolean supportsPinning() {
+        return hasEffectiveMovableEntitySelectionFilter() || effectivePlanningPinToIndexReader != null;
     }
 
     public SelectionFilter<Solution_, Object> getEffectiveMovableEntitySelectionFilter() {
@@ -460,11 +543,19 @@ public class EntityDescriptor<Solution_> {
         if (!isGenuine()) {
             return false;
         }
-        return effectiveGenuineVariableDescriptorList.stream().anyMatch(GenuineVariableDescriptor::isListVariable);
+        return getGenuineListVariableDescriptor() != null;
     }
 
     public boolean isGenuine() {
         return hasAnyGenuineVariables();
+    }
+
+    public ListVariableDescriptor<Solution_> getGenuineListVariableDescriptor() {
+        if (effectiveGenuineListVariableDescriptorList.isEmpty()) {
+            return null;
+        }
+        // Earlier validation guarantees there will only ever be one.
+        return effectiveGenuineListVariableDescriptorList.get(0);
     }
 
     public List<GenuineVariableDescriptor<Solution_>> getGenuineVariableDescriptorList() {
@@ -551,6 +642,60 @@ public class EntityDescriptor<Solution_> {
         List<Object> entityList = new ArrayList<>();
         visitAllEntities(solution, entityList::add);
         return entityList;
+    }
+
+    /**
+     * Returns the {@link PinningStatus} of the entity.
+     * If {@link PlanningPin} is enabled on the entity, the entity is fully pinned.
+     * Otherwise if {@link PlanningPinToIndex} is specified, returns the value of it.
+     *
+     * @param scoreDirector
+     * @param entity
+     * @return
+     */
+    public PinningStatus extractPinningStatus(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        if (!supportsPinning()) {
+            return PinningStatus.ofUnpinned();
+        } else if (!isMovable(scoreDirector, entity)) { // Skipping due to @PlanningPin.
+            return PinningStatus.ofFullyPinned();
+        }
+        var firstUnpinnedIndex = extractFirstUnpinnedIndex(entity);
+        if (firstUnpinnedIndex == 0) {
+            return PinningStatus.ofUnpinned();
+        } else {
+            return PinningStatus.ofPinIndex(firstUnpinnedIndex);
+        }
+    }
+
+    /**
+     * Ignores {@link PlanningPin} on the entire entity.
+     * If it should be taken into account as well, use {@link #extractPinningStatus(ScoreDirector, Object)}.
+     *
+     * @param entity never null
+     * @return never null
+     */
+    public int extractFirstUnpinnedIndex(Object entity) {
+        if (effectivePlanningPinToIndexReader == null) { // There is no @PlanningPinToIndex.
+            return 0;
+        } else {
+            return effectivePlanningPinToIndexReader.applyAsInt(null, entity);
+        }
+    }
+
+    public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int firstUnpinnedIndex) {
+
+        public static PinningStatus ofUnpinned() {
+            return new PinningStatus(false, false, -1);
+        }
+
+        public static PinningStatus ofFullyPinned() {
+            return new PinningStatus(true, true, -1);
+        }
+
+        public static PinningStatus ofPinIndex(int firstUnpinnedIndex) {
+            return new PinningStatus(true, false, firstUnpinnedIndex);
+        }
+
     }
 
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {

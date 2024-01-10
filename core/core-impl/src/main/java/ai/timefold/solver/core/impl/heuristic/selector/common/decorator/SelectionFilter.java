@@ -50,23 +50,20 @@ public interface SelectionFilter<Solution_, T> {
                 .flatMap(filter -> {
                     if (filter == CompositeSelectionFilter.NOOP) {
                         return Stream.empty();
-                    } else if (filter instanceof CompositeSelectionFilter) {
+                    } else if (filter instanceof CompositeSelectionFilter<Solution_, T> compositeSelectionFilter) {
                         // Decompose composites if necessary; avoids needless recursion.
-                        return Arrays.stream(((CompositeSelectionFilter<Solution_, T>) filter).selectionFilterArray);
+                        return Arrays.stream(compositeSelectionFilter.selectionFilterArray);
                     } else {
                         return Stream.of(filter);
                     }
                 })
                 .distinct()
                 .toArray(SelectionFilter[]::new);
-        switch (distinctFilterArray.length) {
-            case 0:
-                return CompositeSelectionFilter.NOOP;
-            case 1:
-                return distinctFilterArray[0];
-            default:
-                return new CompositeSelectionFilter<>(distinctFilterArray);
-        }
+        return switch (distinctFilterArray.length) {
+            case 0 -> CompositeSelectionFilter.NOOP;
+            case 1 -> distinctFilterArray[0];
+            default -> new CompositeSelectionFilter<>(distinctFilterArray);
+        };
     }
 
     /**

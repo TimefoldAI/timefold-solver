@@ -10,12 +10,12 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
-public class NextElementShadowVariableDescriptor<Solution_> extends AbstractNextPrevElementShadowVariableDescriptor<Solution_> {
+public final class NextElementShadowVariableDescriptor<Solution_>
+        extends AbstractNextPrevElementShadowVariableDescriptor<Solution_> {
 
-    public NextElementShadowVariableDescriptor(
-            EntityDescriptor<Solution_> entityDescriptor,
+    public NextElementShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

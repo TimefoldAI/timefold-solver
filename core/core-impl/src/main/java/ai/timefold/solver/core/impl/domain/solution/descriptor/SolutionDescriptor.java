@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
 public class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
-    private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(null, PlanningEntity.class);
+    private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
@@ -97,15 +97,16 @@ public class SolutionDescriptor<Solution_> {
             Map<String, SolutionCloner> solutionClonerMap, List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
         solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
-        SolutionDescriptor<Solution_> solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
-        DescriptorPolicy descriptorPolicy = new DescriptorPolicy();
+        var solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
+        var descriptorPolicy = new DescriptorPolicy();
         descriptorPolicy.setDomainAccessType(domainAccessType);
         descriptorPolicy.setGeneratedSolutionClonerMap(solutionClonerMap);
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
 
         solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
-        for (Class<?> entityClass : sortEntityClassList(entityClassList)) {
-            EntityDescriptor<Solution_> entityDescriptor = new EntityDescriptor<>(solutionDescriptor, entityClass);
+        int ordinal = 0;
+        for (var entityClass : sortEntityClassList(entityClassList)) {
+            var entityDescriptor = new EntityDescriptor<>(ordinal++, solutionDescriptor, entityClass);
             solutionDescriptor.addEntityDescriptor(entityDescriptor);
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
@@ -117,16 +118,12 @@ public class SolutionDescriptor<Solution_> {
         if (clz.isRecord()) {
             throw new IllegalArgumentException("""
                     The %s (%s) cannot be a record as it needs to be mutable.
-                    Use a regular class instead.
-                    """
-                    .strip()
+                    Use a regular class instead."""
                     .formatted(classType, clz.getCanonicalName()));
         } else if (clz.isEnum()) {
             throw new IllegalArgumentException("""
                     The %s (%s) cannot be an enum as it needs to be mutable.
-                    Use a regular class instead.
-                    """
-                    .strip()
+                    Use a regular class instead."""
                     .formatted(classType, clz.getCanonicalName()));
         }
     }

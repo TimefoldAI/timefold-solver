@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
@@ -94,6 +95,39 @@ class KOptListMoveTest {
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 6);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 6);
+    }
+
+    @Test
+    void test3OptPinned() {
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7);
+
+        var variableDescriptorSpy = Mockito.spy(variableDescriptor);
+        var entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
+        Mockito.when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
+
+        KOptListMove<TestdataListSolution> kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
+                variableDescriptor,
+                variableDescriptorSpy,
+                List.of(v7, v2,
+                        v3, v4,
+                        v5, v6),
+                List.of(v2, v4,
+                        v3, v6,
+                        v5, v7));
+
+        assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
+        AbstractMove<TestdataListSolution> undoMove = kOptListMove.doMove(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v6, v7, v5, v4);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 7);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 7);
+
+        reset(scoreDirector);
+        undoMove.doMoveOnly(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 7);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 7);
     }
 
     @Test
@@ -272,6 +306,47 @@ class KOptListMoveTest {
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 4);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 2);
+    }
+
+    @Test
+    void testMultiEntity3OptPinned() {
+        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v6, v7);
+        TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v4, v5);
+
+        var variableDescriptorSpy = Mockito.spy(variableDescriptor);
+        var entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
+        Mockito.when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
+        Mockito.when(entityDescriptor.isMovable(null, e2)).thenReturn(true);
+
+        KOptListMove<TestdataListSolution> kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
+                variableDescriptor,
+                variableDescriptorSpy,
+                List.of(v7, v2,
+                        v3, v6,
+                        v4, v5),
+                List.of(v2, v6,
+                        v3, v5,
+                        v4, v7));
+
+        assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
+        AbstractMove<TestdataListSolution> undoMove = kOptListMove.doMove(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v5);
+        assertThat(e2.getValueList()).containsExactly(v3, v7, v4, v6);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 5);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e2, 0, 2);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 3);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e2, 0, 4);
+
+        reset(scoreDirector);
+        undoMove.doMoveOnly(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v6, v7);
+        assertThat(e2.getValueList()).containsExactly(v4, v5);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 3);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e2, 0, 4);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 5);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e2, 0, 2);
     }
 
     @Test
@@ -585,6 +660,16 @@ class KOptListMoveTest {
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             List<TestdataListValue> removedEdgeList,
             List<TestdataListValue> addedEdgeList) {
+        return fromRemovedAndAddedEdges(scoreDirector, listVariableDescriptor, listVariableDescriptor, removedEdgeList,
+                addedEdgeList);
+    }
+
+    private static <Solution_> KOptListMove<Solution_> fromRemovedAndAddedEdges(
+            InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ListVariableDescriptor<Solution_> listVariableDescriptorSpy,
+            List<TestdataListValue> removedEdgeList,
+            List<TestdataListValue> addedEdgeList) {
 
         if (addedEdgeList.size() != removedEdgeList.size()) {
             throw new IllegalArgumentException(
@@ -610,7 +695,7 @@ class KOptListMoveTest {
                 scoreDirector.getSupplyManager().demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
 
         Function<TestdataListValue, TestdataListValue> successorFunction =
-                getSuccessorFunction(listVariableDescriptor, inverseVariableSupply, indexVariableSupply);
+                getSuccessorFunction(listVariableDescriptorSpy, inverseVariableSupply, indexVariableSupply);
 
         for (int i = 0; i < removedEdgeList.size(); i += 2) {
             if (successorFunction.apply(removedEdgeList.get(i)) != removedEdgeList.get(i + 1)
@@ -644,14 +729,14 @@ class KOptListMoveTest {
         KOptDescriptor<TestdataListValue> descriptor = new KOptDescriptor<>(tourArray,
                 incl,
                 getMultiEntitySuccessorFunction(pickedValues,
-                        listVariableDescriptor,
+                        listVariableDescriptorSpy,
                         inverseVariableSupply,
                         indexVariableSupply),
                 getMultiEntityBetweenPredicate(pickedValues,
-                        listVariableDescriptor,
+                        listVariableDescriptorSpy,
                         inverseVariableSupply,
                         indexVariableSupply));
-        return descriptor.getKOptListMove(listVariableDescriptor, indexVariableSupply, inverseVariableSupply);
+        return descriptor.getKOptListMove(listVariableDescriptorSpy, indexVariableSupply, inverseVariableSupply);
     }
 
     private static int identityIndexOf(List<TestdataListValue> sourceList, TestdataListValue query) {

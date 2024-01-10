@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.testdata.domain.clone.customcloner;
 
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
@@ -18,13 +19,12 @@ public class TestdataScoreNotEqualSolution implements SolutionCloner<TestdataSco
     @PlanningScore
     private SimpleScore score;
     @PlanningEntityProperty
-    private TestdataEntity entity = new TestdataEntity();
+    private TestdataEntity entity = new TestdataEntity("A");
 
     @ValueRangeProvider(id = "valueRange")
     @ProblemFactCollectionProperty
     public List<TestdataValue> valueRange() {
-        // solver will never get to this point due to cloning corruption
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.emptyList();
     }
 
     @Override

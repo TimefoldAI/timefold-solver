@@ -1198,11 +1198,11 @@ The planning list variable is a successor to the chained planning variable and p
 
 [WARNING]
 ====
-As a new feature, planning list variable does not yet support all the advanced planning features that work with the chained planning variable.
-Use a <<chainedPlanningVariable,chained planning variable>> instead of a planning list variable, if you need any of the following planning techniques:
+Planning list variable does not yet support all the advanced planning features that work with the chained planning variable.
+Use a <<chainedPlanningVariable,chained planning variable>> instead of a planning list variable,
+if you need any of the following planning techniques:
 
 - xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[overconstrained planning],
-- xref:responding-to-change/responding-to-change.adoc#continuousPlanning[continuous planning] or xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[entity pinning],
 - <<planningEntityDifficulty,planning entity difficulty comparison>> or <<planningValueStrength,planning value strength comparison>>,
 - xref:optimization-algorithms/optimization-algorithms.adoc#exhaustiveSearch[exhaustive search],
 - xref:optimization-algorithms/optimization-algorithms.adoc#partitionedSearch[partitioned search],

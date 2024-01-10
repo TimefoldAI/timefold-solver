@@ -14,10 +14,11 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
  */
 public abstract class VariableDescriptor<Solution_> {
 
+    protected final int ordinal;
     protected final EntityDescriptor<Solution_> entityDescriptor;
-
     protected final MemberAccessor variableMemberAccessor;
     protected final String variableName;
+    protected final String simpleEntityAndVariableName;
 
     protected List<ShadowVariableDescriptor<Solution_>> sinkVariableDescriptorList = new ArrayList<>(4);
 
@@ -25,20 +26,35 @@ public abstract class VariableDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public VariableDescriptor(EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
+    protected VariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
+        if (variableMemberAccessor.getType().isPrimitive()) {
+            throw new IllegalStateException("""
+                    The entityClass (%s) has a @%s annotated member (%s) that returns a primitive type (%s).
+                    This means it cannot represent an uninitialized variable as null \
+                    and the Construction Heuristics think it's already initialized.
+                    Maybe let the member (%s) return its primitive wrapper type instead."""
+                    .formatted(entityDescriptor.getEntityClass(),
+                            PlanningVariable.class.getSimpleName(),
+                            variableMemberAccessor,
+                            variableMemberAccessor.getType(),
+                            getSimpleEntityAndVariableName()));
+        }
+        this.ordinal = ordinal;
         this.entityDescriptor = entityDescriptor;
         this.variableMemberAccessor = variableMemberAccessor;
-        variableName = variableMemberAccessor.getName();
-        if (variableMemberAccessor.getType().isPrimitive()) {
-            throw new IllegalStateException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + PlanningVariable.class.getSimpleName()
-                    + " annotated member (" + variableMemberAccessor
-                    + ") that returns a primitive type (" + variableMemberAccessor.getType()
-                    + "). This means it cannot represent an uninitialized variable as null"
-                    + " and the Construction Heuristics think it's already initialized.\n"
-                    + "Maybe let the member (" + getSimpleEntityAndVariableName()
-                    + ") return its primitive wrapper type instead.");
-        }
+        this.variableName = variableMemberAccessor.getName();
+        this.simpleEntityAndVariableName = entityDescriptor.getEntityClass().getSimpleName() + "." + variableName;
+    }
+
+    /**
+     * A number unique within an {@link EntityDescriptor}, increasing sequentially from zero.
+     * Used for indexing in arrays to avoid object hash lookups in maps.
+     *
+     * @return zero or higher
+     */
+    public int getOrdinal() {
+        return ordinal;
     }
 
     public EntityDescriptor<Solution_> getEntityDescriptor() {
@@ -54,7 +70,7 @@ public abstract class VariableDescriptor<Solution_> {
     // ************************************************************************
 
     public String getSimpleEntityAndVariableName() {
-        return entityDescriptor.getEntityClass().getSimpleName() + "." + variableName;
+        return simpleEntityAndVariableName;
     }
 
     public Class<?> getVariablePropertyType() {

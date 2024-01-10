@@ -62,8 +62,8 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             return new ListAssignMove<>(
                     listVariableDescriptor,
                     upcomingValue,
-                    destination.getEntity(),
-                    destination.getIndex());
+                    destination.entity(),
+                    destination.index());
         }
 
         // No need to generate ListUnassignMove because they are only used as undo moves.
@@ -72,7 +72,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
                 listVariableDescriptor,
                 upcomingSourceEntity,
                 upcomingSourceIndex,
-                destination.getEntity(),
-                destination.getIndex());
+                destination.entity(),
+                destination.index());
     }
 }

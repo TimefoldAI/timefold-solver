@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -140,14 +139,16 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
-    Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
+    default Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+        return doAndProcessMove(move, assertMoveScoreFromScratch, null);
+    }
 
     /**
      * @param move never null
      * @param assertMoveScoreFromScratch true will hurt performance
-     * @param moveProcessor never null, use this to store the score as well as call the acceptor and forager
+     * @param moveProcessor use this to store the score as well as call the acceptor and forager; skipped if null.
      */
-    void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor);
+    Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor);
 
     /**
      * @param expectedWorkingEntityListRevision an
@@ -314,12 +315,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param beforeMoveScore never null
      */
     void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore);
-
-    /**
-     * Asserts that none of the planning facts from {@link #getWorkingSolution()}
-     * have {@link PlanningId}s with a null value.
-     */
-    void assertNonNullPlanningIds();
 
     /**
      * Needs to be called after use because some implementations need to clean up their resources.
@@ -508,5 +503,32 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         RECOMMENDATION_API
 
     }
+
+    /*
+     * The following methods are copied here from ScoreDirector because they are deprecated there for removal.
+     * They will only be supported on this type, which serves for internal use only,
+     * as opposed to ScoreDirector, which is a public type.
+     * This way, we can ensure that these methods are used correctly and in a safe manner.
+     */
+
+    void beforeEntityAdded(Object entity);
+
+    void afterEntityAdded(Object entity);
+
+    void beforeEntityRemoved(Object entity);
+
+    void afterEntityRemoved(Object entity);
+
+    void beforeProblemFactAdded(Object problemFact);
+
+    void afterProblemFactAdded(Object problemFact);
+
+    void beforeProblemPropertyChanged(Object problemFactOrEntity);
+
+    void afterProblemPropertyChanged(Object problemFactOrEntity);
+
+    void beforeProblemFactRemoved(Object problemFact);
+
+    void afterProblemFactRemoved(Object problemFact);
 
 }

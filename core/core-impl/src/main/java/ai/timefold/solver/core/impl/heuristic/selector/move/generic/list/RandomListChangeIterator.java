@@ -48,7 +48,7 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
                 listVariableDescriptor,
                 inverseVariableSupply.getInverseSingleton(upcomingValue),
                 indexVariableSupply.getIndex(upcomingValue),
-                destination.getEntity(),
-                destination.getIndex());
+                destination.entity(),
+                destination.index());
     }
 }

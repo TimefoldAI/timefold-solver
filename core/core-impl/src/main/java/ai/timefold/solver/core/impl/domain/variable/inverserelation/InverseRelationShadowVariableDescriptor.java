@@ -26,15 +26,15 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class InverseRelationShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+public final class InverseRelationShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
-    protected VariableDescriptor<Solution_> sourceVariableDescriptor;
-    protected boolean singleton;
-    protected boolean chained;
+    private VariableDescriptor<Solution_> sourceVariableDescriptor;
+    private boolean singleton;
+    private boolean chained;
 
-    public InverseRelationShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public InverseRelationShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
     @Override
