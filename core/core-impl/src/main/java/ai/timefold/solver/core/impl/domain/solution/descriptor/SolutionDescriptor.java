@@ -104,9 +104,9 @@ public class SolutionDescriptor<Solution_> {
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
 
         solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
-        int id = 0;
+        int ordinal = 0;
         for (var entityClass : sortEntityClassList(entityClassList)) {
-            var entityDescriptor = new EntityDescriptor<>(id++, solutionDescriptor, entityClass);
+            var entityDescriptor = new EntityDescriptor<>(ordinal++, solutionDescriptor, entityClass);
             solutionDescriptor.addEntityDescriptor(entityDescriptor);
             entityDescriptor.processAnnotations(descriptorPolicy);
         }

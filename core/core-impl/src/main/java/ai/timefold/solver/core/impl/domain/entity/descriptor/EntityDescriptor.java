@@ -86,7 +86,7 @@ public class EntityDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
-    private final int id;
+    private final int ordinal;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Class<?> entityClass;
     private final Predicate<Object> isInitializedPredicate;
@@ -120,8 +120,8 @@ public class EntityDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public EntityDescriptor(int id, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
-        this.id = id;
+    public EntityDescriptor(int ordinal, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+        this.ordinal = ordinal;
         SolutionDescriptor.assertMutable(entityClass, "entityClass");
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
@@ -138,8 +138,8 @@ public class EntityDescriptor<Solution_> {
      *
      * @return zero or higher
      */
-    public int getId() {
-        return id;
+    public int getOrdinal() {
+        return ordinal;
     }
 
     /**
@@ -265,8 +265,8 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
-    private void registerVariableAccessor(int nextVariableDescriptorId, Class<? extends Annotation> variableAnnotationClass,
-            MemberAccessor memberAccessor) {
+    private void registerVariableAccessor(int nextVariableDescriptorOrdinal,
+            Class<? extends Annotation> variableAnnotationClass, MemberAccessor memberAccessor) {
         var memberName = memberAccessor.getName();
         if (declaredGenuineVariableDescriptorMap.containsKey(memberName)
                 || declaredShadowVariableDescriptorMap.containsKey(memberName)) {
@@ -279,11 +279,11 @@ public class EntityDescriptor<Solution_> {
                     Maybe the annotation is defined on both the field and its getter."""
                     .formatted(entityClass, variableAnnotationClass.getSimpleName(), memberAccessor, duplicate));
         } else if (variableAnnotationClass.equals(PlanningVariable.class)) {
-            var variableDescriptor = new BasicVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor = new BasicVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PlanningListVariable.class)) {
             if (List.class.isAssignableFrom(memberAccessor.getType())) {
-                var variableDescriptor = new ListVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+                var variableDescriptor = new ListVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
                 declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
             } else {
                 throw new IllegalStateException("""
@@ -294,30 +294,33 @@ public class EntityDescriptor<Solution_> {
             }
         } else if (variableAnnotationClass.equals(InverseRelationShadowVariable.class)) {
             var variableDescriptor =
-                    new InverseRelationShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+                    new InverseRelationShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(AnchorShadowVariable.class)) {
-            var variableDescriptor = new AnchorShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor = new AnchorShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(IndexShadowVariable.class)) {
-            var variableDescriptor = new IndexShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor = new IndexShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PreviousElementShadowVariable.class)) {
             var variableDescriptor =
-                    new PreviousElementShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+                    new PreviousElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(NextElementShadowVariable.class)) {
-            var variableDescriptor = new NextElementShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor =
+                    new NextElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(ShadowVariable.class)
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
-            var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
-            var variableDescriptor = new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor =
+                    new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CustomShadowVariable.class)) {
-            var variableDescriptor = new LegacyCustomShadowVariableDescriptor<>(nextVariableDescriptorId, this, memberAccessor);
+            var variableDescriptor =
+                    new LegacyCustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else {
             throw new IllegalStateException("The variableAnnotationClass (%s) is not implemented."

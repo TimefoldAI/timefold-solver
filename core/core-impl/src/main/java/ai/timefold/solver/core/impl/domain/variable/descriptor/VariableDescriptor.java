@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
  */
 public abstract class VariableDescriptor<Solution_> {
 
-    protected final int id;
+    protected final int ordinal;
     protected final EntityDescriptor<Solution_> entityDescriptor;
     protected final MemberAccessor variableMemberAccessor;
     protected final String variableName;
@@ -26,7 +26,8 @@ public abstract class VariableDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public VariableDescriptor(int id, EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
+    protected VariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
         if (variableMemberAccessor.getType().isPrimitive()) {
             throw new IllegalStateException("""
                     The entityClass (%s) has a @%s annotated member (%s) that returns a primitive type (%s).
@@ -39,7 +40,7 @@ public abstract class VariableDescriptor<Solution_> {
                             variableMemberAccessor.getType(),
                             getSimpleEntityAndVariableName()));
         }
-        this.id = id;
+        this.ordinal = ordinal;
         this.entityDescriptor = entityDescriptor;
         this.variableMemberAccessor = variableMemberAccessor;
         this.variableName = variableMemberAccessor.getName();
@@ -52,8 +53,8 @@ public abstract class VariableDescriptor<Solution_> {
      *
      * @return zero or higher
      */
-    public int getId() {
-        return id;
+    public int getOrdinal() {
+        return ordinal;
     }
 
     public EntityDescriptor<Solution_> getEntityDescriptor() {

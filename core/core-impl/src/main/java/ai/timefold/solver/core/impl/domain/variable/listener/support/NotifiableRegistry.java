@@ -27,9 +27,9 @@ final class NotifiableRegistry<Solution_> {
             var declaredVariableDescriptorList = entityDescriptor.getDeclaredVariableDescriptors();
             var array = new List[declaredVariableDescriptorList.size()];
             for (var variableDescriptor : declaredVariableDescriptorList) {
-                array[variableDescriptor.getId()] = new ArrayList<>();
+                array[variableDescriptor.getOrdinal()] = new ArrayList<>();
             }
-            var entityDescriptorId = entityDescriptor.getId();
+            var entityDescriptorId = entityDescriptor.getOrdinal();
             sourceVariableToNotifiableListArray[entityDescriptorId] = array;
             sourceEntityToNotifiableSetArray[entityDescriptorId] = new LinkedHashSet<>();
         }
@@ -41,8 +41,8 @@ final class NotifiableRegistry<Solution_> {
 
     void registerNotifiable(Collection<VariableDescriptor<Solution_>> sources, EntityNotifiable<Solution_> notifiable) {
         for (VariableDescriptor<?> source : sources) {
-            var entityDescriptorId = source.getEntityDescriptor().getId();
-            sourceVariableToNotifiableListArray[entityDescriptorId][source.getId()].add(notifiable);
+            var entityDescriptorId = source.getEntityDescriptor().getOrdinal();
+            sourceVariableToNotifiableListArray[entityDescriptorId][source.getOrdinal()].add(notifiable);
             sourceEntityToNotifiableSetArray[entityDescriptorId].add(notifiable);
         }
         notifiableList.add(notifiable);
@@ -53,13 +53,13 @@ final class NotifiableRegistry<Solution_> {
     }
 
     Collection<EntityNotifiable<Solution_>> get(EntityDescriptor<?> entityDescriptor) {
-        return sourceEntityToNotifiableSetArray[entityDescriptor.getId()];
+        return sourceEntityToNotifiableSetArray[entityDescriptor.getOrdinal()];
     }
 
     Collection<VariableListenerNotifiable<Solution_>> get(VariableDescriptor<?> variableDescriptor) {
         var notifiables =
-                sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getId()][variableDescriptor
-                        .getId()];
+                sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
+                        .getOrdinal()];
         if (notifiables == null) {
             return Collections.emptyList();
         }
@@ -68,8 +68,8 @@ final class NotifiableRegistry<Solution_> {
 
     Collection<ListVariableListenerNotifiable<Solution_>> get(ListVariableDescriptor<?> variableDescriptor) {
         var notifiables =
-                sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getId()][variableDescriptor
-                        .getId()];
+                sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
+                        .getOrdinal()];
         if (notifiables == null) {
             return Collections.emptyList();
         }
