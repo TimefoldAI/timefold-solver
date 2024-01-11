@@ -9,7 +9,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.smallrye.config.WithDefault;
 
 /**
  * During build time, this is translated into Timefold's {@link SolverConfig}
@@ -31,7 +30,6 @@ public interface SolverBuildTimeConfig {
      * Enable runtime assertions to detect common bugs in your implementation during development.
      * Defaults to {@link EnvironmentMode#REPRODUCIBLE}.
      */
-    @WithDefault("REPRODUCIBLE")
     Optional<EnvironmentMode> environmentMode();
 
     /**
@@ -39,14 +37,12 @@ public interface SolverBuildTimeConfig {
      * until the next problem fact change arrives. This is often useful for real-time planning.
      * Defaults to "false".
      */
-    @WithDefault("false")
     Optional<Boolean> daemon();
 
     /**
      * Determines how to access the fields and methods of domain classes.
      * Defaults to {@link DomainAccessType#GIZMO}.
      */
-    @WithDefault("GIZMO")
     Optional<DomainAccessType> domainAccessType();
 
     /**

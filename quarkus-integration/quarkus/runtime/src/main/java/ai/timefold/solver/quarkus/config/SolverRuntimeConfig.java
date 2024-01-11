@@ -6,7 +6,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.smallrye.config.WithDefault;
 
 /**
  * During run time, this overrides some of Timefold's {@link SolverConfig}
@@ -20,7 +19,6 @@ public interface SolverRuntimeConfig {
      * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number
      * or formula based on the available processor count.
      */
-    @WithDefault("NONE")
     Optional<String> moveThreadCount();
 
     /**

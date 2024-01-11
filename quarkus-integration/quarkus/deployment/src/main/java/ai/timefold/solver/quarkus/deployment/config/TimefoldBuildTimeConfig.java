@@ -8,7 +8,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
-import io.smallrye.config.WithDefaults;
 import io.smallrye.config.WithUnnamedKey;
 
 /**
@@ -32,15 +31,11 @@ public interface TimefoldBuildTimeConfig {
      * Configuration properties that overwrite Timefold's {@link SolverConfig} per Solver.
      */
     @WithUnnamedKey(DEFAULT_SOLVER_NAME)
-    @WithDefaults
     Map<String, SolverBuildTimeConfig> solver();
 
-    default boolean hasOnlyDefaultSolverConfig() {
-        return solver().size() == 1 && solver().containsKey(DEFAULT_SOLVER_NAME);
-    }
-
-    default Optional<SolverBuildTimeConfig> getDefaultSolverConfig() {
-        return getSolverConfig(DEFAULT_SOLVER_NAME);
+    default boolean isDefaultSolverConfig(String solverName) {
+        return solver().isEmpty() || solver().size() == 1 && getSolverConfig(solverName).isPresent()
+                || solver().containsKey(DEFAULT_SOLVER_NAME) && solverName.equals(DEFAULT_SOLVER_NAME);
     }
 
     default Optional<SolverBuildTimeConfig> getSolverConfig(String solverName) {
