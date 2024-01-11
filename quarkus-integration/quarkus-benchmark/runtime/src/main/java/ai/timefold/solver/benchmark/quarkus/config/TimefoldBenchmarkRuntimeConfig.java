@@ -8,7 +8,7 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-@ConfigMapping(prefix = "timefold.benchmark")
+@ConfigMapping(prefix = "quarkus.timefold.benchmark")
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface TimefoldBenchmarkRuntimeConfig {
     String DEFAULT_BENCHMARK_RESULT_DIRECTORY = "target/benchmarks";

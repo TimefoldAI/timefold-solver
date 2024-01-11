@@ -19,10 +19,9 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldBenchmarkRecorder {
-    public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig) {
+    public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig,
+            TimefoldBenchmarkRuntimeConfig timefoldRuntimeConfig) {
         return () -> {
-            TimefoldBenchmarkRuntimeConfig timefoldRuntimeConfig =
-                    Arc.container().instance(TimefoldBenchmarkRuntimeConfig.class).get();
             SolverConfig solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
             return updateBenchmarkConfigWithRuntimeProperties(benchmarkConfig, timefoldRuntimeConfig, solverConfig);

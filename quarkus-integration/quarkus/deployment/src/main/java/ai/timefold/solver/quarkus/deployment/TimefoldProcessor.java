@@ -11,10 +11,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +40,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
@@ -356,15 +353,14 @@ class TimefoldProcessor {
         registerClassesFromAnnotations(indexView, reflectiveClassSet);
 
         // Register only distinct constraint providers
-        List<Entry<String, SolverConfig>> distinctConstraintProviders = CollectionUtils.toDistinctList(
-	        new LinkedList<>(allSolverConfig.entrySet())
-                        .stream()
-                        .filter(entryConfig -> entryConfig.getValue().getScoreDirectorFactoryConfig()
-                                .getConstraintProviderClass() != null)
-                        .toList(),
-                (Entry<String, SolverConfig> entryConfig) -> entryConfig.getValue().getScoreDirectorFactoryConfig()
-                        .getConstraintProviderClass().getName());
-        distinctConstraintProviders
+        allSolverConfig.values()
+                .stream()
+                .filter(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
+                .map(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass().getName())
+                .distinct()
+                .map(constraintName -> allSolverConfig.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
+                        .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintName))
+                        .findFirst().get())
                 .forEach(entryConfig -> generateConstraintVerifier(entryConfig.getKey(), entryConfig.getValue(),
                         syntheticBeanBuildItemBuildProducer));
 
