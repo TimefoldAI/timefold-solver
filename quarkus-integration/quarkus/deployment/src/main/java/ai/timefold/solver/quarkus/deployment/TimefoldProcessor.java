@@ -357,7 +357,7 @@ class TimefoldProcessor {
 
         // Register only distinct constraint providers
         List<Entry<String, SolverConfig>> distinctConstraintProviders = CollectionUtils.toDistinctList(
-                new LinkedList<Entry<String, SolverConfig>>(allSolverConfig.entrySet())
+	        new LinkedList<>(allSolverConfig.entrySet())
                         .stream()
                         .filter(entryConfig -> entryConfig.getValue().getScoreDirectorFactoryConfig()
                                 .getConstraintProviderClass() != null)
@@ -383,6 +383,10 @@ class TimefoldProcessor {
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             SolverConfigBuildItem solverConfigBuildItem,
             TimefoldRuntimeConfig runtimeConfig) {
+        // Skip this extension if everything is missing.
+        if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
+            return;
+        }
 
         solverConfigBuildItem.getAllSolverConfigurations().forEach((key, value) -> {
             // Register the SolverConfig for each mapped solver or to the default
@@ -393,9 +397,11 @@ class TimefoldProcessor {
                             .setRuntimeInit()
                             .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
                                     GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                            solverConfigBuildItem.getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                                            solverConfigBuildItem
+                                                    .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
                                     GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                            solverConfigBuildItem.getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)));
+                                            solverConfigBuildItem
+                                                    .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)));
             if (key.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
                 configDescriptor.defaultBean();
             }
@@ -461,11 +467,12 @@ class TimefoldProcessor {
                                                     Type.Kind.CLASS),
                                             Type.create(DotName.createSimple(planningSolutionClass.getName()), Type.Kind.CLASS)
                                     }, null))
-                            .forceApplicationClass()
-                            .named(solverName + "ConstraintVerifier");
+                            .forceApplicationClass();
             if (solverName.equals(TimefoldRuntimeConfig.DEFAULT_SOLVER_NAME)) {
                 constraintDescriptor.defaultBean();
             }
+            // TODO Test two instances of constraint providers
+            // TODO Named constraint providers are causing failures
             syntheticBeanBuildItemBuildProducer.produce(constraintDescriptor.done());
         }
     }

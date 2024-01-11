@@ -1,5 +1,7 @@
 package ai.timefold.solver.benchmark.quarkus.deployment;
 
+import java.util.Objects;
+
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkBeanProvider;
 import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkRecorder;
@@ -20,8 +22,6 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.runtime.configuration.ConfigurationException;
-
-import java.util.Objects;
 
 class TimefoldBenchmarkProcessor {
 
@@ -49,7 +49,8 @@ class TimefoldBenchmarkProcessor {
             SolverConfigBuildItem solverConfigBuildItem,
             TimefoldBenchmarkRecorder recorder) {
         // TODO - Test skipping benchmark building
-        if (solverConfigBuildItem.getSolverNames().stream().map(solverConfigBuildItem::getSolverConfig).noneMatch(Objects::nonNull)) {
+        if (solverConfigBuildItem.getSolverNames().stream().map(solverConfigBuildItem::getSolverConfig)
+                .noneMatch(Objects::nonNull)) {
             log.warn("Skipping Timefold Benchmark extension because the Timefold extension was skipped.");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBenchmarkBeanProvider.class));
             return;

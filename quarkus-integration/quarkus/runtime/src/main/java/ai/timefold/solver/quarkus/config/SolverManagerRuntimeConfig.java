@@ -18,7 +18,7 @@ public interface SolverManagerRuntimeConfig {
      * Defaults to {@value SolverManagerConfig#PARALLEL_SOLVER_COUNT_AUTO}.
      * Other options include a number or formula based on the available processor count.
      */
-    @WithDefault("PARALLEL_SOLVER_COUNT_AUTO")
+    @WithDefault("AUTO")
     Optional<String> parallelSolverCount();
 
 }

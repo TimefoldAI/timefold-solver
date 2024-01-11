@@ -132,7 +132,7 @@ public class TimefoldDevUIPropertiesRPCService {
                         (AbstractConstraintStreamScoreDirectorFactory<?, ?>) solverFactory.getScoreDirectorFactory();
                 return Arrays.stream(scoreDirectorFactory.getConstraints())
                         .map(Constraint::getConstraintRef)
-                        .collect(Collectors.toList());
+                    .toList();
             }
         }
         return Collections.emptyList();

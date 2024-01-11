@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.test.QuarkusDevModeTest;
 import io.restassured.RestAssured;
 
-public class TimefoldProcessorHotReloadTest {
+class TimefoldProcessorHotReloadTest {
 
     // This fails in IntelliJ with "Undeclared build item class", but not in maven. That's normal in Quarkus for now.
     @RegisterExtension

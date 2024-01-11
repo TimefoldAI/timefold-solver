@@ -20,7 +20,7 @@ public interface SolverRuntimeConfig {
      * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number
      * or formula based on the available processor count.
      */
-    @WithDefault("MOVE_THREAD_COUNT_NONE")
+    @WithDefault("NONE")
     Optional<String> moveThreadCount();
 
     /**
