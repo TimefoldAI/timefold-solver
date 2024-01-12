@@ -148,7 +148,6 @@ class TimefoldProcessor {
 
     @BuildStep
     void watchSolverConfigXml(BuildProducer<HotDeploymentWatchedFileBuildItem> hotDeploymentWatchedFiles) {
-        // TODO - Add test case to hot reload of multiple solver config files
         String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml()
                 .orElse(TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL);
         Set<String> solverConfigXMLFiles = new HashSet<>();
