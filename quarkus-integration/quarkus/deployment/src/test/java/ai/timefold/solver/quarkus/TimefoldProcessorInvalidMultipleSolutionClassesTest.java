@@ -33,8 +33,11 @@ class TimefoldProcessorInvalidMultipleSolutionClassesTest {
                             TestdataQuarkusShadowVariableListener.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Multiple classes")
                     .hasMessageContaining(
-                            "Multiple classes ([ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableSolution, ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution]) found with a @PlanningSolution annotation."));
+                            "ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableSolution")
+                    .hasMessageContaining("ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution")
+                    .hasMessageContaining("found with a @PlanningSolution annotation."));
 
     @Test
     void test() {
