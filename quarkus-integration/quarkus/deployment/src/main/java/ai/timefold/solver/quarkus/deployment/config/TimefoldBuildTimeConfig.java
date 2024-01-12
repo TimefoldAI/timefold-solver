@@ -28,14 +28,21 @@ public interface TimefoldBuildTimeConfig {
     Optional<String> solverConfigXml();
 
     /**
-     * Configuration properties that overwrite Timefold's {@link SolverConfig} per Solver.
+     * Configuration properties that overwrite Timefold's {@link SolverConfig} per Solver. If a solver name is not
+     * explicitly specified, the solver name will default to {@link #DEFAULT_SOLVER_NAME}.
      */
     @WithUnnamedKey(DEFAULT_SOLVER_NAME)
     Map<String, SolverBuildTimeConfig> solver();
 
     default boolean isDefaultSolverConfig(String solverName) {
+        // 1 - No solver configuration, which means we will use a default empty SolverConfig and default Solver name
+        // 2 - Only one solve config. It will be the default one.
+        // 3 - There is a Solver name set to default
+        // 4 - If all the previous conditions do not apply, we will select the first key in ascending order. This ensures
+        //     that the default bean is always set and does not break the existing beans that expect a default bean.
         return solver().isEmpty() || solver().size() == 1 && getSolverConfig(solverName).isPresent()
-                || solver().containsKey(DEFAULT_SOLVER_NAME) && solverName.equals(DEFAULT_SOLVER_NAME);
+                || solver().containsKey(DEFAULT_SOLVER_NAME) && solverName.equals(DEFAULT_SOLVER_NAME)
+                || solver().keySet().stream().sorted().findFirst().get().equals(solverName);
     }
 
     default Optional<SolverBuildTimeConfig> getSolverConfig(String solverName) {

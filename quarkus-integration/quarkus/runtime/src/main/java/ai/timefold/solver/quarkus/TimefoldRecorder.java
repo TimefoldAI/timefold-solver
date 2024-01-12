@@ -5,6 +5,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.ScoreManager;
+import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -12,6 +17,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 
+import io.quarkus.arc.Arc;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
 
@@ -43,6 +49,40 @@ public class TimefoldRecorder {
         return () -> {
             updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, timefoldRuntimeConfig);
             return solverManagerConfig;
+        };
+    }
+
+    public <Solution_> Supplier<SolverFactory<Solution_>> solverFactory(final String solverConfigName) {
+        return () -> {
+            SolverConfig solverConfig = (SolverConfig) Arc.container().instance(solverConfigName).get();
+            return (SolverFactory<Solution_>) SolverFactory.create(solverConfig);
+        };
+    }
+
+    public <Solution_, ProblemId_> Supplier<SolverManager<Solution_, ProblemId_>> solverManager(final String solverFactoryName,
+            final SolverManagerConfig solverManagerConfig) {
+        return () -> {
+            SolverFactory<Solution_> solverFactory =
+                    (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
+            return (SolverManager<Solution_, ProblemId_>) SolverManager.create(solverFactory, solverManagerConfig);
+        };
+    }
+
+    public <Solution_, Score_ extends Score<Score_>> Supplier<ScoreManager<Solution_, Score_>>
+            scoreManager(final String solverFactoryName) {
+        return () -> {
+            SolverFactory<Solution_> solverFactory =
+                    (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
+            return (ScoreManager<Solution_, Score_>) ScoreManager.create(solverFactory);
+        };
+    }
+
+    public <Solution_, Score_ extends Score<Score_>> Supplier<SolutionManager<Solution_, Score_>>
+            solutionManager(final String solverFactoryName) {
+        return () -> {
+            SolverFactory<Solution_> solverFactory =
+                    (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
+            return (SolutionManager<Solution_, Score_>) SolutionManager.create(solverFactory);
         };
     }
 

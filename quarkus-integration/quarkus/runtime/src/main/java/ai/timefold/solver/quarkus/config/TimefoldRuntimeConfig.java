@@ -21,8 +21,8 @@ public interface TimefoldRuntimeConfig {
     String DEFAULT_SOLVER_NAME = "default";
 
     /**
-     * During run time, this is translated into Timefold's {@link SolverConfig}
-     * runtime properties.
+     * During run time, this is translated into Timefold's {@link SolverConfig} runtime properties per solver. If a solver
+     * name is not explicitly specified, the solver name will default to {@link #DEFAULT_SOLVER_NAME}.
      */
     @WithUnnamedKey(DEFAULT_SOLVER_NAME)
     Map<String, SolverRuntimeConfig> solver();

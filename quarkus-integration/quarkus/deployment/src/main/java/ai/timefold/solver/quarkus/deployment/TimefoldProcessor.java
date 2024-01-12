@@ -28,10 +28,26 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.ScoreManager;
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
@@ -41,7 +57,6 @@ import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
-import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
@@ -96,6 +111,12 @@ import io.quarkus.runtime.configuration.ConfigurationException;
 class TimefoldProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldProcessor.class.getName());
+    private static final String SOLVER_CONFIG_SUFFIX = "Config";
+    private static final String SOLVER_CONFIG_MANAGER_SUFFIX = "ConfigManager";
+    private static final String SOLVER_FACTORY_SUFFIX = "Factory";
+    private static final String SOLVER_MANAGER_SUFFIX = "Manager";
+    private static final String SOLVER_SCORE_MANAGER_SUFFIX = "ScoreManager";
+    private static final String SOLVER_SOLUTION_MANAGER_SUFFIX = "SolutionManager";
 
     TimefoldBuildTimeConfig timefoldBuildTimeConfig;
 
@@ -221,7 +242,7 @@ class TimefoldProcessor {
     }
 
     @BuildStep
-    SolverConfigBuildItem recordAndRegisterBeans(CombinedIndexBuildItem combinedIndex,
+    SolverConfigBuildItem recordAndRegisterBuildTimeBeans(CombinedIndexBuildItem combinedIndex,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
@@ -231,8 +252,6 @@ class TimefoldProcessor {
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         IndexView indexView = combinedIndex.getIndex();
 
-        // TODO - test skipping for the default case
-        // TODO - test skipping for multiple solvers, all configurations must be null
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
                 && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
@@ -251,11 +270,6 @@ class TimefoldProcessor {
         // Validate the planning entities settings
         assertNoMemberAnnotationWithoutClassAnnotation(indexView);
 
-        // TODO - test loading the default case
-        // TODO - test loading two solver configs with XMLs
-        // TODO - test override the XML generated config with solver properties file
-        // TODO - test loading the default file URL
-        // TODO - test config with same planning entities and solution to validate GIZMO
         // Quarkus extensions must always use getContextClassLoader()
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -268,6 +282,7 @@ class TimefoldProcessor {
                     generateSolverConfig(classLoader, indexView, reflectiveHierarchyClass,
                             TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME, reflectiveClassSet));
         } else {
+            // One config per solver mapped name
             this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> allSolverConfig.put(solverName,
                     generateSolverConfig(classLoader, indexView, reflectiveHierarchyClass, solverName, reflectiveClassSet)));
         }
@@ -284,14 +299,13 @@ class TimefoldProcessor {
                 .map(constraintName -> allSolverConfig.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
                         .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintName))
                         .findFirst().get())
-                .forEach(entryConfig -> generateConstraintVerifier(entryConfig.getKey(), entryConfig.getValue(),
-                        syntheticBeanBuildItemBuildProducer));
+                .forEach(
+                        entryConfig -> generateConstraintVerifier(entryConfig.getValue(), syntheticBeanBuildItemBuildProducer));
 
         GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(allSolverConfig, indexView, generatedBeans,
                 generatedClasses, transformers, reflectiveClassSet);
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
-        additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
         return new SolverConfigBuildItem(allSolverConfig, generatedGizmoClasses);
     }
@@ -329,6 +343,7 @@ class TimefoldProcessor {
             solverConfig = new SolverConfig();
         }
 
+        // Configure planning problem models and score director per solver
         applySolverProperties(indexView, solverName, solverConfig);
 
         if (solverConfig.getSolutionClass() != null) {
@@ -351,6 +366,17 @@ class TimefoldProcessor {
         return solverConfig;
     }
 
+    /**
+     * The build step executes at runtime to fetch an updated instance of properties from {@link TimefoldRuntimeConfig}.
+     * <p>
+     * The reason we need to register the managed beans at runtime is because {@code Arc.container().instance()} does
+     * not return an instance of {@link TimefoldRuntimeConfig} when using interfaces instead of classes. Defining
+     * configuration properties as interfaces is the only way to use {@code @WithUnnamedKey}. This is the default approach
+     * documented in both Quarkus and Smallrye pages.
+     * <p>
+     * Finally, recording the bean at runtime is necessary to use updated instances of configuration properties, and
+     * annotating {@link TimefoldRuntimeConfig} with {@code @StaticInitSafe} has no effect.
+     */
     @BuildStep
     @Record(RUNTIME_INIT)
     void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
@@ -363,11 +389,11 @@ class TimefoldProcessor {
         }
 
         solverConfigBuildItem.getAllSolverConfigurations().forEach((key, value) -> {
-            // Register the SolverConfig for each mapped solver or to the default
+            // Register the config per solver and set the default bean name as <solver-name> + SOLVER_CONFIG_SUFFIX
             SyntheticBeanBuildItem.ExtendedBeanConfigurator configDescriptor =
                     SyntheticBeanBuildItem.configure(SolverConfig.class)
                             .scope(Singleton.class)
-                            .named(key + "Config") // We add a suffix to avoid ambiguous bean names
+                            .named(key + SOLVER_CONFIG_SUFFIX) // We add a suffix to avoid ambiguous bean names
                             .setRuntimeInit()
                             .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
                                     GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
@@ -381,21 +407,131 @@ class TimefoldProcessor {
             }
             syntheticBeanBuildItemBuildProducer.produce(configDescriptor.done());
 
-            SolverManagerConfig solverManagerDescriptor = new SolverManagerConfig();
+            // Register the solver manager config per solver and set the default bean name as <solver-name> + SOLVER_CONFIG_MANAGER_SUFFIX
+            SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
             SyntheticBeanBuildItem.ExtendedBeanConfigurator configManagerDescriptor =
                     SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
                             .scope(Singleton.class)
-                            .named(key + "ConfigManager") // We add a suffix to avoid ambiguous bean names
+                            .named(key + SOLVER_CONFIG_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
                             .setRuntimeInit()
-                            .supplier(recorder.solverManagerConfig(solverManagerDescriptor, runtimeConfig));
+                            .supplier(recorder.solverManagerConfig(solverManagerConfig, runtimeConfig));
             if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
                 configManagerDescriptor.defaultBean();
             }
             syntheticBeanBuildItemBuildProducer.produce(configManagerDescriptor.done());
+
+            // Register the solver factory per solver and set the default bean name as <solver-name> + SOLVER_FACTORY_SUFFIX
+            String solverFactoryName = key + SOLVER_FACTORY_SUFFIX;
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator factoryDescriptor =
+                    SyntheticBeanBuildItem.configure(SolverFactory.class)
+                            .scope(Singleton.class)
+                            .addType(ParameterizedType.create(DotName.createSimple(SolverFactory.class.getName()),
+                                    new Type[] {
+                                            Type.create(DotName.createSimple(value.getSolutionClass().getName()),
+                                                    Type.Kind.CLASS)
+                                    }, null))
+                            .named(solverFactoryName) // We add a suffix to avoid ambiguous bean names
+                            .setRuntimeInit()
+                            .supplier(recorder.solverFactory(key + SOLVER_CONFIG_SUFFIX));
+
+            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+                factoryDescriptor.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(factoryDescriptor.done());
+
+            // Register the solver manager per solver and set the default bean name as <solver-name> + SOLVER_MANAGER_SUFFIX
+            // To ensure the SolverManager instance can be injected when using basic types for generic type definition,
+            // some Java basic types are used as parametrized types
+            List<String> basicJavaTypes = List.of(
+                    String.class.getName(),
+                    Short.class.getName(),
+                    Integer.class.getName(),
+                    Long.class.getName(),
+                    Float.class.getName(),
+                    Double.class.getName());
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator managerDescriptor =
+                    SyntheticBeanBuildItem.configure(SolverManager.class)
+                            .scope(Singleton.class);
+            basicJavaTypes.forEach(clazz -> managerDescriptor
+                    .addType(ParameterizedType.create(DotName.createSimple(SolverManager.class.getName()),
+                            new Type[] {
+                                    Type.create(DotName.createSimple(value.getSolutionClass().getName()),
+                                            Type.Kind.CLASS),
+                                    Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
+                            }, null)));
+
+            managerDescriptor.named(key + SOLVER_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
+                    .setRuntimeInit()
+                    .supplier(recorder.solverManager(solverFactoryName, solverManagerConfig));
+            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+                managerDescriptor.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(managerDescriptor.done());
+
+            List<String> scoreTypeClasses = List.of(
+                    Score.class.getName(),
+                    SimpleScore.class.getName(),
+                    SimpleLongScore.class.getName(),
+                    SimpleBigDecimalScore.class.getName(),
+                    HardSoftScore.class.getName(),
+                    HardSoftLongScore.class.getName(),
+                    HardSoftBigDecimalScore.class.getName(),
+                    HardMediumSoftScore.class.getName(),
+                    HardMediumSoftLongScore.class.getName(),
+                    HardMediumSoftBigDecimalScore.class.getName(),
+                    BendableScore.class.getName(),
+                    BendableLongScore.class.getName(),
+                    BendableBigDecimalScore.class.getName());
+
+            // Register the solver score managers per solver and set the default bean name as <solver-name> + SOLVER_SCORE_MANAGER_SUFFIX
+            // To ensure the ScoreManager instance can be injected when using score types for generic type definition,
+            // all score types are used as parametrized types
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator scoreManagerDescriptor =
+                    SyntheticBeanBuildItem.configure(ScoreManager.class)
+                            .scope(Singleton.class);
+
+            scoreTypeClasses.forEach(clazz -> scoreManagerDescriptor
+                    .addType(ParameterizedType.create(DotName.createSimple(ScoreManager.class.getName()),
+                            new Type[] {
+                                    Type.create(DotName.createSimple(value.getSolutionClass().getName()),
+                                            Type.Kind.CLASS),
+                                    Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
+                            }, null)));
+
+            scoreManagerDescriptor.named(key + SOLVER_SCORE_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
+                    .setRuntimeInit()
+                    .supplier(recorder.scoreManager(solverFactoryName));
+            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+                scoreManagerDescriptor.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(scoreManagerDescriptor.done());
+
+            // Register the solver solution managers per solver and set the default bean name as <solver-name> + SOLVER_SOLUTION_MANAGER_SUFFIX
+            // To ensure the SolutionManager instance can be injected when using score types for generic type definition,
+            // all score types are used as parametrized types
+            SyntheticBeanBuildItem.ExtendedBeanConfigurator solutionManagerDescriptor =
+                    SyntheticBeanBuildItem.configure(SolutionManager.class)
+                            .scope(Singleton.class);
+
+            scoreTypeClasses.forEach(clazz -> solutionManagerDescriptor
+                    .addType(ParameterizedType.create(DotName.createSimple(SolutionManager.class.getName()),
+                            new Type[] {
+                                    Type.create(DotName.createSimple(value.getSolutionClass().getName()),
+                                            Type.Kind.CLASS),
+                                    Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
+                            }, null)));
+
+            solutionManagerDescriptor.named(key + SOLVER_SOLUTION_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
+                    .setRuntimeInit()
+                    .supplier(recorder.solutionManager(solverFactoryName));
+            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+                solutionManagerDescriptor.defaultBean();
+            }
+            syntheticBeanBuildItemBuildProducer.produce(solutionManagerDescriptor.done());
         });
     }
 
-    private void generateConstraintVerifier(String solverName, SolverConfig solverConfig,
+    private void generateConstraintVerifier(SolverConfig solverConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer) {
         String constraintVerifierClassName = DotNames.CONSTRAINT_VERIFIER.toString();
         if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null &&
@@ -441,12 +577,8 @@ class TimefoldProcessor {
                                                     Type.Kind.CLASS),
                                             Type.create(DotName.createSimple(planningSolutionClass.getName()), Type.Kind.CLASS)
                                     }, null))
-                            .forceApplicationClass();
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(solverName)) {
-                constraintDescriptor.defaultBean();
-            }
-            // TODO Test two instances of constraint providers
-            // TODO Named constraint providers are causing failures
+                            .forceApplicationClass()
+                            .defaultBean();
             syntheticBeanBuildItemBuildProducer.produce(constraintDescriptor.done());
         }
     }
@@ -675,39 +807,45 @@ class TimefoldProcessor {
             membersToGeneratedAccessorsFor.removeIf(this::shouldIgnoreMember);
 
             // Fail fast on auto-discovery.
-            var planningSolutionAnnotationInstanceCollection =
+            Collection<AnnotationInstance> planningSolutionAnnotationInstanceCollection =
                     indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
+            List<String> unusedSolutionClasses = planningSolutionAnnotationInstanceCollection.stream()
+                    .map(planningClass -> planningClass.target().asClass().name().toString())
+                    .filter(planningClassName -> reflectiveClassSet.stream()
+                            .noneMatch(clazz -> clazz.getName().equals(planningClassName)))
+                    .toList();
             if (planningSolutionAnnotationInstanceCollection.isEmpty()) {
                 throw new IllegalStateException(
                         "No classes found with a @" + PlanningSolution.class.getSimpleName() + " annotation.");
-            } else if (planningSolutionAnnotationInstanceCollection.size() > 1) {
-                throw new IllegalStateException("Multiple classes (" + convertAnnotationInstancesToString(
-                        planningSolutionAnnotationInstanceCollection) + ") found with a @" +
-                        PlanningSolution.class.getSimpleName() + " annotation.");
+            } else if (planningSolutionAnnotationInstanceCollection.size() > 1 && !unusedSolutionClasses.isEmpty()) {
+                throw new IllegalStateException(
+                        "Unused classes (" + String.join(", ", unusedSolutionClasses) + ") found with a @" +
+                                PlanningSolution.class.getSimpleName() + " annotation.");
             }
-            var planningSolutionAnnotationInstance =
-                    planningSolutionAnnotationInstanceCollection.stream().findFirst().orElseThrow();
-            var autoDiscoverMemberType = planningSolutionAnnotationInstance.values().stream()
-                    .filter(v -> v.name().equals("autoDiscoverMemberType"))
-                    .findFirst()
-                    .map(AnnotationValue::asEnum)
-                    .map(AutoDiscoverMemberType::valueOf)
-                    .orElse(AutoDiscoverMemberType.NONE);
 
-            if (autoDiscoverMemberType != AutoDiscoverMemberType.NONE) {
-                throw new UnsupportedOperationException("""
-                        Auto-discovery of members using %s is not supported under Quarkus.
-                        Remove the autoDiscoverMemberType property from the @%s annotation
-                        and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s.
-                        """
-                        .strip()
-                        .formatted(
-                                AutoDiscoverMemberType.class.getSimpleName(),
-                                PlanningSolution.class.getSimpleName(),
-                                PlanningScore.class.getSimpleName(),
-                                PlanningEntityCollectionProperty.class.getSimpleName(),
-                                ProblemFactCollectionProperty.class.getSimpleName()));
-            }
+            planningSolutionAnnotationInstanceCollection.forEach(planningSolutionAnnotationInstance -> {
+                var autoDiscoverMemberType = planningSolutionAnnotationInstance.values().stream()
+                        .filter(v -> v.name().equals("autoDiscoverMemberType"))
+                        .findFirst()
+                        .map(AnnotationValue::asEnum)
+                        .map(AutoDiscoverMemberType::valueOf)
+                        .orElse(AutoDiscoverMemberType.NONE);
+
+                if (autoDiscoverMemberType != AutoDiscoverMemberType.NONE) {
+                    throw new UnsupportedOperationException("""
+                            Auto-discovery of members using %s is not supported under Quarkus.
+                            Remove the autoDiscoverMemberType property from the @%s annotation
+                            and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s.
+                            """
+                            .strip()
+                            .formatted(
+                                    AutoDiscoverMemberType.class.getSimpleName(),
+                                    PlanningSolution.class.getSimpleName(),
+                                    PlanningScore.class.getSimpleName(),
+                                    PlanningEntityCollectionProperty.class.getSimpleName(),
+                                    ProblemFactCollectionProperty.class.getSimpleName()));
+                }
+            });
 
             for (AnnotationInstance annotatedMember : membersToGeneratedAccessorsFor) {
                 switch (annotatedMember.target().kind()) {
