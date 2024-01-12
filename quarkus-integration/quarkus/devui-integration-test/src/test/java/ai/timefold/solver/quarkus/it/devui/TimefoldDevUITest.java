@@ -31,7 +31,7 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     @Test
     void testSolverConfigPage() throws Exception {
         JsonNode configResponse = super.executeJsonRPCMethod("getConfig");
-        String solverConfig = configResponse.get("config").asText();
+        String solverConfig = configResponse.get("config").get("default").asText();
         assertThat(solverConfig).isEqualToIgnoringWhitespace(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                         + "<!--Properties that can be set at runtime are not included-->\n"
@@ -50,17 +50,17 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     @Test
     void testModelPage() throws Exception {
         JsonNode modelResponse = super.executeJsonRPCMethod("getModelInfo");
-        assertThat(modelResponse.get("solutionClass").asText())
+        assertThat(modelResponse.get("default").get("solutionClass").asText())
                 .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
-        assertThat(modelResponse.get("entityClassList"))
+        assertThat(modelResponse.get("default").get("entityClassList"))
                 .containsExactly(
                         new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
-        assertThat(modelResponse.get("entityClassToGenuineVariableListMap")).hasSize(1);
-        assertThat(modelResponse.get("entityClassToGenuineVariableListMap")
+        assertThat(modelResponse.get("default").get("entityClassToGenuineVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get("default").get("entityClassToGenuineVariableListMap")
                 .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
                 .containsExactly(new TextNode("value"));
-        assertThat(modelResponse.get("entityClassToShadowVariableListMap")).hasSize(1);
-        assertThat(modelResponse.get("entityClassToShadowVariableListMap")
+        assertThat(modelResponse.get("default").get("entityClassToShadowVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get("default").get("entityClassToShadowVariableListMap")
                 .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
                 .containsExactly(new TextNode("length"));
     }
@@ -68,7 +68,7 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     @Test
     void testConstraintsPage() throws Exception {
         JsonNode constraintsResponse = super.executeJsonRPCMethod("getConstraints");
-        assertThat(constraintsResponse).containsExactly(
+        assertThat(constraintsResponse.get("default")).containsExactly(
                 new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
                         .getName() + "/Don't assign 2 entities the same value."),
                 new TextNode(TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));

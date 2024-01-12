@@ -189,8 +189,6 @@ class TimefoldProcessor {
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
         CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
 
-        // TODO - test default case, root config and no additional solver
-        // TODO - test multiples solvers config: two with config, only one with config
         // We map each solver config according to the solver name
         Map<String, String> solverConfigText = new HashMap<>();
         solverConfigBuildItem.getSolverNames().forEach(solverName -> {
