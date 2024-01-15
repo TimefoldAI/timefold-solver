@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -65,15 +64,6 @@ public class TimefoldRecorder {
             SolverFactory<Solution_> solverFactory =
                     (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
             return (SolverManager<Solution_, ProblemId_>) SolverManager.create(solverFactory, solverManagerConfig);
-        };
-    }
-
-    public <Solution_, Score_ extends Score<Score_>> Supplier<ScoreManager<Solution_, Score_>>
-            scoreManager(final String solverFactoryName) {
-        return () -> {
-            SolverFactory<Solution_> solverFactory =
-                    (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
-            return (ScoreManager<Solution_, Score_>) ScoreManager.create(solverFactory);
         };
     }
 

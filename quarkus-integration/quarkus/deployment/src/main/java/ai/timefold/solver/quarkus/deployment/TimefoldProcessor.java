@@ -29,7 +29,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
@@ -115,7 +114,6 @@ class TimefoldProcessor {
     private static final String SOLVER_CONFIG_MANAGER_SUFFIX = "ConfigManager";
     private static final String SOLVER_FACTORY_SUFFIX = "Factory";
     private static final String SOLVER_MANAGER_SUFFIX = "Manager";
-    private static final String SOLVER_SCORE_MANAGER_SUFFIX = "ScoreManager";
     private static final String SOLVER_SOLUTION_MANAGER_SUFFIX = "SolutionManager";
 
     TimefoldBuildTimeConfig timefoldBuildTimeConfig;
@@ -465,6 +463,9 @@ class TimefoldProcessor {
             }
             syntheticBeanBuildItemBuildProducer.produce(managerDescriptor.done());
 
+            // Register the solver solution managers per solver and set the default bean name as <solver-name> + SOLVER_SOLUTION_MANAGER_SUFFIX
+            // To ensure the SolutionManager instance can be injected when using score types for generic type definition,
+            // all score types are used as parametrized types
             List<String> scoreTypeClasses = List.of(
                     Score.class.getName(),
                     SimpleScore.class.getName(),
@@ -480,32 +481,6 @@ class TimefoldProcessor {
                     BendableLongScore.class.getName(),
                     BendableBigDecimalScore.class.getName());
 
-            // Register the solver score managers per solver and set the default bean name as <solver-name> + SOLVER_SCORE_MANAGER_SUFFIX
-            // To ensure the ScoreManager instance can be injected when using score types for generic type definition,
-            // all score types are used as parametrized types
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator scoreManagerDescriptor =
-                    SyntheticBeanBuildItem.configure(ScoreManager.class)
-                            .scope(Singleton.class);
-
-            scoreTypeClasses.forEach(clazz -> scoreManagerDescriptor
-                    .addType(ParameterizedType.create(DotName.createSimple(ScoreManager.class.getName()),
-                            new Type[] {
-                                    Type.create(DotName.createSimple(value.getSolutionClass().getName()),
-                                            Type.Kind.CLASS),
-                                    Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
-                            }, null)));
-
-            scoreManagerDescriptor.named(key + SOLVER_SCORE_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
-                    .setRuntimeInit()
-                    .supplier(recorder.scoreManager(solverFactoryName));
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
-                scoreManagerDescriptor.defaultBean();
-            }
-            syntheticBeanBuildItemBuildProducer.produce(scoreManagerDescriptor.done());
-
-            // Register the solver solution managers per solver and set the default bean name as <solver-name> + SOLVER_SOLUTION_MANAGER_SUFFIX
-            // To ensure the SolutionManager instance can be injected when using score types for generic type definition,
-            // all score types are used as parametrized types
             SyntheticBeanBuildItem.ExtendedBeanConfigurator solutionManagerDescriptor =
                     SyntheticBeanBuildItem.configure(SolutionManager.class)
                             .scope(Singleton.class);
