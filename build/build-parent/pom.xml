@@ -53,7 +53,7 @@
     <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sonar.plugin>3.10.0.2594</version.sonar.plugin>
-    <version.spotless.plugin>2.41.1</version.spotless.plugin>
+    <version.spotless.plugin>2.42.0</version.spotless.plugin>
     <version.surefire.plugin>3.2.5</version.surefire.plugin>
     <version.versions.plugin>2.16.2</version.versions.plugin>
 
