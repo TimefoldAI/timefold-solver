@@ -1,12 +1,8 @@
 package ai.timefold.solver.quarkus;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-
-import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.quarkus.rest.TestSolverConfigTestMultipleSolutionsResource;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
@@ -21,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
+import io.restassured.RestAssured;
 
 class TimefoldProcessorMultipleSolverXmlFilesTest {
 
@@ -38,22 +35,14 @@ class TimefoldProcessorMultipleSolverXmlFilesTest {
                     .addClasses(TestdataQuarkusShadowVariableEntity.class,
                             TestdataQuarkusShadowVariableSolution.class,
                             TestdataQuarkusShadowVariableConstraintProvider.class,
-                            TestdataQuarkusShadowVariableListener.class)
+                            TestdataQuarkusShadowVariableListener.class,
+                            TestSolverConfigTestMultipleSolutionsResource.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolver1Config.xml")
                     .addAsResource("ai/timefold/solver/quarkus/customSolver2Config.xml"));
 
-    @Inject
-    @Named("solver1")
-    SolverManager<TestdataQuarkusSolution, String> solver1;
-
-    @Inject
-    @Named("solver2")
-    SolverManager<TestdataQuarkusShadowVariableSolution, String> solver2;
-
     @Test
     void solverProperties() {
-        assertNotNull(solver1);
-        assertNotNull(solver2);
-        assertNotSame(solver1, solver2);
+        String resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();
+        assertEquals("secondsSpentLimit=0.50;secondsSpentLimit=0.12", resp);
     }
 }
