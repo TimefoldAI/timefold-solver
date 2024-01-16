@@ -2,6 +2,18 @@ package ai.timefold.solver.quarkus.it.devui;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.quarkus.it.devui.domain.StringLengthVariableListener;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution;
 import ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider;
@@ -22,7 +34,37 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     @RegisterExtension
     static final QuarkusDevModeTest config = new QuarkusDevModeTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, TimefoldTestResource.class.getPackage().getName()));
+                    .addClasses(StringLengthVariableListener.class,
+                            TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
+                            TestdataStringLengthConstraintProvider.class,
+                            TimefoldTestResource.class));
+
+    @Path("/timefold/test")
+    public static class TimefoldTestResource {
+
+        @Inject
+        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+
+        @POST
+        @Path("/solver-factory")
+        @Produces(MediaType.TEXT_PLAIN)
+        public String solveWithSolverFactory() {
+            TestdataStringLengthShadowSolution planningProblem = new TestdataStringLengthShadowSolution();
+            planningProblem.setEntityList(Arrays.asList(
+                    new TestdataStringLengthShadowEntity(),
+                    new TestdataStringLengthShadowEntity()));
+            planningProblem.setValueList(Arrays.asList("a", "bb", "ccc"));
+            SolverJob<TestdataStringLengthShadowSolution, Long> solverJob = solverManager.solve(1L, planningProblem);
+            try {
+                return solverJob.getFinalBestSolution().getScore().toString();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Solving was interrupted.", e);
+            } catch (ExecutionException e) {
+                throw new IllegalStateException("Solving failed.", e);
+            }
+        }
+    }
 
     public TimefoldDevUITest() {
         super("Timefold Solver");
@@ -44,6 +86,9 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
                         + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
                         + "</constraintProviderClass>\n"
                         + "  </scoreDirectorFactory>\n"
+                        + "  <termination>\n"
+                        + "    <bestScoreLimit>0hard/5soft</bestScoreLimit>\n"
+                        + "  </termination>\n"
                         + "</solver>");
     }
 

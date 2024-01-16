@@ -25,34 +25,34 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 
-import io.quarkus.arc.Arc;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @ApplicationScoped
 public class TimefoldDevUIPropertiesRPCService {
 
-    private final Map<String, String> effectiveSolverConfig;
+    private final DevUISolverConfig devUISolverConfig;
 
     private final Map<String, TimefoldDevUIProperties> devUIProperties;
 
     @Inject
-    public TimefoldDevUIPropertiesRPCService(SolverConfigText solverConfigText) {
-        this.effectiveSolverConfig = solverConfigText.getSolverConfigurations();
+    public TimefoldDevUIPropertiesRPCService(DevUISolverConfig devUISolverConfig) {
+        this.devUISolverConfig = devUISolverConfig;
         this.devUIProperties = new HashMap<>();
     }
 
     @PostConstruct
     public void init() {
-        if (effectiveSolverConfig != null && !effectiveSolverConfig.isEmpty()) {
+        if (devUISolverConfig != null && !devUISolverConfig.isEmpty()) {
             // SolverConfigIO does not work at runtime,
             // but the build time SolverConfig does not have properties
             // that can be set at runtime (ex: termination), so the
             // effective solver config will be missing some properties
-            this.effectiveSolverConfig.forEach((key, config) -> this.devUIProperties.put(key,
-                    new TimefoldDevUIProperties(buildModelInfo(config),
-                            buildXmlContentWithComment(config, "Properties that can be set at runtime are not included"),
-                            buildConstraintList(config))));
+            this.devUISolverConfig.getSolverNames().forEach(key -> this.devUIProperties.put(key,
+                    new TimefoldDevUIProperties(buildModelInfo(devUISolverConfig.getFactory(key)),
+                            buildXmlContentWithComment(devUISolverConfig.getSolverConfigFile(key),
+                                    "Properties that can be set at runtime are not included"),
+                            buildConstraintList(devUISolverConfig.getFactory(key)))));
         } else {
             devUIProperties.put(TimefoldRuntimeConfig.DEFAULT_SOLVER_NAME, new TimefoldDevUIProperties(
                     buildModelInfo(null),
@@ -99,11 +99,10 @@ public class TimefoldDevUIPropertiesRPCService {
         return out;
     }
 
-    private TimefoldModelProperties buildModelInfo(String effectiveSolverConfigXml) {
-        if (effectiveSolverConfigXml != null) {
-            DefaultSolverFactory<?> solverFactory =
-                    (DefaultSolverFactory<?>) Arc.container().instance(SolverFactory.class).get();
-            SolutionDescriptor<?> solutionDescriptor = solverFactory.getScoreDirectorFactory().getSolutionDescriptor();
+    private TimefoldModelProperties buildModelInfo(SolverFactory<?> solverFactory) {
+        if (solverFactory != null) {
+            SolutionDescriptor<?> solutionDescriptor =
+                    ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory().getSolutionDescriptor();
             TimefoldModelProperties out = new TimefoldModelProperties();
             out.setSolutionClass(solutionDescriptor.getSolutionClass().getName());
             List<String> entityClassList = new ArrayList<>();
@@ -134,17 +133,17 @@ public class TimefoldDevUIPropertiesRPCService {
         }
     }
 
-    private List<ConstraintRef> buildConstraintList(String effectiveSolverConfigXml) {
-        if (effectiveSolverConfigXml != null) {
-            DefaultSolverFactory<?> solverFactory =
-                    (DefaultSolverFactory<?>) Arc.container().instance(SolverFactory.class).get();
-            if (solverFactory.getScoreDirectorFactory() instanceof AbstractConstraintStreamScoreDirectorFactory) {
-                AbstractConstraintStreamScoreDirectorFactory<?, ?> scoreDirectorFactory =
-                        (AbstractConstraintStreamScoreDirectorFactory<?, ?>) solverFactory.getScoreDirectorFactory();
-                return Arrays.stream(scoreDirectorFactory.getConstraints())
-                        .map(Constraint::getConstraintRef)
-                        .toList();
-            }
+    private List<ConstraintRef> buildConstraintList(SolverFactory<?> solverFactory) {
+        if (solverFactory != null
+                && (((DefaultSolverFactory<?>) solverFactory)
+                        .getScoreDirectorFactory() instanceof AbstractConstraintStreamScoreDirectorFactory)) {
+            AbstractConstraintStreamScoreDirectorFactory<?, ?> scoreDirectorFactory =
+                    (AbstractConstraintStreamScoreDirectorFactory<?, ?>) ((DefaultSolverFactory<?>) solverFactory)
+                            .getScoreDirectorFactory();
+            return Arrays.stream(scoreDirectorFactory.getConstraints())
+                    .map(Constraint::getConstraintRef)
+                    .toList();
+
         }
         return Collections.emptyList();
     }

@@ -37,12 +37,7 @@ public interface TimefoldBuildTimeConfig {
     default boolean isDefaultSolverConfig(String solverName) {
         // 1 - No solver configuration, which means we will use a default empty SolverConfig and default Solver name
         // 2 - Only one solve config. It will be the default one.
-        // 3 - There is a Solver name set to default
-        // 4 - If all the previous conditions do not apply, we will select the first key in ascending order. This ensures
-        //     that the default bean is always set and does not break the existing beans that expect a default bean.
-        return solver().isEmpty() || solver().size() == 1 && getSolverConfig(solverName).isPresent()
-                || solver().containsKey(DEFAULT_SOLVER_NAME) && solverName.equals(DEFAULT_SOLVER_NAME)
-                || solver().keySet().stream().sorted().findFirst().get().equals(solverName);
+        return solver().isEmpty() || solver().size() == 1 && getSolverConfig(solverName).isPresent();
     }
 
     default Optional<SolverBuildTimeConfig> getSolverConfig(String solverName) {

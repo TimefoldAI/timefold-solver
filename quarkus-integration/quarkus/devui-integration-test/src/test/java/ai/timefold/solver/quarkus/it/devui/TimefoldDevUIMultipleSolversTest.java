@@ -4,6 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.ws.rs.Path;
+
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.quarkus.it.devui.domain.StringLengthVariableListener;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution;
 import ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider;
@@ -27,7 +33,21 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
             .setBuildSystemProperty("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
             .setBuildSystemProperty("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, TimefoldTestResource.class.getPackage().getName()));
+                    .addClasses(StringLengthVariableListener.class,
+                            TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
+                            TestdataStringLengthConstraintProvider.class, TimefoldTestMultipleResource.class));
+
+    @Path("/timefold/test")
+    public static class TimefoldTestMultipleResource {
+
+        @Inject
+        @Named("solver1")
+        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+
+        @Inject
+        @Named("solver2")
+        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager2;
+    }
 
     public TimefoldDevUIMultipleSolversTest() {
         super("Timefold Solver");
@@ -51,6 +71,7 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
                             + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
                             + "</constraintProviderClass>\n"
                             + "  </scoreDirectorFactory>\n"
+                            + "  <termination/>\n"
                             + "</solver>");
         });
     }

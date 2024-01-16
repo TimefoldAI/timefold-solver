@@ -69,18 +69,6 @@ class TimefoldBenchmarkProcessor {
         return new BenchmarkConfigBuildItem(benchmarkConfig);
     }
 
-    /**
-     * The build step executes at runtime to fetch an updated instance of properties from
-     * {@link ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig}.
-     * <p>
-     * The reason we need to register the managed beans at runtime is because {@code Arc.container().instance()} does
-     * not return an instance of {@link ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig} when using interfaces
-     * instead of classes. Defining configuration properties as interfaces is the only way to use {@code @WithUnnamedKey}.
-     * This is the default approach documented in both Quarkus and Smallrye pages.
-     * <p>
-     * Finally, recording the bean at runtime is necessary to use updated instances of configuration properties, and
-     * annotating {@link ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig} with {@code @StaticInitSafe} has no effect.
-     */
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     void registerRuntimeBeans(TimefoldBenchmarkRecorder recorder, BuildProducer<SyntheticBeanBuildItem> syntheticBeans,

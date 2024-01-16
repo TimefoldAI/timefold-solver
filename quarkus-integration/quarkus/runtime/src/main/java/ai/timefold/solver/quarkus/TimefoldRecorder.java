@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
-import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -16,7 +14,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 
-import io.quarkus.arc.Arc;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
 
@@ -51,28 +48,29 @@ public class TimefoldRecorder {
         };
     }
 
-    public <Solution_> Supplier<SolverFactory<Solution_>> solverFactory(final String solverConfigName) {
+    public <Solution_, ProblemId_> Supplier<SolverManager<Solution_, ProblemId_>> solverManager(final String solverName,
+            final SolverConfig solverConfig,
+            final TimefoldRuntimeConfig timefoldRuntimeConfig,
+            Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
+            Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {
-            SolverConfig solverConfig = (SolverConfig) Arc.container().instance(solverConfigName).get();
-            return (SolverFactory<Solution_>) SolverFactory.create(solverConfig);
-        };
-    }
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig, timefoldRuntimeConfig);
+            Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
+            Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
+            generatedGizmoMemberAccessorMap
+                    .forEach((className, runtimeValue) -> memberAccessorMap.put(className, runtimeValue.getValue()));
+            generatedGizmoSolutionClonerMap
+                    .forEach((className, runtimeValue) -> solutionClonerMap.put(className, runtimeValue.getValue()));
 
-    public <Solution_, ProblemId_> Supplier<SolverManager<Solution_, ProblemId_>> solverManager(final String solverFactoryName,
-            final SolverManagerConfig solverManagerConfig) {
-        return () -> {
-            SolverFactory<Solution_> solverFactory =
-                    (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
+            solverConfig.setGizmoMemberAccessorMap(memberAccessorMap);
+            solverConfig.setGizmoSolutionClonerMap(solutionClonerMap);
+
+            SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, timefoldRuntimeConfig);
+
+            SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
+
             return (SolverManager<Solution_, ProblemId_>) SolverManager.create(solverFactory, solverManagerConfig);
-        };
-    }
-
-    public <Solution_, Score_ extends Score<Score_>> Supplier<SolutionManager<Solution_, Score_>>
-            solutionManager(final String solverFactoryName) {
-        return () -> {
-            SolverFactory<Solution_> solverFactory =
-                    (SolverFactory<Solution_>) Arc.container().instance(solverFactoryName).get();
-            return (SolutionManager<Solution_, Score_>) SolutionManager.create(solverFactory);
         };
     }
 

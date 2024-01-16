@@ -1,10 +1,8 @@
 package ai.timefold.solver.quarkus.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
-import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,23 +26,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
-import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -52,16 +36,16 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
+import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
-import ai.timefold.solver.quarkus.devui.SolverConfigText;
+import ai.timefold.solver.quarkus.devui.DevUISolverConfig;
 import ai.timefold.solver.quarkus.devui.TimefoldDevUIPropertiesRPCService;
 import ai.timefold.solver.quarkus.devui.TimefoldDevUIRecorder;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
@@ -110,11 +94,6 @@ import io.quarkus.runtime.configuration.ConfigurationException;
 class TimefoldProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldProcessor.class.getName());
-    private static final String SOLVER_CONFIG_SUFFIX = "Config";
-    private static final String SOLVER_CONFIG_MANAGER_SUFFIX = "ConfigManager";
-    private static final String SOLVER_FACTORY_SUFFIX = "Factory";
-    private static final String SOLVER_MANAGER_SUFFIX = "Manager";
-    private static final String SOLVER_SOLUTION_MANAGER_SUFFIX = "SolutionManager";
 
     TimefoldBuildTimeConfig timefoldBuildTimeConfig;
 
@@ -180,29 +159,8 @@ class TimefoldProcessor {
     }
 
     @BuildStep(onlyIf = IsDevelopment.class)
-    @Record(STATIC_INIT)
-    public CardPageBuildItem registerDevUICard(
-            TimefoldDevUIRecorder devUIRecorder,
-            SolverConfigBuildItem solverConfigBuildItem,
-            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+    public CardPageBuildItem registerDevUICard() {
         CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
-
-        // We map each solver config according to the solver name
-        Map<String, String> solverConfigText = new HashMap<>();
-        solverConfigBuildItem.getSolverNames().forEach(solverName -> {
-            if (solverConfigBuildItem.getSolverConfig(solverName) != null) {
-                StringWriter effectiveSolverConfigWriter = new StringWriter();
-                SolverConfigIO solverConfigIO = new SolverConfigIO();
-                solverConfigIO.write(solverConfigBuildItem.getSolverConfig(solverName), effectiveSolverConfigWriter);
-                solverConfigText.put(solverName, effectiveSolverConfigWriter.toString());
-            } else {
-                solverConfigText.put(solverName, "");
-            }
-        });
-        syntheticBeans.produce(SyntheticBeanBuildItem.configure(SolverConfigText.class)
-                .scope(ApplicationScoped.class)
-                .supplier(devUIRecorder.solverConfigTextSupplier(solverConfigText))
-                .done());
 
         cardPageBuildItem.addPage(Page.webComponentPageBuilder()
                 .title("Configuration")
@@ -301,6 +259,10 @@ class TimefoldProcessor {
                 generatedClasses, transformers, reflectiveClassSet);
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
+        if (allSolverConfig.size() <= 1) {
+            // Only registered for the default solver
+            additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
+        }
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
         return new SolverConfigBuildItem(allSolverConfig, generatedGizmoClasses);
     }
@@ -361,17 +323,6 @@ class TimefoldProcessor {
         return solverConfig;
     }
 
-    /**
-     * The build step executes at runtime to fetch an updated instance of properties from {@link TimefoldRuntimeConfig}.
-     * <p>
-     * The reason we need to register the managed beans at runtime is because {@code Arc.container().instance()} does
-     * not return an instance of {@link TimefoldRuntimeConfig} when using interfaces instead of classes. Defining
-     * configuration properties as interfaces is the only way to use {@code @WithUnnamedKey}. This is the default approach
-     * documented in both Quarkus and Smallrye pages.
-     * <p>
-     * Finally, recording the bean at runtime is necessary to use updated instances of configuration properties, and
-     * annotating {@link TimefoldRuntimeConfig} with {@code @StaticInitSafe} has no effect.
-     */
     @BuildStep
     @Record(RUNTIME_INIT)
     void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
@@ -383,124 +334,93 @@ class TimefoldProcessor {
             return;
         }
 
+        // Using the same name for synthetic beans is impossible, even if they are different types. Therefore, we allow
+        // only the injection of SolverManager, except for the default solver, which can inject all resources to be
+        // retro-compatible.
         solverConfigBuildItem.getAllSolverConfigurations().forEach((key, value) -> {
-            // Register the config per solver and set the default bean name as <solver-name> + SOLVER_CONFIG_SUFFIX
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator configDescriptor =
-                    SyntheticBeanBuildItem.configure(SolverConfig.class)
-                            .scope(Singleton.class)
-                            .named(key + SOLVER_CONFIG_SUFFIX) // We add a suffix to avoid ambiguous bean names
-                            .setRuntimeInit()
-                            .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
-                                    GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                            solverConfigBuildItem
-                                                    .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
-                                    GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                            solverConfigBuildItem
-                                                    .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)));
             if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
-                configDescriptor.defaultBean();
+                // The two configuration resources are required for DefaultTimefoldBeanProvider produce all available
+                // managed beans for the default solver
+                syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
+                        .scope(Singleton.class)
+                        .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
+                                GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
+                                        solverConfigBuildItem
+                                                .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                                GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
+                                        solverConfigBuildItem
+                                                .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)))
+                        .setRuntimeInit()
+                        .defaultBean()
+                        .done());
+
+                SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+                syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
+                        .scope(Singleton.class)
+                        .supplier(recorder.solverManagerConfig(solverManagerConfig, runtimeConfig))
+                        .setRuntimeInit()
+                        .defaultBean()
+                        .done());
             }
-            syntheticBeanBuildItemBuildProducer.produce(configDescriptor.done());
 
-            // Register the solver manager config per solver and set the default bean name as <solver-name> + SOLVER_CONFIG_MANAGER_SUFFIX
-            SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator configManagerDescriptor =
-                    SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
-                            .scope(Singleton.class)
-                            .named(key + SOLVER_CONFIG_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
-                            .setRuntimeInit()
-                            .supplier(recorder.solverManagerConfig(solverManagerConfig, runtimeConfig));
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
-                configManagerDescriptor.defaultBean();
+            // The default SolveManager instance is generated by DefaultTimefoldBeanProvider
+            if (!timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+                // To ensure the SolverManager instance can be injected when using basic types for generic type definition,
+                // some Java basic types are used as parametrized types
+                List<String> basicJavaTypes = List.of(
+                        String.class.getName(),
+                        Short.class.getName(),
+                        Integer.class.getName(),
+                        Long.class.getName(),
+                        Float.class.getName(),
+                        Double.class.getName());
+                SyntheticBeanBuildItem.ExtendedBeanConfigurator managerDescriptor =
+                        SyntheticBeanBuildItem.configure(SolverManager.class)
+                                .scope(Singleton.class);
+                basicJavaTypes.forEach(clazz -> managerDescriptor
+                        .addType(ParameterizedType.create(DotName.createSimple(SolverManager.class.getName()),
+                                new Type[] {
+                                        Type.create(DotName.createSimple(value.getSolutionClass().getName()),
+                                                Type.Kind.CLASS),
+                                        Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
+                                }, null)));
+                syntheticBeanBuildItemBuildProducer.produce(
+                        // We generate all required resources only to create a SolveManager and set it as managed bean
+                        managerDescriptor
+                                .supplier(recorder.solverManager(key, value, runtimeConfig,
+                                        GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
+                                                solverConfigBuildItem
+                                                        .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                                        GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
+                                                solverConfigBuildItem
+                                                        .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)))
+                                .setRuntimeInit()
+                                .named(key)
+                                .done());
             }
-            syntheticBeanBuildItemBuildProducer.produce(configManagerDescriptor.done());
-
-            // Register the solver factory per solver and set the default bean name as <solver-name> + SOLVER_FACTORY_SUFFIX
-            String solverFactoryName = key + SOLVER_FACTORY_SUFFIX;
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator factoryDescriptor =
-                    SyntheticBeanBuildItem.configure(SolverFactory.class)
-                            .scope(Singleton.class)
-                            .addType(ParameterizedType.create(DotName.createSimple(SolverFactory.class.getName()),
-                                    new Type[] {
-                                            Type.create(DotName.createSimple(value.getSolutionClass().getName()),
-                                                    Type.Kind.CLASS)
-                                    }, null))
-                            .named(solverFactoryName) // We add a suffix to avoid ambiguous bean names
-                            .setRuntimeInit()
-                            .supplier(recorder.solverFactory(key + SOLVER_CONFIG_SUFFIX));
-
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
-                factoryDescriptor.defaultBean();
-            }
-            syntheticBeanBuildItemBuildProducer.produce(factoryDescriptor.done());
-
-            // Register the solver manager per solver and set the default bean name as <solver-name> + SOLVER_MANAGER_SUFFIX
-            // To ensure the SolverManager instance can be injected when using basic types for generic type definition,
-            // some Java basic types are used as parametrized types
-            List<String> basicJavaTypes = List.of(
-                    String.class.getName(),
-                    Short.class.getName(),
-                    Integer.class.getName(),
-                    Long.class.getName(),
-                    Float.class.getName(),
-                    Double.class.getName());
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator managerDescriptor =
-                    SyntheticBeanBuildItem.configure(SolverManager.class)
-                            .scope(Singleton.class);
-            basicJavaTypes.forEach(clazz -> managerDescriptor
-                    .addType(ParameterizedType.create(DotName.createSimple(SolverManager.class.getName()),
-                            new Type[] {
-                                    Type.create(DotName.createSimple(value.getSolutionClass().getName()),
-                                            Type.Kind.CLASS),
-                                    Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
-                            }, null)));
-
-            managerDescriptor.named(key + SOLVER_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
-                    .setRuntimeInit()
-                    .supplier(recorder.solverManager(solverFactoryName, solverManagerConfig));
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
-                managerDescriptor.defaultBean();
-            }
-            syntheticBeanBuildItemBuildProducer.produce(managerDescriptor.done());
-
-            // Register the solver solution managers per solver and set the default bean name as <solver-name> + SOLVER_SOLUTION_MANAGER_SUFFIX
-            // To ensure the SolutionManager instance can be injected when using score types for generic type definition,
-            // all score types are used as parametrized types
-            List<String> scoreTypeClasses = List.of(
-                    Score.class.getName(),
-                    SimpleScore.class.getName(),
-                    SimpleLongScore.class.getName(),
-                    SimpleBigDecimalScore.class.getName(),
-                    HardSoftScore.class.getName(),
-                    HardSoftLongScore.class.getName(),
-                    HardSoftBigDecimalScore.class.getName(),
-                    HardMediumSoftScore.class.getName(),
-                    HardMediumSoftLongScore.class.getName(),
-                    HardMediumSoftBigDecimalScore.class.getName(),
-                    BendableScore.class.getName(),
-                    BendableLongScore.class.getName(),
-                    BendableBigDecimalScore.class.getName());
-
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator solutionManagerDescriptor =
-                    SyntheticBeanBuildItem.configure(SolutionManager.class)
-                            .scope(Singleton.class);
-
-            scoreTypeClasses.forEach(clazz -> solutionManagerDescriptor
-                    .addType(ParameterizedType.create(DotName.createSimple(SolutionManager.class.getName()),
-                            new Type[] {
-                                    Type.create(DotName.createSimple(value.getSolutionClass().getName()),
-                                            Type.Kind.CLASS),
-                                    Type.create(DotName.createSimple(clazz), Type.Kind.CLASS)
-                            }, null)));
-
-            solutionManagerDescriptor.named(key + SOLVER_SOLUTION_MANAGER_SUFFIX) // We add a suffix to avoid ambiguous bean names
-                    .setRuntimeInit()
-                    .supplier(recorder.solutionManager(solverFactoryName));
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
-                solutionManagerDescriptor.defaultBean();
-            }
-            syntheticBeanBuildItemBuildProducer.produce(solutionManagerDescriptor.done());
         });
+    }
+
+    @BuildStep(onlyIf = IsDevelopment.class)
+    @Record(RUNTIME_INIT)
+    public void recordAndRegisterDevUIBean(
+            TimefoldDevUIRecorder devUIRecorder,
+            RecorderContext recorderContext,
+            SolverConfigBuildItem solverConfigBuildItem,
+            TimefoldRuntimeConfig runtimeConfig,
+            BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+        syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
+                .scope(ApplicationScoped.class)
+                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getAllSolverConfigurations(), runtimeConfig,
+                        GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
+                                solverConfigBuildItem
+                                        .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                        GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
+                                solverConfigBuildItem
+                                        .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)))
+                .defaultBean()
+                .setRuntimeInit()
+                .done());
     }
 
     private void generateConstraintVerifier(SolverConfig solverConfig,
