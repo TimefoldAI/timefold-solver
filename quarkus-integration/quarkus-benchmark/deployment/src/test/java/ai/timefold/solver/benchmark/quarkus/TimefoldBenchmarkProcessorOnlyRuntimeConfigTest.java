@@ -31,7 +31,8 @@ class TimefoldBenchmarkProcessorOnlyRuntimeConfigTest {
             .assertException(t -> assertThat(t)
                     .isInstanceOf(ConfigurationException.class)
                     .hasMessageContaining("When defining multiple solvers, the benchmark feature is not enabled. " +
-                            "Consider using separate <solverBenchmark> instances for evaluating different solver configurations. " +
+                            "Consider using separate <solverBenchmark> instances for evaluating different solver configurations. "
+                            +
                             "You can find additional information by visiting the Timefold documentation page and " +
                             "navigating to the \"Benchmarking and tweaking\" section."));
 
