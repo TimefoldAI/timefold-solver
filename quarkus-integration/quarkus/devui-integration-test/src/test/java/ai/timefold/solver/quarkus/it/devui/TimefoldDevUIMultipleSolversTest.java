@@ -77,42 +77,35 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
     }
 
     @Test
-    void testModelPage() {
+    void testModelPage() throws Exception {
+        JsonNode modelResponse = super.executeJsonRPCMethod("getModelInfo");
         List.of("solver1", "solver2").forEach(key -> {
-            try {
-                JsonNode modelResponse = super.executeJsonRPCMethod("getModelInfo");
-                assertThat(modelResponse.get(key).get("solutionClass").asText())
-                        .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
-                assertThat(modelResponse.get(key).get("entityClassList"))
-                        .containsExactly(
-                                new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
-                assertThat(modelResponse.get(key).get("entityClassToGenuineVariableListMap")).hasSize(1);
-                assertThat(modelResponse.get(key).get("entityClassToGenuineVariableListMap")
-                        .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
-                        .containsExactly(new TextNode("value"));
-                assertThat(modelResponse.get(key).get("entityClassToShadowVariableListMap")).hasSize(1);
-                assertThat(modelResponse.get(key).get("entityClassToShadowVariableListMap")
-                        .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
-                        .containsExactly(new TextNode("length"));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            assertThat(modelResponse.get(key).get("solutionClass").asText())
+                    .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
+            assertThat(modelResponse.get(key).get("entityClassList"))
+                    .containsExactly(
+                            new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
+            assertThat(modelResponse.get(key).get("entityClassToGenuineVariableListMap")).hasSize(1);
+            assertThat(modelResponse.get(key).get("entityClassToGenuineVariableListMap")
+                    .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
+                    .containsExactly(new TextNode("value"));
+            assertThat(modelResponse.get(key).get("entityClassToShadowVariableListMap")).hasSize(1);
+            assertThat(modelResponse.get(key).get("entityClassToShadowVariableListMap")
+                    .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
+                    .containsExactly(new TextNode("length"));
         });
     }
 
     @Test
     void testConstraintsPage() throws Exception {
+        JsonNode constraintsResponse = super.executeJsonRPCMethod("getConstraints");
         List.of("solver1", "solver2").forEach(key -> {
-            try {
-                JsonNode constraintsResponse = super.executeJsonRPCMethod("getConstraints");
-                assertThat(constraintsResponse.get(key)).containsExactly(
-                        new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
-                                .getName() + "/Don't assign 2 entities the same value."),
-                        new TextNode(
-                                TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            assertThat(constraintsResponse.get(key)).containsExactly(
+                    new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
+                            .getName() + "/Don't assign 2 entities the same value."),
+                    new TextNode(
+                            TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
+
         });
     }
 }

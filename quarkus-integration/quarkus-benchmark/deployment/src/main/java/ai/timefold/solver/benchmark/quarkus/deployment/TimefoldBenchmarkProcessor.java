@@ -43,6 +43,13 @@ class TimefoldBenchmarkProcessor {
     BenchmarkConfigBuildItem registerAdditionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans,
             BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
             SolverConfigBuildItem solverConfigBuildItem) {
+        // We don't support benchmarking for multiple solvers
+        if (solverConfigBuildItem.getAllSolverConfigurations().size() > 1) {
+            throw new ConfigurationException("When defining multiple solvers, the benchmark feature is not enabled. " +
+                    "Consider using separate <solverBenchmark> instances for evaluating different solver configurations. " +
+                    "You can find additional information by visiting the Timefold documentation page and navigating to the " +
+                    "\"Benchmarking and tweaking\" section.");
+        }
         if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             log.warn("Skipping Timefold Benchmark extension because the Timefold extension was skipped.");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBenchmarkBeanProvider.class));
