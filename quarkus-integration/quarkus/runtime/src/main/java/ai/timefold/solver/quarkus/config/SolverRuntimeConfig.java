@@ -22,7 +22,7 @@ public interface SolverRuntimeConfig {
     Optional<String> moveThreadCount();
 
     /**
-     * Configuration properties that overwrite Timefold's {@link TerminationConfig}.
+     * Configuration properties that overwrite {@link TerminationConfig}.
      */
     TerminationRuntimeConfig termination();
 }

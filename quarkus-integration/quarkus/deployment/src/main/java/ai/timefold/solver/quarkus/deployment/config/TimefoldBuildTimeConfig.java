@@ -28,8 +28,8 @@ public interface TimefoldBuildTimeConfig {
     Optional<String> solverConfigXml();
 
     /**
-     * Configuration properties that overwrite Timefold's {@link SolverConfig} per Solver. If a solver name is not
-     * explicitly specified, the solver name will default to {@link #DEFAULT_SOLVER_NAME}.
+     * Configuration properties that overwrite {@link SolverConfig} per Solver.
+     * If a solver name is not explicitly specified, the solver name will default to {@link #DEFAULT_SOLVER_NAME}.
      */
     @WithUnnamedKey(DEFAULT_SOLVER_NAME)
     Map<String, SolverBuildTimeConfig> solver();

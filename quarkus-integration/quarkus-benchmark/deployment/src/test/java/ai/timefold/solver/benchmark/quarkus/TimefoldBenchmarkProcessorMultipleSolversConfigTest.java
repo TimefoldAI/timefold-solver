@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import io.quarkus.test.QuarkusUnitTest;
 
-class TimefoldBenchmarkProcessorOnlyRuntimeConfigTest {
+class TimefoldBenchmarkProcessorMultipleSolversConfigTest {
 
     // It is not possible run a benchmark for multiple solvers
     @RegisterExtension
@@ -30,11 +30,10 @@ class TimefoldBenchmarkProcessorOnlyRuntimeConfigTest {
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(ConfigurationException.class)
-                    .hasMessageContaining("When defining multiple solvers, the benchmark feature is not enabled. " +
-                            "Consider using separate <solverBenchmark> instances for evaluating different solver configurations. "
-                            +
-                            "You can find additional information by visiting the Timefold documentation page and " +
-                            "navigating to the \"Benchmarking and tweaking\" section."));
+                    .hasMessageContaining("""
+                            When defining multiple solvers, the benchmark feature is not enabled.
+                            Consider using separate <solverBenchmark> instances for evaluating different solver configurations.
+                            """));
 
     @Test
     void benchmark() throws ExecutionException, InterruptedException {

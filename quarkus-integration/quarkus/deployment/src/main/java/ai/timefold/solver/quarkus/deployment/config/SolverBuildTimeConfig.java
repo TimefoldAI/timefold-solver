@@ -23,7 +23,6 @@ public interface SolverBuildTimeConfig {
 
     /**
      * A classpath resource to read the specific solver configuration XML.
-     *
      * If this property isn't specified, that solverConfig.xml is optional.
      */
     Optional<String> solverConfigXml();
@@ -36,7 +35,8 @@ public interface SolverBuildTimeConfig {
 
     /**
      * Enable daemon mode. In daemon mode, non-early termination pauses the solver instead of stopping it,
-     * until the next problem fact change arrives. This is often useful for real-time planning.
+     * until the next problem fact change arrives.
+     * This is often useful for real-time planning.
      * Defaults to "false".
      */
     Optional<Boolean> daemon();
@@ -56,7 +56,7 @@ public interface SolverBuildTimeConfig {
     Optional<String> moveThreadCount();
 
     /**
-     * Configuration properties regarding Timefold's {@link TerminationConfig}.
+     * Configuration properties regarding {@link TerminationConfig}.
      */
     TerminationRuntimeConfig termination();
 
