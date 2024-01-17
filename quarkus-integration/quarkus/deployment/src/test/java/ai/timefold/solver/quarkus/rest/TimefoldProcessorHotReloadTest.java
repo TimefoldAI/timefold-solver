@@ -14,17 +14,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.test.QuarkusDevModeTest;
 import io.restassured.RestAssured;
 
-/**
- * Do not remove the public modifier from this class. Otherwise, the test will fail with the following:
- * <p>
- * Caused by: java.lang.IllegalAccessException: class io.quarkus.test.QuarkusDevModeTest cannot access a member of class
- * ai.timefold.solver.quarkus.rest.TimefoldProcessorHotReloadTest with modifiers ""
- * at java.base/java.lang.reflect.AccessibleObject.checkAccess(AccessibleObject.java:674)
- * at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:489)
- * at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)
- * at io.quarkus.test.QuarkusDevModeTest.createTestInstance(QuarkusDevModeTest.java:222)
- */
-@SuppressWarnings("java:S5786")
+@SuppressWarnings("java:S5786") //The public modifier is required when using QuarkusDevModeTest extension.
 public class TimefoldProcessorHotReloadTest {
 
     @RegisterExtension

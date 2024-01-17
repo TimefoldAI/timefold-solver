@@ -2,8 +2,6 @@ package ai.timefold.solver.quarkus.it.devui;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.Path;
@@ -14,7 +12,6 @@ import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEnti
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution;
 import ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
@@ -26,6 +23,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import io.quarkus.devui.tests.DevUIJsonRPCTest;
 import io.quarkus.test.QuarkusDevModeTest;
 
+@SuppressWarnings("java:S5786") //The public modifier is required when using QuarkusDevModeTest extension.
 public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
 
     @RegisterExtension
@@ -46,7 +44,7 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
 
         @Inject
         @Named("solver2")
-        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager2;
+        SolverManager<TestdataStringLengthShadowSolution, String> solverManager2;
     }
 
     public TimefoldDevUIMultipleSolversTest() {
@@ -56,56 +54,63 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
     @Test
     void testSolverConfigPage() throws Exception {
         JsonNode configResponse = super.executeJsonRPCMethod("getConfig");
-        List.of(Pair.of("solver1", "FULL_ASSERT"), Pair.of("solver2", "REPRODUCIBLE")).forEach(key -> {
-            String solverConfig = configResponse.get("config").get(key.getLeft()).asText();
-            assertThat(solverConfig).isEqualToIgnoringWhitespace(
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                            + "<!--Properties that can be set at runtime are not included-->\n"
-                            + "<solver>\n"
-                            + "  <environmentMode>" + key.getRight() + "</environmentMode>\n"
-                            + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
-                            + "</solutionClass>\n"
-                            + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"
-                            + "  <domainAccessType>GIZMO</domainAccessType>\n"
-                            + "  <scoreDirectorFactory>\n"
-                            + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
-                            + "</constraintProviderClass>\n"
-                            + "  </scoreDirectorFactory>\n"
-                            + "  <termination/>\n"
-                            + "</solver>");
-        });
+        assertSolverConfigPage(configResponse.get("config").get("solver1").asText(), "FULL_ASSERT");
+        assertSolverConfigPage(configResponse.get("config").get("solver2").asText(), "REPRODUCIBLE");
+    }
+
+    private void assertSolverConfigPage(String solverConfig, String environment) {
+        assertThat(solverConfig).isEqualToIgnoringWhitespace(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                        + "<!--Properties that can be set at runtime are not included-->\n"
+                        + "<solver>\n"
+                        + "  <environmentMode>" + environment + "</environmentMode>\n"
+                        + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
+                        + "</solutionClass>\n"
+                        + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"
+                        + "  <domainAccessType>GIZMO</domainAccessType>\n"
+                        + "  <scoreDirectorFactory>\n"
+                        + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
+                        + "</constraintProviderClass>\n"
+                        + "  </scoreDirectorFactory>\n"
+                        + "  <termination/>\n"
+                        + "</solver>");
     }
 
     @Test
     void testModelPage() throws Exception {
         JsonNode modelResponse = super.executeJsonRPCMethod("getModelInfo");
-        List.of("solver1", "solver2").forEach(key -> {
-            assertThat(modelResponse.get(key).get("solutionClass").asText())
-                    .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
-            assertThat(modelResponse.get(key).get("entityClassList"))
-                    .containsExactly(
-                            new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
-            assertThat(modelResponse.get(key).get("entityClassToGenuineVariableListMap")).hasSize(1);
-            assertThat(modelResponse.get(key).get("entityClassToGenuineVariableListMap")
-                    .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
-                    .containsExactly(new TextNode("value"));
-            assertThat(modelResponse.get(key).get("entityClassToShadowVariableListMap")).hasSize(1);
-            assertThat(modelResponse.get(key).get("entityClassToShadowVariableListMap")
-                    .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
-                    .containsExactly(new TextNode("length"));
-        });
+        assertModelPage(modelResponse, "solver1");
+        assertModelPage(modelResponse, "solver2");
+    }
+
+    private void assertModelPage(JsonNode modelResponse, String solverName) {
+        assertThat(modelResponse.get(solverName).get("solutionClass").asText())
+                .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
+        assertThat(modelResponse.get(solverName).get("entityClassList"))
+                .containsExactly(
+                        new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
+        assertThat(modelResponse.get(solverName).get("entityClassToGenuineVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get(solverName).get("entityClassToGenuineVariableListMap")
+                .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
+                .containsExactly(new TextNode("value"));
+        assertThat(modelResponse.get(solverName).get("entityClassToShadowVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get(solverName).get("entityClassToShadowVariableListMap")
+                .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
+                .containsExactly(new TextNode("length"));
     }
 
     @Test
     void testConstraintsPage() throws Exception {
         JsonNode constraintsResponse = super.executeJsonRPCMethod("getConstraints");
-        List.of("solver1", "solver2").forEach(key -> {
-            assertThat(constraintsResponse.get(key)).containsExactly(
-                    new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
-                            .getName() + "/Don't assign 2 entities the same value."),
-                    new TextNode(
-                            TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
+        assertConstraintsPage(constraintsResponse, "solver1");
+        assertConstraintsPage(constraintsResponse, "solver2");
+    }
 
-        });
+    private void assertConstraintsPage(JsonNode constraintsResponse, String solverName) {
+        assertThat(constraintsResponse.get(solverName)).containsExactly(
+                new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
+                        .getName() + "/Don't assign 2 entities the same value."),
+                new TextNode(
+                        TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
     }
 }
