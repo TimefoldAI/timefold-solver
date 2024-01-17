@@ -63,24 +63,30 @@ export class ConstraintsComponent extends LitElement {
                         </vaadin-grid-column>
                     </vaadin-grid>`;
             } else {
-                let constraintValues = [];
+                let constraintValues = {};
                 keys.sort().forEach(k => {
                     constraints[k].forEach(v => {
-                        constraintValues.push({
-                            name: k, value: v
-                        });
+                        if (!(v in constraintValues)) {
+                            constraintValues[v] = k;
+                        } else {
+                            constraintValues[v] += ", " + k;
+                        }
                     });
                 });
+                let constraintList = Object.keys(constraintValues).map(key => {
+                    return {name: key, values: constraintValues[key]}
+                });
                 return html`
-                    <vaadin-grid .items="${constraintValues}" class="datatable" theme="no-border" all-rows-visible>
+                    <vaadin-grid .items="${constraintList}" class="datatable" theme="no-border" all-rows-visible>
                         <vaadin-grid-column auto-width
-                                            header="Name"
+                                            header="Constraint"
                                             ${columnBodyRenderer(this._constraintNameRenderer, [])}>
                         </vaadin-grid-column>
                         <vaadin-grid-column auto-width
-                                            header="Constraint"
-                                            ${columnBodyRenderer(this._constraintValueRenderer, [])}>
+                                            header="Solver Config"
+                                            ${columnBodyRenderer(this._solverConfigValueRenderer, [])}>
                         </vaadin-grid-column>
+
                     </vaadin-grid>`;
             }
         }
@@ -96,9 +102,9 @@ export class ConstraintsComponent extends LitElement {
             ${constraint['name']}`;
     }
 
-    _constraintValueRenderer(constraint) {
+    _solverConfigValueRenderer(constraint) {
         return html`
-            ${constraint['value']}`;
+            ${constraint['values']}`;
     }
 
 }

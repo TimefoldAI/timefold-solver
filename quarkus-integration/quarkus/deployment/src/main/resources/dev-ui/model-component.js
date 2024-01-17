@@ -102,7 +102,7 @@ export class ModelComponent extends LitElement {
                 return html`
                     <vaadin-grid .items="${modelValues}" class="datatable" theme="no-border" all-rows-visible>
                         <vaadin-grid-column auto-width
-                                            header="Name"
+                                            header="Solver Config"
                                             ${columnBodyRenderer(this._nameRenderer, [])}>
                         </vaadin-grid-column>
                         <vaadin-grid-column auto-width
