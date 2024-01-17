@@ -9,6 +9,7 @@ import java.time.Duration;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
+import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
@@ -84,6 +85,32 @@ class TimefoldProcessorSingleDefaultSolverPropertiesTest {
     @Inject
     SolutionManager<TestdataQuarkusSolution, BendableBigDecimalScore> bendableBigDecimalSolutionManager1;
 
+    // ScoreManager per score type
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, SimpleScore> simpleScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, SimpleLongScore> simpleLongScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, SimpleBigDecimalScore> simpleBigDecimalScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, HardSoftScore> hardSoftScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, HardSoftLongScore> hardSoftLongScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, HardSoftBigDecimalScore> hardSoftBigDecimalScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, HardMediumSoftScore> hardMediumSoftScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, HardMediumSoftLongScore> hardMediumSoftLongScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, HardMediumSoftBigDecimalScore> hardMediumSoftBigDecimalScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, BendableScore> bendableScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, BendableLongScore> bendableLongScoreManager1;
+    @Inject
+    ScoreManager<TestdataQuarkusSolution, BendableBigDecimalScore> bendableBigDecimalScoreManager1;
+
     @Test
     void solverProperties() {
         // solver1
@@ -111,5 +138,18 @@ class TimefoldProcessorSingleDefaultSolverPropertiesTest {
         assertNotNull(bendableSolutionManager1);
         assertNotNull(bendableLongSolutionManager1);
         assertNotNull(bendableBigDecimalSolutionManager1);
+        // ScoreManager
+        assertNotNull(simpleScoreManager1);
+        assertNotNull(simpleLongScoreManager1);
+        assertNotNull(simpleBigDecimalScoreManager1);
+        assertNotNull(hardSoftScoreManager1);
+        assertNotNull(hardSoftLongScoreManager1);
+        assertNotNull(hardSoftBigDecimalScoreManager1);
+        assertNotNull(hardMediumSoftScoreManager1);
+        assertNotNull(hardMediumSoftLongScoreManager1);
+        assertNotNull(hardMediumSoftBigDecimalScoreManager1);
+        assertNotNull(bendableScoreManager1);
+        assertNotNull(bendableLongScoreManager1);
+        assertNotNull(bendableBigDecimalScoreManager1);
     }
 }

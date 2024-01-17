@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 
 import jakarta.inject.Inject;
 
+import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -46,11 +47,14 @@ class TimefoldProcessorGizmoKitchenSinkTest {
     @Inject
     SolverManager<TestDataKitchenSinkSolution, Long> solverManager;
     @Inject
+    ScoreManager<TestDataKitchenSinkSolution, SimpleScore> scoreManager;
+    @Inject
     SolutionManager<TestDataKitchenSinkSolution, SimpleScore> solutionManager;
 
     @Test
     void singletonSolverFactory() {
         assertNotNull(solverFactory);
+        assertNotNull(scoreManager);
         // There is only one ScoreDirectorFactory instance
         assertSame(((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory(),
                 ((DefaultSolutionManager<?, ?>) solutionManager).getScoreDirectorFactory());
