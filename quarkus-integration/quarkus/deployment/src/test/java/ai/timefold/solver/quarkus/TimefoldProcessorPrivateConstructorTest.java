@@ -39,8 +39,8 @@ class TimefoldProcessorPrivateConstructorTest {
                         new PrivateNoArgsConstructorEntity("2"),
                         new PrivateNoArgsConstructorEntity("3")));
         PrivateNoArgsConstructorSolution solution = solverManager.solve(1L, problem).getFinalBestSolution();
-        Assertions.assertEquals(solution.score.score(), 0);
-        Assertions.assertEquals(solution.someField, 2);
+        Assertions.assertEquals(0, solution.score.score());
+        Assertions.assertEquals(2, solution.someField);
     }
 
 }

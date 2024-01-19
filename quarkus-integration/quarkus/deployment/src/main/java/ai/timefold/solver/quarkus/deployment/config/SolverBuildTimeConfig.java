@@ -6,10 +6,11 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
+import ai.timefold.solver.quarkus.config.TerminationRuntimeConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
 
 /**
  * During build time, this is translated into Timefold's {@link SolverConfig}
@@ -18,37 +19,53 @@ import io.quarkus.runtime.annotations.ConfigItem;
  * See also {@link SolverRuntimeConfig}
  */
 @ConfigGroup
-public class SolverBuildTimeConfig {
+public interface SolverBuildTimeConfig {
+
+    /**
+     * A classpath resource to read the specific solver configuration XML.
+     * If this property isn't specified, that solverConfig.xml is optional.
+     */
+    Optional<String> solverConfigXml();
 
     /**
      * Enable runtime assertions to detect common bugs in your implementation during development.
      * Defaults to {@link EnvironmentMode#REPRODUCIBLE}.
      */
-    @ConfigItem
-    public Optional<EnvironmentMode> environmentMode;
+    Optional<EnvironmentMode> environmentMode();
 
     /**
      * Enable daemon mode. In daemon mode, non-early termination pauses the solver instead of stopping it,
-     * until the next problem fact change arrives. This is often useful for real-time planning.
+     * until the next problem fact change arrives.
+     * This is often useful for real-time planning.
      * Defaults to "false".
      */
-    @ConfigItem
-    public Optional<Boolean> daemon;
+    Optional<Boolean> daemon();
 
     /**
      * Determines how to access the fields and methods of domain classes.
      * Defaults to {@link DomainAccessType#GIZMO}.
      */
-    @ConfigItem
-    public Optional<DomainAccessType> domainAccessType;
+    Optional<DomainAccessType> domainAccessType();
+
+    /**
+     * Enable multithreaded solving for a single problem, which increases CPU consumption.
+     * Defaults to {@value SolverConfig#MOVE_THREAD_COUNT_NONE}.
+     * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number
+     * or formula based on the available processor count.
+     */
+    Optional<String> moveThreadCount();
+
+    /**
+     * Configuration properties regarding {@link TerminationConfig}.
+     */
+    TerminationRuntimeConfig termination();
 
     /**
      * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
      *
      * @deprecated Not used anymore.
      */
-    @ConfigItem
     @Deprecated(forRemoval = true, since = "1.4.0")
-    public Optional<ConstraintStreamImplType> constraintStreamImplType;
+    Optional<ConstraintStreamImplType> constraintStreamImplType();
 
 }

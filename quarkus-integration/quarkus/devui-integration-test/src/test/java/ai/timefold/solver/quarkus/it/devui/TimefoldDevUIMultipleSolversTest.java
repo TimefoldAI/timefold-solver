@@ -2,16 +2,10 @@ package ai.timefold.solver.quarkus.it.devui;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-
 import jakarta.inject.Inject;
-import jakarta.ws.rs.POST;
+import jakarta.inject.Named;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 
-import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.it.devui.domain.StringLengthVariableListener;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity;
@@ -29,55 +23,47 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import io.quarkus.devui.tests.DevUIJsonRPCTest;
 import io.quarkus.test.QuarkusDevModeTest;
 
-public class TimefoldDevUITest extends DevUIJsonRPCTest {
+@SuppressWarnings("java:S5786") //The public modifier is required when using QuarkusDevModeTest extension.
+public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
 
     @RegisterExtension
     static final QuarkusDevModeTest config = new QuarkusDevModeTest()
+            .setBuildSystemProperty("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
+            .setBuildSystemProperty("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(StringLengthVariableListener.class,
                             TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
-                            TestdataStringLengthConstraintProvider.class,
-                            TimefoldTestResource.class));
+                            TestdataStringLengthConstraintProvider.class, TimefoldTestMultipleResource.class));
 
     @Path("/timefold/test")
-    public static class TimefoldTestResource {
+    public static class TimefoldTestMultipleResource {
 
         @Inject
+        @Named("solver1")
         SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
 
-        @POST
-        @Path("/solver-factory")
-        @Produces(MediaType.TEXT_PLAIN)
-        public String solveWithSolverFactory() {
-            TestdataStringLengthShadowSolution planningProblem = new TestdataStringLengthShadowSolution();
-            planningProblem.setEntityList(Arrays.asList(
-                    new TestdataStringLengthShadowEntity(),
-                    new TestdataStringLengthShadowEntity()));
-            planningProblem.setValueList(Arrays.asList("a", "bb", "ccc"));
-            SolverJob<TestdataStringLengthShadowSolution, Long> solverJob = solverManager.solve(1L, planningProblem);
-            try {
-                return solverJob.getFinalBestSolution().getScore().toString();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Solving was interrupted.", e);
-            } catch (ExecutionException e) {
-                throw new IllegalStateException("Solving failed.", e);
-            }
-        }
+        @Inject
+        @Named("solver2")
+        SolverManager<TestdataStringLengthShadowSolution, String> solverManager2;
     }
 
-    public TimefoldDevUITest() {
+    public TimefoldDevUIMultipleSolversTest() {
         super("Timefold Solver");
     }
 
     @Test
     void testSolverConfigPage() throws Exception {
         JsonNode configResponse = super.executeJsonRPCMethod("getConfig");
-        String solverConfig = configResponse.get("config").get("default").asText();
+        assertSolverConfigPage(configResponse.get("config").get("solver1").asText(), "FULL_ASSERT");
+        assertSolverConfigPage(configResponse.get("config").get("solver2").asText(), "REPRODUCIBLE");
+    }
+
+    private void assertSolverConfigPage(String solverConfig, String environment) {
         assertThat(solverConfig).isEqualToIgnoringWhitespace(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                         + "<!--Properties that can be set at runtime are not included-->\n"
                         + "<solver>\n"
+                        + "  <environmentMode>" + environment + "</environmentMode>\n"
                         + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
                         + "</solutionClass>\n"
                         + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"
@@ -86,26 +72,29 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
                         + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
                         + "</constraintProviderClass>\n"
                         + "  </scoreDirectorFactory>\n"
-                        + "  <termination>\n"
-                        + "    <bestScoreLimit>0hard/5soft</bestScoreLimit>\n"
-                        + "  </termination>\n"
+                        + "  <termination/>\n"
                         + "</solver>");
     }
 
     @Test
     void testModelPage() throws Exception {
         JsonNode modelResponse = super.executeJsonRPCMethod("getModelInfo");
-        assertThat(modelResponse.get("default").get("solutionClass").asText())
+        assertModelPage(modelResponse, "solver1");
+        assertModelPage(modelResponse, "solver2");
+    }
+
+    private void assertModelPage(JsonNode modelResponse, String solverName) {
+        assertThat(modelResponse.get(solverName).get("solutionClass").asText())
                 .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
-        assertThat(modelResponse.get("default").get("entityClassList"))
+        assertThat(modelResponse.get(solverName).get("entityClassList"))
                 .containsExactly(
                         new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
-        assertThat(modelResponse.get("default").get("entityClassToGenuineVariableListMap")).hasSize(1);
-        assertThat(modelResponse.get("default").get("entityClassToGenuineVariableListMap")
+        assertThat(modelResponse.get(solverName).get("entityClassToGenuineVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get(solverName).get("entityClassToGenuineVariableListMap")
                 .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
                 .containsExactly(new TextNode("value"));
-        assertThat(modelResponse.get("default").get("entityClassToShadowVariableListMap")).hasSize(1);
-        assertThat(modelResponse.get("default").get("entityClassToShadowVariableListMap")
+        assertThat(modelResponse.get(solverName).get("entityClassToShadowVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get(solverName).get("entityClassToShadowVariableListMap")
                 .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
                 .containsExactly(new TextNode("length"));
     }
@@ -113,9 +102,15 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     @Test
     void testConstraintsPage() throws Exception {
         JsonNode constraintsResponse = super.executeJsonRPCMethod("getConstraints");
-        assertThat(constraintsResponse.get("default")).containsExactly(
+        assertConstraintsPage(constraintsResponse, "solver1");
+        assertConstraintsPage(constraintsResponse, "solver2");
+    }
+
+    private void assertConstraintsPage(JsonNode constraintsResponse, String solverName) {
+        assertThat(constraintsResponse.get(solverName)).containsExactly(
                 new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
                         .getName() + "/Don't assign 2 entities the same value."),
-                new TextNode(TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
+                new TextNode(
+                        TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
     }
 }

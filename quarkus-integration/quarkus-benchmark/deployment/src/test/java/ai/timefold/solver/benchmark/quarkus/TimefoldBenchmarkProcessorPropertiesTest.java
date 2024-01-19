@@ -1,6 +1,11 @@
+
 package ai.timefold.solver.benchmark.quarkus;
 
-import java.util.concurrent.ExecutionException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.Duration;
+
+import jakarta.inject.Inject;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
@@ -9,29 +14,29 @@ import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuark
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class TimefoldBenchmarkProcessorMissingSpentLimitTest {
+class TimefoldBenchmarkProcessorPropertiesTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.test.flat-class-path", "true")
+            .overrideConfigKey("quarkus.timefold.benchmark.solver.termination.best-score-limit", "0hard/-1200soft")
+            .overrideConfigKey("quarkus.timefold.benchmark.solver.termination.spent-limit", "5m")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class));
 
-    @Test
-    void benchmark() throws ExecutionException, InterruptedException {
-        IllegalStateException exception = Assertions.assertThrows(IllegalStateException.class, () -> {
-            new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(new PlannerBenchmarkConfig(), null).get();
-        });
-        Assertions.assertEquals(
-                "At least one of the properties quarkus.timefold.benchmark.solver.termination.spent-limit, quarkus.timefold.benchmark.solver.termination.best-score-limit, quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit is required if termination is not configured in the inherited solver benchmark config and solverBenchmarkBluePrint is used.",
-                exception.getMessage());
-    }
+    @Inject
+    PlannerBenchmarkConfig plannerBenchmarkConfig;
 
+    @Test
+    void terminationProperties() {
+        assertEquals(Duration.ofMinutes(5), plannerBenchmarkConfig.getSolverBenchmarkConfigList().get(0)
+                .getSolverConfig().getTerminationConfig().getSpentLimit());
+        assertEquals("0hard/-1200soft", plannerBenchmarkConfig.getSolverBenchmarkConfigList().get(0)
+                .getSolverConfig().getTerminationConfig().getBestScoreLimit());
+    }
 }
