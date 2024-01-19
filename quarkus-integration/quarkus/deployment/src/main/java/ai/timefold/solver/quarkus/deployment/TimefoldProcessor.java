@@ -1,6 +1,8 @@
 package ai.timefold.solver.quarkus.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -221,56 +223,286 @@ class TimefoldProcessor {
             return new SolverConfigBuildItem(solverConfig, null);
         }
 
-        // Validate the planning entities settings
-        assertNoMemberAnnotationWithoutClassAnnotation(indexView);
-
         // Quarkus extensions must always use getContextClassLoader()
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-        Map<String, SolverConfig> allSolverConfig = new HashMap<>();
-        Set<Class<?>> reflectiveClassSet = new LinkedHashSet<>();
+        Map<String, SolverConfig> solverConfigMap = new HashMap<>();
+        // Step 1 - create all SolverConfig
         // If the config map is empty, we build the config using the default solver name
         if (timefoldBuildTimeConfig.solver().isEmpty()) {
-            allSolverConfig.put(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME,
-                    generateSolverConfig(classLoader, indexView, reflectiveHierarchyClass,
-                            TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME, reflectiveClassSet));
+            solverConfigMap.put(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME,
+                    createSolverConfig(classLoader, TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME));
         } else {
             // One config per solver mapped name
-            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> allSolverConfig.put(solverName,
-                    generateSolverConfig(classLoader, indexView, reflectiveHierarchyClass, solverName, reflectiveClassSet)));
+            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfigMap.put(solverName,
+                    createSolverConfig(classLoader, solverName)));
         }
+
+        // Step 2 - validate all SolverConfig definitions
+        assertNoMemberAnnotationWithoutClassAnnotation(indexView);
+        assertSolverConfigSolutionClasses(indexView, solverConfigMap);
+        assertSolverConfigEntityClasses(indexView);
+        assertSolverConfigConstraintClasses(indexView, solverConfigMap);
+
+        // Step 3 - load all additional information per SolverConfig
+        Set<Class<?>> reflectiveClassSet = new LinkedHashSet<>();
+        solverConfigMap.forEach((solverName, solverConfig) -> loadSolverConfig(indexView, reflectiveHierarchyClass,
+                solverConfig, solverName, reflectiveClassSet));
 
         // Register all annotated domain model classes
         registerClassesFromAnnotations(indexView, reflectiveClassSet);
 
         // Register only distinct constraint providers
-        allSolverConfig.values()
+        solverConfigMap.values()
                 .stream()
                 .filter(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
                 .map(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass().getName())
                 .distinct()
-                .map(constraintName -> allSolverConfig.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
+                .map(constraintName -> solverConfigMap.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
                         .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintName))
                         .findFirst().get())
                 .forEach(
                         entryConfig -> generateConstraintVerifier(entryConfig.getValue(), syntheticBeanBuildItemBuildProducer));
 
-        GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(allSolverConfig, indexView, generatedBeans,
+        GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(solverConfigMap, indexView, generatedBeans,
                 generatedClasses, transformers, reflectiveClassSet);
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
-        if (allSolverConfig.size() <= 1) {
+        if (solverConfigMap.size() <= 1) {
             // Only registered for the default solver
             additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         }
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
-        return new SolverConfigBuildItem(allSolverConfig, generatedGizmoClasses);
+        return new SolverConfigBuildItem(solverConfigMap, generatedGizmoClasses);
     }
 
-    private SolverConfig generateSolverConfig(ClassLoader classLoader, IndexView indexView,
-            BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass, String solverName,
-            Set<Class<?>> reflectiveClassSet) {
+    private void assertNoMemberAnnotationWithoutClassAnnotation(IndexView indexView) {
+        Collection<AnnotationInstance> timefoldFieldAnnotations = new HashSet<>();
+
+        for (DotName annotationName : DotNames.PLANNING_ENTITY_FIELD_ANNOTATIONS) {
+            timefoldFieldAnnotations.addAll(indexView.getAnnotationsWithRepeatable(annotationName, indexView));
+        }
+
+        for (AnnotationInstance annotationInstance : timefoldFieldAnnotations) {
+            AnnotationTarget annotationTarget = annotationInstance.target();
+            ClassInfo declaringClass;
+            String prefix;
+            switch (annotationTarget.kind()) {
+                case FIELD:
+                    prefix = "The field (" + annotationTarget.asField().name() + ") ";
+                    declaringClass = annotationTarget.asField().declaringClass();
+                    break;
+                case METHOD:
+                    prefix = "The method (" + annotationTarget.asMethod().name() + ") ";
+                    declaringClass = annotationTarget.asMethod().declaringClass();
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            "Member annotation @" + annotationInstance.name().withoutPackagePrefix() + " is on ("
+                                    + annotationTarget +
+                                    "), which is an invalid target type (" + annotationTarget.kind() +
+                                    ") for @" + annotationInstance.name().withoutPackagePrefix() + ".");
+            }
+
+            if (!declaringClass.annotationsMap().containsKey(DotNames.PLANNING_ENTITY)) {
+                throw new IllegalStateException(prefix + "with a @" +
+                        annotationInstance.name().withoutPackagePrefix() +
+                        " annotation is in a class (" + declaringClass.name()
+                        + ") that does not have a @" + PlanningEntity.class.getSimpleName() +
+                        " annotation.\n" +
+                        "Maybe add a @" + PlanningEntity.class.getSimpleName() +
+                        " annotation on the class (" + declaringClass.name() + ").");
+            }
+        }
+    }
+
+    private void assertSolverConfigSolutionClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
+        // Validate the solution class        
+        // No solution class
+        assertEmptyInstances(indexView, DotNames.PLANNING_SOLUTION);
+        // Multiple classes and single solver
+        Collection<AnnotationInstance> annotationInstances = indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
+        if (annotationInstances.size() > 1 && solverConfigMap.size() == 1) {
+            throw new IllegalStateException("Multiple classes (%s) found in the classpath with a @%s annotation.".formatted(
+                    convertAnnotationInstancesToString(annotationInstances), PlanningSolution.class.getSimpleName()));
+        }
+        // Multiple classes and at least one solver config does not specify the solution class
+        List<String> solverConfigWithoutSolutionClassList = solverConfigMap.entrySet().stream()
+                .filter(e -> e.getValue().getSolutionClass() == null)
+                .map(Map.Entry::getKey)
+                .toList();
+        if (annotationInstances.size() > 1 && !solverConfigWithoutSolutionClassList.isEmpty()) {
+            throw new IllegalStateException(
+                    """
+                            Some solver configs (%s) don't specify a %s class, yet there are multiple available (%s) on the classpath.
+                            Maybe set the XML config file to the related solver configs, or add the missing solution classes to the XML files,
+                            or remove the unnecessary solution classes from the classpath.
+                            """
+                            .formatted(String.join(", ", solverConfigWithoutSolutionClassList),
+                                    PlanningSolution.class.getSimpleName(),
+                                    convertAnnotationInstancesToString(annotationInstances)));
+        }
+        // Unused solution classes
+        List<String> unusedSolutionClasses = annotationInstances.stream()
+                .map(planningClass -> planningClass.target().asClass().name().toString())
+                .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
+                        .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)))
+                .toList();
+        if (annotationInstances.size() > 1 && !unusedSolutionClasses.isEmpty()) {
+            throw new IllegalStateException(
+                    "Unused classes ([%s]) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClasses),
+                            PlanningSolution.class.getSimpleName()));
+        }
+        // Validate the solution classes target types
+        List<AnnotationTarget> targetList = annotationInstances.stream()
+                .map(AnnotationInstance::target)
+                .toList();
+        assertTargetClasses(targetList, DotNames.PLANNING_SOLUTION);
+    }
+
+    private void assertSolverConfigEntityClasses(IndexView indexView) {
+        // No entity classes
+        assertEmptyInstances(indexView, DotNames.PLANNING_ENTITY);
+        // Validate the entity classes target types
+        Collection<AnnotationInstance> annotationInstances = indexView.getAnnotations(DotNames.PLANNING_ENTITY);
+        List<AnnotationTarget> targetList = annotationInstances.stream()
+                .map(AnnotationInstance::target)
+                .toList();
+        assertTargetClasses(targetList, DotNames.PLANNING_ENTITY);
+    }
+
+    private void assertSolverConfigConstraintClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
+        Collection<ClassInfo> simpleScoreClasses = indexView.getAllKnownImplementors(DotNames.EASY_SCORE_CALCULATOR);
+        Collection<ClassInfo> constraintScoreClasses = indexView.getAllKnownImplementors(DotNames.CONSTRAINT_PROVIDER);
+        Collection<ClassInfo> incrementalScoreClasses =
+                indexView.getAllKnownImplementors(DotNames.INCREMENTAL_SCORE_CALCULATOR);
+        // No score classes
+        if (simpleScoreClasses.isEmpty() && constraintScoreClasses.isEmpty() && incrementalScoreClasses.isEmpty()) {
+            throw new IllegalStateException(
+                    "No classes found that implement %s, %s, or %s.".formatted(EasyScoreCalculator.class.getSimpleName(),
+                            ConstraintProvider.class.getSimpleName(), IncrementalScoreCalculator.class.getSimpleName()));
+        }
+        // Multiple classes and single solver
+        String errorMessage = "Multiple score classes classes (%s) that implements %s were found in the classpath.";
+        if (simpleScoreClasses.size() > 1 && solverConfigMap.size() == 1) {
+            throw new IllegalStateException(errorMessage.formatted(
+                    simpleScoreClasses.stream().map(c -> c.name().toString()).collect(Collectors.joining(", ")),
+                    EasyScoreCalculator.class.getSimpleName()));
+        }
+        if (constraintScoreClasses.size() > 1 && solverConfigMap.size() == 1) {
+            throw new IllegalStateException(errorMessage.formatted(
+                    constraintScoreClasses.stream().map(c -> c.name().toString()).collect(Collectors.joining(", ")),
+                    ConstraintProvider.class.getSimpleName()));
+        }
+        if (incrementalScoreClasses.size() > 1 && solverConfigMap.size() == 1) {
+            throw new IllegalStateException(errorMessage.formatted(
+                    incrementalScoreClasses.stream().map(c -> c.name().toString()).collect(Collectors.joining(", ")),
+                    IncrementalScoreCalculator.class.getSimpleName()));
+        }
+        // Multiple classes and at least one solver config does not specify the score class
+        errorMessage = """
+                Some solver configs (%s) don't specify a %s score class, yet there are multiple available (%s) on the classpath.
+                Maybe set the XML config file to the related solver configs, or add the missing score classes to the XML files,
+                or remove the unnecessary score classes from the classpath.
+                """;
+        List<String> solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
+                .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
+                        || e.getValue().getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass() == null)
+                .map(Map.Entry::getKey)
+                .toList();
+        if (simpleScoreClasses.size() > 1 && !solverConfigWithoutConstraintClassList.isEmpty()) {
+            throw new IllegalStateException(errorMessage.formatted(
+                    String.join(", ", solverConfigWithoutConstraintClassList),
+                    EasyScoreCalculator.class.getSimpleName(),
+                    simpleScoreClasses.stream().map(c -> c.name().toString()).collect(Collectors.joining(", "))));
+        }
+        solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
+                .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
+                        || e.getValue().getScoreDirectorFactoryConfig().getConstraintProviderClass() == null)
+                .map(Map.Entry::getKey)
+                .toList();
+        if (constraintScoreClasses.size() > 1 && !solverConfigWithoutConstraintClassList.isEmpty()) {
+            throw new IllegalStateException(errorMessage.formatted(
+                    String.join(", ", solverConfigWithoutConstraintClassList),
+                    ConstraintProvider.class.getSimpleName(),
+                    constraintScoreClasses.stream().map(c -> c.name().toString()).collect(Collectors.joining(", "))));
+        }
+        solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
+                .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
+                        || e.getValue().getScoreDirectorFactoryConfig().getIncrementalScoreCalculatorClass() == null)
+                .map(Map.Entry::getKey)
+                .toList();
+        if (incrementalScoreClasses.size() > 1 && !solverConfigWithoutConstraintClassList.isEmpty()) {
+            throw new IllegalStateException(errorMessage.formatted(
+                    String.join(", ", solverConfigWithoutConstraintClassList),
+                    IncrementalScoreCalculator.class.getSimpleName(),
+                    incrementalScoreClasses.stream().map(c -> c.name().toString()).collect(Collectors.joining(", "))));
+        }
+        // Unused score classes
+        List<String> solverConfigWithUnusedSolutionClassList = simpleScoreClasses.stream()
+                .map(clazz -> clazz.name().toString())
+                .filter(className -> solverConfigMap.values().stream()
+                        .filter(c -> c.getScoreDirectorFactoryConfig() != null
+                                && c.getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass() != null)
+                        .noneMatch(c -> c.getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass().getName()
+                                .equals(className)))
+                .toList();
+        errorMessage = "Unused classes ([%s]) that implements %s were found.";
+        if (simpleScoreClasses.size() > 1 && !solverConfigWithUnusedSolutionClassList.isEmpty()) {
+            throw new IllegalStateException(errorMessage.formatted(String.join(", ", solverConfigWithUnusedSolutionClassList),
+                    EasyScoreCalculator.class.getSimpleName()));
+        }
+        solverConfigWithUnusedSolutionClassList = constraintScoreClasses.stream()
+                .map(clazz -> clazz.name().toString())
+                .filter(className -> solverConfigMap.values().stream()
+                        .filter(c -> c.getScoreDirectorFactoryConfig() != null
+                                && c.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
+                        .noneMatch(c -> c.getScoreDirectorFactoryConfig().getConstraintProviderClass().getName()
+                                .equals(className)))
+                .toList();
+        if (constraintScoreClasses.size() > 1 && !solverConfigWithUnusedSolutionClassList.isEmpty()) {
+            throw new IllegalStateException(errorMessage.formatted(String.join(", ", solverConfigWithUnusedSolutionClassList),
+                    ConstraintProvider.class.getSimpleName()));
+        }
+        solverConfigWithUnusedSolutionClassList = incrementalScoreClasses.stream()
+                .map(clazz -> clazz.name().toString())
+                .filter(className -> solverConfigMap.values().stream()
+                        .filter(c -> c.getScoreDirectorFactoryConfig() != null
+                                && c.getScoreDirectorFactoryConfig().getIncrementalScoreCalculatorClass() != null)
+                        .noneMatch(c -> c.getScoreDirectorFactoryConfig().getIncrementalScoreCalculatorClass().getName()
+                                .equals(className)))
+                .toList();
+        if (incrementalScoreClasses.size() > 1 && !solverConfigWithUnusedSolutionClassList.isEmpty()) {
+            throw new IllegalStateException(errorMessage.formatted(String.join(", ", solverConfigWithUnusedSolutionClassList),
+                    IncrementalScoreCalculator.class.getSimpleName()));
+        }
+    }
+
+    private void assertEmptyInstances(IndexView indexView, DotName dotName) {
+        // Validate the solution class
+        Collection<AnnotationInstance> annotationInstances = indexView.getAnnotations(dotName);
+        // No solution class
+        if (annotationInstances.isEmpty()) {
+            try {
+                throw new IllegalStateException(
+                        "No classes found with a @%s annotation.".formatted(Class.forName(dotName.local()).getSimpleName()));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void assertTargetClasses(List<AnnotationTarget> targetList, DotName dotName) {
+        if (targetList.stream().anyMatch(target -> target.kind() != AnnotationTarget.Kind.CLASS)) {
+            throw new IllegalStateException(
+                    "All classes ([%s]) annotated with @%s must be a class.".formatted(
+                            targetList.stream().map(t -> t.asClass().name().toString()).collect(Collectors.joining(", ")),
+                            dotName.local()));
+        }
+    }
+
+    private SolverConfig createSolverConfig(ClassLoader classLoader, String solverName) {
         // 1 - The solver configuration takes precedence over root and default settings
         Optional<String> solverConfigXml = this.timefoldBuildTimeConfig.getSolverConfig(solverName)
                 .flatMap(SolverBuildTimeConfig::solverConfigXml);
@@ -300,6 +532,13 @@ class TimefoldProcessor {
         } else {
             solverConfig = new SolverConfig();
         }
+
+        return solverConfig;
+    }
+
+    private SolverConfig loadSolverConfig(IndexView indexView,
+            BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass, SolverConfig solverConfig, String solverName,
+            Set<Class<?>> reflectiveClassSet) {
 
         // Configure planning problem models and score director per solver
         applySolverProperties(indexView, solverName, solverConfig);
@@ -464,7 +703,7 @@ class TimefoldProcessor {
 
     private void applySolverProperties(IndexView indexView, String solverName, SolverConfig solverConfig) {
         if (solverConfig.getSolutionClass() == null) {
-            solverConfig.setSolutionClass(findSolutionClass(indexView));
+            solverConfig.setSolutionClass(findFirstSolutionClass(indexView));
         }
         if (solverConfig.getEntityClassList() == null) {
             solverConfig.setEntityClassList(findEntityClassList(indexView));
@@ -486,80 +725,17 @@ class TimefoldProcessor {
         // Termination properties are set at runtime
     }
 
-    private Class<?> findSolutionClass(IndexView indexView) {
+    private Class<?> findFirstSolutionClass(IndexView indexView) {
         Collection<AnnotationInstance> annotationInstances = indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
-        if (annotationInstances.size() > 1) {
-            throw new IllegalStateException("Multiple classes (" + convertAnnotationInstancesToString(annotationInstances)
-                    + ") found with a @" + PlanningSolution.class.getSimpleName() + " annotation.");
-        }
-        if (annotationInstances.isEmpty()) {
-            throw new IllegalStateException("No classes (" + convertAnnotationInstancesToString(annotationInstances)
-                    + ") found with a @" + PlanningSolution.class.getSimpleName() + " annotation.");
-        }
         AnnotationTarget solutionTarget = annotationInstances.iterator().next().target();
-        if (solutionTarget.kind() != AnnotationTarget.Kind.CLASS) {
-            throw new IllegalStateException("A target (" + solutionTarget
-                    + ") with a @" + PlanningSolution.class.getSimpleName() + " must be a class.");
-        }
         return convertClassInfoToClass(solutionTarget.asClass());
     }
 
     private List<Class<?>> findEntityClassList(IndexView indexView) {
-        Collection<AnnotationInstance> annotationInstances = indexView.getAnnotations(DotNames.PLANNING_ENTITY);
-        if (annotationInstances.isEmpty()) {
-            throw new IllegalStateException("No classes (" + convertAnnotationInstancesToString(annotationInstances)
-                    + ") found with a @" + PlanningEntity.class.getSimpleName() + " annotation.");
-        }
-        List<AnnotationTarget> targetList = annotationInstances.stream()
+        return indexView.getAnnotations(DotNames.PLANNING_ENTITY).stream()
                 .map(AnnotationInstance::target)
-                .toList();
-        if (targetList.stream().anyMatch(target -> target.kind() != AnnotationTarget.Kind.CLASS)) {
-            throw new IllegalStateException("All targets (" + targetList
-                    + ") with a @" + PlanningEntity.class.getSimpleName() + " must be a class.");
-        }
-        return targetList.stream()
                 .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
-                .collect(Collectors.toList());
-    }
-
-    private void assertNoMemberAnnotationWithoutClassAnnotation(IndexView indexView) {
-        Collection<AnnotationInstance> timefoldFieldAnnotations = new HashSet<>();
-
-        for (DotName annotationName : DotNames.PLANNING_ENTITY_FIELD_ANNOTATIONS) {
-            timefoldFieldAnnotations.addAll(indexView.getAnnotationsWithRepeatable(annotationName, indexView));
-        }
-
-        for (AnnotationInstance annotationInstance : timefoldFieldAnnotations) {
-            AnnotationTarget annotationTarget = annotationInstance.target();
-            ClassInfo declaringClass;
-            String prefix;
-            switch (annotationTarget.kind()) {
-                case FIELD:
-                    prefix = "The field (" + annotationTarget.asField().name() + ") ";
-                    declaringClass = annotationTarget.asField().declaringClass();
-                    break;
-                case METHOD:
-                    prefix = "The method (" + annotationTarget.asMethod().name() + ") ";
-                    declaringClass = annotationTarget.asMethod().declaringClass();
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            "Member annotation @" + annotationInstance.name().withoutPackagePrefix() + " is on ("
-                                    + annotationTarget +
-                                    "), which is an invalid target type (" + annotationTarget.kind() +
-                                    ") for @" + annotationInstance.name().withoutPackagePrefix() + ".");
-            }
-
-            if (!declaringClass.annotationsMap().containsKey(DotNames.PLANNING_ENTITY)) {
-                throw new IllegalStateException(prefix + "with a @" +
-                        annotationInstance.name().withoutPackagePrefix() +
-                        " annotation is in a class (" + declaringClass.name()
-                        + ") that does not have a @" + PlanningEntity.class.getSimpleName() +
-                        " annotation.\n" +
-                        "Maybe add a @" + PlanningEntity.class.getSimpleName() +
-                        " annotation on the class (" + declaringClass.name() + ").");
-            }
-        }
+                .collect(toList());
     }
 
     private void registerClassesFromAnnotations(IndexView indexView, Set<Class<?>> reflectiveClassSet) {
@@ -606,28 +782,16 @@ class TimefoldProcessor {
     private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(IndexView indexView) {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(
-                findImplementingClass(DotNames.EASY_SCORE_CALCULATOR, indexView));
+                findFirstImplementingClass(DotNames.EASY_SCORE_CALCULATOR, indexView));
         scoreDirectorFactoryConfig.setConstraintProviderClass(
-                findImplementingClass(DotNames.CONSTRAINT_PROVIDER, indexView));
+                findFirstImplementingClass(DotNames.CONSTRAINT_PROVIDER, indexView));
         scoreDirectorFactoryConfig.setIncrementalScoreCalculatorClass(
-                findImplementingClass(DotNames.INCREMENTAL_SCORE_CALCULATOR, indexView));
-        if (scoreDirectorFactoryConfig.getEasyScoreCalculatorClass() == null
-                && scoreDirectorFactoryConfig.getConstraintProviderClass() == null
-                && scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() == null) {
-            throw new IllegalStateException("No classes found that implement "
-                    + EasyScoreCalculator.class.getSimpleName() + ", "
-                    + ConstraintProvider.class.getSimpleName() + " or "
-                    + IncrementalScoreCalculator.class.getSimpleName() + ".");
-        }
+                findFirstImplementingClass(DotNames.INCREMENTAL_SCORE_CALCULATOR, indexView));
         return scoreDirectorFactoryConfig;
     }
 
-    private <T> Class<? extends T> findImplementingClass(DotName targetDotName, IndexView indexView) {
+    private <T> Class<? extends T> findFirstImplementingClass(DotName targetDotName, IndexView indexView) {
         Collection<ClassInfo> classInfos = indexView.getAllKnownImplementors(targetDotName);
-        if (classInfos.size() > 1) {
-            throw new IllegalStateException("Multiple classes (" + convertClassInfosToString(classInfos)
-                    + ") found that implement the interface " + targetDotName + ".");
-        }
         if (classInfos.isEmpty()) {
             return null;
         }
@@ -637,11 +801,6 @@ class TimefoldProcessor {
 
     private String convertAnnotationInstancesToString(Collection<AnnotationInstance> annotationInstances) {
         return "[" + annotationInstances.stream().map(instance -> instance.target().toString())
-                .collect(Collectors.joining(", ")) + "]";
-    }
-
-    private String convertClassInfosToString(Collection<ClassInfo> classInfos) {
-        return "[" + classInfos.stream().map(instance -> instance.name().toString())
                 .collect(Collectors.joining(", ")) + "]";
     }
 
@@ -779,7 +938,7 @@ class TimefoldProcessor {
         // All solver must use the same domain access type
         if (solverConfig.values().stream().map(SolverConfig::getDomainAccessType).distinct().count() > 1) {
             throw new ConfigurationException("The domain access type must be unique across all Solver configurations.\n" +
-                    solverConfig.entrySet().stream().map(e -> String.format("quarkus.timefold.\"%s\".domain-access-type=%s",
+                    solverConfig.entrySet().stream().map(e -> format("quarkus.timefold.\"%s\".domain-access-type=%s",
                             e.getKey(), e.getValue().getDomainAccessType()))
                             .collect(Collectors.joining("\n")));
         }

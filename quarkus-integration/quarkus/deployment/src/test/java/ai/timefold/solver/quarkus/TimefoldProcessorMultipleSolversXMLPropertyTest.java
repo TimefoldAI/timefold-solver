@@ -1,10 +1,8 @@
-
 package ai.timefold.solver.quarkus;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution;
+import ai.timefold.solver.quarkus.rest.TestdataQuarkusShadowSolutionConfigResource;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
@@ -19,32 +17,32 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
+import io.restassured.RestAssured;
 
-class TimefoldProcessorUnusedSolutionClassTest {
+class TimefoldProcessorMultipleSolversXMLPropertyTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusUnitTest config2 = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
-                    "ai/timefold/solver/quarkus/customSolver1Config.xml")
+                    "ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
-                    "ai/timefold/solver/quarkus/customSolver2Config.xml")
+                    "ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)
                     .addClasses(TestdataQuarkusShadowVariableEntity.class,
                             TestdataQuarkusShadowVariableSolution.class,
                             TestdataQuarkusShadowVariableConstraintProvider.class,
-                            TestdataQuarkusShadowVariableListener.class)
-                    .addClasses(TestdataChainedQuarkusSolution.class)
-                    .addAsResource("ai/timefold/solver/quarkus/customSolver1Config.xml")
-                    .addAsResource("ai/timefold/solver/quarkus/customSolver2Config.xml"))
-            .assertException(t -> assertThat(t)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining(
-                            "Unused classes (ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution) found with a @PlanningSolution annotation."));
+                            TestdataQuarkusShadowVariableListener.class,
+                            TestdataQuarkusShadowSolutionConfigResource.class)
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml"));
 
     @Test
-    void test() {
-        fail("Should not call this method.");
+    void solverProperties() {
+        String resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();
+        assertEquals("secondsSpentLimit=0.50;secondsSpentLimit=0.12", resp);
     }
 }

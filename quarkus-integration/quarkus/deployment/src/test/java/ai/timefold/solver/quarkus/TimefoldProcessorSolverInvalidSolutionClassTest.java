@@ -1,3 +1,4 @@
+
 package ai.timefold.solver.quarkus;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -6,9 +7,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableEntity;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableListener;
 import ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -18,26 +16,33 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class TimefoldProcessorInvalidMultipleSolutionClassesTest {
+class TimefoldProcessorSolverInvalidSolutionClassTest {
 
+    // Empty classes
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+    static final QuarkusUnitTest config1 = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(TestdataQuarkusEntity.class))
+            .assertException(t -> assertThat(t)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining(
+                            "No classes found with a @PlanningSolution annotation."));
+
+    // Multiple classes
+    @RegisterExtension
+    static final QuarkusUnitTest config2 = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)
-                    .addClasses(TestdataQuarkusShadowVariableEntity.class,
-                            TestdataQuarkusShadowVariableSolution.class,
-                            TestdataQuarkusShadowVariableConstraintProvider.class,
-                            TestdataQuarkusShadowVariableListener.class))
+                    .addClasses(TestdataQuarkusShadowVariableSolution.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple classes")
                     .hasMessageContaining(
                             "ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableSolution")
                     .hasMessageContaining("ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution")
-                    .hasMessageContaining("found with a @PlanningSolution annotation."));
+                    .hasMessageContaining("found in the classpath with a @PlanningSolution annotation."));
 
     @Test
     void test() {

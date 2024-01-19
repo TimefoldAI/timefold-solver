@@ -24,9 +24,9 @@ public class TimefoldProcessorHotReloadMultipleSolversTest {
     @RegisterExtension
     static final QuarkusDevModeTest test = new QuarkusDevModeTest()
             .setBuildSystemProperty("quarkus.timefold.solver.\"solver1\".solver-config-xml",
-                    "ai/timefold/solver/quarkus/customSolver1Config.xml")
+                    "ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
             .setBuildSystemProperty("quarkus.timefold.solver.\"solver2\".solver-config-xml",
-                    "ai/timefold/solver/quarkus/customSolver2Config.xml")
+                    "ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)
@@ -34,22 +34,22 @@ public class TimefoldProcessorHotReloadMultipleSolversTest {
                             TestdataQuarkusShadowVariableSolution.class,
                             TestdataQuarkusShadowVariableConstraintProvider.class,
                             TestdataQuarkusShadowVariableListener.class)
-                    .addClasses(TestSolverConfigTestMultipleSolutionsResource.class)
-                    .addAsResource("ai/timefold/solver/quarkus/customSolver1Config.xml")
-                    .addAsResource("ai/timefold/solver/quarkus/customSolver2Config.xml"));
+                    .addClasses(TestdataQuarkusShadowSolutionConfigResource.class)
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml"));
 
     @Test
     void solverConfigHotReload() {
         String resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();
         assertEquals("secondsSpentLimit=0.50;secondsSpentLimit=0.12", resp);
         // First file
-        test.modifyResourceFile("ai/timefold/solver/quarkus/customSolver1Config.xml",
+        test.modifyResourceFile("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml",
                 s -> s.replace("<secondsSpentLimit>1</secondsSpentLimit>",
                         "<secondsSpentLimit>2</secondsSpentLimit>"));
         resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();
         assertEquals("secondsSpentLimit=0.25;secondsSpentLimit=0.12", resp);
         // Second file
-        test.modifyResourceFile("ai/timefold/solver/quarkus/customSolver2Config.xml",
+        test.modifyResourceFile("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml",
                 s -> s.replace("<secondsSpentLimit>4</secondsSpentLimit>",
                         "<secondsSpentLimit>8</secondsSpentLimit>"));
         resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();

@@ -15,12 +15,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.test.QuarkusUnitTest;
 import io.restassured.RestAssured;
 
-class TimefoldProcessorMultipleSolverPropertiesTest {
+class TimefoldProcessorMultipleSolversPropertiesTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.\"solver1\".termination.spent-limit", "4s")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".termination.spent-limit", "2s")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver1\".termination.spent-limit", "8s")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".termination.spent-limit", "4s")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class, TestdataQuarkusSolutionConfigResource.class));
@@ -28,6 +28,6 @@ class TimefoldProcessorMultipleSolverPropertiesTest {
     @Test
     void solverProperties() {
         String resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();
-        assertEquals("secondsSpentLimit=0.12;secondsSpentLimit=0.25", resp);
+        assertEquals("secondsSpentLimit=0.06;secondsSpentLimit=0.12", resp);
     }
 }
