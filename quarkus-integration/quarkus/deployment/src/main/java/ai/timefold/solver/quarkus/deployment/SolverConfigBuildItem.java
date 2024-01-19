@@ -42,7 +42,7 @@ public final class SolverConfigBuildItem extends SimpleBuildItem {
         return this.solverConfigurations.keySet();
     }
 
-    public Map<String, SolverConfig> getAllSolverConfigurations() {
+    public Map<String, SolverConfig> getSolvetConfigMap() {
         return solverConfigurations;
     }
 
