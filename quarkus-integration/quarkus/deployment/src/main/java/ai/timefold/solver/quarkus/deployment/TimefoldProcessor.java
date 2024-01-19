@@ -306,7 +306,7 @@ class TimefoldProcessor {
 
             if (!declaringClass.annotationsMap().containsKey(DotNames.PLANNING_ENTITY)) {
                 throw new IllegalStateException(
-                        "%s with a @%s annotation is in a class (%s) that does not have a @%s annotation.%nMaybe add a @%s annotation on the class (%s)."
+                        "%s with a @%s annotation is in a class (%s) that does not have a @%s annotation.\nMaybe add a @%s annotation on the class (%s)."
                                 .formatted(prefix, annotationInstance.name().withoutPackagePrefix(), declaringClass.name(),
                                         PlanningEntity.class.getSimpleName(), PlanningEntity.class.getSimpleName(),
                                         declaringClass.name()));
@@ -935,7 +935,7 @@ class TimefoldProcessor {
         // All solver must use the same domain access type
         if (solverConfigMap.values().stream().map(SolverConfig::getDomainAccessType).distinct().count() > 1) {
             throw new ConfigurationException(
-                    "The domain access type must be unique across all Solver configurations.%n%s".formatted(solverConfigMap
+                    "The domain access type must be unique across all Solver configurations.\n%s".formatted(solverConfigMap
                             .entrySet().stream().map(e -> format("quarkus.timefold.\"%s\".domain-access-type=%s",
                                     e.getKey(), e.getValue().getDomainAccessType()))
                             .collect(Collectors.joining("\n"))));
