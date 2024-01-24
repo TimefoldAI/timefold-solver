@@ -328,7 +328,7 @@ public class TimefoldAutoConfiguration
     private void assertSolverConfigEntityClasses(IncludeAbstractClassesEntityScanner entityScanner) {
         // No Entity class
         String emptyListErrorMessage = """
-                No classes found with a @%s annotation.
+                No classes were found with a @%s annotation.
                 Maybe your @%s annotated class(es) are not in a subpackage of your @%s annotated class's package.
                 Maybe move your planning entity classes to your application class's (sub)package(or use @%s)."""
                 .formatted(

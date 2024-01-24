@@ -452,7 +452,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains("No classes found with a @PlanningEntity annotation.");
+                .cause().message().contains("No classes were found with a @PlanningEntity annotation.");
     }
 
     @Test

@@ -24,7 +24,7 @@ class TimefoldProcessorMultipleSolversInvalidEntityClassTest {
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
-                            "No classes found with a @PlanningEntity annotation."));
+                            "No classes were found with a @PlanningEntity annotation."));
 
     @Test
     void test() {

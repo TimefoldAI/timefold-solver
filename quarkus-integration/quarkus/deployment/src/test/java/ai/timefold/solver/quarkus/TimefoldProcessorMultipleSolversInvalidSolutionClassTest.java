@@ -31,7 +31,7 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
-                            "No classes found with a @PlanningSolution annotation."));
+                            "No classes were found with a @PlanningSolution annotation."));
 
     // Multiple classes
     @RegisterExtension

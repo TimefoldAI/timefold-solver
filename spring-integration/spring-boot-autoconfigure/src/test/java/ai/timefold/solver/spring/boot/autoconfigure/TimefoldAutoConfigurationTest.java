@@ -579,7 +579,7 @@ class TimefoldAutoConfigurationTest {
                 .withUserConfiguration(NoEntitySpringTestConfiguration.class)
                 .withPropertyValues("timefold.solver.termination.best-score-limit=0")
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains("No classes found with a @PlanningEntity annotation.");
+                .cause().message().contains("No classes were found with a @PlanningEntity annotation.");
     }
 
     @Test
