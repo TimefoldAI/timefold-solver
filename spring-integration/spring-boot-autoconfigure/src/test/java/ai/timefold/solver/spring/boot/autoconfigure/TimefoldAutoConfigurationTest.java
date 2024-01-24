@@ -440,6 +440,26 @@ class TimefoldAutoConfigurationTest {
     }
 
     @Test
+    void benchmarkWithXml() {
+        benchmarkContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
+                .withPropertyValues(
+                        "timefold.benchmark.solver-benchmark-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverBenchmarkConfig.xml")
+                .run(context -> {
+                    PlannerBenchmarkFactory benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
+                    TestdataSpringSolution problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .collect(Collectors.toList()));
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .collect(Collectors.toList()));
+                    benchmarkFactory.buildPlannerBenchmark(problem).benchmark();
+                });
+    }
+
+    @Test
     void constraintVerifier() {
         contextRunner
                 .withClassLoader(testFilteredClassLoader)

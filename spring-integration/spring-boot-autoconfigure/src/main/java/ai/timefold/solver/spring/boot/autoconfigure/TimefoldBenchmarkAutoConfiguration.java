@@ -79,6 +79,12 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
             benchmarkConfig.setBenchmarkDirectory(new File(BenchmarkProperties.DEFAULT_BENCHMARK_RESULT_DIRECTORY));
         }
 
+        if (benchmarkConfig.getInheritedSolverBenchmarkConfig() == null) {
+            SolverBenchmarkConfig inheritedBenchmarkConfig = new SolverBenchmarkConfig();
+            benchmarkConfig.setInheritedSolverBenchmarkConfig(inheritedBenchmarkConfig);
+            inheritedBenchmarkConfig.setSolverConfig(solverConfig.copyConfig());
+        }
+
         if (timefoldProperties.getBenchmark() != null && timefoldProperties.getBenchmark().getSolver() != null) {
             TimefoldAutoConfiguration
                     .applyTerminationProperties(benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig(),

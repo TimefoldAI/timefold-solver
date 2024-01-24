@@ -1,9 +1,9 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
-import org.springframework.boot.convert.DurationStyle;
-
 import java.time.Duration;
 import java.util.Map;
+
+import org.springframework.boot.convert.DurationStyle;
 
 public class TerminationProperties {
 
