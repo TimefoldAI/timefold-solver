@@ -2,9 +2,6 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -36,6 +33,12 @@ import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChain
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringObject;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
+import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleConstraintProviderSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleEasyScoreConstraintSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleIncrementalScoreConstraintSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleSolutionsSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoEntitySpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
@@ -61,7 +64,7 @@ class TimefoldAutoConfigurationTest {
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner emptyContextRunner;
     private final ApplicationContextRunner benchmarkContextRunner;
-    private final ApplicationContextRunner noConstraintsContextRunner;
+    private final ApplicationContextRunner noUserConfigurationContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
@@ -80,9 +83,7 @@ class TimefoldAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBenchmarkAutoConfiguration.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
-        noConstraintsContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
-                .withUserConfiguration(NoConstraintsSpringTestConfiguration.class);
+
         gizmoContextRunner = new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
                 .withUserConfiguration(GizmoSpringTestConfiguration.class);
@@ -101,6 +102,8 @@ class TimefoldAutoConfigurationTest {
         noGizmoFilteredClassLoader = new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("io.quarkus.gizmo"),
                 FilteredClassLoader.ClassPathResourceFilter.of(
                         new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
+        noUserConfigurationContextRunner = new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class));
     }
 
     @Test
@@ -242,6 +245,19 @@ class TimefoldAutoConfigurationTest {
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
+                });
+    }
+
+    @Test
+    void solveWithAllResources() {
+        contextRunner
+                .run(context -> {
+                    assertThat(context.getBean(SolverConfig.class)).isNotNull();
+                    assertThat(context.getBean(SolverFactory.class)).isNotNull();
+                    assertThat(context.getBean(SolverManager.class)).isNotNull();
+                    assertThat(context.getBean(SolutionManager.class)).isNotNull();
+                    assertThat(context.getBean(ScoreManager.class)).isNotNull();
+                    assertThat(context.getBean(ConstraintVerifier.class)).isNotNull();
                 });
     }
 
@@ -517,9 +533,118 @@ class TimefoldAutoConfigurationTest {
                         "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
     }
 
-    private TimefoldAutoConfiguration mockAutoConfiguration() {
-        TimefoldAutoConfiguration autoConfiguration = mock(TimefoldAutoConfiguration.class);
-        doCallRealMethod().when(autoConfiguration).applyScoreDirectorFactoryProperties(any(), any());
-        return autoConfiguration;
+    @Test
+    void noSolutionClass() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(NoSolutionSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains("No classes were found with a @PlanningSolution annotation.");
+    }
+
+    @Test
+    void multipleSolutionClasses() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleSolutionsSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Multiple classes", "TestdataChainedSpringSolution", "TestdataSpringSolution",
+                        "found in the classpath with a @PlanningSolution annotation.");
+    }
+
+    @Test
+    void noEntityClass() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(NoEntitySpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains("No classes found with a @PlanningEntity annotation.");
+    }
+
+    @Test
+    void noConstraintClass() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(NoConstraintsSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "No classes found that implement EasyScoreCalculator, ConstraintProvider, or IncrementalScoreCalculator.");
+    }
+
+    @Test
+    void multipleEasyScoreConstraints() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleEasyScoreConstraintSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Multiple score classes classes", "DummyTestdataChainedSpringEasyScore", "DummyTestdataSpringEasyScore",
+                        "that implements EasyScoreCalculator were found in the classpath.");
+    }
+
+    @Test
+    void multipleConstraintProviderConstraints() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleConstraintProviderSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Multiple score classes classes", "TestdataChainedSpringConstraintProvider",
+                        "TestdataSpringConstraintProvider", "that implements ConstraintProvider were found in the classpath.");
+    }
+
+    @Test
+    void multipleIncrementalScoreConstraints() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleIncrementalScoreConstraintSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Multiple score classes classes", "DummyTestdataChainedSpringIncrementalScore",
+                        "DummyTestdataSpringIncrementalScore",
+                        "that implements IncrementalScoreCalculator were found in the classpath.");
+    }
+
+    @Test
+    void multipleEasyScoreConstraintsXml_property() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleEasyScoreConstraintSpringTestConfiguration.class)
+                .withPropertyValues(
+                        "timefold.solver.solver1.solver-config-xml=solverConfig.xml")
+                .withPropertyValues(
+                        "timefold.solver.solver2.solver-config-xml=solverConfig.xml")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Some solver configs", "solver2", "solver1",
+                        "don't specify a EasyScoreCalculator score class, yet there are multiple available",
+                        "DummyTestdataChainedSpringEasyScore",
+                        "DummyTestdataSpringEasyScore",
+                        "on the classpath.");
+    }
+
+    @Test
+    void multipleConstraintProviderConstraintsXml_property() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleConstraintProviderSpringTestConfiguration.class)
+                .withPropertyValues(
+                        "timefold.solver.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Multiple score classes classes", "TestdataChainedSpringConstraintProvider",
+                        "TestdataSpringConstraintProvider", "that implements ConstraintProvider were found in the classpath.");
+    }
+
+    @Test
+    void multipleIncrementalScoreConstraintsXml_property() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleIncrementalScoreConstraintSpringTestConfiguration.class)
+                .withPropertyValues(
+                        "timefold.solver.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Multiple score classes classes", "DummyTestdataChainedSpringIncrementalScore",
+                        "DummyTestdataSpringIncrementalScore",
+                        "that implements IncrementalScoreCalculator were found in the classpath.");
     }
 }
