@@ -480,7 +480,8 @@ class TimefoldProcessor {
         if (annotationInstanceCollection.isEmpty()) {
             try {
                 throw new IllegalStateException(
-                        "No classes were found with a @%s annotation.".formatted(Class.forName(dotName.local()).getSimpleName()));
+                        "No classes were found with a @%s annotation."
+                                .formatted(Class.forName(dotName.local()).getSimpleName()));
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
