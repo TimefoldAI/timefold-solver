@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
@@ -190,7 +189,7 @@ public class TimefoldAutoConfiguration
             String solverUrl = solverConfigXml.get();
             if (beanClassLoader.getResource(solverUrl) == null) {
                 String message =
-                        "\"Invalid timefold.solverConfigXml property (%s): that classpath resource does not exist."
+                        "Invalid timefold.solverConfigXml property (%s): that classpath resource does not exist."
                                 .formatted(solverUrl);
                 if (!solverName.equals(TimefoldProperties.DEFAULT_SOLVER_NAME)) {
                     message =
@@ -297,7 +296,7 @@ public class TimefoldAutoConfiguration
 
     private void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {
         List<Class<?>> timefoldFieldAnnotationList =
-                entityScanner.findAnnotationsWithRepeatable(PLANNING_ENTITY_FIELD_ANNOTATIONS);
+                entityScanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
         List<Class<?>> entityList = entityScanner.findEntityClassList();
 
         List<String> nonEntityClassList = timefoldFieldAnnotationList.stream().filter(clazz -> !entityList.contains(clazz))
@@ -325,11 +324,11 @@ public class TimefoldAutoConfiguration
         assertEmptyInstances(entityScanner, PlanningSolution.class, emptyListErrorMessage);
         // Multiple classes and single solver
         try {
-            Set<Class<?>> annotationInstanceSet = entityScanner.scan(PlanningSolution.class);
-            if (annotationInstanceSet.size() > 1 && solverConfigMap.size() == 1) {
+            Set<Class<?>> classes = entityScanner.scan(PlanningSolution.class);
+            if (classes.size() > 1 && solverConfigMap.size() == 1) {
                 throw new IllegalStateException(
                         "Multiple classes ([%s]) found in the classpath with a @%s annotation.".formatted(
-                                annotationInstanceSet.stream().map(Class::getSimpleName).collect(joining(", ")),
+                                classes.stream().map(Class::getSimpleName).collect(joining(", ")),
                                 PlanningSolution.class.getSimpleName()));
             }
             // Multiple classes and at least one solver config does not specify the solution class
@@ -337,7 +336,7 @@ public class TimefoldAutoConfiguration
                     .filter(e -> e.getValue().getSolutionClass() == null)
                     .map(Map.Entry::getKey)
                     .toList();
-            if (annotationInstanceSet.size() > 1 && !solverConfigWithoutSolutionClassList.isEmpty()) {
+            if (classes.size() > 1 && !solverConfigWithoutSolutionClassList.isEmpty()) {
                 throw new IllegalStateException(
                         """
                                 Some solver configs (%s) don't specify a %s class, yet there are multiple available (%s) on the classpath.
@@ -345,21 +344,21 @@ public class TimefoldAutoConfiguration
                                 or remove the unnecessary solution classes from the classpath."""
                                 .formatted(String.join(", ", solverConfigWithoutSolutionClassList),
                                         PlanningSolution.class.getSimpleName(),
-                                        annotationInstanceSet.stream().map(Class::getSimpleName).collect(joining(", "))));
+                                        classes.stream().map(Class::getSimpleName).collect(joining(", "))));
             }
             // Unused solution classes
-            List<String> unusedSolutionClassList = annotationInstanceSet.stream()
+            List<String> unusedSolutionClassList = classes.stream()
                     .map(Class::getName)
                     .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
                             .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)))
                     .toList();
-            if (annotationInstanceSet.size() > 1 && !unusedSolutionClassList.isEmpty()) {
+            if (classes.size() > 1 && !unusedSolutionClassList.isEmpty()) {
                 throw new IllegalStateException(
                         "Unused classes ([%s]) found with a @%s annotation.".formatted(
                                 String.join(", ", unusedSolutionClassList),
                                 PlanningSolution.class.getSimpleName()));
             }
-            // TODO - Should we validate target types?
+            assertTargetClasses(classes, PlanningSolution.class.getSimpleName());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Scanning for @%s annotations failed.".formatted(PlanningSolution.class.getSimpleName()), e);
@@ -376,7 +375,7 @@ public class TimefoldAutoConfiguration
                         PlanningEntity.class.getSimpleName(), PlanningEntity.class.getSimpleName(),
                         SpringBootApplication.class.getSimpleName(), EntityScan.class.getSimpleName());
         assertEmptyInstances(entityScanner, PlanningEntity.class, emptyListErrorMessage);
-        // TODO - Should we validate target types?
+        assertTargetClasses(entityScanner.findEntityClassList(), PlanningEntity.class.getSimpleName());
     }
 
     private void assertSolverConfigConstraintClasses(
@@ -404,17 +403,17 @@ public class TimefoldAutoConfiguration
         String errorMessage = "Multiple score classes classes (%s) that implements %s were found in the classpath.";
         if (simpleScoreClassList.size() > 1 && solverConfigMap.size() == 1) {
             throw new IllegalStateException(errorMessage.formatted(
-                    simpleScoreClassList.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")),
+                    simpleScoreClassList.stream().map(Class::getSimpleName).collect(joining(", ")),
                     EasyScoreCalculator.class.getSimpleName()));
         }
         if (constraintScoreClassList.size() > 1 && solverConfigMap.size() == 1) {
             throw new IllegalStateException(errorMessage.formatted(
-                    constraintScoreClassList.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")),
+                    constraintScoreClassList.stream().map(Class::getSimpleName).collect(joining(", ")),
                     ConstraintProvider.class.getSimpleName()));
         }
         if (incrementalScoreClassList.size() > 1 && solverConfigMap.size() == 1) {
             throw new IllegalStateException(errorMessage.formatted(
-                    incrementalScoreClassList.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")),
+                    incrementalScoreClassList.stream().map(Class::getSimpleName).collect(joining(", ")),
                     IncrementalScoreCalculator.class.getSimpleName()));
         }
         // Multiple classes and at least one solver config does not specify the score class
@@ -431,7 +430,7 @@ public class TimefoldAutoConfiguration
             throw new IllegalStateException(errorMessage.formatted(
                     String.join(", ", solverConfigWithoutConstraintClassList),
                     EasyScoreCalculator.class.getSimpleName(),
-                    simpleScoreClassList.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))));
+                    simpleScoreClassList.stream().map(Class::getSimpleName).collect(joining(", "))));
         }
         solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
                 .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
@@ -442,7 +441,7 @@ public class TimefoldAutoConfiguration
             throw new IllegalStateException(errorMessage.formatted(
                     String.join(", ", solverConfigWithoutConstraintClassList),
                     ConstraintProvider.class.getSimpleName(),
-                    constraintScoreClassList.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))));
+                    constraintScoreClassList.stream().map(Class::getSimpleName).collect(joining(", "))));
         }
         solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
                 .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
@@ -453,7 +452,7 @@ public class TimefoldAutoConfiguration
             throw new IllegalStateException(errorMessage.formatted(
                     String.join(", ", solverConfigWithoutConstraintClassList),
                     IncrementalScoreCalculator.class.getSimpleName(),
-                    incrementalScoreClassList.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))));
+                    incrementalScoreClassList.stream().map(Class::getSimpleName).collect(joining(", "))));
         }
         // Unused score classes
         List<String> solverConfigWithUnusedSolutionClassList = simpleScoreClassList.stream()
@@ -504,6 +503,19 @@ public class TimefoldAutoConfiguration
             }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Scanning for @%s annotations failed.".formatted(clazz.getSimpleName()), e);
+        }
+    }
+
+    private void assertTargetClasses(Collection<Class<?>> targetCollection, String targetAnnotation) {
+        List<String> invalidClasses = targetCollection.stream()
+                .filter(target -> target.isRecord() || target.isEnum() || target.isPrimitive())
+                .map(Class::getSimpleName)
+                .toList();
+        if (!invalidClasses.isEmpty()) {
+            throw new IllegalStateException(
+                    "All classes ([%s]) annotated with @%s must be a class.".formatted(
+                            String.join(", ", invalidClasses),
+                            targetAnnotation));
         }
     }
 

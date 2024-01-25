@@ -40,7 +40,9 @@ import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleSolutionsSprin
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.invalid.domain.InvalidEntitySpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
@@ -632,16 +634,13 @@ class TimefoldAutoConfigurationTest {
         assertThatCode(() -> noUserConfigurationContextRunner
                 .withUserConfiguration(MultipleEasyScoreConstraintSpringTestConfiguration.class)
                 .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=solverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=solverConfig.xml")
+                        "timefold.solver.solver.solver-config-xml=solverConfig.xml")
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score class, yet there are multiple available",
+                        "Multiple score classes classes",
                         "DummyTestdataChainedSpringEasyScore",
                         "DummyTestdataSpringEasyScore",
-                        "on the classpath.");
+                        "that implements EasyScoreCalculator were found in the classpath");
     }
 
     @Test
@@ -672,7 +671,7 @@ class TimefoldAutoConfigurationTest {
     @Test
     void invalidEntity() {
         assertThatCode(() -> contextRunner
-                .withUserConfiguration(InvalidEntitySpringTestConfiguration.class)
+                .withUserConfiguration(InvalidEntityTypeSpringTestConfiguration.class)
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "The classes",
@@ -680,5 +679,27 @@ class TimefoldAutoConfigurationTest {
                         "InvalidFieldTestdataSpringEntity",
                         "do not have the PlanningEntity annotation, even though they contain properties reserved for planning entities.",
                         "Maybe add a @PlanningEntity annotation on the classes");
+
+        assertThatCode(() -> contextRunner
+                .withUserConfiguration(InvalidEntitySpringTestConfiguration.class)
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "All classes",
+                        "InvalidRecordTestdataSpringEntity",
+                        "InvalidEnumTestdataSpringEntity",
+                        "annotated with @PlanningEntity must be a class");
+    }
+
+    @Test
+    void invalidSolution() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(InvalidSolutionSpringTestConfiguration.class)
+                .withPropertyValues(
+                        "timefold.solver.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/invalidSolverConfig.xml")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "All classes",
+                        "InvalidRecordTestdataSpringSolution",
+                        "annotated with @PlanningSolution must be a class");
     }
 }

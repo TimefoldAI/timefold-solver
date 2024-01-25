@@ -1,4 +1,4 @@
-package ai.timefold.solver.spring.boot.autoconfigure.invalid.domain;
+package ai.timefold.solver.spring.boot.autoconfigure.invalid;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.spring.boot.autoconfigure.invalid.domain;
+package ai.timefold.solver.spring.boot.autoconfigure.invalid.type;
 
 import java.util.List;
 
@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.VariableListener;
 
 public class InvalidFieldTestdataSpringEntity {
 

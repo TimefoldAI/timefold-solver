@@ -1,4 +1,4 @@
-package ai.timefold.solver.spring.boot.autoconfigure.invalid.domain;
+package ai.timefold.solver.spring.boot.autoconfigure.invalid.entity;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.context.annotation.Configuration;

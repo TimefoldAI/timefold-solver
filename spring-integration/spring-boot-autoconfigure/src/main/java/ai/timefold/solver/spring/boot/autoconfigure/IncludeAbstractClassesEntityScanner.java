@@ -83,7 +83,7 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
     }
 
     @SafeVarargs
-    public final List<Class<?>> findAnnotationsWithRepeatable(Class<? extends Annotation>... annotations) {
+    public final List<Class<?>> findClassesWithAnnotation(Class<? extends Annotation>... annotations) {
         if (!AutoConfigurationPackages.has(context)) {
             return emptyList();
         }

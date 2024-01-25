@@ -17,9 +17,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.spring.boot.autoconfigure.invalid.domain.InvalidFieldTestdataSpringEntity;
-import ai.timefold.solver.spring.boot.autoconfigure.invalid.domain.InvalidMethodTestdataSpringEntity;
-import ai.timefold.solver.spring.boot.autoconfigure.invalid.domain.InvalidEntitySpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidFieldTestdataSpringEntity;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidMethodTestdataSpringEntity;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -45,7 +45,7 @@ class IncludeAbstractClassesEntityScannerTest {
     private final ApplicationContextRunner contextRunner;
 
     public IncludeAbstractClassesEntityScannerTest() {
-        contextRunner = new ApplicationContextRunner().withUserConfiguration(InvalidEntitySpringTestConfiguration.class);
+        contextRunner = new ApplicationContextRunner().withUserConfiguration(InvalidEntityTypeSpringTestConfiguration.class);
     }
 
     @Test
@@ -56,14 +56,14 @@ class IncludeAbstractClassesEntityScannerTest {
 
                     // Each field
                     Arrays.stream(PLANNING_ENTITY_FIELD_ANNOTATIONS).forEach(annotation -> {
-                        List<Class<?>> classes = scanner.findAnnotationsWithRepeatable(annotation);
+                        List<Class<?>> classes = scanner.findClassesWithAnnotation(annotation);
                         assertThat(classes).hasSize(2);
                         assertThat(classes).contains(InvalidFieldTestdataSpringEntity.class,
                                 InvalidMethodTestdataSpringEntity.class);
                     });
 
                     // All fields
-                    List<Class<?>> classes = scanner.findAnnotationsWithRepeatable(PLANNING_ENTITY_FIELD_ANNOTATIONS);
+                    List<Class<?>> classes = scanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
                     assertThat(classes).hasSize(2);
                     assertThat(classes).contains(InvalidFieldTestdataSpringEntity.class,
                             InvalidMethodTestdataSpringEntity.class);
