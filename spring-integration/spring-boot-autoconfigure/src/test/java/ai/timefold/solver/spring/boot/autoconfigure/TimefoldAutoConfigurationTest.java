@@ -40,6 +40,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleSolutionsSprin
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.invalid.domain.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
@@ -324,7 +325,7 @@ class TimefoldAutoConfigurationTest {
                     SolverJob<TestdataSpringSolution, Long> solverJob = solverManager.solve(1L, problem);
                     TestdataSpringSolution solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
-                    assertThat(solution.getScore().score()).isGreaterThanOrEqualTo(0);
+                    assertThat(solution.getScore().score()).isNotNegative();
                 });
     }
 
@@ -376,7 +377,7 @@ class TimefoldAutoConfigurationTest {
                     double gradientTime = solverJob.getSolverTermination().calculateSolverTimeGradient(customScope);
                     TestdataSpringSolution solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
-                    assertThat(solution.getScore().score()).isGreaterThanOrEqualTo(0);
+                    assertThat(solution.getScore().score()).isNotNegative();
                     // Spent-time is 30s by default, but it is overridden with 10. The gradient time must be 50%
                     assertThat(gradientTime).isEqualTo(0.5);
                 });
@@ -399,7 +400,7 @@ class TimefoldAutoConfigurationTest {
                     SolverJob<TestdataSpringSolution, Long> solverJob = solverManager.solve(1L, problem);
                     TestdataSpringSolution solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
-                    assertThat(solution.getScore().score()).isGreaterThanOrEqualTo(0);
+                    assertThat(solution.getScore().score()).isNotNegative();
                 });
     }
 
@@ -666,5 +667,18 @@ class TimefoldAutoConfigurationTest {
                         "Multiple score classes classes", "DummyTestdataChainedSpringIncrementalScore",
                         "DummyTestdataSpringIncrementalScore",
                         "that implements IncrementalScoreCalculator were found in the classpath.");
+    }
+
+    @Test
+    void invalidEntity() {
+        assertThatCode(() -> contextRunner
+                .withUserConfiguration(InvalidEntitySpringTestConfiguration.class)
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "The classes",
+                        "InvalidMethodTestdataSpringEntity",
+                        "InvalidFieldTestdataSpringEntity",
+                        "do not have the PlanningEntity annotation, even though they contain properties reserved for planning entities.",
+                        "Maybe add a @PlanningEntity annotation on the classes");
     }
 }

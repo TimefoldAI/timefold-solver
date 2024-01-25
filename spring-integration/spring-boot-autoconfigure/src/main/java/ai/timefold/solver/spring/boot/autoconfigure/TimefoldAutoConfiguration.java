@@ -14,7 +14,18 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -74,7 +85,20 @@ public class TimefoldAutoConfiguration
         implements BeanClassLoaderAware, ApplicationContextAware, EnvironmentAware, BeanFactoryPostProcessor {
 
     private static final Log LOG = LogFactory.getLog(TimefoldAutoConfiguration.class);
-    private static String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
+    private static final String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
+    private static final Class<? extends Annotation>[] PLANNING_ENTITY_FIELD_ANNOTATIONS = new Class[] {
+            PlanningPin.class,
+            PlanningVariable.class,
+            PlanningListVariable.class,
+            AnchorShadowVariable.class,
+            CustomShadowVariable.class,
+            IndexShadowVariable.class,
+            InverseRelationShadowVariable.class,
+            NextElementShadowVariable.class,
+            PiggybackShadowVariable.class,
+            PreviousElementShadowVariable.class,
+            ShadowVariable.class
+    };
     private ApplicationContext context;
     private ClassLoader beanClassLoader;
     private TimefoldProperties timefoldProperties;
@@ -94,8 +118,8 @@ public class TimefoldAutoConfiguration
 
     @Override
     public void setEnvironment(Environment environment) {
-        // postProcessBeanFactory runs before creating any bean, but we need TimefoldProperties. Therefore, we use the
-        // Environment to load the properties
+        // postProcessBeanFactory runs before creating any bean, but we need TimefoldProperties.
+        // Therefore, we use the Environment to load the properties
         BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
         this.timefoldProperties = result.orElseGet(TimefoldProperties::new);
     }
@@ -125,7 +149,7 @@ public class TimefoldAutoConfiguration
                     .forEach(solverName -> solverConfigMap.put(solverName, createSolverConfig(timefoldProperties, solverName)));
         }
         // Step 2 - validate all SolverConfig definitions
-        // TODO - Should we assert planning members belongs to a PlanningEntity Quarkus#assertNoMemberAnnotationWithoutClassAnnotation?
+        assertNoMemberAnnotationWithoutClassAnnotation(entityScanner);
         assertSolverConfigSolutionClasses(entityScanner, solverConfigMap);
         assertSolverConfigEntityClasses(entityScanner);
         assertSolverConfigConstraintClasses(entityScanner, solverConfigMap);
@@ -268,6 +292,23 @@ public class TimefoldAutoConfiguration
         if (timefoldProperties.getSolver() != null && timefoldProperties.getSolver().size() > 1) {
             throw new BeanCreationException(
                     "No qualifying bean of type '%s' available".formatted(resourceName));
+        }
+    }
+
+    private void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {
+        List<Class<?>> timefoldFieldAnnotationList =
+                entityScanner.findAnnotationsWithRepeatable(PLANNING_ENTITY_FIELD_ANNOTATIONS);
+        List<Class<?>> entityList = entityScanner.findEntityClassList();
+
+        List<String> nonEntityClassList = timefoldFieldAnnotationList.stream().filter(clazz -> !entityList.contains(clazz))
+                .map(Class::getSimpleName).toList();
+        if (!nonEntityClassList.isEmpty()) {
+            throw new IllegalStateException(
+                    """
+                            The classes ([%s]) do not have the %s annotation, even though they contain properties reserved for planning entities.
+                            Maybe add a @%s annotation on the classes ([%s])."""
+                            .formatted(String.join(", ", nonEntityClassList), PlanningEntity.class.getSimpleName(),
+                                    PlanningEntity.class.getSimpleName(), String.join(", ", nonEntityClassList)));
         }
     }
 

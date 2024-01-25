@@ -1,12 +1,19 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static ai.timefold.solver.spring.boot.autoconfigure.util.LambdaUtils.rethrowFunction;
 import static java.util.Collections.emptyList;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,8 +41,19 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
     }
 
     public <T> Class<? extends T> findFirstImplementingClass(Class<T> targetClass) {
-        return Optional.ofNullable(findImplementingClassList(targetClass)).filter(classes -> !classes.isEmpty())
-                .map(classes -> classes.get(0)).orElse(null);
+        List<Class<? extends T>> classes = findImplementingClassList(targetClass);
+        if (!classes.isEmpty()) {
+            return classes.get(0);
+        }
+        return null;
+    }
+
+    private Set<String> findPackages() {
+        Set<String> packages = new HashSet<>();
+        packages.addAll(AutoConfigurationPackages.get(context));
+        EntityScanPackages entityScanPackages = EntityScanPackages.get(context);
+        packages.addAll(entityScanPackages.getPackageNames());
+        return packages;
     }
 
     public <T> List<Class<? extends T>> findImplementingClassList(Class<T> targetClass) {
@@ -46,12 +64,7 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
         scanner.setEnvironment(context.getEnvironment());
         scanner.setResourceLoader(context);
         scanner.addIncludeFilter(new AssignableTypeFilter(targetClass));
-
-        EntityScanPackages entityScanPackages = EntityScanPackages.get(context);
-
-        Set<String> packages = new HashSet<>();
-        packages.addAll(AutoConfigurationPackages.get(context));
-        packages.addAll(entityScanPackages.getPackageNames());
+        Set<String> packages = findPackages();
         return packages.stream()
                 .flatMap(basePackage -> scanner.findCandidateComponents(basePackage).stream())
                 // findCandidateComponents can return the same package for different base packages
@@ -62,19 +75,38 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
                         return (Class<? extends T>) ClassUtils.forName(candidate.getBeanClassName(), context.getClassLoader())
                                 .asSubclass(targetClass);
                     } catch (ClassNotFoundException e) {
-                        throw new IllegalStateException("The " + targetClass.getSimpleName() + " class ("
-                                + candidate.getBeanClassName() + ") cannot be found.", e);
+                        throw new IllegalStateException("The %s class (%s) cannot be found."
+                                .formatted(targetClass.getSimpleName(), candidate.getBeanClassName()), e);
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    @SafeVarargs
+    public final List<Class<?>> findAnnotationsWithRepeatable(Class<? extends Annotation>... annotations) {
+        if (!AutoConfigurationPackages.has(context)) {
+            return emptyList();
+        }
+        Set<String> packages = findPackages();
+        return packages.stream().flatMap(rethrowFunction(
+                basePackage -> findAllClassesUsingClassLoader(this.context.getClassLoader(), basePackage).stream()))
+                .filter(clazz -> hasAnyFieldOrMethodWithAnnotation(clazz, annotations))
+                .toList();
+    }
+
+    private boolean hasAnyFieldOrMethodWithAnnotation(Class<?> clazz, Class<? extends Annotation>[] annotations) {
+        List<Field> fieldList = List.of(clazz.getDeclaredFields());
+        List<Method> methodList = List.of(clazz.getDeclaredMethods());
+        return List.of(annotations).stream().anyMatch(a -> fieldList.stream().anyMatch(f -> f.getAnnotation(a) != null)
+                || methodList.stream().anyMatch(m -> m.getDeclaredAnnotation(a) != null));
     }
 
     public boolean hasSolutionOrEntityClasses() {
         try {
             return !scan(PlanningSolution.class).isEmpty() || !scan(PlanningEntity.class).isEmpty();
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Scanning for @" + PlanningSolution.class.getSimpleName()
-                    + " and @" + PlanningEntity.class.getSimpleName() + " annotations failed.", e);
+            throw new IllegalStateException("Scanning for @%s and @%s annotations failed."
+                    .formatted(PlanningSolution.class.getSimpleName(), PlanningEntity.class.getSimpleName()), e);
         }
     }
 
@@ -83,8 +115,8 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
         try {
             solutionClassSet = scan(PlanningSolution.class);
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Scanning for @" + PlanningSolution.class.getSimpleName()
-                    + " annotations failed.", e);
+            throw new IllegalStateException(
+                    "Scanning for @%s annotations failed.".formatted(PlanningSolution.class.getSimpleName()), e);
         }
         return solutionClassSet.iterator().next();
     }
@@ -94,9 +126,29 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
         try {
             entityClassSet = scan(PlanningEntity.class);
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Scanning for @" + PlanningEntity.class.getSimpleName() + " failed.", e);
+            throw new IllegalStateException("Scanning for @%s failed.".formatted(PlanningEntity.class.getSimpleName()), e);
         }
         return new ArrayList<>(entityClassSet);
+    }
+
+    private Set<Class<?>> findAllClassesUsingClassLoader(ClassLoader classLoader, String packageName) throws IOException {
+        try (InputStream stream = classLoader.getResourceAsStream(packageName.replaceAll("[.]", "/"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+            return reader.lines()
+                    .filter(line -> line.endsWith(".class"))
+                    .map(className -> packageName + "." + className.substring(0, className.lastIndexOf('.')))
+                    .map(className -> getClass(classLoader, className))
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    private Class<?> getClass(ClassLoader classLoader, String className) {
+        try {
+            return Class.forName(className, false, classLoader);
+        } catch (ClassNotFoundException e) {
+            // ignore the exception
+        }
+        return null;
     }
 
     @Override
