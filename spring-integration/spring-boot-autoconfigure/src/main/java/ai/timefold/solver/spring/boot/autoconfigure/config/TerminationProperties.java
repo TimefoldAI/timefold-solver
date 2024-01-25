@@ -7,6 +7,10 @@ import org.springframework.boot.convert.DurationStyle;
 
 public class TerminationProperties {
 
+    private static final String SPENT_LIMIT_PROERTY_NAME = "spent-limit";
+    private static final String UNIMPROVED_SPENT_LIMIT_PROERTY_NAME = "unimproved-spent-limit";
+    private static final String BEST_SCORE_LIMIT_PROERTY_NAME = "best-score-limit";
+
     /**
      * How long the solver can run.
      * For example: "30s" is 30 seconds. "5m" is 5 minutes. "2h" is 2 hours. "1d" is 1 day.
@@ -64,13 +68,13 @@ public class TerminationProperties {
             return;
         }
         switch (key) {
-            case "spent-limit":
+            case SPENT_LIMIT_PROERTY_NAME:
                 setSpentLimit(DurationStyle.detectAndParse((String) value));
                 break;
-            case "unimproved-spent-limit":
+            case UNIMPROVED_SPENT_LIMIT_PROERTY_NAME:
                 setUnimprovedSpentLimit(DurationStyle.detectAndParse((String) value));
                 break;
-            case "best-score-limit":
+            case BEST_SCORE_LIMIT_PROERTY_NAME:
                 setBestScoreLimit((String) value);
                 break;
             default:

@@ -10,9 +10,18 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 public class SolverProperties {
+
+    public static final String SOLVER_CONFIG_XML_PROPERTY_NAME = "solver-config-xml";
+    public static final String ENVIRONMENT_MODE_PROPERTY_NAME = "environment-mode";
+    public static final String DAEMON_PROPERTY_NAME = "daemon";
+    public static final String MOVE_THREAD_COUNT_PROPERTY_NAME = "move-thread-count";
+    public static final String DOMAIN_ACCESS_TYPE_PROPERTY_NAME = "domain-access-type";
+    public static final String CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME = "constraint-stream-impl-type";
+    public static final String TERMINATION_PROPERTY_NAME = "termination";
     public static final Set<String> VALID_FIELD_NAMES_SET =
-            Set.of("solver-config-xml", "environment-mode", "daemon", "move-thread-count", "domain-access-type",
-                    "constraint-stream-impl-type", "termination");
+            Set.of(SOLVER_CONFIG_XML_PROPERTY_NAME, ENVIRONMENT_MODE_PROPERTY_NAME, DAEMON_PROPERTY_NAME,
+                    MOVE_THREAD_COUNT_PROPERTY_NAME, DOMAIN_ACCESS_TYPE_PROPERTY_NAME,
+                    CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME, TERMINATION_PROPERTY_NAME);
 
     /**
      * A classpath resource to read the specific solver configuration XML.
@@ -136,25 +145,25 @@ public class SolverProperties {
             return;
         }
         switch (key) {
-            case "solver-config-xml":
+            case SOLVER_CONFIG_XML_PROPERTY_NAME:
                 setSolverConfigXml((String) value);
                 break;
-            case "environment-mode":
+            case ENVIRONMENT_MODE_PROPERTY_NAME:
                 setEnvironmentMode(EnvironmentMode.valueOf((String) value));
                 break;
-            case "daemon":
+            case DAEMON_PROPERTY_NAME:
                 setDaemon(Boolean.parseBoolean((String) value));
                 break;
-            case "move-thread-count":
+            case MOVE_THREAD_COUNT_PROPERTY_NAME:
                 setMoveThreadCount((String) value);
                 break;
-            case "domain-access-type":
+            case DOMAIN_ACCESS_TYPE_PROPERTY_NAME:
                 setDomainAccessType(DomainAccessType.valueOf((String) value));
                 break;
-            case "constraint-stream-impl-type":
+            case CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME:
                 setConstraintStreamImplType(ConstraintStreamImplType.valueOf((String) value));
                 break;
-            case "termination": {
+            case TERMINATION_PROPERTY_NAME: {
                 if (value instanceof TerminationProperties terminationProperties) {
                     setTermination(terminationProperties);
                 } else if (value instanceof Map<?, ?>) {
