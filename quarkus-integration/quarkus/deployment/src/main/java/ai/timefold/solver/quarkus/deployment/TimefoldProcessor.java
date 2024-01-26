@@ -476,13 +476,12 @@ class TimefoldProcessor {
     }
 
     private void assertEmptyInstances(IndexView indexView, DotName dotName) {
-        // Validate the solution class
         Collection<AnnotationInstance> annotationInstanceCollection = indexView.getAnnotations(dotName);
-        // No solution class
         if (annotationInstanceCollection.isEmpty()) {
             try {
                 throw new IllegalStateException(
-                        "No classes found with a @%s annotation.".formatted(Class.forName(dotName.local()).getSimpleName()));
+                        "No classes were found with a @%s annotation."
+                                .formatted(Class.forName(dotName.local()).getSimpleName()));
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -517,7 +516,7 @@ class TimefoldProcessor {
                                 .formatted(solverUrl);
                 if (!solverName.equals(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME)) {
                     message =
-                            "Invalid quarkus.timefold.\"%s\".solverConfigXML property (%s): that classpath resource does not exist."
+                            "Invalid quarkus.timefold.solver.\"%s\".solverConfigXML property (%s): that classpath resource does not exist."
                                     .formatted(solverName, solverUrl);
                 }
                 throw new ConfigurationException(message);

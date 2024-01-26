@@ -30,10 +30,10 @@ class TimefoldBenchmarkProcessorMultipleSolversConfigTest {
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(ConfigurationException.class)
-                    .hasMessageContaining("""
-                            When defining multiple solvers, the benchmark feature is not enabled.
-                            Consider using separate <solverBenchmark> instances for evaluating different solver configurations.
-                            """));
+                    .hasMessageContaining(
+                            """
+                                    When defining multiple solvers, the benchmark feature is not enabled.
+                                    Consider using separate <solverBenchmark> instances for evaluating different solver configurations."""));
 
     @Test
     void benchmark() throws ExecutionException, InterruptedException {

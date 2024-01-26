@@ -47,8 +47,7 @@ class TimefoldBenchmarkProcessor {
         if (solverConfigBuildItem.getSolvetConfigMap().size() > 1) {
             throw new ConfigurationException("""
                     When defining multiple solvers, the benchmark feature is not enabled.
-                    Consider using separate <solverBenchmark> instances for evaluating different solver configurations.
-                    """);
+                    Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");
         }
         if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             log.warn("Skipping Timefold Benchmark extension because the Timefold extension was skipped.");
