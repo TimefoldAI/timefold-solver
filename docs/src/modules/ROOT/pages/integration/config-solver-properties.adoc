@@ -1,0 +1,52 @@
+////
+Quarkus and Spring Boot support the same configuration properties.
+All the properties are in this file, which can then be included multiple times.
+The {property_prefix} attribute is used for Quarkus properties.
+////
+
+{property_prefix}timefold.solver.<solverName>.solver-config-xml::
+A classpath resource to read the solver configuration XML.
+Defaults to `solverConfig.xml`.
+If this property isn't specified, that file is optional.
+
+{property_prefix}timefold.solver.<solverName>.environment-mode::
+Enable runtime assertions to detect common bugs in your implementation during development.
+
+{property_prefix}timefold.solver.<solverName>.daemon::
+Enable xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode].
+In daemon mode, non-early termination pauses the solver instead of stopping it, until the next problem fact change arrives.
+This is often useful for xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning].
+Defaults to `false`.
+
+{property_prefix}timefold.solver.<solverName>.move-thread-count::
+Enable multi-threaded solving for a single problem, which increases CPU consumption.
+Defaults to `NONE`.
+Note that this is a feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise edition],
+which is Timefold's commercial offering.
+See xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multithreaded incremental solving].
+
+{property_prefix}timefold.solver.<solverName>.domain-access-type::
+How Timefold Solver should access the domain model.
+See xref:using-timefold-solver/configuration.adoc#domainAccess[the domain access section] for more details.
+ifeval::["{property_prefix}" == "quarkus."]
+Defaults to `GIZMO`.
+The other possible value is `REFLECTION`.
+endif::[]
+ifeval::["{property_prefix}" == ""]
+Defaults to `REFLECTION`.
+The other possible value is `GIZMO`.
+endif::[]
+
+{property_prefix}timefold.solver.<solverName>.termination.spent-limit::
+How long the solver can run.
+For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.
+
+{property_prefix}timefold.solver.<solverName>.termination.unimproved-spent-limit::
+How long the solver can run without finding a new best solution after finding a new best solution.
+For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.
+
+{property_prefix}timefold.solver.<solverName>.termination.best-score-limit::
+Terminates the solver when a specific or higher score has been reached.
+For example: `0hard/-1000soft` terminates when the best score changes from `0hard/-1200soft` to `0hard/-900soft`.
+Wildcards are supported to replace numbers.
+For example: `0hard/*soft` to terminate when any feasible score is reached.

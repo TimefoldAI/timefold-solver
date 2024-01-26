@@ -271,16 +271,172 @@ To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-qu
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
 the _Timefold AI constraint solver_ extension before generating your application.
 
+=== Timefold configuration properties
+
 Following properties are supported in the Quarkus `application.properties`:
 
 :property_prefix: quarkus.
 include::config-properties.adoc[]
 
+[#integrationWithQuarkusManagedResources]
+=== Auto-managed resources
+
+The Quarkus integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
+`SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
+
+The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
+(solution, entities, and constraint classes) and customized properties (spent-limit, domain-access-type, etc) for the
+planning problem are identified and loaded into the solver configuration.
+
+The available resouses can be injected as follows:
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@Path("/path")
+public class Resource {
+
+    @Inject
+    SolverConfig solverConfig;
+
+    @Inject
+    SolverFactory<Timetable> solverFactory;
+
+    @Inject
+    SolverManager<Timetable, String> solverManager;
+
+    @Inject
+    SolutionManager<Timetable, SimpleScore> simpleSolutionManager; // <1>
+
+    @Inject
+    ScoreManager<Timetable, SimpleScore> simpleScoreManager; // <1>
+
+    @Inject
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
+
+    ...
+}
+----
+<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@Path("path")
+class Resource {
+
+    @Inject
+    var solverConfig:SolverConfig?
+
+    @Inject
+    var solverFactory:SolverFactory<Timetable>?
+
+    @Inject
+    var solverManager:SolverManager<Timetable, String>?
+
+    @Inject
+    var simpleSolutionManager:SolutionManager<Timetable, SimpleScore>? // <1>
+
+    @Inject
+    var simpleScoreManager:ScoreManager<Timetable, SimpleScore>? // <1>
+
+    @Inject
+    var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
+
+    ...
+}
+----
+<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+--
+====
+
+Timefold provides all the necessary resources for problem-solving and analysis. However, it is still possible to manually create and override the default managed resources. To create a custom `SolverManager`, use the `SolverFactory` resource.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+package org.acme.employeescheduling.rest;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Default;
+import jakarta.ws.rs.Produces;
+
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+
+import org.acme.employeescheduling.domain.EmployeeSchedule;
+
+@ApplicationScoped
+public class BeanProducer {
+
+    @Produces
+    @Default
+    public SolverManager<Timetable, String> overrideSolverManager(SolverFactory<Timetable> solverFactory) {
+        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        return SolverManager.create(solverFactory, solverManagerConfig);
+    }
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+package org.acme.employeescheduling.rest
+
+import ai.timefold.solver.core.api.solver.SolverFactory
+import ai.timefold.solver.core.api.solver.SolverManager
+import ai.timefold.solver.core.config.solver.SolverManagerConfig
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.enterprise.inject.Default
+import jakarta.ws.rs.Produces
+import org.acme.kotlin.schooltimetabling.domain.Timetable
+
+@ApplicationScoped
+class BeanProducer {
+
+    @Produces
+    @Default
+    fun overrideSolverManager(solverFactory: SolverFactory<Timetable>?): SolverManager<Timetable, String> {
+        val solverManagerConfig = SolverManagerConfig()
+        return SolverManager.create(solverFactory, solverManagerConfig)
+    }
+}
+----
+--
+====
+
+[NOTE]
+====
+Consider using xref:#integrationWithQuarkusMultiStage[Multi-stage planning] for multiple solver configurations instead of manually creating resources.
+====
+
 [#integrationWithQuarkusMultiStage]
 === Multi-stage planning
 
-Multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
+Quarkus multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
 application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
+
+==== Solver configuration properties
+
+Following properties are supported per each solver:
+
+:property_prefix: quarkus.
+include::config-solver-properties.adoc[]
+
+==== Working with multiple Solvers
 
 The different solver settings are configured in the `application.properties` file. For example, two different time
 settings for spent-limit are defined as follows:
@@ -482,16 +638,180 @@ class Resource {
 To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
 and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[Spring Boot Java quick start].
 
+=== Timefold configuration properties
+
 These properties are supported in Spring's `application.properties`:
 
 :property_prefix:
 include::config-properties.adoc[]
 
-[#integrationWithQuarkusMultiStage]
+[#integrationWithSpringBootManagedResources]
+=== Auto-managed resources
+
+The Spring Boot integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
+`SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
+
+The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
+(solution, entities, and constraint classes) and customized properties (spent-limit, domain-access-type, etc) for the
+planning problem are identified and loaded into the solver configuration.
+
+The available resouses can be injected as follows:
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@RestController
+@RequestMapping("/path")
+public class Resource {
+
+    @Autowired
+    SolverConfig solverConfig;
+
+    @Autowired
+    SolverFactory<Timetable> solverFactory;
+
+    @Autowired
+    SolverManager<Timetable, String> solverManager;
+
+    @Autowired
+    SolutionManager<Timetable, SimpleScore> simpleSolutionManager; // <1>
+
+    @Autowired
+    ScoreManager<Timetable, SimpleScore> simpleScoreManager; // <1>
+
+    @Autowired
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
+
+    ...
+}
+----
+<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@RestController
+@RequestMapping("/path")
+class Resource {
+
+    @Autowired
+    var solverConfig:SolverConfig?
+
+    @Autowired
+    var solverFactory:SolverFactory<Timetable>?
+
+    @Autowired
+    var solverManager:SolverManager<Timetable, String>?
+
+    @Autowired
+    var simpleSolutionManager:SolutionManager<Timetable, SimpleScore>? // <1>
+
+    @Autowired
+    var simpleScoreManager:ScoreManager<Timetable, SimpleScore>? // <1>
+
+    @Autowired
+    var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
+
+    ...
+}
+----
+<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+--
+====
+
+Timefold provides all the necessary resources for problem-solving and analysis. However, it is still possible to manually create and override the default managed resources. To create a custom `SolverManager`, use the `SolverFactory` resource.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+package org.acme.schooltimetabling.rest;
+
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration;
+
+import org.acme.schooltimetabling.domain.Timetable;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+
+@Configuration
+@Import(TimefoldAutoConfiguration.class)
+public class BeanProducer {
+
+    @Bean
+    @Primary
+    public SolverManager<Timetable, String> overrideSolverManager(SolverFactory<Timetable> solverFactory) {
+        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        return SolverManager.create(solverFactory, solverManagerConfig);
+    }
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+package org.acme.schooltimetabling.rest
+
+import ai.timefold.solver.core.api.solver.SolverFactory
+import ai.timefold.solver.core.api.solver.SolverManager
+import ai.timefold.solver.core.config.solver.SolverManagerConfig
+import ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration
+import org.acme.schooltimetabling.domain.Timetable
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Primary
+
+@Configuration
+@Import(
+    TimefoldAutoConfiguration::class
+)
+class BeanProducer {
+    @Bean
+    @Primary
+    fun overrideSolverManager(solverFactory: SolverFactory<Timetable>?): SolverManager<Timetable, String> {
+        val solverManagerConfig = SolverManagerConfig()
+        return SolverManager.create(solverFactory, solverManagerConfig)
+    }
+}
+----
+--
+====
+
+[NOTE]
+====
+Consider using xref:#integrationWithSpringBootMultiStage[Multi-stage planning] for multiple solver configurations instead of manually creating resources.
+====
+
+[#integrationWithSpringBootMultiStage]
 === Multi-stage planning
 
-Multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
+Spring Boot multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
 application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
+
+==== Solver configuration properties
+
+Following properties are supported per each solver:
+
+:property_prefix:
+include::config-solver-properties.adoc[]
+
+==== Working with multiple Solvers
 
 The different solver settings are configured in the `application.properties` file. For example, two different time
 settings for spent-limit are defined as follows:
