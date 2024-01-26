@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @AutoConfigureAfter(TimefoldAutoConfiguration.class)
@@ -46,6 +47,7 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
     }
 
     @Bean
+    @Lazy
     public PlannerBenchmarkConfig plannerBenchmarkConfig() {
         assertSingleSolver();
         SolverConfig solverConfig = context.getBean(SolverConfig.class);
@@ -139,6 +141,7 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
     }
 
     @Bean
+    @Lazy
     public PlannerBenchmarkFactory plannerBenchmarkFactory(PlannerBenchmarkConfig benchmarkConfig) {
         if (benchmarkConfig == null) {
             return null;

@@ -246,6 +246,22 @@ class TimefoldMultipleSolverAutoConfigurationTest {
     }
 
     @Test
+    void solverPropertiesWithoutLoadingBenchmark() {
+        contextRunner
+                .withPropertyValues("timefold.solver.solver1.environment-mode=FULL_ASSERT")
+                .withPropertyValues("timefold.solver.solver2.environment-mode=TRACKED_FULL_ASSERT")
+                .withUserConfiguration(TimefoldBenchmarkAutoConfiguration.class) // We load the configuration, but get no bean
+                .run(context -> {
+                    SolverManager<TestdataSpringSolution, Long> solver1 =
+                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                    SolverManager<TestdataSpringSolution, Long> solver2 =
+                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                    assertThat(solver1).isNotNull();
+                    assertThat(solver2).isNotNull();
+                });
+    }
+
+    @Test
     void solve() {
         contextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
