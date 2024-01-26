@@ -276,6 +276,206 @@ Following properties are supported in the Quarkus `application.properties`:
 :property_prefix: quarkus.
 include::config-properties.adoc[]
 
+[#integrationWithQuarkusMultiStage]
+=== Multi-stage planning
+
+Multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
+application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
+
+The different solver settings are configured in the `application.properties` file. For example, two different time
+settings for spent-limit are defined as follows:
+
+[source,properties]
+----
+# The solver "fastSolver" runs only for 5 seconds, and "regularSolver" runs for 10s
+quarkus.timefold.solver."fastSolver".termination.spent-limit=5s // <1>
+quarkus.timefold.solver."regularSolver".termination.spent-limit=10s // <2>
+----
+<1> Define a solver config named *fastSolver*.
+<2> Define a solver config named *regularSolver*.
+
+To inject a specific `SolverManager`, use the `@Named` annotation along with the solver configuration name, e.g., fastSolver.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@Path("/path")
+public class Resource {
+
+    @Named("fastSolver")
+    SolverManager<...> fastSolver;
+
+    @Named("regularSolver")
+    SolverManager<...> regularSolver;
+
+    ...
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@Path("path")
+class Resource {
+
+    private final var fastSolver: SolverManager<...>?
+    private final var regularSolver: SolverManager<...>?
+
+    @Inject
+    constructor(
+        @Named("fastSolver") fastSolver: SolverManager<Timetable, String>,
+        @Named("regularSolver") fastSolver: SolverManager<Timetable, String>
+    ) {
+        this.fastSolver = fastSolver
+        this.regularSolver = regularSolver
+    }
+
+    ...
+}
+----
+--
+====
+
+[NOTE]
+====
+When implementing multi-stage planning, it's important to note that only the `SolverManager` resource can be injected.
+====
+
+For a more advanced example, let's imagine two different steps for optimizing the school timetabling problem:
+
+1. Initially, a specific group of teachers is designated to teach the available lessons.
+2. The next step involves assigning lessons to the rooms.
+
+Add two XML files containing the related planning configuration.
+[tabs]
+====
+teachersSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.TeacherToLessonSchedule</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Teacher</entityClass>
+  <scoreDirectorFactory>
+    <constraintProviderClass>
+        org.acme.schooltimetabling.solver.TeacherConstraintProvider
+    </constraintProviderClass>
+  </scoreDirectorFactory>
+</solver>
+----
+roomsSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+  <scoreDirectorFactory>
+    <constraintProviderClass>
+        org.acme.schooltimetabling.solver.TimetableConstraintProvider
+    </constraintProviderClass>
+  </scoreDirectorFactory>
+</solver>
+----
+====
+
+Configure the solvers with the specific XML files in the `application.properties` file:
+
+[source,properties]
+----
+quarkus.timefold.solver."teacherSolver".solver-config-xml=teachersSolverConfig.xml // <1>
+quarkus.timefold.solver."roomSolver".solver-config-xml=roomsSolverConfig.xml // <2>
+----
+<1> Define a solver config named *teacherSolver*.
+<2> Define a solver config named *roomSolver*.
+
+Now let's inject both solvers.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@PlanningSolution
+public class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+public class Teacher {
+    ...
+}
+
+public class TeacherConstraintProvider implements ConstraintProvider {
+    ...
+}
+
+@Path("/path")
+public class Resource {
+
+    @Named("teacherSolver")
+    SolverManager<TeacherToLessonSchedule, String> teacherToLessonScheduleSolverManager;
+
+    @Named("roomSolver")
+    SolverManager<Timetable, String> lessonToRoomTimeslotSolverManager;
+
+    ...
+}
+
+
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+
+@PlanningSolution
+class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+class Teacher {
+    ...
+}
+
+class TeacherConstraintProvider : ConstraintProvider {
+    ...
+}
+
+@Path("path")
+class Resource {
+
+    private final var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
+    private final var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
+
+    @Inject
+    constructor(
+        @Named("teacherSolver") teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>,
+        @Named("roomSolver") lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>
+    ) {
+        this.teacherToLessonScheduleSolverManager = teacherToLessonScheduleSolverManager
+        this.lessonToRoomTimeslotSolverManager = lessonToRoomTimeslotSolverManager
+    }
+
+    ...
+}
+----
+--
+====
+
 [#integrationWithSpringBoot]
 == Spring Boot
 
@@ -286,6 +486,207 @@ These properties are supported in Spring's `application.properties`:
 
 :property_prefix:
 include::config-properties.adoc[]
+
+[#integrationWithQuarkusMultiStage]
+=== Multi-stage planning
+
+Multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
+application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
+
+The different solver settings are configured in the `application.properties` file. For example, two different time
+settings for spent-limit are defined as follows:
+
+[source,properties]
+----
+# The solver "fastSolver" runs only for 5 seconds, and "regularSolver" runs for 10s
+timefold.solver.fastSolver.termination.spent-limit=5s // <1>
+timefold.solver.regularSolver.termination.spent-limit=10s // <2>
+----
+<1> Define a solver config named *fastSolver*.
+<2> Define a solver config named *regularSolver*.
+
+To inject a specific `SolverManager`, use the `@Qualifier` annotation along with the solver configuration name, e.g., fastSolver.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@RestController
+@RequestMapping("/path")
+public class Resource {
+
+    @Autowired
+    @Qualifier("fastSolver")
+    SolverManager<...> fastSolver;
+
+    @Autowired
+    @Qualifier("regularSolver")
+    SolverManager<...> regularSolver;
+
+    ...
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@RestController
+@RequestMapping("/path")
+class Resource {
+
+    @Autowired
+    @Qualifier("fastSolver")
+    var fastSolver: SolverManager<...>?
+
+    @Autowired
+    @Qualifier("regularSolver")
+    var regularSolver: SolverManager<...>?
+
+    ...
+}
+----
+--
+====
+
+[NOTE]
+====
+When implementing multi-stage planning, it's important to note that only the `SolverManager` resource can be injected.
+====
+
+For a more advanced example, let's imagine two different steps for optimizing the school timetabling problem:
+
+1. Initially, a specific group of teachers is designated to teach the available lessons.
+2. The next step involves assigning lessons to the rooms.
+
+Add two XML files containing the related planning configuration.
+
+[tabs]
+====
+teachersSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.TeacherToLessonSchedule</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Teacher</entityClass>
+  <scoreDirectorFactory>
+    <constraintProviderClass>
+        org.acme.schooltimetabling.solver.TeacherConstraintProvider
+    </constraintProviderClass>
+  </scoreDirectorFactory>
+</solver>
+----
+roomsSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+  <scoreDirectorFactory>
+    <constraintProviderClass>
+        org.acme.schooltimetabling.solver.TimetableConstraintProvider
+    </constraintProviderClass>
+  </scoreDirectorFactory>
+</solver>
+----
+====
+
+Configure the solvers with the specific XML files in the `application.properties` file:
+
+[source,properties]
+----
+timefold.solver.teacherSolver.solver-config-xml=teachersSolverConfig.xml // <1>
+timefold.solver.roomSolver.solver-config-xml=roomsSolverConfig.xml // <2>
+----
+<1> Define a solver config named *teacherSolver*.
+<2> Define a solver config named *roomSolver*.
+
+Now let's inject both solvers.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@PlanningSolution
+public class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+public class Teacher {
+    ...
+}
+
+public class TeacherConstraintProvider implements ConstraintProvider {
+    ...
+}
+
+@RestController
+@RequestMapping("/path")
+public class Resource {
+
+    @Autowired
+    @Qualifier("teacherSolver")
+    SolverManager<TeacherToLessonSchedule, String> teacherToLessonScheduleSolverManager;
+
+    @Autowired
+    @Qualifier("roomSolver")
+    SolverManager<Timetable, String> lessonToRoomTimeslotSolverManager;
+
+    ...
+}
+
+
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+
+@PlanningSolution
+class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+class Teacher {
+    ...
+}
+
+class TeacherConstraintProvider : ConstraintProvider {
+    ...
+}
+
+@RestController
+@RequestMapping("/path")
+class Resource {
+
+    @Autowired
+    @Qualifier("teacherSolver")
+    var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
+
+    @Autowired
+    @Qualifier("roomSolver")
+    var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
+
+    ...
+}
+----
+--
+====
 
 
 [#integrationWithOtherEnvironments]
