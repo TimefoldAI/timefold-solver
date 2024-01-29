@@ -271,10 +271,352 @@ To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-qu
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
 the _Timefold AI constraint solver_ extension before generating your application.
 
+[#integrationWithQuarkusProperties]
+=== Available configuration properties
+
 Following properties are supported in the Quarkus `application.properties`:
 
 :property_prefix: quarkus.
+:solver_name_prefix:
 include::config-properties.adoc[]
+
+[#integrationWithQuarkusManagedResources]
+=== Injecting managed resources
+
+The Quarkus integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
+`SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
+
+The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
+(solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
+planning problem are identified and loaded into the solver configuration.
+
+The available resouses can be injected as follows:
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@Path("/path")
+public class Resource {
+
+    @Inject
+    SolverConfig solverConfig;
+
+    @Inject
+    SolverFactory<Timetable> solverFactory;
+
+    @Inject
+    SolverManager<Timetable, String> solverManager;
+
+    @Inject
+    SolutionManager<Timetable, SimpleScore> simpleSolutionManager; // <1>
+
+    @Inject
+    ScoreManager<Timetable, SimpleScore> simpleScoreManager; // <1>
+
+    @Inject
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
+
+    ...
+}
+----
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@Path("path")
+class Resource {
+
+    @Inject
+    var solverConfig:SolverConfig?
+
+    @Inject
+    var solverFactory:SolverFactory<Timetable>?
+
+    @Inject
+    var solverManager:SolverManager<Timetable, String>?
+
+    @Inject
+    var simpleSolutionManager:SolutionManager<Timetable, SimpleScore>? // <1>
+
+    @Inject
+    var simpleScoreManager:ScoreManager<Timetable, SimpleScore>? // <1>
+
+    @Inject
+    var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
+
+    ...
+}
+----
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
+--
+====
+
+Timefold provides all the necessary resources for problem-solving and analysis. However, it is still possible to manually create and override the default managed resources. To create a custom `SolverManager`, use the `SolverFactory` resource.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+package org.acme.employeescheduling.rest;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Default;
+import jakarta.ws.rs.Produces;
+
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+
+import org.acme.employeescheduling.domain.EmployeeSchedule;
+
+@ApplicationScoped
+public class BeanProducer {
+
+    @Produces
+    @Default
+    public SolverManager<Timetable, String> overrideSolverManager(SolverFactory<Timetable> solverFactory) {
+        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        return SolverManager.create(solverFactory, solverManagerConfig);
+    }
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+package org.acme.employeescheduling.rest
+
+import ai.timefold.solver.core.api.solver.SolverFactory
+import ai.timefold.solver.core.api.solver.SolverManager
+import ai.timefold.solver.core.config.solver.SolverManagerConfig
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.enterprise.inject.Default
+import jakarta.ws.rs.Produces
+import org.acme.kotlin.schooltimetabling.domain.Timetable
+
+@ApplicationScoped
+class BeanProducer {
+
+    @Produces
+    @Default
+    fun overrideSolverManager(solverFactory: SolverFactory<Timetable>?): SolverManager<Timetable, String> {
+        val solverManagerConfig = SolverManagerConfig()
+        return SolverManager.create(solverFactory, solverManagerConfig)
+    }
+}
+----
+--
+====
+
+[NOTE]
+====
+Consider using xref:#integrationWithQuarkusMultipleResources[multiple solver configurations] instead of manually creating resources.
+====
+
+[#integrationWithQuarkusMultipleResources]
+=== Injecting multiple instances of `SolverManager`
+
+Quarkus extension allows for defining different solver settings or even wholly distinct planning problems in the same
+application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
+
+==== Solver configuration properties
+
+The configuration properties for multiple solvers are defined using the namespace `quarkus.timefold.solver.<solverName>`,
+where `<solverName>` is the name of the related solver. The `<solverName>` property is only necessary when using multiple
+solvers. For defining a single solver, refer to the xref:#integrationWithQuarkusProperties[Timefold configuration properties section].
+Following properties are supported:
+
+:property_prefix: quarkus.
+:solver_name_prefix: <solverName>.
+include::config-properties.adoc[]
+
+==== Working with multiple Solvers
+
+The different solver settings are configured in the `application.properties` file. For example, two different time
+settings for `spent-limit` are defined as follows:
+
+[source,properties]
+----
+# The solver "fastSolver" runs only for 5 seconds, and "regularSolver" runs for 10s
+quarkus.timefold.solver."fastSolver".termination.spent-limit=5s // <1>
+quarkus.timefold.solver."regularSolver".termination.spent-limit=10s // <2>
+----
+<1> Define a solver config named *fastSolver*.
+<2> Define a solver config named *regularSolver*.
+
+To inject a specific `SolverManager`, use the `@Named` annotation along with the solver configuration name, e.g., fastSolver.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@Path("/path")
+public class Resource {
+
+    @Named("fastSolver")
+    SolverManager<...> fastSolver;
+
+    @Named("regularSolver")
+    SolverManager<...> regularSolver;
+
+    ...
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@Path("path")
+class Resource {
+
+    private final var fastSolver: SolverManager<...>?
+    private final var regularSolver: SolverManager<...>?
+
+    @Inject
+    constructor(
+        @Named("fastSolver") fastSolver: SolverManager<Timetable, String>,
+        @Named("regularSolver") fastSolver: SolverManager<Timetable, String>
+    ) {
+        this.fastSolver = fastSolver
+        this.regularSolver = regularSolver
+    }
+
+    ...
+}
+----
+--
+====
+
+For a more advanced example, let's imagine two different steps for optimizing the school timetabling problem:
+
+1. Initially, a specific group of teachers is designated to teach the available lessons.
+2. The next step involves assigning lessons to the rooms.
+
+To configure two different problems, add two XML files containing related planning configurations.
+
+[tabs]
+====
+teachersSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.TeacherToLessonSchedule</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Teacher</entityClass>
+</solver>
+----
+roomsSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+</solver>
+----
+====
+
+Set the solvers with the specific XML files in the `application.properties` file:
+
+[source,properties]
+----
+quarkus.timefold.solver."teacherSolver".solver-config-xml=teachersSolverConfig.xml // <1>
+quarkus.timefold.solver."roomSolver".solver-config-xml=roomsSolverConfig.xml // <2>
+----
+<1> Define a solver config named *teacherSolver*.
+<2> Define a solver config named *roomSolver*.
+
+Now let's inject both solvers.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@PlanningSolution
+public class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+public class Teacher {
+    ...
+}
+
+@Path("/path")
+public class Resource {
+
+    @Named("teacherSolver")
+    SolverManager<TeacherToLessonSchedule, String> teacherToLessonScheduleSolverManager;
+
+    @Named("roomSolver")
+    SolverManager<Timetable, String> lessonToRoomTimeslotSolverManager;
+
+    ...
+}
+
+
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+
+@PlanningSolution
+class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+class Teacher {
+    ...
+}
+
+@Path("path")
+class Resource {
+
+    private final var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
+    private final var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
+
+    @Inject
+    constructor(
+        @Named("teacherSolver") teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>,
+        @Named("roomSolver") lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>
+    ) {
+        this.teacherToLessonScheduleSolverManager = teacherToLessonScheduleSolverManager
+        this.lessonToRoomTimeslotSolverManager = lessonToRoomTimeslotSolverManager
+    }
+
+    ...
+}
+----
+--
+====
+
+**Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
 
 [#integrationWithSpringBoot]
 == Spring Boot
@@ -282,11 +624,359 @@ include::config-properties.adoc[]
 To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
 and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[Spring Boot Java quick start].
 
+[#integrationWithSpringBootProperties]
+=== Available configuration properties
+
 These properties are supported in Spring's `application.properties`:
 
 :property_prefix:
+:solver_name_prefix:
 include::config-properties.adoc[]
 
+[#integrationWithSpringBootManagedResources]
+=== Injecting managed resources
+
+The Spring Boot integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
+`SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
+
+The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
+(solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
+planning problem are identified and loaded into the solver configuration.
+
+The available resouses can be injected as follows:
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@RestController
+@RequestMapping("/path")
+public class Resource {
+
+    @Autowired
+    SolverConfig solverConfig;
+
+    @Autowired
+    SolverFactory<Timetable> solverFactory;
+
+    @Autowired
+    SolverManager<Timetable, String> solverManager;
+
+    @Autowired
+    SolutionManager<Timetable, SimpleScore> simpleSolutionManager; // <1>
+
+    @Autowired
+    ScoreManager<Timetable, SimpleScore> simpleScoreManager; // <1>
+
+    @Autowired
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
+
+    ...
+}
+----
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@RestController
+@RequestMapping("/path")
+class Resource {
+
+    @Autowired
+    var solverConfig:SolverConfig?
+
+    @Autowired
+    var solverFactory:SolverFactory<Timetable>?
+
+    @Autowired
+    var solverManager:SolverManager<Timetable, String>?
+
+    @Autowired
+    var simpleSolutionManager:SolutionManager<Timetable, SimpleScore>? // <1>
+
+    @Autowired
+    var simpleScoreManager:ScoreManager<Timetable, SimpleScore>? // <1>
+
+    @Autowired
+    var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
+
+    ...
+}
+----
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
+--
+====
+
+Timefold provides all the necessary resources for problem-solving and analysis. However, it is still possible to manually create and override the default managed resources. To create a custom `SolverManager`, use the `SolverFactory` resource.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+package org.acme.schooltimetabling.rest;
+
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration;
+
+import org.acme.schooltimetabling.domain.Timetable;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+
+@Configuration
+@Import(TimefoldAutoConfiguration.class)
+public class BeanProducer {
+
+    @Bean
+    @Primary
+    public SolverManager<Timetable, String> overrideSolverManager(SolverFactory<Timetable> solverFactory) {
+        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        return SolverManager.create(solverFactory, solverManagerConfig);
+    }
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+package org.acme.schooltimetabling.rest
+
+import ai.timefold.solver.core.api.solver.SolverFactory
+import ai.timefold.solver.core.api.solver.SolverManager
+import ai.timefold.solver.core.config.solver.SolverManagerConfig
+import ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration
+import org.acme.schooltimetabling.domain.Timetable
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Primary
+
+@Configuration
+@Import(
+    TimefoldAutoConfiguration::class
+)
+class BeanProducer {
+    @Bean
+    @Primary
+    fun overrideSolverManager(solverFactory: SolverFactory<Timetable>?): SolverManager<Timetable, String> {
+        val solverManagerConfig = SolverManagerConfig()
+        return SolverManager.create(solverFactory, solverManagerConfig)
+    }
+}
+----
+--
+====
+
+[NOTE]
+====
+Consider using xref:#integrationWithSpringBootMultipleResources[multiple solver configurations] instead of manually creating resources.
+====
+
+[#integrationWithSpringBootMultipleResources]
+=== Injecting multiple instances of `SolverManager`
+
+Spring Boot auto-configuration module allows for defining different solver settings or even wholly distinct planning problems in the same
+application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
+
+==== Solver configuration properties
+
+The configuration properties for multiple solvers are defined using the namespace `timefold.solver.<solverName>`,
+where `<solverName>` is the name of the related solver. The `<solverName>` property is only necessary when using multiple
+solvers. For defining a single solver, refer to the xref:#integrationWithSpringBootProperties[Timefold configuration properties section].
+Following properties are supported:
+
+:property_prefix:
+:solver_name_prefix: <solverName>.
+include::config-properties.adoc[]
+
+==== Working with multiple Solvers
+
+The different solver settings are configured in the `application.properties` file. For example, two different time
+settings for `spent-limit` are defined as follows:
+
+[source,properties]
+----
+# The solver "fastSolver" runs only for 5 seconds, and "regularSolver" runs for 10s
+timefold.solver.fastSolver.termination.spent-limit=5s // <1>
+timefold.solver.regularSolver.termination.spent-limit=10s // <2>
+----
+<1> Define a solver config named *fastSolver*.
+<2> Define a solver config named *regularSolver*.
+
+To inject a specific `SolverManager`, use the `@Qualifier` annotation along with the solver configuration name, e.g., fastSolver.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@RestController
+@RequestMapping("/path")
+public class Resource {
+
+    @Autowired
+    @Qualifier("fastSolver")
+    SolverManager<...> fastSolver;
+
+    @Autowired
+    @Qualifier("regularSolver")
+    SolverManager<...> regularSolver;
+
+    ...
+}
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+@RestController
+@RequestMapping("/path")
+class Resource {
+
+    @Autowired
+    @Qualifier("fastSolver")
+    var fastSolver: SolverManager<...>?
+
+    @Autowired
+    @Qualifier("regularSolver")
+    var regularSolver: SolverManager<...>?
+
+    ...
+}
+----
+--
+====
+
+For a more advanced example, let's imagine two different steps for optimizing the school timetabling problem:
+
+1. Initially, a specific group of teachers is designated to teach the available lessons.
+2. The next step involves assigning lessons to the rooms.
+
+To configure two different problems, add two XML files containing related planning configurations.
+
+[tabs]
+====
+teachersSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.TeacherToLessonSchedule</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Teacher</entityClass>
+</solver>
+----
+roomsSolverConfig.xml::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+</solver>
+----
+====
+
+Set the solvers with the specific XML files in the `application.properties` file:
+
+[source,properties]
+----
+timefold.solver.teacherSolver.solver-config-xml=teachersSolverConfig.xml // <1>
+timefold.solver.roomSolver.solver-config-xml=roomsSolverConfig.xml // <2>
+----
+<1> Define a solver config named *teacherSolver*.
+<2> Define a solver config named *roomSolver*.
+
+Now let's inject both solvers.
+
+[tabs]
+====
+Java::
++
+--
+[source,java]
+----
+@PlanningSolution
+public class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+public class Teacher {
+    ...
+}
+
+@RestController
+@RequestMapping("/path")
+public class Resource {
+
+    @Autowired
+    @Qualifier("teacherSolver")
+    SolverManager<TeacherToLessonSchedule, String> teacherToLessonScheduleSolverManager;
+
+    @Autowired
+    @Qualifier("roomSolver")
+    SolverManager<Timetable, String> lessonToRoomTimeslotSolverManager;
+
+    ...
+}
+
+
+----
+--
+Kotlin::
++
+--
+[source,kotlin]
+----
+
+@PlanningSolution
+class TeacherToLessonSchedule {
+    ...
+}
+
+@PlanningEntity
+class Teacher {
+    ...
+}
+
+@RestController
+@RequestMapping("/path")
+class Resource {
+
+    @Autowired
+    @Qualifier("teacherSolver")
+    var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
+
+    @Autowired
+    @Qualifier("roomSolver")
+    var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
+
+    ...
+}
+----
+--
+====
+**Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
 
 [#integrationWithOtherEnvironments]
 == Other environments
