@@ -271,7 +271,8 @@ To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-qu
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
 the _Timefold AI constraint solver_ extension before generating your application.
 
-=== Timefold configuration properties
+[#integrationWithQuarkusProperties]
+=== Available configuration properties
 
 Following properties are supported in the Quarkus `application.properties`:
 
@@ -279,13 +280,13 @@ Following properties are supported in the Quarkus `application.properties`:
 include::config-properties.adoc[]
 
 [#integrationWithQuarkusManagedResources]
-=== Auto-managed resources
+=== Injecting managed resources
 
 The Quarkus integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
 `SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
 
 The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
-(solution, entities, and constraint classes) and customized properties (spent-limit, domain-access-type, etc) for the
+(solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
 planning problem are identified and loaded into the solver configuration.
 
 The available resouses can be injected as follows:
@@ -321,7 +322,7 @@ public class Resource {
     ...
 }
 ----
-<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
 --
 Kotlin::
 +
@@ -352,7 +353,7 @@ class Resource {
     ...
 }
 ----
-<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
 --
 ====
 
@@ -420,18 +421,21 @@ class BeanProducer {
 
 [NOTE]
 ====
-Consider using xref:#integrationWithQuarkusMultiStage[Multi-stage planning] for multiple solver configurations instead of manually creating resources.
+Consider using xref:#integrationWithQuarkusMultiStage[multiple solver configurations] instead of manually creating resources.
 ====
 
 [#integrationWithQuarkusMultiStage]
-=== Multi-stage planning
+=== Injecting multiple instances of `SolverManager`
 
-Quarkus multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
+Quarkus extension allows for defining different solver settings or even wholly distinct planning problems in the same
 application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
 
 ==== Solver configuration properties
 
-Following properties are supported per each solver:
+The configuration properties for multiple solvers are defined using the namespace `quarkus.timefold.solver.<solverName>`,
+where `<solverName>` is the name of the related solver. The `<solverName>` property is only necessary when using multiple
+solvers. For defining a single solver, refer to the xref:#integrationWithQuarkusProperties[Timefold configuration properties section].
+Following properties are supported:
 
 :property_prefix: quarkus.
 include::config-solver-properties.adoc[]
@@ -439,7 +443,7 @@ include::config-solver-properties.adoc[]
 ==== Working with multiple Solvers
 
 The different solver settings are configured in the `application.properties` file. For example, two different time
-settings for spent-limit are defined as follows:
+settings for `spent-limit` are defined as follows:
 
 [source,properties]
 ----
@@ -498,17 +502,13 @@ class Resource {
 --
 ====
 
-[NOTE]
-====
-When implementing multi-stage planning, it's important to note that only the `SolverManager` resource can be injected.
-====
-
 For a more advanced example, let's imagine two different steps for optimizing the school timetabling problem:
 
 1. Initially, a specific group of teachers is designated to teach the available lessons.
 2. The next step involves assigning lessons to the rooms.
 
-Add two XML files containing the related planning configuration.
+To configure two different problems, add two XML files containing related planning configurations.
+
 [tabs]
 ====
 teachersSolverConfig.xml::
@@ -519,11 +519,6 @@ teachersSolverConfig.xml::
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <solutionClass>org.acme.schooltimetabling.domain.TeacherToLessonSchedule</solutionClass>
   <entityClass>org.acme.schooltimetabling.domain.Teacher</entityClass>
-  <scoreDirectorFactory>
-    <constraintProviderClass>
-        org.acme.schooltimetabling.solver.TeacherConstraintProvider
-    </constraintProviderClass>
-  </scoreDirectorFactory>
 </solver>
 ----
 roomsSolverConfig.xml::
@@ -534,16 +529,11 @@ roomsSolverConfig.xml::
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
   <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
-  <scoreDirectorFactory>
-    <constraintProviderClass>
-        org.acme.schooltimetabling.solver.TimetableConstraintProvider
-    </constraintProviderClass>
-  </scoreDirectorFactory>
 </solver>
 ----
 ====
 
-Configure the solvers with the specific XML files in the `application.properties` file:
+Set the solvers with the specific XML files in the `application.properties` file:
 
 [source,properties]
 ----
@@ -569,10 +559,6 @@ public class TeacherToLessonSchedule {
 
 @PlanningEntity
 public class Teacher {
-    ...
-}
-
-public class TeacherConstraintProvider implements ConstraintProvider {
     ...
 }
 
@@ -607,10 +593,6 @@ class Teacher {
     ...
 }
 
-class TeacherConstraintProvider : ConstraintProvider {
-    ...
-}
-
 @Path("path")
 class Resource {
 
@@ -632,13 +614,16 @@ class Resource {
 --
 ====
 
+It is worth noting that **multi-stage** planning can be accomplished by using a separate solver configuration for each optimization stage.
+
 [#integrationWithSpringBoot]
 == Spring Boot
 
 To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
 and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[Spring Boot Java quick start].
 
-=== Timefold configuration properties
+[#integrationWithSpringBootProperties]
+=== Available configuration properties
 
 These properties are supported in Spring's `application.properties`:
 
@@ -646,13 +631,13 @@ These properties are supported in Spring's `application.properties`:
 include::config-properties.adoc[]
 
 [#integrationWithSpringBootManagedResources]
-=== Auto-managed resources
+=== Injecting managed resources
 
 The Spring Boot integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
 `SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
 
 The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
-(solution, entities, and constraint classes) and customized properties (spent-limit, domain-access-type, etc) for the
+(solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
 planning problem are identified and loaded into the solver configuration.
 
 The available resouses can be injected as follows:
@@ -689,7 +674,7 @@ public class Resource {
     ...
 }
 ----
-<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
 --
 Kotlin::
 +
@@ -721,7 +706,7 @@ class Resource {
     ...
 }
 ----
-<1> The following score types are available: `SimpleScore`, `SimpleLongScore`, `SimpleBigDecimalScore`, `HardSoftScore`, `HardSoftLongScore`, `HardSoftBigDecimalScore`, `HardMediumSoftScore`, `HardMediumSoftLongScore`, `HardMediumSoftBigDecimalScore`, `BendableScore`, `BendableLongScore`, and `BendableBigDecimalScore`.
+<1> You can find all the available score types in the xref:constraints-and-score/overview.adoc#scoreType[Constraints and Score] page.
 --
 ====
 
@@ -795,18 +780,21 @@ class BeanProducer {
 
 [NOTE]
 ====
-Consider using xref:#integrationWithSpringBootMultiStage[Multi-stage planning] for multiple solver configurations instead of manually creating resources.
+Consider using xref:#integrationWithSpringBootMultiStage[multiple solver configurations] instead of manually creating resources.
 ====
 
 [#integrationWithSpringBootMultiStage]
-=== Multi-stage planning
+=== Injecting multiple instances of `SolverManager`
 
-Spring Boot multi-stage planning allows for defining different solver settings or even wholly distinct planning problems in the same
+Spring Boot auto-configuration module allows for defining different solver settings or even wholly distinct planning problems in the same
 application. Timefold identifies each setting and provides a specific managed resource, `SolverManager`.
 
 ==== Solver configuration properties
 
-Following properties are supported per each solver:
+The configuration properties for multiple solvers are defined using the namespace `timefold.solver.<solverName>`,
+where `<solverName>` is the name of the related solver. The `<solverName>` property is only necessary when using multiple
+solvers. For defining a single solver, refer to the xref:#integrationWithSpringBootProperties[Timefold configuration properties section].
+Following properties are supported:
 
 :property_prefix:
 include::config-solver-properties.adoc[]
@@ -814,7 +802,7 @@ include::config-solver-properties.adoc[]
 ==== Working with multiple Solvers
 
 The different solver settings are configured in the `application.properties` file. For example, two different time
-settings for spent-limit are defined as follows:
+settings for `spent-limit` are defined as follows:
 
 [source,properties]
 ----
@@ -873,17 +861,12 @@ class Resource {
 --
 ====
 
-[NOTE]
-====
-When implementing multi-stage planning, it's important to note that only the `SolverManager` resource can be injected.
-====
-
 For a more advanced example, let's imagine two different steps for optimizing the school timetabling problem:
 
 1. Initially, a specific group of teachers is designated to teach the available lessons.
 2. The next step involves assigning lessons to the rooms.
 
-Add two XML files containing the related planning configuration.
+To configure two different problems, add two XML files containing related planning configurations.
 
 [tabs]
 ====
@@ -895,11 +878,6 @@ teachersSolverConfig.xml::
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <solutionClass>org.acme.schooltimetabling.domain.TeacherToLessonSchedule</solutionClass>
   <entityClass>org.acme.schooltimetabling.domain.Teacher</entityClass>
-  <scoreDirectorFactory>
-    <constraintProviderClass>
-        org.acme.schooltimetabling.solver.TeacherConstraintProvider
-    </constraintProviderClass>
-  </scoreDirectorFactory>
 </solver>
 ----
 roomsSolverConfig.xml::
@@ -910,16 +888,11 @@ roomsSolverConfig.xml::
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
   <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
-  <scoreDirectorFactory>
-    <constraintProviderClass>
-        org.acme.schooltimetabling.solver.TimetableConstraintProvider
-    </constraintProviderClass>
-  </scoreDirectorFactory>
 </solver>
 ----
 ====
 
-Configure the solvers with the specific XML files in the `application.properties` file:
+Set the solvers with the specific XML files in the `application.properties` file:
 
 [source,properties]
 ----
@@ -945,10 +918,6 @@ public class TeacherToLessonSchedule {
 
 @PlanningEntity
 public class Teacher {
-    ...
-}
-
-public class TeacherConstraintProvider implements ConstraintProvider {
     ...
 }
 
@@ -986,10 +955,6 @@ class Teacher {
     ...
 }
 
-class TeacherConstraintProvider : ConstraintProvider {
-    ...
-}
-
 @RestController
 @RequestMapping("/path")
 class Resource {
@@ -1007,7 +972,7 @@ class Resource {
 ----
 --
 ====
-
+It is worth noting that **multi-stage** planning can be accomplished by using a separate solver configuration for each optimization stage.
 
 [#integrationWithOtherEnvironments]
 == Other environments

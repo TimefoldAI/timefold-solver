@@ -10,12 +10,17 @@ This directly influences CPU consumption.
 Defaults to `AUTO`.
 
 {property_prefix}timefold.solver-config-xml::
-A classpath resource to read the solver configuration XML.
+A classpath resource to read the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration XML].
 Defaults to `solverConfig.xml`.
-If this property isn't specified, that file is optional.
+If a resource is specified, it must be located in the classpath, or the configuration will fail.
+If the property is not specified, the file `solverConfig.xml` is used when found on the classpath. Otherwise, the
+configuration continues without using any configuration file.
+The specified resources take precedence over the default file `solverConfig.xml`, even if both files' resources are
+located in the classpath.
 
 {property_prefix}timefold.solver.environment-mode::
-Enable runtime assertions to detect common bugs in your implementation during development.
+Enable xref:using-timefold-solver/running-the-solver.adoc#environmentMode[runtime assertions] to detect common bugs in your
+implementation during development.
 
 {property_prefix}timefold.solver.daemon::
 Enable xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode].
@@ -45,13 +50,17 @@ endif::[]
 {property_prefix}timefold.solver.termination.spent-limit::
 How long the solver can run.
 For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.
+The https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO8601 format]
+is also supported, e.g., `PT30S` is 30 seconds. `PT5M` is 5 minutes. `PT2H` is 2 hours. `P1D` is 1 day.
 
 {property_prefix}timefold.solver.termination.unimproved-spent-limit::
 How long the solver can run without finding a new best solution after finding a new best solution.
 For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.
+The https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO8601 format]
+is also supported, e.g., `PT30S` is 30 seconds. `PT5M` is 5 minutes. `PT2H` is 2 hours. `P1D` is 1 day.
 
 {property_prefix}timefold.solver.termination.best-score-limit::
-Terminates the solver when a specific or higher score has been reached.
+Terminates the solver when a specific score (or better) has been reached.
 For example: `0hard/-1000soft` terminates when the best score changes from `0hard/-1200soft` to `0hard/-900soft`.
 Wildcards are supported to replace numbers.
 For example: `0hard/*soft` to terminate when any feasible score is reached.
