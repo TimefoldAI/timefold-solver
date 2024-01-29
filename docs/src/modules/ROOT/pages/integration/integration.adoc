@@ -277,6 +277,7 @@ the _Timefold AI constraint solver_ extension before generating your application
 Following properties are supported in the Quarkus `application.properties`:
 
 :property_prefix: quarkus.
+:solver_name_prefix:
 include::config-properties.adoc[]
 
 [#integrationWithQuarkusManagedResources]
@@ -421,10 +422,10 @@ class BeanProducer {
 
 [NOTE]
 ====
-Consider using xref:#integrationWithQuarkusMultiStage[multiple solver configurations] instead of manually creating resources.
+Consider using xref:#integrationWithQuarkusMultipleResources[multiple solver configurations] instead of manually creating resources.
 ====
 
-[#integrationWithQuarkusMultiStage]
+[#integrationWithQuarkusMultipleResources]
 === Injecting multiple instances of `SolverManager`
 
 Quarkus extension allows for defining different solver settings or even wholly distinct planning problems in the same
@@ -438,7 +439,8 @@ solvers. For defining a single solver, refer to the xref:#integrationWithQuarkus
 Following properties are supported:
 
 :property_prefix: quarkus.
-include::config-solver-properties.adoc[]
+:solver_name_prefix: <solverName>.
+include::config-properties.adoc[]
 
 ==== Working with multiple Solvers
 
@@ -614,7 +616,7 @@ class Resource {
 --
 ====
 
-It is worth noting that **multi-stage** planning can be accomplished by using a separate solver configuration for each optimization stage.
+**Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
 
 [#integrationWithSpringBoot]
 == Spring Boot
@@ -628,6 +630,7 @@ and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJ
 These properties are supported in Spring's `application.properties`:
 
 :property_prefix:
+:solver_name_prefix:
 include::config-properties.adoc[]
 
 [#integrationWithSpringBootManagedResources]
@@ -780,10 +783,10 @@ class BeanProducer {
 
 [NOTE]
 ====
-Consider using xref:#integrationWithSpringBootMultiStage[multiple solver configurations] instead of manually creating resources.
+Consider using xref:#integrationWithSpringBootMultipleResources[multiple solver configurations] instead of manually creating resources.
 ====
 
-[#integrationWithSpringBootMultiStage]
+[#integrationWithSpringBootMultipleResources]
 === Injecting multiple instances of `SolverManager`
 
 Spring Boot auto-configuration module allows for defining different solver settings or even wholly distinct planning problems in the same
@@ -797,7 +800,8 @@ solvers. For defining a single solver, refer to the xref:#integrationWithSpringB
 Following properties are supported:
 
 :property_prefix:
-include::config-solver-properties.adoc[]
+:solver_name_prefix: <solverName>.
+include::config-properties.adoc[]
 
 ==== Working with multiple Solvers
 
@@ -972,7 +976,7 @@ class Resource {
 ----
 --
 ====
-It is worth noting that **multi-stage** planning can be accomplished by using a separate solver configuration for each optimization stage.
+**Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
 
 [#integrationWithOtherEnvironments]
 == Other environments
