@@ -24,6 +24,12 @@ public class TimefoldBenchmarkRecorder {
         return () -> {
             SolverConfig solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
+            // If the termination configuration is set and the created benchmark configuration has no configuration item,
+            // we need to add at least one configuration; otherwise, we will fail to recognize the runtime termination setting.
+            if (benchmarkConfig != null && benchmarkConfig.getSolverBenchmarkConfigList() == null &&
+                    timefoldRuntimeConfig != null && timefoldRuntimeConfig.termination() != null) {
+                benchmarkConfig.setSolverBenchmarkConfigList(Collections.singletonList(new SolverBenchmarkConfig()));
+            }
             return updateBenchmarkConfigWithRuntimeProperties(benchmarkConfig, timefoldRuntimeConfig, solverConfig);
         };
     }
