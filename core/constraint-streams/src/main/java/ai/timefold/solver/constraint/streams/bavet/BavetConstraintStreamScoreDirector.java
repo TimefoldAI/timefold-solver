@@ -1,6 +1,9 @@
 package ai.timefold.solver.constraint.streams.bavet;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -25,10 +28,12 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         extends AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
 
     private BavetConstraintSession<Score_> session;
+    private final Set<Object> updatedEntities;
 
     public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
             boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
+        this.updatedEntities = Collections.newSetFromMap(new IdentityHashMap<>());
     }
 
     // ************************************************************************
@@ -38,6 +43,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         session = scoreDirectorFactory.newSession(constraintMatchEnabledPreference, workingSolution);
+        updatedEntities.clear();
         getSolutionDescriptor().visitAll(workingSolution, session::insert);
         super.setWorkingSolution(workingSolution);
     }
@@ -45,6 +51,10 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public Score_ calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
+        for (Object entity : updatedEntities) {
+            session.update(entity);
+        }
+        updatedEntities.clear();
         Score_ score = session.calculateScore(getWorkingInitScore());
         setCalculatedScore(score);
         return score;
@@ -107,14 +117,14 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        session.update(entity);
+        updatedEntities.add(entity);
         super.afterVariableChanged(variableDescriptor, entity);
     }
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        session.update(entity);
+        updatedEntities.add(entity);
         super.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
@@ -145,7 +155,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void afterProblemPropertyChanged(Object problemFactOrEntity) {
-        session.update(problemFactOrEntity);
+        updatedEntities.add(problemFactOrEntity);
         super.afterProblemPropertyChanged(problemFactOrEntity);
     }
 
