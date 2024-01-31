@@ -2673,6 +2673,108 @@ the whole purpose of `MoveIteratorFactory` over `MoveListFactory` is to create a
 in a custom ``Iterator.next()``.
 ====
 
+For example:
+
+[source,java,options="nowrap"]
+----
+public class PossibleAssignmentsOnlyMoveIteratorFactory implements MoveIteratorFactory<MyPlanningSolution, MyChangeMove> {
+    @Override
+    public long getSize(ScoreDirector<MyPlanningSolution> scoreDirector) {
+        // In this case, we return the exact size, but an estimate can be used
+        // if it too expensive to calculate or unknown
+        long totalSize = 0L;
+        var solution = scoreDirector.getWorkingSolution();
+        for (MyEntity entity : solution.getEntities()) {
+            for (MyPlanningValue value : solution.getValues()) {
+                if (entity.canBeAssigned(value)) {
+                    totalSize++;
+                }
+            }
+        }
+        return totalSize;
+    }
+
+    @Override
+    public Iterator<MyChangeMove> createOriginalMoveIterator(ScoreDirector<MyPlanningSolution> scoreDirector) {
+        // Only needed if selectionOrder is ORIGINAL or if it is cached
+        var solution = scoreDirector.getWorkingSolution();
+        var entities = solution.getEntities();
+        var values = solution.getValues();
+        // Assumes each entity has at least one assignable value
+        var firstEntityIndex = 0;
+        var firstValueIndex = 0;
+        while (!entities.get(firstEntityIndex).canBeAssigned(values.get(firstValueIndex))) {
+            firstValueIndex++;
+        }
+
+
+        return new Iterator<>() {
+            int nextEntityIndex = firstEntityIndex;
+            int nextValueIndex = firstValueIndex;
+
+            @Override
+            public boolean hasNext() {
+                return nextEntityIndex < entities.size();
+            }
+
+            @Override
+            public MyChangeMove next() {
+                var selectedEntity = entities.get(nextEntityIndex);
+                var selectedValue = values.get(nextValueIndex);
+                nextValueIndex++;
+                while (nextValueIndex < values.size() && !selectedEntity.canBeAssigned(values.get(nextValueIndex))) {
+                    nextValueIndex++;
+                }
+                if (nextValueIndex >= values.size()) {
+                    // value list exhausted, go to next entity
+                    nextEntityIndex++;
+                    if (nextEntityIndex < entities.size()) {
+                        nextValueIndex = 0;
+                        while (nextValueIndex < values.size() && !entities.get(nextEntityIndex).canBeAssigned(values.get(nextValueIndex))) {
+                            // Assumes each entity has at least one assignable value
+                            nextValueIndex++;
+                        }
+                    }
+                }
+                return new MyChangeMove(selectedEntity, selectedValue);
+            }
+        };
+    }
+
+    @Override
+    public Iterator<MyChangeMove> createRandomMoveIterator(ScoreDirector<MyPlanningSolution> scoreDirector,
+            Random workingRandom) {
+        // Not needed if selectionOrder is ORIGINAL or if it is cached
+        var solution = scoreDirector.getWorkingSolution();
+        var entities = solution.getEntities();
+        var values = solution.getValues();
+
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return !entities.isEmpty();
+            }
+
+            @Override
+            public MyChangeMove next() {
+                var selectedEntity = entities.get(workingRandom.nextInt(entities.size()));
+                var selectedValue = values.get(workingRandom.nextInt(values.size()));
+                while (!selectedEntity.canBeAssigned(selectedValue)) {
+                    // This assumes there at least one value that can be assigned to the selected entity
+                    selectedValue = values.get(workingRandom.nextInt(values.size()));
+                }
+                return new MyChangeMove(selectedEntity, selectedValue);
+            }
+        };
+    }
+}
+----
+
+[NOTE]
+====
+The example above can also be done using <<filteredSelection,filtered selection>>.
+====
+
 Simple configuration (which can be nested in a `unionMoveSelector` just like any other ``MoveSelector``):
 
 [source,xml,options="nowrap"]
