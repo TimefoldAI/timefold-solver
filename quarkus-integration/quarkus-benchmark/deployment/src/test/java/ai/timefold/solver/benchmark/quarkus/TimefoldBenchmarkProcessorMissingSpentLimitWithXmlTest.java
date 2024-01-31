@@ -1,5 +1,7 @@
 package ai.timefold.solver.benchmark.quarkus;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
@@ -12,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class TimefoldBenchmarkProcessorMissingSpentLimitWithXmlTest {
 
