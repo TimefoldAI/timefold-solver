@@ -182,6 +182,31 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
+    void errorThrowableInSolver() {
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
+                        scoreDirector -> {
+                            throw new OutOfMemoryError("exceptionInSolver");
+                        }));
+        solverManager = SolverManager.create(
+                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
+
+        AtomicInteger exceptionCount = new AtomicInteger();
+        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1"))
+                .withExceptionHandler((problemId, throwable) -> exceptionCount.incrementAndGet())
+                .run();
+        assertThatThrownBy(solverJob1::getFinalBestSolution)
+                .isInstanceOf(ExecutionException.class)
+                .hasRootCauseMessage("exceptionInSolver");
+        assertThat(exceptionCount.get()).isEqualTo(1);
+        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+    }
+
+    @Test
+    @Timeout(60)
     void exceptionInConsumer() throws InterruptedException {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
