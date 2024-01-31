@@ -111,7 +111,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             final Solution_ finalBestSolution = solver.solve(problem);
             consumerSupport.consumeFinalBestSolution(finalBestSolution);
             return finalBestSolution;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             exceptionHandler.accept(problemId, e);
             bestSolutionHolder.cancelPendingChanges();
             throw new IllegalStateException("Solving failed for problemId (" + problemId + ").", e);
