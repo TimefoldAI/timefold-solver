@@ -2772,7 +2772,7 @@ public class PossibleAssignmentsOnlyMoveIteratorFactory implements MoveIteratorF
 
 [NOTE]
 ====
-The example above can also be done using <<filteredSelection,filtered selection>>.
+The same effect can also be accomplished using <<filteredSelection,filtered selection>>.
 ====
 
 Simple configuration (which can be nested in a `unionMoveSelector` just like any other ``MoveSelector``):
