@@ -2,6 +2,7 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,6 +138,9 @@ public class TimefoldAotContribution implements BeanFactoryInitializationAotCont
             // We don't support serializing ClassLoaders, so replace it
             // with the context class loader
             return "Thread.currentThread().getContextClassLoader()";
+        }
+        if (pojo instanceof Duration value) {
+            return Duration.class.getName() + ".ofNanos(" + value.toNanos() + "L)";
         }
         if (pojo.getClass().isEnum()) {
             // Use field access to read the enum
