@@ -83,24 +83,25 @@ class TimefoldAutoConfigurationTest {
 
     public TimefoldAutoConfigurationTest() {
         contextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
         emptyContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class))
                 .withUserConfiguration(EmptySpringTestConfiguration.class);
         benchmarkContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
-                        AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBenchmarkAutoConfiguration.class))
+                        AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class,
+                                TimefoldBenchmarkAutoConfiguration.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
 
         gizmoContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class))
                 .withUserConfiguration(GizmoSpringTestConfiguration.class);
         chainedContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class))
                 .withUserConfiguration(ChainedSpringTestConfiguration.class);
         multimoduleRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class))
                 .withUserConfiguration(MultiModuleSpringTestConfiguration.class);
         allDefaultsFilteredClassLoader =
                 new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
@@ -112,7 +113,7 @@ class TimefoldAutoConfigurationTest {
                 FilteredClassLoader.ClassPathResourceFilter.of(
                         new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
         noUserConfigurationContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class));
+                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBeanFactory.class));
     }
 
     @Test

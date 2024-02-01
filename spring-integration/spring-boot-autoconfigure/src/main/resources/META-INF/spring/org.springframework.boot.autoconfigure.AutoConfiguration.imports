@@ -1,2 +1,3 @@
 ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration
 ai.timefold.solver.spring.boot.autoconfigure.TimefoldBenchmarkAutoConfiguration
+ai.timefold.solver.spring.boot.autoconfigure.TimefoldBeanFactory
