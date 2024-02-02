@@ -172,7 +172,7 @@ Overlap of two entities is determined by comparing their start and end time grai
 *The TimeGrain pattern doesn't scale well*.
 Especially with a finer time granularity (such as 1 minute) and a long planning window,
 the value range (and therefore xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space]) is too big to scale well.
-It's recommend to use a coarse time granularity (such as 1 week, 1 day, 1 half day, ...) or shorten the planning window size to scale.
+It's recommended to use a coarse time granularity (such as 1 week, 1 day, 1 half day, ...) or shorten the planning window size to scale.
 To resolve scaling issues, the <<timeBucketPattern,Time Bucket pattern>> is often a good alternative.
 
 [#chainedThroughTimePattern]
