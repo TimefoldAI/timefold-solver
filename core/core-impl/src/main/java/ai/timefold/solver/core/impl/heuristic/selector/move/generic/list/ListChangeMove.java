@@ -97,9 +97,6 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
         this.sourceIndex = sourceIndex;
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
-        if (destinationEntity.toString().equals("3") && destinationIndex == 0) {
-            throw new UnsupportedOperationException();
-        }
     }
 
     public Object getSourceEntity() {
