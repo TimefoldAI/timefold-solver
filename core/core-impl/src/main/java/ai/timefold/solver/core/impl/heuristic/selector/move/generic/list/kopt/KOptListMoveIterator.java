@@ -105,16 +105,24 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     @SuppressWarnings("unchecked")
     private KOptDescriptor<Node_> pickKOptMove(int k) {
         // The code in the paper used 1-index arrays
-        Node_[] pickedValues = (Node_[]) new Object[2 * k + 1];
-        Iterator<Node_> originIterator = (Iterator<Node_>) originSelector.iterator();
+        var pickedValues = (Node_[]) new Object[2 * k + 1];
+        var originIterator = (Iterator<Node_>) originSelector.iterator();
 
         pickedValues[1] = originIterator.next();
-        int remainingAttempts = 20;
+        if (pickedValues[1] == null) {
+            return null;
+        }
+        var remainingAttempts = 20;
         while (remainingAttempts > 0
                 && getEffectiveListSize(listVariableDescriptor,
-                        inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
-            pickedValues[1] = originIterator.next();
-            remainingAttempts--;
+                inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
+            do {
+                if (!originIterator.hasNext()) {
+                    return null;
+                }
+                pickedValues[1] = originIterator.next();
+                remainingAttempts--;
+            } while ((pickedValues[1] == null));
         }
 
         if (remainingAttempts == 0) {
@@ -122,7 +130,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             return null;
         }
 
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
         pickedValues[2] = workingRandom.nextBoolean() ? getNodeSuccessor(entityOrderInfo, pickedValues[1])
                 : getNodePredecessor(entityOrderInfo, pickedValues[1]);
 
