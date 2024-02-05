@@ -115,9 +115,12 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         var remainingAttempts = 20;
         while (remainingAttempts > 0
                 && getEffectiveListSize(listVariableDescriptor,
-                inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
+                        inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
             do {
                 if (!originIterator.hasNext()) {
+                    // Filtered selection due to pinning/unassigned may cause this.
+                    // Filtered selectors only know the upper bound of their size, not their actual size.
+                    // Therefore the iterator may be exhausted before the actual size is reached.
                     return null;
                 }
                 pickedValues[1] = originIterator.next();

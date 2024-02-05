@@ -175,6 +175,33 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
+        // Pinning is implemented in generic moves, but custom moves need to take it into account as well.
+        // This fail-fast exists to detect situations where pinned things are being moved, in case of user error.
+        var entityDescriptor = variableDescriptor.getEntityDescriptor();
+        var pinningStatus = entityDescriptor.extractPinningStatus(scoreDirector, entity);
+        if (pinningStatus.hasPin()) {
+            if (pinningStatus.entireEntityPinned()) {
+                throw new IllegalStateException("""
+                        Attempting to change list variable (%s) on an entity (%s) which is fully pinned.
+                        This is most likely a bug in a move.
+                        Maybe you are using an improperly implemented custom move?"""
+                        .formatted(variableDescriptor, entity));
+            }
+            int firstUnpinnedIndex = pinningStatus.firstUnpinnedIndex();
+            if (fromIndex < firstUnpinnedIndex || toIndex < firstUnpinnedIndex) {
+                throw new IllegalStateException(
+                        """
+                                Attempting to change list variable (%s) on an entity (%s) in range [%d, %d), but the variable's first unpinned index is (%d).
+                                This is most likely a bug in a move.
+                                Maybe you are using an improperly implemented custom move?"""
+                                .formatted(variableDescriptor, entity, fromIndex, toIndex, firstUnpinnedIndex));
+            }
+        }
+        beforeListVariableChangedUnchecked(variableDescriptor, entity, fromIndex, toIndex);
+    }
+
+    public void beforeListVariableChangedUnchecked(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
+            int fromIndex, int toIndex) {
         Collection<ListVariableListenerNotifiable<Solution_>> notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {
             ListVariableNotification<Solution_> notification = Notification.listVariableChanged(entity, fromIndex, toIndex);
@@ -244,7 +271,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             if (variableDescriptor.isGenuineListVariable()) {
                 var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
                 int size = listVariableDescriptor.getListVariable(entity).size();
-                beforeListVariableChanged(listVariableDescriptor, entity, 0, size);
+                beforeListVariableChangedUnchecked(listVariableDescriptor, entity, 0, size);
                 afterListVariableChanged(listVariableDescriptor, entity, 0, size);
             } else {
                 // Triggering before...() is enough, as that will add the after...() call to the queue automatically.

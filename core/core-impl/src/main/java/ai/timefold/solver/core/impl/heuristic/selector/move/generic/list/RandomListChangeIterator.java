@@ -42,8 +42,10 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
         }
 
         Object upcomingValue = valueIterator.next();
-        ElementRef destination = destinationIterator.next();
-
+        ElementRef destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        if (destination == null) {
+            return noUpcomingSelection();
+        }
         return new ListChangeMove<>(
                 listVariableDescriptor,
                 inverseVariableSupply.getInverseSingleton(upcomingValue),
@@ -51,4 +53,19 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
                 destination.entity(),
                 destination.index());
     }
+
+    public static ElementRef findUnpinnedDestination(Iterator<ElementRef> destinationIterator,
+            ListVariableDescriptor<?> listVariableDescriptor) {
+        while (destinationIterator.hasNext()) {
+            var destination = destinationIterator.next();
+            var pinningStatus = listVariableDescriptor.getEntityDescriptor().extractPinningStatus(null, destination.entity());
+            boolean isPinned = pinningStatus.hasPin()
+                    && (pinningStatus.entireEntityPinned() || pinningStatus.firstUnpinnedIndex() > destination.index());
+            if (!isPinned) {
+                return destination;
+            }
+        }
+        return null;
+    }
+
 }

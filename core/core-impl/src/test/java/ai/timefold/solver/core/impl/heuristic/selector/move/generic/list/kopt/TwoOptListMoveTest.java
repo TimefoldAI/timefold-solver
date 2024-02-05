@@ -6,7 +6,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -239,8 +238,10 @@ class TwoOptListMoveTest {
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v8, v7, v3, v4, v5, v6, v2, v1);
 
         var variableDescriptorSpy = Mockito.spy(variableDescriptor);
-        var entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListEntity.class));
         Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
         Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
 
         // 2-Opt((v6, v2), (v7, v3))
@@ -281,9 +282,7 @@ class TwoOptListMoveTest {
                         .rebase(destinationScoreDirector));
     }
 
-    static void assertSameProperties(
-            Object destinationEntity, int destinationV1, int destinationV2,
-            TwoOptListMove<?> move) {
+    static void assertSameProperties(Object destinationEntity, int destinationV1, int destinationV2, TwoOptListMove<?> move) {
         assertThat(move.getFirstEntity()).isSameAs(destinationEntity);
         assertThat(move.getFirstEdgeEndpoint()).isEqualTo(destinationV1);
         assertThat(move.getSecondEdgeEndpoint()).isEqualTo(destinationV2);
