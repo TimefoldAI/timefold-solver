@@ -1,7 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +32,6 @@ import org.springframework.javapoet.MethodSpec;
 
 public class TimefoldAotContribution implements BeanFactoryInitializationAotContribution {
     private static final String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
-
-    /**
-     * Name of the field that stores generated objects.
-     * Complex pojo's should consult this map before creating
-     * a new object to allow for cyclic references
-     * (i.e., a = new ArrayList(); a.add(a);).
-     */
-    private static final String COMPLEX_POJO_MAP_FIELD_NAME = "$pojoMap";
 
     /**
      * Map of SolverConfigs that were recorded during the build.
@@ -100,20 +91,15 @@ public class TimefoldAotContribution implements BeanFactoryInitializationAotCont
         // Create a generated class to hold all the solver configs
         GeneratedClass generatedClass = generationContext.getGeneratedClasses().addForFeature("timefold-aot",
                 builder -> {
-                    PojoInliner pojoInliner = new PojoInliner();
-                    builder.addField(Map.class, "solverConfigMap", Modifier.STATIC);
-                    builder.addField(Map.class, COMPLEX_POJO_MAP_FIELD_NAME, Modifier.STATIC);
+                    final String SOLVER_CONFIG_MAP_FIELD = "solverConfigMap";
 
                     // Handwrite the SolverConfig map in the initializer
-                    CodeBlock.Builder staticInitializer = CodeBlock.builder();
-                    staticInitializer.add("$L = new $T();", COMPLEX_POJO_MAP_FIELD_NAME, HashMap.class);
-                    staticInitializer.add("\nsolverConfigMap = $L;",
-                            pojoInliner.getInlinedPojo(solverConfigMap, staticInitializer));
-                    builder.addStaticBlock(staticInitializer.build());
+                    PojoInliner.inlineFields(builder,
+                            PojoInliner.field(Map.class, SOLVER_CONFIG_MAP_FIELD, solverConfigMap));
 
                     // getSolverConfig fetches the SolverConfig with the given name from the map
                     CodeBlock.Builder getSolverConfigMethod = CodeBlock.builder();
-                    getSolverConfigMethod.add("return ($T) solverConfigMap.get(name);", SolverConfig.class);
+                    getSolverConfigMethod.add("return ($T) $L.get(name);", SolverConfig.class, SOLVER_CONFIG_MAP_FIELD);
                     builder.addMethod(MethodSpec.methodBuilder("getSolverConfig")
                             .addModifiers(Modifier.PUBLIC)
                             .addModifiers(Modifier.STATIC)
@@ -124,7 +110,7 @@ public class TimefoldAotContribution implements BeanFactoryInitializationAotCont
 
                     // Returns the key set of the solver config map
                     CodeBlock.Builder getSolverConfigNamesMethod = CodeBlock.builder();
-                    getSolverConfigNamesMethod.add("return new $T(solverConfigMap.keySet());", ArrayList.class);
+                    getSolverConfigNamesMethod.add("return new $T($L.keySet());", ArrayList.class, SOLVER_CONFIG_MAP_FIELD);
                     builder.addMethod(MethodSpec.methodBuilder("getSolverConfigNames")
                             .addModifiers(Modifier.PUBLIC)
                             .addModifiers(Modifier.STATIC)

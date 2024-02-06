@@ -5,16 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.element.Modifier;
+
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.javapoet.CodeBlock;
+import org.springframework.javapoet.FieldSpec;
+import org.springframework.javapoet.TypeSpec;
 
 public class PojoInlinerTest {
     private static class PrivatePojo {
@@ -208,7 +213,15 @@ public class PojoInlinerTest {
     }
 
     void assertBuilder(CodeBlock.Builder builder, String expected) {
-        assertThat(builder.build().toString().trim()).isEqualTo(expected.trim());
+        if (expected.isEmpty()) {
+            assertThat(builder.build().toString().trim())
+                    .isEqualTo("%s %s = new %s();".formatted(Map.class.getCanonicalName(), COMPLEX_POJO_MAP_FIELD_NAME,
+                            HashMap.class.getCanonicalName()));
+        } else {
+            assertThat(builder.build().toString().trim())
+                    .isEqualTo("%s %s = new %s();\n".formatted(Map.class.getCanonicalName(), COMPLEX_POJO_MAP_FIELD_NAME,
+                            HashMap.class.getCanonicalName()) + expected.trim());
+        }
     }
 
     private String getPojo(int id, Object value) {
@@ -225,23 +238,22 @@ public class PojoInlinerTest {
     @Test
     void inlinePrivateClasses() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
 
-        assertThatCode(() -> inliner.getInlinedPojo(PrivatePojo.class, builder))
+        assertThatCode(() -> inliner.getInlinedPojo(PrivatePojo.class))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize (" + PrivatePojo.class + ") because it is not a public class.");
 
-        assertThatCode(() -> inliner.getInlinedPojo(new PrivatePojo(), builder))
+        assertThatCode(() -> inliner.getInlinedPojo(new PrivatePojo()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize (" + new PrivatePojo() + ") because its type (" + PrivatePojo.class
                         + ") is not public.");
 
-        assertThatCode(() -> inliner.getInlinedPojo(new PrivateRecord(), builder))
+        assertThatCode(() -> inliner.getInlinedPojo(new PrivateRecord()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize record (" + new PrivateRecord() + ") because its type (" + PrivateRecord.class
                         + ") is not public.");
 
-        assertThatCode(() -> inliner.getInlinedPojo(PrivateEnum.VALUE, builder))
+        assertThatCode(() -> inliner.getInlinedPojo(PrivateEnum.VALUE))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize (" + PrivateEnum.VALUE + ") because its type (" + PrivateEnum.class
                         + ") is not a public class.");
@@ -250,9 +262,8 @@ public class PojoInlinerTest {
     @Test
     void inlinePrivateSetter() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
 
-        assertThatCode(() -> inliner.getInlinedPojo(new PrivateSetterPojo(1, 2), builder))
+        assertThatCode(() -> inliner.getInlinedPojo(new PrivateSetterPojo(1, 2)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize type (" + PrivateSetterPojo.class
                         + ") as it is missing a public setter method for field (bFieldWithSetter) of type (int).");
@@ -261,17 +272,17 @@ public class PojoInlinerTest {
     @Test
     void inlineTypeUsingInterfaceImpl() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         ArrayListPojo pojo = new ArrayListPojo();
         pojo.setArrayList(new ArrayList<>());
-        assertThatCode(() -> inliner.getInlinedPojo(pojo, builder))
+        assertThatCode(() -> inliner.getInlinedPojo(pojo))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize type (" + ArrayListPojo.class
                         + ") as its field (arrayList) uses an implementation of a collection (" + ArrayList.class
                         + ") instead of the interface type (" + List.class + ").");
 
         ArrayListRecord record = new ArrayListRecord(new ArrayList<>());
-        assertThatCode(() -> inliner.getInlinedPojo(record, builder))
+        assertThatCode(() -> inliner.getInlinedPojo(record))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize type (" + ArrayListRecord.class
                         + ") as its component (arrayList) uses an implementation of a collection (" + ArrayList.class
@@ -281,9 +292,9 @@ public class PojoInlinerTest {
     @Test
     void inlineNotPojo() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         NotPojo pojo = new NotPojo(1, 2);
-        assertThatCode(() -> inliner.getInlinedPojo(pojo, builder))
+        assertThatCode(() -> inliner.getInlinedPojo(pojo))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize type (" + NotPojo.class
                         + ") as it is missing a public setter method for field (bFieldWithoutSetter) of type (int).");
@@ -292,9 +303,8 @@ public class PojoInlinerTest {
     @Test
     void inlineExtendedNotPojo() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
 
-        assertThatCode(() -> inliner.getInlinedPojo(new ExtendedNotPojo(), builder))
+        assertThatCode(() -> inliner.getInlinedPojo(new ExtendedNotPojo()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize type (" + ExtendedNotPojo.class + ") because its superclass ("
                         + PrivateSetterPojo.class + ") is not serializable.")
@@ -307,11 +317,10 @@ public class PojoInlinerTest {
     @Test
     void inlineCircularRecord() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
 
         LinkedRecordPojo pojo = LinkedRecordPojo.circular();
 
-        assertThatCode(() -> inliner.getInlinedPojo(pojo, builder))
+        assertThatCode(() -> inliner.getInlinedPojo(pojo))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot serialize record (" + pojo + ") because the value (" + pojo.next
                         + ") for its component (next) is not serializable.")
@@ -328,65 +337,63 @@ public class PojoInlinerTest {
     @Test
     void inlinePrimitives() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
 
         // null
-        assertThat(inliner.getInlinedPojo(null, builder)).isEqualTo("null");
-        assertBuilder(builder, "");
+        assertThat(inliner.getInlinedPojo(null)).isEqualTo("null");
+        assertBuilder(inliner.getInitializerBuilder(), "");
 
         // numbers
-        assertThat(inliner.getInlinedPojo(true, builder)).isEqualTo("true");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo(false, builder)).isEqualTo("false");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo((byte) 1, builder)).isEqualTo("((byte) 1)");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo((short) 1, builder)).isEqualTo("((short) 1)");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo(1, builder)).isEqualTo("1");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo(1L, builder)).isEqualTo("1L");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo(1f, builder)).isEqualTo("1.0f");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo(1d, builder)).isEqualTo("1.0d");
-        assertBuilder(builder, "");
+        assertThat(inliner.getInlinedPojo(true)).isEqualTo("true");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo(false)).isEqualTo("false");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo((byte) 1)).isEqualTo("((byte) 1)");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo((short) 1)).isEqualTo("((short) 1)");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo(1)).isEqualTo("1");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo(1L)).isEqualTo("1L");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo(1f)).isEqualTo("1.0f");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo(1d)).isEqualTo("1.0d");
+        assertBuilder(inliner.getInitializerBuilder(), "");
 
         // Strings and chars
-        assertThat(inliner.getInlinedPojo('a', builder)).isEqualTo("'\\u0061'");
-        assertBuilder(builder, "");
-        assertThat(inliner.getInlinedPojo("my\nmultiline\nstring", builder)).isEqualTo("\"my\\nmultiline\\nstring\"");
-        assertBuilder(builder, "");
+        assertThat(inliner.getInlinedPojo('a')).isEqualTo("'\\u0061'");
+        assertBuilder(inliner.getInitializerBuilder(), "");
+        assertThat(inliner.getInlinedPojo("my\nmultiline\nstring")).isEqualTo("\"my\\nmultiline\\nstring\"");
+        assertBuilder(inliner.getInitializerBuilder(), "");
     }
 
     @Test
     void inlineObjectPrimitives() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
 
         // Classes
-        assertThat(inliner.getInlinedPojo(PojoInliner.class, builder))
+        assertThat(inliner.getInlinedPojo(PojoInliner.class))
                 .isEqualTo(PojoInliner.class.getCanonicalName() + ".class");
-        assertBuilder(builder, "");
+        assertBuilder(inliner.getInitializerBuilder(), "");
 
         // Enums
-        assertThat(inliner.getInlinedPojo(EnvironmentMode.REPRODUCIBLE, builder))
+        assertThat(inliner.getInlinedPojo(EnvironmentMode.REPRODUCIBLE))
                 .isEqualTo(EnvironmentMode.class.getCanonicalName() + "." + EnvironmentMode.REPRODUCIBLE.name());
-        assertBuilder(builder, "");
+        assertBuilder(inliner.getInitializerBuilder(), "");
 
         // ClassLoader
-        assertThat(inliner.getInlinedPojo(Thread.currentThread().getContextClassLoader(), builder))
+        assertThat(inliner.getInlinedPojo(Thread.currentThread().getContextClassLoader()))
                 .isEqualTo("Thread.currentThread().getContextClassLoader()");
-        assertBuilder(builder, "");
+        assertBuilder(inliner.getInitializerBuilder(), "");
     }
 
     @Test
     void inlinePrimitiveArray() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         int[] pojo = new int[] { 1, 2, 3, 4, 5 };
-        String accessor = inliner.getInlinedPojo(pojo, builder);
-        assertBuilder(builder,
+        String accessor = inliner.getInlinedPojo(pojo);
+        assertBuilder(inliner.getInitializerBuilder(),
                 """
                         int[] $obj0;
                         $obj0 = new int[5];
@@ -403,13 +410,13 @@ public class PojoInlinerTest {
     @Test
     void inlineObjectArray() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         Object[] pojo = new Object[3];
         pojo[0] = null;
         pojo[1] = pojo;
         pojo[2] = "Item";
-        String accessor = inliner.getInlinedPojo(pojo, builder);
-        assertBuilder(builder,
+        String accessor = inliner.getInlinedPojo(pojo);
+        assertBuilder(inliner.getInitializerBuilder(),
                 """
                         java.lang.Object[] $obj0;
                         $obj0 = new java.lang.Object[3];
@@ -424,10 +431,10 @@ public class PojoInlinerTest {
     @Test
     void inlineIntList() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         List<Integer> pojo = List.of(1, 2, 3);
-        String accessor = inliner.getInlinedPojo(pojo, builder);
-        assertBuilder(builder,
+        String accessor = inliner.getInlinedPojo(pojo);
+        assertBuilder(inliner.getInitializerBuilder(),
                 """
                         java.util.List $obj0;
                         $obj0 = new java.util.ArrayList(3);
@@ -442,13 +449,13 @@ public class PojoInlinerTest {
     @Test
     void inlineIntSet() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         Set<Integer> pojo = new LinkedHashSet<>(3);
         pojo.add(1);
         pojo.add(2);
         pojo.add(3);
-        String accessor = inliner.getInlinedPojo(pojo, builder);
-        assertBuilder(builder,
+        String accessor = inliner.getInlinedPojo(pojo);
+        assertBuilder(inliner.getInitializerBuilder(),
                 """
                         java.util.Set $obj0;
                         $obj0 = new java.util.LinkedHashSet(3);
@@ -463,13 +470,13 @@ public class PojoInlinerTest {
     @Test
     void inlineIntStringMap() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         Map<Integer, String> pojo = new LinkedHashMap<>(3);
         pojo.put(1, "a");
         pojo.put(2, "b");
         pojo.put(3, "c");
-        String accessor = inliner.getInlinedPojo(pojo, builder);
-        assertBuilder(builder,
+        String accessor = inliner.getInlinedPojo(pojo);
+        assertBuilder(inliner.getInitializerBuilder(),
                 """
                         java.util.Map $obj0;
                         $obj0 = new java.util.LinkedHashMap(3);
@@ -484,9 +491,9 @@ public class PojoInlinerTest {
     @Test
     void inlinePojo() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         BasicPojo pojo = new BasicPojo(new BasicPojo(null, 0, "parent"), 1, "child");
-        String accessor = inliner.getInlinedPojo(pojo, builder);
+        String accessor = inliner.getInlinedPojo(pojo);
         String expected = """
                 %s $obj0;
                 $obj0 = new %s();
@@ -505,23 +512,23 @@ public class PojoInlinerTest {
                 BasicPojo.class.getCanonicalName(),
                 BasicPojo.class.getCanonicalName(),
                 getPojo(1, pojo.getParentPojo()));
-        assertBuilder(builder, expected);
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(accessor, 0, pojo);
-        String parentAccessor = inliner.getInlinedPojo(pojo.getParentPojo(), builder);
-        assertBuilder(builder, expected);
+        String parentAccessor = inliner.getInlinedPojo(pojo.getParentPojo());
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(parentAccessor, 1, pojo.getParentPojo());
     }
 
     @Test
     void inlineExtendedPojo() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         ExtendedPojo pojo = new ExtendedPojo();
         pojo.setAdditionalField("newField");
         pojo.setId(1);
         pojo.setName("child");
         pojo.setParentPojo(new BasicPojo(null, 0, "parent"));
-        String accessor = inliner.getInlinedPojo(pojo, builder);
+        String accessor = inliner.getInlinedPojo(pojo);
         String expected = """
                 %s $obj0;
                 $obj0 = new %s();
@@ -541,20 +548,20 @@ public class PojoInlinerTest {
                 BasicPojo.class.getCanonicalName(),
                 BasicPojo.class.getCanonicalName(),
                 getPojo(1, pojo.getParentPojo()));
-        assertBuilder(builder, expected);
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(accessor, 0, pojo);
-        String parentAccessor = inliner.getInlinedPojo(pojo.getParentPojo(), builder);
-        assertBuilder(builder, expected);
+        String parentAccessor = inliner.getInlinedPojo(pojo.getParentPojo());
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(parentAccessor, 1, pojo.getParentPojo());
     }
 
     @Test
     void inlineRecord() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         BasicPojo pojo = new BasicPojo(null, 0, "name");
         RecordPojo recordPojo = new RecordPojo("INSERT", 0, pojo);
-        String accessor = inliner.getInlinedPojo(recordPojo, builder);
+        String accessor = inliner.getInlinedPojo(recordPojo);
         String expected = """
                 %s $obj0;
                 $obj0 = new %s();
@@ -569,17 +576,17 @@ public class PojoInlinerTest {
                 RecordPojo.class.getCanonicalName(),
                 RecordPojo.class.getCanonicalName(),
                 getPojo(0, recordPojo.pojo()));
-        assertBuilder(builder, expected);
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(accessor, 1, recordPojo);
-        String partAccessor = inliner.getInlinedPojo(recordPojo.pojo(), builder);
-        assertBuilder(builder, expected);
+        String partAccessor = inliner.getInlinedPojo(recordPojo.pojo());
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(partAccessor, 0, recordPojo.pojo());
     }
 
     @Test
     void inlineNonCircularRecord() {
         PojoInliner inliner = new PojoInliner();
-        CodeBlock.Builder builder = CodeBlock.builder();
+
         LinkedRecordPojo pojo = LinkedRecordPojo.nonCircular();
         String expected = """
                 %s $obj0;
@@ -598,14 +605,75 @@ public class PojoInlinerTest {
                 LinkedRecordPojo.class.getCanonicalName(),
                 LinkedRecordPojo.class.getCanonicalName(),
                 getPojo(0, pojo.next()));
-        String accessor = inliner.getInlinedPojo(pojo, builder);
-        assertBuilder(builder, expected);
+        String accessor = inliner.getInlinedPojo(pojo);
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(accessor, 2, pojo);
-        String nextAccessor = inliner.getInlinedPojo(pojo.next(), builder);
-        assertBuilder(builder, expected);
+        String nextAccessor = inliner.getInlinedPojo(pojo.next());
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(nextAccessor, 0, pojo.next());
-        String referenceAccessor = inliner.getInlinedPojo(pojo.next().getReference(), builder);
-        assertBuilder(builder, expected);
+        String referenceAccessor = inliner.getInlinedPojo(pojo.next().getReference());
+        assertBuilder(inliner.getInitializerBuilder(), expected);
         assertAccessor(referenceAccessor, 1, pojo.next().getReference());
+    }
+
+    @Test
+    void inlineFieldToStaticBlock() {
+        PojoInliner inliner = new PojoInliner();
+        inliner.inlineField("myField", new BasicPojo(null, 0, "name"));
+        String expected = """
+                %s $obj0;
+                $obj0 = new %s();
+                $pojoMap.put("$obj0", $obj0);
+                $obj0.setId(0);
+                $obj0.setName("name");
+                $obj0.setParentPojo(null);
+                myField = %s;
+                """.formatted(BasicPojo.class.getCanonicalName(),
+                BasicPojo.class.getCanonicalName(),
+                getPojo(0, new BasicPojo(null, 0, "name")));
+        assertBuilder(inliner.getInitializerBuilder(), expected);
+    }
+
+    @Test
+    void inlineMultipleFieldsToStaticBlock() {
+        var typeBuilder = TypeSpec.classBuilder("TestClass");
+        PojoInliner.inlineFields(typeBuilder,
+                PojoInliner.field(int.class, "a", 1),
+                PojoInliner.field(BasicPojo.class, "b", new BasicPojo(null, 0, "name")),
+                PojoInliner.field(Object.class, "c", "text"));
+        TypeSpec typeSpec = typeBuilder.build();
+        assertThat(typeSpec.fieldSpecs).containsExactly(
+                FieldSpec.builder(int.class, "a", Modifier.PRIVATE,
+                        Modifier.STATIC,
+                        Modifier.FINAL)
+                        .build(),
+                FieldSpec.builder(BasicPojo.class, "b", Modifier.PRIVATE,
+                        Modifier.STATIC,
+                        Modifier.FINAL)
+                        .build(),
+                FieldSpec.builder(Object.class, "c", Modifier.PRIVATE,
+                        Modifier.STATIC,
+                        Modifier.FINAL)
+                        .build());
+        assertThat(typeSpec.staticBlock.toString()).isEqualTo(
+                """
+                        static {
+                          %s %s = new %s();
+                          a = 1;
+                          %s $obj0;
+                          $obj0 = new %s();
+                          $pojoMap.put("$obj0", $obj0);
+                          $obj0.setId(0);
+                          $obj0.setName("name");
+                          $obj0.setParentPojo(null);
+                          b = %s;
+                          c = "text";
+                        }
+                         """.formatted(Map.class.getCanonicalName(),
+                        COMPLEX_POJO_MAP_FIELD_NAME,
+                        HashMap.class.getCanonicalName(),
+                        BasicPojo.class.getCanonicalName(),
+                        BasicPojo.class.getCanonicalName(),
+                        getPojo(0, new BasicPojo(null, 0, "name"))));
     }
 }
