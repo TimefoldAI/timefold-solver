@@ -3,9 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.iterator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
 
 /**
  * IMPORTANT: The constructor of any subclass of this abstract class, should never call any of its child
@@ -58,6 +60,20 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
         } else {
             return "Next upcoming (" + upcomingSelection + ")";
         }
+    }
+
+    public static ElementRef findUnpinnedDestination(Iterator<ElementRef> destinationIterator,
+            ListVariableDescriptor<?> listVariableDescriptor) {
+        while (destinationIterator.hasNext()) {
+            var destination = destinationIterator.next();
+            var pinningStatus = listVariableDescriptor.getEntityDescriptor().extractPinningStatus(null, destination.entity());
+            var isPinned = pinningStatus.hasPin()
+                    && (pinningStatus.entireEntityPinned() || pinningStatus.firstUnpinnedIndex() > destination.index());
+            if (!isPinned) {
+                return destination;
+            }
+        }
+        return null;
     }
 
 }

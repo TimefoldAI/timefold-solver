@@ -646,8 +646,6 @@ public class EntityDescriptor<Solution_> {
 
     /**
      * Returns the {@link PinningStatus} of the entity.
-     * If {@link PlanningPin} is enabled on the entity, the entity is fully pinned.
-     * Otherwise if {@link PlanningPinToIndex} is specified, returns the value of it.
      *
      * @param scoreDirector
      * @param entity

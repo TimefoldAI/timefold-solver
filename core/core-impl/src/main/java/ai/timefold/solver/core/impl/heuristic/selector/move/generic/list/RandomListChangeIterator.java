@@ -54,18 +54,4 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
                 destination.index());
     }
 
-    public static ElementRef findUnpinnedDestination(Iterator<ElementRef> destinationIterator,
-            ListVariableDescriptor<?> listVariableDescriptor) {
-        while (destinationIterator.hasNext()) {
-            var destination = destinationIterator.next();
-            var pinningStatus = listVariableDescriptor.getEntityDescriptor().extractPinningStatus(null, destination.entity());
-            boolean isPinned = pinningStatus.hasPin()
-                    && (pinningStatus.entireEntityPinned() || pinningStatus.firstUnpinnedIndex() > destination.index());
-            if (!isPinned) {
-                return destination;
-            }
-        }
-        return null;
-    }
-
 }
