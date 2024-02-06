@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,6 +24,8 @@ import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.Constrain
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableElementStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -32,6 +35,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
+
+    /**
+     * The first dimension is the entity descriptor ordinal.
+     * The second dimension is the ordinal of list variable descriptor in that entity.
+     * This is a performance optimization which helps avoid requesting a new supply in before/after methods,
+     * and avoids hash lookups which would be used by the map that otherwise would have been used for this.
+     */
+    protected final ListVariableDataSupply<Solution_>[][] listVariableDataSupplies;
     protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
@@ -74,14 +86,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
-                ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
+                ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
                 : null;
         this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
+        this.listVariableDataSupplies = buildListVariableDataSupplies(solutionDescriptor, variableListenerSupport);
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
         if (scoreDirectorFactory.isTrackingWorkingSolution()) {
             this.solutionTracker = new SolutionTracker<>(getSolutionDescriptor(),
@@ -91,6 +105,30 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
+    }
+
+    private static <Solution_> ListVariableDataSupply<Solution_>[][] buildListVariableDataSupplies(
+            SolutionDescriptor<Solution_> solutionDescriptor, VariableListenerSupport<Solution_> variableListenerSupport) {
+        var entityDescriptorCollection = solutionDescriptor.getEntityDescriptors();
+        var listVariableDataSupplyArrayArray = new ListVariableDataSupply[entityDescriptorCollection.size()][];
+        for (var entityDescriptor : entityDescriptorCollection) {
+            var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+            var listVariableDataSupplyArray = new ListVariableDataSupply[variableDescriptorList.size()];
+            for (var variableDescriptor : variableDescriptorList) {
+                if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
+                    listVariableDataSupplyArray[variableDescriptor.getOrdinal()] =
+                            variableListenerSupport.demand(listVariableDescriptor.getProvidedDemand());
+                }
+            }
+            listVariableDataSupplyArrayArray[entityDescriptor.getOrdinal()] = listVariableDataSupplyArray;
+        }
+        return listVariableDataSupplyArrayArray;
+    }
+
+    protected ListVariableDataSupply<Solution_>
+            getListVariableDataSupply(ListVariableDescriptor<Solution_> listVariableDescriptor) {
+        return listVariableDataSupplies[listVariableDescriptor.getEntityDescriptor().getOrdinal()][listVariableDescriptor
+                .getOrdinal()];
     }
 
     @Override
@@ -330,85 +368,55 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         variableListenerSupport.close();
     }
 
+    /**
+     * When transitioning between phases, the working solution is reset
+     * and therefore so is the state of supplies.
+     * This means we lose the information about which list variable values were initialized.
+     * This method retrieves that information so that, once the solution is reset,
+     * the information can be restored in {@link #initializeElements(Map)}.
+     * This does not apply to assigned values because those are already in some list,
+     * and therefore we find their status from that list.
+     *
+     * @return never null
+     */
+    public Map<ListVariableDescriptor<Solution_>, Set<Object>> getInitializedUnassignedListVariableElements() {
+        var listVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
+            return Collections.emptyMap();
+        }
+        var workingSolution = getWorkingSolution();
+        var supply = getListVariableDataSupply(listVariableDescriptor);
+        if (supply.countNotAssigned() == 0) {
+            return Collections.emptyMap();
+        }
+        var iterator = listVariableDescriptor.getValuesFromValueRange(workingSolution, null);
+        var unassignedElementSet = CollectionUtils.newHashSet(
+                ((int) Math.min(Integer.MAX_VALUE, listVariableDescriptor.getValueRangeSize(workingSolution, null))));
+        while (iterator.hasNext()) {
+            var next = iterator.next();
+            var state = supply.getState(next);
+            if (state == ListVariableElementStateSupply.ElementState.INITIALIZED) {
+                unassignedElementSet.add(next);
+            }
+        }
+        return Collections.singletonMap(listVariableDescriptor, unassignedElementSet);
+    }
+
+    /**
+     * @see #getInitializedUnassignedListVariableElements()
+     */
+    public void initializeElements(Map<ListVariableDescriptor<Solution_>, Set<Object>> previousState) {
+        previousState.forEach((listVariableDescriptor, list) -> list.forEach(element -> {
+            var actualElement = lookUpWorkingObject(element);
+            beforeListVariableElementInitialized(listVariableDescriptor, actualElement);
+            afterListVariableElementInitialized(listVariableDescriptor, actualElement);
+        }));
+        triggerVariableListeners();
+    }
+
     // ************************************************************************
     // Entity/variable add/change/remove methods
     // ************************************************************************
-
-    @Override
-    public final void beforeEntityAdded(Object entity) {
-        beforeEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
-    @Override
-    public final void afterEntityAdded(Object entity) {
-        afterEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
-    @Override
-    public final void beforeVariableChanged(Object entity, String variableName) {
-        VariableDescriptor<Solution_> variableDescriptor = getSolutionDescriptor()
-                .findVariableDescriptorOrFail(entity, variableName);
-        beforeVariableChanged(variableDescriptor, entity);
-    }
-
-    @Override
-    public final void afterVariableChanged(Object entity, String variableName) {
-        VariableDescriptor<Solution_> variableDescriptor = getSolutionDescriptor()
-                .findVariableDescriptorOrFail(entity, variableName);
-        afterVariableChanged(variableDescriptor, entity);
-    }
-
-    @Override
-    public void beforeListVariableElementAssigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementAssigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void afterListVariableElementAssigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementAssigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void beforeListVariableElementUnassigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementUnassigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void afterListVariableElementUnassigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementUnassigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void beforeListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableChanged(listVariableDescriptor, entity, fromIndex, toIndex);
-    }
-
-    @Override
-    public void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableChanged(listVariableDescriptor, entity, fromIndex, toIndex);
-    }
-
-    @Override
-    public final void beforeEntityRemoved(Object entity) {
-        beforeEntityRemoved(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
-    @Override
-    public final void afterEntityRemoved(Object entity) {
-        afterEntityRemoved(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
 
     public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         variableListenerSupport.beforeEntityAdded(entityDescriptor, entity);
@@ -451,14 +459,38 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public void beforeListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
+        // Do nothing.
+    }
+
+    @Override
+    public void afterListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
+        var supply = getListVariableDataSupply(variableDescriptor);
+        supply.afterListVariableElementInitialized(variableDescriptor, element);
+    }
+
+    @Override
+    public void beforeListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
+        // Do nothing.
+    }
+
+    @Override
+    public void afterListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
+        var supply = getListVariableDataSupply(variableDescriptor);
+        supply.afterListVariableElementUninitialized(variableDescriptor, element);
+    }
+
+    @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         // Do nothing
     }
 
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        workingInitScore++;
-        assertInitScoreZeroOrLess();
+        if (!variableDescriptor.allowsUnassigned()) { // Unassigned elements don't count towards the initScore here.
+            workingInitScore++;
+            assertInitScoreZeroOrLess();
+        }
     }
 
     @Override
@@ -468,7 +500,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        workingInitScore--;
+        if (!variableDescriptor.allowsUnassigned()) { // Unassigned elements don't count towards the initScore here.
+            workingInitScore--;
+        }
         variableListenerSupport.afterElementUnassigned(variableDescriptor, element);
     }
 

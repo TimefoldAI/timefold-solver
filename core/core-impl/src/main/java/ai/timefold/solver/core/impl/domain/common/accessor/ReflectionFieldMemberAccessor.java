@@ -39,12 +39,18 @@ public final class ReflectionFieldMemberAccessor extends AbstractMemberAccessor 
 
     @Override
     public Object executeGetter(Object bean) {
+        if (bean == null) {
+            throw new IllegalArgumentException("Requested field (%s) on a null bean."
+                    .formatted(field));
+        }
         try {
             return field.get(bean);
         } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Cannot get the field (" + field.getName()
-                    + ") on bean of class (" + bean.getClass() + ").\n" +
-                    MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE, e);
+            throw new IllegalStateException("""
+                    Cannot get the field (%s) on bean of class (%s).
+                    %s"""
+                    .formatted(field.getName(), bean.getClass(), MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE),
+                    e);
         }
     }
 
@@ -55,11 +61,18 @@ public final class ReflectionFieldMemberAccessor extends AbstractMemberAccessor 
 
     @Override
     public void executeSetter(Object bean, Object value) {
+        if (bean == null) {
+            throw new IllegalArgumentException("Requested field (%s) on a null bean."
+                    .formatted(field));
+        }
         try {
             field.set(bean, value);
         } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Cannot set the field (" + field.getName()
-                    + ") on bean of class (" + bean.getClass() + ").", e);
+            throw new IllegalStateException("""
+                    Cannot set the field (%s) on bean of class (%s).
+                    %s"""
+                    .formatted(field.getName(), bean.getClass(), MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE),
+                    e);
         }
     }
 

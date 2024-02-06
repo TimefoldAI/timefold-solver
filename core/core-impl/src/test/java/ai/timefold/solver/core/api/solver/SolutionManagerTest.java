@@ -13,6 +13,9 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedIncrementalScoreCalculator;
@@ -30,9 +33,6 @@ import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEnt
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultivarIncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataOtherValue;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableIncrementalScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedIncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedSolution;
@@ -46,7 +46,7 @@ public class SolutionManagerTest {
 
     public static final SolverFactory<TestdataShadowedSolution> SOLVER_FACTORY =
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowedSolverConfig.xml");
-    public static final SolverFactory<TestdataNullableSolution> SOLVER_FACTORY_OVERCONSTRAINED =
+    public static final SolverFactory<TestdataAllowsUnassignedSolution> SOLVER_FACTORY_OVERCONSTRAINED =
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataOverconstrainedSolverConfig.xml");
     public static final SolverFactory<TestdataShadowedSolution> SOLVER_FACTORY_SHADOWED = SolverFactory.create(
             new SolverConfig()
@@ -55,13 +55,13 @@ public class SolutionManagerTest {
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
                                     TestdataShadowedIncrementalScoreCalculator.class)));
-    public static final SolverFactory<TestdataNullableSolution> SOLVER_FACTORY_UNASSIGNED = SolverFactory.create(
+    public static final SolverFactory<TestdataAllowsUnassignedSolution> SOLVER_FACTORY_UNASSIGNED = SolverFactory.create(
             new SolverConfig()
-                    .withSolutionClass(TestdataNullableSolution.class)
-                    .withEntityClasses(TestdataNullableEntity.class)
+                    .withSolutionClass(TestdataAllowsUnassignedSolution.class)
+                    .withEntityClasses(TestdataAllowsUnassignedEntity.class)
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
-                                    TestdataNullableIncrementalScoreCalculator.class)));
+                                    TestdataAllowsUnassignedIncrementalScoreCalculator.class)));
     public static final SolverFactory<TestdataMultiVarSolution> SOLVER_FACTORY_MULTIVAR = SolverFactory.create(
             new SolverConfig()
                     .withSolutionClass(TestdataMultiVarSolution.class)
@@ -306,7 +306,7 @@ public class SolutionManagerTest {
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
     void analyzeNullableWithNullValue(SolutionManagerSource SolutionManagerSource) {
-        var solution = TestdataNullableSolution.generateSolution();
+        var solution = TestdataAllowsUnassignedSolution.generateSolution();
         solution.getEntityList().get(0).setValue(null);
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_OVERCONSTRAINED);
@@ -372,7 +372,7 @@ public class SolutionManagerTest {
     @EnumSource(SolutionManagerSource.class)
     void recommendFitWithUnassigned(SolutionManagerSource SolutionManagerSource) {
         int valueSize = 3;
-        var solution = TestdataNullableSolution.generateSolution(valueSize, 3);
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(valueSize, 3);
         var uninitializedEntity = solution.getEntityList().get(2);
         uninitializedEntity.setValue(null);
 
@@ -381,7 +381,8 @@ public class SolutionManagerTest {
         // But only entity2 should be processed for recommendations.
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_UNASSIGNED);
         assertThat(solutionManager).isNotNull();
-        var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity, TestdataNullableEntity::getValue);
+        var recommendationList =
+                solutionManager.recommendFit(solution, uninitializedEntity, TestdataAllowsUnassignedEntity::getValue);
 
         // Three values means there need to be four recommendations, one extra for unassigned.
         assertThat(recommendationList).hasSize(valueSize + 1);
@@ -440,7 +441,7 @@ public class SolutionManagerTest {
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_MULTIVAR);
         var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity,
                 entity -> new Triple<>(entity.getPrimaryValue(), entity.getSecondaryValue(),
-                        entity.getTertiaryNullableValue()));
+                        entity.getTertiaryValueAllowedUnassigned()));
         assertThat(recommendationList).hasSize(8);
 
         var firstRecommendation = recommendationList.get(0);

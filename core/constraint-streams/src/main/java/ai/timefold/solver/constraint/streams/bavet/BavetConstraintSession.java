@@ -15,7 +15,7 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 
 /**
  * The type is public to make it easier for Bavet-specific minimal bug reproducers to be created.
- * Instances should be created through {@link BavetConstraintStreamScoreDirectorFactory#newSession(boolean, Object)}.
+ * Instances should be created through {@link BavetConstraintStreamScoreDirectorFactory#newSession(Object, boolean)}.
  *
  * @see PropagationQueue Description of the tuple propagation mechanism.
  * @param <Score_>

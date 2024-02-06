@@ -79,8 +79,8 @@ public abstract class VariableDescriptor<Solution_> {
 
     public abstract void linkVariableDescriptors(DescriptorPolicy descriptorPolicy);
 
-    public boolean isGenuineListVariable() {
-        return false;
+    public final boolean isListVariable() {
+        return this instanceof ListVariableDescriptor;
     }
 
     // ************************************************************************

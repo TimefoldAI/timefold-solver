@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -157,17 +158,15 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * </ul>
      */
     public <Solution_> KOptListMove<Solution_> getKOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            IndexVariableSupply originalIndexVariableSupply,
-            SingletonInverseVariableSupply inverseVariableSupply) {
+            ListVariableDataSupply<Solution_> listVariableDataSupply) {
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it a no-op
-            return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, new MultipleDelegateList<>(),
-                    List.of(), 0, new int[] {});
+            return new KOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0, new int[] {});
         }
 
-        MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, inverseVariableSupply);
-        IndexVariableSupply indexVariableSupply = node -> combinedList.getIndexOfValue(listVariableDescriptor,
-                inverseVariableSupply, originalIndexVariableSupply, node);
+        MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, listVariableDataSupply);
+        IndexVariableSupply indexVariableSupply =
+                node -> combinedList.getIndexOfValue(listVariableDescriptor, listVariableDataSupply, node);
         int entityListSize = combinedList.size();
         List<FlipSublistAction> out = new ArrayList<>();
         int[] originalToCurrentIndexList = new int[entityListSize];
@@ -214,7 +213,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             if (maximumOrientedPairCountAfterReversal >= 0) {
                 if ((bestOrientedPairFirstEndpoint & 1) == 1) {
                     out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
-                            combinedList, originalToCurrentIndexList,
+                            originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint + 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairSecondEndpoint]],
@@ -225,7 +224,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                             bestOrientedPairSecondEndpoint);
                 } else {
                     out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
-                            combinedList, originalToCurrentIndexList,
+                            originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint - 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairSecondEndpoint]],
@@ -246,7 +245,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
 
                 if (secondEndpoint >= firstEndpoint + 2) {
                     out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
-                            combinedList, originalToCurrentIndexList,
+                            originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[firstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[firstEndpoint + 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[secondEndpoint]],
@@ -275,8 +274,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                 .toArray();
 
         newEndIndices[newEndIndices.length - 1] = originalToCurrentIndexList.length - 1;
-        return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, combinedList, out, startElementShift,
-                newEndIndices);
+        return new KOptListMove<>(listVariableDescriptor, this, combinedList, out, startElementShift, newEndIndices);
     }
 
     /**
@@ -402,7 +400,6 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     private static <Node_> FlipSublistAction getListReversalMoveForEdgePair(
             ListVariableDescriptor<?> listVariableDescriptor,
             IndexVariableSupply indexVariableSupply,
-            MultipleDelegateList<Node_> combinedList,
             int[] originalToCurrentIndexList,
             Node_ firstEdgeStart,
             Node_ firstEdgeEnd,
@@ -441,7 +438,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         for (Map.Entry<Object, Integer> entry : entityToEntityIndex.entrySet()) {
             int index = entry.getValue();
             Object entity = entry.getKey();
-            List<Node_> entityList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
+            List<Node_> entityList = (List<Node_>) listVariableDescriptor.getValue(entity);
             int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
             if (firstUnpinnedIndex != 0) {
                 entityList = entityList.subList(firstUnpinnedIndex, entityList.size());

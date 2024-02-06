@@ -37,9 +37,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(constraintMatchEnabledPreference, workingSolution);
-        getSolutionDescriptor().visitAll(workingSolution, session::insert);
+        session = scoreDirectorFactory.newSession(workingSolution, constraintMatchEnabledPreference);
         super.setWorkingSolution(workingSolution);
+        getSolutionDescriptor().visitAll(workingSolution, session::insert);
     }
 
     @Override

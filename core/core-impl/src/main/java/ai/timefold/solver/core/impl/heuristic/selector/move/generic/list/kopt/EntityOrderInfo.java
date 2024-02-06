@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
 
@@ -53,16 +54,17 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
 
     @SuppressWarnings("unchecked")
     public <Node_> Node_ successor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
-            IndexVariableSupply indexVariableSupply, SingletonInverseVariableSupply inverseVariableSupply) {
-        var entity = inverseVariableSupply.getInverseSingleton(object);
-        var indexInEntityList = indexVariableSupply.getIndex(object);
-        var listVariable = listVariableDescriptor.getListVariable(entity);
+            ListVariableDataSupply<?> listVariableDataSupply) {
+        var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(object);
+        var entity = elementLocation.entity();
+        var indexInEntityList = elementLocation.index();
+        var listVariable = listVariableDescriptor.getValue(entity);
         if (indexInEntityList == listVariable.size() - 1) {
             var nextEntityIndex = (entityToEntityIndex.get(entity) + 1) % entities.length;
             var nextEntity = entities[nextEntityIndex];
             var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
                     .extractFirstUnpinnedIndex(nextEntity);
-            return (Node_) listVariableDescriptor.getListVariable(nextEntity)
+            return (Node_) listVariableDescriptor.getValue(nextEntity)
                     .get(firstUnpinnedIndexInList);
         } else {
             return (Node_) listVariable.get(indexInEntityList + 1);
@@ -71,31 +73,34 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
 
     @SuppressWarnings("unchecked")
     public <Node_> Node_ predecessor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
-            IndexVariableSupply indexVariableSupply, SingletonInverseVariableSupply inverseVariableSupply) {
-        var entity = inverseVariableSupply.getInverseSingleton(object);
-        var indexInEntityList = indexVariableSupply.getIndex(object);
+            ListVariableDataSupply<?> listVariableDataSupply) {
+        var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(object);
+        var entity = elementLocation.entity();
+        var indexInEntityList = elementLocation.index();
         var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
                 .extractFirstUnpinnedIndex(entity);
-        var listVariable = listVariableDescriptor.getListVariable(entity);
+        var listVariable = listVariableDescriptor.getValue(entity);
         if (indexInEntityList == firstUnpinnedIndexInList) {
             // add entities.length to ensure modulo result is positive
             int previousEntityIndex = (entityToEntityIndex.get(entity) - 1 + entities.length) % entities.length;
-            listVariable = listVariableDescriptor.getListVariable(entities[previousEntityIndex]);
+            listVariable = listVariableDescriptor.getValue(entities[previousEntityIndex]);
             return (Node_) listVariable.get(listVariable.size() - 1);
         } else {
             return (Node_) listVariable.get(indexInEntityList - 1);
         }
     }
 
-    public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, IndexVariableSupply indexVariableSupply,
-            SingletonInverseVariableSupply inverseVariableSupply) {
-        int startEntityIndex = entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(start));
-        int middleEntityIndex = entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(middle));
-        int endEntityIndex = entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(end));
+    public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, ListVariableDataSupply<?> listVariableDataSupply) {
+        var startElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(start);
+        var middleElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(middle);
+        var endElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(end);
+        int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
+        int middleEntityIndex = entityToEntityIndex.get(middleElementLocation.entity());
+        int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
 
-        int startIndex = indexVariableSupply.getIndex(start) + offsets[startEntityIndex];
-        int middleIndex = indexVariableSupply.getIndex(middle) + offsets[middleEntityIndex];
-        int endIndex = indexVariableSupply.getIndex(end) + offsets[endEntityIndex];
+        int startIndex = startElementLocation.index() + offsets[startEntityIndex];
+        int middleIndex = middleElementLocation.index() + offsets[middleEntityIndex];
+        int endIndex = endElementLocation.index() + offsets[endEntityIndex];
 
         if (startIndex <= endIndex) {
             // test middleIndex in [startIndex, endIndex]

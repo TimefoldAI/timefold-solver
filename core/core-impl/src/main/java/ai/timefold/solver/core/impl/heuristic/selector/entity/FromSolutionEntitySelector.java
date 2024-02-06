@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -20,19 +21,24 @@ public final class FromSolutionEntitySelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements EntitySelector<Solution_> {
 
-    protected final EntityDescriptor<Solution_> entityDescriptor;
-    protected final SelectionCacheType minimumCacheType;
-    protected final boolean randomSelection;
+    private final EntityDescriptor<Solution_> entityDescriptor;
+    private final SelectionCacheType minimumCacheType;
+    private final boolean randomSelection;
+    private final boolean includeNull;
 
-    protected List<Object> cachedEntityList = null;
-    protected Long cachedEntityListRevision = null;
-    protected boolean cachedEntityListIsDirty = false;
+    private List<Object> cachedEntityList = null;
+    private Long cachedEntityListRevision = null;
+    private boolean cachedEntityListIsDirty = false;
 
     public FromSolutionEntitySelector(EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         this.entityDescriptor = entityDescriptor;
         this.minimumCacheType = minimumCacheType;
         this.randomSelection = randomSelection;
+        this.includeNull = entityDescriptor.hasAnyGenuineListVariables()
+                && entityDescriptor.getGenuineVariableDescriptorList().stream()
+                        .anyMatch(variableDescriptor -> variableDescriptor.allowsUnassigned()
+                                && variableDescriptor instanceof BasicVariableDescriptor<Solution_>);
     }
 
     @Override
@@ -59,7 +65,14 @@ public final class FromSolutionEntitySelector<Solution_>
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
+        reloadCachedEntityList(scoreDirector);
+    }
+
+    private void reloadCachedEntityList(InnerScoreDirector<Solution_, ?> scoreDirector) {
         cachedEntityList = entityDescriptor.extractEntities(scoreDirector.getWorkingSolution());
+        if (includeNull) {
+            cachedEntityList.add(null);
+        }
         cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
         cachedEntityListIsDirty = false;
     }
@@ -72,8 +85,7 @@ public final class FromSolutionEntitySelector<Solution_>
             if (minimumCacheType.compareTo(SelectionCacheType.STEP) > 0) {
                 cachedEntityListIsDirty = true;
             } else {
-                cachedEntityList = entityDescriptor.extractEntities(scoreDirector.getWorkingSolution());
-                cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
+                reloadCachedEntityList(scoreDirector);
             }
         }
     }

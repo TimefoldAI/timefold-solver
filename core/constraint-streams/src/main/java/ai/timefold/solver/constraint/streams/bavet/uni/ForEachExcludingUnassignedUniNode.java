@@ -6,14 +6,14 @@ import java.util.function.Predicate;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-public final class ForEachExcludingNullVarsUniNode<A> extends AbstractForEachUniNode<A> {
+public final class ForEachExcludingUnassignedUniNode<A> extends AbstractForEachUniNode<A> {
 
     private final Predicate<A> filter;
 
-    public ForEachExcludingNullVarsUniNode(Class<A> forEachClass, Predicate<A> filter,
+    public ForEachExcludingUnassignedUniNode(Class<A> forEachClass, Predicate<A> filter,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
-        this.filter = Objects.requireNonNull(filter);
+        this.filter = Objects.requireNonNullElse(filter, a -> true);
     }
 
     @Override

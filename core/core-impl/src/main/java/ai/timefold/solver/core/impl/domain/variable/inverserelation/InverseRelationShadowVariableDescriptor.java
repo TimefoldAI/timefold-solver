@@ -95,8 +95,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         }
         chained = (sourceVariableDescriptor instanceof GenuineVariableDescriptor) &&
                 ((GenuineVariableDescriptor<Solution_>) sourceVariableDescriptor).isChained();
-        boolean list = (sourceVariableDescriptor instanceof GenuineVariableDescriptor) &&
-                ((GenuineVariableDescriptor<Solution_>) sourceVariableDescriptor).isListVariable();
+        boolean list = sourceVariableDescriptor.isListVariable();
         if (singleton) {
             if (!chained && !list) {
                 throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
@@ -156,8 +155,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
             if (chained) {
                 return new SingletonInverseVariableDemand<>(sourceVariableDescriptor);
             } else {
-                return new SingletonListInverseVariableDemand<>(
-                        (ListVariableDescriptor<Solution_>) sourceVariableDescriptor);
+                return new SingletonListInverseVariableDemand<>((ListVariableDescriptor<Solution_>) sourceVariableDescriptor);
             }
         } else {
             return new CollectionInverseVariableDemand<>(sourceVariableDescriptor);

@@ -22,12 +22,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UninitializedListValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
@@ -262,13 +262,14 @@ class ValueSelectorFactoryTest {
 
     static Stream<Arguments> applyListValueFiltering() {
         return Stream.of(
-                arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED, AssignedValueSelector.class),
-                arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED, UnassignedValueSelector.class),
+                arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED, AssignedListValueSelector.class),
+                arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNINITIALIZED,
+                        UninitializedListValueSelector.class),
                 arguments(true, ValueSelectorFactory.ListValueFilteringType.NONE,
                         DummyEntityIndependentValueSelector.class),
                 arguments(false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED,
                         DummyEntityIndependentValueSelector.class),
-                arguments(false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED,
+                arguments(false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNINITIALIZED,
                         DummyEntityIndependentValueSelector.class),
                 arguments(false, ValueSelectorFactory.ListValueFilteringType.NONE,
                         DummyEntityIndependentValueSelector.class));

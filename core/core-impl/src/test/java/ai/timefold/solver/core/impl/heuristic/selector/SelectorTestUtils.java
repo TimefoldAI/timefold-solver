@@ -179,7 +179,7 @@ public class SelectorTestUtils {
         final List<SubList> subListList = Arrays.asList(subLists);
         when(subListSelector.iterator()).thenAnswer(invocation -> subListList.iterator());
         List<Object> distinctValueList = subListList.stream()
-                .map(subList -> variableDescriptor.getElement(subList.getEntity(), subList.getFromIndex()))
+                .map(subList -> variableDescriptor.getElement(subList.entity(), subList.fromIndex()))
                 .distinct()
                 .collect(Collectors.toList());
         when(subListSelector.endingValueIterator()).thenAnswer(invocation -> distinctValueList.iterator());

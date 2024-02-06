@@ -9,12 +9,12 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-public class NullableCountableValueRange<T> extends AbstractCountableValueRange<T> {
+public final class NullAllowingCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
     private final CountableValueRange<T> childValueRange;
     private final long size;
 
-    public NullableCountableValueRange(CountableValueRange<T> childValueRange) {
+    public NullAllowingCountableValueRange(CountableValueRange<T> childValueRange) {
         this.childValueRange = childValueRange;
         size = childValueRange.getSize() + 1L;
     }

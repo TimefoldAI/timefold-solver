@@ -4,11 +4,8 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 
 import java.util.Iterator;
 
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -20,8 +17,7 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     private final EntityIndependentValueSelector<Solution_> rightValueSelector;
     private final boolean randomSelection;
 
-    private SingletonInverseVariableSupply inverseVariableSupply;
-    private IndexVariableSupply indexVariableSupply;
+    private ListVariableDataSupply<Solution_> listVariableDataSupply;
     private EntityIndependentValueSelector<Solution_> movableLeftValueSelector;
     private EntityIndependentValueSelector<Solution_> movableRightValueSelector;
 
@@ -44,19 +40,15 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         super.solvingStarted(solverScope);
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableLeftValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, inverseVariableSupply, indexVariableSupply);
-        movableRightValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, inverseVariableSupply, indexVariableSupply);
+        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
+        movableLeftValueSelector = filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, listVariableDataSupply);
+        movableRightValueSelector = filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, listVariableDataSupply);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        inverseVariableSupply = null;
-        indexVariableSupply = null;
+        listVariableDataSupply = null;
         movableLeftValueSelector = null;
         movableRightValueSelector = null;
     }
@@ -64,17 +56,9 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     @Override
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
-            return new RandomListSwapIterator<>(
-                    inverseVariableSupply,
-                    indexVariableSupply,
-                    movableLeftValueSelector,
-                    movableRightValueSelector);
+            return new RandomListSwapIterator<>(listVariableDataSupply, movableLeftValueSelector, movableRightValueSelector);
         } else {
-            return new OriginalListSwapIterator<>(
-                    inverseVariableSupply,
-                    indexVariableSupply,
-                    movableLeftValueSelector,
-                    movableRightValueSelector);
+            return new OriginalListSwapIterator<>(listVariableDataSupply, movableLeftValueSelector, movableRightValueSelector);
         }
     }
 

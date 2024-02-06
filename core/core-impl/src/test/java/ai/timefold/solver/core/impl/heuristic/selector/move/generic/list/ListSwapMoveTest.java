@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -47,7 +47,7 @@ class ListSwapMoveTest {
         // Swap Move 1: between two entities
         ListSwapMove<TestdataListSolution> move1 = new ListSwapMove<>(variableDescriptor, e1, 0, e2, 0);
 
-        AbstractMove<TestdataListSolution> undoMove1 = move1.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove1 = move1.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v3, v2);
         assertThat(e2.getValueList()).containsExactly(v1);
 
@@ -66,7 +66,7 @@ class ListSwapMoveTest {
         // Swap Move 2: same entity
         ListSwapMove<TestdataListSolution> move2 = new ListSwapMove<>(variableDescriptor, e1, 0, e1, 1);
 
-        AbstractMove<TestdataListSolution> undoMove2 = move2.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove2 = move2.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v2, v1);
 
         // undo

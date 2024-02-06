@@ -24,9 +24,8 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -38,7 +37,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * @param <Score_> the score type to go with the solution
  */
 public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
-        extends ScoreDirector<Solution_>, AutoCloseable {
+        extends VariableDescriptorAwareScoreDirector<Solution_>, AutoCloseable {
 
     static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> getConstraintAnalysis(
             ConstraintMatchTotal<Score_> constraintMatchTotal, boolean analyzeConstraintMatches) {
@@ -322,128 +321,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     void close();
 
-    // ************************************************************************
-    // Basic variable
-    // ************************************************************************
-
-    void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity);
-
-    void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity);
-
-    void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity, Object newValue);
-
-    // ************************************************************************
-    // List variable
-    // ************************************************************************
-
-    /**
-     * Call this for each element that will be assigned (added to a list variable of one entity without being removed
-     * from a list variable of another entity).
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the assigned element
-     */
-    void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Call this for each element that was assigned (added to a list variable of one entity without being removed
-     * from a list variable of another entity).
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the assigned element
-     */
-    void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Call this for each element that will be unassigned (removed from a list variable of one entity without being added
-     * to a list variable of another entity).
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the unassigned element
-     */
-    void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Call this for each element that was unassigned (removed from a list variable of one entity without being added
-     * to a list variable of another entity).
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the unassigned element
-     */
-    void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Notify the score director before a list variable changes.
-     * <p>
-     * The list variable change includes:
-     * <ul>
-     * <li>Changing position (index) of one or more elements.</li>
-     * <li>Removing one or more elements from the list variable.</li>
-     * <li>Adding one or more elements to the list variable.</li>
-     * <li>Any mix of the above.</li>
-     * </ul>
-     * For the sake of variable listeners' efficiency, the change notification requires an index range that contains elements
-     * affected by the change. The range starts at {@code fromIndex} (inclusive) and ends at {@code toIndex} (exclusive).
-     * <p>
-     * The range has to comply with the following contract:
-     * <ol>
-     * <li>{@code fromIndex} must be greater than or equal to 0; {@code toIndex} must be less than or equal to the list variable
-     * size.</li>
-     * <li>{@code toIndex} must be greater than or equal to {@code fromIndex}.</li>
-     * <li>The range must contain all elements that are going to be changed.</li>
-     * <li>The range is allowed to contain elements that are not going to be changed.</li>
-     * <li>The range may be empty ({@code fromIndex} equals {@code toIndex}) if none of the existing list variable elements
-     * are going to be changed.</li>
-     * </ol>
-     * <p>
-     * {@link #beforeListVariableElementUnassigned(ListVariableDescriptor, Object)} must be called for each element
-     * that will be unassigned (removed from a list variable of one entity without being added
-     * to a list variable of another entity).
-     *
-     * @param variableDescriptor descriptor of the list variable being changed
-     * @param entity the entity owning the list variable being changed
-     * @param fromIndex low endpoint (inclusive) of the changed range
-     * @param toIndex high endpoint (exclusive) of the changed range
-     */
-    void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-            int toIndex);
-
-    /**
-     * Notify the score director after a list variable changes.
-     * <p>
-     * The list variable change includes:
-     * <ul>
-     * <li>Changing position (index) of one or more elements.</li>
-     * <li>Removing one or more elements from the list variable.</li>
-     * <li>Adding one or more elements to the list variable.</li>
-     * <li>Any mix of the above.</li>
-     * </ul>
-     * For the sake of variable listeners' efficiency, the change notification requires an index range that contains elements
-     * affected by the change. The range starts at {@code fromIndex} (inclusive) and ends at {@code toIndex} (exclusive).
-     * <p>
-     * The range has to comply with the following contract:
-     * <ol>
-     * <li>{@code fromIndex} must be greater than or equal to 0; {@code toIndex} must be less than or equal to the list variable
-     * size.</li>
-     * <li>{@code toIndex} must be greater than or equal to {@code fromIndex}.</li>
-     * <li>The range must contain all elements that have changed.</li>
-     * <li>The range is allowed to contain elements that have not changed.</li>
-     * <li>The range may be empty ({@code fromIndex} equals {@code toIndex}) if none of the existing list variable elements
-     * have changed.</li>
-     * </ol>
-     * <p>
-     * {@link #afterListVariableElementUnassigned(ListVariableDescriptor, Object)} must be called for each element
-     * that was unassigned (removed from a list variable of one entity without being added
-     * to a list variable of another entity).
-     *
-     * @param variableDescriptor descriptor of the list variable being changed
-     * @param entity the entity owning the list variable being changed
-     * @param fromIndex low endpoint (inclusive) of the changed range
-     * @param toIndex high endpoint (exclusive) of the changed range
-     */
-    void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-            int toIndex);
-
     /**
      * Unlike {@link #triggerVariableListeners()} which only triggers notifications already in the queue,
      * this triggers every variable listener on every genuine variable.
@@ -511,13 +388,29 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * This way, we can ensure that these methods are used correctly and in a safe manner.
      */
 
-    void beforeEntityAdded(Object entity);
+    default void beforeEntityAdded(Object entity) {
+        beforeEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
+    }
 
-    void afterEntityAdded(Object entity);
+    void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity);
 
-    void beforeEntityRemoved(Object entity);
+    default void afterEntityAdded(Object entity) {
+        afterEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
+    }
 
-    void afterEntityRemoved(Object entity);
+    void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity);
+
+    default void beforeEntityRemoved(Object entity) {
+        beforeEntityRemoved(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
+    }
+
+    void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity);
+
+    default void afterEntityRemoved(Object entity) {
+        afterEntityRemoved(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
+    }
+
+    void afterEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity);
 
     void beforeProblemFactAdded(Object problemFact);
 

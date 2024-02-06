@@ -24,6 +24,7 @@ public class TestdataPinnedListValue extends TestdataObject {
                 .getShadowVariableDescriptor("index");
     }
 
+    // Intentionally missing the inverse relation variable; some tests rely on it not being here.
     @IndexShadowVariable(sourceVariableName = "valueList")
     private Integer index;
 

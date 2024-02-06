@@ -2,6 +2,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,9 +14,10 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,58 +32,33 @@ public class MultipleDelegateListTest {
                 new MultipleDelegateList<>(new String[] { "e1", "e2", "e3" }, delegate1, delegate2, delegate3);
 
         @SuppressWarnings("unchecked")
-        ListVariableDescriptor<Object> listVariableDescriptor = Mockito.mock(ListVariableDescriptor.class);
+        ListVariableDescriptor<Object> listVariableDescriptor = mock(ListVariableDescriptor.class);
         @SuppressWarnings("unchecked")
-        EntityDescriptor<Object> entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        EntityDescriptor<Object> entityDescriptor = mock(EntityDescriptor.class);
 
         Mockito.when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
 
-        SingletonInverseVariableSupply inverseVariableSupply = object -> {
-            String value = (String) object;
-            switch (value) {
-                case "a":
-                case "b":
-                case "c":
-                    return "e1";
-                case "d":
-                case "e":
-                    return "e2";
-                case "f":
-                    return "e3";
-                default:
-                    return "e4";
-            }
-        };
-
-        IndexVariableSupply indexVariableSupply = object -> {
-            String value = (String) object;
-            switch (value) {
-                case "a":
-                case "d":
-                case "f":
-                    return 0;
-                case "b":
-                case "e":
-                    return 1;
-                case "c":
-                    return 2;
-                default:
-                    return null;
-            }
-        };
+        ListVariableDataSupply<Object> listVariableDataSupply = mock(ListVariableDataSupply.class);
+        doAnswer(invocation -> {
+            String value = invocation.getArgument(0);
+            return switch (value) {
+                case "a" -> new LocationInList("e1", 0);
+                case "b" -> new LocationInList("e1", 1);
+                case "c" -> new LocationInList("e1", 2);
+                case "d" -> new LocationInList("e2", 0);
+                case "e" -> new LocationInList("e2", 1);
+                case "f" -> new LocationInList("e3", 0);
+                default -> ElementLocation.unassigned();
+            };
+        }).when(listVariableDataSupply).getLocationInList(Mockito.anyString());
 
         List<String> expectedOrder = List.of("a", "b", "c", "d", "e", "f");
         for (int i = 0; i < expectedOrder.size(); i++) {
-            assertThat(combined.getIndexOfValue(listVariableDescriptor,
-                    inverseVariableSupply,
-                    indexVariableSupply,
-                    expectedOrder.get(i))).isEqualTo(i);
+            assertThat(combined.getIndexOfValue(listVariableDescriptor, listVariableDataSupply, expectedOrder.get(i)))
+                    .isEqualTo(i);
         }
 
-        assertThatCode(() -> combined.getIndexOfValue(listVariableDescriptor,
-                inverseVariableSupply,
-                indexVariableSupply,
-                "g"))
+        assertThatCode(() -> combined.getIndexOfValue(listVariableDescriptor, listVariableDataSupply, "g"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Value (g) is not contained in any entity list");
     }

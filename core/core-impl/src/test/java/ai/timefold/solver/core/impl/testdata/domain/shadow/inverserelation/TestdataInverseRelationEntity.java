@@ -35,7 +35,7 @@ public class TestdataInverseRelationEntity extends TestdataObject {
         }
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", nullable = true)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", allowsUnassigned = true)
     public TestdataInverseRelationValue getValue() {
         return value;
     }

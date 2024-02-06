@@ -13,6 +13,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicRecordingSubListSelector;
@@ -24,7 +25,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactor
 
 public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigFactory<Solution_, SubListSelectorConfig> {
 
-    private static final int DEFAULT_MINIMUM_SUB_LIST_SIZE = 1;
+    private static final int DEFAULT_MINIMUM_SUB_LIST_SIZE = 1; // TODO Bump this to 2 in Timefold Solver 2.0
     private static final int DEFAULT_MAXIMUM_SUB_LIST_SIZE = Integer.MAX_VALUE;
 
     private SubListSelectorFactory(SubListSelectorConfig config) {
@@ -120,7 +121,8 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory
                 .<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
-        if (!valueSelector.getVariableDescriptor().isListVariable()) {
+        GenuineVariableDescriptor<Solution_> solutionGenuineVariableDescriptor = valueSelector.getVariableDescriptor();
+        if (!solutionGenuineVariableDescriptor.isListVariable()) {
             throw new IllegalArgumentException("The subListSelector (" + config
                     + ") can only be used when the domain model has a list variable."
                     + " Check your @" + PlanningEntity.class.getSimpleName()

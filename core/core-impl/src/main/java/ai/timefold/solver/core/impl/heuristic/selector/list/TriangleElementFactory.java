@@ -42,33 +42,12 @@ final class TriangleElementFactory {
         return TriangleElement.valueOf(subListIndex);
     }
 
-    static final class TriangleElement {
-
-        private final int index;
-        private final int level;
-        private final int indexOnLevel;
-
-        private TriangleElement(int index, int level, int indexOnLevel) {
-            this.index = index;
-            this.level = level;
-            this.indexOnLevel = indexOnLevel;
-        }
+    record TriangleElement(int index, int level, int indexOnLevel) {
 
         static TriangleElement valueOf(int index) {
             int level = (int) Math.ceil(triangularRoot(index));
             return new TriangleElement(index, level, index - nthTriangle(level - 1));
         }
 
-        public int getIndex() {
-            return index;
-        }
-
-        public int getLevel() {
-            return level;
-        }
-
-        public int getIndexOnLevel() {
-            return indexOnLevel;
-        }
     }
 }

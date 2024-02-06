@@ -73,7 +73,7 @@ public class TestdataMultivarIncrementalScoreCalculator
         this.indictmentMap = new HashMap<>();
         for (TestdataMultiVarEntity left : workingSolution.getMultiVarEntityList()) {
             int count = left.getPrimaryValue() == left.getSecondaryValue() ? 0 : 1;
-            count += left.getTertiaryNullableValue() == null ? 0 : 1;
+            count += left.getTertiaryValueAllowedUnassigned() == null ? 0 : 1;
             var constraintMatch = constraintMatchTotal.addConstraintMatch(List.of(left), SimpleScore.of(-count));
             indictmentMap.computeIfAbsent(left, key -> new DefaultIndictment<>(key, SimpleScore.ZERO))
                     .getConstraintMatchSet()

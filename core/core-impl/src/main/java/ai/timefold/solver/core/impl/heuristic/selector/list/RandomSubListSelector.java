@@ -5,10 +5,8 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -24,7 +22,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     private final int maximumSubListSize;
 
     private TriangleElementFactory triangleElementFactory;
-    private SingletonInverseVariableSupply inverseVariableSupply;
+    private ListVariableDataSupply<Solution_> listVariableDataSupply;
 
     private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
@@ -36,6 +34,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         this.valueSelector = valueSelector;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         if (minimumSubListSize < 1) {
+            // TODO raise this to 2 in Timefold Solver 2.0
             throw new IllegalArgumentException(
                     "The minimumSubListSize (" + minimumSubListSize + ") must be greater than 0.");
         }
@@ -55,16 +54,14 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         super.solvingStarted(solverScope);
         triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        var indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
+        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
+        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableDataSupply);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        inverseVariableSupply = null;
+        listVariableDataSupply = null;
     }
 
     @Override
@@ -155,15 +152,22 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 }
                 // Using valueSelector instead of entitySelector is fairer
                 // because entities with bigger list variables will be selected more often.
-                sourceEntity = inverseVariableSupply.getInverseSingleton(valueIterator.next());
+                var value = valueIterator.next();
+                sourceEntity = listVariableDataSupply.getInverseSingleton(value);
+                if (sourceEntity == null) { // Ignore values which are unassigned.
+                    continue;
+                }
                 firstUnpinnedIndex = entityDescriptor.extractFirstUnpinnedIndex(sourceEntity);
                 listSize = listVariableDescriptor.getListSize(sourceEntity) - firstUnpinnedIndex;
             }
 
             TriangleElementFactory.TriangleElement triangleElement = triangleElementFactory.nextElement(listSize);
-            int subListLength = listSize - triangleElement.getLevel() + 1;
-            int sourceIndex = triangleElement.getIndexOnLevel() - 1 + firstUnpinnedIndex;
-
+            int subListLength = listSize - triangleElement.level() + 1;
+            if (subListLength < 1) {
+                throw new IllegalStateException("Impossible state: The subListLength (%s) must be greater than 0."
+                        .formatted(subListLength));
+            }
+            int sourceIndex = triangleElement.indexOnLevel() - 1 + firstUnpinnedIndex;
             return new SubList(sourceEntity, sourceIndex, subListLength);
         }
     }

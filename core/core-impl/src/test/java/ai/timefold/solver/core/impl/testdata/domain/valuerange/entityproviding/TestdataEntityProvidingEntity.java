@@ -36,7 +36,7 @@ public class TestdataEntityProvidingEntity extends TestdataObject {
         this.value = value;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", nullable = true)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", allowsUnassigned = true)
     public TestdataValue getValue() {
         return value;
     }

@@ -1,18 +1,18 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
-import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.RandomListChangeIterator.findUnpinnedDestination;
-
 import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 /**
@@ -21,24 +21,17 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
  */
 public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final SingletonInverseVariableSupply inverseVariableSupply;
-    private final IndexVariableSupply indexVariableSupply;
+    private final ListVariableDataSupply<Solution_> listVariableDataSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
-    private Iterator<ElementRef> destinationIterator;
+    private Iterator<ElementLocation> destinationIterator;
 
-    private Object upcomingSourceEntity;
-    private Integer upcomingSourceIndex;
     private Object upcomingValue;
 
-    public OriginalListChangeIterator(
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector,
-            DestinationSelector<Solution_> destinationSelector) {
-        this.inverseVariableSupply = inverseVariableSupply;
-        this.indexVariableSupply = indexVariableSupply;
+    public OriginalListChangeIterator(ListVariableDataSupply<Solution_> listVariableDataSupply,
+            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+        this.listVariableDataSupply = listVariableDataSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
@@ -52,32 +45,48 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
                 return noUpcomingSelection();
             }
             upcomingValue = valueIterator.next();
-            upcomingSourceEntity = inverseVariableSupply.getInverseSingleton(upcomingValue);
-            upcomingSourceIndex = indexVariableSupply.getIndex(upcomingValue);
-
             destinationIterator = destinationSelector.iterator();
         }
-
-        ElementRef destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
-        if (destination == null) {
+        var move = buildChangeMove(listVariableDescriptor, listVariableDataSupply, upcomingValue, destinationIterator);
+        if (move == null) {
             return noUpcomingSelection();
+        } else {
+            return move;
         }
-
-        if (upcomingSourceEntity == null && upcomingSourceIndex == null) {
-            return new ListAssignMove<>(
-                    listVariableDescriptor,
-                    upcomingValue,
-                    destination.entity(),
-                    destination.index());
-        }
-
-        // No need to generate ListUnassignMove because they are only used as undo moves.
-
-        return new ListChangeMove<>(
-                listVariableDescriptor,
-                upcomingSourceEntity,
-                upcomingSourceIndex,
-                destination.entity(),
-                destination.index());
     }
+
+    static <Solution_> Move<Solution_> buildChangeMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ListVariableDataSupply<Solution_> listVariableDataSupply, Object upcomingLeftValue,
+            Iterator<ElementLocation> destinationIterator) {
+        var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        if (upcomingDestination == null) {
+            return null;
+        }
+        var upcomingSource = listVariableDataSupply.getLocationInList(upcomingLeftValue);
+        if (upcomingSource == null) {
+            if (upcomingDestination instanceof LocationInList destinationElement) {
+                return CompositeMove.buildMove(
+                        new ListInitializeMove<>(listVariableDescriptor, upcomingLeftValue),
+                        new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
+                                destinationElement.index()));
+            } else {
+                return new ListInitializeMove<>(listVariableDescriptor, upcomingLeftValue);
+            }
+        } else if (upcomingSource instanceof LocationInList sourceElement) {
+            if (upcomingDestination instanceof LocationInList destinationElement) {
+                return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
+                        destinationElement.entity(), destinationElement.index());
+            } else {
+                return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
+            }
+        } else {
+            if (upcomingDestination instanceof LocationInList destinationElement) {
+                return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
+                        destinationElement.index());
+            } else {
+                return NoChangeMove.getInstance();
+            }
+        }
+    }
+
 }

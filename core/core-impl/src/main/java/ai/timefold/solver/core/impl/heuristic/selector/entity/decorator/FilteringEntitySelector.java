@@ -101,7 +101,7 @@ public final class FilteringEntitySelector<Solution_>
                 if (bailOutEnabled) {
                     // if childEntityIterator is neverEnding and nothing is accepted, bail out of the infinite loop
                     if (attemptsBeforeBailOut <= 0L) {
-                        logger.warn("Bailing out of neverEnding selector ({}) to avoid infinite loop.",
+                        logger.debug("Bailing out of neverEnding selector ({}) to avoid infinite loop.",
                                 FilteringEntitySelector.this);
                         return noUpcomingSelection();
                     }

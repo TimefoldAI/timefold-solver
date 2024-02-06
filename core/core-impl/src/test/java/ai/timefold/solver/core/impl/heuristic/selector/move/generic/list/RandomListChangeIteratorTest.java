@@ -7,10 +7,10 @@ import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtil
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfIterator;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -32,9 +32,14 @@ class RandomListChangeIteratorTest {
         TestdataListEntity a = TestdataListEntity.createWithValues("A", v1, v2);
         TestdataListEntity b = TestdataListEntity.createWithValues("B");
         TestdataListEntity c = TestdataListEntity.createWithValues("C", v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
                 mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor = getListVariableDescriptor(scoreDirector);
         // Iterates over values in this given order.
         EntityIndependentValueSelector<TestdataListSolution> sourceValueSelector =
@@ -45,8 +50,7 @@ class RandomListChangeIteratorTest {
         ElementDestinationSelector<TestdataListSolution> destinationSelector =
                 new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true);
         RandomListChangeIterator<TestdataListSolution> randomListChangeIterator = new RandomListChangeIterator<>(
-                scoreDirector.getSupplyManager().demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor)),
-                scoreDirector.getSupplyManager().demand(new IndexVariableDemand<>(listVariableDescriptor)),
+                scoreDirector.getSupplyManager().demand(listVariableDescriptor.getProvidedDemand()),
                 sourceValueSelector,
                 destinationSelector);
 

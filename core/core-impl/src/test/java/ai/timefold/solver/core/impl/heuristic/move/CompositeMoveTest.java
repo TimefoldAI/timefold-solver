@@ -14,12 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -31,27 +28,25 @@ class CompositeMoveTest {
 
     @Test
     void createUndoMove() {
-        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
-        DummyMove a = new DummyMove("a");
-        DummyMove b = new DummyMove("b");
-        DummyMove c = new DummyMove("c");
-        CompositeMove<TestdataSolution> move = new CompositeMove<>(a, b, c);
-        CompositeMove<TestdataSolution> undoMove = move.doMove(scoreDirector);
+        var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
+        var a = new DummyMove("a");
+        var b = new DummyMove("b");
+        var c = new DummyMove("c");
+        var move = new CompositeMove<>(a, b, c);
+        var undoMove = (CompositeMove<TestdataSolution>) move.doMove(scoreDirector);
         assertAllCodesOfArray(move.getMoves(), "a", "b", "c");
         assertAllCodesOfArray(undoMove.getMoves(), "undo c", "undo b", "undo a");
     }
 
     @Test
     void createUndoMoveWithNonDoableMove() {
-        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
+        var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
 
-        DummyMove a = new DummyMove("a");
-        DummyMove b = new NotDoableDummyMove("b");
-        DummyMove c = new DummyMove("c");
-        CompositeMove<TestdataSolution> move = new CompositeMove<>(a, b, c);
-        CompositeMove<TestdataSolution> undoMove = move.doMove(scoreDirector);
+        var a = new DummyMove("a");
+        var b = (DummyMove) new NotDoableDummyMove("b");
+        var c = new DummyMove("c");
+        var move = new CompositeMove<>(a, b, c);
+        var undoMove = (CompositeMove<TestdataSolution>) move.doMove(scoreDirector);
         assertAllCodesOfArray(move.getMoves(), "a", "b", "c");
         assertAllCodesOfArray(undoMove.getMoves(), "undo c", "undo a");
 
@@ -59,22 +54,21 @@ class CompositeMoveTest {
         b = new DummyMove("b");
         c = new NotDoableDummyMove("c");
         move = new CompositeMove<>(a, b, c);
-        undoMove = move.doMove(scoreDirector);
+        var undoMove2 = move.doMove(scoreDirector);
         assertAllCodesOfArray(move.getMoves(), "a", "b", "c");
-        assertAllCodesOfArray(undoMove.getMoves(), "undo b");
+        assertThat(undoMove2).isInstanceOf(DummyMove.class); // The only doable move, Composite was stripped.
     }
 
     @Test
     void doMove() {
-        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
-        DummyMove a = mock(DummyMove.class);
+        var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
+        var a = mock(DummyMove.class);
         when(a.isMoveDoable(any())).thenReturn(true);
-        DummyMove b = mock(DummyMove.class);
+        var b = mock(DummyMove.class);
         when(b.isMoveDoable(any())).thenReturn(true);
-        DummyMove c = mock(DummyMove.class);
+        var c = mock(DummyMove.class);
         when(c.isMoveDoable(any())).thenReturn(true);
-        CompositeMove<TestdataSolution> move = new CompositeMove<>(a, b, c);
+        var move = new CompositeMove<>(a, b, c);
         move.doMove(scoreDirector);
         verify(a, times(1)).doMove(scoreDirector);
         verify(b, times(1)).doMove(scoreDirector);
@@ -83,19 +77,19 @@ class CompositeMoveTest {
 
     @Test
     void rebase() {
-        GenuineVariableDescriptor<TestdataSolution> variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
 
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataEntity e1 = new TestdataEntity("e1", v1);
-        TestdataEntity e2 = new TestdataEntity("e2", null);
-        TestdataEntity e3 = new TestdataEntity("e3", v1);
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var e1 = new TestdataEntity("e1", v1);
+        var e2 = new TestdataEntity("e2", null);
+        var e3 = new TestdataEntity("e3", v1);
 
-        TestdataValue destinationV1 = new TestdataValue("v1");
-        TestdataValue destinationV2 = new TestdataValue("v2");
-        TestdataEntity destinationE1 = new TestdataEntity("e1", destinationV1);
-        TestdataEntity destinationE2 = new TestdataEntity("e2", null);
-        TestdataEntity destinationE3 = new TestdataEntity("e3", destinationV1);
+        var destinationV1 = new TestdataValue("v1");
+        var destinationV2 = new TestdataValue("v2");
+        var destinationE1 = new TestdataEntity("e1", destinationV1);
+        var destinationE2 = new TestdataEntity("e2", null);
+        var destinationE3 = new TestdataEntity("e3", destinationV1);
 
         ScoreDirector<TestdataSolution> destinationScoreDirector = mockRebasingScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), new Object[][] {
@@ -106,15 +100,15 @@ class CompositeMoveTest {
                         { e3, destinationE3 },
                 });
 
-        ChangeMove<TestdataSolution> a = new ChangeMove<>(variableDescriptor, e1, v2);
-        ChangeMove<TestdataSolution> b = new ChangeMove<>(variableDescriptor, e2, v1);
-        CompositeMove<TestdataSolution> rebaseMove = new CompositeMove<>(a, b).rebase(destinationScoreDirector);
-        Move<TestdataSolution>[] rebasedChildMoves = rebaseMove.getMoves();
+        var a = new ChangeMove<>(variableDescriptor, e1, v2);
+        var b = new ChangeMove<>(variableDescriptor, e2, v1);
+        var rebaseMove = new CompositeMove<>(a, b).rebase(destinationScoreDirector);
+        var rebasedChildMoves = rebaseMove.getMoves();
         assertThat(rebasedChildMoves).hasSize(2);
-        ChangeMove<TestdataSolution> rebasedA = (ChangeMove<TestdataSolution>) rebasedChildMoves[0];
+        var rebasedA = (ChangeMove<TestdataSolution>) rebasedChildMoves[0];
         assertThat(rebasedA.getEntity()).isSameAs(destinationE1);
         assertThat(rebasedA.getToPlanningValue()).isSameAs(destinationV2);
-        ChangeMove<TestdataSolution> rebasedB = (ChangeMove<TestdataSolution>) rebasedChildMoves[1];
+        var rebasedB = (ChangeMove<TestdataSolution>) rebasedChildMoves[1];
         assertThat(rebasedB.getEntity()).isSameAs(destinationE2);
         assertThat(rebasedB.getToPlanningValue()).isSameAs(destinationV1);
     }
@@ -129,8 +123,8 @@ class CompositeMoveTest {
 
     @Test
     void buildOneElemMove() {
-        DummyMove tmpMove = new DummyMove();
-        Move<TestdataSolution> move = CompositeMove.buildMove(Collections.singletonList(tmpMove));
+        var tmpMove = new DummyMove();
+        var move = CompositeMove.buildMove(Collections.singletonList(tmpMove));
         assertThat(move)
                 .isInstanceOf(DummyMove.class);
 
@@ -140,10 +134,10 @@ class CompositeMoveTest {
     }
 
     @Test
-    void buildTwoElemMove() {
-        DummyMove first = new DummyMove();
-        NoChangeMove<TestdataSolution> second = new NoChangeMove<>();
-        Move<TestdataSolution> move = CompositeMove.buildMove(Arrays.asList(first, second));
+    <Solution_> void buildTwoElemMove() {
+        Move<Solution_> first = (Move<Solution_>) new DummyMove();
+        Move<Solution_> second = NoChangeMove.getInstance();
+        var move = CompositeMove.buildMove(first, second);
         assertThat(move)
                 .isInstanceOf(CompositeMove.class);
         assertThat(((CompositeMove<TestdataSolution>) move).getMoves()[0])
@@ -162,12 +156,11 @@ class CompositeMoveTest {
 
     @Test
     void isMoveDoable() {
-        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
+        var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
 
-        DummyMove first = new DummyMove();
-        DummyMove second = new DummyMove();
-        Move<TestdataSolution> move = CompositeMove.buildMove(first, second);
+        var first = new DummyMove();
+        var second = new DummyMove();
+        var move = CompositeMove.buildMove(first, second);
         assertThat(move.isMoveDoable(scoreDirector)).isTrue();
 
         first = new DummyMove();
@@ -187,11 +180,11 @@ class CompositeMoveTest {
     }
 
     @Test
-    void equals() {
-        DummyMove first = new DummyMove();
-        NoChangeMove<TestdataSolution> second = new NoChangeMove<>();
-        Move<TestdataSolution> move = CompositeMove.buildMove(Arrays.asList(first, second));
-        Move<TestdataSolution> other = CompositeMove.buildMove(first, second);
+    <Solution_> void equals() {
+        var first = (Move<Solution_>) new DummyMove();
+        var second = (Move<Solution_>) NoChangeMove.getInstance();
+        var move = CompositeMove.buildMove(Arrays.asList(first, second));
+        var other = CompositeMove.buildMove(first, second);
         assertThat(move).isEqualTo(other);
 
         move = CompositeMove.buildMove(first, second);
@@ -203,26 +196,25 @@ class CompositeMoveTest {
 
     @Test
     void interconnectedChildMoves() {
-        TestdataSolution solution = new TestdataSolution("s1");
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataValue v3 = new TestdataValue("v3");
+        var solution = new TestdataSolution("s1");
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
-        TestdataEntity e1 = new TestdataEntity("e1", v1);
-        TestdataEntity e2 = new TestdataEntity("e2", v2);
+        var e1 = new TestdataEntity("e1", v1);
+        var e2 = new TestdataEntity("e2", v2);
         solution.setEntityList(Arrays.asList(e1, e2));
 
-        GenuineVariableDescriptor<TestdataSolution> variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        SwapMove<TestdataSolution> first = new SwapMove<>(Collections.singletonList(variableDescriptor), e1, e2);
-        ChangeMove<TestdataSolution> second = new ChangeMove<>(variableDescriptor, e1, v3);
-        Move<TestdataSolution> move = CompositeMove.buildMove(first, second);
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var first = new SwapMove<>(Collections.singletonList(variableDescriptor), e1, e2);
+        var second = new ChangeMove<>(variableDescriptor, e1, v3);
+        var move = CompositeMove.buildMove(first, second);
 
         assertThat(e1.getValue()).isSameAs(v1);
         assertThat(e2.getValue()).isSameAs(v2);
 
-        ScoreDirector<TestdataSolution> scoreDirector = mockScoreDirector(
-                variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-        Move<TestdataSolution> undoMove = move.doMove(scoreDirector);
+        var scoreDirector = mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValue()).isSameAs(v3);
         assertThat(e2.getValue()).isSameAs(v1);

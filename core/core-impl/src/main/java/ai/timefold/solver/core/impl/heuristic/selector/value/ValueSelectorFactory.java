@@ -25,7 +25,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityDependentSortingValueSelector;
@@ -36,7 +36,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.Reinitial
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SelectedCountLimitValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UninitializedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRecorder;
@@ -489,8 +489,8 @@ public class ValueSelectorFactory<Solution_>
                         + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
             }
             valueSelector = listValueFilteringType == ListValueFilteringType.ACCEPT_ASSIGNED
-                    ? new AssignedValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
-                    : new UnassignedValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
+                    ? new AssignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
+                    : new UninitializedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
         }
         return valueSelector;
     }
@@ -513,6 +513,6 @@ public class ValueSelectorFactory<Solution_>
     public enum ListValueFilteringType {
         NONE,
         ACCEPT_ASSIGNED,
-        ACCEPT_UNASSIGNED,
+        ACCEPT_UNINITIALIZED,
     }
 }

@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -107,30 +107,10 @@ final class KOptUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <Node_> Function<Node_, Node_> getSuccessorFunction(
-            ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
-        return (node) -> {
-            var entity = inverseVariableSupply.getInverseSingleton(node);
-            var valueList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
-            var index = indexVariableSupply.getIndex(node);
-            if (index == valueList.size() - 1) {
-                var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
-                return valueList.get(firstUnpinnedIndex);
-            } else {
-                return valueList.get(index + 1);
-            }
-        };
-    }
-
-    public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(
-            Node_[] pickedValues,
-            ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
-        return node -> entityOrderInfo.successor(node, listVariableDescriptor, indexVariableSupply, inverseVariableSupply);
+    public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(Node_[] pickedValues,
+            ListVariableDescriptor<?> listVariableDescriptor, ListVariableDataSupply<?> listVariableDataSupply) {
+        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableDataSupply, listVariableDescriptor);
+        return node -> entityOrderInfo.successor(node, listVariableDescriptor, listVariableDataSupply);
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getBetweenPredicate(IndexVariableSupply indexVariableSupply) {
@@ -150,11 +130,9 @@ final class KOptUtils {
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getMultiEntityBetweenPredicate(Node_[] pickedValues,
-            ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
-        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, indexVariableSupply, inverseVariableSupply);
+            ListVariableDescriptor<?> listVariableDescriptor, ListVariableDataSupply<?> listVariableDataSupply) {
+        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableDataSupply, listVariableDescriptor);
+        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableDataSupply);
     }
 
     public static void flipSubarray(int[] array, int fromIndexInclusive, int toIndexExclusive) {

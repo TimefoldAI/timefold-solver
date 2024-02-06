@@ -27,7 +27,7 @@ public class NextElementVariableListener<Solution_> implements ListVariableListe
     @Override
     public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> listVariable = sourceVariableDescriptor.getListVariable(entity);
+        List<Object> listVariable = sourceVariableDescriptor.getValue(entity);
         for (int i = 0; i < listVariable.size() - 1; i++) {
             Object element = listVariable.get(i);
             Object next = listVariable.get(i + 1);
@@ -45,7 +45,7 @@ public class NextElementVariableListener<Solution_> implements ListVariableListe
     @Override
     public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> listVariable = sourceVariableDescriptor.getListVariable(entity);
+        List<Object> listVariable = sourceVariableDescriptor.getValue(entity);
         for (int i = 0; i < listVariable.size() - 1; i++) {
             Object element = listVariable.get(i);
             innerScoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
@@ -72,7 +72,7 @@ public class NextElementVariableListener<Solution_> implements ListVariableListe
     @Override
     public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> listVariable = sourceVariableDescriptor.getListVariable(entity);
+        List<Object> listVariable = sourceVariableDescriptor.getValue(entity);
         Object next = toIndex < listVariable.size() ? listVariable.get(toIndex) : null;
         for (int i = toIndex - 1; i >= fromIndex - 1 && i >= 0; i--) {
             Object element = listVariable.get(i);

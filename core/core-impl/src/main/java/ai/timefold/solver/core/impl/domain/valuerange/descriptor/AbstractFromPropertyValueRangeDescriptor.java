@@ -41,10 +41,10 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
         if (addNullInValueRange && !countable) {
-            throw new IllegalStateException("The valueRangeDescriptor (" + this
-                    + ") is nullable, but not countable (" + countable + ").\n"
-                    + "Maybe the member (" + memberAccessor + ") should return "
-                    + CountableValueRange.class.getSimpleName() + ".");
+            throw new IllegalStateException("""
+                    The valueRangeDescriptor (%s) allows unassigned values, but not countable (%s).
+                    Maybe the member (%s) should return %s."""
+                    .formatted(this, countable, memberAccessor, CountableValueRange.class.getSimpleName()));
         }
     }
 
@@ -117,13 +117,16 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     : ReflectionHelper.transformArrayToList(valueRangeObject);
             // Don't check the entire list for performance reasons, but do check common pitfalls
             if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
-                throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") called on bean (" + bean
-                        + ") must not return a " + (collectionWrapping ? Collection.class.getSimpleName() : "array")
-                        + "(" + list + ") with an element that is null.\n"
-                        + "Maybe remove that null element from the dataset.\n"
-                        + "Maybe use @" + PlanningVariable.class.getSimpleName() + "(nullable = true) instead.");
+                throw new IllegalStateException(
+                        """
+                                The @%s-annotated member (%s) called on bean (%s) must not return a %s (%s) with an element that is null.
+                                Maybe remove that null element from the dataset.
+                                Maybe use @%s(allowsUnassigned = true) instead."""
+                                .formatted(ValueRangeProvider.class.getSimpleName(),
+                                        memberAccessor, bean,
+                                        collectionWrapping ? Collection.class.getSimpleName() : "array",
+                                        list,
+                                        PlanningVariable.class.getSimpleName()));
             }
             valueRange = new ListValueRange<>(list);
         } else {

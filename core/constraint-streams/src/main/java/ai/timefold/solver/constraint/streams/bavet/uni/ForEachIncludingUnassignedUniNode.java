@@ -3,9 +3,9 @@ package ai.timefold.solver.constraint.streams.bavet.uni;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.constraint.streams.bavet.common.tuple.UniTuple;
 
-public final class ForEachIncludingNullVarsUniNode<A> extends AbstractForEachUniNode<A> {
+public final class ForEachIncludingUnassignedUniNode<A> extends AbstractForEachUniNode<A> {
 
-    public ForEachIncludingNullVarsUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
+    public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
     }

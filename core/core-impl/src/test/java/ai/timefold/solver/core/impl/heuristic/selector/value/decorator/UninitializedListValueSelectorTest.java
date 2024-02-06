@@ -10,11 +10,12 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -22,25 +23,27 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 
-class UnassignedValueSelectorTest {
+class UninitializedListValueSelectorTest {
 
     @Test
     void filterOutAssignedValues() {
-        TestdataListValue v1 = new TestdataListValue("1");
-        TestdataListValue v2 = new TestdataListValue("2");
-        TestdataListValue v3 = new TestdataListValue("3");
-        TestdataListValue v4 = new TestdataListValue("4");
-        TestdataListValue v5 = new TestdataListValue("5");
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
+        var v4 = new TestdataListValue("4");
+        var v5 = new TestdataListValue("5");
         // 1 and 3 are assigned, the rest (2, 4, 5) are unassigned.
-        TestdataListEntity.createWithValues("A", v1, v3);
+        var entity = TestdataListEntity.createWithValues("A", v1, v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(v1, v2, v3, v4, v5));
 
-        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
-                mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector<TestdataListSolution> childValueSelector =
+        var childValueSelector =
                 mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
-
-        UnassignedValueSelector<TestdataListSolution> valueSelector = new UnassignedValueSelector<>(childValueSelector);
+        var valueSelector = new UninitializedListValueSelector<>(childValueSelector);
 
         SolverScope<TestdataListSolution> solverScope = mock(SolverScope.class);
         valueSelector.solvingStarted(solverScope);
@@ -67,6 +70,6 @@ class UnassignedValueSelectorTest {
 
         when(childValueSelector.isNeverEnding()).thenReturn(true);
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new UnassignedValueSelector<>(childValueSelector));
+        assertThatIllegalArgumentException().isThrownBy(() -> new UninitializedListValueSelector<>(childValueSelector));
     }
 }

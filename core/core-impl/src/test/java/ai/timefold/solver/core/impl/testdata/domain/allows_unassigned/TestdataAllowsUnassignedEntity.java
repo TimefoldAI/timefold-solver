@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.nullable;
+package ai.timefold.solver.core.impl.testdata.domain.allows_unassigned;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -8,32 +8,32 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 @PlanningEntity
-public class TestdataNullableEntity extends TestdataObject {
+public class TestdataAllowsUnassignedEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataNullableSolution> buildEntityDescriptor() {
-        return TestdataNullableSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataNullableEntity.class);
+    public static EntityDescriptor<TestdataAllowsUnassignedSolution> buildEntityDescriptor() {
+        return TestdataAllowsUnassignedSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataAllowsUnassignedEntity.class);
     }
 
-    public static GenuineVariableDescriptor<TestdataNullableSolution> buildVariableDescriptorForValue() {
+    public static GenuineVariableDescriptor<TestdataAllowsUnassignedSolution> buildVariableDescriptorForValue() {
         return buildEntityDescriptor().getGenuineVariableDescriptor("value");
     }
 
     private TestdataValue value;
 
-    public TestdataNullableEntity() {
+    public TestdataAllowsUnassignedEntity() {
     }
 
-    public TestdataNullableEntity(String code) {
+    public TestdataAllowsUnassignedEntity(String code) {
         super(code);
     }
 
-    public TestdataNullableEntity(String code, TestdataValue value) {
+    public TestdataAllowsUnassignedEntity(String code, TestdataValue value) {
         this(code);
         this.value = value;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", nullable = true)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", allowsUnassigned = true)
     public TestdataValue getValue() {
         return value;
     }

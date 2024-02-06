@@ -2,13 +2,13 @@ package ai.timefold.solver.core.impl.heuristic.move;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
  * A CompositeMove is composed out of multiple other moves.
@@ -27,14 +27,11 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
      */
     @SafeVarargs
     public static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(Move_... moves) {
-        int size = moves.length;
-        if (size > 1) {
-            return new CompositeMove<>(moves);
-        } else if (size == 1) {
-            return moves[0];
-        } else {
-            return new NoChangeMove<>();
-        }
+        return switch (moves.length) {
+            case 0 -> NoChangeMove.getInstance();
+            case 1 -> moves[0];
+            default -> new CompositeMove<>(moves);
+        };
     }
 
     /**
@@ -42,21 +39,14 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
      * @return never null
      */
     public static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(List<Move_> moveList) {
-        int size = moveList.size();
-        if (size > 1) {
-            return new CompositeMove<>(moveList.toArray(new Move[0]));
-        } else if (size == 1) {
-            return moveList.get(0);
-        } else {
-            return new NoChangeMove<>();
-        }
+        return buildMove(moveList.toArray(new Move[0]));
     }
 
     // ************************************************************************
     // Non-static members
     // ************************************************************************
 
-    protected final Move<Solution_>[] moves;
+    private final Move<Solution_>[] moves;
 
     /**
      * @param moves never null, never empty. Do not modify this argument afterwards or this CompositeMove corrupts.
@@ -81,7 +71,7 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public CompositeMove<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
+    public Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
         Move<Solution_>[] undoMoves = new Move[moves.length];
         int doableCount = 0;
         for (Move<Solution_> move : moves) {
@@ -99,7 +89,19 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
             undoMoves = Arrays.copyOfRange(undoMoves, undoMoves.length - doableCount, undoMoves.length);
         }
         // No need to call scoreDirector.triggerVariableListeners() because Move.doMove() already does it for every move.
-        return new CompositeMove<>(undoMoves);
+        return CompositeMove.buildMove(undoMoves);
+    }
+
+    @Override
+    public void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
+        for (Move<Solution_> move : moves) {
+            if (!move.isMoveDoable(scoreDirector)) {
+                continue;
+            }
+            // Calls scoreDirector.triggerVariableListeners() between moves
+            // because a later move can depend on the shadow variables changed by an earlier move
+            move.doMoveOnly(scoreDirector);
+        }
     }
 
     @Override
@@ -117,24 +119,16 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @Override
     public String getSimpleMoveTypeDescription() {
-        Set<String> childMoveTypeDescriptionSet = new TreeSet<>();
-        for (Move<Solution_> move : moves) {
-            childMoveTypeDescriptionSet.add(move.getSimpleMoveTypeDescription());
-        }
-        StringBuilder moveTypeDescription = new StringBuilder(20 * (moves.length + 1));
-        moveTypeDescription.append(getClass().getSimpleName()).append("(");
-        String delimiter = "";
-        for (String childMoveTypeDescription : childMoveTypeDescriptionSet) {
-            moveTypeDescription.append(delimiter).append("* ").append(childMoveTypeDescription);
-            delimiter = ", ";
-        }
-        moveTypeDescription.append(")");
-        return moveTypeDescription.toString();
+        return getClass().getSimpleName() + Arrays.stream(moves)
+                .map(Move::getSimpleMoveTypeDescription)
+                .sorted()
+                .map(childMoveTypeDescription -> "* " + childMoveTypeDescription)
+                .collect(Collectors.joining(",", "(", ")"));
     }
 
     @Override
-    public Collection<? extends Object> getPlanningEntities() {
-        Set<Object> entities = new LinkedHashSet<>(moves.length * 2);
+    public Collection<?> getPlanningEntities() {
+        Set<Object> entities = CollectionUtils.newLinkedHashSet(moves.length * 2);
         for (Move<Solution_> move : moves) {
             entities.addAll(move.getPlanningEntities());
         }
@@ -142,8 +136,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Collection<? extends Object> getPlanningValues() {
-        Set<Object> values = new LinkedHashSet<>(moves.length * 2);
+    public Collection<?> getPlanningValues() {
+        Set<Object> values = CollectionUtils.newLinkedHashSet(moves.length * 2);
         for (Move<Solution_> move : moves) {
             values.addAll(move.getPlanningValues());
         }
@@ -152,14 +146,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null || getClass() != other.getClass()) {
-            return false;
-        }
-        CompositeMove<?> that = (CompositeMove<?>) other;
-        return Arrays.equals(moves, that.moves);
+        return other instanceof CompositeMove<?> otherCompositeMove
+                && Arrays.equals(moves, otherCompositeMove.moves);
     }
 
     @Override

@@ -91,7 +91,7 @@ public class PatientAdmissionScheduleImporter extends AbstractTxtSolutionImporte
             readEmptyLine();
             readConstantLine("END\\.");
             createBedDesignationList();
-            // The + 1 is because it's a nullable=true variable
+            // The + 1 is because variable allows unassigned values
             BigInteger possibleSolutionSize = BigInteger.valueOf(patientAdmissionSchedule.getBedList().size() + 1).pow(
                     patientAdmissionSchedule.getAdmissionPartList().size());
             logger.info("PatientAdmissionSchedule {} has {} specialisms, {} equipments, {} departments, {} rooms, "

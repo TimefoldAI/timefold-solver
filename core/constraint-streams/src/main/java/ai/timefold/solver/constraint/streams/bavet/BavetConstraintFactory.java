@@ -5,17 +5,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.constraint.streams.common.InnerConstraintFactory;
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 
 public final class BavetConstraintFactory<Solution_>
         extends InnerConstraintFactory<Solution_, BavetConstraint<Solution_>> {
@@ -50,7 +54,8 @@ public final class BavetConstraintFactory<Solution_>
      * If a constraint already exists in this factory, it replaces it by the old copy.
      * {@link BavetAbstractConstraintStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link BavetConstraintSessionFactory#buildSession(boolean, Object)} relies on this occurring for all streams.
+     * {@link BavetConstraintSessionFactory#buildSession(Object, boolean)} relies on this
+     * occurring for all streams.
      * <p>
      * This must be called before the stream receives child streams.
      *
@@ -74,20 +79,58 @@ public final class BavetConstraintFactory<Solution_>
     @Override
     public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
         assertValidFromType(sourceClass);
-        Predicate<A> nullityFilter = getNullityFilter(sourceClass);
-        return share(new BavetForEachUniConstraintStream<>(this, sourceClass, nullityFilter, RetrievalSemantics.STANDARD));
-    }
-
-    private <A> Predicate<A> getNullityFilter(Class<A> fromClass) {
-        EntityDescriptor<Solution_> entityDescriptor = getSolutionDescriptor().findEntityDescriptor(fromClass);
-        if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
-            return (Predicate<A>) entityDescriptor.getHasNoNullVariables();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
+        if (entityDescriptor == null) {
+            // Not genuine or shadow entity; no need for filtering.
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
         }
-        return null;
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
+            // No applicable list variable; don't need to check inverse relationships.
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
+                    entityDescriptor.getHasNoNullVariablesPredicateBasicVar(), RetrievalSemantics.STANDARD));
+        }
+        var applicableShadowDescriptors = entityDescriptor.getShadowVariableDescriptors()
+                .stream()
+                .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor
+                        && Objects.equals(inverseRelationShadowVariableDescriptor.getVariableName(),
+                                listVariableDescriptor.getVariableName()))
+                .toList();
+        var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
+        if (entityClass == sourceClass) {
+            throw new IllegalStateException("Impossible state: entityClass (%s) and sourceClass (%s) are the same."
+                    .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
+        } else if (applicableShadowDescriptors.isEmpty()) {
+            // The list variable element doesn't have the @InverseRelationShadowVariable annotation.
+            // We don't want the users to be forced to implement it in quickstarts,
+            // so we'll do this expensive thing instead.
+            return forEachIncludingUnassigned(sourceClass)
+                    .ifExists((Class) entityClass,
+                            Joiners.filtering((A source, Object entity) -> {
+                                var list = listVariableDescriptor.getValue(entity);
+                                return list.contains(source);
+                            }));
+        } else if (applicableShadowDescriptors.size() > 1) {
+            // This state may be impossible.
+            throw new IllegalStateException(
+                    """
+                            Instances of entityClass (%s) may be used in list variable (%s), but the class has more than one @%s-annotated field (%s).
+                            Remove the annotations from all but one field."""
+                            .formatted(entityClass.getCanonicalName(),
+                                    listVariableDescriptor.getSimpleEntityAndVariableName(),
+                                    InverseRelationShadowVariable.class.getSimpleName(),
+                                    applicableShadowDescriptors.stream()
+                                            .map(ShadowVariableDescriptor::getSimpleEntityAndVariableName)
+                                            .collect(Collectors.joining(", ", "[", "]"))));
+        } else {
+            // We have the inverse relation variable, so we can read its value directly.
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
+                    entityDescriptor.getHasNoNullVariablesPredicateListVar(), RetrievalSemantics.STANDARD));
+        }
     }
 
     @Override
-    public <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass) {
+    public <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass) {
         assertValidFromType(sourceClass);
         return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
     }
@@ -95,9 +138,9 @@ public final class BavetConstraintFactory<Solution_>
     @Override
     public <A> UniConstraintStream<A> from(Class<A> fromClass) {
         assertValidFromType(fromClass);
-        EntityDescriptor<Solution_> entityDescriptor = getSolutionDescriptor().findEntityDescriptor(fromClass);
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
         if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
-            Predicate<A> predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
+            var predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
             return share(new BavetForEachUniConstraintStream<>(this, fromClass, predicate, RetrievalSemantics.LEGACY));
         } else {
             return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));

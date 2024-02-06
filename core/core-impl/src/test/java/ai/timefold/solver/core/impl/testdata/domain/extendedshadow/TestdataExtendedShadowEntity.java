@@ -8,7 +8,7 @@ public class TestdataExtendedShadowEntity {
 
     public int desiredId;
 
-    @PlanningVariable(nullable = true)
+    @PlanningVariable(allowsUnassigned = true)
     public TestdataExtendedShadowVariable myPlanningVariable;
 
     public TestdataExtendedShadowEntity() {

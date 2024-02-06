@@ -175,7 +175,7 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
                             + sourceEntityDescriptor.getEntityClass() + ").\n"
                             + sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName));
                 }
-                if (sourceVariableDescriptor.isGenuineListVariable()) {
+                if (sourceVariableDescriptor.isListVariable()) {
                     throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
                             + ") has a @" + CustomShadowVariable.class.getSimpleName()
                             + " annotated property (" + variableMemberAccessor.getName()

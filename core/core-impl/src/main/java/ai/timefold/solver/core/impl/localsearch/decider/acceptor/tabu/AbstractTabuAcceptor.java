@@ -167,7 +167,7 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
             }
             if (assertTabuHashCodeCorrectness) {
                 for (Object tabu : tabuSequenceDeque) {
-                    // tabu and checkingTabu can be null with a nullable planning variable
+                    // tabu and checkingTabu can be null with a planning variable which allows unassigned values
                     if (tabu != null && tabu.equals(checkingTabu)) {
                         if (tabu.hashCode() != checkingTabu.hashCode()) {
                             throw new IllegalStateException("HashCode/equals contract violation: tabu (" + tabu

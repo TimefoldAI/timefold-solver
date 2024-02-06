@@ -12,8 +12,12 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataDemand;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
+
+    private final ListVariableDataDemand<Solution_> providedDemand = new ListVariableDataDemand<>(this);
+    boolean allowsUnassignedValues = true;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -31,6 +35,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     @Override
     protected void processPropertyAnnotations(DescriptorPolicy descriptorPolicy) {
         PlanningListVariable planningVariableAnnotation = variableMemberAccessor.getAnnotation(PlanningListVariable.class);
+        allowsUnassignedValues = planningVariableAnnotation.allowsUnassignedValues();
         processValueRangeRefs(descriptorPolicy, planningVariableAnnotation.valueRangeProviderRefs());
     }
 
@@ -55,26 +60,6 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     // ************************************************************************
 
     @Override
-    public boolean isGenuineListVariable() {
-        return true;
-    }
-
-    @Override
-    public boolean isListVariable() {
-        return true;
-    }
-
-    @Override
-    public boolean isChained() {
-        return false;
-    }
-
-    @Override
-    public boolean isNullable() {
-        return false;
-    }
-
-    @Override
     public boolean acceptsValueType(Class<?> valueType) {
         return getElementType().isAssignableFrom(valueType);
     }
@@ -91,12 +76,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     // ************************************************************************
 
     @Override
-    public boolean isInitialized(Object entity) {
-        return true;
-    }
-
-    public List<Object> getListVariable(Object entity) {
-        Object value = getValue(entity);
+    public List<Object> getValue(Object entity) {
+        Object value = super.getValue(entity);
         if (value == null) {
             throw new IllegalStateException("The planning list variable (" + this + ") of entity (" + entity + ") is null.");
         }
@@ -104,22 +85,27 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     public Object removeElement(Object entity, int index) {
-        return getListVariable(entity).remove(index);
+        return getValue(entity).remove(index);
     }
 
     public void addElement(Object entity, int index, Object element) {
-        getListVariable(entity).add(index, element);
+        getValue(entity).add(index, element);
     }
 
     public Object getElement(Object entity, int index) {
-        return getListVariable(entity).get(index);
+        return getValue(entity).get(index);
     }
 
     public Object setElement(Object entity, int index, Object element) {
-        return getListVariable(entity).set(index, element);
+        return getValue(entity).set(index, element);
     }
 
     public int getListSize(Object entity) {
-        return getListVariable(entity).size();
+        return getValue(entity).size();
     }
+
+    public ListVariableDataDemand<Solution_> getProvidedDemand() {
+        return providedDemand;
+    }
+
 }

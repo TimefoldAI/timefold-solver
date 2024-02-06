@@ -17,12 +17,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
@@ -33,22 +31,28 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleLongScoreSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
@@ -74,13 +78,13 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void filter_problemFact() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
-        TestdataLavishValueGroup valueGroup1 = new TestdataLavishValueGroup("MyValueGroup 1");
+        var solution = TestdataLavishSolution.generateSolution();
+        var valueGroup1 = new TestdataLavishValueGroup("MyValueGroup 1");
         solution.getValueGroupList().add(valueGroup1);
-        TestdataLavishValueGroup valueGroup2 = new TestdataLavishValueGroup("MyValueGroup 2");
+        var valueGroup2 = new TestdataLavishValueGroup("MyValueGroup 2");
         solution.getValueGroupList().add(valueGroup2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishValueGroup.class)
                         .filter(valueGroup -> valueGroup.getCode().startsWith("MyValueGroup"))
                         .penalize(SimpleScore.ONE)
@@ -103,18 +107,18 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void filter_entity() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution();
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() == entityGroup)
                         .penalize(SimpleScore.ONE)
@@ -156,13 +160,13 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void filter_consecutive() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(4, 4);
-        TestdataLavishEntity entity1 = solution.getEntityList().get(0);
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
-        TestdataLavishEntity entity4 = solution.getEntityList().get(3);
+        var solution = TestdataLavishSolution.generateSolution(4, 4);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entity4 = solution.getEntityList().get(3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> !Objects.equals(entity, entity1))
                         .filter(entity -> !Objects.equals(entity, entity2))
@@ -199,13 +203,13 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void join_0() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 1);
-        TestdataLavishValueGroup valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 1);
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
         solution.getValueGroupList().add(valueGroup);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishValueGroup.class)
                         .join(TestdataLavishEntityGroup.class)
                         .penalize(SimpleScore.ONE)
@@ -231,18 +235,18 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void join_1Equal() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value1);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class,
                                 equal(TestdataLavishEntity::getValue))
@@ -291,12 +295,12 @@ public abstract class AbstractUniConstraintStreamTest
      */
     @TestTemplate
     public void join_1_mirrored() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var solution = TestdataLavishSolution.generateSolution(1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         solution.getValueList().add(value2);
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(), value2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(), value2);
         solution.getEntityList().add(entity2);
 
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
@@ -338,20 +342,20 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void join_2Equal() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         entity1.setIntegerProperty(7);
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, solution.getFirstValue());
         entity2.setIntegerProperty(7);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup, solution.getFirstValue());
+        var entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup, solution.getFirstValue());
         entity3.setIntegerProperty(8);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class,
                                 equal(TestdataLavishEntity::getEntityGroup),
@@ -385,21 +389,21 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void joinAfterGroupBy() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
-        TestdataLavishValue value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
+        var solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
+        var value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
         solution.getValueList().add(value1);
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         solution.getValueList().add(value2);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(), value1);
+        var entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(), value1);
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(), value1);
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(), value1);
         solution.getEntityList().add(entity2);
-        TestdataLavishExtra extra1 = new TestdataLavishExtra("MyExtra 1");
+        var extra1 = new TestdataLavishExtra("MyExtra 1");
         solution.getExtraList().add(extra1);
-        TestdataLavishExtra extra2 = new TestdataLavishExtra("MyExtra 2");
+        var extra2 = new TestdataLavishExtra("MyExtra 2");
         solution.getExtraList().add(extra2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(countDistinct(TestdataLavishEntity::getValue))
                         .join(TestdataLavishExtra.class)
@@ -448,13 +452,13 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifExists_0Joiner0Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 1);
-        TestdataLavishValueGroup valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 1);
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
         solution.getValueGroupList().add(valueGroup);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishValueGroup.class)
                         .ifExists(TestdataLavishEntityGroup.class)
                         .penalize(SimpleScore.ONE)
@@ -478,16 +482,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifExists_0Join1Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifExists(TestdataLavishEntityGroup.class,
                                 filtering((entity, group) -> Objects.equals(entity.getEntityGroup(), group)))
@@ -513,16 +517,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifExists_1Join0Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(factory -> factory
+        var scoreDirector = buildScoreDirector(factory -> factory
                 .forEach(TestdataLavishEntity.class)
                 .ifExists(TestdataLavishEntityGroup.class, equal(TestdataLavishEntity::getEntityGroup, Function.identity()))
                 .penalize(SimpleScore.ONE)
@@ -547,16 +551,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifExists_1Join1Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifExists(TestdataLavishEntityGroup.class,
                                 equal(TestdataLavishEntity::getEntityGroup, Function.identity()),
@@ -581,16 +585,16 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void ifExistsOther_1Join0Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .penalize(SimpleScore.ONE)
@@ -614,19 +618,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifExistsDoesNotIncludeNullVars() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
+        var entity3 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
         solution.getEntityList().add(entity3);
 
         // both forEach() and ifExists() will skip entity3, as it is not initialized.
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .penalize(SimpleScore.ONE)
@@ -651,20 +655,20 @@ public abstract class AbstractUniConstraintStreamTest
     @TestTemplate
     @Deprecated(forRemoval = true)
     public void ifExistsIncludesNullVarsWithFrom() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
+        var entity3 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
         solution.getEntityList().add(entity3);
 
         // from() will skip entity3, as it is not initialized.
         // ifExists() will still catch it, as it ignores that check.
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.from(TestdataLavishEntity.class)
                         .ifExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .penalize(SimpleScore.ONE)
@@ -701,13 +705,13 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifNotExists_0Joiner0Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 1);
-        TestdataLavishValueGroup valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 1);
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
         solution.getValueGroupList().add(valueGroup);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishValueGroup.class)
                         .ifNotExists(TestdataLavishEntityGroup.class)
                         .penalize(SimpleScore.ONE)
@@ -727,16 +731,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifNotExists_0Join1Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifNotExists(TestdataLavishEntityGroup.class,
                                 filtering((entity, group) -> Objects.equals(entity.getEntityGroup(), group)))
@@ -758,16 +762,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifNotExists_1Join0Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifNotExists(TestdataLavishEntityGroup.class,
                                 equal(TestdataLavishEntity::getEntityGroup, Function.identity()))
@@ -789,16 +793,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifNotExists_1Join1Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifNotExists(TestdataLavishEntityGroup.class,
                                 equal(TestdataLavishEntity::getEntityGroup, Function.identity()),
@@ -824,15 +828,15 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifNotExistsDoesNotIncludeNullVars() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
+        var entity2 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifNotExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .penalize(SimpleScore.ONE)
@@ -857,15 +861,15 @@ public abstract class AbstractUniConstraintStreamTest
     @TestTemplate
     @Deprecated(forRemoval = true)
     public void ifNotExistsIncludesNullVarsWithFrom() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
+        var entity2 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.from(TestdataLavishEntity.class)
                         .ifNotExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .penalize(SimpleScore.ONE)
@@ -886,16 +890,16 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void ifNotExistsOther_1Join0Filter() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .ifNotExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .penalize(SimpleScore.ONE)
@@ -917,21 +921,21 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void ifExistsAfterGroupBy() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
-        TestdataLavishValue value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
+        var solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
+        var value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
         solution.getValueList().add(value1);
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         solution.getValueList().add(value2);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(), value1);
+        var entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(), value1);
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(), value1);
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(), value1);
         solution.getEntityList().add(entity2);
-        TestdataLavishExtra extra1 = new TestdataLavishExtra("MyExtra 1");
+        var extra1 = new TestdataLavishExtra("MyExtra 1");
         solution.getExtraList().add(extra1);
-        TestdataLavishExtra extra2 = new TestdataLavishExtra("MyExtra 2");
+        var extra2 = new TestdataLavishExtra("MyExtra 2");
         solution.getExtraList().add(extra2);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(countDistinct(TestdataLavishEntity::getValue))
                         .ifExists(TestdataLavishExtra.class)
@@ -975,12 +979,12 @@ public abstract class AbstractUniConstraintStreamTest
     @TestTemplate
     public void forEach_polymorphism() {
         TestdataSolution solution = new TestdataUnannotatedExtendedSolution();
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
         solution.setValueList(List.of(v1, v2));
-        TestdataUnannotatedExtendedEntity cat = new TestdataUnannotatedExtendedEntity("Cat", v1);
-        TestdataEntity animal = new TestdataEntity("Animal", v1);
-        TestdataUnannotatedExtendedEntity dog = new TestdataUnannotatedExtendedEntity("Dog", v1);
+        var cat = new TestdataUnannotatedExtendedEntity("Cat", v1);
+        var animal = new TestdataEntity("Animal", v1);
+        var dog = new TestdataUnannotatedExtendedEntity("Dog", v1);
         solution.setEntityList(List.of(cat, animal, dog));
 
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = buildScoreDirector(
@@ -1005,19 +1009,267 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     @TestTemplate
+    public void forEach_basicVarUninitialized() {
+        var solution = new TestdataAllowsUnassignedSolution();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataAllowsUnassignedEntity("e1", v1);
+        var e2 = new TestdataAllowsUnassignedEntity("e2", null);
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataAllowsUnassignedSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataAllowsUnassignedSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEach(TestdataAllowsUnassignedEntity.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(e1));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(e2, "value");
+        e2.setValue(v2);
+        scoreDirector.afterVariableChanged(e2, "value");
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(e1),
+                assertMatch(e2));
+
+        scoreDirector.beforeVariableChanged(e1, "value");
+        e1.setValue(null);
+        scoreDirector.afterVariableChanged(e1, "value");
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(e2));
+    }
+
+    @TestTemplate
+    public void forEach_listVarNotAllowsUnassignedValues() {
+        var solution = new TestdataListSolution();
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataListEntity("e1", v1);
+        v1.setEntity(e1);
+        v1.setIndex(0);
+        var e2 = new TestdataListEntity("e2");
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataListSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEach(TestdataListValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // v2 is not assigned, so it should not be matched
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(v1));
+
+        // Incremental
+        scoreDirector.beforeListVariableChanged(e2, "valueList", 0, 1);
+        scoreDirector.beforeListVariableElementAssigned(e2, "valueList", v2);
+        e2.getValueList().add(v2);
+        scoreDirector.afterListVariableElementAssigned(e2, "valueList", v2);
+        scoreDirector.afterListVariableChanged(e2, "valueList", 0, 1);
+        assertScore(scoreDirector,
+                assertMatch(v1),
+                assertMatch(v2));
+
+        scoreDirector.beforeListVariableChanged(e1, "valueList", 0, 0);
+        scoreDirector.beforeListVariableElementUnassigned(e1, "valueList", v1);
+        e1.getValueList().clear();
+        scoreDirector.afterListVariableElementUnassigned(e1, "valueList", v1);
+        scoreDirector.afterListVariableChanged(e1, "valueList", 0, 0);
+        assertScore(scoreDirector,
+                assertMatch(v2));
+    }
+
+    @TestTemplate
+    public void forEach_listVarNotAllowsUnassignedValues_noInverseVar() {
+        var solution = new TestdataPinnedListSolution();
+        var v1 = new TestdataPinnedListValue("v1");
+        var v2 = new TestdataPinnedListValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataPinnedListEntity("e1", v1);
+        v1.setIndex(0);
+        var e2 = new TestdataPinnedListEntity("e2");
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataPinnedListSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataPinnedListSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEach(TestdataPinnedListValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // v2 is not assigned, so it should not be matched
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(v1));
+
+        // Incremental
+        scoreDirector.beforeListVariableChanged(e2, "valueList", 0, 1);
+        scoreDirector.beforeListVariableElementAssigned(e2, "valueList", v2);
+        e2.getValueList().add(v2);
+        scoreDirector.afterListVariableElementAssigned(e2, "valueList", v2);
+        scoreDirector.afterListVariableChanged(e2, "valueList", 0, 1);
+        assertScore(scoreDirector,
+                assertMatch(v1),
+                assertMatch(v2));
+
+        scoreDirector.beforeListVariableChanged(e1, "valueList", 0, 0);
+        scoreDirector.beforeListVariableElementUnassigned(e1, "valueList", v1);
+        e1.getValueList().clear();
+        scoreDirector.afterListVariableElementUnassigned(e1, "valueList", v1);
+        scoreDirector.afterListVariableChanged(e1, "valueList", 0, 0);
+        assertScore(scoreDirector,
+                assertMatch(v2));
+    }
+
+    @TestTemplate
+    public void forEach_listVarAllowsUnassignedValues() {
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        var v1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        v1.setEntity(e1);
+        v1.setIndex(0);
+        var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // v2 is not assigned, so it should not be matched
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(v1));
+
+        // Incremental
+        scoreDirector.beforeListVariableChanged(e2, "valueList", 0, 1);
+        scoreDirector.beforeListVariableElementAssigned(e2, "valueList", v2);
+        e2.getValueList().add(v2);
+        scoreDirector.afterListVariableElementAssigned(e2, "valueList", v2);
+        scoreDirector.afterListVariableChanged(e2, "valueList", 0, 1);
+        assertScore(scoreDirector,
+                assertMatch(v1),
+                assertMatch(v2));
+
+        scoreDirector.beforeListVariableChanged(e1, "valueList", 0, 0);
+        scoreDirector.beforeListVariableElementUnassigned(e1, "valueList", v1);
+        e1.getValueList().clear();
+        scoreDirector.afterListVariableElementUnassigned(e1, "valueList", v1);
+        scoreDirector.afterListVariableChanged(e1, "valueList", 0, 0);
+        assertScore(scoreDirector,
+                assertMatch(v2));
+    }
+
+    @TestTemplate
+    public void forEachIncludingUnassigned_basicVarUninitialized() {
+        var solution = new TestdataAllowsUnassignedSolution();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataAllowsUnassignedEntity("e1", v1);
+        var e2 = new TestdataAllowsUnassignedEntity("e2", null);
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataAllowsUnassignedSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataAllowsUnassignedSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEachIncludingUnassigned(TestdataAllowsUnassignedEntity.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(e1),
+                assertMatch(e2));
+    }
+
+    @TestTemplate
+    public void forEachIncludingUnassigned_listVarNotAllowsUnassignedValues() {
+        var solution = new TestdataListSolution();
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataListEntity("e1", v1);
+        var e2 = new TestdataListEntity("e2");
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataListSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEachIncludingUnassigned(TestdataListValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // Even though only one value is assigned, both are matched.
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(v1),
+                assertMatch(v2));
+
+    }
+
+    @TestTemplate
+    public void forEachIncludingUnassigned_listVarAllowsUnassignedValues() {
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        var v1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("v2");
+        solution.setValueList(List.of(v1, v2));
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
+        solution.setEntityList(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEachIncludingUnassigned(TestdataAllowsUnassignedValuesListValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // Even though only one value is assigned, both are matched.
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(v1),
+                assertMatch(v2));
+
+    }
+
+    @TestTemplate
     public void forEachUniquePair_0() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 0);
-        TestdataLavishEntity entityB = new TestdataLavishEntity("B", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 0);
+        var entityB = new TestdataLavishEntity("B", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entityB);
-        TestdataLavishEntity entityA = new TestdataLavishEntity("A", solution.getFirstEntityGroup(),
+        var entityA = new TestdataLavishEntity("A", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entityA);
-        TestdataLavishEntity entityC = new TestdataLavishEntity("C", solution.getFirstEntityGroup(),
+        var entityC = new TestdataLavishEntity("C", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entityC);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -1032,21 +1284,21 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void forEachUniquePair_1Equals() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 0);
-        TestdataLavishEntity entityB = new TestdataLavishEntity("B", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 0);
+        var entityB = new TestdataLavishEntity("B", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         entityB.setIntegerProperty(2);
         solution.getEntityList().add(entityB);
-        TestdataLavishEntity entityA = new TestdataLavishEntity("A", solution.getFirstEntityGroup(),
+        var entityA = new TestdataLavishEntity("A", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         entityA.setIntegerProperty(2);
         solution.getEntityList().add(entityA);
-        TestdataLavishEntity entityC = new TestdataLavishEntity("C", solution.getFirstEntityGroup(),
+        var entityC = new TestdataLavishEntity("C", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         entityC.setIntegerProperty(10);
         solution.getEntityList().add(entityC);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(factory -> factory
+        var scoreDirector = buildScoreDirector(factory -> factory
                 .forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getIntegerProperty))
                 .penalize(SimpleScore.ONE)
                 .asConstraint(TEST_CONSTRAINT_NAME));
@@ -1070,18 +1322,18 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void groupBy_1Mapping0Collect_filtered() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup)
                         .filter(entityGroup -> Objects.equals(entityGroup, entityGroup1))
@@ -1094,18 +1346,18 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void groupBy_1Mapping1Collect_filtered() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, count())
                         .filter((entityGroup, count) -> count > 1)
@@ -1120,18 +1372,18 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void groupBy_joinedAndFiltered() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup)
                         .join(TestdataLavishEntity.class, equal(Function.identity(), TestdataLavishEntity::getEntityGroup))
@@ -1148,18 +1400,18 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_1Mapping0Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup)
                         .penalize(SimpleScore.ONE)
@@ -1183,8 +1435,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_1Mapping1Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, count())
                         .penalize(SimpleScore.ONE)
@@ -1210,8 +1462,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_1Mapping2Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup,
                                 count(),
@@ -1219,9 +1471,9 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1241,8 +1493,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_1Mapping3Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup,
                                 count(),
@@ -1251,9 +1503,9 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1273,18 +1525,18 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_0Mapping1Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(count())
                         .penalize(SimpleScore.ONE, count -> count)
@@ -1304,15 +1556,15 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_0Mapping2Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(count(),
                                 countDistinct())
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        var entity1 = solution.getFirstEntity();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1328,8 +1580,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_0Mapping3Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(count(),
                                 min(TestdataLavishEntity::getIntegerProperty),
@@ -1337,11 +1589,11 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        var entity1 = solution.getFirstEntity();
         entity1.setIntegerProperty(0);
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
+        var entity2 = solution.getEntityList().get(1);
         entity2.setIntegerProperty(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
+        var entity3 = solution.getEntityList().get(2);
         entity3.setIntegerProperty(2);
 
         // From scratch
@@ -1360,8 +1612,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_0Mapping4Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(count(),
                                 min(TestdataLavishEntity::getIntegerProperty),
@@ -1370,11 +1622,11 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        var entity1 = solution.getFirstEntity();
         entity1.setIntegerProperty(0);
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
+        var entity2 = solution.getEntityList().get(1);
         entity2.setIntegerProperty(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
+        var entity3 = solution.getEntityList().get(2);
         entity3.setIntegerProperty(2);
 
         // From scratch
@@ -1392,21 +1644,21 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void groupBy_1Mapping1Collector_groupingOnPrimitives() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         entity1.setIntegerProperty(1);
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         entity2.setIntegerProperty(2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         entity3.setIntegerProperty(3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getIntegerProperty, count())
                         .penalize(SimpleScore.ONE, (integerProperty, count) -> count)
@@ -1431,18 +1683,18 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_2Mapping0Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishValue secondValue = solution.getValueList().get(1);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup1, secondValue);
+        var secondValue = solution.getValueList().get(1);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup1, secondValue);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue)
                         .penalize(SimpleScore.ONE)
@@ -1487,19 +1739,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_2Mapping1Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishValue value1 = new TestdataLavishValue("MyValue", solution.getFirstValueGroup());
+        var value1 = new TestdataLavishValue("MyValue", solution.getFirstValueGroup());
         solution.getValueList().add(value1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, value1);
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, value1);
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup1, value1);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup1, value1);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue, count())
                         .penalize(SimpleScore.ONE, (entityGroup, value, count) -> count)
@@ -1524,19 +1776,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_2Mapping2Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 7);
-        TestdataLavishEntityGroup entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 7);
+        var entityGroup1 = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup1);
-        TestdataLavishValue value1 = new TestdataLavishValue("MyValue", solution.getFirstValueGroup());
+        var value1 = new TestdataLavishValue("MyValue", solution.getFirstValueGroup());
         solution.getValueList().add(value1);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, value1);
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup1, value1);
         solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup1, solution.getFirstValue());
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup1, value1);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", entityGroup1, value1);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue, count(), count())
                         .penalize(SimpleScore.ONE, (entityGroup, value, count, sameCount) -> count)
@@ -1561,25 +1813,25 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_3Mapping0Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
+        var solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue,
                                 TestdataLavishEntity::getCode)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
-        TestdataLavishEntity entity4 = solution.getEntityList().get(3);
-        TestdataLavishEntity entity5 = solution.getEntityList().get(4);
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = solution.getValueList().get(1);
-        TestdataLavishValue value3 = solution.getValueList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entity4 = solution.getEntityList().get(3);
+        var entity5 = solution.getEntityList().get(4);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value1 = solution.getFirstValue();
+        var value2 = solution.getValueList().get(1);
+        var value3 = solution.getValueList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1604,25 +1856,25 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_3Mapping1Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
+        var solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue,
                                 TestdataLavishEntity::getCode, ConstraintCollectors.toSet())
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
-        TestdataLavishEntity entity4 = solution.getEntityList().get(3);
-        TestdataLavishEntity entity5 = solution.getEntityList().get(4);
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = solution.getValueList().get(1);
-        TestdataLavishValue value3 = solution.getValueList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entity4 = solution.getEntityList().get(3);
+        var entity5 = solution.getEntityList().get(4);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value1 = solution.getFirstValue();
+        var value2 = solution.getValueList().get(1);
+        var value3 = solution.getValueList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1647,25 +1899,25 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void groupBy_4Mapping0Collector() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
+        var solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .groupBy(Function.identity(), TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue,
                                 TestdataLavishEntity::getCode)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
-        TestdataLavishEntity entity4 = solution.getEntityList().get(3);
-        TestdataLavishEntity entity5 = solution.getEntityList().get(4);
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = solution.getValueList().get(1);
-        TestdataLavishValue value3 = solution.getValueList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entity4 = solution.getEntityList().get(3);
+        var entity5 = solution.getEntityList().get(4);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value1 = solution.getFirstValue();
+        var value2 = solution.getValueList().get(1);
+        var value3 = solution.getValueList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1694,15 +1946,15 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void distinct() { // On a distinct stream, this is a no-op.
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(2, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .distinct()
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1714,14 +1966,14 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToUniWithDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup) // Two entities, just one group => duplicates.
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group = solution.getFirstEntityGroup();
+        var group = solution.getFirstEntityGroup();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1729,7 +1981,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group),
                 assertMatch(group));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1742,15 +1994,15 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToUniWithoutDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup) // Two entities, two groups => no duplicates.
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1758,7 +2010,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1),
                 assertMatch(group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1771,22 +2023,22 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToUniAndDistinctWithDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 1, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 1, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup) // Two entities, just one group => duplicates.
                         .distinct() // Duplicate copies removed here.
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group = solution.getFirstEntityGroup();
+        var group = solution.getFirstEntityGroup();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(group));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1799,16 +2051,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToUniAndDistinctWithoutDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup) // Two entities, two groups => no duplicates.
                         .distinct()
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1816,7 +2068,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1),
                 assertMatch(group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1829,18 +2081,18 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToBi() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup,
                                 TestdataLavishEntity::getValue)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishValue value1 = solution.getFirstEntity().getValue();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value2 = solution.getEntityList().get(1).getValue();
+        var group1 = solution.getFirstEntityGroup();
+        var value1 = solution.getFirstEntity().getValue();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value2 = solution.getEntityList().get(1).getValue();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1848,7 +2100,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1, value1),
                 assertMatch(group2, value2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1861,8 +2113,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToTri() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup,
                                 TestdataLavishEntity::getValue,
@@ -1870,12 +2122,12 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishValue value1 = solution.getFirstEntity().getValue();
-        String code1 = solution.getFirstEntity().getCode();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value2 = solution.getEntityList().get(1).getValue();
-        String code2 = solution.getEntityList().get(1).getCode();
+        var group1 = solution.getFirstEntityGroup();
+        var value1 = solution.getFirstEntity().getValue();
+        var code1 = solution.getFirstEntity().getCode();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value2 = solution.getEntityList().get(1).getValue();
+        var code2 = solution.getEntityList().get(1).getCode();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1883,7 +2135,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1, value1, code1),
                 assertMatch(group2, value2, code2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1896,8 +2148,8 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void mapToQuad() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .map(TestdataLavishEntity::getEntityGroup,
                                 TestdataLavishEntity::getValue,
@@ -1906,13 +2158,13 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishValue value1 = solution.getFirstEntity().getValue();
-        String code1 = solution.getFirstEntity().getCode();
+        var group1 = solution.getFirstEntityGroup();
+        var value1 = solution.getFirstEntity().getValue();
+        var code1 = solution.getFirstEntity().getCode();
         long property1 = solution.getFirstEntity().getLongProperty();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value2 = solution.getEntityList().get(1).getValue();
-        String code2 = solution.getEntityList().get(1).getCode();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value2 = solution.getEntityList().get(1).getValue();
+        var code2 = solution.getEntityList().get(1).getCode();
         long property2 = solution.getEntityList().get(1).getLongProperty();
 
         // From scratch
@@ -1921,7 +2173,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1, value1, code1, property1),
                 assertMatch(group2, value2, code2, property2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1934,15 +2186,15 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void expandToBi() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .expand(TestdataLavishEntity::getEntityGroup)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1950,7 +2202,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(solution.getFirstEntity(), group1),
                 assertMatch(solution.getEntityList().get(1), group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1963,17 +2215,17 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void expandToTri() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .expand(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishValue value1 = solution.getFirstEntity().getValue();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value2 = solution.getEntityList().get(1).getValue();
+        var group1 = solution.getFirstEntityGroup();
+        var value1 = solution.getFirstEntity().getValue();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value2 = solution.getEntityList().get(1).getValue();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1981,7 +2233,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(solution.getFirstEntity(), group1, value1),
                 assertMatch(solution.getEntityList().get(1), group2, value2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1994,20 +2246,20 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void expandToQuad() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .expand(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue,
                                 TestdataLavishEntity::getCode)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishValue value1 = solution.getFirstEntity().getValue();
-        String code1 = solution.getFirstEntity().getCode();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
-        TestdataLavishValue value2 = solution.getEntityList().get(1).getValue();
-        String code2 = solution.getEntityList().get(1).getCode();
+        var group1 = solution.getFirstEntityGroup();
+        var value1 = solution.getFirstEntity().getValue();
+        var code1 = solution.getFirstEntity().getCode();
+        var group2 = solution.getEntityGroupList().get(1);
+        var value2 = solution.getEntityList().get(1).getValue();
+        var code2 = solution.getEntityList().get(1).getCode();
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2015,7 +2267,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(solution.getFirstEntity(), group1, value1, code1),
                 assertMatch(solution.getEntityList().get(1), group2, value2, code2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -2028,11 +2280,11 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void flattenLastWithDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .flattenLast(entity -> Arrays.asList(group1, group1, group2))
                         .penalize(SimpleScore.ONE)
@@ -2048,7 +2300,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1),
                 assertMatch(group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -2063,15 +2315,15 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void flattenLastWithoutDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .flattenLast(entity -> Collections.singletonList(entity.getEntityGroup()))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2079,7 +2331,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1),
                 assertMatch(group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -2092,11 +2344,11 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void flattenLastAndDistinctWithDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .flattenLast(entity -> Arrays.asList(group1, group1, group2))
                         .distinct()
@@ -2109,7 +2361,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1),
                 assertMatch(group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -2123,16 +2375,16 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void flattenLastAndDistinctWithoutDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .flattenLast(entity -> Collections.singletonList(entity.getEntityGroup()))
                         .distinct()
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
-        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
-        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2140,7 +2392,7 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(group1),
                 assertMatch(group2));
 
-        TestdataLavishEntity entity = solution.getFirstEntity();
+        var entity = solution.getFirstEntity();
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -2153,19 +2405,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatUniWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2195,19 +2447,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatUniWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2237,19 +2489,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatAndDistinctUniWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2280,19 +2532,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatAndDistinctUniWithValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2321,19 +2573,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatBiWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2365,19 +2617,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatAndDistinctBiWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2410,19 +2662,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatTriWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2456,19 +2708,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatAndDistinctTriWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2503,19 +2755,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatQuadWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2551,19 +2803,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatAndDistinctQuadWithoutValueDuplicates() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .concat(factory.forEach(TestdataLavishEntity.class)
@@ -2600,19 +2852,19 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void concatAfterGroupBy() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishValue value1 = solution.getFirstValue();
-        TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
-        TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
-        TestdataLavishEntity entity1 = solution.getFirstEntity();
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
         solution.getEntityList().add(entity2);
-        TestdataLavishEntity entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
                 value3);
         solution.getEntityList().add(entity3);
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .filter(entity -> entity.getValue() == value1)
                         .groupBy(TestdataLavishEntity::getValue, ConstraintCollectors.count())
@@ -2655,9 +2907,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeUnweighted() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2712,24 +2964,24 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(scoreDirector.getIndictmentMap())
                 .containsOnlyKeys(entityList);
 
-        String constraintFqn =
+        var constraintFqn =
                 ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
                         .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
-        Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
+        var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
                 .containsOnlyKeys(constraintFqn);
-        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+        var constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size());
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
-        for (int i = 0; i < entityList.size(); i++) {
-            Entity_ entity = entityList.get(i);
-            ConstraintMatch<Score_> constraintMatch = constraintMatchList.get(i);
+        for (var i = 0; i < entityList.size(); i++) {
+            var entity = entityList.get(i);
+            var constraintMatch = constraintMatchList.get(i);
             assertSoftly(softly -> {
-                ConstraintJustification justification = constraintMatch.getJustification();
+                var justification = constraintMatch.getJustification();
                 softly.assertThat(justification)
                         .isInstanceOf(DefaultConstraintJustification.class);
-                DefaultConstraintJustification castJustification =
+                var castJustification =
                         (DefaultConstraintJustification) justification;
                 softly.assertThat(castJustification.getFacts())
                         .containsExactly(entity);
@@ -2742,9 +2994,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalize() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, entity -> 2)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2758,7 +3010,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -2777,7 +3029,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeBigDecimal() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -2794,9 +3046,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardUnweighted() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2810,9 +3062,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void reward() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE, entity -> 2)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2826,7 +3078,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -2845,7 +3097,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardBigDecimal() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -2864,9 +3116,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveUnweighted() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2880,9 +3132,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositive() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, entity -> 2)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2896,7 +3148,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -2915,7 +3167,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveBigDecimal() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -2935,9 +3187,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactNegative() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, entity -> -2)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -2951,7 +3203,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactNegativeLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -2970,7 +3222,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactNegativeBigDecimal() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -2990,9 +3242,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeUnweightedCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3013,24 +3265,24 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(scoreDirector.getIndictmentMap())
                 .containsOnlyKeys(entityList);
 
-        String constraintFqn =
+        var constraintFqn =
                 ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
                         .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
-        Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
+        var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
                 .containsOnlyKeys(constraintFqn);
-        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+        var constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size());
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
-        for (int i = 0; i < entityList.size(); i++) {
-            Entity_ entity = entityList.get(i);
-            ConstraintMatch<Score_> constraintMatch = constraintMatchList.get(i);
+        for (var i = 0; i < entityList.size(); i++) {
+            var entity = entityList.get(i);
+            var constraintMatch = constraintMatchList.get(i);
             assertSoftly(softly -> {
-                ConstraintJustification justification = constraintMatch.getJustification();
+                var justification = constraintMatch.getJustification();
                 softly.assertThat(justification)
                         .isInstanceOf(TestConstraintJustification.class);
-                TestConstraintJustification<Score_> castJustification =
+                var castJustification =
                         (TestConstraintJustification<Score_>) justification;
                 softly.assertThat(castJustification.getFacts())
                         .containsExactly(entity);
@@ -3043,9 +3295,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3061,7 +3313,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -3082,7 +3334,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void penalizeBigDecimalCustomJustifications() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -3101,9 +3353,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardUnweightedCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3119,9 +3371,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3137,7 +3389,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -3158,7 +3410,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void rewardBigDecimalCustomJustifications() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -3179,9 +3431,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveUnweightedCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3197,9 +3449,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3215,7 +3467,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -3236,7 +3488,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactPositiveBigDecimalCustomJustifications() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -3258,9 +3510,9 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactNegativeCustomJustifications() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
+        var solution = TestdataLavishSolution.generateSolution();
 
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
+        var scoreDirector = buildScoreDirector(
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, entity -> -2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
@@ -3276,7 +3528,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactNegativeLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+        var solution = TestdataSimpleLongScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
                 TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
@@ -3297,7 +3549,7 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void impactNegativeBigDecimalCustomJustifications() {
-        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+        var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
         InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
                 buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
@@ -3337,14 +3589,14 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void zeroConstraintWeightDisabled() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
+        var entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
                 solution.getFirstValue());
         entity1.setStringProperty("myProperty1");
         solution.getEntityList().add(entity1);
 
-        AtomicLong zeroWeightMonitorCount = new AtomicLong(0L);
-        AtomicLong oneWeightMonitorCount = new AtomicLong(0L);
+        var zeroWeightMonitorCount = new AtomicLong(0L);
+        var oneWeightMonitorCount = new AtomicLong(0L);
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
                 TestdataLavishSolution.buildSolutionDescriptor(),
                 factory -> new Constraint[] {
@@ -3380,117 +3632,20 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     // ************************************************************************
-    // Node Sharing
-    // ************************************************************************
-
-    @TestTemplate
-    public void nodeSharing() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", solution.getFirstEntityGroup(),
-                solution.getFirstValue());
-        entity1.setStringProperty("myProperty1");
-        solution.getEntityList().add(entity1);
-
-        AtomicLong monitorCount = new AtomicLong(0L);
-        Predicate<TestdataLavishEntity> predicate = entity -> {
-            monitorCount.getAndIncrement();
-            return true;
-        };
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataLavishSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataLavishEntity.class)
-                                .filter(predicate)
-                                .penalize(SimpleScore.ONE)
-                                .asConstraint("myConstraint1"),
-                        factory.forEach(TestdataLavishEntity.class)
-                                .filter(predicate)
-                                .penalize(SimpleScore.ONE)
-                                .asConstraint("myConstraint2")
-                });
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(monitorCount.getAndSet(0L)).isEqualTo(3);
-
-        // Incremental
-        scoreDirector.beforeProblemPropertyChanged(entity1);
-        entity1.setStringProperty("myProperty2");
-        scoreDirector.afterProblemPropertyChanged(entity1);
-        scoreDirector.calculateScore();
-        assertThat(monitorCount.get()).isEqualTo(1);
-    }
-
-    @TestTemplate
-    public void reuseFilteredStream() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
-        TestdataLavishEntity entity1 = solution.getEntityList().get(0);
-
-        Predicate<TestdataLavishEntity> predicate = entity -> Objects.equals(entity, entity1);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataLavishSolution.buildSolutionDescriptor(),
-                factory -> {
-                    UniConstraintStream<TestdataLavishEntity> base = factory.forEach(TestdataLavishEntity.class)
-                            .filter(predicate);
-                    return new Constraint[] {
-                            base.penalize(SimpleScore.ONE).asConstraint("myConstraint1"),
-                            base.penalize(SimpleScore.ONE).asConstraint("myConstraint2")
-                    };
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch("myConstraint1", entity1),
-                assertMatch("myConstraint2", entity1));
-    }
-
-    @TestTemplate
-    public void reuseGroupedStream() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 3, 2);
-        TestdataLavishEntity entity1 = solution.getEntityList().get(0);
-        TestdataLavishEntityGroup entityGroup1 = solution.getFirstEntityGroup();
-        entity1.setEntityGroup(entityGroup1);
-        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
-        TestdataLavishEntityGroup entityGroup2 = new TestdataLavishEntityGroup("Some Other Group");
-        entity2.setEntityGroup(entityGroup2);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataLavishSolution.buildSolutionDescriptor(),
-                factory -> {
-                    UniConstraintStream<TestdataLavishEntityGroup> base = factory.forEach(TestdataLavishEntity.class)
-                            .groupBy(TestdataLavishEntity::getEntityGroup);
-                    return new Constraint[] {
-                            base.penalize(SimpleScore.ONE).asConstraint("myConstraint1"),
-                            base.filter(e -> !Objects.equals(e, entityGroup1))
-                                    .penalize(SimpleScore.ONE)
-                                    .asConstraint("myConstraint2")
-                    };
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch("myConstraint1", entityGroup1),
-                assertMatch("myConstraint1", entityGroup2),
-                assertMatch("myConstraint2", entityGroup2));
-    }
-
-    // ************************************************************************
     // from() (deprecated)
     // ************************************************************************
 
     @TestTemplate
     @Deprecated(forRemoval = true)
-    public void fromIncludesNullWhenNullable() {
-        TestdataNullableSolution solution = TestdataNullableSolution.generateSolution();
-        TestdataNullableEntity entityWithNull = solution.getEntityList().get(0);
-        TestdataNullableEntity entityWithValue = solution.getEntityList().get(1);
+    public void fromIncludesNullWhenAllowsUnassigned() {
+        var solution = TestdataAllowsUnassignedSolution.generateSolution();
+        var entityWithNull = solution.getEntityList().get(0);
+        var entityWithValue = solution.getEntityList().get(1);
 
-        InnerScoreDirector<TestdataNullableSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataNullableSolution.buildSolutionDescriptor(),
+        InnerScoreDirector<TestdataAllowsUnassignedSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataAllowsUnassignedSolution.buildSolutionDescriptor(),
                 constraintFactory -> new Constraint[] {
-                        constraintFactory.from(TestdataNullableEntity.class)
+                        constraintFactory.from(TestdataAllowsUnassignedEntity.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint(TEST_CONSTRAINT_NAME)
                 });

@@ -92,7 +92,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
                 if (bailOutEnabled) {
                     // if childMoveIterator is neverEnding and nothing is accepted, bail out of the infinite loop
                     if (attemptsBeforeBailOut <= 0L) {
-                        logger.warn("Bailing out of neverEnding selector ({}) after ({}) attempts to avoid infinite loop.",
+                        logger.debug("Bailing out of neverEnding selector ({}) after ({}) attempts to avoid infinite loop.",
                                 FilteringMoveSelector.this, bailOutSize);
                         return noUpcomingSelection();
                     }

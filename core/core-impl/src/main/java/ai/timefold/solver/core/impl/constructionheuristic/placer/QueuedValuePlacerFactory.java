@@ -37,7 +37,7 @@ public class QueuedValuePlacerFactory<Solution_>
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig_)
                 .buildValueSelector(configPolicy, entityDescriptor, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL,
                         false, // override applyReinitializeVariableFiltering
-                        ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED);
+                        ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNINITIALIZED);
 
         MoveSelectorConfig<?> moveSelectorConfig_ = config.getMoveSelectorConfig() == null
                 ? buildChangeMoveSelectorConfig(configPolicy, valueSelectorConfig_.getId(),

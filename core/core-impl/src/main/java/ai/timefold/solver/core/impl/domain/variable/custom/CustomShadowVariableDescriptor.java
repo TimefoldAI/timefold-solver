@@ -78,7 +78,7 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
                     + sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName));
         }
         Class<? extends AbstractVariableListener> variableListenerClass = shadowVariable.variableListenerClass();
-        if (sourceVariableDescriptor.isGenuineListVariable()
+        if (sourceVariableDescriptor.isListVariable()
                 && !ListVariableListener.class.isAssignableFrom(variableListenerClass)) {
             throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
                     + ") has a @" + ShadowVariable.class.getSimpleName()
@@ -89,7 +89,7 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
                     + "Maybe make the variableListenerClass (" + variableListenerClass.getSimpleName()
                     + ") implement " + ListVariableListener.class.getSimpleName() + ".");
         }
-        if (!sourceVariableDescriptor.isGenuineListVariable()
+        if (!sourceVariableDescriptor.isListVariable()
                 && !VariableListener.class.isAssignableFrom(variableListenerClass)) {
             throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
                     + ") has a @" + ShadowVariable.class.getSimpleName()

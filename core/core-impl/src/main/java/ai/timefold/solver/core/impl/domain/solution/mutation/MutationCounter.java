@@ -40,8 +40,8 @@ public class MutationCounter<Solution_> {
                     if (variableDescriptor.isListVariable()) {
                         ListVariableDescriptor<Solution_> listVariableDescriptor =
                                 (ListVariableDescriptor<Solution_>) variableDescriptor;
-                        List<Object> aValues = listVariableDescriptor.getListVariable(aEntity);
-                        List<Object> bValues = listVariableDescriptor.getListVariable(bEntity);
+                        List<Object> aValues = listVariableDescriptor.getValue(aEntity);
+                        List<Object> bValues = listVariableDescriptor.getValue(bEntity);
                         int aSize = aValues.size();
                         int bSize = bValues.size();
                         if (aSize != bSize) {

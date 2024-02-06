@@ -187,6 +187,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.beforeListVariableElementAssigned(secondEntity, "valueList", 0);
             secondEntity.setValueList(List.of(workingSolution.getValueList().get(1)));
             scoreDirector.afterListVariableElementAssigned(secondEntity, "valueList", 0);
+            scoreDirector.triggerVariableListeners();
             var score2 = scoreDirector.calculateScore();
             assertThat(score2).isEqualTo(SimpleScore.of(-2));
         }
@@ -214,6 +215,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.beforeListVariableElementAssigned(thirdEntity, "valueList", 0);
             thirdEntity.setValueList(List.of(workingSolution.getValueList().get(2)));
             scoreDirector.afterListVariableElementAssigned(thirdEntity, "valueList", 0);
+            scoreDirector.triggerVariableListeners();
             var score2 = scoreDirector.calculateScore();
             assertThat(score2).isEqualTo(SimpleScore.of(-3));
         }

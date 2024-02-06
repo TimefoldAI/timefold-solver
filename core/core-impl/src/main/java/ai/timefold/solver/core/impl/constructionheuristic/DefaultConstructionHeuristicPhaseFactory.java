@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -114,22 +113,16 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .orElseGet(() -> buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
     }
 
-    private Optional<ListVariableDescriptor<?>> findValidListVariableDescriptor(
-            SolutionDescriptor<Solution_> solutionDescriptor) {
-        List<ListVariableDescriptor<Solution_>> listVariableDescriptors = solutionDescriptor.getListVariableDescriptors();
-        if (listVariableDescriptors.isEmpty()) {
+    private Optional<ListVariableDescriptor<?>>
+            findValidListVariableDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
             return Optional.empty();
         }
-        if (listVariableDescriptors.size() > 1) {
-            throw new IllegalArgumentException("Construction Heuristic phase does not support multiple list variables ("
-                    + listVariableDescriptors + ").");
-        }
-
         failIfConfigured(phaseConfig.getConstructionHeuristicType(), "constructionHeuristicType");
         failIfConfigured(phaseConfig.getEntityPlacerConfig(), "entityPlacerConfig");
         failIfConfigured(phaseConfig.getMoveSelectorConfigList(), "moveSelectorConfigList");
-
-        return Optional.of(listVariableDescriptors.get(0));
+        return Optional.of(listVariableDescriptor);
     }
 
     private static void failIfConfigured(Object configValue, String configName) {

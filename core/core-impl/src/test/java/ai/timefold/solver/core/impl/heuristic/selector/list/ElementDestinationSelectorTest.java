@@ -14,6 +14,8 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertEmp
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
 
+import java.util.List;
+
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -34,8 +36,12 @@ class ElementDestinationSelectorTest {
         var a = TestdataListEntity.createWithValues("A", v2, v1);
         var b = TestdataListEntity.createWithValues("B");
         var c = TestdataListEntity.createWithValues("C", v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var entitySelector = mockEntitySelector(a, b, c);
         var valueSelector = mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v2);
@@ -69,8 +75,12 @@ class ElementDestinationSelectorTest {
         var a = TestdataListEntity.createWithValues("A", v1, v2);
         var b = TestdataListEntity.createWithValues("B");
         var c = TestdataListEntity.createWithValues("C", v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var entitySelector = mockEntitySelector(a, b, c, c);
         var valueSelector = mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v2, v1);
@@ -129,8 +139,12 @@ class ElementDestinationSelectorTest {
     void notEmptyIfThereAreEntities() {
         var a = TestdataListEntity.createWithValues("A");
         var b = TestdataListEntity.createWithValues("B");
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of());
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var entitySelector = mockEntitySelector(a, b);
         var valueSelector = mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector));
@@ -152,8 +166,12 @@ class ElementDestinationSelectorTest {
         var b = TestdataPinnedWithIndexListEntity.createWithValues("B",
                 new TestdataPinnedWithIndexListValue("B0"), new TestdataPinnedWithIndexListValue("B1"));
         b.setPlanningPinToIndex(1); // B0 will be ignored.
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(b.getValueList().get(0), b.getValueList().get(1)));
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var entitySelector = mockEntitySelector(a, b);
         var valueSelector = mockEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector));

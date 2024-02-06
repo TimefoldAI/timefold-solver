@@ -40,7 +40,7 @@ public class IndexVariableListener<Solution_> implements ListVariableListener<So
     @Override
     public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> listVariable = sourceVariableDescriptor.getListVariable(entity);
+        List<Object> listVariable = sourceVariableDescriptor.getValue(entity);
         for (Object element : listVariable) {
             innerScoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
             shadowVariableDescriptor.setValue(element, null);
@@ -68,7 +68,7 @@ public class IndexVariableListener<Solution_> implements ListVariableListener<So
     }
 
     private void updateIndexes(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex, int toIndex) {
-        List<Object> listVariable = sourceVariableDescriptor.getListVariable(entity);
+        List<Object> listVariable = sourceVariableDescriptor.getValue(entity);
         for (int i = fromIndex; i < listVariable.size(); i++) {
             Object element = listVariable.get(i);
             Integer oldIndex = shadowVariableDescriptor.getValue(element);

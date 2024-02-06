@@ -4,11 +4,14 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
+import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 /**
@@ -17,23 +20,17 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
  */
 public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final SingletonInverseVariableSupply inverseVariableSupply;
-    private final IndexVariableSupply indexVariableSupply;
+    private final ListVariableDataSupply<Solution_> listVariableDataSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Iterator<Object> leftValueIterator;
     private final EntityIndependentValueSelector<Solution_> rightValueSelector;
     private Iterator<Object> rightValueIterator;
+    private Object upcomingLeftValue;
 
-    private Object upcomingLeftEntity;
-    private Integer upcomingLeftIndex;
-
-    public OriginalListSwapIterator(
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply,
+    public OriginalListSwapIterator(ListVariableDataSupply<Solution_> listVariableDataSupply,
             EntityIndependentValueSelector<Solution_> leftValueSelector,
             EntityIndependentValueSelector<Solution_> rightValueSelector) {
-        this.inverseVariableSupply = inverseVariableSupply;
-        this.indexVariableSupply = indexVariableSupply;
+        this.listVariableDataSupply = listVariableDataSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;
@@ -46,19 +43,51 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
             if (!leftValueIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            Object upcomingLeftValue = leftValueIterator.next();
-            upcomingLeftEntity = inverseVariableSupply.getInverseSingleton(upcomingLeftValue);
-            upcomingLeftIndex = indexVariableSupply.getIndex(upcomingLeftValue);
+            upcomingLeftValue = leftValueIterator.next();
             rightValueIterator = rightValueSelector.iterator();
         }
 
-        Object upcomingRightValue = rightValueIterator.next();
+        var upcomingRightValue = rightValueIterator.next();
+        return buildSwapMove(listVariableDescriptor, listVariableDataSupply, upcomingLeftValue, upcomingRightValue);
+    }
 
-        return new ListSwapMove<>(
-                listVariableDescriptor,
-                upcomingLeftEntity,
-                upcomingLeftIndex,
-                inverseVariableSupply.getInverseSingleton(upcomingRightValue),
-                indexVariableSupply.getIndex(upcomingRightValue));
+    static <Solution_> Move<Solution_> buildSwapMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ListVariableDataSupply<Solution_> listVariableDataSupply, Object upcomingLeftValue, Object upcomingRightValue) {
+        if (upcomingLeftValue == upcomingRightValue) {
+            return NoChangeMove.getInstance();
+        }
+        var upcomingLeft = listVariableDataSupply.getLocationInList(upcomingLeftValue);
+        var upcomingRight = listVariableDataSupply.getLocationInList(upcomingRightValue);
+        if (upcomingLeft == null) { // Swap Moves are not used in construction heuristics.
+            throw new IllegalStateException("Impossible state: upcomingLeftValue (%s) is not initialized."
+                    .formatted(upcomingLeftValue));
+        } else if (upcomingRight == null) { // Swap Moves are not used in construction heuristics.
+            throw new IllegalStateException("Impossible state: upcomingRightValue (%s) is not initialized."
+                    .formatted(upcomingRightValue));
+        }
+        boolean leftUnassigned = upcomingLeft instanceof UnassignedLocation;
+        boolean rightUnassigned = upcomingRight instanceof UnassignedLocation;
+        if (leftUnassigned && rightUnassigned) { // No need to swap two unassigned elements.
+            return NoChangeMove.getInstance();
+        } else if (leftUnassigned) { // Unassign right, put left where right used to be.
+            var rightDestination = (LocationInList) upcomingRight;
+            var unassignMove =
+                    new ListUnassignMove<>(listVariableDescriptor, rightDestination.entity(), rightDestination.index());
+            var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, rightDestination.entity(),
+                    rightDestination.index());
+            return CompositeMove.buildMove(unassignMove, assignMove);
+        } else if (rightUnassigned) { // Unassign left, put right where left used to be.
+            var leftDestination = (LocationInList) upcomingLeft;
+            var unassignMove =
+                    new ListUnassignMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index());
+            var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
+                    leftDestination.index());
+            return CompositeMove.buildMove(unassignMove, assignMove);
+        } else {
+            var leftDestination = (LocationInList) upcomingLeft;
+            var rightDestination = (LocationInList) upcomingRight;
+            return new ListSwapMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index(),
+                    rightDestination.entity(), rightDestination.index());
+        }
     }
 }

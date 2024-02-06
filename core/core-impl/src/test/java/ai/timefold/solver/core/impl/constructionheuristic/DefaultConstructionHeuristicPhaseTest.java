@@ -11,9 +11,9 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
@@ -101,31 +101,31 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @Test
-    void solveWithNullableEntities() {
+    void solveWithEntitiesAllowedUnassigned() {
         SolverConfig solverConfig = new SolverConfig()
-                .withSolutionClass(TestdataNullableSolution.class)
-                .withEntityClasses(TestdataNullableEntity.class)
-                .withEasyScoreCalculatorClass(TestdataNullableEasyScoreCalculator.class)
+                .withSolutionClass(TestdataAllowsUnassignedSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEasyScoreCalculator.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
-        TestdataNullableSolution solution = new TestdataNullableSolution("s1");
+        TestdataAllowsUnassignedSolution solution = new TestdataAllowsUnassignedSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");
         TestdataValue v2 = new TestdataValue("v2");
         solution.setValueList(Arrays.asList(v1, v2));
         solution.setEntityList(Arrays.asList(
-                new TestdataNullableEntity("e1", null),
-                new TestdataNullableEntity("e2", null),
-                new TestdataNullableEntity("e3", null)));
+                new TestdataAllowsUnassignedEntity("e1", null),
+                new TestdataAllowsUnassignedEntity("e2", null),
+                new TestdataAllowsUnassignedEntity("e3", null)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        TestdataNullableEntity solvedE1 = solution.getEntityList().get(0);
+        TestdataAllowsUnassignedEntity solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
         assertThat(solvedE1.getValue()).isEqualTo(v1);
-        TestdataNullableEntity solvedE2 = solution.getEntityList().get(1);
+        TestdataAllowsUnassignedEntity solvedE2 = solution.getEntityList().get(1);
         assertCode("e2", solvedE2);
         assertThat(solvedE2.getValue()).isEqualTo(v2);
-        TestdataNullableEntity solvedE3 = solution.getEntityList().get(2);
+        TestdataAllowsUnassignedEntity solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(null);
         assertThat(solution.getScore().initScore()).isEqualTo(0);

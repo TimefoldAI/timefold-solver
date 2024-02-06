@@ -8,8 +8,8 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 
 public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
-    private boolean chained;
-    private boolean nullable;
+    boolean chained;
+    boolean allowsUnassigned;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -27,21 +27,38 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     @Override
     protected void processPropertyAnnotations(DescriptorPolicy descriptorPolicy) {
         PlanningVariable planningVariableAnnotation = variableMemberAccessor.getAnnotation(PlanningVariable.class);
-        processNullable(planningVariableAnnotation);
+        processAllowsUnassigned(planningVariableAnnotation);
         processChained(planningVariableAnnotation);
         processValueRangeRefs(descriptorPolicy, planningVariableAnnotation.valueRangeProviderRefs());
         processStrength(planningVariableAnnotation.strengthComparatorClass(),
                 planningVariableAnnotation.strengthWeightFactoryClass());
     }
 
-    private void processNullable(PlanningVariable planningVariableAnnotation) {
-        nullable = planningVariableAnnotation.nullable();
-        if (nullable && variableMemberAccessor.getType().isPrimitive()) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + PlanningVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with nullable (" + nullable + "), which is not compatible with the primitive propertyType ("
-                    + variableMemberAccessor.getType() + ").");
+    private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {
+        var allowsUnassigned = planningVariableAnnotation.allowsUnassigned();
+        var deprecatedNullable = planningVariableAnnotation.nullable();
+        if (allowsUnassigned) { // If the user has specified allowsUnassigned = true, it takes precedence.
+            if (deprecatedNullable) {
+                throw new IllegalArgumentException(
+                        "The entityClass (%s) has a @%s-annotated property (%s) with allowsUnassigned (%s) and nullable (%s) which are mutually exclusive."
+                                .formatted(entityDescriptor.getEntityClass(),
+                                        PlanningVariable.class.getSimpleName(),
+                                        variableMemberAccessor.getName(),
+                                        allowsUnassigned,
+                                        deprecatedNullable));
+            }
+            this.allowsUnassigned = true;
+        } else { // If the user has not specified allowsUnassigned = true, nullable is taken.
+            this.allowsUnassigned = deprecatedNullable;
+        }
+        if (this.allowsUnassigned && variableMemberAccessor.getType().isPrimitive()) {
+            throw new IllegalArgumentException(
+                    "The entityClass (%s) has a @%s-annotated property (%s) with allowsUnassigned (%s) which is not compatible with the primitive propertyType (%s)."
+                            .formatted(entityDescriptor.getEntityClass(),
+                                    PlanningVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(),
+                                    this.allowsUnassigned,
+                                    variableMemberAccessor.getType()));
         }
     }
 
@@ -51,20 +68,25 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
             return;
         }
         if (!acceptsValueType(entityDescriptor.getEntityClass())) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + PlanningVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with chained (" + chained + ") and propertyType (" + getVariablePropertyType()
-                    + ") which is not a superclass/interface of or the same as the entityClass ("
-                    + entityDescriptor.getEntityClass() + ").\n"
-                    + "If an entity's chained planning variable cannot point to another entity of the same class,"
-                    + " then it is impossible to make a chain longer than 1 entity and therefore chaining is useless.");
+            throw new IllegalArgumentException(
+                    """
+                            The entityClass (%s) has a @%s-annotated property (%s) with chained (%s) and propertyType (%s) which is not a superclass/interface of or the same as the entityClass (%s).
+                            If an entity's chained planning variable cannot point to another entity of the same class, then it is impossible to make a chain longer than 1 entity and therefore chaining is useless."""
+                            .formatted(entityDescriptor.getEntityClass(),
+                                    PlanningVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(),
+                                    chained,
+                                    getVariablePropertyType(),
+                                    entityDescriptor.getEntityClass()));
         }
-        if (nullable) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + PlanningVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with chained (" + chained + "), which is not compatible with nullable (" + nullable + ").");
+        if (allowsUnassigned) {
+            throw new IllegalArgumentException(
+                    "The entityClass (%s) has a @%s-annotated property (%s) with chained (%s), which is not compatible with nullable (%s)."
+                            .formatted(entityDescriptor.getEntityClass(),
+                                    PlanningVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(),
+                                    chained,
+                                    allowsUnassigned));
         }
     }
 
@@ -73,35 +95,8 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     // ************************************************************************
 
     @Override
-    public boolean isListVariable() {
-        return false;
-    }
-
-    @Override
-    public boolean isChained() {
-        return chained;
-    }
-
-    @Override
-    public boolean isNullable() {
-        return nullable;
-    }
-
-    @Override
     public boolean acceptsValueType(Class<?> valueType) {
         return getVariablePropertyType().isAssignableFrom(valueType);
     }
 
-    // ************************************************************************
-    // Extraction methods
-    // ************************************************************************
-
-    @Override
-    public boolean isInitialized(Object entity) {
-        if (isNullable()) {
-            return true;
-        }
-        Object variable = getValue(entity);
-        return variable != null;
-    }
 }

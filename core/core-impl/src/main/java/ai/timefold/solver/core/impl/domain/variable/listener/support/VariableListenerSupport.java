@@ -56,6 +56,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             if (variableListener instanceof Supply supply) {
                 // Non-sourced variable listeners (ie. ones provided by the user) can never be a supply.
                 var demand = shadowVariableDescriptor.getProvidedDemand();
+                demand.cancel(this);
                 supplyMap.put(demand, new SupplyWithDemandCount(supply, 1L));
             }
             var globalOrder = shadowVariableDescriptor.getGlobalShadowOrder();
@@ -68,10 +69,17 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     @Override
     public <Supply_ extends Supply> Supply_ demand(Demand<Supply_> demand) {
-        var supplyWithDemandCount =
-                supplyMap.compute(demand, (key, value) -> value == null ? new SupplyWithDemandCount(createSupply(key), 1L)
-                        : new SupplyWithDemandCount(value.supply, value.demandCount + 1L));
-        return (Supply_) supplyWithDemandCount.supply;
+        var supplyWithDemandCount = supplyMap.get(demand);
+        if (supplyWithDemandCount == null) {
+            var newSupplyWithDemandCount = new SupplyWithDemandCount(createSupply(demand), 1L);
+            supplyMap.put(demand, newSupplyWithDemandCount);
+            return (Supply_) newSupplyWithDemandCount.supply;
+        } else {
+            var supply = supplyWithDemandCount.supply;
+            var newSupplyWithDemandCount = new SupplyWithDemandCount(supply, supplyWithDemandCount.demandCount + 1L);
+            supplyMap.put(demand, newSupplyWithDemandCount);
+            return (Supply_) supply;
+        }
     }
 
     private Supply createSupply(Demand<?> demand) {
@@ -94,7 +102,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         var supplyWithDemandCount = supplyMap.get(demand);
         if (supplyWithDemandCount == null) {
             return false;
-        } else if (supplyWithDemandCount.demandCount == 1L) {
+        }
+        demand.cancel(this);
+        if (supplyWithDemandCount.demandCount == 1L) {
             supplyMap.remove(demand);
         } else {
             supplyMap.put(demand,
@@ -241,9 +251,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             return;
         }
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
-            if (variableDescriptor.isGenuineListVariable()) {
+            if (variableDescriptor.isListVariable()) {
                 var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                int size = listVariableDescriptor.getListVariable(entity).size();
+                int size = listVariableDescriptor.getValue(entity).size();
                 beforeListVariableChanged(listVariableDescriptor, entity, 0, size);
                 afterListVariableChanged(listVariableDescriptor, entity, 0, size);
             } else {

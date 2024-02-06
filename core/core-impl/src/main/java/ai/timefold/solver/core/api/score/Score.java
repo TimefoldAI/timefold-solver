@@ -39,7 +39,7 @@ public interface Score<Score_ extends Score<Score_>>
      *         initialized
      */
     default int initScore() {
-        // TODO remove default implementation in 9.0; exists only for backwards compatibility
+        // TODO remove default implementation in 2.0; exists only for backwards compatibility
         return getInitScore();
     }
 

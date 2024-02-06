@@ -15,6 +15,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -110,7 +111,7 @@ public class ListSwapMoveSelectorFactory<Solution_>
         }
         List<ListVariableDescriptor<Solution_>> variableDescriptorList =
                 entityDescriptor.getGenuineVariableDescriptorList().stream()
-                        .filter(GenuineVariableDescriptor::isListVariable)
+                        .filter(VariableDescriptor::isListVariable)
                         .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
                         .collect(Collectors.toList());
         if (variableDescriptorList.isEmpty()) {

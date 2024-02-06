@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
-  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution</solutionClass>
-  <entityClass>ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity</entityClass>
+  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity</entityClass>
 
   <!-- Score configuration -->
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
 </solver>

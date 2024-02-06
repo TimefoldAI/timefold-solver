@@ -17,7 +17,12 @@ public final class IndexVariableDemand<Solution_>
 
     @Override
     public IndexVariableSupply createExternalizedSupply(SupplyManager supplyManager) {
-        return new ExternalizedIndexVariableSupply<>((ListVariableDescriptor<Solution_>) variableDescriptor);
+        return supplyManager.demand(((ListVariableDescriptor<Solution_>) variableDescriptor).getProvidedDemand());
+    }
+
+    @Override
+    public void cancel(SupplyManager supplyManager) {
+        supplyManager.cancel(((ListVariableDescriptor<Solution_>) variableDescriptor).getProvidedDemand());
     }
 
 }

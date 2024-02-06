@@ -24,7 +24,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
  */
 public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelector<Solution_> {
 
-    private static final Move<?> EMPTY_MARK = new NoChangeMove<>();
+    private static final Move<?> EMPTY_MARK = NoChangeMove.getInstance();
 
     private final boolean ignoreEmptyChildIterators;
 

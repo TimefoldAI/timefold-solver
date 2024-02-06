@@ -10,21 +10,20 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * Selects destinations for list variable change moves. The destination specifies a future position in a list variable,
- * expressed as an {@link ElementRef}, where a moved element or subList can be inserted.
+ * expressed as an {@link LocationInList}, where a moved element or subList can be inserted.
  * <p>
  * Destination completeness is achieved by using both entity and value child selectors.
  * When an entity <em>A</em> is selected, the destination becomes <em>A[0]</em>.
@@ -39,20 +38,19 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solution_>
         implements DestinationSelector<Solution_> {
 
+    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
     private final EntityIndependentValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
 
-    private SingletonInverseVariableSupply inverseVariableSupply;
-    private IndexVariableSupply indexVariableSupply;
+    private ListVariableDataSupply<Solution_> listVariableDataSupply;
     private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
-    public ElementDestinationSelector(
-            EntitySelector<Solution_> entitySelector,
-            EntityIndependentValueSelector<Solution_> valueSelector,
-            boolean randomSelection) {
+    public ElementDestinationSelector(EntitySelector<Solution_> entitySelector,
+            EntityIndependentValueSelector<Solution_> valueSelector, boolean randomSelection) {
+        this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.entitySelector = entitySelector;
-        this.valueSelector = valueSelector;
+        this.valueSelector = valueSelector; // At this point, guaranteed to only return assigned values.
         this.randomSelection = randomSelection;
 
         phaseLifecycleSupport.addEventListener(entitySelector);
@@ -63,18 +61,14 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        var listVariableDescriptor = (ListVariableDescriptor<?>) valueSelector.getVariableDescriptor();
-        inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(valueSelector, inverseVariableSupply, indexVariableSupply);
+        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
+        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableDataSupply);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        inverseVariableSupply = null;
-        indexVariableSupply = null;
+        listVariableDataSupply = null;
         movableValueSelector = null;
     }
 
@@ -87,64 +81,45 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     private EntityIndependentValueSelector<Solution_> getEffectiveValueSelector() { // Simplify tests.
-        if (movableValueSelector == null) {
-            return valueSelector;
-        } else {
-            return movableValueSelector;
-        }
+        return Objects.requireNonNullElse(movableValueSelector, valueSelector);
     }
 
     @Override
-    public Iterator<ElementRef> iterator() {
+    public Iterator<ElementLocation> iterator() {
         if (randomSelection) {
-            var totalSize = Math.addExact(entitySelector.getSize(), getEffectiveValueSelector().getSize());
+            var allowsUnassignedValues = listVariableDescriptor.allowsUnassigned();
             var entityIterator = entitySelector.iterator();
-            var valueIterator = getEffectiveValueSelector().iterator();
 
-            return new Iterator<>() {
-                @Override
-                public boolean hasNext() {
-                    // The valueSelector's hasNext() is insignificant. The next random destination exists if and only if
-                    // there is a next entity.
-                    return entityIterator.hasNext();
-                }
-
-                @Override
-                public ElementRef next() {
-                    var entitySize = entitySelector.getSize();
-                    if (RandomUtils.nextLong(workingRandom, totalSize) < entitySize) {
-                        // Start with the first unpinned value of each entity, or zero if no pinning.
-                        // Entity selector is guaranteed to return only unpinned entities.
-                        var entity = entityIterator.next();
-                        EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
-                        return new ElementRef(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
-                    } else {
-                        // Value selector already returns only unpinned values.
-                        var value = valueIterator.next();
-                        var entity = inverseVariableSupply.getInverseSingleton(value);
-                        return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
-                    }
-                }
-            };
+            // In case of list var which allows unassigned values, we need to exclude unassigned elements.
+            var totalValueSize = getEffectiveValueSelector().getSize()
+                    - (allowsUnassignedValues ? listVariableDataSupply.countNotAssigned() : 0);
+            var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
+            return new ElementLocationRandomIterator(entityIterator, totalSize, allowsUnassignedValues);
         } else {
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();
             }
-            return Stream.concat(
-                    // Start with the first unpinned value of each entity, or zero if no pinning.
-                    // Entity selector is guaranteed to return only unpinned entities.
-                    StreamSupport.stream(entitySelector.spliterator(), false)
-                            .map(entity -> {
-                                EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
-                                return new ElementRef(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
-                            }),
+            // Start with the first unpinned value of each entity, or zero if no pinning.
+            // Entity selector is guaranteed to return only unpinned entities.
+            var stream = StreamSupport.stream(entitySelector.spliterator(), false)
+                    .map(entity -> {
+                        var entityDescriptor = entitySelector.getEntityDescriptor();
+                        return (ElementLocation) ElementLocation.of(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
+                    });
+            // Filter guarantees that we only get values that are actually in one of the lists.
+            // Value selector guarantees only unpinned values.
+            stream = Stream.concat(stream,
                     StreamSupport.stream(getEffectiveValueSelector().spliterator(), false)
-                            .map(value -> {
-                                // Value selector already returns only unpinned values.
-                                var entity = inverseVariableSupply.getInverseSingleton(value);
-                                return new ElementRef(entity, indexVariableSupply.getIndex(value) + 1);
-                            }))
-                    .iterator();
+                            .map(v -> listVariableDataSupply.getLocationInList(v))
+                            .flatMap(elementLocation -> elementLocation instanceof LocationInList locationInList
+                                    ? Stream.of(locationInList)
+                                    : Stream.empty())
+                            .map(locationInList -> ElementLocation.of(locationInList.entity(), locationInList.index() + 1)));
+            if (listVariableDescriptor.allowsUnassigned()) {
+                // If the list variable allows unassigned values, add the option of unassigning.
+                stream = Stream.concat(stream, Stream.of(ElementLocation.unassigned()));
+            }
+            return stream.iterator();
         }
     }
 
@@ -198,5 +173,85 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + entitySelector + ", " + valueSelector + ")";
+    }
+
+    private final class ElementLocationRandomIterator implements Iterator<ElementLocation> {
+        private final Iterator<Object> entityIterator;
+        private final long totalSize;
+        private final boolean allowsUnassignedValues;
+        private Iterator<Object> valueIterator;
+
+        public ElementLocationRandomIterator(Iterator<Object> entityIterator, long totalSize, boolean allowsUnassignedValues) {
+            this.entityIterator = entityIterator;
+            this.totalSize = totalSize;
+            if (totalSize < 1) {
+                throw new IllegalStateException("Impossible state: totalSize (%d) < 1"
+                        .formatted(totalSize));
+            }
+            this.allowsUnassignedValues = allowsUnassignedValues;
+            this.valueIterator = getValueIterator(allowsUnassignedValues);
+        }
+
+        private Iterator<Object> getValueIterator(boolean allowsUnassignedValues) {
+            var effectiveValueSelector = getEffectiveValueSelector();
+            if (allowsUnassignedValues) {
+                /*
+                 * In case of list variable that allows unassigned values,
+                 * unassigned elements will show up in the valueSelector.
+                 * These skew the selection probability, so we need to exclude them.
+                 * The option to unassign needs to be added to the iterator once later,
+                 * to make sure that it can get selected.
+                 *
+                 * Example: for destination elements [A, B, C] where C is not initialized,
+                 * the probability of unassigning a source element is 1/3 as it should be.
+                 * (If destination is not initialized, it means source will be unassigned.)
+                 * However, if B and C were not initialized, the probability of unassigning goes up to 2/3.
+                 * The probability should be 1/2 instead.
+                 * (Either select A as the destination, or unassign.)
+                 * If we always remove unassigned elements from the iterator,
+                 * and always add one option to unassign at the end,
+                 * we can keep the correct probabilities throughout.
+                 */
+                effectiveValueSelector =
+                        (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(effectiveValueSelector,
+                                (ScoreDirector<Solution_> scoreDirector,
+                                        Object selection) -> listVariableDataSupply.getInverseSingleton(selection) != null);
+            }
+            return effectiveValueSelector.iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            // The valueSelector's hasNext() is insignificant.
+            // The next random destination exists if and only if there is a next entity.
+            return entityIterator.hasNext();
+        }
+
+        @Override
+        public ElementLocation next() {
+            var entitySize = entitySelector.getSize();
+            var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
+            long random = RandomUtils.nextLong(workingRandom, totalSize);
+            if (allowsUnassignedValues && random == 0) {
+                /*
+                 * We have already excluded all unassigned elements,
+                 * the only way to get an unassigned destination is to explicitly add it.
+                 */
+                return ElementLocation.unassigned();
+            } else if (random < entityBoundary) {
+                // Start with the first unpinned value of each entity, or zero if no pinning.
+                // Entity selector is guaranteed to return only unpinned entities.
+                var entity = entityIterator.next();
+                EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
+                return new LocationInList(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
+            } else { // Value selector already returns only unpinned values.
+                if (!valueIterator.hasNext()) {
+                    valueIterator = getValueIterator(allowsUnassignedValues);
+                }
+                var value = valueIterator.next();
+                var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(value);
+                return new LocationInList(elementLocation.entity(), elementLocation.index() + 1);
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.nullable;
+package ai.timefold.solver.core.impl.testdata.domain.allows_unassigned;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,29 +14,30 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 @PlanningSolution
-public class TestdataNullableSolution extends TestdataObject {
+public class TestdataAllowsUnassignedSolution extends TestdataObject {
 
-    public static SolutionDescriptor<TestdataNullableSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataNullableSolution.class, TestdataNullableEntity.class);
+    public static SolutionDescriptor<TestdataAllowsUnassignedSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataAllowsUnassignedSolution.class,
+                TestdataAllowsUnassignedEntity.class);
     }
 
-    public static TestdataNullableSolution generateSolution() {
+    public static TestdataAllowsUnassignedSolution generateSolution() {
         return generateSolution(2, 2);
     }
 
-    public static TestdataNullableSolution generateSolution(int valueListSize, int entityListSize) {
-        TestdataNullableSolution solution = new TestdataNullableSolution("Generated Solution 0");
+    public static TestdataAllowsUnassignedSolution generateSolution(int valueListSize, int entityListSize) {
+        TestdataAllowsUnassignedSolution solution = new TestdataAllowsUnassignedSolution("Generated Solution 0");
         List<TestdataValue> valueList = new ArrayList<>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {
             TestdataValue value = new TestdataValue("Generated Value " + i);
             valueList.add(value);
         }
         solution.setValueList(valueList);
-        List<TestdataNullableEntity> entityList = new ArrayList<>(entityListSize);
-        entityList.add(new TestdataNullableEntity("Generated Entity 0", null));
+        List<TestdataAllowsUnassignedEntity> entityList = new ArrayList<>(entityListSize);
+        entityList.add(new TestdataAllowsUnassignedEntity("Generated Entity 0", null));
         for (int i = 1; i < entityListSize; i++) {
             TestdataValue value = valueList.get(i % valueListSize);
-            TestdataNullableEntity entity = new TestdataNullableEntity("Generated Entity " + i, value);
+            TestdataAllowsUnassignedEntity entity = new TestdataAllowsUnassignedEntity("Generated Entity " + i, value);
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
@@ -44,14 +45,14 @@ public class TestdataNullableSolution extends TestdataObject {
     }
 
     private List<TestdataValue> valueList;
-    private List<TestdataNullableEntity> entityList;
+    private List<TestdataAllowsUnassignedEntity> entityList;
 
     private SimpleScore score;
 
-    public TestdataNullableSolution() {
+    public TestdataAllowsUnassignedSolution() {
     }
 
-    public TestdataNullableSolution(String code) {
+    public TestdataAllowsUnassignedSolution(String code) {
         super(code);
     }
 
@@ -66,11 +67,11 @@ public class TestdataNullableSolution extends TestdataObject {
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataNullableEntity> getEntityList() {
+    public List<TestdataAllowsUnassignedEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataNullableEntity> entityList) {
+    public void setEntityList(List<TestdataAllowsUnassignedEntity> entityList) {
         this.entityList = entityList;
     }
 

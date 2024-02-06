@@ -2,13 +2,12 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Iterator;
 
+import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
+import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
@@ -21,8 +20,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
 
-    private SingletonInverseVariableSupply inverseVariableSupply;
-    private IndexVariableSupply indexVariableSupply;
+    private ListVariableDataSupply<Solution_> listVariableDataSupply;
 
     public ListChangeMoveSelector(
             EntityIndependentValueSelector<Solution_> sourceValueSelector,
@@ -41,16 +39,14 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         super.solvingStarted(solverScope);
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        inverseVariableSupply = supplyManager.demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor));
-        indexVariableSupply = supplyManager.demand(new IndexVariableDemand<>(listVariableDescriptor));
-        movableSourceValueSelector = filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, inverseVariableSupply,
-                indexVariableSupply);
+        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
+        movableSourceValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, listVariableDataSupply);
     }
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
             EntityIndependentValueSelector<Solution_> sourceValueSelector,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
+            ListVariableDataSupply<Solution_> listVariableDataSupply) {
         var entityDescriptor = sourceValueSelector.getVariableDescriptor().getEntityDescriptor();
         var supportsPinning = entityDescriptor.supportsPinning();
         if (!supportsPinning) {
@@ -59,10 +55,12 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         }
         return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
-                    var entity = inverseVariableSupply.getInverseSingleton(selection);
-                    if (entity == null) { // Unassigned.
+                    var elementLocation = listVariableDataSupply.getLocationInList(selection);
+                    if (elementLocation == null || elementLocation instanceof UnassignedLocation) {
                         return true;
                     }
+                    var elementDestination = (LocationInList) elementLocation;
+                    var entity = elementDestination.entity();
                     var pinningStatus = entityDescriptor.extractPinningStatus(scoreDirector, entity);
                     if (!pinningStatus.hasPin()) {
                         return true;
@@ -70,7 +68,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                         return false;
                     }
                     var firstUnpinnedIndex = pinningStatus.firstUnpinnedIndex();
-                    var index = indexVariableSupply.getIndex(selection);
+                    var index = elementDestination.index();
                     return index >= firstUnpinnedIndex;
                 });
     }
@@ -78,8 +76,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        inverseVariableSupply = null;
-        indexVariableSupply = null;
+        listVariableDataSupply = null;
         movableSourceValueSelector = null;
     }
 
@@ -92,14 +89,12 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
             return new RandomListChangeIterator<>(
-                    inverseVariableSupply,
-                    indexVariableSupply,
+                    listVariableDataSupply,
                     movableSourceValueSelector,
                     destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
-                    inverseVariableSupply,
-                    indexVariableSupply,
+                    listVariableDataSupply,
                     movableSourceValueSelector,
                     destinationSelector);
         }

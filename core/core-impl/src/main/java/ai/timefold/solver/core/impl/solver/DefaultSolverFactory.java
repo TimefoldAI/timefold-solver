@@ -1,15 +1,11 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -20,7 +16,6 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -30,7 +25,6 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -213,25 +207,22 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
             BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> termination) {
-        List<PhaseConfig> phaseConfigList_ = solverConfig.getPhaseConfigList();
-        if (ConfigUtils.isEmptyCollection(phaseConfigList_)) {
-            Collection<EntityDescriptor<Solution_>> genuineEntityDescriptors =
-                    configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
-            Map<Class<?>, List<ListVariableDescriptor<Solution_>>> entityClassToListVariableDescriptorListMap =
-                    configPolicy.getSolutionDescriptor()
-                            .getListVariableDescriptors()
-                            .stream()
-                            .collect(Collectors.groupingBy(
-                                    listVariableDescriptor -> listVariableDescriptor.getEntityDescriptor().getEntityClass(),
-                                    Collectors.mapping(Function.identity(), Collectors.toList())));
+        var phaseConfigList = solverConfig.getPhaseConfigList();
+        if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
+            var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
+            var listVariableDescriptor = configPolicy.getSolutionDescriptor().getListVariableDescriptor();
+            var entityClassToListVariableDescriptorListMap =
+                    listVariableDescriptor == null ? Collections.<Class<?>, List<ListVariableDescriptor<Solution_>>> emptyMap()
+                            : Collections.singletonMap(listVariableDescriptor.getEntityDescriptor().getEntityClass(),
+                                    List.of(listVariableDescriptor));
 
-            phaseConfigList_ = new ArrayList<>(genuineEntityDescriptors.size() + 1);
-            for (EntityDescriptor<Solution_> genuineEntityDescriptor : genuineEntityDescriptors) {
-                ConstructionHeuristicPhaseConfig constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
+            phaseConfigList = new ArrayList<>(genuineEntityDescriptorCollection.size() + 1);
+            for (var genuineEntityDescriptor : genuineEntityDescriptorCollection) {
+                var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
                 EntityPlacerConfig<?> entityPlacerConfig;
 
                 if (entityClassToListVariableDescriptorListMap.containsKey(genuineEntityDescriptor.getEntityClass())) {
-                    List<ListVariableDescriptor<Solution_>> listVariableDescriptorList =
+                    var listVariableDescriptorList =
                             entityClassToListVariableDescriptorListMap.get(genuineEntityDescriptor.getEntityClass());
                     if (listVariableDescriptorList.size() != 1) {
                         // TODO: Do multiple Construction Heuristics for each list variable descriptor?
@@ -249,11 +240,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 }
 
                 constructionHeuristicPhaseConfig.setEntityPlacerConfig(entityPlacerConfig);
-                phaseConfigList_.add(constructionHeuristicPhaseConfig);
+                phaseConfigList.add(constructionHeuristicPhaseConfig);
             }
-            phaseConfigList_.add(new LocalSearchPhaseConfig());
+            phaseConfigList.add(new LocalSearchPhaseConfig());
         }
-        return PhaseFactory.buildPhases(phaseConfigList_, configPolicy, bestSolutionRecaller, termination);
+        return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination);
     }
 
     // Required for testability as final classes cannot be mocked.
