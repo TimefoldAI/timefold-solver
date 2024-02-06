@@ -66,11 +66,11 @@ import org.springframework.core.env.Environment;
 @ConditionalOnMissingBean({ SolverConfig.class, SolverFactory.class, ScoreManager.class, SolutionManager.class,
         SolverManager.class })
 @EnableConfigurationProperties({ TimefoldProperties.class })
-public class TimefoldAutoConfiguration
+public class TimefoldSolverAutoConfiguration
         implements BeanClassLoaderAware, ApplicationContextAware, EnvironmentAware, BeanFactoryInitializationAotProcessor,
         BeanFactoryPostProcessor {
 
-    private static final Log LOG = LogFactory.getLog(TimefoldAutoConfiguration.class);
+    private static final Log LOG = LogFactory.getLog(TimefoldSolverAutoConfiguration.class);
     private static final String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
     private static final Class<? extends Annotation>[] PLANNING_ENTITY_FIELD_ANNOTATIONS = new Class[] {
             PlanningPin.class,
@@ -89,7 +89,7 @@ public class TimefoldAutoConfiguration
     private ClassLoader beanClassLoader;
     private TimefoldProperties timefoldProperties;
 
-    protected TimefoldAutoConfiguration() {
+    protected TimefoldSolverAutoConfiguration() {
     }
 
     @Override
@@ -147,7 +147,7 @@ public class TimefoldAutoConfiguration
     @Override
     public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
         Map<String, SolverConfig> solverConfigMap = getSolverConfigMap();
-        return new TimefoldAotContribution(solverConfigMap);
+        return new TimefoldSolverAotContribution(solverConfigMap);
     }
 
     @Override

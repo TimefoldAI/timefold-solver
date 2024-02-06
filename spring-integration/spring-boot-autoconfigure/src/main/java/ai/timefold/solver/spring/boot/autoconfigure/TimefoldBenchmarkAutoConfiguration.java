@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
 @Configuration
-@AutoConfigureAfter(TimefoldAutoConfiguration.class)
+@AutoConfigureAfter(TimefoldSolverAutoConfiguration.class)
 @ConditionalOnClass({ PlannerBenchmarkFactory.class })
 @ConditionalOnMissingBean({ PlannerBenchmarkFactory.class })
 @EnableConfigurationProperties({ TimefoldProperties.class })
@@ -88,7 +88,7 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
         }
 
         if (timefoldProperties.getBenchmark() != null && timefoldProperties.getBenchmark().getSolver() != null) {
-            TimefoldAutoConfiguration
+            TimefoldSolverAutoConfiguration
                     .applyTerminationProperties(benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig(),
                             timefoldProperties.getBenchmark().getSolver().getTermination());
         }

@@ -30,7 +30,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 
-public class TimefoldAotContribution implements BeanFactoryInitializationAotContribution {
+public class TimefoldSolverAotContribution implements BeanFactoryInitializationAotContribution {
     private static final String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
 
     /**
@@ -38,7 +38,7 @@ public class TimefoldAotContribution implements BeanFactoryInitializationAotCont
      */
     private final Map<String, SolverConfig> solverConfigMap;
 
-    public TimefoldAotContribution(Map<String, SolverConfig> solverConfigMap) {
+    public TimefoldSolverAotContribution(Map<String, SolverConfig> solverConfigMap) {
         this.solverConfigMap = solverConfigMap;
     }
 

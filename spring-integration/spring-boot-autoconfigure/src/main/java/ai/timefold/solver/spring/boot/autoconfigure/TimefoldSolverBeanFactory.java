@@ -42,13 +42,13 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import com.fasterxml.jackson.databind.Module;
 
 /**
- * Must be seperated from {@link TimefoldAutoConfiguration} since
- * {@link TimefoldAutoConfiguration} will not be available at runtime
+ * Must be seperated from {@link TimefoldSolverAutoConfiguration} since
+ * {@link TimefoldSolverAutoConfiguration} will not be available at runtime
  * for a native image (since it is a {@link BeanFactoryInitializationAotProcessor}/
  * {@link BeanFactoryPostProcessor}).
  */
 @Configuration
-public class TimefoldBeanFactory implements ApplicationContextAware, EnvironmentAware {
+public class TimefoldSolverBeanFactory implements ApplicationContextAware, EnvironmentAware {
     private ApplicationContext context;
     private TimefoldProperties timefoldProperties;
 
@@ -133,13 +133,39 @@ public class TimefoldBeanFactory implements ApplicationContextAware, Environment
     // @Bean wrapped by static class to avoid classloading issues if dependencies are absent
     @ConditionalOnClass({ ConstraintVerifier.class })
     @ConditionalOnMissingBean({ ConstraintVerifier.class })
-    @AutoConfigureAfter(TimefoldAutoConfiguration.class)
+    @AutoConfigureAfter(TimefoldSolverAutoConfiguration.class)
     class TimefoldConstraintVerifierConfiguration {
 
         private final ApplicationContext context;
 
         protected TimefoldConstraintVerifierConfiguration(ApplicationContext context) {
             this.context = context;
+        }
+
+        private static class UnsupportedConstraintVerifier<ConstraintProvider_ extends ConstraintProvider, SolutionClass_>
+                implements ConstraintVerifier<ConstraintProvider_, SolutionClass_> {
+            final String errorMessage;
+
+            public UnsupportedConstraintVerifier(String errorMessage) {
+                this.errorMessage = errorMessage;
+            }
+
+            @Override
+            public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
+                    withConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
+                throw new UnsupportedOperationException(errorMessage);
+            }
+
+            @Override
+            public SingleConstraintVerification<SolutionClass_>
+                    verifyThat(BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
+                throw new UnsupportedOperationException(errorMessage);
+            }
+
+            @Override
+            public MultiConstraintVerification<SolutionClass_> verifyThat() {
+                throw new UnsupportedOperationException(errorMessage);
+            }
         }
 
         @Bean
@@ -162,28 +188,11 @@ public class TimefoldBeanFactory implements ApplicationContextAware, Environment
             if (scoreDirectorFactoryConfig == null || scoreDirectorFactoryConfig.getConstraintProviderClass() == null) {
                 // Return a mock ConstraintVerifier so not having ConstraintProvider doesn't crash tests
                 // (Cannot create custom condition that checks SolverConfig, since that
-                //  requires TimefoldAutoConfiguration to have a no-args constructor)
+                //  requires TimefoldSolverAutoConfiguration to have a no-args constructor)
                 final String noConstraintProviderErrorMsg = (scoreDirectorFactoryConfig != null)
                         ? "Cannot provision a ConstraintVerifier because there is no ConstraintProvider class."
                         : "Cannot provision a ConstraintVerifier because there is no PlanningSolution or PlanningEntity classes.";
-                return new ConstraintVerifier<>() {
-                    @Override
-                    public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
-                            withConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
-                        throw new UnsupportedOperationException(noConstraintProviderErrorMsg);
-                    }
-
-                    @Override
-                    public SingleConstraintVerification<SolutionClass_>
-                            verifyThat(BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
-                        throw new UnsupportedOperationException(noConstraintProviderErrorMsg);
-                    }
-
-                    @Override
-                    public MultiConstraintVerification<SolutionClass_> verifyThat() {
-                        throw new UnsupportedOperationException(noConstraintProviderErrorMsg);
-                    }
-                };
+                return new UnsupportedConstraintVerifier<>(noConstraintProviderErrorMsg);
             }
 
             return ConstraintVerifier.create(solverConfig);
