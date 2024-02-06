@@ -5,7 +5,7 @@
     <entityClass>ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity</entityClass>
     <scoreDirectorFactory>
         <easyScoreCalculatorClass>
-            ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.easyScoreConstraints.DummyTestdataChainedSpringEasyScore
+            ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.easy.DummyChainedSpringEasyScore
         </easyScoreCalculatorClass>
     </scoreDirectorFactory>
 </solver>

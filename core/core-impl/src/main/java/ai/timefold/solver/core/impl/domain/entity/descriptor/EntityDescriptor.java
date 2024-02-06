@@ -646,8 +646,6 @@ public class EntityDescriptor<Solution_> {
 
     /**
      * Returns the {@link PinningStatus} of the entity.
-     * If {@link PlanningPin} is enabled on the entity, the entity is fully pinned.
-     * Otherwise if {@link PlanningPinToIndex} is specified, returns the value of it.
      *
      * @param scoreDirector
      * @param entity
@@ -684,12 +682,15 @@ public class EntityDescriptor<Solution_> {
 
     public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int firstUnpinnedIndex) {
 
+        private static final PinningStatus FULLY_PINNED = new PinningStatus(true, true, -1);
+        private static final PinningStatus UNPINNED = new PinningStatus(false, false, -1);
+
         public static PinningStatus ofUnpinned() {
-            return new PinningStatus(false, false, -1);
+            return UNPINNED;
         }
 
         public static PinningStatus ofFullyPinned() {
-            return new PinningStatus(true, true, -1);
+            return FULLY_PINNED;
         }
 
         public static PinningStatus ofPinIndex(int firstUnpinnedIndex) {

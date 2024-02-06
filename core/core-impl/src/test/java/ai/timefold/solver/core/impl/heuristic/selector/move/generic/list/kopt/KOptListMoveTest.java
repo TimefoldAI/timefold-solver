@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
@@ -102,8 +101,10 @@ class KOptListMoveTest {
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7);
 
         var variableDescriptorSpy = Mockito.spy(variableDescriptor);
-        var entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListEntity.class));
         Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
         Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
         Mockito.when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
 
@@ -314,8 +315,10 @@ class KOptListMoveTest {
         TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v4, v5);
 
         var variableDescriptorSpy = Mockito.spy(variableDescriptor);
-        var entityDescriptor = Mockito.mock(EntityDescriptor.class);
+        var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListEntity.class));
         Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
         Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
         Mockito.when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
         Mockito.when(entityDescriptor.isMovable(null, e2)).thenReturn(true);
