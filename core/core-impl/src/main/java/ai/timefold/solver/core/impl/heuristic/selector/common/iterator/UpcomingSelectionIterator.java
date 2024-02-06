@@ -62,6 +62,15 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
         }
     }
 
+    /**
+     * Some destination iterators, such as nearby destination iterators, may return even elements which are pinned.
+     * This is because the nearby matrix always picks from all nearby elements, and is unaware of any pinning.
+     * This means that later we need to filter out the pinned elements, so that moves aren't generated for them.
+     *
+     * @param destinationIterator never null
+     * @param listVariableDescriptor never null
+     * @return null if no unpinned destination was found, at which point the iterator is exhausted.
+     */
     public static ElementRef findUnpinnedDestination(Iterator<ElementRef> destinationIterator,
             ListVariableDescriptor<?> listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
