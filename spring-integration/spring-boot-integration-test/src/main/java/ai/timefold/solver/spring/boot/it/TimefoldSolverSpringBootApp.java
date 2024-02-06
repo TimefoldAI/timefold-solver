@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TimefoldSpringBootApp {
+public class TimefoldSolverSpringBootApp {
 
     public static void main(String[] args) {
-        SpringApplication.run(TimefoldSpringBootApp.class, args);
+        SpringApplication.run(TimefoldSolverSpringBootApp.class, args);
     }
 }

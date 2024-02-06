@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/integration-test")
-public class TimefoldController {
+public class TimefoldSolverController {
     private final SolverFactory<IntegrationTestSolution> solverFactory;
 
-    public TimefoldController(SolverFactory<IntegrationTestSolution> solverFactory) {
+    public TimefoldSolverController(SolverFactory<IntegrationTestSolution> solverFactory) {
         this.solverFactory = solverFactory;
     }
 
