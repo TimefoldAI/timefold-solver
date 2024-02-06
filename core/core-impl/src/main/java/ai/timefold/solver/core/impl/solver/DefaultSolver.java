@@ -8,6 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ProblemFactChange;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
@@ -220,6 +222,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
+        assertCorrectSolutionState();
         solverScope.startingNow();
         solverScope.getScoreDirector().resetCalculationCount();
         super.solvingStarted(solverScope);
@@ -233,6 +236,55 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 environmentMode.name(),
                 moveThreadCountDescription,
                 (randomFactory != null ? randomFactory : "not fixed"));
+    }
+
+    private void assertCorrectSolutionState() {
+        solverScope.getSolutionDescriptor().visitAllProblemFacts(solverScope.getBestSolution(), this::assertNonNullPlanningId);
+        solverScope.getSolutionDescriptor().visitAllEntities(solverScope.getBestSolution(), entity -> {
+            assertNonNullPlanningId(entity);
+            // Ensure correct state of pinning properties.
+            var entityDescriptor = solverScope.getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass());
+            if (!entityDescriptor.supportsPinning() || !entityDescriptor.hasAnyGenuineListVariables()) {
+                return;
+            }
+            int pinIndex = entityDescriptor.extractFirstUnpinnedIndex(entity);
+            if (entityDescriptor.isMovable(solverScope.getScoreDirector(), entity)) {
+                if (pinIndex < 0) {
+                    throw new IllegalStateException("The movable planning entity (%s) has a pin index (%s) which is negative."
+                            .formatted(entity, pinIndex));
+                }
+                var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+                var listSize = listVariableDescriptor.getListSize(entity);
+                if (pinIndex > listSize) {
+                    // pinIndex == listSize is allowed, as that says the pin is at the end of the list,
+                    // allowing additions to the list.
+                    throw new IllegalStateException(
+                            "The movable planning entity (%s) has a pin index (%s) which is greater than the list size (%s)."
+                                    .formatted(entity, pinIndex, listSize));
+                }
+            } else {
+                if (pinIndex != 0) {
+                    throw new IllegalStateException("The immovable planning entity (%s) has a pin index (%s) which is not 0."
+                            .formatted(entity, pinIndex));
+                }
+            }
+        });
+    }
+
+    private void assertNonNullPlanningId(Object fact) {
+        Class<?> factClass = fact.getClass();
+        MemberAccessor planningIdAccessor = solverScope.getSolutionDescriptor().getPlanningIdAccessor(factClass);
+        if (planningIdAccessor == null) { // There is no planning ID annotation.
+            return;
+        }
+        Object id = planningIdAccessor.executeGetter(fact);
+        if (id == null) { // Fail fast as planning ID is null.
+            throw new IllegalStateException("The planningId (" + id + ") of the member (" + planningIdAccessor
+                    + ") of the class (" + factClass + ") on object (" + fact + ") must not be null.\n"
+                    + "Maybe initialize the planningId of the class (" + planningIdAccessor.getDeclaringClass()
+                    + ") instance (" + fact + ") before solving.\n" +
+                    "Maybe remove the @" + PlanningId.class.getSimpleName() + " annotation.");
+        }
     }
 
     @Override
@@ -274,7 +326,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             }
             // All PFCs are processed, fail fast if any of the new facts have null planning IDs.
             InnerScoreDirector<Solution_, ?> scoreDirector = solverScope.getScoreDirector();
-            scoreDirector.assertNonNullPlanningIds();
+            assertCorrectSolutionState();
             // Everything is fine, proceed.
             Score<?> score = scoreDirector.calculateScore();
             basicPlumbingTermination.endProblemFactChangesProcessing();

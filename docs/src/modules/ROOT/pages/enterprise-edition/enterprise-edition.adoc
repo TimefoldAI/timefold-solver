@@ -15,8 +15,6 @@ see http://timefold.ai/pricing[Timefold Pricing].
 
 Unlike Timefold Solver Community Edition,
 the Enterprise Edition is not open-source.
-However,
-source code of the Enterprise Edition https://github.com/TimefoldAI/timefold-solver-enterprise[is available for reference].
 
 
 [#switchToEnterpriseEdition]

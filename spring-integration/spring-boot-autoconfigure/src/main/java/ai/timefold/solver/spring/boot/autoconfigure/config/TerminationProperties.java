@@ -1,8 +1,15 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
 import java.time.Duration;
+import java.util.Map;
+
+import org.springframework.boot.convert.DurationStyle;
 
 public class TerminationProperties {
+
+    private static final String SPENT_LIMIT_PROERTY_NAME = "spent-limit";
+    private static final String UNIMPROVED_SPENT_LIMIT_PROERTY_NAME = "unimproved-spent-limit";
+    private static final String BEST_SCORE_LIMIT_PROERTY_NAME = "best-score-limit";
 
     /**
      * How long the solver can run.
@@ -50,6 +57,29 @@ public class TerminationProperties {
 
     public void setBestScoreLimit(String bestScoreLimit) {
         this.bestScoreLimit = bestScoreLimit;
+    }
+
+    public void loadProperties(Map<String, Object> properties) {
+        properties.forEach(this::loadProperty);
+    }
+
+    private void loadProperty(String key, Object value) {
+        if (value == null) {
+            return;
+        }
+        switch (key) {
+            case SPENT_LIMIT_PROERTY_NAME:
+                setSpentLimit(DurationStyle.detectAndParse((String) value));
+                break;
+            case UNIMPROVED_SPENT_LIMIT_PROERTY_NAME:
+                setUnimprovedSpentLimit(DurationStyle.detectAndParse((String) value));
+                break;
+            case BEST_SCORE_LIMIT_PROERTY_NAME:
+                setBestScoreLimit((String) value);
+                break;
+            default:
+                throw new IllegalStateException("The property %s is not valid.".formatted(key));
+        }
     }
 
 }

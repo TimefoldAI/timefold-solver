@@ -15,6 +15,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
 
 public final class TestdataListUtils {
 
@@ -25,19 +28,39 @@ public final class TestdataListUtils {
         return entity.getValueList().size();
     }
 
-    public static EntitySelector<TestdataListSolution> mockEntitySelector(Object... entities) {
-        return SelectorTestUtils.mockEntitySelector(TestdataListEntity.buildEntityDescriptor(), entities);
+    public static int listSize(TestdataPinnedWithIndexListEntity entity) {
+        return entity.getValueList().size();
     }
 
-    public static EntityIndependentValueSelector<TestdataListSolution> mockEntityIndependentValueSelector(
-            ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, Object... values) {
+    public static EntitySelector<TestdataListSolution> mockEntitySelector(TestdataListEntity... entities) {
+        return SelectorTestUtils.mockEntitySelector(TestdataListEntity.buildEntityDescriptor(), (Object[]) entities);
+    }
+
+    public static EntitySelector<TestdataPinnedWithIndexListSolution>
+            mockEntitySelector(TestdataPinnedWithIndexListEntity... entities) {
+        return SelectorTestUtils.mockEntitySelector(TestdataPinnedWithIndexListEntity.buildEntityDescriptor(),
+                (Object[]) entities);
+    }
+
+    public static <Solution_> EntityIndependentValueSelector<Solution_> mockEntityIndependentValueSelector(
+            ListVariableDescriptor<Solution_> listVariableDescriptor, Object... values) {
         return SelectorTestUtils.mockEntityIndependentValueSelector(listVariableDescriptor, values);
     }
 
     public static EntityIndependentValueSelector<TestdataListSolution> mockNeverEndingEntityIndependentValueSelector(
-            ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, Object... values) {
-        EntityIndependentValueSelector<TestdataListSolution> valueSelector = mockEntityIndependentValueSelector(
-                listVariableDescriptor, values);
+            ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, TestdataListValue... values) {
+        var valueSelector = mockEntityIndependentValueSelector(
+                listVariableDescriptor, (Object[]) values);
+        when(valueSelector.isNeverEnding()).thenReturn(true);
+        when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
+        return valueSelector;
+    }
+
+    public static EntityIndependentValueSelector<TestdataPinnedWithIndexListSolution>
+            mockNeverEndingEntityIndependentValueSelector(
+                    ListVariableDescriptor<TestdataPinnedWithIndexListSolution> listVariableDescriptor,
+                    TestdataPinnedWithIndexListValue... values) {
+        var valueSelector = mockEntityIndependentValueSelector(listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
         return valueSelector;
@@ -48,9 +71,14 @@ public final class TestdataListUtils {
         return mockNeverEndingDestinationSelector(elementRefs.length, elementRefs);
     }
 
-    public static DestinationSelector<TestdataListSolution> mockNeverEndingDestinationSelector(long size,
+    public static DestinationSelector<TestdataPinnedWithIndexListSolution> mockPinnedNeverEndingDestinationSelector(
             ElementRef... elementRefs) {
-        DestinationSelector<TestdataListSolution> destinationSelector = mock(DestinationSelector.class);
+        return mockNeverEndingDestinationSelector(elementRefs.length, elementRefs);
+    }
+
+    public static <Solution_> DestinationSelector<Solution_> mockNeverEndingDestinationSelector(long size,
+            ElementRef... elementRefs) {
+        var destinationSelector = mock(DestinationSelector.class);
         when(destinationSelector.isCountable()).thenReturn(true);
         when(destinationSelector.isNeverEnding()).thenReturn(true);
         when(destinationSelector.getSize()).thenReturn(size);
@@ -58,8 +86,8 @@ public final class TestdataListUtils {
         return destinationSelector;
     }
 
-    public static DestinationSelector<TestdataListSolution> mockDestinationSelector(ElementRef... elementRefs) {
-        DestinationSelector<TestdataListSolution> destinationSelector = mock(DestinationSelector.class);
+    public static <Solution_> DestinationSelector<Solution_> mockDestinationSelector(ElementRef... elementRefs) {
+        DestinationSelector<Solution_> destinationSelector = mock(DestinationSelector.class);
         List<ElementRef> refList = Arrays.asList(elementRefs);
         when(destinationSelector.isCountable()).thenReturn(true);
         when(destinationSelector.isNeverEnding()).thenReturn(false);
@@ -73,6 +101,14 @@ public final class TestdataListUtils {
         return (ListVariableDescriptor<TestdataListSolution>) scoreDirector
                 .getSolutionDescriptor()
                 .getEntityDescriptorStrict(TestdataListEntity.class)
+                .getGenuineVariableDescriptor("valueList");
+    }
+
+    public static ListVariableDescriptor<TestdataPinnedWithIndexListSolution> getPinnedListVariableDescriptor(
+            InnerScoreDirector<TestdataPinnedWithIndexListSolution, ?> scoreDirector) {
+        return (ListVariableDescriptor<TestdataPinnedWithIndexListSolution>) scoreDirector
+                .getSolutionDescriptor()
+                .getEntityDescriptorStrict(TestdataPinnedWithIndexListEntity.class)
                 .getGenuineVariableDescriptor("valueList");
     }
 

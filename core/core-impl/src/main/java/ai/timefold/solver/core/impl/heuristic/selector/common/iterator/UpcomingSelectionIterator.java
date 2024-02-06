@@ -3,9 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.iterator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
 
 /**
  * IMPORTANT: The constructor of any subclass of this abstract class, should never call any of its child
@@ -58,6 +60,29 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
         } else {
             return "Next upcoming (" + upcomingSelection + ")";
         }
+    }
+
+    /**
+     * Some destination iterators, such as nearby destination iterators, may return even elements which are pinned.
+     * This is because the nearby matrix always picks from all nearby elements, and is unaware of any pinning.
+     * This means that later we need to filter out the pinned elements, so that moves aren't generated for them.
+     *
+     * @param destinationIterator never null
+     * @param listVariableDescriptor never null
+     * @return null if no unpinned destination was found, at which point the iterator is exhausted.
+     */
+    public static ElementRef findUnpinnedDestination(Iterator<ElementRef> destinationIterator,
+            ListVariableDescriptor<?> listVariableDescriptor) {
+        while (destinationIterator.hasNext()) {
+            var destination = destinationIterator.next();
+            var pinningStatus = listVariableDescriptor.getEntityDescriptor().extractPinningStatus(null, destination.entity());
+            var isPinned = pinningStatus.hasPin()
+                    && (pinningStatus.entireEntityPinned() || pinningStatus.firstUnpinnedIndex() > destination.index());
+            if (!isPinned) {
+                return destination;
+            }
+        }
+        return null;
     }
 
 }

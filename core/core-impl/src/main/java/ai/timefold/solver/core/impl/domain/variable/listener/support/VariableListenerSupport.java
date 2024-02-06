@@ -3,19 +3,15 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
@@ -35,9 +31,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
-    // If thread-safety is ever required, the two collections before need to be updated together.
-    private final Map<Demand<?>, Supply> supplyMap = new LinkedHashMap<>();
-    private final Map<Demand<?>, Long> demandCounterMap = new HashMap<>();
+    private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
     private boolean notificationQueuesAreEmpty = true;
     private int nextGlobalOrder = 0;
@@ -57,16 +51,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     private void processShadowVariableDescriptor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        for (VariableListenerWithSources<Solution_> listenerWithSources : shadowVariableDescriptor
-                .buildVariableListeners(this)) {
-            AbstractVariableListener<Solution_, Object> variableListener = listenerWithSources.getVariableListener();
+        for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
+            var variableListener = listenerWithSources.getVariableListener();
             if (variableListener instanceof Supply supply) {
                 // Non-sourced variable listeners (ie. ones provided by the user) can never be a supply.
-                Demand<?> demand = shadowVariableDescriptor.getProvidedDemand();
-                supplyMap.put(demand, supply);
-                demandCounterMap.put(demand, 1L);
+                var demand = shadowVariableDescriptor.getProvidedDemand();
+                supplyMap.put(demand, new SupplyWithDemandCount(supply, 1L));
             }
-            int globalOrder = shadowVariableDescriptor.getGlobalShadowOrder();
+            var globalOrder = shadowVariableDescriptor.getGlobalShadowOrder();
             notifiableRegistry.registerNotifiable(
                     listenerWithSources.getSourceVariableDescriptors(),
                     AbstractNotifiable.buildNotifiable(scoreDirector, variableListener, globalOrder));
@@ -76,20 +68,16 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     @Override
     public <Supply_ extends Supply> Supply_ demand(Demand<Supply_> demand) {
-        long activeDemandCount = demandCounterMap.compute(demand, (key, count) -> count == null ? 1L : count + 1L);
-        if (activeDemandCount == 1L) { // This is a new demand, create the supply.
-            Supply_ supply = (Supply_) createSupply(demand);
-            supplyMap.put(demand, supply);
-            return supply;
-        } else { // Return existing supply.
-            return (Supply_) supplyMap.get(demand);
-        }
+        var supplyWithDemandCount =
+                supplyMap.compute(demand, (key, value) -> value == null ? new SupplyWithDemandCount(createSupply(key), 1L)
+                        : new SupplyWithDemandCount(value.supply, value.demandCount + 1L));
+        return (Supply_) supplyWithDemandCount.supply;
     }
 
     private Supply createSupply(Demand<?> demand) {
-        Supply supply = demand.createExternalizedSupply(this);
+        var supply = demand.createExternalizedSupply(this);
         if (supply instanceof SourcedVariableListener) {
-            SourcedVariableListener<Solution_> variableListener = (SourcedVariableListener<Solution_>) supply;
+            var variableListener = (SourcedVariableListener<Solution_>) supply;
             // An external ScoreDirector can be created before the working solution is set
             if (scoreDirector.getWorkingSolution() != null) {
                 variableListener.resetWorkingSolution(scoreDirector);
@@ -103,16 +91,26 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     @Override
     public <Supply_ extends Supply> boolean cancel(Demand<Supply_> demand) {
-        Long result = demandCounterMap.computeIfPresent(demand, (key, count) -> Objects.equals(count, 1L) ? null : count - 1L);
-        if (result != null) {
-            return true;
+        var supplyWithDemandCount = supplyMap.get(demand);
+        if (supplyWithDemandCount == null) {
+            return false;
+        } else if (supplyWithDemandCount.demandCount == 1L) {
+            supplyMap.remove(demand);
+        } else {
+            supplyMap.put(demand,
+                    new SupplyWithDemandCount(supplyWithDemandCount.supply, supplyWithDemandCount.demandCount - 1L));
         }
-        return supplyMap.remove(demand) != null;
+        return true;
     }
 
     @Override
     public <Supply_ extends Supply> long getActiveCount(Demand<Supply_> demand) {
-        return demandCounterMap.getOrDefault(demand, 0L);
+        var supplyAndDemandCounter = supplyMap.get(demand);
+        if (supplyAndDemandCounter == null) {
+            return 0L;
+        } else {
+            return supplyAndDemandCounter.demandCount;
+        }
     }
 
     // ************************************************************************
@@ -264,4 +262,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     + " before calling " + ScoreDirector.class.getSimpleName() + ".calculateScore().");
         }
     }
+
+    private record SupplyWithDemandCount(Supply supply, long demandCount) {
+    }
+
 }

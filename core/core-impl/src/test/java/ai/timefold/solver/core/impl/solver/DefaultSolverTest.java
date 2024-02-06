@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,11 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -38,6 +43,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
@@ -49,6 +55,8 @@ import ai.timefold.solver.core.impl.phase.custom.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
+import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
+import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -62,6 +70,12 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.Testdata
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEntitySolution;
@@ -71,10 +85,10 @@ import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreS
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -109,6 +123,96 @@ class DefaultSolverTest {
         solution = solver.solve(solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void solveCorruptedEasyUninitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
+
+        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis could not be generated");
+    }
+
+    @Test
+    void solveCorruptedEasyInitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        solution.setValueList(List.of(value1, value2));
+        var entity1 = new TestdataEntity("e1");
+        entity1.setValue(value1);
+        var entity2 = new TestdataEntity("e2");
+        entity2.setValue(value2);
+        solution.setEntityList(List.of(entity1, entity2));
+
+        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis could not be generated");
+    }
+
+    @Test
+    void solveCorruptedIncrementalUninitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
+
+        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @Test
+    void solveCorruptedIncrementalInitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        solution.setValueList(List.of(value1, value2));
+        var entity1 = new TestdataEntity("e1");
+        entity1.setValue(value1);
+        var entity2 = new TestdataEntity("e2");
+        entity2.setValue(value2);
+        solution.setEntityList(List.of(entity1, entity2));
+
+        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis:");
     }
 
     @Test
@@ -234,8 +338,6 @@ class DefaultSolverTest {
                                 Meter.Type.COUNTER));
     }
 
-    // TODO: Enable with Micrometer 1.7.8 or later.
-    @Disabled("https://github.com/micrometer-metrics/micrometer/issues/2947")
     @Test
     void solveMetrics() {
         TestMeterRegistry meterRegistry = new TestMeterRegistry();
@@ -566,40 +668,6 @@ class DefaultSolverTest {
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
     }
 
-    // TODO https://issues.redhat.com/browse/PLANNER-1738
-    @Test
-    @Disabled("We currently don't support an empty value list yet if the entity list is not empty.")
-    void solveEmptyValueList() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
-
-        TestdataSolution solution = new TestdataSolution("s1");
-        solution.setValueList(Collections.emptyList());
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        solution = solver.solve(solution);
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isFalse();
-    }
-
-    @Test
-    @Disabled("We currently don't support an empty value list yet if the entity list is not empty.")
-    void solveChainedEmptyValueList() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataChainedSolution.class,
-                TestdataChainedEntity.class);
-        SolverFactory<TestdataChainedSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataChainedSolution> solver = solverFactory.buildSolver();
-
-        TestdataChainedSolution solution = new TestdataChainedSolution("s1");
-        solution.setChainedAnchorList(Collections.emptyList());
-        solution.setChainedEntityList(Arrays.asList(new TestdataChainedEntity("e1"), new TestdataChainedEntity("e2")));
-
-        solution = solver.solve(solution);
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isFalse();
-    }
-
     @Test
     void solveEmptyEntityListAndEmptyValueList() {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
@@ -863,6 +931,259 @@ class DefaultSolverTest {
         solution = solver.solve(solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void solveWithPlanningListVariableEntityPinFair() {
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setPinned(true);
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class,
+                        TestdataPinnedListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataPinnedListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+        solution = solver.solve(updateSolution(solverFactory, solution));
+
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
+        assertThat(solution.getEntityList().get(0).getValueList())
+                .containsExactly(solution.getValueList().get(0));
+        int actualValueCount = solution.getEntityList().stream()
+                .mapToInt(e -> e.getValueList().size())
+                .sum();
+        assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    private static <Solution_> Solution_ updateSolution(SolverFactory<Solution_> solverFactory, Solution_ solution) {
+        SolutionManager<Solution_, ?> solutionManager = SolutionManager.create(solverFactory);
+        solutionManager.update(solution);
+        return solution;
+    }
+
+    @Test
+    void solveWithPlanningListVariableEntityPinUnfair() {
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setPinned(true);
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataPinnedListSolution.class, TestdataPinnedListEntity.class,
+                        TestdataPinnedListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataPinnedListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+        solution = solver.solve(updateSolution(solverFactory, solution));
+
+        assertThat(solution).isNotNull();
+        // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(1));
+        assertThat(solution.getEntityList().get(0).getValueList())
+                .containsExactly(solution.getValueList().get(0));
+        int actualValueCount = solution.getEntityList().stream()
+                .mapToInt(e -> e.getValueList().size())
+                .sum();
+        assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    @Test
+    void solveWithPlanningListVariablePinIndexFair() {
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        // Pin the first list entirely.
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setPinned(true);
+        // In the second list, pin only the first value.
+        var partiallyPinnedEntity = solution.getEntityList().get(1);
+        var partiallyPinnedList = partiallyPinnedEntity.getValueList();
+        var partiallyPinnedValue1 = solution.getValueList().get(1);
+        var partiallyPinnedValue2 = solution.getValueList().get(2);
+        partiallyPinnedList.add(partiallyPinnedValue1);
+        partiallyPinnedList.add(partiallyPinnedValue2);
+        partiallyPinnedEntity.setPlanningPinToIndex(1); // The first value is pinned.
+        partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
+                        TestdataPinnedWithIndexListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEasyScoreCalculatorClass(MinimizeUnusedEntitiesEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+        solution = solver.solve(updateSolution(solverFactory, solution));
+
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO); // No unused entities.
+        assertThat(solution.getEntityList().get(0).getValueList()).containsExactly(solution.getValueList().get(0));
+        assertThat(solution.getEntityList().get(1).getValueList())
+                .first()
+                .isEqualTo(solution.getValueList().get(1));
+        int actualValueCount = solution.getEntityList().stream()
+                .mapToInt(e -> e.getValueList().size())
+                .sum();
+        assertThat(actualValueCount).isEqualTo(expectedValueCount);
+    }
+
+    @Test
+    void solveWithPlanningListVariablePinIndexUnfair() {
+        var expectedValueCount = 4;
+        var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(expectedValueCount, 3);
+        // Pin the first list entirely.
+        var pinnedEntity = solution.getEntityList().get(0);
+        var pinnedList = pinnedEntity.getValueList();
+        var pinnedValue = solution.getValueList().get(0);
+        pinnedList.add(pinnedValue);
+        pinnedEntity.setPinned(true);
+        // In the second list, pin only the first value.
+        var partiallyPinnedEntity = solution.getEntityList().get(1);
+        var partiallyPinnedList = partiallyPinnedEntity.getValueList();
+        var partiallyPinnedValue1 = solution.getValueList().get(1);
+        var partiallyPinnedValue2 = solution.getValueList().get(2);
+        partiallyPinnedList.add(partiallyPinnedValue1);
+        partiallyPinnedList.add(partiallyPinnedValue2);
+        partiallyPinnedEntity.setPlanningPinToIndex(1); // The first value is pinned.
+        partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataPinnedWithIndexListSolution.class, TestdataPinnedWithIndexListEntity.class,
+                        TestdataPinnedWithIndexListValue.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
+        var solverFactory = SolverFactory.<TestdataPinnedWithIndexListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+        solution = solver.solve(updateSolution(solverFactory, solution));
+
+        assertThat(solution).isNotNull();
+        // 1 unused entity; out of 3 total, one is pinned and the other gets all the values.
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(1));
+        assertThat(solution.getEntityList().get(0).getValueList()).containsExactly(solution.getValueList().get(0));
+        assertThat(solution.getEntityList().get(1).getValueList())
+                .containsExactlyInAnyOrder(solution.getValueList().get(1),
+                        solution.getValueList().get(2),
+                        solution.getValueList().get(3));
+        assertThat(solution.getEntityList().get(2).getValueList())
+                .isEmpty();
+    }
+
+    public static final class MinimizeUnusedEntitiesEasyScoreCalculator
+            implements EasyScoreCalculator<Object, SimpleScore> {
+
+        @Override
+        public SimpleScore calculateScore(Object solution) {
+            return new MaximizeUnusedEntitiesEasyScoreCalculator().calculateScore(solution).negate();
+        }
+    }
+
+    public static final class MaximizeUnusedEntitiesEasyScoreCalculator
+            implements EasyScoreCalculator<Object, SimpleScore> {
+
+        @Override
+        public SimpleScore calculateScore(Object solution) {
+            if (solution instanceof TestdataPinnedListSolution testdataPinnedListSolution) {
+                int unusedEntities = 0;
+                for (var entity : testdataPinnedListSolution.getEntityList()) {
+                    if (entity.getValueList().isEmpty()) {
+                        unusedEntities++;
+                    }
+                }
+                return SimpleScore.of(unusedEntities);
+            } else if (solution instanceof TestdataPinnedWithIndexListSolution testdataPinnedWithIndexListSolution) {
+                int unusedEntities = 0;
+                for (var entity : testdataPinnedWithIndexListSolution.getEntityList()) {
+                    if (entity.getValueList().isEmpty()) {
+                        unusedEntities++;
+                    }
+                }
+                return SimpleScore.of(unusedEntities);
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
+    }
+
+    public static class CorruptedEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
+
+        @Override
+        public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+            int random = (int) (Math.random() * 1000);
+            return SimpleScore.of(random);
+        }
+    }
+
+    public static class CorruptedIncrementalScoreCalculator
+            implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+
+        @Override
+        public void resetWorkingSolution(TestdataSolution workingSolution, boolean constraintMatchEnabled) {
+
+        }
+
+        @Override
+        public Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
+            return Collections.singletonList(new DefaultConstraintMatchTotal<>(ConstraintRef.of("a", "b"), SimpleScore.of(1)));
+        }
+
+        @Override
+        public Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
+            return Collections.singletonMap(new TestdataEntity("e1"),
+                    new DefaultIndictment<>(new TestdataEntity("e1"), SimpleScore.ONE));
+        }
+
+        @Override
+        public void resetWorkingSolution(TestdataSolution workingSolution) {
+
+        }
+
+        @Override
+        public void beforeEntityAdded(Object entity) {
+
+        }
+
+        @Override
+        public void afterEntityAdded(Object entity) {
+
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity, String variableName) {
+
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity, String variableName) {
+
+        }
+
+        @Override
+        public void beforeEntityRemoved(Object entity) {
+
+        }
+
+        @Override
+        public void afterEntityRemoved(Object entity) {
+
+        }
+
+        @Override
+        public SimpleScore calculateScore() {
+            int random = (int) (Math.random() * 1000);
+            return SimpleScore.of(random);
+        }
     }
 
 }

@@ -26,5 +26,4 @@ class TimefoldTestResourceTest {
                 .body(is(
                         "0hard/6soft"));
     }
-
 }

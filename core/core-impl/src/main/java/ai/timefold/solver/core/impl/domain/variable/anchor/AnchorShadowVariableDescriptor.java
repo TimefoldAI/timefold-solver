@@ -21,13 +21,13 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class AnchorShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+public final class AnchorShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
-    protected VariableDescriptor<Solution_> sourceVariableDescriptor;
+    private VariableDescriptor<Solution_> sourceVariableDescriptor;
 
-    public AnchorShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public AnchorShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

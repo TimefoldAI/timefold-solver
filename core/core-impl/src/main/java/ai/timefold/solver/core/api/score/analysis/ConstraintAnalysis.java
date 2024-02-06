@@ -138,6 +138,24 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
         return matchAnalysisMap;
     }
 
+    /**
+     * Return package name of the constraint that this analysis is for.
+     *
+     * @return equal to {@code constraintRef.packageName()}
+     */
+    public String constraintPackage() {
+        return constraintRef.packageName();
+    }
+
+    /**
+     * Return name of the constraint that this analysis is for.
+     *
+     * @return equal to {@code constraintRef.constraintName()}
+     */
+    public String constraintName() {
+        return constraintRef.constraintName();
+    }
+
     @Override
     public String toString() {
         if (matches == null) {

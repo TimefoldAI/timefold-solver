@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.score.director;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -139,14 +139,16 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
-    Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
+    default Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+        return doAndProcessMove(move, assertMoveScoreFromScratch, null);
+    }
 
     /**
      * @param move never null
      * @param assertMoveScoreFromScratch true will hurt performance
-     * @param moveProcessor never null, use this to store the score as well as call the acceptor and forager
+     * @param moveProcessor use this to store the score as well as call the acceptor and forager; skipped if null.
      */
-    void doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor);
+    Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor);
 
     /**
      * @param expectedWorkingEntityListRevision an
@@ -315,12 +317,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore);
 
     /**
-     * Asserts that none of the planning facts from {@link #getWorkingSolution()}
-     * have {@link PlanningId}s with a null value.
-     */
-    void assertNonNullPlanningIds();
-
-    /**
      * Needs to be called after use because some implementations need to clean up their resources.
      */
     @Override
@@ -456,26 +452,28 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void forceTriggerVariableListeners();
 
     default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches) {
-        return buildScoreAnalysis(analyzeConstraintMatches, false);
+        return buildScoreAnalysis(analyzeConstraintMatches, ScoreAnalysisMode.DEFAULT);
     }
 
     /**
      *
      * @param analyzeConstraintMatches True if the result's {@link ConstraintAnalysis} should have its {@link MatchAnalysis}
      *        populated.
-     * @param overrideInitScore True if the result's {@link Score} should have its {@link Score#isSolutionInitialized()} set to
-     *        true.
+     * @param mode Allows to tweak the behavior of this method.
      * @return never null
      */
-    default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches, boolean overrideInitScore) {
+    default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches, ScoreAnalysisMode mode) {
         var score = calculateScore();
-        if (overrideInitScore) {
-            score = score.withInitScore(0);
-        } else if (!score.isSolutionInitialized()) {
-            throw new IllegalArgumentException("""
-                    Cannot analyze solution (%s) as it is not initialized (%s).
-                    Maybe run the solver first?"""
-                    .formatted(getWorkingSolution(), score));
+        switch (Objects.requireNonNull(mode)) {
+            case RECOMMENDATION_API -> score = score.withInitScore(0);
+            case DEFAULT -> {
+                if (!score.isSolutionInitialized()) {
+                    throw new IllegalArgumentException("""
+                            Cannot analyze solution (%s) as it is not initialized (%s).
+                            Maybe run the solver first?"""
+                            .formatted(getWorkingSolution(), score));
+                }
+            }
         }
         var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
@@ -484,5 +482,53 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         }
         return new ScoreAnalysis<>(score, constraintAnalysisMap);
     }
+
+    enum ScoreAnalysisMode {
+        /**
+         * The default mode, which will throw an exception if the solution is not initialized.
+         */
+        DEFAULT,
+        /**
+         * If analysis is requested as a result of a score corruption detection,
+         * there will be no tweaks to the score and no initialization exception will be thrown.
+         * This is because score corruption may have been detected during construction heuristics,
+         * where the score is rightfully uninitialized.
+         */
+        SCORE_CORRUPTION,
+        /**
+         * Will not throw an exception if the solution is not initialized,
+         * but will set {@link Score#initScore()} to zero.
+         * Recommendation API always has an uninitialized solution by design.
+         */
+        RECOMMENDATION_API
+
+    }
+
+    /*
+     * The following methods are copied here from ScoreDirector because they are deprecated there for removal.
+     * They will only be supported on this type, which serves for internal use only,
+     * as opposed to ScoreDirector, which is a public type.
+     * This way, we can ensure that these methods are used correctly and in a safe manner.
+     */
+
+    void beforeEntityAdded(Object entity);
+
+    void afterEntityAdded(Object entity);
+
+    void beforeEntityRemoved(Object entity);
+
+    void afterEntityRemoved(Object entity);
+
+    void beforeProblemFactAdded(Object problemFact);
+
+    void afterProblemFactAdded(Object problemFact);
+
+    void beforeProblemPropertyChanged(Object problemFactOrEntity);
+
+    void afterProblemPropertyChanged(Object problemFactOrEntity);
+
+    void beforeProblemFactRemoved(Object problemFact);
+
+    void afterProblemFactRemoved(Object problemFact);
 
 }

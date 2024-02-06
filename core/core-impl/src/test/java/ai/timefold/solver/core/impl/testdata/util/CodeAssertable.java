@@ -86,7 +86,7 @@ public interface CodeAssertable {
         } else if (o instanceof SubList subList) {
             return () -> convert(subList.getEntity()) + "[" + subList.getFromIndex() + "+" + subList.getLength() + "]";
         } else if (o instanceof ElementRef elementRef) {
-            return () -> convert(elementRef.getEntity()) + "[" + elementRef.getIndex() + "]";
+            return () -> convert(elementRef.entity()) + "[" + elementRef.index() + "]";
         } else if (o instanceof SubChain subChain) {
             final String code = convert(subChain.getEntityList()).getCode();
             return () -> code;

@@ -2,9 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
@@ -91,28 +89,43 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     @SuppressWarnings("unchecked")
     private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) {
-        EntityOrderInfo entityOrderInfo = new EntityOrderInfo(pickedValues, inverseVariableSupply, listVariableDescriptor);
-        IntStream pickedEntityIndexStream = workingRandom.ints(0, entityOrderInfo.entities.length);
-        return (Iterator<Node_>) pickedEntityIndexStream
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
+        return (Iterator<Node_>) workingRandom.ints(0, entityOrderInfo.entities().length)
                 .mapToObj(index -> {
-                    Object entity = entityOrderInfo.entities[index];
-                    List<Object> listVariable = listVariableDescriptor.getListVariable(entity);
-                    return listVariable.get(workingRandom.nextInt(listVariable.size()));
-                }).iterator();
+                    var entity = entityOrderInfo.entities()[index];
+                    var listVariable = listVariableDescriptor.getListVariable(entity);
+                    var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor()
+                            .extractFirstUnpinnedIndex(entity);
+                    return listVariable
+                            .get(workingRandom.nextInt(listVariable.size() - firstUnpinnedIndex) + firstUnpinnedIndex);
+                })
+                .iterator();
     }
 
     @SuppressWarnings("unchecked")
     private KOptDescriptor<Node_> pickKOptMove(int k) {
         // The code in the paper used 1-index arrays
-        Node_[] pickedValues = (Node_[]) new Object[2 * k + 1];
-        Iterator<Node_> originIterator = (Iterator<Node_>) originSelector.iterator();
+        var pickedValues = (Node_[]) new Object[2 * k + 1];
+        var originIterator = (Iterator<Node_>) originSelector.iterator();
 
         pickedValues[1] = originIterator.next();
-        int remainingAttempts = 20;
+        if (pickedValues[1] == null) {
+            return null;
+        }
+        var remainingAttempts = 20;
         while (remainingAttempts > 0
-                && listVariableDescriptor.getListSize(inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
-            pickedValues[1] = originIterator.next();
-            remainingAttempts--;
+                && getEffectiveListSize(listVariableDescriptor,
+                        inverseVariableSupply.getInverseSingleton(pickedValues[1])) < 2) {
+            do {
+                if (!originIterator.hasNext()) {
+                    // Filtered selection due to pinning/unassigned may cause this.
+                    // Filtered selectors only know the upper bound of their size, not their actual size.
+                    // Therefore the iterator may be exhausted before the actual size is reached.
+                    return null;
+                }
+                pickedValues[1] = originIterator.next();
+                remainingAttempts--;
+            } while ((pickedValues[1] == null));
         }
 
         if (remainingAttempts == 0) {
@@ -120,7 +133,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             return null;
         }
 
-        EntityOrderInfo entityOrderInfo = new EntityOrderInfo(pickedValues, inverseVariableSupply, listVariableDescriptor);
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
         pickedValues[2] = workingRandom.nextBoolean() ? getNodeSuccessor(entityOrderInfo, pickedValues[1])
                 : getNodePredecessor(entityOrderInfo, pickedValues[1]);
 
@@ -130,6 +143,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         } else {
             return pickKOptMoveRec((Iterator<Node_>) valueSelector.iterator(), entityOrderInfo, pickedValues, 2, k, true);
         }
+    }
+
+    private static <Solution_> int getEffectiveListSize(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            Object entity) {
+        var listSize = listVariableDescriptor.getListSize(entity);
+        var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor()
+                .extractFirstUnpinnedIndex(entity);
+        return listSize - firstUnpinnedIndex;
     }
 
     private KOptDescriptor<Node_> pickKOptMoveRec(Iterator<Node_> valueIterator,
@@ -190,7 +211,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             if (pickedSoFar < k) {
                 KOptDescriptor<Node_> descriptor = pickKOptMoveRec(valueIterator, newEntityOrderInfo, pickedValues,
                         pickedSoFar + 1, k, canSelectNewEntities);
-                if (descriptor != null && descriptor.isFeasible()) {
+                if (descriptor != null && descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 }
             } else {
@@ -203,14 +224,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                                 listVariableDescriptor,
                                 inverseVariableSupply,
                                 indexVariableSupply));
-                if (descriptor.isFeasible()) {
+                if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 } else {
                     descriptor = patchCycles(
                             descriptor,
                             newEntityOrderInfo, pickedValues,
                             pickedSoFar);
-                    if (descriptor.isFeasible()) {
+                    if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                         return descriptor;
                     }
                 }
@@ -222,13 +243,18 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     KOptDescriptor<Node_> patchCycles(KOptDescriptor<Node_> descriptor, EntityOrderInfo entityOrderInfo,
             Node_[] oldRemovedEdges, int k) {
         Node_ s1, s2;
-        int[] removedEdgeIndexToTourOrder = descriptor.getRemovedEdgeIndexToTourOrder();
+        int[] removedEdgeIndexToTourOrder = descriptor.removedEdgeIndexToTourOrder();
         Iterator<Node_> valueIterator = getValuesOnSelectedEntitiesIterator(oldRemovedEdges);
         KOptCycle cycleInfo = KOptUtils.getCyclesForPermutation(descriptor);
-        int cycleCount = cycleInfo.cycleCount;
-        int[] cycle = cycleInfo.indexToCycleIdentifier;
+        int cycleCount = cycleInfo.cycleCount();
+        int[] cycle = cycleInfo.indexToCycleIdentifier();
 
-        if (cycleCount == 1 || cycleCount > maxCyclesPatchedInInfeasibleMove) {
+        // If cycleCount != 1,
+        // we are changing an infeasible k-opt move that results in cycleCount cycles
+        // into a (k+cycleCount) move.
+        // If the k+cycleCount > maxK, we should ignore generating the move
+        // Note: maxCyclesPatchedInInfeasibleMove = maxK
+        if (cycleCount == 1 || k + cycleCount > maxCyclesPatchedInInfeasibleMove) {
             return descriptor;
         }
         int currentCycle =
@@ -238,7 +264,12 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             if (cycle[removedEdgeIndexToTourOrder[2 * i]] == currentCycle) {
                 Node_ sStart = oldRemovedEdges[removedEdgeIndexToTourOrder[2 * i]];
                 Node_ sStop = oldRemovedEdges[removedEdgeIndexToTourOrder[2 * i + 1]];
+                int attemptRemaining = k;
                 for (s1 = sStart; s1 != sStop; s1 = s2) {
+                    attemptRemaining--;
+                    if (attemptRemaining == 0) {
+                        break;
+                    }
                     Node_[] removedEdges = Arrays.copyOf(oldRemovedEdges, oldRemovedEdges.length + 2);
 
                     removedEdges[2 * k + 1] = s1;
@@ -255,7 +286,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                     KOptDescriptor<Node_> newMove = patchCyclesRec(valueIterator, descriptor, entityOrderInfo, removedEdges,
                             addedEdgeToOtherEndpoint, cycle, currentCycle,
                             k, 2, cycleCount);
-                    if (newMove.isFeasible()) {
+                    if (newMove.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                         return newMove;
                     }
                 }
@@ -284,7 +315,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         int remainingAttempts = cycleCount * 2;
         while (s3 == getNodePredecessor(entityOrderInfo, s2) || s3 == getNodeSuccessor(entityOrderInfo, s2)
                 || ((NewCycle = findCycleIdentifierForNode(entityOrderInfo, s3, removedEdges,
-                        originalMove.getRemovedEdgeIndexToTourOrder(),
+                        originalMove.removedEdgeIndexToTourOrder(),
                         cycle)) == currentCycle)
                 ||
                 (isEdgeAlreadyDeleted(removedEdges, s3, getNodePredecessor(entityOrderInfo, s3), k)
@@ -315,7 +346,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                     patchCyclesRec(valueIterator, originalMove, entityOrderInfo, removedEdges, addedEdgeToOtherEndpoint, cycle,
                             currentCycle,
                             k, patchedCycleCount + 1, cycleCount - 1);
-            if (recursiveCall.isFeasible()) {
+            if (recursiveCall.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                 return recursiveCall;
             }
             for (i = 1; i <= 2 * k; i++) {
@@ -373,16 +404,19 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     private int getSegmentSize(EntityOrderInfo entityOrderInfo, Object from, Object to) {
-        int startEntityIndex = entityOrderInfo.entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(from));
-        int endEntityIndex = entityOrderInfo.entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(to));
-        int startIndex = entityOrderInfo.offsets[startEntityIndex] + indexVariableSupply.getIndex(from);
-        int endIndex = entityOrderInfo.offsets[endEntityIndex] + indexVariableSupply.getIndex(to);
+        var entityToEntityIndex = entityOrderInfo.entityToEntityIndex();
+        int startEntityIndex = entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(from));
+        int endEntityIndex = entityToEntityIndex.get(inverseVariableSupply.getInverseSingleton(to));
+        var offsets = entityOrderInfo.offsets();
+        int startIndex = offsets[startEntityIndex] + indexVariableSupply.getIndex(from);
+        int endIndex = offsets[endEntityIndex] + indexVariableSupply.getIndex(to);
 
         if (startIndex <= endIndex) {
             return endIndex - startIndex;
         } else {
-            int totalRouteSize = entityOrderInfo.offsets[entityOrderInfo.offsets.length - 1] +
-                    listVariableDescriptor.getListSize(entityOrderInfo.entities[entityOrderInfo.entities.length - 1]);
+            var entities = entityOrderInfo.entities();
+            int totalRouteSize =
+                    offsets[offsets.length - 1] + listVariableDescriptor.getListSize(entities[entities.length - 1]);
             return totalRouteSize - startIndex + endIndex;
         }
     }
@@ -411,8 +445,13 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private boolean isNodeEndpointOfList(Object node) {
         int index = indexVariableSupply.getIndex(node);
+        int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor()
+                .extractFirstUnpinnedIndex(inverseVariableSupply.getInverseSingleton(node));
+        if (index == firstUnpinnedIndex) {
+            return true;
+        }
         int size = listVariableDescriptor.getListSize(inverseVariableSupply.getInverseSingleton(node));
-        return index == 0 || (index == size - 1);
+        return index == size - 1;
     }
 
     private Node_ getNodeSuccessor(EntityOrderInfo entityOrderInfo, Node_ node) {

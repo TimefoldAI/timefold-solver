@@ -14,31 +14,43 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.spring.boot.autoconfigure.config.BenchmarkProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @AutoConfigureAfter(TimefoldAutoConfiguration.class)
 @ConditionalOnClass({ PlannerBenchmarkFactory.class })
 @ConditionalOnMissingBean({ PlannerBenchmarkFactory.class })
 @EnableConfigurationProperties({ TimefoldProperties.class })
-public class TimefoldBenchmarkAutoConfiguration
-        implements BeanClassLoaderAware {
+public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware, ApplicationContextAware {
 
     private final TimefoldProperties timefoldProperties;
     private ClassLoader beanClassLoader;
+    private ApplicationContext context;
 
     protected TimefoldBenchmarkAutoConfiguration(TimefoldProperties timefoldProperties) {
         this.timefoldProperties = timefoldProperties;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        this.context = context;
+    }
+
     @Bean
-    public PlannerBenchmarkConfig plannerBenchmarkConfig(SolverConfig solverConfig) {
+    @Lazy
+    public PlannerBenchmarkConfig plannerBenchmarkConfig() {
+        assertSingleSolver();
+        SolverConfig solverConfig = context.getBean(SolverConfig.class);
         if (solverConfig == null) {
             return null;
         }
@@ -67,6 +79,12 @@ public class TimefoldBenchmarkAutoConfiguration
 
         if (benchmarkConfig.getBenchmarkDirectory() == null) {
             benchmarkConfig.setBenchmarkDirectory(new File(BenchmarkProperties.DEFAULT_BENCHMARK_RESULT_DIRECTORY));
+        }
+
+        if (benchmarkConfig.getInheritedSolverBenchmarkConfig() == null) {
+            SolverBenchmarkConfig inheritedBenchmarkConfig = new SolverBenchmarkConfig();
+            benchmarkConfig.setInheritedSolverBenchmarkConfig(inheritedBenchmarkConfig);
+            inheritedBenchmarkConfig.setSolverConfig(solverConfig.copyConfig());
         }
 
         if (timefoldProperties.getBenchmark() != null && timefoldProperties.getBenchmark().getSolver() != null) {
@@ -123,11 +141,21 @@ public class TimefoldBenchmarkAutoConfiguration
     }
 
     @Bean
+    @Lazy
     public PlannerBenchmarkFactory plannerBenchmarkFactory(PlannerBenchmarkConfig benchmarkConfig) {
         if (benchmarkConfig == null) {
             return null;
         }
+        assertSingleSolver();
         return PlannerBenchmarkFactory.create(benchmarkConfig);
+    }
+
+    private void assertSingleSolver() {
+        if (timefoldProperties.getSolver() != null && timefoldProperties.getSolver().size() > 1) {
+            throw new IllegalStateException("""
+                    When defining multiple solvers, the benchmark feature is not enabled.
+                    Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");
+        }
     }
 
     @Override

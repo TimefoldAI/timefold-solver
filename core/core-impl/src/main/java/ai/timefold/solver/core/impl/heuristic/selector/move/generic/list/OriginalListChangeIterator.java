@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.RandomListChangeIterator.findUnpinnedDestination;
+
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -56,14 +58,17 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             destinationIterator = destinationSelector.iterator();
         }
 
-        ElementRef destination = destinationIterator.next();
+        ElementRef destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        if (destination == null) {
+            return noUpcomingSelection();
+        }
 
         if (upcomingSourceEntity == null && upcomingSourceIndex == null) {
             return new ListAssignMove<>(
                     listVariableDescriptor,
                     upcomingValue,
-                    destination.getEntity(),
-                    destination.getIndex());
+                    destination.entity(),
+                    destination.index());
         }
 
         // No need to generate ListUnassignMove because they are only used as undo moves.
@@ -72,7 +77,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
                 listVariableDescriptor,
                 upcomingSourceEntity,
                 upcomingSourceIndex,
-                destination.getEntity(),
-                destination.getIndex());
+                destination.entity(),
+                destination.index());
     }
 }

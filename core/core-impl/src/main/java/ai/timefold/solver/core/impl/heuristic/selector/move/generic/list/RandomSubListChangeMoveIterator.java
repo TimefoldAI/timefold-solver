@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.RandomListChangeIterator.findUnpinnedDestination;
+
 import java.util.Iterator;
 import java.util.Random;
 
@@ -38,14 +40,17 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
         }
 
         SubList subList = subListIterator.next();
-        ElementRef destination = destinationIterator.next();
+        ElementRef destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        if (destination == null) {
+            return noUpcomingSelection();
+        }
         boolean reversing = selectReversingMoveToo && workingRandom.nextBoolean();
 
         return new SubListChangeMove<>(
                 listVariableDescriptor,
                 subList,
-                destination.getEntity(),
-                destination.getIndex(),
+                destination.entity(),
+                destination.index(),
                 reversing);
     }
 }

@@ -161,7 +161,7 @@ However, in exam timetabling, that is allowed, if there is enough seating capaci
 
 Assigning humans to start a meeting at four seconds after 9 o'clock is pointless because most human activities have a time granularity of five minutes or 15 minutes.
 Therefore it is not necessary to allow a planning entity to be assigned subsecond, second or even one minute accuracy.
-The five minute or 15 minutes accuracy suffices.
+A granularity of 15 minutes, 1 hour or 1 day accuracy suffices for most use cases.
 The TimeGrain pattern models such *time accuracy* by partitioning time as time grains.
 For example in xref:use-cases-and-examples/meeting-scheduling/meeting-scheduling.adoc#meetingScheduling[meeting scheduling], all meetings start/end in hour, half hour, or 15-minute intervals before or after each hour, therefore the optimal settings for time grains is 15 minutes.
 
@@ -169,10 +169,11 @@ Each planning entity is assigned to a start time grain.
 The end time grain is calculated by adding the duration in grains to the starting time grain.
 Overlap of two entities is determined by comparing their start and end time grains.
 
-This pattern also works well with a coarser time granularity (such as days, half days, hours, ...).
-With a finer time granularity (such as seconds, milliseconds, ...) and a long time window, the value range (and therefore xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space]) can become too high, which reduces efficiency and scalability.
-However, such a solution is not impossible.
-
+*The TimeGrain pattern doesn't scale well*.
+Especially with a finer time granularity (such as 1 minute) and a long planning window,
+the value range (and therefore xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space]) is too big to scale well.
+It's recommended to use a coarse time granularity (such as 1 week, 1 day, 1 half day, ...) or shorten the planning window size to scale.
+To resolve scaling issues, the <<timeBucketPattern,Time Bucket pattern>> is often a good alternative.
 
 [#chainedThroughTimePattern]
 === Chained through time pattern: assign in a chain that determines starting time
@@ -189,7 +190,8 @@ use a xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[
 This pattern is implemented using either the xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained planning variable]
 or the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable].
 The two modeling approaches are equivalent because they both allow Timefold Solver to order elements in sequences of variable lengths.
-The planning list variable is easier to use than the chained planning variable, but it does not yet support all the advanced planning techniques.
+The planning list variable is easier to use than the chained planning variable,
+but it does not yet support all the advanced planning techniques.
 
 [#chainedThroughTimePatternChainedVariable]
 ==== Chained through time pattern using chained planning variable

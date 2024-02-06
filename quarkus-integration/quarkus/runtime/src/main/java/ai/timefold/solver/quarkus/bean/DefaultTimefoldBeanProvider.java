@@ -26,6 +26,9 @@ import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import io.quarkus.arc.DefaultBean;
 
+/**
+ * Provider for managed resources of the default solver.
+ */
 @ApplicationScoped
 public class DefaultTimefoldBeanProvider {
 

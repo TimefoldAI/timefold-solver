@@ -208,10 +208,11 @@ public class Lecture {
 }
 ----
 
-In the example above, if `pinned` is `true`, the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
+In the example above, if `pinned` is `true`,
+the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
 
 [#configureAPinningFilter]
-==== Configure a `PinningFilter`
+===== Configure a `PinningFilter`
 
 Alternatively, to pin some planning entities down, add a `PinningFilter` that returns `true` if an entity is pinned, and `false` if it is movable.
 This is more flexible and more verbose than the `@PlanningPin` approach.
@@ -242,6 +243,49 @@ public class ShiftAssignment {
     ...
 }
 ----
+
+[#partiallyPinnedPlanningListVariable]
+==== Pinning a planning list variable
+
+There are cases where pinning only a part of xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] is necessary.
+For example, if some customer visits have already happened but are still in the list,
+it makes sense to pin them down.
+
+To achieve that, use a `@PlanningPinToIndex` annotation instead:
+
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle {
+
+    ...
+
+    @PlanningListVariable
+    protected List<Customer> customers = ...; // Includes some customers.
+    @PlanningPinToIndex
+    protected int firstUnpinnedIndex = 1;
+
+    ...
+
+}
+----
+
+When `@PlanningPinToIndex` is used, the list is split in two parts.
+
+- The first part, with indexes less than `firstUnpinnedIndex`, is pinned.
+In the example above, it means that the first element of the list can not be moved from its position.
+Nothing will be added before it, and it will not be removed from the list.
+It will forever stay as the first element of the list.
+- The second part, starting with `firstUnpinnedIndex` and ending where the list ends, is movable.
+Items can be freely added, removed and reordered in this part of the list.
+
+This means that, if the `@PlanningPinToIndex` is zero (`0`), the list is fully modifiable.
+Consequently, if the `@PlanningPinToIndex` is equal to the size of the list,
+all the contents of the list are pinned,
+but the list can still be extended by adding to the end of the list.
+
+To pin the entire list, preventing any modifications to the list whatsoever,
+<<pinDownPlanningEntities, `@PlanningPin`>> needs to be used on the entity itself.
 
 [#nonvolatileReplanning]
 === Nonvolatile replanning to minimize disruption (semi-movable planning entities)

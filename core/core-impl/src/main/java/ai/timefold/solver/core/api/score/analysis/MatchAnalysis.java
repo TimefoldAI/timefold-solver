@@ -18,7 +18,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  * @param justification never null
  */
 public record MatchAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score,
-        ConstraintJustification justification) {
+        ConstraintJustification justification) implements Comparable<MatchAnalysis<Score_>> {
 
     public MatchAnalysis {
         Objects.requireNonNull(constraintRef);
@@ -33,4 +33,21 @@ public record MatchAnalysis<Score_ extends Score<Score_>>(ConstraintRef constrai
         return new MatchAnalysis<>(constraintRef, score.negate(), justification);
     }
 
+    @Override
+    public int compareTo(MatchAnalysis<Score_> other) {
+        int constraintRefComparison = this.constraintRef.compareTo(other.constraintRef);
+        if (constraintRefComparison != 0) {
+            return constraintRefComparison;
+        }
+        int scoreComparison = this.score.compareTo(other.score);
+        if (scoreComparison != 0) {
+            return scoreComparison;
+        } else {
+            if (this.justification instanceof Comparable && other.justification instanceof Comparable) {
+                return ((Comparable) this.justification).compareTo(other.justification);
+            } else {
+                return 0;
+            }
+        }
+    }
 }

@@ -42,13 +42,16 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
         }
 
         Object upcomingValue = valueIterator.next();
-        ElementRef destination = destinationIterator.next();
-
+        ElementRef destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        if (destination == null) {
+            return noUpcomingSelection();
+        }
         return new ListChangeMove<>(
                 listVariableDescriptor,
                 inverseVariableSupply.getInverseSingleton(upcomingValue),
                 indexVariableSupply.getIndex(upcomingValue),
-                destination.getEntity(),
-                destination.getIndex());
+                destination.entity(),
+                destination.index());
     }
+
 }

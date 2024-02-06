@@ -25,14 +25,14 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class CustomShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
     private final Map<Class<? extends AbstractVariableListener>, List<VariableDescriptor<Solution_>>> listenerClassToSourceDescriptorListMap =
             new HashMap<>();
 
-    public CustomShadowVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
+    public CustomShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
     @Override

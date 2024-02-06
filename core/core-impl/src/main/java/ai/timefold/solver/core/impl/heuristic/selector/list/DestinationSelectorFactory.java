@@ -11,7 +11,6 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
@@ -44,13 +43,10 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType,
             SelectionOrder selectionOrder) {
-        EntitySelector<Solution_> entitySelector = EntitySelectorFactory
-                .<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
+        var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
-
-        EntityIndependentValueSelector<Solution_> valueSelector = buildEntityIndependentValueSelector(configPolicy,
-                entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
-
+        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
+                minimumCacheType, selectionOrder);
         return new ElementDestinationSelector<>(
                 entitySelector,
                 valueSelector,

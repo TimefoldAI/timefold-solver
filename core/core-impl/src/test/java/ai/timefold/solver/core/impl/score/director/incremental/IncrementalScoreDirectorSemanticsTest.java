@@ -9,16 +9,45 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeighIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
 final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorSemanticsTest {
 
     @Override
     protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+                    SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataConstraintWeighIncrementalScoreCalculator.class);
-        ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
-                new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
+        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore>(
+                scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
+                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+    }
+
+    @Override
+    protected InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
+            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+                    SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withIncrementalScoreCalculatorClass(TestdataPinnedListIncrementalScoreCalculator.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
+                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+    }
+
+    @Override
+    protected InnerScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
+            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+                    SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withIncrementalScoreCalculatorClass(TestdataPinnedWithIndexListIncrementalScoreCalculator.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
                 EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }

@@ -13,14 +13,15 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 
-public class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
+public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public ListVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor, MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+    public ListVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
+        super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
     // ************************************************************************

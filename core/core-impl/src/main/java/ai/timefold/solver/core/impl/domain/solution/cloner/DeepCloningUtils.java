@@ -95,7 +95,15 @@ public final class DeepCloningUtils {
     }
 
     static boolean isImmutable(Class<?> clz) {
-        if (clz.isPrimitive() || clz.isEnum() || clz.isRecord() || Score.class.isAssignableFrom(clz)) {
+        if (clz.isPrimitive() || Score.class.isAssignableFrom(clz)) {
+            return true;
+        } else if (clz.isRecord() || clz.isEnum()) {
+            if (clz.isAnnotationPresent(DeepPlanningClone.class)) {
+                throw new IllegalStateException("""
+                        The class (%s) is annotated with @%s, but it is immutable.
+                        Deep-cloning enums and records is not supported."""
+                        .formatted(clz.getName(), DeepPlanningClone.class.getSimpleName()));
+            }
             return true;
         }
         return IMMUTABLE_CLASSES.contains(clz);

@@ -19,12 +19,17 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldBenchmarkRecorder {
-    public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig) {
+    public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig,
+            TimefoldBenchmarkRuntimeConfig timefoldRuntimeConfig) {
         return () -> {
-            TimefoldBenchmarkRuntimeConfig timefoldRuntimeConfig =
-                    Arc.container().instance(TimefoldBenchmarkRuntimeConfig.class).get();
             SolverConfig solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
+            // If the termination configuration is set and the created benchmark configuration has no configuration item,
+            // we need to add at least one configuration; otherwise, we will fail to recognize the runtime termination setting.
+            if (benchmarkConfig != null && benchmarkConfig.getSolverBenchmarkConfigList() == null &&
+                    timefoldRuntimeConfig != null && timefoldRuntimeConfig.termination() != null) {
+                benchmarkConfig.setSolverBenchmarkConfigList(Collections.singletonList(new SolverBenchmarkConfig()));
+            }
             return updateBenchmarkConfigWithRuntimeProperties(benchmarkConfig, timefoldRuntimeConfig, solverConfig);
         };
     }
@@ -37,7 +42,9 @@ public class TimefoldBenchmarkRecorder {
             plannerBenchmarkConfig = PlannerBenchmarkConfig.createFromSolverConfig(solverConfig);
         }
 
-        plannerBenchmarkConfig.setBenchmarkDirectory(new File(benchmarkRuntimeConfig.resultDirectory));
+        if (benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.resultDirectory() != null) {
+            plannerBenchmarkConfig.setBenchmarkDirectory(new File(benchmarkRuntimeConfig.resultDirectory()));
+        }
         SolverBenchmarkConfig inheritedBenchmarkConfig = plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig();
 
         if (plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList() != null) {
@@ -53,10 +60,12 @@ public class TimefoldBenchmarkRecorder {
                 inheritedTerminationConfig = new TerminationConfig();
                 inheritedBenchmarkConfig.getSolverConfig().setTerminationConfig(inheritedTerminationConfig);
             }
-            benchmarkRuntimeConfig.termination.spentLimit.ifPresent(inheritedTerminationConfig::setSpentLimit);
-            benchmarkRuntimeConfig.termination.unimprovedSpentLimit
-                    .ifPresent(inheritedTerminationConfig::setUnimprovedSpentLimit);
-            benchmarkRuntimeConfig.termination.bestScoreLimit.ifPresent(inheritedTerminationConfig::setBestScoreLimit);
+            if (benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.termination() != null) {
+                benchmarkRuntimeConfig.termination().spentLimit().ifPresent(inheritedTerminationConfig::setSpentLimit);
+                benchmarkRuntimeConfig.termination().unimprovedSpentLimit()
+                        .ifPresent(inheritedTerminationConfig::setUnimprovedSpentLimit);
+                benchmarkRuntimeConfig.termination().bestScoreLimit().ifPresent(inheritedTerminationConfig::setBestScoreLimit);
+            }
         }
 
         TerminationConfig inheritedTerminationConfig = null;
@@ -89,11 +98,12 @@ public class TimefoldBenchmarkRecorder {
                     continue;
                 }
 
-                benchmarkRuntimeConfig.termination.spentLimit.ifPresent(terminationConfig::setSpentLimit);
-                benchmarkRuntimeConfig.termination.unimprovedSpentLimit
-                        .ifPresent(terminationConfig::setUnimprovedSpentLimit);
-                benchmarkRuntimeConfig.termination.bestScoreLimit.ifPresent(terminationConfig::setBestScoreLimit);
-
+                if (benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.termination() != null) {
+                    benchmarkRuntimeConfig.termination().spentLimit().ifPresent(terminationConfig::setSpentLimit);
+                    benchmarkRuntimeConfig.termination().unimprovedSpentLimit()
+                            .ifPresent(terminationConfig::setUnimprovedSpentLimit);
+                    benchmarkRuntimeConfig.termination().bestScoreLimit().ifPresent(terminationConfig::setBestScoreLimit);
+                }
                 if (!terminationConfig.isConfigured() && !solverConfig_.canTerminate()) {
                     throw new IllegalStateException("At least one of the solver benchmarks is not configured to terminate. " +
                             "At least one of the properties " +

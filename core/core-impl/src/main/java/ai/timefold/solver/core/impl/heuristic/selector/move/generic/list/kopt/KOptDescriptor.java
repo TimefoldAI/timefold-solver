@@ -14,43 +14,27 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 
-final class KOptDescriptor<Node_> {
-
-    /**
-     * The number of edges being added
-     */
-    private final int k;
-
-    /**
-     * A sequence of 2K nodes that forms the sequence of edges being removed
-     */
-    private final Node_[] removedEdges;
-
-    /**
-     * The order each node is visited when the tour is travelled in the successor direction. This forms
-     * a 2K-cycle representing the permutation performed by the K-opt move.
-     */
-    private final int[] removedEdgeIndexToTourOrder;
-
-    /**
-     * The order each node is visited when the tour is travelled in the predecessor direction. It the
-     * inverse of {@link KOptDescriptor#removedEdgeIndexToTourOrder} (i.e.
-     * {@link KOptDescriptor#removedEdgeIndexToTourOrder}[inverseRemovedEdgeIndexToTourOrder[i]] == i
-     *
-     */
-    private final int[] inverseRemovedEdgeIndexToTourOrder;
-
-    /**
-     * Maps the index of a removed edge endpoint to its corresponding added edge other endpoint. For instance,
-     * if the removed edges are (a, b), (c, d), (e, f) and the added edges are (a, d), (c, f), (e, b), then
-     * <br />
-     * removedEdges = [null, a, b, c, d, e, f] <br />
-     * addedEdgeToOtherEndpoint = [null, 4, 5, 6, 1, 2, 3] <br />
-     * <br />
-     * For any valid removedEdges index, (removedEdges[index], removedEdges[addedEdgeToOtherEndpoint[index]])
-     * is an edge added by this K-Opt move.
-     */
-    private final int[] addedEdgeToOtherEndpoint;
+/**
+ *
+ * @param k the number of edges being added
+ * @param removedEdges sequence of 2k nodes that forms the sequence of edges being removed
+ * @param removedEdgeIndexToTourOrder node visit order when the tour is traveled in the successor direction.
+ *        This forms a 2k-cycle representing the permutation performed by the K-opt move.
+ * @param inverseRemovedEdgeIndexToTourOrder node visit order when the tour is traveled in the predecessor direction.
+ *        It is the inverse of {@link KOptDescriptor#removedEdgeIndexToTourOrder}
+ *        (i.e. {@link KOptDescriptor#removedEdgeIndexToTourOrder}[inverseRemovedEdgeIndexToTourOrder[i]] == i
+ * @param addedEdgeToOtherEndpoint maps the index of a removed edge endpoint to its corresponding added edge other endpoint.
+ *        For instance, if the removed edges are (a, b), (c, d), (e, f) and the added edges are (a, d), (c, f), (e, b), then
+ *        <br />
+ *        removedEdges = [null, a, b, c, d, e, f] <br />
+ *        addedEdgeToOtherEndpoint = [null, 4, 5, 6, 1, 2, 3] <br />
+ *        <br />
+ *        For any valid removedEdges index, (removedEdges[index], removedEdges[addedEdgeToOtherEndpoint[index]])
+ *        is an edge added by this K-Opt move.
+ * @param <Node_>
+ */
+record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndexToTourOrder,
+        int[] inverseRemovedEdgeIndexToTourOrder, int[] addedEdgeToOtherEndpoint) {
 
     static <Node_> int[] computeInEdgesForSequentialMove(Node_[] removedEdges) {
         int[] out = new int[removedEdges.length];
@@ -76,7 +60,7 @@ final class KOptDescriptor<Node_> {
      *        argument is between its first and last argument when the tour is
      *        taken in the successor direction.
      */
-    public KOptDescriptor(
+    KOptDescriptor(
             Node_[] removedEdges,
             Function<Node_, Node_> endpointToSuccessorFunction,
             TriPredicate<Node_, Node_, Node_> betweenPredicate) {
@@ -94,16 +78,13 @@ final class KOptDescriptor<Node_> {
      *        argument is between its first and last argument when the tour is
      *        taken in the successor direction.
      */
-    public KOptDescriptor(
+    KOptDescriptor(
             Node_[] removedEdges,
             int[] addedEdgeToOtherEndpoint,
             Function<Node_, Node_> endpointToSuccessorFunction,
             TriPredicate<Node_, Node_, Node_> betweenPredicate) {
-        this.k = (removedEdges.length - 1) >> 1;
-        this.removedEdges = removedEdges;
-        this.removedEdgeIndexToTourOrder = new int[removedEdges.length];
-        this.inverseRemovedEdgeIndexToTourOrder = new int[removedEdges.length];
-        this.addedEdgeToOtherEndpoint = addedEdgeToOtherEndpoint;
+        this((removedEdges.length - 1) >> 1, removedEdges, new int[removedEdges.length], new int[removedEdges.length],
+                addedEdgeToOtherEndpoint);
 
         // Compute the permutation as described in FindPermutation
         // (Section 5.3 "Determination of the feasibility of a move",
@@ -132,29 +113,6 @@ final class KOptDescriptor<Node_> {
         for (int i = 1; i <= 2 * k; i++) {
             inverseRemovedEdgeIndexToTourOrder[removedEdgeIndexToTourOrder[i]] = i;
         }
-    }
-
-    // ****************************************************
-    // Simple Getters (only accessible from kopt package)
-    // ****************************************************
-    int getK() {
-        return k;
-    }
-
-    Node_[] getRemovedEdges() {
-        return removedEdges;
-    }
-
-    int[] getRemovedEdgeIndexToTourOrder() {
-        return removedEdgeIndexToTourOrder;
-    }
-
-    int[] getInverseRemovedEdgeIndexToTourOrder() {
-        return inverseRemovedEdgeIndexToTourOrder;
-    }
-
-    int[] getAddedEdgeToOtherEndpoint() {
-        return addedEdgeToOtherEndpoint;
     }
 
     // ****************************************************
@@ -203,7 +161,8 @@ final class KOptDescriptor<Node_> {
             SingletonInverseVariableSupply inverseVariableSupply) {
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it a no-op
-            return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, List.of(), 0, new int[] {});
+            return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, new MultipleDelegateList<>(),
+                    List.of(), 0, new int[] {});
         }
 
         MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, inverseVariableSupply);
@@ -316,17 +275,28 @@ final class KOptDescriptor<Node_> {
                 .toArray();
 
         newEndIndices[newEndIndices.length - 1] = originalToCurrentIndexList.length - 1;
-        return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, out, startElementShift, newEndIndices);
+        return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, combinedList, out, startElementShift,
+                newEndIndices);
     }
 
     /**
      * Return true if and only if performing the K-opt move described by this {@link KOptDescriptor} will result in a
      * single cycle.
      *
+     * @param minK
+     * @param maxK
      * @return true if and only if performing the K-opt move described by this {@link KOptDescriptor} will result in a
      *         single cycle, false otherwise.
      */
-    public boolean isFeasible() {
+    public boolean isFeasible(int minK, int maxK) {
+        if (k < minK || k > maxK) {
+            throw new IllegalStateException("Impossible state: The k-opt move k-value (%d) is not in the range [%d, %d]."
+                    .formatted(k, minK, maxK));
+        }
+        return isFeasible();
+    }
+
+    private boolean isFeasible() {
         int count = 0;
         int currentEndpoint = 2 * k;
 
@@ -454,8 +424,7 @@ final class KOptDescriptor<Node_> {
 
         KOptUtils.flipSubarray(originalToCurrentIndexList, firstEndpoint, secondEndpoint);
 
-        return new FlipSublistAction(listVariableDescriptor, (MultipleDelegateList<Object>) combinedList,
-                firstEndpoint, secondEndpoint);
+        return new FlipSublistAction(listVariableDescriptor, firstEndpoint, secondEndpoint);
     }
 
     @SuppressWarnings("unchecked")
@@ -467,12 +436,21 @@ final class KOptDescriptor<Node_> {
                     entity -> entityToEntityIndex.size());
         }
 
-        List<Node_>[] entityLists = new List[entityToEntityIndex.size()];
+        Object[] entities = new Object[entityToEntityIndex.size()];
+        List<Node_>[] entityLists = new List[entities.length];
         for (Map.Entry<Object, Integer> entry : entityToEntityIndex.entrySet()) {
-            entityLists[entry.getValue()] = (List<Node_>) listVariableDescriptor.getListVariable(entry.getKey());
+            int index = entry.getValue();
+            Object entity = entry.getKey();
+            List<Node_> entityList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
+            int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
+            if (firstUnpinnedIndex != 0) {
+                entityList = entityList.subList(firstUnpinnedIndex, entityList.size());
+            }
+            entities[index] = entity;
+            entityLists[index] = entityList;
         }
 
-        return new MultipleDelegateList<>(entityLists);
+        return new MultipleDelegateList<>(entities, entityLists);
     }
 
     private static int indexOf(int[] search, int query) {

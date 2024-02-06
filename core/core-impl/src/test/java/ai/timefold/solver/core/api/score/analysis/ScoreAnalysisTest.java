@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.score.director.InnerScoreDirector.get
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -14,6 +15,18 @@ import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal
 import org.junit.jupiter.api.Test;
 
 class ScoreAnalysisTest {
+
+    @Test
+    void empty() {
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.of(0), Collections.emptyMap());
+        var scoreAnalysis2 = new ScoreAnalysis<>(SimpleScore.of(0), Collections.emptyMap());
+
+        var diff = scoreAnalysis.diff(scoreAnalysis2);
+        assertSoftly(softly -> {
+            softly.assertThat(diff.score()).isEqualTo(SimpleScore.of(0));
+            softly.assertThat(diff.constraintMap()).isEmpty();
+        });
+    }
 
     @Test
     void compareWithConstraintMatchesWithoutMatchAnalysis() {

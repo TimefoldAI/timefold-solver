@@ -17,14 +17,13 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
-public class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
-    protected ListVariableDescriptor<Solution_> sourceVariableDescriptor;
+    private ListVariableDescriptor<Solution_> sourceVariableDescriptor;
 
-    public IndexShadowVariableDescriptor(
-            EntityDescriptor<Solution_> entityDescriptor,
+    public IndexShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(entityDescriptor, variableMemberAccessor);
+        super(ordinal, entityDescriptor, variableMemberAccessor);
         if (!variableMemberAccessor.getType().equals(Integer.class) && !variableMemberAccessor.getType().equals(Long.class)) {
             throw new IllegalStateException("The entityClass (" + entityDescriptor.getEntityClass()
                     + ") has an @" + IndexShadowVariable.class.getSimpleName()

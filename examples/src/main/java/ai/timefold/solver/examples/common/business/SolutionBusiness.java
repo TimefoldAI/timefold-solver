@@ -316,8 +316,10 @@ public final class SolutionBusiness<Solution_, Score_ extends Score<Score_>> imp
      * @return never null
      */
     public Solution_ solve(Solution_ problem, Consumer<Solution_> bestSolutionConsumer) {
-        SolverJob<Solution_, Long> solverJob = solverManager.solveAndListen(SOLVER_JOB_ID_COUNTER.getAndIncrement(),
-                id -> problem, bestSolution -> {
+        SolverJob<Solution_, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(SOLVER_JOB_ID_COUNTER.getAndIncrement())
+                .withProblemFinder(id -> problem)
+                .withBestSolutionConsumer(bestSolution -> {
                     setSolution(bestSolution);
                     SwingUtilities.invokeLater(() -> {
                         // Skip this event if a newer one arrived meanwhile to avoid flooding the Swing Event thread.
@@ -327,7 +329,9 @@ public final class SolutionBusiness<Solution_, Score_ extends Score<Score_>> imp
                         }
                         bestSolutionConsumer.accept(bestSolution);
                     });
-                });
+                })
+                .run();
+
         solverJobRef.set(solverJob);
         try {
             return solverJob.getFinalBestSolution();

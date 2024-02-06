@@ -88,11 +88,11 @@ public class KOptUtilsTest {
                 removedEdges,
                 addedEdges);
         KOptCycle cycle = KOptUtils.getCyclesForPermutation(kOptDescriptor);
-        assertThat(cycle.cycleCount).isEqualTo(1);
+        assertThat(cycle.cycleCount()).isEqualTo(1);
 
         // Cycles:
         // v1 -> v4 -> v5 -> v3 -> v2 -> v7 -> v6 -> v8
-        assertThat(cycle.indexToCycleIdentifier).containsExactly(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        assertThat(cycle.indexToCycleIdentifier()).containsExactly(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     @Test
@@ -111,12 +111,12 @@ public class KOptUtilsTest {
                 removedEdges,
                 addedEdges);
         KOptCycle cycleInfo = KOptUtils.getCyclesForPermutation(kOptDescriptor);
-        assertThat(cycleInfo.cycleCount).isEqualTo(2);
+        assertThat(cycleInfo.cycleCount()).isEqualTo(2);
 
         // Cycles:
         // v1 -> v4 -> v5 -> v8
         // v2 -> v3 -> v6 -> v7
-        assertThat(cycleInfo.indexToCycleIdentifier).containsExactly(0, 0, 1, 1, 0, 0, 1, 1, 0);
+        assertThat(cycleInfo.indexToCycleIdentifier()).containsExactly(0, 0, 1, 1, 0, 0, 1, 1, 0);
     }
 
     @Test
@@ -139,13 +139,13 @@ public class KOptUtilsTest {
                 removedEdges,
                 addedEdges);
         KOptCycle cycleInfo = KOptUtils.getCyclesForPermutation(kOptDescriptor);
-        assertThat(cycleInfo.cycleCount).isEqualTo(3);
+        assertThat(cycleInfo.cycleCount()).isEqualTo(3);
 
         // Cycles:
         // v1 -> v4 -> v5 -> v12
         // v2 -> v7 -> v6 -> v3
         // v8 -> v10 -> v11 -> v9
-        assertThat(cycleInfo.indexToCycleIdentifier).containsExactly(0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 2, 2, 0);
+        assertThat(cycleInfo.indexToCycleIdentifier()).containsExactly(0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 2, 2, 0);
     }
 
     @Test

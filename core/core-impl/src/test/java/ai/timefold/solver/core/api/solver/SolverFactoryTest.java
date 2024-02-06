@@ -2,18 +2,24 @@ package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
@@ -135,6 +141,19 @@ class SolverFactoryTest {
     }
 
     @Test
+    void createAndOverrideSettings() {
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        SolverConfigOverride<TestdataSolution> configOverride = mock(SolverConfigOverride.class);
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.withSpentLimit(Duration.ofSeconds(60));
+        doReturn(terminationConfig).when(configOverride).getTerminationConfig();
+        Solver<TestdataSolution> solver = solverFactory.buildSolver(configOverride);
+        assertThat(solver).isNotNull();
+        verify(configOverride, atLeast(1)).getTerminationConfig();
+    }
+
+    @Test
     void getScoreDirectorFactory() {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         DefaultSolverFactory<TestdataSolution> solverFactory =
@@ -167,7 +186,7 @@ class SolverFactoryTest {
 
         DefaultSolverFactory<TestdataSolution> solverFactory =
                 (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
-        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+        Assertions.assertThatThrownBy(() -> solverFactory.buildSolver())
                 .hasMessageContaining("unreachable phase");
     }
 

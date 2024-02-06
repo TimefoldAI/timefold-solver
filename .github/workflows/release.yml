@@ -83,7 +83,7 @@ jobs:
           JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.JRELEASER_NEXUS2_PASSWORD }}
 
       - name: JReleaser release output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: jreleaser-release
