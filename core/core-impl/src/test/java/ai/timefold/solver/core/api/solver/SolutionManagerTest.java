@@ -26,6 +26,8 @@ import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEnt
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultivarIncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataOtherValue;
+import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
+import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableIncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedIncrementalScoreCalculator;
@@ -42,13 +44,20 @@ public class SolutionManagerTest {
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataShadowedSolverConfig.xml");
     public static final SolverFactory<TestdataNullableSolution> SOLVER_FACTORY_OVERCONSTRAINED =
             SolverFactory.createFromXmlResource("ai/timefold/solver/core/api/solver/testdataOverconstrainedSolverConfig.xml");
-    public static final SolverFactory<TestdataShadowedSolution> SOLVER_FACTORY_EASY = SolverFactory.create(
+    public static final SolverFactory<TestdataShadowedSolution> SOLVER_FACTORY_SHADOWED = SolverFactory.create(
             new SolverConfig()
                     .withSolutionClass(TestdataShadowedSolution.class)
                     .withEntityClasses(TestdataShadowedEntity.class)
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
                                     TestdataShadowedIncrementalScoreCalculator.class)));
+    public static final SolverFactory<TestdataNullableSolution> SOLVER_FACTORY_UNASSIGNED = SolverFactory.create(
+            new SolverConfig()
+                    .withSolutionClass(TestdataNullableSolution.class)
+                    .withEntityClasses(TestdataNullableEntity.class)
+                    .withScoreDirectorFactory(
+                            new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
+                                    TestdataNullableIncrementalScoreCalculator.class)));
     public static final SolverFactory<TestdataMultiVarSolution> SOLVER_FACTORY_MULTIVAR = SolverFactory.create(
             new SolverConfig()
                     .withSolutionClass(TestdataMultiVarSolution.class)
@@ -81,7 +90,7 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
 
-        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_EASY);
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_SHADOWED);
         assertThat(solutionManager).isNotNull();
         solutionManager.update(solution);
 
@@ -203,7 +212,7 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
 
-        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_EASY);
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_SHADOWED);
         assertThat(solutionManager).isNotNull();
         solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY);
 
@@ -223,7 +232,7 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
 
-        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_EASY);
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_SHADOWED);
         assertThat(solutionManager).isNotNull();
         solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
 
@@ -309,7 +318,7 @@ public class SolutionManagerTest {
         var unassignedValue = uninitializedEntity.getValue();
         uninitializedEntity.setValue(null);
 
-        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_EASY);
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_SHADOWED);
         assertThat(solutionManager).isNotNull();
         var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity, TestdataShadowedEntity::getValue);
 
@@ -344,6 +353,63 @@ public class SolutionManagerTest {
             softly.assertThat(uninitializedEntity.getValue()).isNull();
             softly.assertThat(solution.getEntityList().get(0).getValue()).isEqualTo(solution.getValueList().get(0));
             softly.assertThat(solution.getEntityList().get(1).getValue()).isEqualTo(solution.getValueList().get(1));
+            softly.assertThat(solution.getScore()).isNull();
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void recommendFitWithUnassigned(SolutionManagerSource SolutionManagerSource) {
+        int valueSize = 3;
+        var solution = TestdataNullableSolution.generateSolution(valueSize, 3);
+        var uninitializedEntity = solution.getEntityList().get(2);
+        uninitializedEntity.setValue(null);
+
+        // At this point, entity 0 and entity 2 are unassigned.
+        // Entity 1 is assigned to value #1.
+        // But only entity2 should be processed for recommendations.
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_UNASSIGNED);
+        assertThat(solutionManager).isNotNull();
+        var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity, TestdataNullableEntity::getValue);
+
+        // Three values means there need to be four recommendations, one extra for unassigned.
+        assertThat(recommendationList).hasSize(valueSize + 1);
+        /*
+         * The calculator penalizes how many entities have the same value as another entity.
+         * Therefore the recommendation to assign value 0 and value 2 need to come first and in the order of the placer,
+         * as it means two entities no longer share a value, improving the score.
+         */
+        var recommendation1 = recommendationList.get(0);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation1.proposition()).isEqualTo(solution.getValueList().get(0));
+            softly.assertThat(recommendation1.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.of(2)); // Two entities no longer share null value.
+        });
+        var recommendation2 = recommendationList.get(1);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation2.proposition()).isEqualTo(solution.getValueList().get(2));
+            softly.assertThat(recommendation2.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.of(2));
+        });
+        // The other two recommendations need to come in order of the placer; so null, then value #1.
+        var recommendation3 = recommendationList.get(2);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation3.proposition()).isEqualTo(null);
+            softly.assertThat(recommendation3.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.ZERO);
+        });
+        var recommendation4 = recommendationList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation4.proposition()).isEqualTo(solution.getValueList().get(1));
+            softly.assertThat(recommendation4.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.ZERO);
+        });
+        // Ensure the original solution is in its original state.
+        assertSoftly(softly -> {
+            softly.assertThat(uninitializedEntity.getValue()).isNull();
+            softly.assertThat(solution.getEntityList().get(0).getValue()).isNull();
+            softly.assertThat(solution.getEntityList().get(1).getValue()).isEqualTo(solution.getValueList().get(1));
+            softly.assertThat(solution.getEntityList().get(2).getValue()).isNull();
             softly.assertThat(solution.getScore()).isNull();
         });
     }
