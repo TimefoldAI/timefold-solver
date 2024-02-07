@@ -1,5 +1,5 @@
-[#helloWorldJavaQuickStart]
-= Hello world Java quick start
+[#helloWorldQuickStart]
+= Hello World Quick Start Guide
 :doctype: book
 :imagesdir: ../..
 :sectnums:

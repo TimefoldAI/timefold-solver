@@ -1,5 +1,5 @@
-[#springBootJavaQuickStart]
-= Spring Boot Java quick start
+[#springBootQuickStart]
+= Spring Boot Quick Start Guide
 :doctype: book
 :imagesdir: ../..
 :sectnums:
