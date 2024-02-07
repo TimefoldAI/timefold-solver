@@ -38,6 +38,9 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
 
     @Override
     public List<RecommendedFit<Out_, Score_>> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
+        // The placers needs to be filtered.
+        // If anything else than the cloned element is unassigned, we want to keep it unassigned.
+        // Otherwise the solution would have to explicitly pin everything other than the cloned element.
         var entityPlacer = buildEntityPlacer()
                 .rebuildWithFilter((solution, selection) -> selection == clonedElement);
 

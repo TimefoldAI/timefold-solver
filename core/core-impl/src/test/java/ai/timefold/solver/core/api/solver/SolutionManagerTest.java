@@ -18,6 +18,10 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShado
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedIncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedObject;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListCMAIncrementalScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
@@ -79,6 +83,13 @@ public class SolutionManagerTest {
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
                                     TestdataListWithShadowHistoryIncrementalScoreCalculator.class)));
+    public static final SolverFactory<TestdataPinnedWithIndexListSolution> SOLVER_FACTORY_LIST_PINNED = SolverFactory.create(
+            new SolverConfig()
+                    .withSolutionClass(TestdataPinnedWithIndexListSolution.class)
+                    .withEntityClasses(TestdataPinnedWithIndexListEntity.class, TestdataPinnedWithIndexListValue.class)
+                    .withScoreDirectorFactory(
+                            new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
+                                    TestdataPinnedWithIndexListCMAIncrementalScoreCalculator.class)));
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -644,6 +655,68 @@ public class SolutionManagerTest {
             softly.assertThat(entity.getCode()).isEqualTo(c.getCode());
             softly.assertThat(entity.getValueList()).hasSize(2);
             softly.assertThat(fourthRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-5));
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void recommendFitListPinned(SolutionManagerSource SolutionManagerSource) {
+        var a = new TestdataPinnedWithIndexListEntity("a");
+        var b0 = new TestdataPinnedWithIndexListValue("b0");
+        var b = new TestdataPinnedWithIndexListEntity("b", b0);
+        b.setPinned(true); // Entity will be unavailable.
+        var c0 = new TestdataPinnedWithIndexListValue("c0");
+        var c1 = new TestdataPinnedWithIndexListValue("c1");
+        var c = new TestdataPinnedWithIndexListEntity("c", c0, c1);
+        c.setPinned(false);
+        c.setPlanningPinToIndex(1); // Destination c[0] will be unavailable.
+        var solution = new TestdataPinnedWithIndexListSolution();
+        var uninitializedValue = new TestdataPinnedWithIndexListValue("uninitialized");
+        solution.setEntityList(Arrays.asList(a, b, c));
+        solution.setValueList(Arrays.asList(b0, c0, c1, uninitializedValue));
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST_PINNED);
+        var recommendationList =
+                solutionManager.recommendFit(solution, uninitializedValue,
+                        v -> new Pair<>(v.getEntity(), v.getEntity().getValueList().indexOf(v)));
+        assertThat(recommendationList).hasSize(3);
+
+        // First recommendation is to be added to the "a" list variable, as that results in the shortest list.
+        var firstRecommendation = recommendationList.get(0);
+        assertSoftly(softly -> {
+            var result = (Pair<TestdataPinnedWithIndexListEntity, Integer>) firstRecommendation.proposition();
+            softly.assertThat(result.value()).isEqualTo(0); // Beginning of the list.
+            // The entity is cloned...
+            var entity = result.key();
+            softly.assertThat(entity).isNotEqualTo(a);
+            softly.assertThat(entity.getCode()).isEqualTo(a.getCode());
+            // ... but it is in a state as it would've been in the original solution.
+            softly.assertThat(entity.getValueList()).isEmpty();
+            softly.assertThat(firstRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-1));
+        });
+
+        // Second recommendation is to be added to c[1].
+        var secondRecommendation = recommendationList.get(1);
+        assertSoftly(softly -> {
+            var result = (Pair<TestdataPinnedWithIndexListEntity, Integer>) secondRecommendation.proposition();
+            softly.assertThat(result.value()).isEqualTo(1); // First unpinned index.
+            var entity = result.key();
+            softly.assertThat(entity).isNotEqualTo(c);
+            softly.assertThat(entity.getCode()).isEqualTo(c.getCode());
+            softly.assertThat(entity.getValueList()).hasSize(2);
+            softly.assertThat(secondRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-5));
+        });
+
+        // Third recommendation is to be added to c[2].
+        var thirdRecommendation = recommendationList.get(2);
+        assertSoftly(softly -> {
+            var result = (Pair<TestdataPinnedWithIndexListEntity, Integer>) thirdRecommendation.proposition();
+            softly.assertThat(result.value()).isEqualTo(2); // End of the list.
+            var entity = result.key();
+            softly.assertThat(entity).isNotEqualTo(c);
+            softly.assertThat(entity.getCode()).isEqualTo(c.getCode());
+            softly.assertThat(entity.getValueList()).hasSize(2);
+            softly.assertThat(thirdRecommendation.scoreAnalysisDiff().score()).isEqualTo(SimpleScore.of(-5));
         });
     }
 
