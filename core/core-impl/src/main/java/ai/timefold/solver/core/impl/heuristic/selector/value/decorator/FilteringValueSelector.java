@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -17,30 +16,31 @@ public class FilteringValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements ValueSelector<Solution_> {
 
-    public static <Solution_> ValueSelector<Solution_> create(ValueSelector<Solution_> valueSelector,
+    public static <Solution_> ValueSelector<Solution_> of(ValueSelector<Solution_> valueSelector,
             SelectionFilter<Solution_, Object> filter) {
-        return create(valueSelector, List.of(filter));
-    }
-
-    public static <Solution_> ValueSelector<Solution_> create(ValueSelector<Solution_> valueSelector,
-            List<SelectionFilter<Solution_, Object>> filterList) {
-        if (valueSelector instanceof EntityIndependentValueSelector<Solution_> entityIndependentValueSelector) {
-            return new EntityIndependentFilteringValueSelector<>(entityIndependentValueSelector, filterList);
+        if (valueSelector instanceof EntityIndependentFilteringValueSelector<Solution_> filteringValueSelector) {
+            return new EntityIndependentFilteringValueSelector<>(
+                    (EntityIndependentValueSelector<Solution_>) filteringValueSelector.childValueSelector,
+                    SelectionFilter.compose(filteringValueSelector.selectionFilter, filter));
+        } else if (valueSelector instanceof FilteringValueSelector<Solution_> filteringValueSelector) {
+            return new FilteringValueSelector<>(filteringValueSelector.childValueSelector,
+                    SelectionFilter.compose(filteringValueSelector.selectionFilter, filter));
+        } else if (valueSelector instanceof EntityIndependentValueSelector<Solution_> entityIndependentValueSelector) {
+            return new EntityIndependentFilteringValueSelector<>(entityIndependentValueSelector, filter);
         } else {
-            return new FilteringValueSelector<>(valueSelector, filterList);
+            return new FilteringValueSelector<>(valueSelector, filter);
         }
     }
 
     protected final ValueSelector<Solution_> childValueSelector;
-    private final SelectionFilter<Solution_, Object> selectionFilter;
+    final SelectionFilter<Solution_, Object> selectionFilter;
     protected final boolean bailOutEnabled;
 
     private ScoreDirector<Solution_> scoreDirector = null;
 
-    protected FilteringValueSelector(ValueSelector<Solution_> childValueSelector,
-            List<SelectionFilter<Solution_, Object>> filterList) {
-        this.childValueSelector = childValueSelector;
-        this.selectionFilter = SelectionFilter.compose(filterList);
+    protected FilteringValueSelector(ValueSelector<Solution_> childValueSelector, SelectionFilter<Solution_, Object> filter) {
+        this.childValueSelector = Objects.requireNonNull(childValueSelector);
+        this.selectionFilter = Objects.requireNonNull(filter);
         bailOutEnabled = childValueSelector.isNeverEnding();
         phaseLifecycleSupport.addEventListener(childValueSelector);
     }
@@ -136,12 +136,8 @@ public class FilteringValueSelector<Solution_>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        FilteringValueSelector<?> that = (FilteringValueSelector<?>) o;
-        return Objects.equals(childValueSelector, that.childValueSelector)
+        return o instanceof FilteringValueSelector<?> that
+                && Objects.equals(childValueSelector, that.childValueSelector)
                 && Objects.equals(selectionFilter, that.selectionFilter);
     }
 

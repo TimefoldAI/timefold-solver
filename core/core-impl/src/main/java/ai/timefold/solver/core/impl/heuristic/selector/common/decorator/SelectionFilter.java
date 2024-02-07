@@ -46,23 +46,29 @@ public interface SelectionFilter<Solution_, T> {
      * As defined by {@link #compose(SelectionFilter[])}.
      */
     static <Solution_, T> SelectionFilter<Solution_, T> compose(List<SelectionFilter<Solution_, T>> filterList) {
-        var distinctFilterArray = filterList.stream()
-                .flatMap(filter -> {
-                    if (filter == CompositeSelectionFilter.NOOP) {
-                        return Stream.empty();
-                    } else if (filter instanceof CompositeSelectionFilter<Solution_, T> compositeSelectionFilter) {
-                        // Decompose composites if necessary; avoids needless recursion.
-                        return Arrays.stream(compositeSelectionFilter.selectionFilterArray);
-                    } else {
-                        return Stream.of(filter);
-                    }
-                })
-                .distinct()
-                .toArray(SelectionFilter[]::new);
-        return switch (distinctFilterArray.length) {
+        return switch (filterList.size()) {
             case 0 -> CompositeSelectionFilter.NOOP;
-            case 1 -> distinctFilterArray[0];
-            default -> new CompositeSelectionFilter<>(distinctFilterArray);
+            case 1 -> filterList.get(0);
+            default -> {
+                var distinctFilterArray = filterList.stream()
+                        .flatMap(filter -> {
+                            if (filter == CompositeSelectionFilter.NOOP) {
+                                return Stream.empty();
+                            } else if (filter instanceof CompositeSelectionFilter<Solution_, T> compositeSelectionFilter) {
+                                // Decompose composites if necessary; avoids needless recursion.
+                                return Arrays.stream(compositeSelectionFilter.selectionFilterArray());
+                            } else {
+                                return Stream.of(filter);
+                            }
+                        })
+                        .distinct()
+                        .toArray(SelectionFilter[]::new);
+                yield switch (distinctFilterArray.length) {
+                    case 0 -> CompositeSelectionFilter.NOOP;
+                    case 1 -> distinctFilterArray[0];
+                    default -> new CompositeSelectionFilter<>(distinctFilterArray);
+                };
+            }
         };
     }
 

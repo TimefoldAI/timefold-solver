@@ -57,7 +57,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
             // Don't incur the overhead of filtering values if there is no pinning support.
             return sourceValueSelector;
         }
-        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.create(sourceValueSelector,
+        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
                     var entity = inverseVariableSupply.getInverseSingleton(selection);
                     if (entity == null) { // Unassigned.

@@ -147,9 +147,9 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
                     ConfigUtils.newInstance(config, "filterClass", config.getFilterClass());
             SelectionFilter<Solution_, Move<Solution_>> finalFilter =
                     baseFilter == null ? selectionFilter : SelectionFilter.compose(baseFilter, selectionFilter);
-            return new FilteringMoveSelector<>(moveSelector, finalFilter);
+            return FilteringMoveSelector.of(moveSelector, finalFilter);
         } else if (baseFilter != null) {
-            return new FilteringMoveSelector<>(moveSelector, baseFilter);
+            return FilteringMoveSelector.of(moveSelector, baseFilter);
         } else {
             return moveSelector;
         }

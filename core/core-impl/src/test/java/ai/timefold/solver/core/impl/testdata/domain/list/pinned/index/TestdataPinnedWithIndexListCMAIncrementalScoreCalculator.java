@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.nullable;
+package ai.timefold.solver.core.impl.testdata.domain.list.pinned.index;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -15,21 +15,20 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
-public class TestdataNullableIncrementalScoreCalculator
-        implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataNullableSolution, SimpleScore> {
+public class TestdataPinnedWithIndexListCMAIncrementalScoreCalculator
+        implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataPinnedWithIndexListSolution, SimpleScore> {
 
-    private TestdataNullableSolution workingSolution;
+    private TestdataPinnedWithIndexListSolution workingSolution;
     private Map<Object, Indictment<SimpleScore>> indictmentMap;
 
     @Override
-    public void resetWorkingSolution(TestdataNullableSolution workingSolution) {
+    public void resetWorkingSolution(TestdataPinnedWithIndexListSolution workingSolution) {
         resetWorkingSolution(workingSolution, true);
     }
 
     @Override
-    public void resetWorkingSolution(TestdataNullableSolution workingSolution, boolean constraintMatchEnabled) {
+    public void resetWorkingSolution(TestdataPinnedWithIndexListSolution workingSolution, boolean constraintMatchEnabled) {
         this.workingSolution = workingSolution;
         this.indictmentMap = null;
     }
@@ -74,15 +73,18 @@ public class TestdataNullableIncrementalScoreCalculator
                 ConstraintRef.of(getClass().getPackageName(), "testConstraint"),
                 SimpleScore.ONE);
         this.indictmentMap = new HashMap<>();
-        for (TestdataNullableEntity left : workingSolution.getEntityList()) {
-            TestdataValue value = left.getValue();
-            for (TestdataNullableEntity right : workingSolution.getEntityList()) {
-                if (Objects.equals(right.getValue(), value)) {
+        for (TestdataPinnedWithIndexListValue left : workingSolution.getValueList()) {
+            TestdataPinnedWithIndexListEntity entity = left.getEntity();
+            if (entity == null) {
+                continue;
+            }
+            for (TestdataPinnedWithIndexListValue right : workingSolution.getValueList()) {
+                if (Objects.equals(right.getEntity(), entity)) {
                     var constraintMatch =
                             constraintMatchTotal.addConstraintMatch(List.of(left, right), SimpleScore.ONE.negate());
                     Stream.of(left, right)
-                            .forEach(entity -> indictmentMap
-                                    .computeIfAbsent(entity, key -> new DefaultIndictment<>(key, SimpleScore.ZERO))
+                            .forEach(value -> indictmentMap
+                                    .computeIfAbsent(value, key -> new DefaultIndictment<>(key, SimpleScore.ZERO))
                                     .getConstraintMatchSet()
                                     .add(constraintMatch));
                 }

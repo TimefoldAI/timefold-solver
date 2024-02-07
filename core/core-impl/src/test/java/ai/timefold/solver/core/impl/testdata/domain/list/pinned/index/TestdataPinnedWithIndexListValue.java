@@ -26,6 +26,7 @@ public class TestdataPinnedWithIndexListValue extends TestdataObject {
                 .getShadowVariableDescriptor("index");
     }
 
+    // Index shadow var intentionally missing, to test that the supply can deal with that.
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
     private TestdataPinnedWithIndexListEntity entity;
 
