@@ -1,8 +1,6 @@
 name: Turtle Tests
 
 on:
-  pull_request: # TODO remove
-    branches: [main]
   schedule:
     - cron: '0 2 * * 6' # Every Saturday at 2am UTC
 
