@@ -46,7 +46,7 @@ class FilteringMoveSelectorTest {
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"), new DummyMove("a4"));
 
         SelectionFilter<TestdataSolution, DummyMove> filter = (scoreDirector, move) -> !move.getCode().equals("a3");
-        MoveSelector moveSelector = new FilteringMoveSelector(childMoveSelector, filter);
+        MoveSelector moveSelector = FilteringMoveSelector.of(childMoveSelector, (SelectionFilter) filter);
         if (cacheType.isCached()) {
             moveSelector = new CachingMoveSelector(moveSelector, cacheType, false);
         }

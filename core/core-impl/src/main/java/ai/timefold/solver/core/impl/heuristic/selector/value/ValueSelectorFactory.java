@@ -242,7 +242,7 @@ public class ValueSelectorFactory<Solution_>
             if (variableDescriptor.hasMovableChainedTrailingValueFilter()) {
                 filterList.add(variableDescriptor.getMovableChainedTrailingValueFilter());
             }
-            valueSelector = FilteringValueSelector.create(valueSelector, filterList);
+            valueSelector = FilteringValueSelector.of(valueSelector, SelectionFilter.compose(filterList));
         }
         return valueSelector;
     }

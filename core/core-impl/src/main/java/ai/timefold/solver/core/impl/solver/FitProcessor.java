@@ -38,7 +38,8 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
 
     @Override
     public List<RecommendedFit<Out_, Score_>> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
-        var entityPlacer = buildEntityPlacer();
+        var entityPlacer = buildEntityPlacer()
+                .rebuildWithFilter((solution, selection) -> selection == clonedElement);
 
         var solverScope = new SolverScope<Solution_>();
         solverScope.setWorkingRandom(new Random(0)); // We will evaluate every option; random does not matter.

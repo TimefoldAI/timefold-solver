@@ -7,8 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -30,8 +28,7 @@ class EntityIndependentFilteringValueSelectorTest {
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"), new TestdataValue("v4"));
 
         SelectionFilter<TestdataSolution, TestdataValue> filter = (scoreDirector, value) -> !value.getCode().equals("v3");
-        EntityIndependentValueSelector valueSelector =
-                new EntityIndependentFilteringValueSelector(childValueSelector, List.of(filter));
+        EntityIndependentValueSelector valueSelector = new EntityIndependentFilteringValueSelector(childValueSelector, filter);
 
         SolverScope solverScope = mock(SolverScope.class);
         valueSelector.solvingStarted(solverScope);
