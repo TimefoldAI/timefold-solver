@@ -1,5 +1,5 @@
 [#quickStart]
-= Quick start
+= Getting started with Timefold Solver
 :doctype: book
 :sectnums:
 :icons: font

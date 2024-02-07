@@ -1,5 +1,5 @@
-[#quarkusJavaQuickStart]
-= Quarkus Java quick start
+[#quarkusQuickStart]
+= Quarkus Quick Start Guide
 :doctype: book
 :imagesdir: ../..
 :sectnums:

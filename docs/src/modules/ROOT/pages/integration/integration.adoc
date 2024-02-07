@@ -267,7 +267,7 @@ For example, this generates:
 [#integrationWithQuarkus]
 == Quarkus
 
-To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusJavaQuickStart[Quarkus Java quick start].
+To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[Quarkus Java quick start].
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
 the _Timefold AI constraint solver_ extension before generating your application.
 
@@ -622,7 +622,7 @@ class Resource {
 == Spring Boot
 
 To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
-and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootJavaQuickStart[Spring Boot Java quick start].
+and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot Java quick start].
 
 [#integrationWithSpringBootProperties]
 === Available configuration properties
