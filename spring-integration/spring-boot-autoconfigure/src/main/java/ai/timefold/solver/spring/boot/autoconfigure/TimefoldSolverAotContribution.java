@@ -1,23 +1,24 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
-import java.util.ArrayList;
+import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.lang.model.element.Modifier;
-
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverManagerProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
-import ai.timefold.solver.spring.boot.autoconfigure.util.PojoInliner;
+import ai.timefold.solver.spring.boot.autoconfigure.util.JacksonCustomPhaseConfigMixin;
+import ai.timefold.solver.spring.boot.autoconfigure.util.JacksonSolverConfigMixin;
+import ai.timefold.solver.spring.boot.autoconfigure.util.JacksonTerminationConfigMixin;
 
-import org.springframework.aot.generate.DefaultMethodReference;
-import org.springframework.aot.generate.GeneratedClass;
+import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.ReflectionHints;
@@ -28,7 +29,9 @@ import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.Environment;
 import org.springframework.javapoet.CodeBlock;
-import org.springframework.javapoet.MethodSpec;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TimefoldSolverAotContribution implements BeanFactoryInitializationAotContribution {
     private static final String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
@@ -37,6 +40,9 @@ public class TimefoldSolverAotContribution implements BeanFactoryInitializationA
      * Map of SolverConfigs that were recorded during the build.
      */
     private final Map<String, SolverConfig> solverConfigMap;
+    private final static Set<Class<?>> BANNED_CLASSES = Set.of(
+            Class.class,
+            ClassLoader.class);
 
     public TimefoldSolverAotContribution(Map<String, SolverConfig> solverConfigMap) {
         this.solverConfigMap = solverConfigMap;
@@ -60,6 +66,46 @@ public class TimefoldSolverAotContribution implements BeanFactoryInitializationA
                 MemberCategory.INVOKE_PUBLIC_METHODS);
     }
 
+    private void registerTypeRecursively(ReflectionHints reflectionHints, Class<?> type, Set<Class<?>> visited) {
+        if (type == null || BANNED_CLASSES.contains(type) || visited.contains(type)) {
+            return;
+        }
+        visited.add(type);
+        registerType(reflectionHints, type);
+        for (Field field : type.getDeclaredFields()) {
+            registerTypeRecursively(reflectionHints, field.getType(), visited);
+        }
+        registerTypeRecursively(reflectionHints, type.getSuperclass(), visited);
+    }
+
+    public static void registerSolverConfigs(Environment environment,
+            ConfigurableListableBeanFactory beanFactory,
+            ClassLoader classLoader,
+            Map<String, SolverConfig> solverConfigMap) {
+        BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
+        TimefoldProperties timefoldProperties = result.orElseGet(TimefoldProperties::new);
+        if (solverConfigMap.isEmpty()) {
+            beanFactory.registerSingleton(DEFAULT_SOLVER_CONFIG_NAME, new SolverConfig(classLoader));
+            return;
+        }
+
+        if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().size() == 1) {
+            beanFactory.registerSingleton(DEFAULT_SOLVER_CONFIG_NAME, solverConfigMap.values().iterator().next());
+        } else {
+            // Only SolverManager can be injected for multiple solver configurations
+            solverConfigMap.forEach((solverName, solverConfig) -> {
+                SolverFactory<?> solverFactory = SolverFactory.create(solverConfig);
+
+                SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+                SolverManagerProperties solverManagerProperties = timefoldProperties.getSolverManager();
+                if (solverManagerProperties != null && solverManagerProperties.getParallelSolverCount() != null) {
+                    solverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());
+                }
+                beanFactory.registerSingleton(solverName, SolverManager.create(solverFactory, solverManagerConfig));
+            });
+        }
+    }
+
     // The code below uses CodeBlock.Builder to generate the Java file
     // that stores the SolverConfig.
     // CodeBlock.Builder.add supports different kinds of formatting args.
@@ -76,125 +122,61 @@ public class TimefoldSolverAotContribution implements BeanFactoryInitializationA
         // Register all classes reachable from the SolverConfig for reflection
         // (so we can read their metadata)
         Set<Class<?>> classSet = new HashSet<>();
-        for (SolverConfig solverConfig : solverConfigMap.values()) {
-            solverConfig.visitReferencedClasses(clazz -> {
+        Map<String, String> solverXmlMap = new LinkedHashMap<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.addMixIn(SolverConfig.class, JacksonSolverConfigMixin.class);
+        objectMapper.addMixIn(TerminationConfig.class, JacksonTerminationConfigMixin.class);
+        objectMapper.addMixIn(CustomPhaseConfig.class, JacksonCustomPhaseConfigMixin.class);
+        for (Map.Entry<String, SolverConfig> solverConfigEntry : solverConfigMap.entrySet()) {
+            solverConfigEntry.getValue().visitReferencedClasses(clazz -> {
                 if (clazz != null) {
                     classSet.add(clazz);
                 }
             });
+            try {
+                solverXmlMap.put(solverConfigEntry.getKey(), objectMapper.writeValueAsString(solverConfigEntry.getValue()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
+        registerType(reflectionHints, SolverConfig.class);
+        registerTypeRecursively(reflectionHints, SolverConfig.class, new HashSet<>());
 
         for (Class<?> clazz : classSet) {
             registerType(reflectionHints, clazz);
         }
 
         // Create a generated class to hold all the solver configs
-        GeneratedClass generatedClass = generationContext.getGeneratedClasses().addForFeature("timefold-aot",
+        GeneratedMethod generatedMethod = beanFactoryInitializationCode.getMethods().add("getSolverConfigs",
                 builder -> {
-                    final String SOLVER_CONFIG_MAP_FIELD = "solverConfigMap";
-
-                    // Handwrite the SolverConfig map in the initializer
-                    PojoInliner.inlineFields(builder,
-                            PojoInliner.field(Map.class, SOLVER_CONFIG_MAP_FIELD, solverConfigMap));
-
-                    // getSolverConfig fetches the SolverConfig with the given name from the map
-                    CodeBlock.Builder getSolverConfigMethod = CodeBlock.builder();
-                    getSolverConfigMethod.add("return ($T) $L.get(name);", SolverConfig.class, SOLVER_CONFIG_MAP_FIELD);
-                    builder.addMethod(MethodSpec.methodBuilder("getSolverConfig")
-                            .addModifiers(Modifier.PUBLIC)
-                            .addModifiers(Modifier.STATIC)
-                            .addParameter(String.class, "name")
-                            .returns(SolverConfig.class)
-                            .addCode(getSolverConfigMethod.build())
-                            .build());
-
-                    // Returns the key set of the solver config map
-                    CodeBlock.Builder getSolverConfigNamesMethod = CodeBlock.builder();
-                    getSolverConfigNamesMethod.add("return new $T($L.keySet());", ArrayList.class, SOLVER_CONFIG_MAP_FIELD);
-                    builder.addMethod(MethodSpec.methodBuilder("getSolverConfigNames")
-                            .addModifiers(Modifier.PUBLIC)
-                            .addModifiers(Modifier.STATIC)
-                            .returns(List.class)
-                            .addCode(getSolverConfigNamesMethod.build())
-                            .build());
-
-                    // Registers the SolverConfig(s) as beans that can be injected
-                    CodeBlock.Builder registerSolverConfigsMethod = CodeBlock.builder();
-                    // Get the timefold properties from the environment
-                    registerSolverConfigsMethod.add("$T<TimefoldProperties> timefoldPropertiesResult = " +
-                            "$T.get(environment).bind(\"timefold\", $T.class);", BindResult.class, Binder.class,
-                            TimefoldProperties.class);
-                    registerSolverConfigsMethod.add("\n$T timefoldProperties = timefoldPropertiesResult.orElseGet($T::new);",
-                            TimefoldProperties.class, TimefoldProperties.class);
-
-                    // Get the names of the solverConfigs
-                    registerSolverConfigsMethod.add("\n$T solverConfigNames = getSolverConfigNames();\n", List.class);
-
-                    // If there are no solverConfigs...
-                    registerSolverConfigsMethod.beginControlFlow("if (solverConfigNames.isEmpty())");
-                    // Create an empty one that can be used for injection
-                    registerSolverConfigsMethod.add(
-                            "\nbeanFactory.registerSingleton($S, new $T(beanFactory.getBeanClassLoader()));",
-                            DEFAULT_SOLVER_CONFIG_NAME, SolverConfig.class);
-                    registerSolverConfigsMethod.add("return;\n");
-                    registerSolverConfigsMethod.endControlFlow();
-
-                    // If there is only a single solver
-                    registerSolverConfigsMethod.beginControlFlow(
-                            "if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().size() == 1)");
-                    // Use the default solver config name
-                    registerSolverConfigsMethod.add(
-                            "\nbeanFactory.registerSingleton($S, getSolverConfig((String) solverConfigNames.get(0)));",
-                            DEFAULT_SOLVER_CONFIG_NAME);
-                    registerSolverConfigsMethod.add("return;\n");
-                    registerSolverConfigsMethod.endControlFlow();
-
-                    // Otherwise, for each solver...
-                    registerSolverConfigsMethod.beginControlFlow("for (Object solverNameObj : solverConfigNames)");
-                    // Get the solver config with the given name
-                    registerSolverConfigsMethod.add("\nString solverName = (String) solverNameObj;");
-                    registerSolverConfigsMethod.add(
-                            "\n$T solverConfig = getSolverConfig(solverName);",
-                            SolverConfig.class);
-
-                    // Create a solver manager from that solver config
-                    registerSolverConfigsMethod.add("\n$T solverFactory = $T.create(solverConfig);", SolverFactory.class,
-                            SolverFactory.class);
-                    registerSolverConfigsMethod.add("\n$T solverManagerConfig = new $T();", SolverManagerConfig.class,
-                            SolverManagerConfig.class);
-                    registerSolverConfigsMethod.add("\n$T solverManagerProperties = timefoldProperties.getSolverManager();\n",
-                            SolverManagerProperties.class);
-                    registerSolverConfigsMethod.beginControlFlow(
-                            "if (solverManagerProperties != null && solverManagerProperties.getParallelSolverCount() != null)");
-                    registerSolverConfigsMethod.add(
-                            "\nsolverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());\n");
-                    registerSolverConfigsMethod.endControlFlow();
-
-                    // Register that solver manager
-                    registerSolverConfigsMethod.add(
-                            "\nbeanFactory.registerSingleton(solverName, $T.create(solverFactory, solverManagerConfig));\n",
-                            SolverManager.class);
-                    registerSolverConfigsMethod.endControlFlow();
-
-                    builder.addMethod(MethodSpec.methodBuilder("registerSolverConfigs")
-                            .addModifiers(Modifier.PUBLIC)
-                            .addModifiers(Modifier.STATIC)
-                            .addParameter(Environment.class, "environment")
-                            .addParameter(ConfigurableListableBeanFactory.class, "beanFactory")
-                            .addCode(registerSolverConfigsMethod.build())
-                            .build());
-
-                    builder.build();
+                    builder.addParameter(Environment.class, "environment");
+                    builder.addParameter(ConfigurableListableBeanFactory.class, "beanFactory");
+                    var code = CodeBlock.builder();
+                    code.beginControlFlow("try");
+                    code.add("$T<$T, $T> solverConfigMap = new $T<>();\n", Map.class, String.class, SolverConfig.class,
+                            LinkedHashMap.class);
+                    code.add("$T objectMapper = new $T();\n", ObjectMapper.class, ObjectMapper.class);
+                    code.add("objectMapper.addMixIn($T.class, $T.class);\n", SolverConfig.class,
+                            JacksonSolverConfigMixin.class);
+                    code.add("objectMapper.addMixIn($T.class, $T.class);\n", TerminationConfig.class,
+                            JacksonTerminationConfigMixin.class);
+                    code.add("objectMapper.addMixIn($T.class, $T.class);\n", CustomPhaseConfig.class,
+                            JacksonCustomPhaseConfigMixin.class);
+                    for (Map.Entry<String, String> solverConfigXmlEntry : solverXmlMap.entrySet()) {
+                        code.add("solverConfigMap.put($S, objectMapper.readerFor($T.class).readValue($S));\n",
+                                solverConfigXmlEntry.getKey(),
+                                SolverConfig.class, solverConfigXmlEntry.getValue());
+                    }
+                    code.add(
+                            "$T.registerSolverConfigs(environment, beanFactory, $T.currentThread().getContextClassLoader(), solverConfigMap);\n",
+                            TimefoldSolverAotContribution.class, Thread.class);
+                    code.endControlFlow();
+                    code.beginControlFlow("catch ($T e)", JsonProcessingException.class);
+                    code.add("throw new $T(e);\n", RuntimeException.class);
+                    code.endControlFlow();
+                    builder.addCode(code.build());
                 });
-
-        // Make spring call our generated class when the native image starts
-        beanFactoryInitializationCode.addInitializer(new DefaultMethodReference(
-                MethodSpec.methodBuilder("registerSolverConfigs")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addModifiers(Modifier.STATIC)
-                        .addParameter(Environment.class, "environment")
-                        .addParameter(ConfigurableListableBeanFactory.class, "beanFactory")
-                        .build(),
-                generatedClass.getName()));
+        // Make spring call our generated method when the native image starts
+        beanFactoryInitializationCode.addInitializer(generatedMethod.toMethodReference());
     }
 }

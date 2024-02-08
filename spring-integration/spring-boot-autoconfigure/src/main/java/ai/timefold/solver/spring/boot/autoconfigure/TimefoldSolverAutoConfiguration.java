@@ -33,9 +33,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.spring.boot.autoconfigure.config.SolverManagerProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
@@ -87,6 +85,7 @@ public class TimefoldSolverAutoConfiguration
     };
     private ApplicationContext context;
     private ClassLoader beanClassLoader;
+    private Environment environment;
     private TimefoldProperties timefoldProperties;
 
     protected TimefoldSolverAutoConfiguration() {
@@ -107,6 +106,7 @@ public class TimefoldSolverAutoConfiguration
         // postProcessBeanFactory runs before creating any bean, but we need TimefoldProperties.
         // Therefore, we use the Environment to load the properties
         BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
+        this.environment = environment;
         this.timefoldProperties = result.orElseGet(TimefoldProperties::new);
     }
 
@@ -153,26 +153,7 @@ public class TimefoldSolverAutoConfiguration
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         Map<String, SolverConfig> solverConfigMap = getSolverConfigMap();
-        if (solverConfigMap.isEmpty()) {
-            beanFactory.registerSingleton(DEFAULT_SOLVER_CONFIG_NAME, new SolverConfig(beanClassLoader));
-            return;
-        }
-
-        if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().size() == 1) {
-            beanFactory.registerSingleton(DEFAULT_SOLVER_CONFIG_NAME, solverConfigMap.values().iterator().next());
-        } else {
-            // Only SolverManager can be injected for multiple solver configurations
-            solverConfigMap.forEach((solverName, solverConfig) -> {
-                SolverFactory<?> solverFactory = SolverFactory.create(solverConfig);
-
-                SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-                SolverManagerProperties solverManagerProperties = timefoldProperties.getSolverManager();
-                if (solverManagerProperties != null && solverManagerProperties.getParallelSolverCount() != null) {
-                    solverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());
-                }
-                beanFactory.registerSingleton(solverName, SolverManager.create(solverFactory, solverManagerConfig));
-            });
-        }
+        TimefoldSolverAotContribution.registerSolverConfigs(environment, beanFactory, beanClassLoader, solverConfigMap);
     }
 
     private SolverConfig createSolverConfig(TimefoldProperties timefoldProperties, String solverName) {
