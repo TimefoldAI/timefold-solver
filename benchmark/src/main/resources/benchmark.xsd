@@ -446,6 +446,9 @@
           <xs:element minOccurs="0" name="constraintStreamImplType" type="tns:constraintStreamImplType"/>
                               
           
+          <xs:element minOccurs="0" name="constraintStreamShareLambdas" type="xs:boolean"/>
+                              
+          
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                               
           

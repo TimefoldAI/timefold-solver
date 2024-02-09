@@ -23,6 +23,7 @@ import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
         "constraintProviderClass",
         "constraintProviderCustomProperties",
         "constraintStreamImplType",
+        "constraintStreamShareLambdas",
         "incrementalScoreCalculatorClass",
         "incrementalScoreCalculatorCustomProperties",
         "scoreDrlList",
@@ -41,6 +42,7 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     protected Map<String, String> constraintProviderCustomProperties = null;
     protected ConstraintStreamImplType constraintStreamImplType;
+    protected Boolean constraintStreamShareLambdas;
 
     protected Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass = null;
 
@@ -99,6 +101,14 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
 
     public void setConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;
+    }
+
+    public Boolean getConstraintStreamShareLambdas() {
+        return constraintStreamShareLambdas;
+    }
+
+    public void setConstraintStreamShareLambdas(Boolean constraintStreamShareLambdas) {
+        this.constraintStreamShareLambdas = constraintStreamShareLambdas;
     }
 
     public Class<? extends IncrementalScoreCalculator> getIncrementalScoreCalculatorClass() {
@@ -187,6 +197,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         return this;
     }
 
+    public ScoreDirectorFactoryConfig withConstraintStreamShareLambdas(Boolean constraintStreamShareLambdas) {
+        this.constraintStreamShareLambdas = constraintStreamShareLambdas;
+        return this;
+    }
+
     public ScoreDirectorFactoryConfig
             withIncrementalScoreCalculatorClass(Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
         this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass;
@@ -246,6 +261,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
                 constraintProviderCustomProperties, inheritedConfig.getConstraintProviderCustomProperties());
         constraintStreamImplType = ConfigUtils.inheritOverwritableProperty(
                 constraintStreamImplType, inheritedConfig.getConstraintStreamImplType());
+        constraintStreamShareLambdas = ConfigUtils.inheritOverwritableProperty(constraintStreamShareLambdas,
+                inheritedConfig.getConstraintStreamShareLambdas());
         incrementalScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
                 incrementalScoreCalculatorClass, inheritedConfig.getIncrementalScoreCalculatorClass());
         incrementalScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(
