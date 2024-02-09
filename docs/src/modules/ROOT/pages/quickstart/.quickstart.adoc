@@ -11,3 +11,5 @@ include::hello-world/hello-world-quickstart.adoc[leveloffset=+1]
 include::quarkus/quarkus-quickstart.adoc[leveloffset=+1]
 
 include::spring-boot/spring-boot-quickstart.adoc[leveloffset=+1]
+
+include::vrp-quarkus/vrp-quarkus-quickstart.adoc[leveloffset=+1]

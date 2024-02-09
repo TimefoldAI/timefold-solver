@@ -1,0 +1,518 @@
+= Gather the domain objects in a planning solution
+:imagesdir: ../..
+
+A `VehicleRoutePlan` wraps all `Vehicle` and `Visit` instances of a single dataset.
+Furthermore, because it contains all vehicles and visits, each with a specific planning variable state,
+it is a _planning solution_ and it has a score:
+
+* If visits are still unassigned, then it is an _uninitialized_ solution,
+for example, a solution with the score `-4init/0hard/0soft`.
+* If it breaks hard constraints, then it is an _infeasible_ solution,
+for example, a solution with the score `-2hard/-3soft`.
+* If it adheres to all hard constraints, then it is a _feasible_ solution,
+for example, a solution with the score `0hard/-7soft`.
+
+[tabs]
+====
+Java::
++
+--
+Create the `src/main/java/org/acme/vehiclerouting/domain/VehicleRoutePlan.java` class:
+
+[source,java]
+----
+package org.acme.vehiclerouting.domain;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Stream;
+
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.solver.SolverStatus;
+
+import org.acme.vehiclerouting.domain.geo.DrivingTimeCalculator;
+import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator;
+
+@PlanningSolution
+public class VehicleRoutePlan {
+
+    private String name;
+
+    private Location southWestCorner;
+    private Location northEastCorner;
+
+    private LocalDateTime startDateTime;
+
+    private LocalDateTime endDateTime;
+
+    @PlanningEntityCollectionProperty
+    private List<Vehicle> vehicles;
+
+    @PlanningEntityCollectionProperty
+    @ValueRangeProvider
+    private List<Visit> visits;
+
+    @PlanningScore
+    private HardSoftLongScore score;
+
+    private SolverStatus solverStatus;
+
+    private String scoreExplanation;
+
+    public VehicleRoutePlan() {
+    }
+
+    public VehicleRoutePlan(String name, HardSoftLongScore score, SolverStatus solverStatus) {
+        this.name = name;
+        this.score = score;
+        this.solverStatus = solverStatus;
+    }
+
+    public VehicleRoutePlan(String name,
+            Location southWestCorner,
+            Location northEastCorner,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime,
+            List<Vehicle> vehicles,
+            List<Visit> visits) {
+        this.name = name;
+        this.southWestCorner = southWestCorner;
+        this.northEastCorner = northEastCorner;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.vehicles = vehicles;
+        this.visits = visits;
+        List<Location> locations = Stream.concat(
+                vehicles.stream().map(Vehicle::getHomeLocation),
+                visits.stream().map(Visit::getLocation)).toList();
+
+        DrivingTimeCalculator drivingTimeCalculator = HaversineDrivingTimeCalculator.getInstance();
+        drivingTimeCalculator.initDrivingTimeMaps(locations);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Location getSouthWestCorner() {
+        return southWestCorner;
+    }
+
+    public Location getNorthEastCorner() {
+        return northEastCorner;
+    }
+
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
+    }
+
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
+    }
+
+    public List<Vehicle> getVehicles() {
+        return vehicles;
+    }
+
+    public List<Visit> getVisits() {
+        return visits;
+    }
+
+    public HardSoftLongScore getScore() {
+        return score;
+    }
+
+    public void setScore(HardSoftLongScore score) {
+        this.score = score;
+    }
+
+    public long getTotalDrivingTimeSeconds() {
+        return vehicles == null ? 0 : vehicles.stream().mapToLong(Vehicle::getTotalDrivingTimeSeconds).sum();
+    }
+
+    public SolverStatus getSolverStatus() {
+        return solverStatus;
+    }
+
+    public void setSolverStatus(SolverStatus solverStatus) {
+        this.solverStatus = solverStatus;
+    }
+
+    public String getScoreExplanation() {
+        return scoreExplanation;
+    }
+
+    public void setScoreExplanation(String scoreExplanation) {
+        this.scoreExplanation = scoreExplanation;
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/vehiclerouting/domain/VehicleRoutePlan.kt` class:
+
+[source,kotlin]
+----
+package org.acme.vehiclerouting.domain;
+
+import java.time.LocalDateTime
+import java.util.stream.Stream
+
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
+import ai.timefold.solver.core.api.domain.solution.PlanningScore
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
+import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore
+import ai.timefold.solver.core.api.solver.SolverStatus
+
+import org.acme.vehiclerouting.domain.geo.DrivingTimeCalculator
+import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator
+
+@PlanningSolution
+class VehicleRoutePlan {
+    lateinit var name: String
+    var southWestCorner: Location? = null
+        private set
+    var northEastCorner: Location? = null
+        private set
+    var startDateTime: LocalDateTime? = null
+        private set
+    var endDateTime: LocalDateTime? = null
+        private set
+
+    @PlanningEntityCollectionProperty
+    var vehicles: List<Vehicle>? = null
+        private set
+
+    @PlanningEntityCollectionProperty
+    @ValueRangeProvider
+    var visits: List<Visit>? = null
+        private set
+
+    @PlanningScore
+    var score: HardSoftLongScore? = null
+
+    var solverStatus: SolverStatus? = null
+
+    var scoreExplanation: String? = null
+
+    constructor()
+
+    constructor(name: String, score: HardSoftLongScore?, solverStatus: SolverStatus?) {
+        this.name = name
+        this.score = score
+        this.solverStatus = solverStatus
+    }
+
+    constructor(
+        name: String,
+        southWestCorner: Location?,
+        northEastCorner: Location?,
+        startDateTime: LocalDateTime?,
+        endDateTime: LocalDateTime?,
+        vehicles: List<Vehicle>,
+        visits: List<Visit>
+    ) {
+        this.name = name
+        this.southWestCorner = southWestCorner
+        this.northEastCorner = northEastCorner
+        this.startDateTime = startDateTime
+        this.endDateTime = endDateTime
+        this.vehicles = vehicles
+        this.visits = visits
+        val locations = Stream.concat(
+            vehicles.stream().map({ obj: Vehicle -> obj.homeLocation }),
+            visits.stream().map({ obj: Visit -> obj.location })
+        ).toList()
+
+        val drivingTimeCalculator: DrivingTimeCalculator = HaversineDrivingTimeCalculator.INSTANCE
+        drivingTimeCalculator.initDrivingTimeMaps(locations)
+    }
+
+    val totalDrivingTimeSeconds: Long
+        get() = if (vehicles == null) 0 else vehicles!!.stream()
+            .mapToLong({ obj: Vehicle -> obj.totalDrivingTimeSeconds }).sum()
+}
+----
+--
+====
+
+
+The `VehicleRoutePlan` class has an `@PlanningSolution` annotation,
+so Timefold Solver knows that this class contains all of the input and output data.
+
+Specifically, these classes are the input of the problem:
+
+* The `vehicles` field with all vehicles
+** This is a list of planning entities, because they change during solving.
+** Of each `Vehicle`:
+*** The value of the `visits` is typically still `null`, so unassigned.
+It is a planning variable.
+*** The other fields, such as `capacity`, `homeLocation` and `departureTime`, are filled in.
+These fields are problem properties.
+* The `visits` field with all visits
+** This is a list of planning entities, because they change during solving.
+** Of each `Visit`:
+*** The values of `vehicle`, `previousVisit`, `nextVisit`, `arrivalTime` are typically still `null`.
+They are planning shadow variables, which may be optional if the data is not used.
+*** The other fields, such as `name`, `location` and `demand`, are filled in.
+These fields are problem properties.
+
+However, this class is also the output of the solution:
+
+* The `vehicles` field for which each `Vehicle` instance has non-null `visits` field after solving.
+* The `score` field that represents the quality of the output solution, for example, `0hard/-5soft`.
+
+== The value range providers
+
+The `visits` field is a value range provider.
+It holds the `Visit` instances which Timefold Solver can pick from to assign to the `visits` field of `Vehicle` instances.
+The `visits` field has an `@ValueRangeProvider` annotation to connect the `@PlanningListVariable` with the `@ValueRangeProvider`,
+by matching the type of the planning list variable with the type returned by the xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider].
+
+== Distance calculation
+
+The distance calculation method applies the Haversine approach, which measures distances in meters. First create a
+contract for driving time calculation.
+
+[tabs]
+====
+Java::
++
+--
+Create the `src/main/java/org/acme/vehiclerouting/domain/geo/DrivingTimeCalculator.java` interface:
+
+[source,java]
+----
+package org.acme.vehiclerouting.domain.geo;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.acme.vehiclerouting.domain.Location;
+
+public interface DrivingTimeCalculator {
+
+    long calculateDrivingTime(Location from, Location to);
+
+    default Map<Location, Map<Location, Long>> calculateBulkDrivingTime(
+            Collection<Location> fromLocations,
+            Collection<Location> toLocations) {
+        return fromLocations.stream().collect(Collectors.toMap(
+                Function.identity(),
+                from -> toLocations.stream().collect(Collectors.toMap(
+                        Function.identity(),
+                        to -> calculateDrivingTime(from, to)))));
+    }
+
+    default void initDrivingTimeMaps(Collection<Location> locations) {
+        Map<Location, Map<Location, Long>> drivingTimeMatrix = calculateBulkDrivingTime(locations, locations);
+        locations.forEach(location -> location.setDrivingTimeSeconds(drivingTimeMatrix.get(location)));
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/vehiclerouting/domain/geo/DrivingTimeCalculator.kt` interface:
+
+[source,kotlin]
+----
+package org.acme.vehiclerouting.domain.geo
+
+import org.acme.vehiclerouting.domain.Location
+import java.util.function.Function
+import java.util.stream.Collectors
+
+interface DrivingTimeCalculator {
+
+    fun calculateDrivingTime(from: Location, to: Location): Long
+
+    fun calculateBulkDrivingTime(
+        fromLocations: Collection<Location>,
+        toLocations: Collection<Location>
+    ): Map<Location, Map<Location, Long>> {
+        return fromLocations.stream().collect(
+            Collectors.toMap(
+                Function.identity()
+            ) { from: Location ->
+                toLocations.stream()
+                    .collect(
+                        Collectors.toMap(
+                            Function.identity(),
+                            { to: Location ->
+                                calculateDrivingTime(
+                                    from,
+                                    to
+                                )
+                            })
+                    )
+            }
+        )
+    }
+
+    fun initDrivingTimeMaps(locations: Collection<Location>) {
+        val drivingTimeMatrix = calculateBulkDrivingTime(locations, locations)
+        locations.forEach { location: Location ->
+            location.drivingTimeSeconds = drivingTimeMatrix[location]
+        }
+    }
+}
+----
+--
+====
+
+Then create an implementation using Haversine method.
+
+[tabs]
+====
+Java::
++
+--
+Create the `src/main/java/org/acme/vehiclerouting/domain/geo/HaversineDrivingTimeCalculator.java` class:
+
+[source,java]
+----
+package org.acme.vehiclerouting.domain.geo;
+
+import org.acme.vehiclerouting.domain.Location;
+
+public final class HaversineDrivingTimeCalculator implements DrivingTimeCalculator {
+
+    private static final HaversineDrivingTimeCalculator INSTANCE = new HaversineDrivingTimeCalculator();
+
+    public static final int AVERAGE_SPEED_KMPH = 50;
+
+    private static final int EARTH_RADIUS_IN_M = 6371000;
+    private static final int TWICE_EARTH_RADIUS_IN_M = 2 * EARTH_RADIUS_IN_M;
+
+    static long metersToDrivingSeconds(long meters) {
+        return Math.round((double) meters / AVERAGE_SPEED_KMPH * 3.6);
+    }
+
+    public static synchronized HaversineDrivingTimeCalculator getInstance() {
+        return INSTANCE;
+    }
+
+    private HaversineDrivingTimeCalculator() {
+    }
+
+    @Override
+    public long calculateDrivingTime(Location from, Location to) {
+        if (from.equals(to)) {
+            return 0L;
+        }
+
+        CartesianCoordinate fromCartesian = locationToCartesian(from);
+        CartesianCoordinate toCartesian = locationToCartesian(to);
+        return metersToDrivingSeconds(calculateDistance(fromCartesian, toCartesian));
+    }
+
+    private long calculateDistance(CartesianCoordinate from, CartesianCoordinate to) {
+        if (from.equals(to)) {
+            return 0L;
+        }
+
+        double dX = from.x - to.x;
+        double dY = from.y - to.y;
+        double dZ = from.z - to.z;
+        double r = Math.sqrt((dX * dX) + (dY * dY) + (dZ * dZ));
+        return Math.round(TWICE_EARTH_RADIUS_IN_M * Math.asin(r));
+    }
+
+    private CartesianCoordinate locationToCartesian(Location location) {
+        double latitudeInRads = Math.toRadians(location.getLatitude());
+        double longitudeInRads = Math.toRadians(location.getLongitude());
+        // Cartesian coordinates, normalized for a sphere of diameter 1.0
+        double cartesianX = 0.5 * Math.cos(latitudeInRads) * Math.sin(longitudeInRads);
+        double cartesianY = 0.5 * Math.cos(latitudeInRads) * Math.cos(longitudeInRads);
+        double cartesianZ = 0.5 * Math.sin(latitudeInRads);
+        return new CartesianCoordinate(cartesianX, cartesianY, cartesianZ);
+    }
+
+    private record CartesianCoordinate(double x, double y, double z) {
+
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/vehiclerouting/domain/geo/HaversineDrivingTimeCalculator.kt` class:
+
+[source,kotlin]
+----
+package org.acme.vehiclerouting.domain.geo
+
+import kotlin.math.asin
+import kotlin.math.sqrt
+import kotlin.math.cos
+import kotlin.math.sin
+
+import org.acme.vehiclerouting.domain.Location
+
+class HaversineDrivingTimeCalculator private constructor() : DrivingTimeCalculator {
+    override fun calculateDrivingTime(from: Location, to: Location): Long {
+        if (from == to) {
+            return 0L
+        }
+
+        val fromCartesian = locationToCartesian(from)
+        val toCartesian = locationToCartesian(to)
+        return metersToDrivingSeconds(calculateDistance(fromCartesian, toCartesian))
+    }
+
+    private fun calculateDistance(from: CartesianCoordinate, to: CartesianCoordinate): Long {
+        if (from == to) {
+            return 0L
+        }
+
+        val dX = from.x - to.x
+        val dY = from.y - to.y
+        val dZ = from.z - to.z
+        val r: Double = sqrt((dX * dX) + (dY * dY) + (dZ * dZ))
+        return Math.round(TWICE_EARTH_RADIUS_IN_M * asin(r))
+    }
+
+    private fun locationToCartesian(location: Location): CartesianCoordinate {
+        val latitudeInRads = Math.toRadians(location.latitude)
+        val longitudeInRads = Math.toRadians(location.longitude)
+        // Cartesian coordinates, normalized for a sphere of diameter 1.0
+        val cartesianX: Double = 0.5 * cos(latitudeInRads) * sin(longitudeInRads)
+        val cartesianY: Double = 0.5 * cos(latitudeInRads) * cos(longitudeInRads)
+        val cartesianZ: Double = 0.5 * sin(latitudeInRads)
+        return CartesianCoordinate(cartesianX, cartesianY, cartesianZ)
+    }
+
+    private data class CartesianCoordinate(val x: Double, val y: Double, val z: Double)
+    companion object {
+        @JvmStatic
+        @get:Synchronized
+        val INSTANCE: HaversineDrivingTimeCalculator = HaversineDrivingTimeCalculator()
+
+        const val AVERAGE_SPEED_KMPH: Int = 50
+
+        private const val EARTH_RADIUS_IN_M = 6371000
+        private const val TWICE_EARTH_RADIUS_IN_M = 2 * EARTH_RADIUS_IN_M
+
+        fun metersToDrivingSeconds(meters: Long): Long {
+            return Math.round(meters.toDouble() / AVERAGE_SPEED_KMPH * 3.6)
+        }
+    }
+}
+----
+--
+====
