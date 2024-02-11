@@ -78,20 +78,10 @@ package org.acme.schooltimetabling.domain
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-class Timeslot {
-
-    lateinit var dayOfWeek: DayOfWeek
-    lateinit var startTime: LocalTime
-    lateinit var endTime: LocalTime
-
-    // No-arg constructor required for Hibernate
-    constructor()
-
-    constructor(dayOfWeek: DayOfWeek, startTime: LocalTime, endTime: LocalTime) {
-        this.dayOfWeek = dayOfWeek
-        this.startTime = startTime
-        this.endTime = endTime
-    }
+data class Timeslot(
+    val dayOfWeek: DayOfWeek,
+    val startTime: LocalTime,
+    val endTime: LocalTime) {
 
     override fun toString(): String = "$dayOfWeek $startTime"
 
@@ -158,16 +148,8 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Room.kt` class:
 ----
 package org.acme.schooltimetabling.domain
 
-class Room {
-
-    lateinit var name: String
-
-    // No-arg constructor required for Hibernate
-    constructor()
-
-    constructor(name: String) {
-        this.name = name
-    }
+data class Room(
+    val name: String) {
 
     override fun toString(): String = name
 
@@ -298,14 +280,12 @@ import ai.timefold.solver.core.api.domain.lookup.PlanningId
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable
 
 @PlanningEntity
-class Lesson {
-
+data class Lesson (
     @PlanningId
-    var id: Long? = null
-
-    lateinit var subject: String
-    lateinit var teacher: String
-    lateinit var studentGroup: String
+    val id: Long,
+    val subject: String,
+    val teacher: String,
+    val studentGroup: String) {
 
     @PlanningVariable
     var timeslot: Timeslot? = null
@@ -313,22 +293,8 @@ class Lesson {
     @PlanningVariable
     var room: Room? = null
 
-    // No-arg constructor required for Hibernate and Timefold
-    constructor()
-
-    constructor(id: Long?, subject: String, teacher: String, studentGroup: String) {
-        this.id = id
-        this.subject = subject.trim()
-        this.teacher = teacher.trim()
-        this.studentGroup = studentGroup.trim()
-    }
-
-    constructor(id: Long?, subject: String, teacher: String, studentGroup: String, timeslot: Timeslot?, room: Room?)
-            : this(id, subject, teacher, studentGroup) {
-        this.timeslot = timeslot
-        this.room = room
-    }
-
+    // No-arg constructor required for Timefold
+    constructor() : this(0, "", "", "")
 
     override fun toString(): String = "$subject($id)"
 
