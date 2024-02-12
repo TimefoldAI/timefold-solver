@@ -42,7 +42,7 @@
     <!-- Plugins -->
     <!-- ************************************************************************ -->
     <version.antrun.plugin>3.1.0</version.antrun.plugin>
-    <version.asciidoctor.plugin>2.2.5</version.asciidoctor.plugin>
+    <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
     <version.assembly.plugin>3.6.0</version.assembly.plugin>
     <version.compiler.plugin>3.12.1</version.compiler.plugin>
     <version.dependency.plugin>3.6.1</version.dependency.plugin>
