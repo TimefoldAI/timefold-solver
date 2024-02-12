@@ -17,7 +17,7 @@ with https://quarkus.io/[Quarkus] and https://timefold.ai[Timefold]'s constraint
 
 You will build a REST application that optimizes a Vehicle Route Problem (VRP):
 
-image::quickstart/vrp-quarkus/vehicleRouteScreenshot.png[]
+image::quickstart/vehicle-routing/vehicleRouteScreenshot.png[]
 
 Your service will assign `Vist` instances to `Vehicle` instances automatically
 by using AI to adhere to hard and soft scheduling _constraints_, such as the following examples:
