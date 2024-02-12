@@ -1,5 +1,5 @@
-# Updates Spring Initializr when a new version of Timefold Solver is released.
-name: Update Spring Initializr
+# Updates start.spring.io when a new version of Timefold Solver is released.
+name: Update start.spring.io
 on:
   push:
     tags:
@@ -45,4 +45,4 @@ jobs:
           ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
           git add $SPRING_INITIALIZR_YAML_FILE_PATH
           git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" 
-          gh pr create --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body "CC @triceo"
+          gh pr create --head $(git branch --show-current) --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body-file .github/workflows/release-pr-spring-body.md

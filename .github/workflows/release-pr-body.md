@@ -12,7 +12,7 @@ please follow the steps below in the given order:
 5. [ ] Merge this PR. (Only do this after undrafting the release, otherwise the tag will point to the final SNAPSHOT commit.)
 6. [ ] Delete the branch that this PR is based on. (Typically a button appears on this page once the PR is merged.)
 7. [ ] Start release automation for [Timefold Quickstarts](https://github.com/TimefoldAI/timefold-quickstarts).
-8. [ ] Start release automation for [Timefold Solver Enterprise Edition](https://github.com/TimefoldAI/timefold-solver-enterprise).
+8. [ ] Start release automation for Timefold Solver Enterprise Edition.
 
 Note: If this is a dry run, 
 none of the above applies and this PR should not be merged.
