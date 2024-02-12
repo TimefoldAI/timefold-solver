@@ -12,7 +12,7 @@ use the `HardSoftScore` class to represent the score:
 * Hard constraints must not be broken.
 For example: _The vehicle capacity must not be exceeded._
 * Soft constraints should not be broken.
-For example: _The total travel time should be a minimum._
+For example: _The sum total of travel time._
 
 Hard constraints are weighted against other hard constraints.
 Soft constraints are weighted too, against other soft constraints.
@@ -33,10 +33,10 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.acme.vehiclerouting.domain.Vehicle;
 import org.acme.vehiclerouting.domain.VehicleRoutePlan;
+import org.acme.vehiclerouting.domain.Visit;
 
 public class VehicleRoutingEasyScoreCalculator implements EasyScoreCalculator<VehicleRoutePlan, HardSoftLongScore> {
     @Override
@@ -44,31 +44,30 @@ public class VehicleRoutingEasyScoreCalculator implements EasyScoreCalculator<Ve
 
         List<Vehicle> vehicleList = vehicleRoutePlan.getVehicles();
 
-        MutableInt hardScore = new MutableInt(0);
+        int hardScore = 0;
         int softScore = 0;
         for (Vehicle vehicle : vehicleList) {
 
             // The demand exceeds the capacity
             if (vehicle.getVisits() != null && vehicle.getTotalDemand() > vehicle.getCapacity()) {
-                hardScore.setValue(hardScore.intValue() - (vehicle.getTotalDemand() - vehicle.getCapacity()));
+                hardScore -= vehicle.getTotalDemand() - vehicle.getCapacity();
             }
 
-            // Max end-time not meted
+            // Max end-time not met
             if (vehicle.getVisits() != null) {
-                vehicle.getVisits().forEach(visit -> {
+                for (Visit visit: vehicle.getVisits()) {
                     if (visit.isServiceFinishedAfterMaxEndTime()) {
-                        hardScore.setValue((int) (hardScore.intValue() - visit.getServiceFinishedDelayInMinutes()));
+                        hardScore -= visit.getServiceFinishedDelayInMinutes();
                     }
-                });
+                }
             }
 
             softScore -= (int) vehicle.getTotalDrivingTimeSeconds();
         }
 
-        return HardSoftLongScore.of(hardScore.intValue(), softScore);
+        return HardSoftLongScore.of(hardScore, softScore);
     }
 }
-
 ----
 --
 
@@ -77,45 +76,41 @@ Kotlin::
 --
 [source,kotlin]
 ----
-package org.acme.vehiclerouting.solver
-
-import java.util.function.Consumer
+package org.acme.vehiclerouting.solver;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator
-import ai.timefold.solver.core.impl.util.MutableInt
 
 import org.acme.vehiclerouting.domain.Vehicle
 import org.acme.vehiclerouting.domain.VehicleRoutePlan
-import org.acme.vehiclerouting.domain.Visit
 
 class VehicleRoutingEasyScoreCalculator :
     EasyScoreCalculator<VehicleRoutePlan, HardSoftLongScore> {
     override fun calculateScore(vehicleRoutePlan: VehicleRoutePlan): HardSoftLongScore {
-        val vehicleList: List<Vehicle>? = vehicleRoutePlan.vehicles
+        val vehicleList: List<Vehicle> = vehicleRoutePlan.vehicles!!
 
-        val hardScore = MutableInt(0)
+        var hardScore = 0
         var softScore = 0
-        for (vehicle in vehicleList!!) {
+        for (vehicle in vehicleList) {
             // The demand exceeds the capacity
 
             if (vehicle.visits != null && vehicle.totalDemand > vehicle.capacity) {
-                hardScore.setValue((hardScore.toInt() - (vehicle.totalDemand - vehicle.capacity)).toInt())
+                hardScore -= (vehicle.totalDemand - vehicle.capacity).toInt()
             }
 
-            // Max end-time not meted
+            // Max end-time not met
             if (vehicle.visits != null) {
-                vehicle.visits!!.forEach(Consumer { visit: Visit ->
+                for (visit in vehicle.visits!!) {
                     if (visit.isServiceFinishedAfterMaxEndTime) {
-                        hardScore.setValue((hardScore.toInt() - visit.serviceFinishedDelayInMinutes).toInt())
+                        hardScore -= visit.serviceFinishedDelayInMinutes.toInt()
                     }
-                })
+                }
             }
 
             softScore -= vehicle.totalDrivingTimeSeconds.toInt()
         }
 
-        return HardSoftLongScore.of(hardScore.toInt().toLong(), softScore.toLong())
+        return HardSoftLongScore.of(hardScore.toLong(), softScore.toLong())
     }
 }
 ----
@@ -283,4 +278,4 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
 --
 ====
 
-The `ConstraintProvider` scales an order of magnitude better than the `EasyScoreCalculator`: __O__(n) instead of __O__(n²).
+The `ConstraintProvider` scales much better than the `EasyScoreCalculator`: typically __O__(n) instead of __O__(n²).

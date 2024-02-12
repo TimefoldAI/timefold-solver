@@ -87,17 +87,20 @@ class Location @JsonCreator constructor(val latitude: Double, val longitude: Dou
 
 == Vehicle
 
-`Vehicle` has a defined route plan with scheduled visits to make. Each vehicle has a specific departure time and
-starting location. It returns to its home location after completing the route and has a maximum capacity that must
-not be exceeded.
+`Vehicle` has a defined route plan with scheduled visits to make.
+Each vehicle has a specific departure time and starting location.
+It returns to its home location after completing the route and has a maximum capacity that must not be exceeded.
 
 During solving, Timefold Solver updates the `visits` field of the `Vehicle` class to assign a list of visits.
-Because Timefold Solver changes this field, `Vehicle` is a _planning entity_:
+Because Timefold Solver changes this field, `Vehicle` is a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#planningEntity[_planning entity_]:
 
 image::quickstart/vehicle-routing/vehicleRoutingClassDiagramAnnotated.png[]
 
-Based on the diagram, the `visits` field is a genuine variable that changes during the solving process. To ensure that
-Timefold Solver recognizes it as a list of planning variables, the field must have an `@PlanningListVariable` annotation.
+Based on the diagram, the `visits` field is a genuine variable that changes during the solving process.
+To ensure that Timefold Solver recognizes it as a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#planningListVariable[sequence of connected variables],
+the field must have an `@PlanningListVariable` annotation indicating that the solver can distribute a subset of the
+available visits to it.
+The objective is to create an ordered scheduled visit plan for each vehicle.
 
 [tabs]
 ====
@@ -283,15 +286,11 @@ class Vehicle {
 --
 ====
 
-The `Vehicle` class has an `@PlanningEntity` annotation, so Timefold Solver knows that this class changes during solving
-because it contains one or more planning variables.
+The `Vehicle` class has an `@PlanningEntity` annotation,
+so Timefold Solver knows that this class changes during solving because it contains one or more planning variables.
 
-The `visits` field is a planning list variable used to schedule a list of visits. It is annotated with `@PlanningListVariable`,
-indicating that the solver can distribute a subset of the available visits to it. The objective is to create an ordered
-scheduled visit plan for each vehicle.
-
-Notice the `toString()` method keeps the output short, so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log,
-as shown later.
+Notice the `toString()` method keeps the output short,
+so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log, as shown later.
 
 [NOTE]
 ====
@@ -302,9 +301,9 @@ Read xref:design-patterns/design-patterns.adoc#domainModelingGuide[the domain mo
 
 == Visit
 
-The `Visit` class represents a delivery that needs to be made by vehicles. A visit includes a destination location, a
-delivery time window represented by `[minStartTime, maxEndTime]`, a demand that needs to be fulfilled by the vehicle,
-and a service duration time.
+The `Visit` class represents a delivery that needs to be made by vehicles.
+A visit includes a destination location, a delivery time window represented by `[minStartTime, maxEndTime]`,
+a demand that needs to be fulfilled by the vehicle, and a service duration time.
 
 [tabs]
 ====
@@ -609,23 +608,33 @@ class Visit {
 ====
 
 Some methods are annotated with `@InverseRelationShadowVariable`, `@PreviousElementShadowVariable`,
-`@NextElementShadowVariable`, and `@ShadowVariable`. They are called shadow variables, and because Timefold Solver
-changes them, `Visit` is a _planning entity_:
+`@NextElementShadowVariable`, and `@ShadowVariable`.
+They are called https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#shadowVariable[shadow variables],
+and because Timefold Solver changes them,
+`Visit` is a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#planningEntity[_planning entity_]:
 
 image::quickstart/vehicle-routing/vehicleRoutingCompleteClassDiagramAnnotated.png[]
 
-The method `getVehicle()` has an `@InverseRelationShadowVariable` annotation, creating a bi-directional relationship
-with the `Vehicle`. The function returns a reference to the `Vehicle` where the visit is scheduled. Let's say the visit
-`Ann` was scheduled to the vehicle `V1` during the solving process. The method returns a reference of `V1`.
+The method `getVehicle()` has an `@InverseRelationShadowVariable` annotation,
+creating a bi-directional relationship with the `Vehicle`.
+The function returns a reference to the `Vehicle` where the visit is scheduled.
+Let's say the visit `Ann` was scheduled to the vehicle `V1` during the solving process.
+The method returns a reference of `V1`.
 
 The methods `getPreviousVisit()` and `getNextVisit()` are annotated with `@PreviousElementShadowVariable` and
-`@NextElementShadowVariable`, respectively. The Solver returns a reference of the previous and next visit of
-the current visit instance. Assuming that vehicle `V1` is assigned the visits of `Ann`, `Beth`, and `Carl`, the
-`getNextVisit()` method returns `Carl`, and the `getPreviousVisit()` method returns `Ann` for the visit of `Beth`.
+`@NextElementShadowVariable`, respectively.
+The method returns a reference of the previous and next visit of the current visit instance.
+Assuming that vehicle `V1` is assigned the visits of `Ann`, `Beth`, and `Carl`,
+the `getNextVisit()` method returns `Carl`,
+and the `getPreviousVisit()` method returns `Ann` for the visit of `Beth`.
 
-The method `getArrivalTime()` has two `@ShadowVariable` annotations, one per each variable: `vehicle` and `previousVisit`.
+The method `getArrivalTime()` has two `@ShadowVariable` annotations,
+one per each variable: `vehicle` and `previousVisit`.
 The solver triggers `ArrivalTimeUpdatingVariableListener` to update `arrivalTime` field every time the fields `vehicle`
 or `previousVisit` get updated.
+
+The `Visit` class has an `@PlanningEntity` annotation
+but no genuine variables and is called https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#shadowVariable[shadow entity].
 
 [tabs]
 ====

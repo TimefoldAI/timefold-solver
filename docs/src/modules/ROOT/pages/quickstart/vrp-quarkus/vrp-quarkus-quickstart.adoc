@@ -55,7 +55,14 @@ and run it (see its README file).
 
 To complete this guide, you need:
 
-* https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
+* https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately.
+For example with https://sdkman.io[Sdkman]:
++
+[source, shell]
+----
+$ curl -s "https://get.sdkman.io" | bash
+$ sdk install java
+----
 * https://maven.apache.org/download.html[Apache Maven] {maven-version}+
 * An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], VSCode or Eclipse
 
@@ -693,7 +700,7 @@ internal class VehicleRoutingConstraintProviderTest {
 ====
 
 This test verifies that the constraint `VehicleRoutingConstraintProvider::vehicleCapacity`,
-when given two visits assigned to the same vehicle, it penalizes with a match weight of `20` (exceeded capacity).
+when given two visits assigned to the same vehicle, penalizes with a match weight of `20` (exceeded capacity).
 So with a constraint weight of `20hard` it would reduce the score by `-20hard`.
 
 Notice how `ConstraintVerifier` ignores the constraint weight during testing - even
@@ -915,4 +922,5 @@ Use `trace` logging to show every _step_ and every _move_ per step.
 Congratulations!
 You have just developed a Quarkus application with https://timefold.ai[Timefold]!
 
-For a full implementation with a web UI and in-memory storage, check out {vrp-quickstart-url}[the Quarkus quickstart source code].
+For a full implementation with a web UI and in-memory storage,
+check out {vrp-quickstart-url}[the Quarkus quickstart source code].

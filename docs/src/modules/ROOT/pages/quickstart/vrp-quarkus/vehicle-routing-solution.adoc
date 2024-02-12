@@ -3,7 +3,8 @@
 
 A `VehicleRoutePlan` wraps all `Vehicle` and `Visit` instances of a single dataset.
 Furthermore, because it contains all vehicles and visits, each with a specific planning variable state,
-it is a _planning solution_ and it has a score:
+it is a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#planningProblemAndPlanningSolution[_planning solution_]
+and it has a score:
 
 * If visits are still unassigned, then it is an _uninitialized_ solution,
 for example, a solution with the score `-4init/0hard/0soft`.
@@ -252,16 +253,16 @@ Specifically, these classes are the input of the problem:
 
 * The `vehicles` field with all vehicles
 ** This is a list of planning entities, because they change during solving.
-** Of each `Vehicle`:
-*** The value of the `visits` is typically still `null`, so unassigned.
+** For each `Vehicle`:
+*** The value of the `visits` is typically still `empty`, so unassigned.
 It is a planning variable.
 *** The other fields, such as `capacity`, `homeLocation` and `departureTime`, are filled in.
 These fields are problem properties.
 * The `visits` field with all visits
 ** This is a list of planning entities, because they change during solving.
-** Of each `Visit`:
-*** The values of `vehicle`, `previousVisit`, `nextVisit`, `arrivalTime` are typically still `null`.
-They are planning shadow variables, which may be optional if the data is not used.
+** For each `Visit`:
+*** The values of `vehicle`, `previousVisit`, `nextVisit`, `arrivalTime` are typically still `null` for a fresh solution.
+They are planning shadow variables.
 *** The other fields, such as `name`, `location` and `demand`, are filled in.
 These fields are problem properties.
 
@@ -279,8 +280,9 @@ by matching the type of the planning list variable with the type returned by the
 
 == Distance calculation
 
-The distance calculation method applies the Haversine approach, which measures distances in meters. First create a
-contract for driving time calculation.
+The distance calculation method applies the Haversine approach,
+which measures distances in meters.
+First create a contract for driving time calculation:
 
 [tabs]
 ====
@@ -373,7 +375,7 @@ interface DrivingTimeCalculator {
 --
 ====
 
-Then create an implementation using Haversine method.
+Then create an implementation using Haversine method:
 
 [tabs]
 ====
