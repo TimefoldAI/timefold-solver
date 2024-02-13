@@ -7,7 +7,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -24,7 +23,6 @@ public final class FromSolutionEntitySelector<Solution_>
     private final EntityDescriptor<Solution_> entityDescriptor;
     private final SelectionCacheType minimumCacheType;
     private final boolean randomSelection;
-    private final boolean includeNull;
 
     private List<Object> cachedEntityList = null;
     private Long cachedEntityListRevision = null;
@@ -35,10 +33,6 @@ public final class FromSolutionEntitySelector<Solution_>
         this.entityDescriptor = entityDescriptor;
         this.minimumCacheType = minimumCacheType;
         this.randomSelection = randomSelection;
-        this.includeNull = entityDescriptor.hasAnyGenuineListVariables()
-                && entityDescriptor.getGenuineVariableDescriptorList().stream()
-                        .anyMatch(variableDescriptor -> variableDescriptor.allowsUnassigned()
-                                && variableDescriptor instanceof BasicVariableDescriptor<Solution_>);
     }
 
     @Override
@@ -70,9 +64,6 @@ public final class FromSolutionEntitySelector<Solution_>
 
     private void reloadCachedEntityList(InnerScoreDirector<Solution_, ?> scoreDirector) {
         cachedEntityList = entityDescriptor.extractEntities(scoreDirector.getWorkingSolution());
-        if (includeNull) {
-            cachedEntityList.add(null);
-        }
         cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
         cachedEntityListIsDirty = false;
     }
