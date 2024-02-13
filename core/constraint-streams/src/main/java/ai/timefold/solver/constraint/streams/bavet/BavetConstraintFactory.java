@@ -93,8 +93,8 @@ public final class BavetConstraintFactory<Solution_>
         var applicableShadowDescriptors = entityDescriptor.getShadowVariableDescriptors()
                 .stream()
                 .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor
-                        && Objects.equals(inverseRelationShadowVariableDescriptor.getVariableName(),
-                                listVariableDescriptor.getVariableName()))
+                        && Objects.equals(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptorList().get(0),
+                                listVariableDescriptor))
                 .toList();
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
         if (entityClass == sourceClass) {
