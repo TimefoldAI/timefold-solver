@@ -141,6 +141,7 @@ class ListSwapMoveSelectorTest {
 
         solvingStarted(moveSelector, scoreDirector);
 
+        // Tests each move from the product of the two value selectors.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
                 "v1 {A[1]->null}+v4 {null->A[1]}",
                 "v1 {A[1]} <-> v3 {B[0]}",

@@ -137,7 +137,8 @@ class DefaultSolverTest {
 
         var bestSolution = solver.solve(solution);
         assertSoftly(softly -> {
-            softly.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(-2)); // Length of the value list.
+            softly.assertThat(bestSolution.getScore())
+                    .isEqualTo(SimpleScore.of(-2)); // Length of the entity's value list.
             var firstEntity = bestSolution.getEntityList().get(0);
             var firstValue = bestSolution.getValueList().get(0);
             var secondValue = bestSolution.getValueList().get(1);

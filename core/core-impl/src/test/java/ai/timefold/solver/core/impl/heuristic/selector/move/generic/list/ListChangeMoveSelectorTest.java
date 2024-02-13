@@ -174,6 +174,10 @@ class ListChangeMoveSelectorTest {
 
         solvingStarted(moveSelector, scoreDirector);
 
+        // First try all destinations for v3 (which is originally at C[0]),
+        // then v1 (originally at A[1]),
+        // then v4 (uninitialized),
+        // then v2 (originally at A[0]).
         assertAllCodesOfMoveSelector(moveSelector,
                 "3 {C[0]->A[0]}",
                 "3 {C[0]->B[0]}",
