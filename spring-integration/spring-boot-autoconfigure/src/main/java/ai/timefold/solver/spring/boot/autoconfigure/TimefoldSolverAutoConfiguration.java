@@ -2,6 +2,7 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 
 import static java.util.stream.Collectors.joining;
 
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
@@ -44,8 +46,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,14 +63,14 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ SolverConfig.class, SolverFactory.class, ScoreManager.class, SolutionManager.class, SolverManager.class })
 @ConditionalOnMissingBean({ SolverConfig.class, SolverFactory.class, ScoreManager.class, SolutionManager.class,
         SolverManager.class })
 @EnableConfigurationProperties({ TimefoldProperties.class })
 public class TimefoldSolverAutoConfiguration
         implements BeanClassLoaderAware, ApplicationContextAware, EnvironmentAware, BeanFactoryInitializationAotProcessor,
-        BeanFactoryPostProcessor {
+        BeanDefinitionRegistryPostProcessor {
 
     private static final Log LOG = LogFactory.getLog(TimefoldSolverAutoConfiguration.class);
     private static final String DEFAULT_SOLVER_CONFIG_NAME = "getSolverConfig";
@@ -151,9 +155,47 @@ public class TimefoldSolverAutoConfiguration
     }
 
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         Map<String, SolverConfig> solverConfigMap = getSolverConfigMap();
-        TimefoldSolverAotContribution.registerSolverConfigs(environment, beanFactory, beanClassLoader, solverConfigMap);
+        BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
+        TimefoldProperties timefoldProperties = result.orElseGet(TimefoldProperties::new);
+        SolverConfigIO solverConfigIO = new SolverConfigIO();
+        registry.registerBeanDefinition(TimefoldSolverAotFactory.class.getName(),
+                new RootBeanDefinition(TimefoldSolverAotFactory.class));
+        if (solverConfigMap.isEmpty()) {
+            RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
+            rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
+            rootBeanDefinition.setFactoryMethodName("solverConfigSupplier");
+            StringWriter solverXmlOutput = new StringWriter();
+            solverConfigIO.write(new SolverConfig(), solverXmlOutput);
+            rootBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
+                    solverXmlOutput.toString());
+            registry.registerBeanDefinition(DEFAULT_SOLVER_CONFIG_NAME, rootBeanDefinition);
+            return;
+        }
+
+        if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().size() == 1) {
+            RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
+            rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
+            rootBeanDefinition.setFactoryMethodName("solverConfigSupplier");
+            StringWriter solverXmlOutput = new StringWriter();
+            solverConfigIO.write(solverConfigMap.values().iterator().next(), solverXmlOutput);
+            rootBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
+                    solverXmlOutput.toString());
+            registry.registerBeanDefinition(DEFAULT_SOLVER_CONFIG_NAME, rootBeanDefinition);
+        } else {
+            // Only SolverManager can be injected for multiple solver configurations
+            solverConfigMap.forEach((solverName, solverConfig) -> {
+                RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(SolverManager.class);
+                rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
+                rootBeanDefinition.setFactoryMethodName("solverManagerSupplier");
+                StringWriter solverXmlOutput = new StringWriter();
+                solverConfigIO.write(solverConfig, solverXmlOutput);
+                rootBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
+                        solverXmlOutput.toString());
+                registry.registerBeanDefinition(solverName, rootBeanDefinition);
+            });
+        }
     }
 
     private SolverConfig createSolverConfig(TimefoldProperties timefoldProperties, String solverName) {

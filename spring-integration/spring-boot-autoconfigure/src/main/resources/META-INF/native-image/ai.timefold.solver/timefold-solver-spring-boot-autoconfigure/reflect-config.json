@@ -1,0 +1,2989 @@
+[
+  {
+    "name": "java.util.ArrayList",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbDurationAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbOffsetDateTimeAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory"
+  },
+  {
+    "name": "ai.timefold.solver.core.api.domain.common.DomainAccessType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "GIZMO"
+      },
+      {
+        "name": "REFLECTION"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.api.domain.entity.PlanningEntity",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.domain.solution.PlanningSolution",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.score.Score",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.score.ScoreManager",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllDeclaredConstructors": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "BAVET"
+      },
+      {
+        "name": "DROOLS"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.api.solver.SolutionManager",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.solver.SolverFactory",
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "methods": [
+      {
+        "name": "buildSolver",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.api.solver.SolverManager",
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "close",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.AbstractConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAcceptedCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAcceptorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAcceptorTypeList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAssertionScoreDirectorFactory",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBestScoreFeasible",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBestScoreLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBetaDistributionAlpha",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBetaDistributionBeta",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeMinimum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionUniformDistributionProbability",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBreakTieRandomly",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCacheType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getClassLoader",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintProviderClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintProviderCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintStreamImplType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintStreamShareLambdas",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstructionHeuristicType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomPhaseCommandClassList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomPhaseCommandList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDaemon",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDaysSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDestinationSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDomainAccessType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDowncastEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEasyScoreCalculatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEasyScoreCalculatorCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClassList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityPlacerConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEnvironmentMode",
+        "parameterTypes": []
+      },
+      {
+        "name": "getExhaustiveSearchType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingEntityTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingEntityTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingUndoMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingValueTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingValueTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFilterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFinalistPodiumType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFixedProbabilityWeight",
+        "parameterTypes": []
+      },
+      {
+        "name": "getForagerConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGizmoMemberAccessorMap",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGizmoSolutionClonerMap",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGreatDelugeWaterLevelIncrementRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGreatDelugeWaterLevelIncrementScore",
+        "parameterTypes": []
+      },
+      {
+        "name": "getHoursSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getId",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIgnoreEmptyChildIterators",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIncrementalScoreCalculatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIncrementalScoreCalculatorCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getInitializingScoreTrend",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLateAcceptanceSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLinearDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLocalSearchType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubChainSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubPillarSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMillisecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMimicSelectorRef",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubChainSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubPillarSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinutesSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMonitoringConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveThreadBufferSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveThreadCount",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbyDistanceMeterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbySelectionConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbySelectionDistributionType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNodeExplorationType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getParabolicDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPhaseConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPickEarlyType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRandomFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRandomSeed",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRandomType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRunnablePartThreadLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getScoreCalculationCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getScoreDirectorFactoryConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getScoreDrlList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectReversingMoveToo",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectedCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectionOrder",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectorProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSimulatedAnnealingStartingTemperature",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionPartitionerClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionPartitionerCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolverMetricList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterOrder",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getStepCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getStepCountingHillClimbingSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getStepCountingHillClimbingType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarSequenceComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationCompositionStyle",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getThreadFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUndoMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedDaysSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedHoursSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedMillisecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedMinutesSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedScoreDifferenceThreshold",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedSecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedStepCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableName",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableNameIncludeList",
+        "parameterTypes": []
+      },
+      {
+        "name": "inherit",
+        "parameterTypes": [
+          "ai.timefold.solver.core.config.AbstractConfig"
+        ]
+      },
+      {
+        "name": "toString",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "ALLOCATE_ENTITY_FROM_QUEUE"
+      },
+      {
+        "name": "ALLOCATE_FROM_POOL"
+      },
+      {
+        "name": "ALLOCATE_TO_VALUE_FROM_QUEUE"
+      },
+      {
+        "name": "CHEAPEST_INSERTION"
+      },
+      {
+        "name": "FIRST_FIT"
+      },
+      {
+        "name": "FIRST_FIT_DECREASING"
+      },
+      {
+        "name": "STRONGEST_FIT"
+      },
+      {
+        "name": "STRONGEST_FIT_DECREASING"
+      },
+      {
+        "name": "WEAKEST_FIT"
+      },
+      {
+        "name": "WEAKEST_FIT_DECREASING"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicPickEarlyType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "FIRST_FEASIBLE_SCORE"
+      },
+      {
+        "name": "FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD"
+      },
+      {
+        "name": "FIRST_NON_DETERIORATING_SCORE"
+      },
+      {
+        "name": "NEVER"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSelectorConfig",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "BRANCH_AND_BOUND"
+      },
+      {
+        "name": "BRUTE_FORCE"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.exhaustivesearch.NodeExplorationType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "BREADTH_FIRST"
+      },
+      {
+        "name": "DEPTH_FIRST"
+      },
+      {
+        "name": "OPTIMISTIC_BOUND_FIRST"
+      },
+      {
+        "name": "ORIGINAL_ORDER"
+      },
+      {
+        "name": "SCORE_FIRST"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.SelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBetaDistributionAlpha",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBetaDistributionBeta",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeMinimum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionUniformDistributionProbability",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCacheType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDestinationSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDowncastEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFilterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFixedProbabilityWeight",
+        "parameterTypes": []
+      },
+      {
+        "name": "getId",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIgnoreEmptyChildIterators",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLinearDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubChainSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubPillarSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMimicSelectorRef",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubChainSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubPillarSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbyDistanceMeterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbySelectionConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbySelectionDistributionType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getParabolicDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectReversingMoveToo",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectedCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectionOrder",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectorProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterOrder",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarSequenceComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableName",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableNameIncludeList",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "JUST_IN_TIME"
+      },
+      {
+        "name": "PHASE"
+      },
+      {
+        "name": "SOLVER"
+      },
+      {
+        "name": "STEP"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "INHERIT"
+      },
+      {
+        "name": "ORIGINAL"
+      },
+      {
+        "name": "PROBABILISTIC"
+      },
+      {
+        "name": "RANDOM"
+      },
+      {
+        "name": "SHUFFLED"
+      },
+      {
+        "name": "SORTED"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "ASCENDING"
+      },
+      {
+        "name": "DESCENDING"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionDistributionType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "BETA_DISTRIBUTION"
+      },
+      {
+        "name": "BLOCK_DISTRIBUTION"
+      },
+      {
+        "name": "LINEAR_DISTRIBUTION"
+      },
+      {
+        "name": "PARABOLIC_DISTRIBUTION"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "DECREASING_DIFFICULTY"
+      },
+      {
+        "name": "DECREASING_DIFFICULTY_IF_AVAILABLE"
+      },
+      {
+        "name": "NONE"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDestinationSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIgnoreEmptyChildIterators",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectReversingMoveToo",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectorProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarSequenceComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableNameIncludeList",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableNameIncludeList",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.SubPillarType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "ALL"
+      },
+      {
+        "name": "NONE"
+      },
+      {
+        "name": "SEQUENCE"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "DECREASING_STRENGTH"
+      },
+      {
+        "name": "DECREASING_STRENGTH_IF_AVAILABLE"
+      },
+      {
+        "name": "INCREASING_STRENGTH"
+      },
+      {
+        "name": "INCREASING_STRENGTH_IF_AVAILABLE"
+      },
+      {
+        "name": "NONE"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.LocalSearchType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "GREAT_DELUGE"
+      },
+      {
+        "name": "HILL_CLIMBING"
+      },
+      {
+        "name": "LATE_ACCEPTANCE"
+      },
+      {
+        "name": "SIMULATED_ANNEALING"
+      },
+      {
+        "name": "TABU_SEARCH"
+      },
+      {
+        "name": "VARIABLE_NEIGHBORHOOD_DESCENT"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "ENTITY_TABU"
+      },
+      {
+        "name": "GREAT_DELUGE"
+      },
+      {
+        "name": "HILL_CLIMBING"
+      },
+      {
+        "name": "LATE_ACCEPTANCE"
+      },
+      {
+        "name": "MOVE_TABU"
+      },
+      {
+        "name": "SIMULATED_ANNEALING"
+      },
+      {
+        "name": "STEP_COUNTING_HILL_CLIMBING"
+      },
+      {
+        "name": "UNDO_MOVE_TABU"
+      },
+      {
+        "name": "VALUE_TABU"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "ACCEPTED_MOVE"
+      },
+      {
+        "name": "EQUAL_OR_IMPROVING_STEP"
+      },
+      {
+        "name": "IMPROVING_STEP"
+      },
+      {
+        "name": "SELECTED_MOVE"
+      },
+      {
+        "name": "STEP"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.forager.FinalistPodiumType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "HIGHEST_SCORE"
+      },
+      {
+        "name": "STRATEGIC_OSCILLATION"
+      },
+      {
+        "name": "STRATEGIC_OSCILLATION_BY_LEVEL"
+      },
+      {
+        "name": "STRATEGIC_OSCILLATION_BY_LEVEL_ON_BEST_SCORE"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "FIRST_BEST_SCORE_IMPROVING"
+      },
+      {
+        "name": "FIRST_LAST_STEP_SCORE_IMPROVING"
+      },
+      {
+        "name": "NEVER"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.phase.NoChangePhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.phase.PhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAcceptorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstructionHeuristicType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomPhaseCommandClassList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomPhaseCommandList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityPlacerConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getExhaustiveSearchType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getForagerConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLocalSearchType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNodeExplorationType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPhaseConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRunnablePartThreadLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionPartitionerClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionPartitionerCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSorterManner",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.EnvironmentMode",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "FAST_ASSERT"
+      },
+      {
+        "name": "FULL_ASSERT"
+      },
+      {
+        "name": "NON_INTRUSIVE_FULL_ASSERT"
+      },
+      {
+        "name": "NON_REPRODUCIBLE"
+      },
+      {
+        "name": "REPRODUCIBLE"
+      },
+      {
+        "name": "TRACKED_FULL_ASSERT"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.SolverConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "copyConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "inherit",
+        "parameterTypes": [
+          "ai.timefold.solver.core.config.AbstractConfig"
+        ]
+      },
+      {
+        "name": "visitReferencedClasses",
+        "parameterTypes": [
+          "java.util.function.Consumer"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.monitoring.SolverMetric",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "BEST_SCORE"
+      },
+      {
+        "name": "BEST_SOLUTION_MUTATION"
+      },
+      {
+        "name": "CONSTRAINT_MATCH_TOTAL_BEST_SCORE"
+      },
+      {
+        "name": "CONSTRAINT_MATCH_TOTAL_STEP_SCORE"
+      },
+      {
+        "name": "ERROR_COUNT"
+      },
+      {
+        "name": "MEMORY_USE"
+      },
+      {
+        "name": "MOVE_COUNT_PER_STEP"
+      },
+      {
+        "name": "PICKED_MOVE_TYPE_BEST_SCORE_DIFF"
+      },
+      {
+        "name": "PICKED_MOVE_TYPE_STEP_SCORE_DIFF"
+      },
+      {
+        "name": "SCORE_CALCULATION_COUNT"
+      },
+      {
+        "name": "SOLVE_DURATION"
+      },
+      {
+        "name": "STEP_SCORE"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.random.RandomType",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "JDK"
+      },
+      {
+        "name": "MERSENNE_TWISTER"
+      },
+      {
+        "name": "WELL1024A"
+      },
+      {
+        "name": "WELL19937A"
+      },
+      {
+        "name": "WELL19937C"
+      },
+      {
+        "name": "WELL44497A"
+      },
+      {
+        "name": "WELL44497B"
+      },
+      {
+        "name": "WELL512A"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle",
+    "allDeclaredFields": true,
+    "fields": [
+      {
+        "name": "AND"
+      },
+      {
+        "name": "OR"
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMap",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMapEntry",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.solver.DefaultSolverFactory",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "buildSolver",
+        "parameterTypes": [
+          "ai.timefold.solver.core.api.solver.SolverConfigOverride"
+        ]
+      },
+      {
+        "name": "close",
+        "parameterTypes": []
+      },
+      {
+        "name": "shutdown",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolver",
+        "parameterTypes": []
+      },
+      {
+        "name": "setSolver",
+        "parameterTypes": [
+          "java.util.Map"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.test.api.score.stream.ConstraintVerifier"
+  },
+  {
+    "name": "jakarta.xml.bind.Binder"
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlAccessorType",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlElement",
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "type",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlElements",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlEnum",
+    "methods": [
+      {
+        "name": "value",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlRootElement",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlSeeAlso",
+    "methods": [
+      {
+        "name": "value",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlTransient",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlType",
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "factoryClass",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
+    "methods": [
+      {
+        "name": "type",
+        "parameterTypes": []
+      },
+      {
+        "name": "value",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.lang.Object",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "getAcceptedCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAcceptorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAcceptorTypeList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getAssertionScoreDirectorFactory",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBestScoreFeasible",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBestScoreLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBetaDistributionAlpha",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBetaDistributionBeta",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeMinimum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionSizeRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBlockDistributionUniformDistributionProbability",
+        "parameterTypes": []
+      },
+      {
+        "name": "getBreakTieRandomly",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCacheType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getClassLoader",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintProviderClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintProviderCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintStreamImplType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstraintStreamShareLambdas",
+        "parameterTypes": []
+      },
+      {
+        "name": "getConstructionHeuristicType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomPhaseCommandClassList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomPhaseCommandList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDaemon",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDaysSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDestinationSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDomainAccessType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getDowncastEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEasyScoreCalculatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEasyScoreCalculatorCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityClassList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityPlacerConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntitySorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEntityTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getEnvironmentMode",
+        "parameterTypes": []
+      },
+      {
+        "name": "getExhaustiveSearchType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingEntityTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingEntityTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingUndoMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingValueTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFadingValueTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFilterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFinalistPodiumType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getFixedProbabilityWeight",
+        "parameterTypes": []
+      },
+      {
+        "name": "getForagerConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGizmoMemberAccessorMap",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGizmoSolutionClonerMap",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGreatDelugeWaterLevelIncrementRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getGreatDelugeWaterLevelIncrementScore",
+        "parameterTypes": []
+      },
+      {
+        "name": "getHoursSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getId",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIgnoreEmptyChildIterators",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIncrementalScoreCalculatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getIncrementalScoreCalculatorCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getInitializingScoreTrend",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLateAcceptanceSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLinearDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getLocalSearchType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubChainSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMaximumSubPillarSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMillisecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMimicSelectorRef",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumK",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubChainSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubListSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinimumSubPillarSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMinutesSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMonitoringConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveIteratorFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveListFactoryCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveSelectorList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveThreadBufferSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getMoveThreadCount",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbyDistanceMeterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbySelectionConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNearbySelectionDistributionType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getNodeExplorationType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getOriginValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getParabolicDistributionSizeMaximum",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPhaseConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPickEarlyType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRandomFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRandomSeed",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRandomType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getRunnablePartThreadLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getScoreCalculationCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getScoreDirectorFactoryConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getScoreDrlList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryEntitySelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryPillarSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondarySubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondaryValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectReversingMoveToo",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectedCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectionOrder",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSelectorProbabilityWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSimulatedAnnealingStartingTemperature",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionPartitionerClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolutionPartitionerCustomProperties",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSolverMetricList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterOrder",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSorterWeightFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getStepCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getStepCountingHillClimbingSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getStepCountingHillClimbingType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubChainSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubListSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarSequenceComparatorClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getSubPillarType",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationCompositionStyle",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getTerminationConfigList",
+        "parameterTypes": []
+      },
+      {
+        "name": "getThreadFactoryClass",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUndoMoveTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedDaysSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedHoursSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedMillisecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedMinutesSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedScoreDifferenceThreshold",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedSecondsSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedSpentLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getUnimprovedStepCountLimit",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSelectorConfig",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueSorterManner",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueTabuRatio",
+        "parameterTypes": []
+      },
+      {
+        "name": "getValueTabuSize",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableName",
+        "parameterTypes": []
+      },
+      {
+        "name": "getVariableNameIncludeList",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.core.v2.model.nav.ReflectionNavigator",
+    "methods": [
+      {
+        "name": "getInstance",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayElementLeafProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayElementNodeProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayReferenceNodeProperty",
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleElementLeafProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleElementNodeProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleMapNodeProperty",
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleReferenceNodeProperty",
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "org.glassfish.jersey.server.spring.SpringComponentProvider"
+  }
+]
