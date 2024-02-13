@@ -30,10 +30,10 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
 
     @Override
     public T get(long index) {
-        if (index == size - 1L) {
+        if (index == 0) { // Consistent with the iterator.
             return null;
         } else {
-            return childValueRange.get(index);
+            return childValueRange.get(index - 1L);
         }
     }
 

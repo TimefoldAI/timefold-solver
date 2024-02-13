@@ -99,13 +99,15 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();
             }
+            // If the list variable allows unassigned values, add the option of unassigning.
+            var entityDescriptor = entitySelector.getEntityDescriptor();
+            var stream = listVariableDescriptor.allowsUnassigned() ? Stream.of(ElementLocation.unassigned())
+                    : Stream.<ElementLocation> empty();
             // Start with the first unpinned value of each entity, or zero if no pinning.
             // Entity selector is guaranteed to return only unpinned entities.
-            var stream = StreamSupport.stream(entitySelector.spliterator(), false)
-                    .map(entity -> {
-                        var entityDescriptor = entitySelector.getEntityDescriptor();
-                        return (ElementLocation) ElementLocation.of(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
-                    });
+            stream = Stream.concat(stream,
+                    StreamSupport.stream(entitySelector.spliterator(), false)
+                            .map(entity -> ElementLocation.of(entity, entityDescriptor.extractFirstUnpinnedIndex(entity))));
             // Filter guarantees that we only get values that are actually in one of the lists.
             // Value selector guarantees only unpinned values.
             stream = Stream.concat(stream,
@@ -115,11 +117,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                                     ? Stream.of(locationInList)
                                     : Stream.empty())
                             .map(locationInList -> ElementLocation.of(locationInList.entity(), locationInList.index() + 1)));
-            if (listVariableDescriptor.allowsUnassigned()) {
-                // If the list variable allows unassigned values, add the option of unassigning.
-                stream = Stream.concat(stream, Stream.of(ElementLocation.unassigned()));
-            }
-            return stream.iterator();
+            return (Iterator<ElementLocation>) stream.iterator();
         }
     }
 

@@ -30,16 +30,16 @@ class NullAllowingCountableValueRangeTest {
 
     @Test
     void get() {
-        assertThat(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(0, 2, 5, 10))).get(2L).intValue())
-                .isEqualTo(5);
-        assertThat(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(0, 2, 5, 10))).get(4L))
-                .isEqualTo(null);
+        assertThat(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(0, 2, 5, 10))).get(0L))
+                .isNull();
+        assertThat(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(0, 2, 5, 10))).get(2L))
+                .isEqualTo(2);
         assertThat(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList("b", "z", "a", "c", "g", "d")))
                 .get(3L))
-                .isEqualTo("c");
+                .isEqualTo("a");
         assertThat(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList("b", "z", "a", "c", "g", "d")))
                 .get(6L))
-                .isEqualTo(null);
+                .isEqualTo("d");
     }
 
     @Test
@@ -82,13 +82,7 @@ class NullAllowingCountableValueRangeTest {
     @Test
     void createRandomIterator() {
         assertElementsOfIterator(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(0, 2, 5)))
-                .createRandomIterator(new TestRandom(3, 0)), null, 0);
-        assertElementsOfIterator(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(100, 120, 5)))
-                .createRandomIterator(new TestRandom(3, 0)), null, 100);
-        assertElementsOfIterator(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList(-15, 25, 0)))
-                .createRandomIterator(new TestRandom(3, 0)), null, -15);
-        assertElementsOfIterator(new NullAllowingCountableValueRange<>(new ListValueRange<>(Arrays.asList("b", "z", "a")))
-                .createRandomIterator(new TestRandom(3, 0)), null, "b");
+                .createRandomIterator(new TestRandom(3, 2, 1, 0)), 5, 2, 0, null);
         assertElementsOfIterator(new NullAllowingCountableValueRange<>(new ListValueRange<>(Collections.emptyList()))
                 .createRandomIterator(new TestRandom(0)), new String[] { null });
     }
