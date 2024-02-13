@@ -737,7 +737,7 @@ unless it is a sorted collector such as `toSortedSet` or `toSortedMap`.
 [NOTE]
 ====
 Collecting elements into a `Collection` negates benefits of
-xref:performance.adoc#incrementalScoreCalculation[incremental score calculation],
+xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation],
 as all operations on the resulting `Collection` will no longer be incremental.
 If performance is a concern, avoid these collectors.
 ====

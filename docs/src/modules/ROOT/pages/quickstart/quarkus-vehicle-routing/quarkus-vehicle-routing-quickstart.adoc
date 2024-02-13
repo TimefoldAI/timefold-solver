@@ -1,4 +1,4 @@
-[#quarkusQuickStart]
+[#vrpQuarkusQuickStart]
 = Vehicle Routing Quick Start Guide
 :doctype: book
 :imagesdir: ../..

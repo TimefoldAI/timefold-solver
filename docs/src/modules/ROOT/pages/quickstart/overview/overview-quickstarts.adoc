@@ -23,5 +23,8 @@ All three quick starts use Timefold Solver to optimize a school timetable for st
 
 image::quickstart/school-timetabling/schoolTimetablingInputOutput.png[]
 
+You can also find out
+how to build xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStart[Vehicle Routing with Quarkus].
+
 For other use cases, take a look at https://github.com/TimefoldAI/timefold-quickstarts[the timefold-quickstarts repository]
 and the xref:use-cases-and-examples/use-cases-and-examples.adoc#useCasesAndExamples[use cases chapter].

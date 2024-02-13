@@ -294,7 +294,7 @@ A @PlanningVariable annotation needs to be on a member in a class with a @Planni
 It is ignored on parent classes or subclasses without that annotation.
 ====
 
-xref:using-timefold-solver.adoc/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [source,java,options="nowrap"]
 ----
@@ -894,7 +894,7 @@ public class NQueens {
 That `Collection` (or ``ValueRange``) must not contain the value ``null``, not even for a <<nullablePlanningVariable,nullable planning variable>>.
 ====
 
-xref:using-timefold-solver.adoc/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [source,java,options="nowrap"]
 ----
