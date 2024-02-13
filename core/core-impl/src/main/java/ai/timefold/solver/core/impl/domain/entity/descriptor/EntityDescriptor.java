@@ -173,21 +173,20 @@ public class EntityDescriptor<Solution_> {
             if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(entityClass)) {
                 throw new IllegalStateException(
                         "Impossible state: method called without an applicable list variable descriptor.");
-            } else {
-                var applicableShadowDescriptors = getShadowVariableDescriptors()
-                        .stream()
-                        .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_>)
-                        .toList();
-                if (applicableShadowDescriptors.size() != 1) {
-                    throw new IllegalStateException(
-                            "Impossible state: method called without an applicable list variable descriptor.");
-                }
-                var applicableShadowDescriptor =
-                        (InverseRelationShadowVariableDescriptor<Solution_>) applicableShadowDescriptors.get(0);
-
-                hasNoNullVariablesListVar = getHasNoNullVariablesPredicateBasicVar()
-                        .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
             }
+            var applicableShadowDescriptors = getShadowVariableDescriptors()
+                    .stream()
+                    .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_>)
+                    .toList();
+            if (applicableShadowDescriptors.size() != 1) {
+                throw new IllegalStateException(
+                        "Impossible state: method called without an applicable list variable descriptor.");
+            }
+            var applicableShadowDescriptor =
+                    (InverseRelationShadowVariableDescriptor<Solution_>) applicableShadowDescriptors.get(0);
+
+            hasNoNullVariablesListVar = getHasNoNullVariablesPredicateBasicVar()
+                    .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
         }
         return (Predicate<A>) hasNoNullVariablesListVar;
     }

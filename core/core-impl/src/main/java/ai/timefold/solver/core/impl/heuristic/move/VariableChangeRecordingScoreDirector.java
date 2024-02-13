@@ -50,7 +50,6 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        // Use an empty list as old value to clear the list so beforeListVariableChanged can undo the value correctly
         variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
         delegate.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }

@@ -1073,6 +1073,8 @@ public class SolutionDescriptor<Solution_> {
             if (listVariableDescriptor.allowsUnassigned()) { // Unassigned elements count as assigned.
                 continue;
             }
+            // We count every possibly unassigned element in every list variable.
+            // And later we subtract the assigned elements.
             unassignedValueCount.add((int) listVariableDescriptor.getValueRangeSize(solution, null));
         }
         visitAllEntities(solution, entity -> {
