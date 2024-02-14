@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -362,8 +363,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     /**
      * Create a new {@link UniConstraintStream} for every A where B exists for which the {@link BiJoiner} is true
      * (for the properties it extracts from both facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link BiJoiner} parameters.
      *
@@ -372,12 +374,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <B> the type of the second matched fact
      * @return never null, a stream that matches every A where B exists for which the {@link BiJoiner} is true
      */
-    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner) {
-        return ifExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner });
+    default <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner) {
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -386,13 +388,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <B> the type of the second matched fact
      * @return never null, a stream that matches every A where B exists for which all the {@link BiJoiner}s are true
      */
-    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+    default <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner1,
             BiJoiner<A, B> joiner2) {
-        return ifExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2 });
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -402,14 +404,14 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <B> the type of the second matched fact
      * @return never null, a stream that matches every A where B exists for which all the {@link BiJoiner}s are true
      */
-    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+    default <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner1,
             BiJoiner<A, B> joiner2,
             BiJoiner<A, B> joiner3) {
-        return ifExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -420,14 +422,14 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <B> the type of the second matched fact
      * @return never null, a stream that matches every A where B exists for which all the {@link BiJoiner}s are true
      */
-    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+    default <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner1,
             BiJoiner<A, B> joiner2,
             BiJoiner<A, B> joiner3, BiJoiner<A, B> joiner4) {
-        return ifExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      * <p>
      * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
@@ -439,7 +441,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <B> the type of the second matched fact
      * @return never null, a stream that matches every A where B exists for which all the {@link BiJoiner}s are true
      */
-    <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B>... joiners);
+    <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniConstraintStream} for every A, if another A exists that does not {@link Object#equals(Object)}
@@ -547,23 +549,26 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Create a new {@link UniConstraintStream} for every A, if another A exists that does not {@link Object#equals(Object)}
-     * the first.
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * Create a new {@link UniConstraintStream} for every A,
+     * if another A exists that does not {@link Object#equals(Object)} the first.
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      *
      * @param otherClass never null
      * @return never null, a stream that matches every A where a different A exists
      */
-    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass) {
-        return ifExistsOtherIncludingNullVars(otherClass, new BiJoiner[0]);
+    default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[0]);
     }
 
     /**
-     * Create a new {@link UniConstraintStream} for every A, if another A exists that does not {@link Object#equals(Object)}
-     * the first, and for which the {@link BiJoiner} is true (for the properties it extracts from both facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * Create a new {@link UniConstraintStream} for every A,
+     * if another A exists that does not {@link Object#equals(Object)} the first,
+     * and for which the {@link BiJoiner} is true (for the properties it extracts from both facts).
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link BiJoiner} parameters.
      *
@@ -572,13 +577,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists for which the {@link BiJoiner} is
      *         true
      */
-    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner) {
-        return ifExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner });
+    default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifExistsOther(Class, BiJoiner)}. For performance reasons, indexing joiners must be placed
-     * before filtering joiners.
+     * As defined by {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
      * @param joiner1 never null
@@ -586,13 +591,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists for which all the {@link BiJoiner}s
      *         are true
      */
-    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+    default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner1,
             BiJoiner<A, A> joiner2) {
-        return ifExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2 });
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -602,13 +607,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists for which all the {@link BiJoiner}s
      *         are true
      */
-    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+    default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner1,
             BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3) {
-        return ifExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -619,13 +624,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists for which all the {@link BiJoiner}s
      *         are true
      */
-    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+    default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner1,
             BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
-        return ifExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * If multiple {@link BiJoiner}s are provided, for performance reasons,
      * the indexing joiners must be placed before filtering joiners.
      * <p>
@@ -638,13 +643,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists for which all the {@link BiJoiner}s
      *         are true
      */
-    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A>... joiners) {
+    default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
         BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
 
         @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
-        return ifExistsIncludingNullVars(otherClass, allJoiners);
+        return ifExistsIncludingUnassigned(otherClass, allJoiners);
     }
 
     /**
@@ -737,8 +742,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     /**
      * Create a new {@link UniConstraintStream} for every A where B does not exist for which the {@link BiJoiner} is
      * true (for the properties it extracts from both facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link BiJoiner} parameters.
      *
@@ -747,12 +753,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <B> the type of the second matched fact
      * @return never null, a stream that matches every A where B does not exist for which the {@link BiJoiner} is true
      */
-    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner) {
-        return ifNotExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner });
+    default <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner) {
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -762,13 +768,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where B does not exist for which all the {@link BiJoiner}s are
      *         true
      */
-    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+    default <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner1,
             BiJoiner<A, B> joiner2) {
-        return ifNotExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2 });
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -779,13 +785,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where B does not exist for which all the {@link BiJoiner}s are
      *         true
      */
-    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+    default <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner1,
             BiJoiner<A, B> joiner2, BiJoiner<A, B> joiner3) {
-        return ifNotExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -797,13 +803,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where B does not exist for which all the {@link BiJoiner}s are
      *         true
      */
-    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+    default <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B> joiner1,
             BiJoiner<A, B> joiner2, BiJoiner<A, B> joiner3, BiJoiner<A, B> joiner4) {
-        return ifNotExistsIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      * <p>
      * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
@@ -816,7 +822,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where B does not exist for which all the {@link BiJoiner}s are
      *         true
      */
-    <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B>... joiners);
+    <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniConstraintStream} for every A, if no other A exists that does not {@link Object#equals(Object)}
@@ -925,23 +931,26 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
-     * Create a new {@link UniConstraintStream} for every A, if no other A exists that does not {@link Object#equals(Object)}
-     * the first.
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * Create a new {@link UniConstraintStream} for every A,
+     * if no other A exists that does not {@link Object#equals(Object)} the first.
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      *
      * @param otherClass never null
      * @return never null, a stream that matches every A where a different A does not exist
      */
-    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass) {
-        return ifNotExistsOtherIncludingNullVars(otherClass, new BiJoiner[0]);
+    default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[0]);
     }
 
     /**
-     * Create a new {@link UniConstraintStream} for every A, if no other A exists that does not {@link Object#equals(Object)}
-     * the first, and for which the {@link BiJoiner} is true (for the properties it extracts from both facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * Create a new {@link UniConstraintStream} for every A,
+     * if no other A exists that does not {@link Object#equals(Object)} the first,
+     * and for which the {@link BiJoiner} is true (for the properties it extracts from both facts).
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link BiJoiner} parameters.
      *
@@ -950,12 +959,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist for which the
      *         {@link BiJoiner} is true
      */
-    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner) {
-        return ifNotExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner });
+    default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifNotExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -964,13 +973,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist for which all the
      *         {@link BiJoiner}s are true
      */
-    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+    default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner1,
             BiJoiner<A, A> joiner2) {
-        return ifNotExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2 });
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -980,13 +989,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist for which all the
      *         {@link BiJoiner}s are true
      */
-    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+    default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner1,
             BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3) {
-        return ifNotExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -997,13 +1006,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist for which all the
      *         {@link BiJoiner}s are true
      */
-    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+    default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A> joiner1,
             BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
-        return ifNotExistsOtherIncludingNullVars(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsOtherIncludingNullVars(Class, BiJoiner)}.
+     * As defined by {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner)}.
      * If multiple {@link BiJoiner}s are provided, for performance reasons,
      * the indexing joiners must be placed before filtering joiners.
      * <p>
@@ -1016,13 +1025,64 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist for which all the
      *         {@link BiJoiner}s are true
      */
-    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A>... joiners) {
+    default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
         BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
 
         @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
-        return ifNotExistsIncludingNullVars(otherClass, allJoiners);
+        return ifNotExistsIncludingUnassigned(otherClass, allJoiners);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsOtherIncludingUnassigned(Class)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[0]);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsOtherIncludingUnassigned(Class, BiJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifNotExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A>... joiners) {
+        return ifNotExistsOtherIncludingUnassigned(otherClass, joiners);
     }
 
     // ************************************************************************
@@ -1885,6 +1945,147 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * If there is no {@link ConstraintConfiguration}, use {@link #impactBigDecimal(Score, Function)} instead.
      */
     UniConstraintBuilder<A, ?> impactConfigurableBigDecimal(Function<A, BigDecimal> matchWeigher);
+
+    // ************************************************************************
+    // Deprecated declarations
+    // ************************************************************************
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner) {
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+            BiJoiner<A, B> joiner2) {
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+            BiJoiner<A, B> joiner2, BiJoiner<A, B> joiner3) {
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+            BiJoiner<A, B> joiner2, BiJoiner<A, B> joiner3, BiJoiner<A, B> joiner4) {
+        return ifExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, BiJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+        return ifExistsIncludingUnassigned(otherClass, joiners);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsOtherIncludingUnassigned(Class)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[0]);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
+        return ifExistsOtherIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsOtherIncludingUnassigned(Class, BiJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default UniConstraintStream<A> ifExistsOtherIncludingNullVars(Class<A> otherClass, BiJoiner<A, A>... joiners) {
+        return ifExistsOtherIncludingUnassigned(otherClass, joiners);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner)}
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner) {
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner, BiJoiner)}
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+            BiJoiner<A, B> joiner2) {
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner)}
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+            BiJoiner<A, B> joiner2, BiJoiner<A, B> joiner3) {
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)}
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B> joiner1,
+            BiJoiner<A, B> joiner2, BiJoiner<A, B> joiner3, BiJoiner<A, B> joiner4) {
+        return ifNotExistsIncludingUnassigned(otherClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, BiJoiner...)}
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+        return ifNotExistsIncludingUnassigned(otherClass, joiners);
+    }
 
     /**
      * Negatively impact the {@link Score}: subtract the constraintWeight multiplied by the match weight.

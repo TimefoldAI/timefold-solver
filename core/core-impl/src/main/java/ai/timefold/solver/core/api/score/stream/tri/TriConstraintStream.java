@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
@@ -373,8 +374,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D exists for which the
      * {@link QuadJoiner} is true (for the properties it extracts from the facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
@@ -384,13 +386,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner) {
-        return ifExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner });
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -400,13 +402,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2) {
-        return ifExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner1, joiner2 });
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -417,13 +419,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
-        return ifExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -435,14 +437,14 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3,
             QuadJoiner<A, B, C, D> joiner4) {
-        return ifExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      * <p>
      * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
@@ -455,7 +457,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
+    <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
@@ -548,8 +550,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
      * {@link QuadJoiner} is true (for the properties it extracts from the facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * For classes annotated with {@link PlanningEntity},
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
@@ -559,13 +562,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner) {
-        return ifNotExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner });
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -575,13 +578,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2) {
-        return ifNotExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner1, joiner2 });
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -592,13 +595,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
-        return ifNotExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -610,14 +613,14 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3,
             QuadJoiner<A, B, C, D> joiner4) {
-        return ifNotExistsIncludingNullVars(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, QuadJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      * <p>
      * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
@@ -630,7 +633,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+    <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D>... joiners);
 
     // ************************************************************************
@@ -1403,6 +1406,98 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * If there is no {@link ConstraintConfiguration}, use {@link #impactBigDecimal(Score, TriFunction)} instead.
      */
     TriConstraintBuilder<A, B, C, ?> impactConfigurableBigDecimal(TriFunction<A, B, C, BigDecimal> matchWeigher);
+
+    // ************************************************************************
+    // Deprecated declarations
+    // ************************************************************************
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner) {
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, QuadJoiner, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2) {
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, QuadJoiner, QuadJoiner, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, QuadJoiner, QuadJoiner, QuadJoiner, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+        return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, QuadJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass,
+            QuadJoiner<A, B, C, D>... joiners) {
+        return ifExistsIncludingUnassigned(otherClass, joiners);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner) {
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2) {
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner, QuadJoiner, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner, QuadJoiner, QuadJoiner, QuadJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+        return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+            QuadJoiner<A, B, C, D>... joiners) {
+        return ifNotExistsIncludingUnassigned(otherClass, joiners);
+    }
 
     /**
      * Negatively impact the {@link Score}: subtract the constraintWeight multiplied by the match weight.

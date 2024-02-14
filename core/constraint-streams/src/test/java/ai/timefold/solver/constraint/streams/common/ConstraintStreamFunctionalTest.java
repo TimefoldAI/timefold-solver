@@ -44,7 +44,7 @@ public interface ConstraintStreamFunctionalTest {
 
     void ifExists_1Join1Filter();
 
-    void ifExistsDoesNotIncludeNullVars();
+    void ifExistsDoesNotIncludeUnassigned();
 
     @Deprecated(forRemoval = true)
     void ifExistsIncludesNullVarsWithFrom();
@@ -59,7 +59,7 @@ public interface ConstraintStreamFunctionalTest {
 
     void ifNotExists_1Join1Filter();
 
-    void ifNotExistsDoesNotIncludeNullVars();
+    void ifNotExistsDoesNotIncludeUnassigned();
 
     @Deprecated(forRemoval = true)
     void ifNotExistsIncludesNullVarsWithFrom();
