@@ -39,10 +39,10 @@ class ExternalizedListVariableDataSupplyTest {
             supply.resetWorkingSolution(scoreDirector);
 
             assertSoftly(softly -> {
-                softly.assertThat(supply.countNotAssigned()).isEqualTo(2);
-                softly.assertThat(supply.getState(v1)).isEqualTo(ListVariableElementStateSupply.ElementState.ASSIGNED);
-                softly.assertThat(supply.getState(v2)).isEqualTo(ListVariableElementStateSupply.ElementState.INITIALIZED);
-                softly.assertThat(supply.getState(v3)).isEqualTo(ListVariableElementStateSupply.ElementState.INITIALIZED);
+                softly.assertThat(supply.countUnassigned()).isEqualTo(2);
+                softly.assertThat(supply.isAssigned(v1)).isTrue();
+                softly.assertThat(supply.isAssigned(v2)).isFalse();
+                softly.assertThat(supply.isAssigned(v3)).isFalse();
             });
         }
     }
@@ -67,7 +67,7 @@ class ExternalizedListVariableDataSupplyTest {
             supply.resetWorkingSolution(scoreDirector);
 
             assertSoftly(softly -> {
-                softly.assertThat(supply.countNotAssigned()).isEqualTo(2);
+                softly.assertThat(supply.countUnassigned()).isEqualTo(2);
                 softly.assertThat(supply.getLocationInList(v1)).isEqualTo(new LocationInList(e1, 0));
                 softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());
@@ -75,7 +75,7 @@ class ExternalizedListVariableDataSupplyTest {
 
             supply.afterListVariableElementUnassigned(scoreDirector, v1);
             assertSoftly(softly -> {
-                softly.assertThat(supply.countNotAssigned()).isEqualTo(3);
+                softly.assertThat(supply.countUnassigned()).isEqualTo(3);
                 softly.assertThat(supply.getLocationInList(v1)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());

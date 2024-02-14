@@ -2,33 +2,30 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 
 public interface ListVariableElementStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,
         ListVariableListener<Solution_, Object, Object> {
 
-    ElementState getState(Object element);
-
     /**
-     * Counts all elements not in the {@link ElementState#ASSIGNED} state.
      *
-     * @return >= 0.
+     * @param element never null
+     * @return true if the element is contained in a list variable of any entity.
      */
-    int countNotAssigned();
+    boolean isAssigned(Object element);
 
     /**
-     * State of an element of a list variable.
+     *
+     * @param value never null
+     * @return never null
      */
-    enum ElementState {
-        /**
-         * The element is initialized, but not yet assigned.
-         * It is not part of any list.
-         */
-        INITIALIZED,
-        /**
-         * The element is assigned to a single list.
-         */
-        ASSIGNED
-    }
+    ElementLocation getLocationInList(Object value);
+
+    /**
+     *
+     * @return number of elements for which {@link #isAssigned(Object)} would return false.
+     */
+    int countUnassigned();
 
 }

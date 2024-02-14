@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
-import static ai.timefold.solver.core.impl.domain.variable.ListVariableElementStateSupply.ElementState.ASSIGNED;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
 import java.util.Iterator;
@@ -69,10 +68,10 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
         // We need to filter out unassigned vars.
         return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(entityIndependentValueSelector,
                 (scoreDirector, selection) -> {
-                    if (listVariableDataSupply.countNotAssigned() == 0) {
+                    if (listVariableDataSupply.countUnassigned() == 0) {
                         return true;
                     }
-                    return listVariableDataSupply.getState(selection) == ASSIGNED;
+                    return listVariableDataSupply.isAssigned(selection);
                 });
     }
 

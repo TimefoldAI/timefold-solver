@@ -92,7 +92,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
             var totalValueSize = getEffectiveValueSelector().getSize()
-                    - (allowsUnassignedValues ? listVariableDataSupply.countNotAssigned() : 0);
+                    - (allowsUnassignedValues ? listVariableDataSupply.countUnassigned() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
             return new ElementLocationRandomIterator(entityIterator, totalSize, allowsUnassignedValues);
         } else {

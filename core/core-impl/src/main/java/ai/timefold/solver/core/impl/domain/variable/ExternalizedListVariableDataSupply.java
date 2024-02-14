@@ -160,17 +160,12 @@ final class ExternalizedListVariableDataSupply<Solution_>
     }
 
     @Override
-    public ElementState getState(Object element) {
-        var elementLocation = getLocationInList(element);
-        if (elementLocation instanceof LocationInList) {
-            return ElementState.ASSIGNED;
-        } else {
-            return ElementState.INITIALIZED;
-        }
+    public boolean isAssigned(Object element) {
+        return getLocationInList(element) instanceof LocationInList;
     }
 
     @Override
-    public int countNotAssigned() {
+    public int countUnassigned() {
         return notAssignedElementCount;
     }
 
