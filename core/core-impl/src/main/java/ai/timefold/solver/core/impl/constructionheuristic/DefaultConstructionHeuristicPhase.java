@@ -10,7 +10,6 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-import ai.timefold.solver.core.impl.util.MutableLong;
 
 /**
  * Default implementation of {@link ConstructionHeuristicPhase}.
@@ -56,13 +55,6 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         var maxStepCount = -1;
         if (supportsUnassignedValues) {
             var workingSolution = phaseScope.getWorkingSolution();
-            MutableLong valueCount = new MutableLong(listVariableDescriptor.getValueRangeSize(workingSolution, null));
-            solutionDescriptor.visitEntitiesByEntityClass(workingSolution,
-                    listVariableDescriptor.getEntityDescriptor().getEntityClass(), entity -> {
-                        var assignedValues = listVariableDescriptor.getValue(entity);
-                        valueCount.subtract(assignedValues.size());
-                        return false;
-                    });
             maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
         }
 
