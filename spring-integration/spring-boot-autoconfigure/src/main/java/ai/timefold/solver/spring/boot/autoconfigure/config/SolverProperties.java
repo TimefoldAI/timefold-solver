@@ -1,5 +1,7 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -137,6 +139,19 @@ public class SolverProperties {
     }
 
     public void loadProperties(Map<String, Object> properties) {
+        // Check if the keys are valid
+        String invalidKeys = properties.entrySet().stream()
+                .filter(e -> !VALID_FIELD_NAMES_SET.contains(e.getKey()))
+                .map(Map.Entry::getKey)
+                .collect(joining(", "));
+
+        if (!invalidKeys.isBlank()) {
+            throw new IllegalStateException("""
+                    The properties [%s] are not valid.
+                    Maybe try changing the property name to kebab-case.
+                    Here is the list of valid properties: %s"""
+                    .formatted(invalidKeys, String.join(", ", VALID_FIELD_NAMES_SET)));
+        }
         properties.forEach(this::loadProperty);
     }
 
@@ -146,16 +161,16 @@ public class SolverProperties {
         }
         switch (key) {
             case SOLVER_CONFIG_XML_PROPERTY_NAME:
-                setSolverConfigXml((String) value);
+                setSolverConfigXml(value.toString());
                 break;
             case ENVIRONMENT_MODE_PROPERTY_NAME:
                 setEnvironmentMode(EnvironmentMode.valueOf((String) value));
                 break;
             case DAEMON_PROPERTY_NAME:
-                setDaemon(Boolean.parseBoolean((String) value));
+                setDaemon(Boolean.parseBoolean(value.toString()));
                 break;
             case MOVE_THREAD_COUNT_PROPERTY_NAME:
-                setMoveThreadCount((String) value);
+                setMoveThreadCount(value.toString());
                 break;
             case DOMAIN_ACCESS_TYPE_PROPERTY_NAME:
                 setDomainAccessType(DomainAccessType.valueOf((String) value));

@@ -1,0 +1,6 @@
+timefold:
+  solver:
+    solverConfigXml: ai/timefold/solver/spring/boot/autoconfigure/customSolver1Config.xml
+    environmentMode: FULL_ASSERT
+    moveThreadCount: 2
+    domainAccessType: REFLECTION

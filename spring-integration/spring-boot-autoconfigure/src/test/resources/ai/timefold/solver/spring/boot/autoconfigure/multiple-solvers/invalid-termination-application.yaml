@@ -1,0 +1,8 @@
+timefold:
+  solver:
+    solver1:
+      environment-mode: FULL_ASSERT
+      termination:
+        spentLimit: 4h
+        unimprovedSpentLimit: 5h
+        bestScoreLimit: 0
