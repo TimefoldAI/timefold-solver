@@ -29,7 +29,7 @@ class TimefoldProcessorSolverYamlTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)
-                    .addAsResource("ai/timefold/solver/quarkus/sigle-solver/application.yaml", "application.yaml"));
+                    .addAsResource("ai/timefold/solver/quarkus/single-solver/application.yaml", "application.yaml"));
 
     @Inject
     SolverConfig solverConfig;
