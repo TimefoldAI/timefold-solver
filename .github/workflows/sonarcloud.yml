@@ -53,4 +53,4 @@ jobs:
             -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}
             -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
         run: |
-          ./mvn clean verify
+          mvn clean verify
