@@ -49,6 +49,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -292,6 +293,54 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                         assertThat(solution.getScore().score()).isNotNegative();
                     }
                 });
+    }
+
+    @Test
+    void solverWithYaml() {
+        contextRunner
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withSystemProperties(
+                        "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/multiple-solvers/application.yaml")
+                .run(context -> {
+                    TestdataSpringSolution problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .collect(Collectors.toList()));
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .collect(Collectors.toList()));
+
+                    for (String solverName : List.of("solver1", "solver2")) {
+                        SolverManager<TestdataSpringSolution, Long> solver =
+                                (SolverManager<TestdataSpringSolution, Long>) context.getBean(solverName);
+                        SolverJob<TestdataSpringSolution, Long> solverJob = solver.solve(1L, problem);
+                        TestdataSpringSolution solution = solverJob.getFinalBestSolution();
+                        assertThat(solution).isNotNull();
+                        assertThat(solution.getScore().score()).isNotNegative();
+                    }
+                });
+    }
+
+    @Test
+    void invalidYaml() {
+        assertThatCode(() -> contextRunner
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withSystemProperties(
+                        "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/multiple-solvers/invalid-application.yaml")
+                .run(context -> context.getBean(SolverConfig.class)))
+                .rootCause().message().contains("The properties", "solverConfigXml", "environmentMode", "moveThreadCount",
+                        "domainAccessType", "are not valid", "Maybe try changing the property name to kebab-case");
+    }
+
+    @Test
+    void invalidTerminationYaml() {
+        assertThatCode(() -> contextRunner
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withSystemProperties(
+                        "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/multiple-solvers/invalid-termination-application.yaml")
+                .run(context -> context.getBean(SolverConfig.class)))
+                .rootCause().message().contains("The termination properties", "spentLimit", "unimprovedSpentLimit",
+                        "bestScoreLimit", "are not valid", "Maybe try changing the property name to kebab-case");
     }
 
     @Test

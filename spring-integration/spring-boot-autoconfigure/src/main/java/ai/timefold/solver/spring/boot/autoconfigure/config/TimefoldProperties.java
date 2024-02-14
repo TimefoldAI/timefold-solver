@@ -1,6 +1,7 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
 import static ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties.VALID_FIELD_NAMES_SET;
+import static java.util.stream.Collectors.joining;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +68,18 @@ public class TimefoldProperties {
             solverProperties.loadProperties(solver);
             this.solver.put(DEFAULT_SOLVER_NAME, solverProperties);
         } else {
+            // The values must be an instance of map
+            String invalidKeys = solver.entrySet().stream()
+                    .filter(e -> e.getValue() != null && !(e.getValue() instanceof Map<?, ?>))
+                    .map(Map.Entry::getKey)
+                    .collect(joining(", "));
+            if (!invalidKeys.isBlank()) {
+                throw new IllegalStateException("""
+                        The properties [%s] are not valid.
+                        Maybe try changing the property name to kebab-case.
+                        Here is the list of valid properties: %s"""
+                        .formatted(invalidKeys, String.join(", ", VALID_FIELD_NAMES_SET)));
+            }
             // Multiple solvers. We load the properties per key (or solver config)
             solver.forEach((key, value) -> {
                 SolverProperties solverProperties = new SolverProperties();
