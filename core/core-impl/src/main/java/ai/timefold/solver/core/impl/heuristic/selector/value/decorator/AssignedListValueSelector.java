@@ -21,7 +21,7 @@ public final class AssignedListValueSelector<Solution_> extends AbstractInverseE
         if (listVariableDataSupply.countNotAssigned() == 0) {
             return true; // Avoid hash lookup.
         }
-        return listVariableDataSupply.getState(value) != ListVariableElementStateSupply.ElementState.UNINITIALIZED;
+        return listVariableDataSupply.getState(value) == ListVariableElementStateSupply.ElementState.ASSIGNED;
     }
 
     @Override

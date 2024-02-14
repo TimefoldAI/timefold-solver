@@ -28,14 +28,6 @@ public interface ScoreDirector<Solution_> {
 
     void afterVariableChanged(Object entity, String variableName);
 
-    void beforeListVariableElementInitialized(Object entity, String variableName, Object element);
-
-    void afterListVariableElementInitialized(Object entity, String variableName, Object element);
-
-    void beforeListVariableElementUninitialized(Object entity, String variableName, Object element);
-
-    void afterListVariableElementUninitialized(Object entity, String variableName, Object element);
-
     void beforeListVariableElementAssigned(Object entity, String variableName, Object element);
 
     void afterListVariableElementAssigned(Object entity, String variableName, Object element);

@@ -12,7 +12,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListInitializeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
@@ -45,8 +44,6 @@ public interface CodeAssertable {
             }
             final String code = codeBuilder.substring(1);
             return () -> code;
-        } else if (o instanceof ListInitializeMove<?> listAssignMove) {
-            return () -> "Initialize(%s)".formatted(listAssignMove.getInitializedValue());
         } else if (o instanceof ListAssignMove<?> listAssignMove) {
             return () -> convert(listAssignMove.getMovedValue())
                     + " {null->"

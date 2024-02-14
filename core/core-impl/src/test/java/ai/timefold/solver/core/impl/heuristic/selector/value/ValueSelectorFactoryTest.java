@@ -27,7 +27,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.Filtering
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UninitializedListValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
@@ -263,13 +263,13 @@ class ValueSelectorFactoryTest {
     static Stream<Arguments> applyListValueFiltering() {
         return Stream.of(
                 arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED, AssignedListValueSelector.class),
-                arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNINITIALIZED,
-                        UninitializedListValueSelector.class),
+                arguments(true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED,
+                        UnassignedListValueSelector.class),
                 arguments(true, ValueSelectorFactory.ListValueFilteringType.NONE,
                         DummyEntityIndependentValueSelector.class),
                 arguments(false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED,
                         DummyEntityIndependentValueSelector.class),
-                arguments(false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNINITIALIZED,
+                arguments(false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED,
                         DummyEntityIndependentValueSelector.class),
                 arguments(false, ValueSelectorFactory.ListValueFilteringType.NONE,
                         DummyEntityIndependentValueSelector.class));

@@ -1,24 +1,20 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 final class ExternalizedListVariableDataSupply<Solution_>
         implements ListVariableDataSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private Map<Object, ElementLocation> elementLocationMap;
-    private Set<Object> applicableElementSet;
     private int notAssignedElementCount;
 
     public ExternalizedListVariableDataSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
@@ -29,17 +25,9 @@ final class ExternalizedListVariableDataSupply<Solution_>
     public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
         this.elementLocationMap = new IdentityHashMap<>();
         var workingSolution = scoreDirector.getWorkingSolution();
-        int expectedValueCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
-        if (expectedValueCount > 0) {
-            applicableElementSet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(expectedValueCount));
-            var elementIterator = sourceVariableDescriptor.getValuesFromValueRange(workingSolution, null);
-            while (elementIterator.hasNext()) {
-                applicableElementSet.add(elementIterator.next());
-            }
-        } else {
-            applicableElementSet = Collections.emptySet();
-        }
-        notAssignedElementCount = applicableElementSet.size();
+        // Start with everything unassigned.
+        notAssignedElementCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
+        // Will run over all entities and unmark all present elements as unassigned.
         sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(workingSolution, this::insert);
     }
 
@@ -60,7 +48,6 @@ final class ExternalizedListVariableDataSupply<Solution_>
 
     @Override
     public void close() {
-        applicableElementSet = null;
         elementLocationMap = null;
     }
 
@@ -111,40 +98,12 @@ final class ExternalizedListVariableDataSupply<Solution_>
     }
 
     @Override
-    public void afterListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        var oldRef = elementLocationMap.put(element, ElementLocation.unassigned());
-        if (oldRef != null) {
-            throw new IllegalStateException(
-                    "The supply (%s) is corrupted, because the element (%s) already existed before initialization."
-                            .formatted(this, element));
-        }
-    }
-
-    @Override
-    public void afterListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
+    public void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Object element) {
         var oldLocation = elementLocationMap.remove(element);
         if (oldLocation == null) {
             throw new IllegalStateException(
-                    "The supply (%s) is corrupted, because the element (%s) did not existed before uninitialization."
+                    "The supply (%s) is corrupted, because the element (%s) did not exist before unassigning."
                             .formatted(this, element));
-        } else if (oldLocation instanceof LocationInList oldLocationInList) {
-            throw new IllegalStateException(
-                    "The supply (%s) is corrupted, because the element (%s) at index (%s) was still assigned before uninitialization."
-                            .formatted(this, oldLocationInList.entity(), oldLocationInList.index()));
-        }
-    }
-
-    @Override
-    public void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Object o) {
-        var oldRef = elementLocationMap.put(o, ElementLocation.unassigned());
-        if (oldRef == null) {
-            throw new IllegalStateException(
-                    "The supply (%s) is corrupted, because the element (%s) did not exist before."
-                            .formatted(this, o));
-        } else if (oldRef instanceof UnassignedLocation) {
-            throw new IllegalStateException(
-                    "The supply (%s) is corrupted, because the element (%s) was not assigned before."
-                            .formatted(this, o));
         }
         notAssignedElementCount++;
     }
@@ -178,7 +137,8 @@ final class ExternalizedListVariableDataSupply<Solution_>
 
     @Override
     public ElementLocation getLocationInList(Object planningValue) {
-        return elementLocationMap.get(Objects.requireNonNull(planningValue));
+        return Objects.requireNonNullElse(elementLocationMap.get(Objects.requireNonNull(planningValue)),
+                ElementLocation.unassigned());
     }
 
     @Override
@@ -200,16 +160,9 @@ final class ExternalizedListVariableDataSupply<Solution_>
     }
 
     @Override
-    public boolean isApplicable(Object element) {
-        return applicableElementSet.contains(element);
-    }
-
-    @Override
     public ElementState getState(Object element) {
         var elementLocation = getLocationInList(element);
-        if (elementLocation == null) {
-            return ElementState.UNINITIALIZED;
-        } else if (elementLocation instanceof LocationInList) {
+        if (elementLocation instanceof LocationInList) {
             return ElementState.ASSIGNED;
         } else {
             return ElementState.INITIALIZED;

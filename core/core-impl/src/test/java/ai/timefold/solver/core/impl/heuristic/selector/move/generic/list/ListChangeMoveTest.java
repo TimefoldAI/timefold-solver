@@ -163,10 +163,8 @@ class ListChangeMoveTest {
                 new ListChangeMove<>(variableDescriptor, e2, 0, e2, 0).rebase(destinationScoreDirector));
     }
 
-    static void assertSameProperties(
-            Object sourceEntity, int sourceIndex,
-            Object movedValue, Object destinationEntity, int destinationIndex,
-            ListChangeMove<?> move) {
+    static void assertSameProperties(Object sourceEntity, int sourceIndex, Object movedValue, Object destinationEntity,
+            int destinationIndex, ListChangeMove<?> move) {
         assertThat(move.getSourceEntity()).isSameAs(sourceEntity);
         assertThat(move.getSourceIndex()).isEqualTo(sourceIndex);
         assertThat(move.getMovedValue()).isSameAs(movedValue);

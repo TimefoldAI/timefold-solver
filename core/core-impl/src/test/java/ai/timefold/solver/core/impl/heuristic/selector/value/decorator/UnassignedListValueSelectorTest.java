@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 
-class UninitializedListValueSelectorTest {
+class UnassignedListValueSelectorTest {
 
     @Test
     void filterOutAssignedValues() {
@@ -43,7 +43,7 @@ class UninitializedListValueSelectorTest {
 
         var childValueSelector =
                 mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
-        var valueSelector = new UninitializedListValueSelector<>(childValueSelector);
+        var valueSelector = new UnassignedListValueSelector<>(childValueSelector);
 
         SolverScope<TestdataListSolution> solverScope = mock(SolverScope.class);
         valueSelector.solvingStarted(solverScope);
@@ -70,6 +70,6 @@ class UninitializedListValueSelectorTest {
 
         when(childValueSelector.isNeverEnding()).thenReturn(true);
 
-        assertThatIllegalArgumentException().isThrownBy(() -> new UninitializedListValueSelector<>(childValueSelector));
+        assertThatIllegalArgumentException().isThrownBy(() -> new UnassignedListValueSelector<>(childValueSelector));
     }
 }

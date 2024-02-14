@@ -9,9 +9,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
  * This used for {@link QueuedValuePlacer}’s recording value selector during Construction Heuristic phase
  * to prevent reinitializing values.
  */
-public final class UninitializedListValueSelector<Solution_> extends AbstractInverseEntityFilteringValueSelector<Solution_> {
+public final class UnassignedListValueSelector<Solution_> extends AbstractInverseEntityFilteringValueSelector<Solution_> {
 
-    public UninitializedListValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector) {
+    public UnassignedListValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector) {
         super(childValueSelector);
     }
 
@@ -20,7 +20,7 @@ public final class UninitializedListValueSelector<Solution_> extends AbstractInv
         if (listVariableDataSupply.countNotAssigned() == 0) {
             return false; // Avoid hash lookup.
         }
-        return listVariableDataSupply.getState(value) == ListVariableElementStateSupply.ElementState.UNINITIALIZED;
+        return listVariableDataSupply.getState(value) != ListVariableElementStateSupply.ElementState.ASSIGNED;
     }
 
     @Override

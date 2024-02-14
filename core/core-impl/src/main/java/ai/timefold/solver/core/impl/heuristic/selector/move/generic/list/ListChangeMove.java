@@ -115,7 +115,10 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     public Object getMovedValue() {
-        return variableDescriptor.getElement(sourceEntity, sourceIndex);
+        if (planningValue == null) {
+            planningValue = variableDescriptor.getElement(sourceEntity, sourceIndex);
+        }
+        return planningValue;
     }
 
     // ************************************************************************

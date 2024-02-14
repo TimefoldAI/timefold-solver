@@ -231,10 +231,8 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
             long random = RandomUtils.nextLong(workingRandom, totalSize);
             if (allowsUnassignedValues && random == 0) {
-                /*
-                 * We have already excluded all unassigned elements,
-                 * the only way to get an unassigned destination is to explicitly add it.
-                 */
+                // We have already excluded all unassigned elements,
+                // the only way to get an unassigned destination is to explicitly add it.
                 return ElementLocation.unassigned();
             } else if (random < entityBoundary) {
                 // Start with the first unpinned value of each entity, or zero if no pinning.

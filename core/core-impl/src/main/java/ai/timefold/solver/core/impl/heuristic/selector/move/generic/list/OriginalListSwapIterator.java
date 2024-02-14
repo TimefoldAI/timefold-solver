@@ -58,15 +58,8 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         }
         var upcomingLeft = listVariableDataSupply.getLocationInList(upcomingLeftValue);
         var upcomingRight = listVariableDataSupply.getLocationInList(upcomingRightValue);
-        if (upcomingLeft == null) { // Swap Moves are not used in construction heuristics.
-            throw new IllegalStateException("Impossible state: upcomingLeftValue (%s) is not initialized."
-                    .formatted(upcomingLeftValue));
-        } else if (upcomingRight == null) { // Swap Moves are not used in construction heuristics.
-            throw new IllegalStateException("Impossible state: upcomingRightValue (%s) is not initialized."
-                    .formatted(upcomingRightValue));
-        }
-        boolean leftUnassigned = upcomingLeft instanceof UnassignedLocation;
-        boolean rightUnassigned = upcomingRight instanceof UnassignedLocation;
+        var leftUnassigned = upcomingLeft instanceof UnassignedLocation;
+        var rightUnassigned = upcomingRight instanceof UnassignedLocation;
         if (leftUnassigned && rightUnassigned) { // No need to swap two unassigned elements.
             return NoChangeMove.getInstance();
         } else if (leftUnassigned) { // Unassign right, put left where right used to be.

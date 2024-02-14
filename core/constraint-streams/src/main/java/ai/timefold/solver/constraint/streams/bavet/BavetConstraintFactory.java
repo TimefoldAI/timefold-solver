@@ -5,21 +5,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.constraint.streams.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.constraint.streams.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.constraint.streams.common.InnerConstraintFactory;
 import ai.timefold.solver.constraint.streams.common.RetrievalSemantics;
-import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 
 public final class BavetConstraintFactory<Solution_>
         extends InnerConstraintFactory<Solution_, BavetConstraint<Solution_>> {
@@ -90,17 +86,13 @@ public final class BavetConstraintFactory<Solution_>
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
                     entityDescriptor.getHasNoNullVariablesPredicateBasicVar(), RetrievalSemantics.STANDARD));
         }
-        var applicableShadowDescriptors = entityDescriptor.getShadowVariableDescriptors()
-                .stream()
-                .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor
-                        && Objects.equals(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptorList().get(0),
-                                listVariableDescriptor))
-                .toList();
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
         if (entityClass == sourceClass) {
             throw new IllegalStateException("Impossible state: entityClass (%s) and sourceClass (%s) are the same."
                     .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
-        } else if (applicableShadowDescriptors.isEmpty()) {
+        }
+        var shadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
+        if (shadowDescriptor == null) {
             // The list variable element doesn't have the @InverseRelationShadowVariable annotation.
             // We don't want the users to be forced to implement it in quickstarts,
             // so we'll do this expensive thing instead.
@@ -110,20 +102,7 @@ public final class BavetConstraintFactory<Solution_>
                                 var list = listVariableDescriptor.getValue(entity);
                                 return list.contains(source);
                             }));
-        } else if (applicableShadowDescriptors.size() > 1) {
-            // This state may be impossible.
-            throw new IllegalStateException(
-                    """
-                            Instances of entityClass (%s) may be used in list variable (%s), but the class has more than one @%s-annotated field (%s).
-                            Remove the annotations from all but one field."""
-                            .formatted(entityClass.getCanonicalName(),
-                                    listVariableDescriptor.getSimpleEntityAndVariableName(),
-                                    InverseRelationShadowVariable.class.getSimpleName(),
-                                    applicableShadowDescriptors.stream()
-                                            .map(ShadowVariableDescriptor::getSimpleEntityAndVariableName)
-                                            .collect(Collectors.joining(", ", "[", "]"))));
-        } else {
-            // We have the inverse relation variable, so we can read its value directly.
+        } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
                     entityDescriptor.getHasNoNullVariablesPredicateListVar(), RetrievalSemantics.STANDARD));
         }

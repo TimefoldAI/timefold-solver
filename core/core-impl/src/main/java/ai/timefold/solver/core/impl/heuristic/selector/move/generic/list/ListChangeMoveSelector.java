@@ -56,7 +56,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
                     var elementLocation = listVariableDataSupply.getLocationInList(selection);
-                    if (elementLocation == null || elementLocation instanceof UnassignedLocation) {
+                    if (elementLocation instanceof UnassignedLocation) {
                         return true;
                     }
                     var elementDestination = (LocationInList) elementLocation;

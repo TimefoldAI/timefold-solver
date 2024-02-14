@@ -176,7 +176,7 @@ class ListChangeMoveSelectorTest {
 
         // First try all destinations for v3 (which is originally at C[0]),
         // then v1 (originally at A[1]),
-        // then v4 (uninitialized),
+        // then v4 (unassigned),
         // then v2 (originally at A[0]).
         assertAllCodesOfMoveSelector(moveSelector,
                 "3 {C[0]->A[0]}",
@@ -193,13 +193,13 @@ class ListChangeMoveSelectorTest {
                 "1 {A[1]->A[2]}",
                 "1 {A[1]->A[1]}", // undoable
                 "1 {A[1]->null}",
-                "Initialize(4)+4 {null->A[0]}",
-                "Initialize(4)+4 {null->B[0]}",
-                "Initialize(4)+4 {null->C[0]}",
-                "Initialize(4)+4 {null->C[1]}",
-                "Initialize(4)+4 {null->A[2]}",
-                "Initialize(4)+4 {null->A[1]}",
-                "Initialize(4)", // Initialize but not assign
+                "4 {null->A[0]}",
+                "4 {null->B[0]}",
+                "4 {null->C[0]}",
+                "4 {null->C[1]}",
+                "4 {null->A[2]}",
+                "4 {null->A[1]}",
+                "No change",
                 "2 {A[0]->A[0]}", // undoable
                 "2 {A[0]->B[0]}",
                 "2 {A[0]->C[0]}",
@@ -331,7 +331,7 @@ class ListChangeMoveSelectorTest {
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "2 {A[1]->B[0]}",
                 "1 {A[0]->A[2]}",
-                "Initialize(4)+4 {null->A[0]}",
+                "4 {null->A[0]}",
                 "3 {C[0]->A[1]}",
                 "3 {C[0]->A[2]}");
     }

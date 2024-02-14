@@ -12,7 +12,6 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -84,10 +83,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.
             // If there isn't, no need to planning clone the best solution to the working solution.
             if (it.hasNext()) {
-                var scoreDirector = (AbstractScoreDirector<Solution_, ?, ?>) solverScope.getScoreDirector();
-                var state = scoreDirector.getInitializedUnassignedListVariableElements();
                 solverScope.setWorkingSolutionFromBestSolution();
-                scoreDirector.initializeElements(state);
             }
         }
     }

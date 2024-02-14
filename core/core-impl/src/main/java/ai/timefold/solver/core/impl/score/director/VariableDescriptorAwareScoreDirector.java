@@ -25,38 +25,6 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
     // ************************************************************************
 
     /**
-     * Call this for each element that will be initialized during construction heuristics.
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the initialized element
-     */
-    void beforeListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Call this for each element that will be initialized during construction heuristics.
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the initialized element
-     */
-    void afterListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Call this for each element that will be uninitialized during construction heuristics.
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the uninitialized element
-     */
-    void beforeListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
-     * Call this for each element that will be uninitialized during construction heuristics.
-     *
-     * @param variableDescriptor the list variable descriptor
-     * @param element the initialized element
-     */
-    void afterListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element);
-
-    /**
      * Call this for each element that will be assigned (added to a list variable of one entity without being removed
      * from a list variable of another entity).
      *
@@ -178,34 +146,6 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
     default void afterVariableChanged(Object entity, String variableName) {
         var variableDescriptor = getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
         afterVariableChanged(variableDescriptor, entity);
-    }
-
-    @Override
-    default void beforeListVariableElementInitialized(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementInitialized(listVariableDescriptor, element);
-    }
-
-    @Override
-    default void afterListVariableElementInitialized(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementInitialized(listVariableDescriptor, element);
-    }
-
-    @Override
-    default void beforeListVariableElementUninitialized(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementUninitialized(listVariableDescriptor, element);
-    }
-
-    @Override
-    default void afterListVariableElementUninitialized(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementUninitialized(listVariableDescriptor, element);
     }
 
     @Override

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 /**
  * Default implementation of {@link ConstructionHeuristicPhase}.
@@ -46,6 +47,25 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         ConstructionHeuristicPhaseScope<Solution_> phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope);
         phaseStarted(phaseScope);
 
+        // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
+        // (When it exhausts all values, it will start over from the beginning.)
+        // To prevent that, we need to limit the number of steps to the number of unassigned values.
+        var solutionDescriptor = solverScope.getSolutionDescriptor();
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        var supportsUnassignedValues = listVariableDescriptor != null && listVariableDescriptor.allowsUnassigned();
+        var maxStepCount = -1;
+        if (supportsUnassignedValues) {
+            var workingSolution = phaseScope.getWorkingSolution();
+            MutableLong valueCount = new MutableLong(listVariableDescriptor.getValueRangeSize(workingSolution, null));
+            solutionDescriptor.visitEntitiesByEntityClass(workingSolution,
+                    listVariableDescriptor.getEntityDescriptor().getEntityClass(), entity -> {
+                        var assignedValues = listVariableDescriptor.getValue(entity);
+                        valueCount.subtract(assignedValues.size());
+                        return false;
+                    });
+            maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
+        }
+
         for (Placement<Solution_> placement : entityPlacer) {
             ConstructionHeuristicStepScope<Solution_> stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
@@ -73,7 +93,8 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             doStep(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
-            if (phaseTermination.isPhaseTerminated(phaseScope)) {
+            if (phaseTermination.isPhaseTerminated(phaseScope)
+                    || (supportsUnassignedValues && stepScope.getStepIndex() >= maxStepCount)) {
                 break;
             }
         }

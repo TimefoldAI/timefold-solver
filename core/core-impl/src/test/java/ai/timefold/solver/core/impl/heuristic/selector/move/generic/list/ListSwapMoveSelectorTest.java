@@ -9,12 +9,8 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAll
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfMoveSelectorWithoutSize;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -129,11 +125,6 @@ class ListSwapMoveSelectorTest {
 
         // swap moves do not support uninitialized entities
         var listVariableDescriptor = getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector);
-        var initializedElements = scoreDirector.getInitializedUnassignedListVariableElements();
-        assertThat(initializedElements)
-                .containsOnly(Map.entry(listVariableDescriptor, Collections.emptySet()));
-        scoreDirector.initializeElements(Map.of(listVariableDescriptor, Set.of(v4)));
-
         var moveSelector = new ListSwapMoveSelector<>(
                 mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3, v4),
                 mockEntityIndependentValueSelector(listVariableDescriptor, v4, v3, v2, v1),
@@ -249,11 +240,6 @@ class ListSwapMoveSelectorTest {
 
         // swap moves do not support uninitialized entities
         var listVariableDescriptor = getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector);
-        var initializedElements = scoreDirector.getInitializedUnassignedListVariableElements();
-        assertThat(initializedElements)
-                .containsOnly(Map.entry(listVariableDescriptor, Collections.emptySet()));
-        scoreDirector.initializeElements(Map.of(listVariableDescriptor, Set.of(v4)));
-
         var moveSelector = new ListSwapMoveSelector<>(
                 // Value selectors are longer than the number of expected codes because they're expected
                 // to be never ending, so they must not be exhausted after the last asserted code.

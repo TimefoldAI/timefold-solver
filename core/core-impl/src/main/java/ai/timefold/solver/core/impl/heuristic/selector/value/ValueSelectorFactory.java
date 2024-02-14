@@ -36,7 +36,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.Reinitial
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SelectedCountLimitValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UninitializedListValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRecorder;
@@ -490,7 +490,7 @@ public class ValueSelectorFactory<Solution_>
             }
             valueSelector = listValueFilteringType == ListValueFilteringType.ACCEPT_ASSIGNED
                     ? new AssignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
-                    : new UninitializedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
+                    : new UnassignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
         }
         return valueSelector;
     }
@@ -513,6 +513,6 @@ public class ValueSelectorFactory<Solution_>
     public enum ListValueFilteringType {
         NONE,
         ACCEPT_ASSIGNED,
-        ACCEPT_UNINITIALIZED,
+        ACCEPT_UNASSIGNED,
     }
 }

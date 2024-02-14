@@ -6,7 +6,6 @@ import java.util.Iterator;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -63,16 +62,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             return null;
         }
         var upcomingSource = listVariableDataSupply.getLocationInList(upcomingLeftValue);
-        if (upcomingSource == null) {
-            if (upcomingDestination instanceof LocationInList destinationElement) {
-                return CompositeMove.buildMove(
-                        new ListInitializeMove<>(listVariableDescriptor, upcomingLeftValue),
-                        new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
-                                destinationElement.index()));
-            } else {
-                return new ListInitializeMove<>(listVariableDescriptor, upcomingLeftValue);
-            }
-        } else if (upcomingSource instanceof LocationInList sourceElement) {
+        if (upcomingSource instanceof LocationInList sourceElement) {
             if (upcomingDestination instanceof LocationInList destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
                         destinationElement.entity(), destinationElement.index());
@@ -84,6 +74,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
                 return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
                         destinationElement.index());
             } else {
+                // Only used in construction heuristics to give the CH an option to leave the element unassigned.
                 return NoChangeMove.getInstance();
             }
         }

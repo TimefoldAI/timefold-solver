@@ -55,30 +55,6 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     }
 
     @Override
-    public void beforeListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableBeforeInitializationAction<>(element, variableDescriptor));
-        delegate.beforeListVariableElementInitialized(variableDescriptor, element);
-    }
-
-    @Override
-    public void afterListVariableElementInitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableAfterInitializationAction<>(element, variableDescriptor));
-        delegate.afterListVariableElementInitialized(variableDescriptor, element);
-    }
-
-    @Override
-    public void beforeListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableBeforeUninitializationAction<>(element, variableDescriptor));
-        delegate.beforeListVariableElementUninitialized(variableDescriptor, element);
-    }
-
-    @Override
-    public void afterListVariableElementUninitialized(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableAfterUninitializationAction<>(element, variableDescriptor));
-        delegate.afterListVariableElementUninitialized(variableDescriptor, element);
-    }
-
-    @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
         delegate.beforeListVariableElementAssigned(variableDescriptor, element);
