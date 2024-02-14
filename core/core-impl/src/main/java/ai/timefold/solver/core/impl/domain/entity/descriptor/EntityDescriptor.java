@@ -174,16 +174,11 @@ public class EntityDescriptor<Solution_> {
                 throw new IllegalStateException(
                         "Impossible state: method called without an applicable list variable descriptor.");
             }
-            var applicableShadowDescriptors = getShadowVariableDescriptors()
-                    .stream()
-                    .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_>)
-                    .toList();
-            if (applicableShadowDescriptors.size() != 1) {
+            var applicableShadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
+            if (applicableShadowDescriptor == null) {
                 throw new IllegalStateException(
                         "Impossible state: method called without an applicable list variable descriptor.");
             }
-            var applicableShadowDescriptor =
-                    (InverseRelationShadowVariableDescriptor<Solution_>) applicableShadowDescriptors.get(0);
 
             hasNoNullVariablesListVar = getHasNoNullVariablesPredicateBasicVar()
                     .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
