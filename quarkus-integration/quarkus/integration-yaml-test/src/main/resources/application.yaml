@@ -1,0 +1,6 @@
+quarkus:
+  timefold:
+    solver:
+      termination:
+        bestScoreLimit: 0hard/5soft
+        spentLimit: 30s
