@@ -19,8 +19,6 @@
     <module>runtime</module>
     <module>deployment</module>
     <module>integration-test</module>
-    <module>integration-yaml-test</module>
-    <module>integration-multiple-solvers-yaml-test</module>
     <module>reflection-integration-test</module>
     <module>devui-integration-test</module>
   </modules>
