@@ -28,8 +28,8 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     private Object upcomingLeftValue;
 
     public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                                    EntityIndependentValueSelector<Solution_> leftValueSelector,
-                                    EntityIndependentValueSelector<Solution_> rightValueSelector) {
+            EntityIndependentValueSelector<Solution_> leftValueSelector,
+            EntityIndependentValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
         this.leftValueIterator = leftValueSelector.iterator();
@@ -52,7 +52,7 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     }
 
     static <Solution_> Move<Solution_> buildSwapMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-                                                     ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue, Object upcomingRightValue) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue, Object upcomingRightValue) {
         if (upcomingLeftValue == upcomingRightValue) {
             return NoChangeMove.getInstance();
         }

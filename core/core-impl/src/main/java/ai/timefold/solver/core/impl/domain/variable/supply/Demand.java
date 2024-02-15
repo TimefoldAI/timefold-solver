@@ -19,12 +19,4 @@ public interface Demand<Supply_ extends Supply> {
      */
     Supply_ createExternalizedSupply(SupplyManager supplyManager);
 
-    /**
-     * Not required to be implemented for demands which do not transitively use other demands.
-     * Never to be called by user code.
-     */
-    default void cancel(SupplyManager supplyManager) {
-
-    }
-
 }

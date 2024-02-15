@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
-import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 
 final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
@@ -73,14 +72,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     private void retract(Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var index = 0;
-        for (var element : assignedElements) {
-            var oldElementLocation = elementLocationMap.put(element, ElementLocation.unassigned());
-            if (oldElementLocation == null) {
-                throw new IllegalStateException(
-                        "The supply (%s) is corrupted, because the element (%s) at index (%d) did not exist."
-                                .formatted(this, element, index));
-            } else if (oldElementLocation instanceof LocationInList oldLocationInlist) {
+        for (var index = 0; index < assignedElements.size(); index++) {
+            var element = assignedElements.get(index);
+            var oldElementLocation = elementLocationMap.remove(element);
+            if (oldElementLocation instanceof LocationInList oldLocationInlist) {
                 var oldIndex = oldLocationInlist.index();
                 if (oldIndex != index) {
                     throw new IllegalStateException(
@@ -92,7 +87,6 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) was already unassigned (%s)."
                                 .formatted(this, element, index, oldElementLocation));
             }
-            index++;
             unassignedCount++;
         }
     }
@@ -122,15 +116,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
         for (var index = startIndex; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
             var oldLocation = elementLocationMap.put(element, new LocationInList(entity, index));
-            if (oldLocation == null || oldLocation instanceof UnassignedLocation) {
+            if (!(oldLocation instanceof LocationInList)) {
                 // Fixes the lack of before/afterListVariableElementAssigned().
                 unassignedCount--;
-            }
-            // The first element is allowed to have a null oldIndex because it might have been just assigned.
-            if (oldLocation == null && index != startIndex) {
-                throw new IllegalStateException(
-                        "The supply (%s) is corrupted, because the element (%s) at index (%d) did not exist before."
-                                .formatted(this, element, index));
             }
         }
     }

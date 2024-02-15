@@ -15,6 +15,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -155,7 +156,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
             if (chained) {
                 return new SingletonInverseVariableDemand<>(sourceVariableDescriptor);
             } else {
-                return new SingletonListInverseVariableDemand<>((ListVariableDescriptor<Solution_>) sourceVariableDescriptor);
+                return new ListVariableStateDemand<>((ListVariableDescriptor<Solution_>) sourceVariableDescriptor);
             }
         } else {
             return new CollectionInverseVariableDemand<>(sourceVariableDescriptor);

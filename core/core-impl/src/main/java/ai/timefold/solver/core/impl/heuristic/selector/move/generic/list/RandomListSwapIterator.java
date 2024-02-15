@@ -22,8 +22,8 @@ public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator
     private final Iterator<Object> rightValueIterator;
 
     public RandomListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                                  EntityIndependentValueSelector<Solution_> leftValueSelector,
-                                  EntityIndependentValueSelector<Solution_> rightValueSelector) {
+            EntityIndependentValueSelector<Solution_> leftValueSelector,
+            EntityIndependentValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
         this.leftValueIterator = leftValueSelector.iterator();

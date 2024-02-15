@@ -69,7 +69,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     }
 
     public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
-                               ListVariableStateSupply<?> listVariableStateSupply, Object value) {
+            ListVariableStateSupply<?> listVariableStateSupply, Object value) {
         var elementLocation = listVariableStateSupply.getLocationInList(value);
         if (elementLocation instanceof LocationInList elementLocationInList) {
             var entity = elementLocationInList.entity();

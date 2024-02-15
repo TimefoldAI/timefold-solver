@@ -29,7 +29,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     private Object upcomingValue;
 
     public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                                      EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.valueIterator = valueSelector.iterator();
@@ -55,8 +55,8 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-                                                       ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue,
-                                                       Iterator<ElementLocation> destinationIterator) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue,
+            Iterator<ElementLocation> destinationIterator) {
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (upcomingDestination == null) {
             return null;

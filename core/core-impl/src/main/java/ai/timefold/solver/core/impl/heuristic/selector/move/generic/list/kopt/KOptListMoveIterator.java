@@ -25,8 +25,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     private final int maxCyclesPatchedInInfeasibleMove;
 
     public KOptListMoveIterator(Random workingRandom, ListVariableDescriptor<Solution_> listVariableDescriptor,
-                                ListVariableStateSupply<Solution_> listVariableStateSupply, EntityIndependentValueSelector<Node_> originSelector,
-                                EntityIndependentValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply, EntityIndependentValueSelector<Node_> originSelector,
+            EntityIndependentValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
         this.workingRandom = workingRandom;
         this.listVariableDescriptor = listVariableDescriptor;
         this.listVariableStateSupply = listVariableStateSupply;
@@ -209,8 +209,10 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                 }
             } else {
                 var descriptor = new KOptDescriptor<Node_>(pickedValues,
-                        KOptUtils.getMultiEntitySuccessorFunction(pickedValues, listVariableDescriptor, listVariableStateSupply),
-                        KOptUtils.getMultiEntityBetweenPredicate(pickedValues, listVariableDescriptor, listVariableStateSupply));
+                        KOptUtils.getMultiEntitySuccessorFunction(pickedValues, listVariableDescriptor,
+                                listVariableStateSupply),
+                        KOptUtils.getMultiEntityBetweenPredicate(pickedValues, listVariableDescriptor,
+                                listVariableStateSupply));
                 if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 } else {

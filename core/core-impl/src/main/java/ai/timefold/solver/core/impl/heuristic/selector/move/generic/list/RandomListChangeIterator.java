@@ -22,7 +22,7 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
     private final Iterator<ElementLocation> destinationIterator;
 
     public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                                    EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.valueIterator = valueSelector.iterator();

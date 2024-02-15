@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -29,7 +28,7 @@ public class SubListUnassignMove<Solution_> extends AbstractEasyMove<Solution_> 
         this(variableDescriptor, subList.entity(), subList.fromIndex(), subList.length());
     }
 
-    public SubListUnassignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
+    private SubListUnassignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
             int length) {
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
@@ -64,15 +63,14 @@ public class SubListUnassignMove<Solution_> extends AbstractEasyMove<Solution_> 
 
         var sourceList = variableDescriptor.getValue(sourceEntity);
         var subList = sourceList.subList(sourceIndex, sourceIndex + length);
-        planningValues = new ArrayList<>(subList);
 
-        innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
-        subList.clear();
-        innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
-        for (var element : planningValues) {
+        for (var element : subList) {
             innerScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
             innerScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
         }
+        innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
+        subList.clear();
+        innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
     }
 
     @Override

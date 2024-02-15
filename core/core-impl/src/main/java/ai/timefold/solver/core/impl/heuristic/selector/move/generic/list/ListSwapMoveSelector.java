@@ -42,7 +42,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
         movableLeftValueSelector = filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, listVariableStateSupply);
-        movableRightValueSelector = filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, listVariableStateSupply);
+        movableRightValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, listVariableStateSupply);
     }
 
     @Override

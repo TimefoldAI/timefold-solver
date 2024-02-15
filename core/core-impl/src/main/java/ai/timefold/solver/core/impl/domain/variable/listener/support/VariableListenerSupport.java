@@ -53,11 +53,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private void processShadowVariableDescriptor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
             var variableListener = listenerWithSources.getVariableListener();
-            if (variableListener instanceof Supply supply) {
+            if (variableListener instanceof Supply) {
                 // Non-sourced variable listeners (ie. ones provided by the user) can never be a supply.
-                var demand = shadowVariableDescriptor.getProvidedDemand();
-                demand.cancel(this);
-                supplyMap.put(demand, new SupplyWithDemandCount(supply, 1L));
+                demand(shadowVariableDescriptor.getProvidedDemand());
             }
             var globalOrder = shadowVariableDescriptor.getGlobalShadowOrder();
             notifiableRegistry.registerNotifiable(
@@ -103,7 +101,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         if (supplyWithDemandCount == null) {
             return false;
         }
-        demand.cancel(this);
         if (supplyWithDemandCount.demandCount == 1L) {
             supplyMap.remove(demand);
         } else {

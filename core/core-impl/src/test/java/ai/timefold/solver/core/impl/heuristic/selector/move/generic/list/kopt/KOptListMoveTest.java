@@ -15,7 +15,6 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -226,7 +225,7 @@ class KOptListMoveTest {
         var inverseVariableSupply = Mockito.mock(SingletonInverseVariableSupply.class);
 
         when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
-        when(supplyManager.demand(Mockito.any(SingletonListInverseVariableDemand.class))).thenReturn(inverseVariableSupply);
+        when(supplyManager.demand(Mockito.any(ListVariableStateDemand.class))).thenReturn(inverseVariableSupply);
         when(inverseVariableSupply.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
         when(inverseVariableSupply.getInverseSingleton(destinationE2.getValueList().get(0))).thenReturn(destinationE2);
 

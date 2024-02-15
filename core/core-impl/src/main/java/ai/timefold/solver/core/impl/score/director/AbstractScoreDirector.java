@@ -114,8 +114,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             var listVariableDataSupplyArray = new ListVariableStateSupply[variableDescriptorList.size()];
             for (var variableDescriptor : variableDescriptorList) {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                    listVariableDataSupplyArray[variableDescriptor.getOrdinal()] =
-                            variableListenerSupport.demand(listVariableDescriptor.getStateDemand());
+                    var demand = variableListenerSupport.demand(listVariableDescriptor.getStateDemand());
+                    listVariableDataSupplyArray[variableDescriptor.getOrdinal()] = demand;
                 }
             }
             listVariableDataSupplyArrayArray[entityDescriptor.getOrdinal()] = listVariableDataSupplyArray;
