@@ -4,10 +4,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractEasyMove;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
-public class ListUnassignMove<Solution_> extends AbstractEasyMove<Solution_> {
+public class ListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solution_> {
 
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final Object sourceEntity;

@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -15,6 +17,24 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
 
     private final AbstractScoreDirector<Solution_, ?, ?> delegate;
     private final List<ChangeAction<Solution_>> variableChanges;
+    /*
+     * The fromIndex of afterListVariableChanged must match the fromIndex of its beforeListVariableChanged call.
+     * Otherwise this will happen in the undo move:
+     *
+     * // beforeListVariableChanged(0, 3);
+     * [1, 2, 3, 4]
+     * change
+     * [1, 2, 3]
+     * // afterListVariableChanged(2, 3)
+     * // Start Undo
+     * // Undo afterListVariableChanged(2, 3)
+     * [1, 2, 3] -> [1, 2]
+     * // Undo beforeListVariableChanged(0, 3);
+     * [1, 2, 3, 4, 1, 2]
+     *
+     * This map exists to ensure that this is the case.
+     */
+    private final Map<Object, Integer> cache = new IdentityHashMap<>();
 
     VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate) {
         this.delegate = (AbstractScoreDirector<Solution_, ?, ?>) delegate;
@@ -42,6 +62,7 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
         // List is fromIndex, fromIndex, since the undo action for afterListVariableChange will clear the affected list
+        cache.put(entity, fromIndex);
         variableChanges.add(new ListVariableBeforeChangeAction<>(entity,
                 new ArrayList<>(variableDescriptor.getValue(entity).subList(fromIndex, toIndex)), fromIndex, toIndex,
                 variableDescriptor));
@@ -51,6 +72,14 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
+        Integer requiredFromIndex = cache.remove(entity);
+        if (requiredFromIndex != fromIndex) {
+            throw new IllegalArgumentException(
+                    """
+                            The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
+                            Maybe check implementation of your %s."""
+                            .formatted(fromIndex, requiredFromIndex, AbstractSimplifiedMove.class.getSimpleName()));
+        }
         variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
         delegate.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }

@@ -23,6 +23,8 @@ public interface ListVariableElementStateSupply<Solution_> extends
     ElementLocation getLocationInList(Object value);
 
     /**
+     * Consider colling this before {@link #isAssigned(Object)} to eliminate some map accesses.
+     * If unassigned count is 0, {@link #isAssigned(Object)} is guaranteed to return true.
      *
      * @return number of elements for which {@link #isAssigned(Object)} would return false.
      */

@@ -7,8 +7,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 /**
- * Abstract superclass for {@link Move}, requiring the implementation of custom undo moves.
- * Consider using {@link AbstractEasyMove} instead.
+ * Abstract superclass for {@link Move}, requiring implementation of undo moves.
+ * Unless raw performance is a concern, consider using {@link AbstractSimplifiedMove} instead.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see Move

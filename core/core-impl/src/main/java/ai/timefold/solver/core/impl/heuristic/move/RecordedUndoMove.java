@@ -6,12 +6,12 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-final class EasyUndoMove<Solution_> implements Move<Solution_> {
+final class RecordedUndoMove<Solution_> implements Move<Solution_> {
 
     private final List<ChangeAction<Solution_>> changeActions;
     private final Supplier<String> sourceToString;
 
-    EasyUndoMove(List<ChangeAction<Solution_>> changeActions, Supplier<String> sourceToString) {
+    RecordedUndoMove(List<ChangeAction<Solution_>> changeActions, Supplier<String> sourceToString) {
         this.changeActions = changeActions;
         this.sourceToString = sourceToString;
     }
