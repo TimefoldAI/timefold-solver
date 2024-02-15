@@ -37,6 +37,7 @@ Developed by the original OptaPlanner team, our aim is to free the world of wast
 +
 ----
 $ sdk install java
+
 $ sdk install maven
 ----
 
