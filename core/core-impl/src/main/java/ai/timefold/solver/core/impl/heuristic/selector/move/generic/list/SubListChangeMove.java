@@ -83,8 +83,9 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
             return true;
         } else if (destinationIndex == sourceIndex) {
             return false;
+        } else {
+            return destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
         }
-        return destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
     }
 
     @Override

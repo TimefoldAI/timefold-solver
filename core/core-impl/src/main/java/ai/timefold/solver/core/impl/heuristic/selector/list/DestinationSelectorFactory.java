@@ -71,10 +71,6 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         return (EntityIndependentValueSelector<Solution_>) valueSelector;
     }
 
-    private boolean hasNearbySelection() {
-        return TimefoldSolverEnterpriseService.load() != null && config.getNearbySelectionConfig() != null;
-    }
-
     private DestinationSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder,
             ElementDestinationSelector<Solution_> destinationSelector) {

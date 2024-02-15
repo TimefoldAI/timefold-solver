@@ -20,6 +20,7 @@ public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution
         return new RecordedUndoMove<>(recordingScoreDirector.getVariableChanges(), this::toString);
     }
 
+    @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
         doMoveOnGenuineVariables(scoreDirector);
         scoreDirector.triggerVariableListeners();

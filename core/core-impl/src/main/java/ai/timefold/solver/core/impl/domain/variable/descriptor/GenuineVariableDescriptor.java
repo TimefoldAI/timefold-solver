@@ -6,11 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -303,12 +301,6 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     public long getValueRangeSize(Solution_ solution, Object entity) {
         return valueRangeDescriptor.extractValueRangeSize(solution, entity);
-    }
-
-    public Iterator<?> getValuesFromValueRange(Solution_ solution, Object entity) {
-        var valueRange = (CountableValueRange<Object>) getValueRangeDescriptor()
-                .extractValueRange(solution, entity);
-        return valueRange.createOriginalIterator();
     }
 
     @Override

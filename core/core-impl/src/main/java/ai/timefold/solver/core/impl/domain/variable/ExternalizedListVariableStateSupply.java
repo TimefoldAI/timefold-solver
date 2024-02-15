@@ -52,6 +52,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object o) {
+        // No need to do anything.
     }
 
     @Override
@@ -61,6 +62,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object o) {
+        // No need to do anything.
     }
 
     @Override
@@ -104,6 +106,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void beforeListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object o, int fromIndex, int toIndex) {
+        // No need to do anything.
     }
 
     @Override

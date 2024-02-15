@@ -557,7 +557,8 @@ public class SolutionDescriptor<Solution_> {
     private void validateListVariableDescriptors() {
         if (listVariableDescriptorList.isEmpty()) {
             return;
-        } else if (listVariableDescriptorList.size() > 1) {
+        }
+        if (listVariableDescriptorList.size() > 1) {
             throw new UnsupportedOperationException(
                     "Defining multiple list variables (%s) across the model is currently not supported."
                             .formatted(listVariableDescriptorList));

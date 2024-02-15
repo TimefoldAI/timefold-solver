@@ -35,17 +35,14 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     }
 
     private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {
-        var allowsUnassigned = planningVariableAnnotation.allowsUnassigned();
         var deprecatedNullable = planningVariableAnnotation.nullable();
-        if (allowsUnassigned) { // If the user has specified allowsUnassigned = true, it takes precedence.
+        if (planningVariableAnnotation.allowsUnassigned()) {
+            // If the user has specified allowsUnassigned = true, it takes precedence.
             if (deprecatedNullable) {
                 throw new IllegalArgumentException(
                         "The entityClass (%s) has a @%s-annotated property (%s) with allowsUnassigned (%s) and nullable (%s) which are mutually exclusive."
-                                .formatted(entityDescriptor.getEntityClass(),
-                                        PlanningVariable.class.getSimpleName(),
-                                        variableMemberAccessor.getName(),
-                                        allowsUnassigned,
-                                        deprecatedNullable));
+                                .formatted(entityDescriptor.getEntityClass(), PlanningVariable.class.getSimpleName(),
+                                        variableMemberAccessor.getName(), true, true));
             }
             this.allowsUnassigned = true;
         } else { // If the user has not specified allowsUnassigned = true, nullable is taken.

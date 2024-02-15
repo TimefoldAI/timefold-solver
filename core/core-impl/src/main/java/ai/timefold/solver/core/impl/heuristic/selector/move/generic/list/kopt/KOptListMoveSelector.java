@@ -54,9 +54,9 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     private EntityIndependentValueSelector<Solution_> createEffectiveValueSelector(
             EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
             ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        var effectiveValueSelector =
+        var filteredValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableStateSupply);
-        return filterNotAssignedValues(effectiveValueSelector, listVariableStateSupply);
+        return filterNotAssignedValues(filteredValueSelector, listVariableStateSupply);
     }
 
     private EntityIndependentValueSelector<Solution_> filterNotAssignedValues(
