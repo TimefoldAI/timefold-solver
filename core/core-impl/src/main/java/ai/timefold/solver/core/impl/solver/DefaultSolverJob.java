@@ -208,18 +208,17 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     @Override
     public Duration getSolvingDuration() {
-        SolverScope<Solution_> solverScope = solver.getSolverScope();
-        Long startingSystemTimeMillis = solverScope.getStartingSystemTimeMillis();
-        if (startingSystemTimeMillis == null) {
-            // The solver hasn't started yet
-            return Duration.ZERO;
-        }
-        Long endingSystemTimeMillis = solverScope.getEndingSystemTimeMillis();
-        if (endingSystemTimeMillis == null) {
-            // The solver hasn't ended yet
-            endingSystemTimeMillis = System.currentTimeMillis();
-        }
-        return Duration.ofMillis(endingSystemTimeMillis - startingSystemTimeMillis);
+        return Duration.ofMillis(solver.getTimeMillisSpent());
+    }
+
+    @Override
+    public long getScoreCalculationCount() {
+        return solver.getScoreCalculationCount();
+    }
+
+    @Override
+    public long getScoreCalculationSpeed() {
+        return solver.getScoreCalculationSpeed();
     }
 
     public Termination<Solution_> getSolverTermination() {

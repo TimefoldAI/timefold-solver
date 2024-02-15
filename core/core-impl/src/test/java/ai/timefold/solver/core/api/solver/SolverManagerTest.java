@@ -293,6 +293,35 @@ class SolverManagerTest {
     }
 
     @Test
+    void testScoreCalculationCountForFinishedJob() throws ExecutionException, InterruptedException {
+        // Terminate after exactly 5 score calculations
+        var terminationConfig = new TerminationConfig()
+                .withScoreCalculationCountLimit(5L);
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withTerminationConfig(terminationConfig);
+
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        var problem = PlannerTestUtils.generateTestdataSolution("s1");
+        var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                .withProblemId(2L)
+                .withProblem(problem)
+                .run();
+
+        solverJob.getFinalBestSolution();
+        assertThat(solverJob.getScoreCalculationCount()).isEqualTo(5L);
+
+        // Score calculation speed and solve duration are non-deterministic.
+        // On an exceptionally fast machine, getSolvingDuration() can return Duration.ZERO.
+        // On an exceptionally slow machine, getScoreCalculationSpeed() can be 0 due to flooring
+        // (i.e. by taking more than 5 seconds to finish solving).
+        assertThat(solverJob.getSolvingDuration()).isGreaterThanOrEqualTo(Duration.ZERO);
+        assertThat(solverJob.getScoreCalculationSpeed()).isGreaterThanOrEqualTo(0L);
+    }
+
+    @Test
     void testSolveBuilderForExistingSolvingMethods() {
         SolverJobBuilder<TestdataSolution, Long> solverJobBuilder = mock(SolverJobBuilder.class);
         SolverManager<TestdataSolution, Long> solverManager = mock(SolverManager.class);
