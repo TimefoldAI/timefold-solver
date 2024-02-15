@@ -136,58 +136,53 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
     // Overloads without known variable descriptors
     // ************************************************************************
 
+    VariableDescriptorCache<Solution_> getVariableDescriptorCache();
+
     @Override
     default void beforeVariableChanged(Object entity, String variableName) {
-        var variableDescriptor = getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeVariableChanged(variableDescriptor, entity);
+        beforeVariableChanged(getVariableDescriptorCache().getVariableDescriptor(entity, variableName), entity);
     }
 
     @Override
     default void afterVariableChanged(Object entity, String variableName) {
-        var variableDescriptor = getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterVariableChanged(variableDescriptor, entity);
+        afterVariableChanged(getVariableDescriptorCache().getVariableDescriptor(entity, variableName), entity);
     }
 
     @Override
     default void beforeListVariableElementAssigned(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementAssigned(listVariableDescriptor, element);
+        beforeListVariableElementAssigned(getVariableDescriptorCache().getListVariableDescriptor(entity, variableName),
+                element);
     }
 
     @Override
     default void afterListVariableElementAssigned(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementAssigned(listVariableDescriptor, element);
+        afterListVariableElementAssigned(getVariableDescriptorCache().getListVariableDescriptor(entity, variableName), element);
     }
 
     @Override
     default void beforeListVariableElementUnassigned(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementUnassigned(listVariableDescriptor, element);
+        beforeListVariableElementUnassigned(getVariableDescriptorCache().getListVariableDescriptor(entity, variableName),
+                element);
     }
 
     @Override
     default void afterListVariableElementUnassigned(Object entity, String variableName, Object element) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementUnassigned(listVariableDescriptor, element);
+        afterListVariableElementUnassigned(getVariableDescriptorCache().getListVariableDescriptor(entity, variableName),
+                element);
     }
 
     @Override
     default void beforeListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableChanged(listVariableDescriptor, entity, fromIndex, toIndex);
+        beforeListVariableChanged(getVariableDescriptorCache().getListVariableDescriptor(entity, variableName), entity,
+                fromIndex,
+                toIndex);
     }
 
     @Override
     default void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-        var listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableChanged(listVariableDescriptor, entity, fromIndex, toIndex);
+        afterListVariableChanged(getVariableDescriptorCache().getListVariableDescriptor(entity, variableName), entity,
+                fromIndex,
+                toIndex);
     }
 
 }

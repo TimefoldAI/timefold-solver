@@ -58,8 +58,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final LookUpManager lookUpManager;
     private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
+    private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
-
     /**
      * The first dimension is the entity descriptor ordinal.
      * The second dimension is the ordinal of list variable descriptor in that entity.
@@ -90,6 +90,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 : null;
         this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
         this.scoreDirectorFactory = scoreDirectorFactory;
+        this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
         this.listVariableDataSupplies = buildListVariableDataSupplies(solutionDescriptor, variableListenerSupport);
@@ -122,12 +123,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return listVariableDataSupplyArrayArray;
     }
 
-    protected ListVariableDataSupply<Solution_>
-            getListVariableDataSupply(ListVariableDescriptor<Solution_> listVariableDescriptor) {
-        return listVariableDataSupplies[listVariableDescriptor.getEntityDescriptor().getOrdinal()][listVariableDescriptor
-                .getOrdinal()];
-    }
-
     @Override
     public Factory_ getScoreDirectorFactory() {
         return scoreDirectorFactory;
@@ -141,6 +136,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public ScoreDefinition<Score_> getScoreDefinition() {
         return scoreDirectorFactory.getScoreDefinition();
+    }
+
+    @Override
+    public VariableDescriptorCache<Solution_> getVariableDescriptorCache() {
+        return variableDescriptorCache;
     }
 
     @Override

@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
 final class VariableChangeRecordingScoreDirector<Solution_> implements VariableDescriptorAwareScoreDirector<Solution_> {
 
@@ -88,6 +89,11 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     @Override
     public Solution_ getWorkingSolution() {
         return delegate.getWorkingSolution();
+    }
+
+    @Override
+    public VariableDescriptorCache<Solution_> getVariableDescriptorCache() {
+        return delegate.getVariableDescriptorCache();
     }
 
     @Override
