@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -108,9 +108,9 @@ final class KOptUtils {
 
     @SuppressWarnings("unchecked")
     public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(Node_[] pickedValues,
-            ListVariableDescriptor<?> listVariableDescriptor, ListVariableDataSupply<?> listVariableDataSupply) {
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableDataSupply, listVariableDescriptor);
-        return node -> entityOrderInfo.successor(node, listVariableDescriptor, listVariableDataSupply);
+            ListVariableDescriptor<?> listVariableDescriptor, ListVariableStateSupply<?> listVariableStateSupply) {
+        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply, listVariableDescriptor);
+        return node -> entityOrderInfo.successor(node, listVariableDescriptor, listVariableStateSupply);
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getBetweenPredicate(IndexVariableSupply indexVariableSupply) {
@@ -130,9 +130,9 @@ final class KOptUtils {
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getMultiEntityBetweenPredicate(Node_[] pickedValues,
-            ListVariableDescriptor<?> listVariableDescriptor, ListVariableDataSupply<?> listVariableDataSupply) {
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableDataSupply, listVariableDescriptor);
-        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableDataSupply);
+            ListVariableDescriptor<?> listVariableDescriptor, ListVariableStateSupply<?> listVariableStateSupply) {
+        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply, listVariableDescriptor);
+        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableStateSupply);
     }
 
     public static void flipSubarray(int[] array, int fromIndexInclusive, int toIndexExclusive) {

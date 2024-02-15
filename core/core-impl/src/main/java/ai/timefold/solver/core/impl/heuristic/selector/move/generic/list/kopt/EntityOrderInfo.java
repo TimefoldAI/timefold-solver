@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
@@ -54,8 +54,8 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
 
     @SuppressWarnings("unchecked")
     public <Node_> Node_ successor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableDataSupply<?> listVariableDataSupply) {
-        var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(object);
+            ListVariableStateSupply<?> listVariableStateSupply) {
+        var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(object);
         var entity = elementLocation.entity();
         var indexInEntityList = elementLocation.index();
         var listVariable = listVariableDescriptor.getValue(entity);
@@ -73,8 +73,8 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
 
     @SuppressWarnings("unchecked")
     public <Node_> Node_ predecessor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableDataSupply<?> listVariableDataSupply) {
-        var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(object);
+            ListVariableStateSupply<?> listVariableStateSupply) {
+        var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(object);
         var entity = elementLocation.entity();
         var indexInEntityList = elementLocation.index();
         var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
@@ -90,10 +90,10 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
         }
     }
 
-    public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, ListVariableDataSupply<?> listVariableDataSupply) {
-        var startElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(start);
-        var middleElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(middle);
-        var endElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(end);
+    public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, ListVariableStateSupply<?> listVariableStateSupply) {
+        var startElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(start);
+        var middleElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(middle);
+        var endElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(end);
         int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
         int middleEntityIndex = entityToEntityIndex.get(middleElementLocation.entity());
         int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());

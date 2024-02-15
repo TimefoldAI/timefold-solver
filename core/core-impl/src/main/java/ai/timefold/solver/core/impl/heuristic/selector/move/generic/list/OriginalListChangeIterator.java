@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
  */
 public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final ListVariableDataSupply<Solution_> listVariableDataSupply;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
@@ -28,9 +28,9 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
 
     private Object upcomingValue;
 
-    public OriginalListChangeIterator(ListVariableDataSupply<Solution_> listVariableDataSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
-        this.listVariableDataSupply = listVariableDataSupply;
+    public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+                                      EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+        this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
@@ -46,7 +46,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             upcomingValue = valueIterator.next();
             destinationIterator = destinationSelector.iterator();
         }
-        var move = buildChangeMove(listVariableDescriptor, listVariableDataSupply, upcomingValue, destinationIterator);
+        var move = buildChangeMove(listVariableDescriptor, listVariableStateSupply, upcomingValue, destinationIterator);
         if (move == null) {
             return noUpcomingSelection();
         } else {
@@ -55,13 +55,13 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableDataSupply<Solution_> listVariableDataSupply, Object upcomingLeftValue,
-            Iterator<ElementLocation> destinationIterator) {
+                                                       ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue,
+                                                       Iterator<ElementLocation> destinationIterator) {
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (upcomingDestination == null) {
             return null;
         }
-        var upcomingSource = listVariableDataSupply.getLocationInList(upcomingLeftValue);
+        var upcomingSource = listVariableStateSupply.getLocationInList(upcomingLeftValue);
         if (upcomingSource instanceof LocationInList sourceElement) {
             if (upcomingDestination instanceof LocationInList destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),

@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -43,7 +43,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     private final EntityIndependentValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
 
-    private ListVariableDataSupply<Solution_> listVariableDataSupply;
+    private ListVariableStateSupply<Solution_> listVariableStateSupply;
     private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector,
@@ -61,14 +61,14 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
-        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableDataSupply);
+        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableStateSupply);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        listVariableDataSupply = null;
+        listVariableStateSupply = null;
         movableValueSelector = null;
     }
 
@@ -92,7 +92,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
             var totalValueSize = getEffectiveValueSelector().getSize()
-                    - (allowsUnassignedValues ? listVariableDataSupply.countUnassigned() : 0);
+                    - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
             return new ElementLocationRandomIterator(entityIterator, totalSize, allowsUnassignedValues);
         } else {
@@ -112,7 +112,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             // Value selector guarantees only unpinned values.
             stream = Stream.concat(stream,
                     StreamSupport.stream(getEffectiveValueSelector().spliterator(), false)
-                            .map(v -> listVariableDataSupply.getLocationInList(v))
+                            .map(v -> listVariableStateSupply.getLocationInList(v))
                             .flatMap(elementLocation -> elementLocation instanceof LocationInList locationInList
                                     ? Stream.of(locationInList)
                                     : Stream.empty())
@@ -213,7 +213,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 effectiveValueSelector =
                         (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(effectiveValueSelector,
                                 (ScoreDirector<Solution_> scoreDirector,
-                                        Object selection) -> listVariableDataSupply.getInverseSingleton(selection) != null);
+                                        Object selection) -> listVariableStateSupply.getInverseSingleton(selection) != null);
             }
             return effectiveValueSelector.iterator();
         }
@@ -245,7 +245,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                     valueIterator = getValueIterator(allowsUnassignedValues);
                 }
                 var value = valueIterator.next();
-                var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(value);
+                var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(value);
                 return new LocationInList(elementLocation.entity(), elementLocation.index() + 1);
             }
         }

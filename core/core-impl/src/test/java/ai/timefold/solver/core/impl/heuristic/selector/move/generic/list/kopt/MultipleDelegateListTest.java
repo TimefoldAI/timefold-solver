@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
@@ -38,7 +38,7 @@ public class MultipleDelegateListTest {
 
         Mockito.when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
 
-        ListVariableDataSupply<Object> listVariableDataSupply = mock(ListVariableDataSupply.class);
+        ListVariableStateSupply<Object> listVariableStateSupply = mock(ListVariableStateSupply.class);
         doAnswer(invocation -> {
             String value = invocation.getArgument(0);
             return switch (value) {
@@ -50,15 +50,15 @@ public class MultipleDelegateListTest {
                 case "f" -> new LocationInList("e3", 0);
                 default -> ElementLocation.unassigned();
             };
-        }).when(listVariableDataSupply).getLocationInList(Mockito.anyString());
+        }).when(listVariableStateSupply).getLocationInList(Mockito.anyString());
 
         List<String> expectedOrder = List.of("a", "b", "c", "d", "e", "f");
         for (int i = 0; i < expectedOrder.size(); i++) {
-            assertThat(combined.getIndexOfValue(listVariableDescriptor, listVariableDataSupply, expectedOrder.get(i)))
+            assertThat(combined.getIndexOfValue(listVariableDescriptor, listVariableStateSupply, expectedOrder.get(i)))
                     .isEqualTo(i);
         }
 
-        assertThatCode(() -> combined.getIndexOfValue(listVariableDescriptor, listVariableDataSupply, "g"))
+        assertThatCode(() -> combined.getIndexOfValue(listVariableDescriptor, listVariableStateSupply, "g"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Value (g) is not contained in any entity list");
     }

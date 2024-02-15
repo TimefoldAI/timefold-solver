@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
@@ -16,7 +16,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private final Random workingRandom;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
-    private final ListVariableDataSupply<Solution_> listVariableDataSupply;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final EntityIndependentValueSelector<Node_> originSelector;
     private final EntityIndependentValueSelector<Node_> valueSelector;
     private final int minK;
@@ -25,11 +25,11 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     private final int maxCyclesPatchedInInfeasibleMove;
 
     public KOptListMoveIterator(Random workingRandom, ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableDataSupply<Solution_> listVariableDataSupply, EntityIndependentValueSelector<Node_> originSelector,
-            EntityIndependentValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
+                                ListVariableStateSupply<Solution_> listVariableStateSupply, EntityIndependentValueSelector<Node_> originSelector,
+                                EntityIndependentValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
         this.workingRandom = workingRandom;
         this.listVariableDescriptor = listVariableDescriptor;
-        this.listVariableDataSupply = listVariableDataSupply;
+        this.listVariableStateSupply = listVariableStateSupply;
         this.originSelector = originSelector;
         this.valueSelector = valueSelector;
         this.minK = minK;
@@ -59,7 +59,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             // Was unable to find a K-Opt move
             return NoChangeMove.getInstance();
         }
-        return descriptor.getKOptListMove(listVariableDescriptor, listVariableDataSupply);
+        return descriptor.getKOptListMove(listVariableDescriptor, listVariableStateSupply);
     }
 
     private Move<Solution_> pickTwoOptMove() {
@@ -77,15 +77,15 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         Object firstValue = originIterator.next();
         Object secondValue = valueIterator.next();
 
-        var firstElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(firstValue);
-        var secondElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(secondValue);
+        var firstElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(firstValue);
+        var secondElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(secondValue);
         return new TwoOptListMove<>(listVariableDescriptor, firstElementLocation.entity(), secondElementLocation.entity(),
                 firstElementLocation.index(), secondElementLocation.index());
     }
 
     @SuppressWarnings("unchecked")
     private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) {
-        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableDataSupply, listVariableDescriptor);
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply, listVariableDescriptor);
         return (Iterator<Node_>) workingRandom.ints(0, entityOrderInfo.entities().length)
                 .mapToObj(index -> {
                     var entity = entityOrderInfo.entities()[index];
@@ -111,7 +111,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         var remainingAttempts = 20;
         while (remainingAttempts > 0
                 && getEffectiveListSize(listVariableDescriptor,
-                        listVariableDataSupply.getInverseSingleton(pickedValues[1])) < 2) {
+                        listVariableStateSupply.getInverseSingleton(pickedValues[1])) < 2) {
             do {
                 if (!originIterator.hasNext()) {
                     return null;
@@ -126,7 +126,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             return null;
         }
 
-        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableDataSupply, listVariableDescriptor);
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply, listVariableDescriptor);
         pickedValues[2] = workingRandom.nextBoolean() ? getNodeSuccessor(entityOrderInfo, pickedValues[1])
                 : getNodePredecessor(entityOrderInfo, pickedValues[1]);
 
@@ -159,7 +159,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         while (remainingAttempts > 0) {
             nextRemovedEdgePoint = valueIterator.next();
             var newEntityOrderInfo =
-                    entityOrderInfo.withNewNode(nextRemovedEdgePoint, listVariableDescriptor, listVariableDataSupply);
+                    entityOrderInfo.withNewNode(nextRemovedEdgePoint, listVariableDescriptor, listVariableStateSupply);
             while (nextRemovedEdgePoint == getNodePredecessor(newEntityOrderInfo, previousRemovedEdgeEndpoint) ||
                     nextRemovedEdgePoint == getNodeSuccessor(newEntityOrderInfo, previousRemovedEdgeEndpoint) ||
                     isEdgeAlreadyAdded(pickedValues, previousRemovedEdgeEndpoint, nextRemovedEdgePoint, pickedSoFar - 2) ||
@@ -174,7 +174,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                 }
                 nextRemovedEdgePoint = valueIterator.next();
                 newEntityOrderInfo =
-                        entityOrderInfo.withNewNode(nextRemovedEdgePoint, listVariableDescriptor, listVariableDataSupply);
+                        entityOrderInfo.withNewNode(nextRemovedEdgePoint, listVariableDescriptor, listVariableStateSupply);
                 remainingAttempts--;
             }
             remainingAttempts--;
@@ -209,8 +209,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                 }
             } else {
                 var descriptor = new KOptDescriptor<Node_>(pickedValues,
-                        KOptUtils.getMultiEntitySuccessorFunction(pickedValues, listVariableDescriptor, listVariableDataSupply),
-                        KOptUtils.getMultiEntityBetweenPredicate(pickedValues, listVariableDescriptor, listVariableDataSupply));
+                        KOptUtils.getMultiEntitySuccessorFunction(pickedValues, listVariableDescriptor, listVariableStateSupply),
+                        KOptUtils.getMultiEntityBetweenPredicate(pickedValues, listVariableDescriptor, listVariableStateSupply));
                 if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 } else {
@@ -343,8 +343,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             addedEdgeToOtherEndpoint[addedEdgeToOtherEndpoint[2 * k + 1] = 2 * (k + patchedCycleCount)] =
                     2 * k + 1;
             return new KOptDescriptor<>(removedEdges, addedEdgeToOtherEndpoint,
-                    KOptUtils.getMultiEntitySuccessorFunction(removedEdges, listVariableDescriptor, listVariableDataSupply),
-                    KOptUtils.getMultiEntityBetweenPredicate(removedEdges, listVariableDescriptor, listVariableDataSupply));
+                    KOptUtils.getMultiEntitySuccessorFunction(removedEdges, listVariableDescriptor, listVariableStateSupply),
+                    KOptUtils.getMultiEntityBetweenPredicate(removedEdges, listVariableDescriptor, listVariableStateSupply));
         }
         return originalMove;
     }
@@ -386,8 +386,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private int getSegmentSize(EntityOrderInfo entityOrderInfo, Object from, Object to) {
         var entityToEntityIndex = entityOrderInfo.entityToEntityIndex();
-        var startElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(from);
-        var endElementLocation = (LocationInList) listVariableDataSupply.getLocationInList(to);
+        var startElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(from);
+        var endElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(to);
         int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
         int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
         var offsets = entityOrderInfo.offsets();
@@ -427,7 +427,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     private boolean isNodeEndpointOfList(Object node) {
-        var elementLocation = (LocationInList) listVariableDataSupply.getLocationInList(node);
+        var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(node);
         var index = elementLocation.index();
         var firstUnpinnedIndex =
                 listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(elementLocation.entity());
@@ -439,14 +439,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     private Node_ getNodeSuccessor(EntityOrderInfo entityOrderInfo, Node_ node) {
-        return entityOrderInfo.successor(node, listVariableDescriptor, listVariableDataSupply);
+        return entityOrderInfo.successor(node, listVariableDescriptor, listVariableStateSupply);
     }
 
     private Node_ getNodePredecessor(EntityOrderInfo entityOrderInfo, Node_ node) {
-        return entityOrderInfo.predecessor(node, listVariableDescriptor, listVariableDataSupply);
+        return entityOrderInfo.predecessor(node, listVariableDescriptor, listVariableStateSupply);
     }
 
     private boolean isMiddleNodeBetween(EntityOrderInfo entityOrderInfo, Node_ start, Node_ middle, Node_ end) {
-        return entityOrderInfo.between(start, middle, end, listVariableDataSupply);
+        return entityOrderInfo.between(start, middle, end, listVariableStateSupply);
     }
 }

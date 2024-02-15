@@ -4,7 +4,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
@@ -25,7 +25,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     private final int[] pickedKDistribution;
 
-    private ListVariableDataSupply<Solution_> listVariableDataSupply;
+    private ListVariableStateSupply<Solution_> listVariableStateSupply;
     private EntityIndependentValueSelector<Solution_> effectiveOriginSelector;
     private EntityIndependentValueSelector<Solution_> effectiveValueSelector;
 
@@ -46,39 +46,39 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
-        effectiveOriginSelector = createEffectiveValueSelector(originSelector, listVariableDataSupply);
-        effectiveValueSelector = createEffectiveValueSelector(valueSelector, listVariableDataSupply);
+        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        effectiveOriginSelector = createEffectiveValueSelector(originSelector, listVariableStateSupply);
+        effectiveValueSelector = createEffectiveValueSelector(valueSelector, listVariableStateSupply);
     }
 
     private EntityIndependentValueSelector<Solution_> createEffectiveValueSelector(
             EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
-            ListVariableDataSupply<Solution_> listVariableDataSupply) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
         var effectiveValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableDataSupply);
-        return filterNotAssignedValues(effectiveValueSelector, listVariableDataSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableStateSupply);
+        return filterNotAssignedValues(effectiveValueSelector, listVariableStateSupply);
     }
 
     private EntityIndependentValueSelector<Solution_> filterNotAssignedValues(
             EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
-            ListVariableDataSupply<Solution_> listVariableDataSupply) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
         if (!listVariableDescriptor.allowsUnassigned()) {
             return entityIndependentValueSelector;
         }
         // We need to filter out unassigned vars.
         return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(entityIndependentValueSelector,
                 (scoreDirector, selection) -> {
-                    if (listVariableDataSupply.countUnassigned() == 0) {
+                    if (listVariableStateSupply.getUnassignedCount() == 0) {
                         return true;
                     }
-                    return listVariableDataSupply.isAssigned(selection);
+                    return listVariableStateSupply.isAssigned(selection);
                 });
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        listVariableDataSupply = null;
+        listVariableStateSupply = null;
         effectiveOriginSelector = null;
         effectiveValueSelector = null;
     }
@@ -107,7 +107,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableDataSupply,
+        return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableStateSupply,
                 effectiveOriginSelector,
                 effectiveValueSelector, minK, maxK, pickedKDistribution);
     }

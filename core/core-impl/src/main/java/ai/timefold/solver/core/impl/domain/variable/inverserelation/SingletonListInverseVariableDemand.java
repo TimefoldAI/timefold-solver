@@ -17,11 +17,11 @@ public final class SingletonListInverseVariableDemand<Solution_>
 
     @Override
     public SingletonInverseVariableSupply createExternalizedSupply(SupplyManager supplyManager) {
-        return supplyManager.demand(((ListVariableDescriptor<Solution_>) variableDescriptor).getProvidedDemand());
+        return supplyManager.demand(((ListVariableDescriptor<Solution_>) variableDescriptor).getStateDemand());
     }
 
     @Override
     public void cancel(SupplyManager supplyManager) {
-        supplyManager.cancel(((ListVariableDescriptor<Solution_>) variableDescriptor).getProvidedDemand());
+        supplyManager.cancel(((ListVariableDescriptor<Solution_>) variableDescriptor).getStateDemand());
     }
 }

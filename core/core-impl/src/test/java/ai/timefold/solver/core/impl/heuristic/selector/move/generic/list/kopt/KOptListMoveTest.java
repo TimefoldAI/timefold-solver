@@ -11,8 +11,8 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataDemand;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
@@ -167,10 +167,10 @@ class KOptListMoveTest {
                         { e1, destinationE1 },
                 });
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var inverseVariableSupply = Mockito.mock(ListVariableDataSupply.class);
+        var inverseVariableSupply = Mockito.mock(ListVariableStateSupply.class);
 
         when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
-        when(supplyManager.demand(Mockito.any(ListVariableDataDemand.class))).thenReturn(inverseVariableSupply);
+        when(supplyManager.demand(Mockito.any(ListVariableStateDemand.class))).thenReturn(inverseVariableSupply);
         when(inverseVariableSupply.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
 
         var rebasedMove = kOptListMove.rebase(destinationScoreDirector);
@@ -749,7 +749,7 @@ class KOptListMoveTest {
 
         var pickedValues = removedEdgeList.toArray(TestdataListValue[]::new);
 
-        var listVariableDataSupply = scoreDirector.getSupplyManager().demand(listVariableDescriptor.getProvidedDemand());
+        var listVariableDataSupply = scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand());
 
         Function<TestdataListValue, TestdataListValue> successorFunction =
                 getSuccessorFunction(listVariableDescriptorSpy, listVariableDataSupply);
@@ -790,11 +790,11 @@ class KOptListMoveTest {
     }
 
     private static <Node_> Function<Node_, Node_> getSuccessorFunction(ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableDataSupply<?> listVariableDataSupply) {
+            ListVariableStateSupply<?> listVariableStateSupply) {
         return (node) -> {
-            var entity = listVariableDataSupply.getInverseSingleton(node);
+            var entity = listVariableStateSupply.getInverseSingleton(node);
             var valueList = (List<Node_>) listVariableDescriptor.getValue(entity);
-            var index = listVariableDataSupply.getIndex(node);
+            var index = listVariableStateSupply.getIndex(node);
             if (index == valueList.size() - 1) {
                 var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
                 return valueList.get(firstUnpinnedIndex);

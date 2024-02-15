@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -158,15 +158,15 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * </ul>
      */
     public <Solution_> KOptListMove<Solution_> getKOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableDataSupply<Solution_> listVariableDataSupply) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it a no-op
             return new KOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0, new int[] {});
         }
 
-        MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, listVariableDataSupply);
+        MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, listVariableStateSupply);
         IndexVariableSupply indexVariableSupply =
-                node -> combinedList.getIndexOfValue(listVariableDescriptor, listVariableDataSupply, node);
+                node -> combinedList.getIndexOfValue(listVariableDescriptor, listVariableStateSupply, node);
         int entityListSize = combinedList.size();
         List<FlipSublistAction> out = new ArrayList<>();
         int[] originalToCurrentIndexList = new int[entityListSize];

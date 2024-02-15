@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.Constrain
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -66,7 +66,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * This is a performance optimization which helps avoid requesting a new supply in before/after methods,
      * and avoids hash lookups which would be used by the map that otherwise would have been used for this.
      */
-    protected final ListVariableDataSupply<Solution_>[][] listVariableDataSupplies;
+    protected final ListVariableStateSupply<Solution_>[][] listVariableDataSupplies;
     protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
@@ -105,17 +105,17 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
-    private static <Solution_> ListVariableDataSupply<Solution_>[][] buildListVariableDataSupplies(
+    private static <Solution_> ListVariableStateSupply<Solution_>[][] buildListVariableDataSupplies(
             SolutionDescriptor<Solution_> solutionDescriptor, VariableListenerSupport<Solution_> variableListenerSupport) {
         var entityDescriptorCollection = solutionDescriptor.getEntityDescriptors();
-        var listVariableDataSupplyArrayArray = new ListVariableDataSupply[entityDescriptorCollection.size()][];
+        var listVariableDataSupplyArrayArray = new ListVariableStateSupply[entityDescriptorCollection.size()][];
         for (var entityDescriptor : entityDescriptorCollection) {
             var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
-            var listVariableDataSupplyArray = new ListVariableDataSupply[variableDescriptorList.size()];
+            var listVariableDataSupplyArray = new ListVariableStateSupply[variableDescriptorList.size()];
             for (var variableDescriptor : variableDescriptorList) {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
                     listVariableDataSupplyArray[variableDescriptor.getOrdinal()] =
-                            variableListenerSupport.demand(listVariableDescriptor.getProvidedDemand());
+                            variableListenerSupport.demand(listVariableDescriptor.getStateDemand());
                 }
             }
             listVariableDataSupplyArrayArray[entityDescriptor.getOrdinal()] = listVariableDataSupplyArray;

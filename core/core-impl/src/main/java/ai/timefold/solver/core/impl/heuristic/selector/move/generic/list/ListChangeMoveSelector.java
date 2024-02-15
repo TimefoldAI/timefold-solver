@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
@@ -20,7 +20,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
 
-    private ListVariableDataSupply<Solution_> listVariableDataSupply;
+    private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     public ListChangeMoveSelector(
             EntityIndependentValueSelector<Solution_> sourceValueSelector,
@@ -39,14 +39,14 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         super.solvingStarted(solverScope);
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
+        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
         movableSourceValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, listVariableDataSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, listVariableStateSupply);
     }
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
             EntityIndependentValueSelector<Solution_> sourceValueSelector,
-            ListVariableDataSupply<Solution_> listVariableDataSupply) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
         var entityDescriptor = sourceValueSelector.getVariableDescriptor().getEntityDescriptor();
         var supportsPinning = entityDescriptor.supportsPinning();
         if (!supportsPinning) {
@@ -55,7 +55,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         }
         return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
-                    var elementLocation = listVariableDataSupply.getLocationInList(selection);
+                    var elementLocation = listVariableStateSupply.getLocationInList(selection);
                     if (elementLocation instanceof UnassignedLocation) {
                         return true;
                     }
@@ -76,7 +76,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        listVariableDataSupply = null;
+        listVariableStateSupply = null;
         movableSourceValueSelector = null;
     }
 
@@ -89,12 +89,12 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
             return new RandomListChangeIterator<>(
-                    listVariableDataSupply,
+                    listVariableStateSupply,
                     movableSourceValueSelector,
                     destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
-                    listVariableDataSupply,
+                    listVariableStateSupply,
                     movableSourceValueSelector,
                     destinationSelector);
         }

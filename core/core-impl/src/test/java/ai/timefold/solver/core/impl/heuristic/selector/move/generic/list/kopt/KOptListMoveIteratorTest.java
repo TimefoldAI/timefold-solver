@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -38,7 +38,7 @@ public class KOptListMoveIteratorTest {
         Random workingRandom;
         ListVariableDescriptor<Object> listVariableDescriptor;
         EntityDescriptor<Object> entityDescriptor;
-        ListVariableDataSupply<Object> listVariableDataSupply;
+        ListVariableStateSupply<Object> listVariableStateSupply;
         EntityIndependentValueSelector<Object> originSelector;
         EntityIndependentValueSelector<Object> valueSelector;
     }
@@ -56,13 +56,13 @@ public class KOptListMoveIteratorTest {
         result.workingRandom = mock(Random.class);
         result.listVariableDescriptor = mock(ListVariableDescriptor.class);
         result.entityDescriptor = mock(EntityDescriptor.class);
-        result.listVariableDataSupply = mock(ListVariableDataSupply.class);
+        result.listVariableStateSupply = mock(ListVariableStateSupply.class);
         result.originSelector = mock(EntityIndependentValueSelector.class);
         result.valueSelector = mock(EntityIndependentValueSelector.class);
         result.kOptListMoveIterator = new KOptListMoveIterator<>(
                 result.workingRandom,
                 result.listVariableDescriptor,
-                result.listVariableDataSupply,
+                result.listVariableStateSupply,
                 result.originSelector,
                 result.valueSelector,
                 minK,
@@ -141,10 +141,10 @@ public class KOptListMoveIteratorTest {
             entityToOffset.put(entity, 1);
 
             for (int i = 0; i < entityList.size(); i++) {
-                when(mocks.listVariableDataSupply.getLocationInList(entityList.get(i)))
+                when(mocks.listVariableStateSupply.getLocationInList(entityList.get(i)))
                         .thenReturn(new LocationInList(entity, i));
-                when(mocks.listVariableDataSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
-                when(mocks.listVariableDataSupply.getIndex(entityList.get(i))).thenReturn(i);
+                when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
+                when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
             }
             when(mocks.listVariableDescriptor.getListSize(entity)).thenReturn(entityList.size());
             offset += listSize;
@@ -239,10 +239,10 @@ public class KOptListMoveIteratorTest {
             entityToOffset.put(entity, 1);
 
             for (int i = 0; i < entityList.size(); i++) {
-                when(mocks.listVariableDataSupply.getLocationInList(entityList.get(i)))
+                when(mocks.listVariableStateSupply.getLocationInList(entityList.get(i)))
                         .thenReturn(new LocationInList(entity, i));
-                when(mocks.listVariableDataSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
-                when(mocks.listVariableDataSupply.getIndex(entityList.get(i))).thenReturn(i);
+                when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
+                when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
             }
             when(mocks.listVariableDescriptor.getListSize(entity)).thenReturn(entityList.size());
             offset += listSize;

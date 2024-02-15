@@ -10,14 +10,14 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 
-final class ExternalizedListVariableDataSupply<Solution_>
-        implements ListVariableDataSupply<Solution_> {
+final class ExternalizedListVariableStateSupply<Solution_>
+        implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private Map<Object, ElementLocation> elementLocationMap;
-    private int notAssignedElementCount;
+    private int unassignedCount;
 
-    public ExternalizedListVariableDataSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
+    public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
@@ -26,7 +26,7 @@ final class ExternalizedListVariableDataSupply<Solution_>
         this.elementLocationMap = new IdentityHashMap<>();
         var workingSolution = scoreDirector.getWorkingSolution();
         // Start with everything unassigned.
-        notAssignedElementCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
+        unassignedCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
         // Will run over all entities and unmark all present elements as unassigned.
         sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(workingSolution, this::insert);
     }
@@ -42,7 +42,7 @@ final class ExternalizedListVariableDataSupply<Solution_>
                                 .formatted(this, element, index, oldLocation));
             }
             index++;
-            notAssignedElementCount--;
+            unassignedCount--;
         }
     }
 
@@ -93,7 +93,7 @@ final class ExternalizedListVariableDataSupply<Solution_>
                                 .formatted(this, element, index, oldElementLocation));
             }
             index++;
-            notAssignedElementCount++;
+            unassignedCount++;
         }
     }
 
@@ -105,7 +105,7 @@ final class ExternalizedListVariableDataSupply<Solution_>
                     "The supply (%s) is corrupted, because the element (%s) did not exist before unassigning."
                             .formatted(this, element));
         }
-        notAssignedElementCount++;
+        unassignedCount++;
     }
 
     @Override
@@ -124,7 +124,7 @@ final class ExternalizedListVariableDataSupply<Solution_>
             var oldLocation = elementLocationMap.put(element, new LocationInList(entity, index));
             if (oldLocation == null || oldLocation instanceof UnassignedLocation) {
                 // Fixes the lack of before/afterListVariableElementAssigned().
-                notAssignedElementCount--;
+                unassignedCount--;
             }
             // The first element is allowed to have a null oldIndex because it might have been just assigned.
             if (oldLocation == null && index != startIndex) {
@@ -165,8 +165,8 @@ final class ExternalizedListVariableDataSupply<Solution_>
     }
 
     @Override
-    public int countUnassigned() {
-        return notAssignedElementCount;
+    public int getUnassignedCount() {
+        return unassignedCount;
     }
 
     @Override

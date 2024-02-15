@@ -4,17 +4,17 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.supply.AbstractVariableDescriptorBasedDemand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
-public final class ListVariableDataDemand<Solution_>
-        extends AbstractVariableDescriptorBasedDemand<Solution_, ListVariableDataSupply<Solution_>> {
+public final class ListVariableStateDemand<Solution_>
+        extends AbstractVariableDescriptorBasedDemand<Solution_, ListVariableStateSupply<Solution_>> {
 
-    public ListVariableDataDemand(ListVariableDescriptor<Solution_> variableDescriptor) {
+    public ListVariableStateDemand(ListVariableDescriptor<Solution_> variableDescriptor) {
         super(variableDescriptor);
     }
 
     @Override
-    public ListVariableDataSupply<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
+    public ListVariableStateSupply<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-        return new ExternalizedListVariableDataSupply<>(listVariableDescriptor);
+        return new ExternalizedListVariableStateSupply<>(listVariableDescriptor);
     }
 
 }

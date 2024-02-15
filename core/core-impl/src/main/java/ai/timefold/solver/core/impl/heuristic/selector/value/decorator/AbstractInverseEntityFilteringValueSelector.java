@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
@@ -26,7 +26,7 @@ abstract class AbstractInverseEntityFilteringValueSelector<Solution_>
 
     protected final EntityIndependentValueSelector<Solution_> childValueSelector;
 
-    protected ListVariableDataSupply<Solution_> listVariableDataSupply;
+    protected ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     protected AbstractInverseEntityFilteringValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector) {
         if (childValueSelector.isNeverEnding()) {
@@ -52,14 +52,14 @@ abstract class AbstractInverseEntityFilteringValueSelector<Solution_>
         super.phaseStarted(phaseScope);
         ListVariableDescriptor<Solution_> variableDescriptor =
                 (ListVariableDescriptor<Solution_>) childValueSelector.getVariableDescriptor();
-        listVariableDataSupply = phaseScope.getScoreDirector().getSupplyManager()
-                .demand(variableDescriptor.getProvidedDemand());
+        listVariableStateSupply = phaseScope.getScoreDirector().getSupplyManager()
+                .demand(variableDescriptor.getStateDemand());
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        listVariableDataSupply = null;
+        listVariableStateSupply = null;
     }
 
     @Override

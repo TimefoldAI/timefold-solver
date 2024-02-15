@@ -17,13 +17,13 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_value
 
 import org.junit.jupiter.api.Test;
 
-class ExternalizedListVariableDataSupplyTest {
+class ExternalizedListVariableStateSupplyTest {
 
     @Test
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(ScoreDirector.class);
-        try (var supply = new ExternalizedListVariableDataSupply<>(variableDescriptor)) {
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
             var v2 = new TestdataAllowsUnassignedValuesListValue("2");
@@ -39,7 +39,7 @@ class ExternalizedListVariableDataSupplyTest {
             supply.resetWorkingSolution(scoreDirector);
 
             assertSoftly(softly -> {
-                softly.assertThat(supply.countUnassigned()).isEqualTo(2);
+                softly.assertThat(supply.getUnassignedCount()).isEqualTo(2);
                 softly.assertThat(supply.isAssigned(v1)).isTrue();
                 softly.assertThat(supply.isAssigned(v2)).isFalse();
                 softly.assertThat(supply.isAssigned(v3)).isFalse();
@@ -51,7 +51,7 @@ class ExternalizedListVariableDataSupplyTest {
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(ScoreDirector.class);
-        try (var supply = new ExternalizedListVariableDataSupply<>(variableDescriptor)) {
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
             var v2 = new TestdataAllowsUnassignedValuesListValue("2");
@@ -67,7 +67,7 @@ class ExternalizedListVariableDataSupplyTest {
             supply.resetWorkingSolution(scoreDirector);
 
             assertSoftly(softly -> {
-                softly.assertThat(supply.countUnassigned()).isEqualTo(2);
+                softly.assertThat(supply.getUnassignedCount()).isEqualTo(2);
                 softly.assertThat(supply.getLocationInList(v1)).isEqualTo(new LocationInList(e1, 0));
                 softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());
@@ -75,7 +75,7 @@ class ExternalizedListVariableDataSupplyTest {
 
             supply.afterListVariableElementUnassigned(scoreDirector, v1);
             assertSoftly(softly -> {
-                softly.assertThat(supply.countUnassigned()).isEqualTo(3);
+                softly.assertThat(supply.getUnassignedCount()).isEqualTo(3);
                 softly.assertThat(supply.getLocationInList(v1)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());

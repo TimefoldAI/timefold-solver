@@ -50,7 +50,7 @@ class RandomListChangeIteratorTest {
         ElementDestinationSelector<TestdataListSolution> destinationSelector =
                 new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true);
         RandomListChangeIterator<TestdataListSolution> randomListChangeIterator = new RandomListChangeIterator<>(
-                scoreDirector.getSupplyManager().demand(listVariableDescriptor.getProvidedDemand()),
+                scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 sourceValueSelector,
                 destinationSelector);
 

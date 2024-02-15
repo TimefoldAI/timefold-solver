@@ -5,7 +5,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -22,7 +22,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     private final int maximumSubListSize;
 
     private TriangleElementFactory triangleElementFactory;
-    private ListVariableDataSupply<Solution_> listVariableDataSupply;
+    private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     private EntityIndependentValueSelector<Solution_> movableValueSelector;
 
@@ -54,14 +54,14 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         super.solvingStarted(solverScope);
         triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        listVariableDataSupply = supplyManager.demand(listVariableDescriptor.getProvidedDemand());
-        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableDataSupply);
+        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableStateSupply);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        listVariableDataSupply = null;
+        listVariableStateSupply = null;
     }
 
     @Override
@@ -153,7 +153,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 // Using valueSelector instead of entitySelector is fairer
                 // because entities with bigger list variables will be selected more often.
                 var value = valueIterator.next();
-                sourceEntity = listVariableDataSupply.getInverseSingleton(value);
+                sourceEntity = listVariableStateSupply.getInverseSingleton(value);
                 if (sourceEntity == null) { // Ignore values which are unassigned.
                     continue;
                 }

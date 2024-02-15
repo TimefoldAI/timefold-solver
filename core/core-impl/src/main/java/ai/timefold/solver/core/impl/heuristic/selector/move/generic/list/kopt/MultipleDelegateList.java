@@ -12,7 +12,7 @@ import java.util.RandomAccess;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.function.TriConsumer;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableDataSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
@@ -69,8 +69,8 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     }
 
     public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableDataSupply<?> listVariableDataSupply, Object value) {
-        var elementLocation = listVariableDataSupply.getLocationInList(value);
+                               ListVariableStateSupply<?> listVariableStateSupply, Object value) {
+        var elementLocation = listVariableStateSupply.getLocationInList(value);
         if (elementLocation instanceof LocationInList elementLocationInList) {
             var entity = elementLocationInList.entity();
             for (var i = 0; i < delegateEntities.length; i++) {

@@ -5,7 +5,7 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 
-public interface ListVariableDataSupply<Solution_> extends
+public interface ListVariableStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,
         ListVariableListener<Solution_, Object, Object>,
         SingletonInverseVariableSupply,

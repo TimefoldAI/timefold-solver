@@ -26,6 +26,6 @@ public interface ListVariableElementStateSupply<Solution_> extends
      *
      * @return number of elements for which {@link #isAssigned(Object)} would return false.
      */
-    int countUnassigned();
+    int getUnassignedCount();
 
 }
