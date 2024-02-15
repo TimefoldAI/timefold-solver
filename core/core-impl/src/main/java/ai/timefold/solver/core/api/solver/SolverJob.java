@@ -85,4 +85,24 @@ public interface SolverJob<Solution_, ProblemId_> {
      */
     Duration getSolvingDuration();
 
+    /**
+     * Return the number of score calculations since the last start.
+     * If it hasn't started yet, it returns 0.
+     * If it hasn't ended yet, it returns the number of score calculations so far.
+     * If it has ended already, it returns the total number of score calculations that occurred during solving.
+     *
+     * @return the number of score calculations that had occurred during solving since the last (re)start, at least 0
+     */
+    long getScoreCalculationCount();
+
+    /**
+     * Return the average number of score calculations per second since the last start.
+     * If it hasn't started yet, it returns 0.
+     * If it hasn't ended yet, it returns the average number of score calculations per second so far.
+     * If it has ended already, it returns the average number of score calculations per second during solving.
+     *
+     * @return the average number of score calculations per second that had occurred during solving
+     *         since the last (re)start, at least 0
+     */
+    long getScoreCalculationSpeed();
 }
