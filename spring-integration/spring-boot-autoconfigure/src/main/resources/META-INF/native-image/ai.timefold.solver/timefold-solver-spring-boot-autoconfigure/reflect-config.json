@@ -633,12 +633,24 @@
   {
     "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMap",
     "allDeclaredFields": true,
-    "queryAllDeclaredMethods": true
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMapEntry",
     "allDeclaredFields": true,
-    "queryAllDeclaredMethods": true
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "jakarta.xml.bind.Binder"
