@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
@@ -10,7 +9,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
  * which guarantee that no 2 entities use the same planningValue.
  * <p>
  * To get an instance, demand a {@link SingletonInverseVariableDemand} (for a chained variable)
- * or a {@link ListVariableStateDemand} (for a list variable) from {@link InnerScoreDirector#getSupplyManager()}.
+ * or a {@link SingletonListInverseVariableDemand} (for a list variable) from {@link InnerScoreDirector#getSupplyManager()}.
  */
 public interface SingletonInverseVariableSupply extends Supply {
 

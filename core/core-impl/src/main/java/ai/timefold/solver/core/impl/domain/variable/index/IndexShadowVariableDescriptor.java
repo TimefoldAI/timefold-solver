@@ -11,12 +11,10 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
@@ -100,8 +98,8 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Demand<? extends IndexVariableSupply> getProvidedDemand() {
-        return new ListVariableStateDemand<>(sourceVariableDescriptor);
+    public IndexVariableDemand<Solution_> getProvidedDemand() {
+        return new IndexVariableDemand<>(sourceVariableDescriptor);
     }
 
     @Override

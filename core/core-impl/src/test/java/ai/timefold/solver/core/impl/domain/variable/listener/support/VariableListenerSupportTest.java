@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -99,7 +100,7 @@ class VariableListenerSupportTest {
         SingletonInverseVariableSupply supply1 = variableListenerSupport
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
         assertThat(supply1)
-                .isInstanceOf(ExternalizedSingletonInverseVariableSupply.class);
+                .isInstanceOf(SingletonInverseVariableListener.class);
         SingletonInverseVariableSupply supply2 = variableListenerSupport
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
         assertThat(supply2).isSameAs(supply1);
