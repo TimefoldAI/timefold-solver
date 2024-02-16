@@ -781,12 +781,18 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean hasNoNullVariables(Object entity) {
-        for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            if (variableDescriptor.getValue(entity) == null) {
-                return false;
+        return switch (effectiveGenuineVariableDescriptorList.size()) { // Avoid excessive iterator allocation.
+            case 0 -> true;
+            case 1 -> effectiveGenuineVariableDescriptorList.get(0).getValue(entity) != null;
+            default -> {
+                for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
+                    if (variableDescriptor.getValue(entity) == null) {
+                        yield false;
+                    }
+                }
+                yield true;
             }
-        }
-        return true;
+        };
     }
 
     public int countReinitializableVariables(Object entity) {
