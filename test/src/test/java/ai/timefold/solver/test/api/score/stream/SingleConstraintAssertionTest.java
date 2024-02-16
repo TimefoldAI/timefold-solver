@@ -251,6 +251,17 @@ class SingleConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
+                .penalizes(0, "There should be no penalties"))
+                .hasMessageContaining("There should be no penalties");
+        assertThatCode(() -> constraintVerifier
+                .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
+                .given(entity, value1, value2)
+                .penalizes(1, "There should be no penalties"))
+                .hasMessageContaining("There should be no penalties");
+
+        assertThatCode(() -> constraintVerifier
+                .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
+                .given(entity, value1, value2)
                 .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)

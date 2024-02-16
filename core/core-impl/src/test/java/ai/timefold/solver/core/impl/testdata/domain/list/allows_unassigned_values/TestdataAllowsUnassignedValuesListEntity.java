@@ -30,10 +30,17 @@ public class TestdataAllowsUnassignedValuesListEntity extends TestdataObject {
     }
 
     TestdataAllowsUnassignedValuesListEntity setUpShadowVariables() {
-        valueList.forEach(testdataListValue -> {
+        for (int i = 0; i < valueList.size(); i++) {
+            var testdataListValue = valueList.get(i);
             testdataListValue.setEntity(this);
             testdataListValue.setIndex(valueList.indexOf(testdataListValue));
-        });
+            if (i != 0) {
+                testdataListValue.setPrevious(valueList.get(i - 1));
+            }
+            if (i != valueList.size() - 1) {
+                testdataListValue.setNext(valueList.get(i + 1));
+            }
+        }
         return this;
     }
 

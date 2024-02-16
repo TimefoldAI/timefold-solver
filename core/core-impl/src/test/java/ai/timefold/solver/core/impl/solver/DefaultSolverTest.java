@@ -171,8 +171,7 @@ class DefaultSolverTest {
         var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
         var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
         var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
-        var entity = new TestdataAllowsUnassignedValuesListEntity("e1");
-        entity.setValueList(Arrays.asList(value1, value2));
+        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(entity));
@@ -945,16 +944,7 @@ class DefaultSolverTest {
         var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
         var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
         var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
-        var entity = new TestdataAllowsUnassignedValuesListEntity("e1");
-        entity.setValueList(Arrays.asList(value1, value2));
-        value1.setIndex(0);
-        value1.setEntity(entity);
-        value1.setPrevious(null);
-        value1.setNext(value2);
-        value2.setIndex(1);
-        value2.setEntity(entity);
-        value2.setPrevious(value1);
-        value2.setNext(null);
+        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(entity));
