@@ -229,8 +229,12 @@ public class SolverScope<Solution_> {
      */
     public long getScoreCalculationSpeed() {
         long timeMillisSpent = getTimeMillisSpent();
+        return getScoreCalculationSpeed(getScoreCalculationCount(), timeMillisSpent);
+    }
+
+    public static long getScoreCalculationSpeed(long scoreCalculationCount, long timeMillisSpent) {
         // Avoid divide by zero exception on a fast CPU
-        return getScoreCalculationCount() * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+        return scoreCalculationCount * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
 
     public void setWorkingSolutionFromBestSolution() {

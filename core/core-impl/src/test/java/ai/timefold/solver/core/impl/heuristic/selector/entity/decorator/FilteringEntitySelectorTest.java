@@ -8,8 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -68,7 +66,7 @@ class FilteringEntitySelectorTest {
                 new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3"), new TestdataEntity("e4"));
 
         SelectionFilter<TestdataSolution, TestdataEntity> filter = (scoreDirector, entity) -> !entity.getCode().equals("e3");
-        EntitySelector entitySelector = new FilteringEntitySelector(childEntitySelector, List.of(filter));
+        EntitySelector entitySelector = FilteringEntitySelector.of(childEntitySelector, (SelectionFilter) filter);
         if (cacheType.isCached()) {
             entitySelector = new CachingEntitySelector(entitySelector, cacheType, false);
         }

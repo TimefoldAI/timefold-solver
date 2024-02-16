@@ -1,0 +1,8 @@
+timefold:
+  solver:
+    solver1:
+      termination:
+        best-score-limit: 0
+    solver2:
+      termination:
+        best-score-limit: 0

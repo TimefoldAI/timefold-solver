@@ -4,3 +4,4 @@
 :hello-world-java-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/hello-world
 :spring-boot-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/technology/java-spring-boot
 :quarkus-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/school-timetabling
+:vrp-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/vehicle-routing

@@ -197,7 +197,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             }
             // Do not filter out initialized entities here for CH and ES, because they can be partially initialized
             // Instead, ValueSelectorConfig.applyReinitializeVariableFiltering() does that.
-            entitySelector = new FilteringEntitySelector<>(entitySelector, filterList);
+            entitySelector = FilteringEntitySelector.of(entitySelector, SelectionFilter.compose(filterList));
         }
         return entitySelector;
     }

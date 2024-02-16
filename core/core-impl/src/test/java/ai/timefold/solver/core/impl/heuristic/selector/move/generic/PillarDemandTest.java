@@ -32,7 +32,7 @@ class PillarDemandTest {
                 new FromSolutionEntitySelector<>(entityDescriptor, SelectionCacheType.JUST_IN_TIME, true);
         SelectionFilter<TestdataSolution, Object> selectionFilter = (scoreDirector, selection) -> true;
         FilteringEntitySelector<TestdataSolution> filteringEntitySelector =
-                new FilteringEntitySelector<>(entitySelector, List.of(selectionFilter));
+                FilteringEntitySelector.of(entitySelector, selectionFilter);
 
         PillarDemand<TestdataSolution> pillarDemand =
                 new PillarDemand<>(filteringEntitySelector, variableDescriptorList, subPillarConfigPolicy);
@@ -46,8 +46,7 @@ class PillarDemandTest {
                 new PillarDemand<>(filteringEntitySelector, new ArrayList<>(variableDescriptorList), subPillarConfigPolicy);
         Assertions.assertThat(samePillarDemandCopiedList).isEqualTo(pillarDemand);
 
-        EntitySelector<TestdataSolution> sameEntitySelector =
-                new FilteringEntitySelector<>(entitySelector, List.of(selectionFilter));
+        EntitySelector<TestdataSolution> sameEntitySelector = FilteringEntitySelector.of(entitySelector, selectionFilter);
         PillarDemand<TestdataSolution> samePillarDemandCopiedSelector =
                 new PillarDemand<>(sameEntitySelector, new ArrayList<>(variableDescriptorList), subPillarConfigPolicy);
         Assertions.assertThat(samePillarDemandCopiedSelector).isEqualTo(pillarDemand);

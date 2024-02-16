@@ -3,10 +3,12 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer;
 import java.util.Collections;
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityIndependentFilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 
 public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_> implements EntityPlacer<Solution_> {
 
@@ -44,7 +46,7 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
                 }
             }
             valueIterator.next();
-            Iterator<Move<Solution_>> moveIterator = moveSelector.iterator();
+            var moveIterator = moveSelector.iterator();
             // Because the valueSelector is entity independent, there is always a move if there's still an entity
             if (!moveIterator.hasNext()) {
                 return noUpcomingSelection();
@@ -52,6 +54,13 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
             return new Placement<>(moveIterator);
         }
 
+    }
+
+    @Override
+    public EntityPlacer<Solution_> rebuildWithFilter(SelectionFilter<Solution_, Object> filter) {
+        return new QueuedValuePlacer<>(
+                (EntityIndependentFilteringValueSelector<Solution_>) FilteringValueSelector.of(valueSelector, filter),
+                moveSelector);
     }
 
 }

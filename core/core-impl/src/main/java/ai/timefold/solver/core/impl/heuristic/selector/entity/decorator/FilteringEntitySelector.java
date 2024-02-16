@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 
@@ -18,20 +17,24 @@ public final class FilteringEntitySelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements EntitySelector<Solution_> {
 
+    public static <Solution_> FilteringEntitySelector<Solution_> of(EntitySelector<Solution_> childEntitySelector,
+            SelectionFilter<Solution_, Object> filter) {
+        if (childEntitySelector instanceof FilteringEntitySelector<Solution_> filteringEntitySelector) {
+            return new FilteringEntitySelector<>(filteringEntitySelector.childEntitySelector,
+                    SelectionFilter.compose(filteringEntitySelector.selectionFilter, filter));
+        }
+        return new FilteringEntitySelector<>(childEntitySelector, filter);
+    }
+
     private final EntitySelector<Solution_> childEntitySelector;
     private final SelectionFilter<Solution_, Object> selectionFilter;
     private final boolean bailOutEnabled;
 
     private ScoreDirector<Solution_> scoreDirector = null;
 
-    public FilteringEntitySelector(EntitySelector<Solution_> childEntitySelector,
-            List<SelectionFilter<Solution_, Object>> filterList) {
-        this.childEntitySelector = childEntitySelector;
-        if (filterList == null || filterList.isEmpty()) {
-            throw new IllegalArgumentException(
-                    getClass().getSimpleName() + " must have at least one filter, but got (" + filterList + ").");
-        }
-        this.selectionFilter = SelectionFilter.compose(filterList);
+    private FilteringEntitySelector(EntitySelector<Solution_> childEntitySelector, SelectionFilter<Solution_, Object> filter) {
+        this.childEntitySelector = Objects.requireNonNull(childEntitySelector);
+        this.selectionFilter = Objects.requireNonNull(filter);
         bailOutEnabled = childEntitySelector.isNeverEnding();
         phaseLifecycleSupport.addEventListener(childEntitySelector);
     }
@@ -172,12 +175,8 @@ public final class FilteringEntitySelector<Solution_>
 
     @Override
     public boolean equals(Object other) {
-        if (this == other)
-            return true;
-        if (other == null || getClass() != other.getClass())
-            return false;
-        FilteringEntitySelector<?> that = (FilteringEntitySelector<?>) other;
-        return Objects.equals(childEntitySelector, that.childEntitySelector)
+        return other instanceof FilteringEntitySelector<?> that
+                && Objects.equals(childEntitySelector, that.childEntitySelector)
                 && Objects.equals(selectionFilter, that.selectionFilter);
     }
 

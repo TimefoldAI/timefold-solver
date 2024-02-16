@@ -1,0 +1,10 @@
+quarkus:
+  timefold:
+    solver:
+      solver1:
+        termination:
+          spent-limit: 8s
+      solver2:
+        termination:
+          spent-limit: 4s
+

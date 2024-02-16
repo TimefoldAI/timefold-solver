@@ -2,6 +2,7 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -60,6 +61,7 @@ import ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -253,6 +255,47 @@ class TimefoldAutoConfigurationTest {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                 });
+    }
+
+    @Test
+    void solverWithYaml() {
+        contextRunner
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withSystemProperties(
+                        "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/application.yaml")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertEquals(EnvironmentMode.FULL_ASSERT, solverConfig.getEnvironmentMode());
+                    assertTrue(solverConfig.getDaemon());
+                    assertEquals("2", solverConfig.getMoveThreadCount());
+                    assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
+                    assertNull(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType());
+                    assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
+                    assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
+                    assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
+                });
+    }
+
+    @Test
+    void invalidYaml() {
+        assertThatCode(() -> contextRunner
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withSystemProperties(
+                        "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/invalid-application.yaml")
+                .run(context -> context.getBean(SolverConfig.class)))
+                .rootCause().message().contains("The properties", "solverConfigXml", "environmentMode", "moveThreadCount",
+                        "domainAccessType", "are not valid", "Maybe try changing the property name to kebab-case");
+    }
+
+    @Test
+    void invalidTerminationYaml() {
+        assertThatCode(() -> contextRunner
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withSystemProperties(
+                        "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/invalid-termination-application.yaml")
+                .run(context -> context.getBean(SolverConfig.class)))
+                .rootCause().message().contains("The termination properties", "spentLimit", "unimprovedSpentLimit",
+                        "bestScoreLimit", "are not valid", "Maybe try changing the property name to kebab-case");
     }
 
     @Test

@@ -103,6 +103,14 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return endingSystemTimeMillis - startingSystemTimeMillis;
     }
 
+    public long getScoreCalculationCount() {
+        return solverScope.getScoreCalculationCount();
+    }
+
+    public long getScoreCalculationSpeed() {
+        return SolverScope.getScoreCalculationSpeed(getScoreCalculationCount(), getTimeMillisSpent());
+    }
+
     @Override
     public boolean isSolving() {
         return solving.get();

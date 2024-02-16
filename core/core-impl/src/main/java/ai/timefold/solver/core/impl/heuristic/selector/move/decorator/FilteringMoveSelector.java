@@ -12,13 +12,22 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
 
+    public static <Solution_> FilteringMoveSelector<Solution_> of(MoveSelector<Solution_> moveSelector,
+            SelectionFilter<Solution_, Move<Solution_>> filter) {
+        if (moveSelector instanceof FilteringMoveSelector<Solution_> filteringMoveSelector) {
+            return new FilteringMoveSelector<>(filteringMoveSelector.childMoveSelector,
+                    SelectionFilter.compose(filteringMoveSelector.filter, filter));
+        }
+        return new FilteringMoveSelector<>(moveSelector, filter);
+    }
+
     private final MoveSelector<Solution_> childMoveSelector;
     private final SelectionFilter<Solution_, Move<Solution_>> filter;
     private final boolean bailOutEnabled;
 
     private ScoreDirector<Solution_> scoreDirector = null;
 
-    public FilteringMoveSelector(MoveSelector<Solution_> childMoveSelector,
+    private FilteringMoveSelector(MoveSelector<Solution_> childMoveSelector,
             SelectionFilter<Solution_, Move<Solution_>> filter) {
         this.childMoveSelector = childMoveSelector;
         this.filter = filter;
