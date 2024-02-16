@@ -21,7 +21,7 @@ public class TimefoldSolverAotContribution implements BeanFactoryInitializationA
      * Register a type for reflection, allowing introspection
      * of its members at runtime in a native build.
      */
-    private void registerType(ReflectionHints reflectionHints, Class<?> type) {
+    private static void registerType(ReflectionHints reflectionHints, Class<?> type) {
         reflectionHints.registerType(type,
                 MemberCategory.INTROSPECT_PUBLIC_METHODS,
                 MemberCategory.INTROSPECT_DECLARED_METHODS,

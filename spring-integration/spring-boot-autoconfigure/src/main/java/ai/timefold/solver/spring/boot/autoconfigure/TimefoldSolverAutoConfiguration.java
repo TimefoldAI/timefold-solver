@@ -89,7 +89,6 @@ public class TimefoldSolverAutoConfiguration
     };
     private ApplicationContext context;
     private ClassLoader beanClassLoader;
-    private Environment environment;
     private TimefoldProperties timefoldProperties;
 
     protected TimefoldSolverAutoConfiguration() {
@@ -110,7 +109,6 @@ public class TimefoldSolverAutoConfiguration
         // postProcessBeanFactory runs before creating any bean, but we need TimefoldProperties.
         // Therefore, we use the Environment to load the properties
         BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
-        this.environment = environment;
         this.timefoldProperties = result.orElseGet(TimefoldProperties::new);
     }
 
@@ -157,8 +155,6 @@ public class TimefoldSolverAutoConfiguration
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         Map<String, SolverConfig> solverConfigMap = getSolverConfigMap();
-        BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
-        TimefoldProperties timefoldProperties = result.orElseGet(TimefoldProperties::new);
         SolverConfigIO solverConfigIO = new SolverConfigIO();
         registry.registerBeanDefinition(TimefoldSolverAotFactory.class.getName(),
                 new RootBeanDefinition(TimefoldSolverAotFactory.class));
@@ -280,7 +276,8 @@ public class TimefoldSolverAutoConfiguration
         }
     }
 
-    private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(IncludeAbstractClassesEntityScanner entityScanner) {
+    private static ScoreDirectorFactoryConfig
+            defaultScoreDirectoryFactoryConfig(IncludeAbstractClassesEntityScanner entityScanner) {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig
                 .setEasyScoreCalculatorClass(entityScanner.findFirstImplementingClass(EasyScoreCalculator.class));
@@ -311,7 +308,7 @@ public class TimefoldSolverAutoConfiguration
         }
     }
 
-    private void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {
+    private static void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {
         List<Class<?>> timefoldFieldAnnotationList =
                 entityScanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
         List<Class<?>> entityList = entityScanner.findEntityClassList();
@@ -328,7 +325,7 @@ public class TimefoldSolverAutoConfiguration
         }
     }
 
-    private void assertSolverConfigSolutionClasses(IncludeAbstractClassesEntityScanner entityScanner,
+    private static void assertSolverConfigSolutionClasses(IncludeAbstractClassesEntityScanner entityScanner,
             Map<String, SolverConfig> solverConfigMap) {
         // Validate the solution class
         // No solution class
@@ -382,7 +379,7 @@ public class TimefoldSolverAutoConfiguration
         }
     }
 
-    private void assertSolverConfigEntityClasses(IncludeAbstractClassesEntityScanner entityScanner) {
+    private static void assertSolverConfigEntityClasses(IncludeAbstractClassesEntityScanner entityScanner) {
         // No Entity class
         String emptyListErrorMessage = """
                 No classes were found with a @%s annotation.
@@ -395,7 +392,7 @@ public class TimefoldSolverAutoConfiguration
         assertTargetClasses(entityScanner.findEntityClassList(), PlanningEntity.class.getSimpleName());
     }
 
-    private void assertSolverConfigConstraintClasses(
+    private static void assertSolverConfigConstraintClasses(
             IncludeAbstractClassesEntityScanner entityScanner, Map<String, SolverConfig> solverConfigMap) {
         List<Class<? extends EasyScoreCalculator>> simpleScoreClassList =
                 entityScanner.findImplementingClassList(EasyScoreCalculator.class);
@@ -403,7 +400,7 @@ public class TimefoldSolverAutoConfiguration
                 entityScanner.findImplementingClassList(ConstraintProvider.class);
         List<Class<? extends IncrementalScoreCalculator>> incrementalScoreClassList =
                 entityScanner.findImplementingClassList(IncrementalScoreCalculator.class);
-        // No score classes
+        // No score calculators
         if (simpleScoreClassList.isEmpty() && constraintScoreClassList.isEmpty()
                 && incrementalScoreClassList.isEmpty()) {
             throw new IllegalStateException(
@@ -416,8 +413,17 @@ public class TimefoldSolverAutoConfiguration
                                     ConstraintProvider.class.getSimpleName(), SpringBootApplication.class.getSimpleName(),
                                     ConstraintProvider.class.getSimpleName(), EntityScan.class.getSimpleName()));
         }
-        // Multiple classes and single solver
-        String errorMessage = "Multiple score classes classes (%s) that implements %s were found in the classpath.";
+        assertSolverConfigsSpecifyScoreCalculatorWhenAmbigious(solverConfigMap, simpleScoreClassList, constraintScoreClassList,
+                incrementalScoreClassList);
+        assertNoUnusedScoreClasses(solverConfigMap, simpleScoreClassList, constraintScoreClassList, incrementalScoreClassList);
+    }
+
+    private static void assertSolverConfigsSpecifyScoreCalculatorWhenAmbigious(Map<String, SolverConfig> solverConfigMap,
+            List<Class<? extends EasyScoreCalculator>> simpleScoreClassList,
+            List<Class<? extends ConstraintProvider>> constraintScoreClassList,
+            List<Class<? extends IncrementalScoreCalculator>> incrementalScoreClassList) {
+        // Single solver, multiple score calculators
+        String errorMessage = "Multiple score calculator classes (%s) that implements %s were found in the classpath.";
         if (simpleScoreClassList.size() > 1 && solverConfigMap.size() == 1) {
             throw new IllegalStateException(errorMessage.formatted(
                     simpleScoreClassList.stream().map(Class::getSimpleName).collect(joining(", ")),
@@ -433,11 +439,12 @@ public class TimefoldSolverAutoConfiguration
                     incrementalScoreClassList.stream().map(Class::getSimpleName).collect(joining(", ")),
                     IncrementalScoreCalculator.class.getSimpleName()));
         }
-        // Multiple classes and at least one solver config does not specify the score class
-        errorMessage = """
-                Some solver configs (%s) don't specify a %s score class, yet there are multiple available (%s) on the classpath.
-                Maybe set the XML config file to the related solver configs, or add the missing score classes to the XML files,
-                or remove the unnecessary score classes from the classpath.""";
+        // Multiple solvers, multiple score calculators
+        errorMessage =
+                """
+                        Some solver configs (%s) don't specify a %s score calculator class, yet there are multiple available (%s) on the classpath.
+                        Maybe set the XML config file to the related solver configs, or add the missing score calculator to the XML files,
+                        or remove the unnecessary score calculator from the classpath.""";
         List<String> solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
                 .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
                         || e.getValue().getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass() == null)
@@ -471,7 +478,13 @@ public class TimefoldSolverAutoConfiguration
                     IncrementalScoreCalculator.class.getSimpleName(),
                     incrementalScoreClassList.stream().map(Class::getSimpleName).collect(joining(", "))));
         }
-        // Unused score classes
+    }
+
+    private static void assertNoUnusedScoreClasses(Map<String, SolverConfig> solverConfigMap,
+            List<Class<? extends EasyScoreCalculator>> simpleScoreClassList,
+            List<Class<? extends ConstraintProvider>> constraintScoreClassList,
+            List<Class<? extends IncrementalScoreCalculator>> incrementalScoreClassList) {
+        String errorMessage;
         List<String> solverConfigWithUnusedSolutionClassList = simpleScoreClassList.stream()
                 .map(Class::getName)
                 .filter(className -> solverConfigMap.values().stream()
@@ -511,7 +524,8 @@ public class TimefoldSolverAutoConfiguration
         }
     }
 
-    private void assertEmptyInstances(IncludeAbstractClassesEntityScanner entityScanner, Class<? extends Annotation> clazz,
+    private static void assertEmptyInstances(IncludeAbstractClassesEntityScanner entityScanner,
+            Class<? extends Annotation> clazz,
             String errorMessage) {
         try {
             Collection<Class<?>> classInstanceCollection = entityScanner.scan(clazz);
@@ -523,7 +537,7 @@ public class TimefoldSolverAutoConfiguration
         }
     }
 
-    private void assertTargetClasses(Collection<Class<?>> targetCollection, String targetAnnotation) {
+    private static void assertTargetClasses(Collection<Class<?>> targetCollection, String targetAnnotation) {
         List<String> invalidClasses = targetCollection.stream()
                 .filter(target -> target.isRecord() || target.isEnum() || target.isPrimitive())
                 .map(Class::getSimpleName)

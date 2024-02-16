@@ -558,7 +558,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score class, yet there are multiple available",
+                        "don't specify a EasyScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringEasyScore.class.getSimpleName(),
                         DummySpringEasyScore.class.getSimpleName(),
                         "on the classpath.");
@@ -573,7 +573,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a ConstraintProvider score class, yet there are multiple available",
+                        "don't specify a ConstraintProvider score calculator class, yet there are multiple available",
                         TestdataChainedSpringConstraintProvider.class.getSimpleName(),
                         TestdataSpringConstraintProvider.class.getSimpleName(),
                         "on the classpath.");
@@ -588,7 +588,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a IncrementalScoreCalculator score class, yet there are multiple available",
+                        "don't specify a IncrementalScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringIncrementalScore.class.getSimpleName(),
                         DummySpringIncrementalScore.class.getSimpleName(),
                         "on the classpath.");
@@ -605,7 +605,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score class, yet there are multiple available",
+                        "don't specify a EasyScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringEasyScore.class.getSimpleName(),
                         DummySpringEasyScore.class.getSimpleName(),
                         "on the classpath.");
@@ -622,7 +622,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a ConstraintProvider score class, yet there are multiple available",
+                        "don't specify a ConstraintProvider score calculator class, yet there are multiple available",
                         TestdataChainedSpringConstraintProvider.class.getSimpleName(),
                         TestdataSpringConstraintProvider.class.getSimpleName(),
                         "on the classpath.");
@@ -639,7 +639,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a IncrementalScoreCalculator score class, yet there are multiple available",
+                        "don't specify a IncrementalScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringIncrementalScore.class.getSimpleName(),
                         DummySpringIncrementalScore.class.getSimpleName(),
                         "on the classpath.");

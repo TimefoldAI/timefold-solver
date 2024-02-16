@@ -83,7 +83,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     public <Solution_> SolverFactory<Solution_> getSolverFactory() {
         failInjectionWithMultipleSolvers(SolverFactory.class.getName());
         SolverConfig solverConfig = context.getBean(SolverConfig.class);
-        if (solverConfig == null || solverConfig.getSolutionClass() == null) {
+        if (solverConfig.getSolutionClass() == null) {
             return null;
         }
         return SolverFactory.create(solverConfig);
@@ -109,12 +109,12 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     @Lazy
     @ConditionalOnMissingBean
     @Deprecated(forRemoval = true)
+    /**
+     * @deprecated Use {@link SolutionManager} instead.
+     */
     public <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager() {
         failInjectionWithMultipleSolvers(ScoreManager.class.getName());
-        SolverFactory solverFactory = context.getBean(SolverFactory.class);
-        if (solverFactory == null) {
-            return null;
-        }
+        SolverFactory<Solution_> solverFactory = context.getBean(SolverFactory.class);
         return ScoreManager.create(solverFactory);
     }
 
@@ -123,10 +123,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     @ConditionalOnMissingBean
     public <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager() {
         failInjectionWithMultipleSolvers(SolutionManager.class.getName());
-        SolverFactory solverFactory = context.getBean(SolverFactory.class);
-        if (solverFactory == null) {
-            return null;
-        }
+        SolverFactory<Solution_> solverFactory = context.getBean(SolverFactory.class);
         return SolutionManager.create(solverFactory);
     }
 
