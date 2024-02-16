@@ -158,6 +158,7 @@ The source code of all these examples is available on https://github.com/Timefol
 |* xref:constraints-and-score/overview.adoc#bendableScore[Bendable score]
 * xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained through time pattern]
 * Custom xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[VariableListener]
+* xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[Overconstrained planning]
 * xref:responding-to-change/responding-to-change.adoc#continuousPlanning[Continuous planning]
 * xref:responding-to-change/responding-to-change.adoc#realTimePlanning[Real-time planning]
 

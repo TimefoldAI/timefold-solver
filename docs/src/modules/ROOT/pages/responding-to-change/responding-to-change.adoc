@@ -98,17 +98,25 @@ To implement this:
 [#overconstrainedPlanningWithVirtualValues]
 === Overconstrained planning with virtual values
 
-In overconstrained planning it is often useful to know which resources are lacking.
-In overconstrained planning with virtual values, the solution indicates which resources to buy.
+If we handle overconstrained planning with virtual values,
+the overload entities will be assigned to one or more dummy values provided by the user.
+
+[NOTE]
+====
+This method is inferior to xref:overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values].
+It is likely to result in significantly worse solver performance and is also more challenging to implement.
+Null variable values should be preferred over virtual values if at all possible.
+====
 
 To implement this:
 
-. Add an additional score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
-. Add a number of virtual values. It can be difficult to determine a good formula to calculate that number:
+. Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
+. Add a number of virtual values. It can be challenging to determine a good formula to calculate that number:
 ** Do not add too many, as that will decrease solver efficiency.
 ** Importantly, do not add too few as that will lead to an infeasible solution.
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of virtual assigned entities (or a weighted sum of them).
 . Optionally, change all soft constraints to ignore virtual assigned entities.
+
 
 [#continuousPlanning]
 == Continuous planning (windowed planning)
