@@ -28,7 +28,7 @@ public class Employee extends AbstractPersistable implements Labeled {
     private Set<Skill> skillSet;
     private Map<Customer, Affinity> affinityMap;
 
-    @PlanningListVariable
+    @PlanningListVariable(allowsUnassignedValues = true)
     private List<Task> tasks;
 
     // TODO pinning: https://issues.redhat.com/browse/PLANNER-2633.

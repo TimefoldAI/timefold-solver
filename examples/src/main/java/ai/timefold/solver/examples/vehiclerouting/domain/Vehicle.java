@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.examples.common.domain.AbstractPersistable;
 import ai.timefold.solver.examples.common.persistence.jackson.JacksonUniqueIdGenerator;
@@ -21,6 +23,12 @@ public class Vehicle extends AbstractPersistable implements LocationAware {
 
     @PlanningListVariable
     protected List<Customer> customers = new ArrayList<>();
+
+    @PlanningPin
+    public boolean pinned;
+
+    @PlanningPinToIndex
+    public int pinnedToIndex;
 
     public Vehicle() {
     }
@@ -53,6 +61,14 @@ public class Vehicle extends AbstractPersistable implements LocationAware {
 
     public void setCustomers(List<Customer> customers) {
         this.customers = customers;
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public int getPinnedToIndex() {
+        return pinnedToIndex;
     }
 
     // ************************************************************************
