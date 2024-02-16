@@ -143,7 +143,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
             ElementAwareListEntry<OutTuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
             ElementAwareList<OutTuple_> outEntryList = outEntry.getList();
             if (outList == outEntryList) {
-                outTupleList.prematurelyTerminateIterator(); // Performance optimization.
                 return outTuple;
             }
         }
