@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.testdata.domain.list.pinned;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -24,7 +25,9 @@ public class TestdataPinnedListValue extends TestdataObject {
                 .getShadowVariableDescriptor("index");
     }
 
-    // Intentionally missing the inverse relation variable; some tests rely on it not being here.
+    @InverseRelationShadowVariable(sourceVariableName = "valueList")
+    private TestdataPinnedListEntity entity;
+
     @IndexShadowVariable(sourceVariableName = "valueList")
     private Integer index;
 
@@ -35,6 +38,14 @@ public class TestdataPinnedListValue extends TestdataObject {
         super(code);
     }
 
+    public TestdataPinnedListEntity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(TestdataPinnedListEntity entity) {
+        this.entity = entity;
+    }
+
     public Integer getIndex() {
         return index;
     }
@@ -42,4 +53,5 @@ public class TestdataPinnedListValue extends TestdataObject {
     public void setIndex(Integer index) {
         this.index = index;
     }
+
 }

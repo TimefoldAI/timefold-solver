@@ -16,9 +16,9 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
@@ -156,15 +156,15 @@ class MultiConstraintAssertionTest {
     void listVarUnassignedWhileDisallowsUnassigned_noInverseRelationShadowVar() {
         var constraintVerifier =
                 ConstraintVerifier.build(new TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider(),
-                        TestdataPinnedListSolution.class,
-                        TestdataPinnedListEntity.class,
-                        TestdataPinnedListValue.class);
+                        TestdataPinnedNoShadowsListSolution.class,
+                        TestdataPinnedNoShadowsListEntity.class,
+                        TestdataPinnedNoShadowsListValue.class);
 
-        var value1 = new TestdataPinnedListValue("v1");
-        var value2 = new TestdataPinnedListValue("v2");
-        var entity = new TestdataPinnedListEntity("eA", value1);
+        var value1 = new TestdataPinnedNoShadowsListValue("v1");
+        var value2 = new TestdataPinnedNoShadowsListValue("v2");
+        var entity = new TestdataPinnedNoShadowsListEntity("eA", value1);
         value1.setIndex(0);
-        var solution = new TestdataPinnedListSolution();
+        var solution = new TestdataPinnedNoShadowsListSolution();
         solution.setEntityList(List.of(entity));
         solution.setValueList(List.of(value1, value2));
 
@@ -192,13 +192,13 @@ class MultiConstraintAssertionTest {
         }
 
         private Constraint penalizeEveryAssignedValue(ConstraintFactory constraintFactory) {
-            return constraintFactory.forEach(TestdataPinnedListValue.class)
+            return constraintFactory.forEach(TestdataPinnedNoShadowsListValue.class)
                     .penalize(SimpleScore.ONE)
                     .asConstraint("Penalize every unassigned value");
         }
 
         private Constraint penalizeEveryValue(ConstraintFactory constraintFactory) {
-            return constraintFactory.forEachIncludingUnassigned(TestdataPinnedListValue.class)
+            return constraintFactory.forEachIncludingUnassigned(TestdataPinnedNoShadowsListValue.class)
                     .penalize(SimpleScore.ONE)
                     .asConstraint("Penalize every value");
         }

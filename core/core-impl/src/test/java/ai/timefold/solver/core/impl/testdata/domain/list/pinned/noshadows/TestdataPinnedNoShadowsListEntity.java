@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.list.pinned;
+package ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,56 +13,56 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
 @PlanningEntity
-public class TestdataPinnedListEntity extends TestdataObject {
+public class TestdataPinnedNoShadowsListEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataPinnedListSolution> buildEntityDescriptor() {
-        return TestdataPinnedListSolution.buildSolutionDescriptor().findEntityDescriptorOrFail(TestdataPinnedListEntity.class);
+    public static EntityDescriptor<TestdataPinnedNoShadowsListSolution> buildEntityDescriptor() {
+        return TestdataPinnedNoShadowsListSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataPinnedNoShadowsListEntity.class);
     }
 
-    public static ListVariableDescriptor<TestdataPinnedListSolution> buildVariableDescriptorForValueList() {
-        return (ListVariableDescriptor<TestdataPinnedListSolution>) buildEntityDescriptor()
+    public static ListVariableDescriptor<TestdataPinnedNoShadowsListSolution> buildVariableDescriptorForValueList() {
+        return (ListVariableDescriptor<TestdataPinnedNoShadowsListSolution>) buildEntityDescriptor()
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataPinnedListEntity createWithValues(String code, TestdataPinnedListValue... values) {
+    public static TestdataPinnedNoShadowsListEntity createWithValues(String code, TestdataPinnedNoShadowsListValue... values) {
         // Set up shadow variables to preserve consistency.
-        return new TestdataPinnedListEntity(code, values).setUpShadowVariables();
+        return new TestdataPinnedNoShadowsListEntity(code, values).setUpShadowVariables();
     }
 
-    TestdataPinnedListEntity setUpShadowVariables() {
+    TestdataPinnedNoShadowsListEntity setUpShadowVariables() {
         valueList.forEach(testdataListValue -> {
-            testdataListValue.setEntity(this);
             testdataListValue.setIndex(valueList.indexOf(testdataListValue));
         });
         return this;
     }
 
-    private List<TestdataPinnedListValue> valueList;
+    private List<TestdataPinnedNoShadowsListValue> valueList;
 
     @PlanningPin
     private boolean pinned;
 
-    public TestdataPinnedListEntity() {
+    public TestdataPinnedNoShadowsListEntity() {
     }
 
-    public TestdataPinnedListEntity(String code, List<TestdataPinnedListValue> valueList) {
+    public TestdataPinnedNoShadowsListEntity(String code, List<TestdataPinnedNoShadowsListValue> valueList) {
         super(code);
         this.valueList = valueList;
     }
 
-    public TestdataPinnedListEntity(String code, TestdataPinnedListValue... values) {
+    public TestdataPinnedNoShadowsListEntity(String code, TestdataPinnedNoShadowsListValue... values) {
         this(code, new ArrayList<>(Arrays.asList(values)));
     }
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    public List<TestdataPinnedListValue> getValueList() {
+    public List<TestdataPinnedNoShadowsListValue> getValueList() {
         if (pinned) {
             return Collections.unmodifiableList(valueList); // Hard fail when something tries to modify the list.
         }
         return valueList;
     }
 
-    public void setValueList(List<TestdataPinnedListValue> valueList) {
+    public void setValueList(List<TestdataPinnedNoShadowsListValue> valueList) {
         this.valueList = valueList;
     }
 

@@ -50,9 +50,9 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleLongScoreSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
@@ -1094,19 +1094,19 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void forEach_listVarNotAllowsUnassignedValues_noInverseVar() {
-        var solution = new TestdataPinnedListSolution();
-        var v1 = new TestdataPinnedListValue("v1");
-        var v2 = new TestdataPinnedListValue("v2");
+        var solution = new TestdataPinnedNoShadowsListSolution();
+        var v1 = new TestdataPinnedNoShadowsListValue("v1");
+        var v2 = new TestdataPinnedNoShadowsListValue("v2");
         solution.setValueList(List.of(v1, v2));
-        var e1 = new TestdataPinnedListEntity("e1", v1);
+        var e1 = new TestdataPinnedNoShadowsListEntity("e1", v1);
         v1.setIndex(0);
-        var e2 = new TestdataPinnedListEntity("e2");
+        var e2 = new TestdataPinnedNoShadowsListEntity("e2");
         solution.setEntityList(List.of(e1, e2));
 
-        InnerScoreDirector<TestdataPinnedListSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataPinnedListSolution.buildSolutionDescriptor(),
+        InnerScoreDirector<TestdataPinnedNoShadowsListSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataPinnedNoShadowsListSolution.buildSolutionDescriptor(),
                 factory -> new Constraint[] {
-                        factory.forEach(TestdataPinnedListValue.class)
+                        factory.forEach(TestdataPinnedNoShadowsListValue.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint(TEST_CONSTRAINT_NAME)
                 });
