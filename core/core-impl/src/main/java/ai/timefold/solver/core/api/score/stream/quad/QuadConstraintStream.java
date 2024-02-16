@@ -922,6 +922,24 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
     }
 
     /**
+     * As defined by {@link #penalizeLong(Score, ToLongQuadFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeLong(Score_ constraintWeight) {
+        return penalizeLong(constraintWeight, ConstantLambdaUtils.quadConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #penalizeBigDecimal(Score, QuadFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.quadConstantOneBigDecimal());
+    }
+
+    /**
      * Applies a negative {@link Score} impact,
      * subtracting the constraintWeight multiplied by the match weight,
      * and returns a builder to apply optional constraint properties.

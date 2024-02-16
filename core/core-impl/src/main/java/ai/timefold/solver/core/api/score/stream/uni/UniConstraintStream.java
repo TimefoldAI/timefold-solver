@@ -1634,6 +1634,24 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     }
 
     /**
+     * As defined by {@link #penalizeLong(Score, ToLongFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeLong(Score_ constraintWeight) {
+        return penalizeLong(constraintWeight, ConstantLambdaUtils.uniConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #penalizeBigDecimal(Score, Function)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.uniConstantOneBigDecimal());
+    }
+
+    /**
      * Applies a negative {@link Score} impact,
      * subtracting the constraintWeight multiplied by the match weight,
      * and returns a builder to apply optional constraint properties.
