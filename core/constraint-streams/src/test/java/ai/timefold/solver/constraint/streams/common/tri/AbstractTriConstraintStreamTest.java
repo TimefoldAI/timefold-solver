@@ -2322,6 +2322,46 @@ public abstract class AbstractTriConstraintStreamTest
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
+    @Override
+    @TestTemplate
+    public void penalizeUnweightedLong() {
+        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
+
+        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
+                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
+                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
+                                .penalizeLong(SimpleLongScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-2));
+        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
+    }
+
+    @Override
+    @TestTemplate
+    public void penalizeUnweightedBigDecimal() {
+        TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
+
+        InnerScoreDirector<TestdataSimpleBigDecimalScoreSolution, SimpleBigDecimalScore> scoreDirector =
+                buildScoreDirector(TestdataSimpleBigDecimalScoreSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
+                                        .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
+                                        .penalizeBigDecimal(SimpleBigDecimalScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        });
+
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-2)));
+        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
+    }
+
     private <Score_ extends Score<Score_>, Solution_, Entity_, Value_> void assertDefaultJustifications(
             InnerScoreDirector<Solution_, Score_> scoreDirector, List<Entity_> entityList, List<Value_> valueList) {
         if (!implSupport.isConstreamMatchEnabled())

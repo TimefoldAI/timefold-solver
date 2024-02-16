@@ -194,6 +194,10 @@ public interface ConstraintStreamFunctionalTest {
 
     void penalizeUnweighted();
 
+    void penalizeUnweightedLong();
+
+    void penalizeUnweightedBigDecimal();
+
     void penalize();
 
     void penalizeLong();
