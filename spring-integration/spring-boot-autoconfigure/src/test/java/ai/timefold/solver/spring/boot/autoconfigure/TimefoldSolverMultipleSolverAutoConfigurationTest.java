@@ -56,7 +56,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
-class TimefoldMultipleSolverAutoConfigurationTest {
+class TimefoldSolverMultipleSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner emptyContextRunner;
@@ -67,32 +67,39 @@ class TimefoldMultipleSolverAutoConfigurationTest {
     private final ApplicationContextRunner multimoduleRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
 
-    public TimefoldMultipleSolverAutoConfigurationTest() {
+    public TimefoldSolverMultipleSolverAutoConfigurationTest() {
         contextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
         emptyContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(EmptySpringTestConfiguration.class);
         benchmarkContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
-                        AutoConfigurations.of(TimefoldAutoConfiguration.class, TimefoldBenchmarkAutoConfiguration.class))
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class,
+                                TimefoldBenchmarkAutoConfiguration.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
         gizmoContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(GizmoSpringTestConfiguration.class);
         chainedContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(ChainedSpringTestConfiguration.class);
         multimoduleRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class))
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultiModuleSpringTestConfiguration.class);
         allDefaultsFilteredClassLoader =
                 new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
                         FilteredClassLoader.ClassPathResourceFilter
                                 .of(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
         noUserConfigurationContextRunner = new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(TimefoldAutoConfiguration.class));
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class));
     }
 
     @Test
@@ -551,7 +558,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score class, yet there are multiple available",
+                        "don't specify a EasyScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringEasyScore.class.getSimpleName(),
                         DummySpringEasyScore.class.getSimpleName(),
                         "on the classpath.");
@@ -566,7 +573,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a ConstraintProvider score class, yet there are multiple available",
+                        "don't specify a ConstraintProvider score calculator class, yet there are multiple available",
                         TestdataChainedSpringConstraintProvider.class.getSimpleName(),
                         TestdataSpringConstraintProvider.class.getSimpleName(),
                         "on the classpath.");
@@ -581,7 +588,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a IncrementalScoreCalculator score class, yet there are multiple available",
+                        "don't specify a IncrementalScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringIncrementalScore.class.getSimpleName(),
                         DummySpringIncrementalScore.class.getSimpleName(),
                         "on the classpath.");
@@ -598,7 +605,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score class, yet there are multiple available",
+                        "don't specify a EasyScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringEasyScore.class.getSimpleName(),
                         DummySpringEasyScore.class.getSimpleName(),
                         "on the classpath.");
@@ -615,7 +622,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a ConstraintProvider score class, yet there are multiple available",
+                        "don't specify a ConstraintProvider score calculator class, yet there are multiple available",
                         TestdataChainedSpringConstraintProvider.class.getSimpleName(),
                         TestdataSpringConstraintProvider.class.getSimpleName(),
                         "on the classpath.");
@@ -632,7 +639,7 @@ class TimefoldMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "Some solver configs", "solver2", "solver1",
-                        "don't specify a IncrementalScoreCalculator score class, yet there are multiple available",
+                        "don't specify a IncrementalScoreCalculator score calculator class, yet there are multiple available",
                         DummyChainedSpringIncrementalScore.class.getSimpleName(),
                         DummySpringIncrementalScore.class.getSimpleName(),
                         "on the classpath.");

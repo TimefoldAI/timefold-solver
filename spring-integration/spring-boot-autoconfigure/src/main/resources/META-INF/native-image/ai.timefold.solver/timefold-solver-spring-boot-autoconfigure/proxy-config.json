@@ -1,0 +1,8 @@
+[
+  {
+    "interfaces": [
+      "java.lang.Deprecated",
+      "org.glassfish.jaxb.core.v2.model.annotation.Locatable"
+    ]
+  }
+]
