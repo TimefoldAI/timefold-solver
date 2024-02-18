@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -21,7 +20,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
 public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
     private Iterator<ElementLocation> destinationIterator;
@@ -31,7 +29,6 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
             EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
-        this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
         this.destinationIterator = Collections.emptyIterator();
