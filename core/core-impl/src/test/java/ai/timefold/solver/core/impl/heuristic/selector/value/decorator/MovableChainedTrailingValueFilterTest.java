@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.chained.TestdataPinnedChainedEntity;
@@ -46,8 +46,7 @@ class MovableChainedTrailingValueFilterTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, b1, b2, c1, c2));
 
         scoreDirector.setWorkingSolution(solution);
-        SingletonInverseVariableSupply inverseVariableSupply = scoreDirector.getSupplyManager()
-                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
+        scoreDirector.getSupplyManager().demand(new SingletonInverseVariableDemand<>(variableDescriptor));
 
         MovableChainedTrailingValueFilter<TestdataPinnedChainedSolution> filter =
                 new MovableChainedTrailingValueFilter<>(variableDescriptor);
@@ -71,7 +70,7 @@ class MovableChainedTrailingValueFilterTest {
         VariableDescriptor<TestdataPinnedChainedSolution> variableDescriptor =
                 TestdataPinnedChainedEntity.buildEntityDescriptor()
                         .getVariableDescriptor("chainedObject");
-        assertThat(((GenuineVariableDescriptor<TestdataPinnedChainedSolution>) variableDescriptor)
+        assertThat(((BasicVariableDescriptor<TestdataPinnedChainedSolution>) variableDescriptor)
                 .getMovableChainedTrailingValueFilter()).isNotNull();
     }
 

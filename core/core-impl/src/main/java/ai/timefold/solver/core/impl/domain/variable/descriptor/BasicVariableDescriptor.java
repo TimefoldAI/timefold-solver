@@ -5,11 +5,14 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableChainedTrailingValueFilter;
 
 public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
-    boolean chained;
-    boolean allowsUnassigned;
+    private SelectionFilter<Solution_, Object> movableChainedTrailingValueFilter;
+    private boolean chained;
+    private boolean allowsUnassigned;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -18,6 +21,10 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     public BasicVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
+    }
+
+    public boolean isChained() {
+        return chained;
     }
 
     public boolean allowsUnassigned() {
@@ -91,6 +98,16 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         }
     }
 
+    @Override
+    public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
+        super.linkVariableDescriptors(descriptorPolicy);
+        if (chained && entityDescriptor.hasEffectiveMovableEntitySelectionFilter()) {
+            movableChainedTrailingValueFilter = new MovableChainedTrailingValueFilter<>(this);
+        } else {
+            movableChainedTrailingValueFilter = null;
+        }
+    }
+
     // ************************************************************************
     // Worker methods
     // ************************************************************************
@@ -98,6 +115,19 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     @Override
     public boolean acceptsValueType(Class<?> valueType) {
         return getVariablePropertyType().isAssignableFrom(valueType);
+    }
+
+    @Override
+    public boolean isInitialized(Object entity) {
+        return allowsUnassigned || getValue(entity) != null;
+    }
+
+    public boolean hasMovableChainedTrailingValueFilter() {
+        return movableChainedTrailingValueFilter != null;
+    }
+
+    public SelectionFilter<Solution_, Object> getMovableChainedTrailingValueFilter() {
+        return movableChainedTrailingValueFilter;
     }
 
 }

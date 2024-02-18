@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
@@ -57,7 +58,9 @@ public class ChainedSwapMove<Solution_> extends SwapMove<Solution_> {
             Object oldRightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(oldLeftValue, oldRightValue)) {
                 InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-                if (!variableDescriptor.isChained()) {
+                boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && basicVariableDescriptor.isChained();
+                if (!isChained) {
                     innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
                     innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
                 } else {

@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
     private final ListVariableStateDemand<Solution_> stateDemand = new ListVariableStateDemand<>(this);
-    boolean allowsUnassignedValues = true;
+    private boolean allowsUnassignedValues = true;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -76,6 +76,11 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     @Override
     public boolean acceptsValueType(Class<?> valueType) {
         return getElementType().isAssignableFrom(valueType);
+    }
+
+    @Override
+    public boolean isInitialized(Object entity) {
+        return true; // List variable itself can never be null and is always initialized.
     }
 
     public Class<?> getElementType() {

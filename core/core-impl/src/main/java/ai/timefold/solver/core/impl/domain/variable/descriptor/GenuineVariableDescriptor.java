@@ -23,11 +23,9 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPrope
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableChainedTrailingValueFilter;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -35,7 +33,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableCh
 public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescriptor<Solution_> {
 
     private ValueRangeDescriptor<Solution_> valueRangeDescriptor;
-    private SelectionFilter<Solution_, Object> movableChainedTrailingValueFilter;
     private SelectionSorter<Solution_, Object> increasingStrengthSorter;
     private SelectionSorter<Solution_, Object> decreasingStrengthSorter;
 
@@ -205,33 +202,15 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-        if (isChained() && entityDescriptor.hasEffectiveMovableEntitySelectionFilter()) {
-            movableChainedTrailingValueFilter = new MovableChainedTrailingValueFilter<>(this);
-        } else {
-            movableChainedTrailingValueFilter = null;
-        }
+        // Overriding this method so that subclasses can override it too and call super.
+        // This way, if this method ever gets any content, it will be called by all subclasses, preventing bugs.
     }
 
     // ************************************************************************
     // Worker methods
     // ************************************************************************
 
-    public final boolean isChained() {
-        if (this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
-            return basicVariableDescriptor.chained;
-        }
-        return false; // ListVariableDescriptor is never chained.
-    }
-
     public abstract boolean acceptsValueType(Class<?> valueType);
-
-    public boolean hasMovableChainedTrailingValueFilter() {
-        return movableChainedTrailingValueFilter != null;
-    }
-
-    public SelectionFilter<Solution_, Object> getMovableChainedTrailingValueFilter() {
-        return movableChainedTrailingValueFilter;
-    }
 
     public ValueRangeDescriptor<Solution_> getValueRangeDescriptor() {
         return valueRangeDescriptor;
@@ -247,30 +226,12 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     /**
      * A basic planning variable {@link PlanningVariable#allowsUnassigned() allowing unassigned}
-     * and {@link PlanningListVariable#allowsUnassignedValues() allowing unassigned values}
-     * are always considered initialized.
+     * and @{@link PlanningListVariable} are always considered initialized.
      *
      * @param entity never null
      * @return true if the variable on that entity is initialized
      */
-    public final boolean isInitialized(Object entity) {
-        if (isListVariable()) {
-            return true;
-        } else if (this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
-            if (basicVariableDescriptor.allowsUnassigned()) {
-                return true;
-            }
-            return getValue(entity) != null;
-        } else {
-            throw new IllegalStateException("Impossible state: unknown variable type (%s)."
-                    .formatted(this.getClass().getSimpleName()));
-        }
-    }
-
-    @Override
-    public boolean isGenuineAndUninitialized(Object entity) {
-        return !isInitialized(entity);
-    }
+    public abstract boolean isInitialized(Object entity);
 
     /**
      * Decides whether an entity is eligible for initialization.

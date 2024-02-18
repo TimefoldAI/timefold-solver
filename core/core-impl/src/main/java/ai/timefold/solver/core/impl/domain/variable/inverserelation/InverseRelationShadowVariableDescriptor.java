@@ -15,7 +15,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -93,8 +93,8 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
                     + sourceEntityDescriptor.getEntityClass() + ").\n"
                     + sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName));
         }
-        chained = (sourceVariableDescriptor instanceof GenuineVariableDescriptor) &&
-                ((GenuineVariableDescriptor<Solution_>) sourceVariableDescriptor).isChained();
+        chained = sourceVariableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor &&
+                basicVariableDescriptor.isChained();
         boolean list = sourceVariableDescriptor.isListVariable();
         if (singleton) {
             if (!chained && !list) {

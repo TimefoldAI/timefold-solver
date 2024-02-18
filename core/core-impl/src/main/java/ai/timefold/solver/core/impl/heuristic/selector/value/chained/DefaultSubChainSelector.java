@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -16,7 +17,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLife
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleListener;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -43,11 +43,13 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
             int minimumSubChainSize, int maximumSubChainSize) {
         this.valueSelector = valueSelector;
         this.randomSelection = randomSelection;
-        if (!valueSelector.getVariableDescriptor().isChained()) {
-            throw new IllegalArgumentException("The selector (" + this
-                    + ")'s valueSelector (" + valueSelector
-                    + ") must have a chained variableDescriptor chained ("
-                    + valueSelector.getVariableDescriptor().isChained() + ").");
+        boolean isChained =
+                valueSelector.getVariableDescriptor() instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && basicVariableDescriptor.isChained();
+        if (!isChained) {
+            throw new IllegalArgumentException(
+                    "The selector (%s)'s valueSelector (%s) must have a chained variableDescriptor chained (%s)."
+                            .formatted(this, valueSelector, isChained));
         }
         if (valueSelector.isNeverEnding()) {
             throw new IllegalStateException("The selector (" + this
@@ -99,7 +101,6 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
 
     @Override
     public void constructCache(SolverScope<Solution_> solverScope) {
-        InnerScoreDirector<Solution_, ?> scoreDirector = solverScope.getScoreDirector();
         GenuineVariableDescriptor<Solution_> variableDescriptor = valueSelector.getVariableDescriptor();
         long valueSize = valueSelector.getSize();
         // Fail-fast when anchorTrailingChainList.size() could ever be too big

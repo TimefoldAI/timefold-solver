@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -37,10 +38,11 @@ public class KOptMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
                             + KOptMoveSelector.class.getSimpleName() + "."); // TODO
         }
         variableDescriptor = valueSelectors[0].getVariableDescriptor();
-        if (!variableDescriptor.isChained()) {
-            throw new IllegalStateException("The selector (" + this
-                    + ")'s valueSelector's  variableDescriptor (" + variableDescriptor
-                    + ") must be chained (" + variableDescriptor.isChained() + ").");
+        boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                && basicVariableDescriptor.isChained();
+        if (!isChained) {
+            throw new IllegalStateException("The selector (%s)'s valueSelector's variableDescriptor (%s) must be chained (%s)."
+                    .formatted(this, variableDescriptor, isChained));
         }
         if (!variableDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(
                 entitySelector.getEntityDescriptor().getEntityClass())) {
