@@ -1071,7 +1071,7 @@ public class SolutionDescriptor<Solution_> {
         var genuineEntityCount = new MutableInt();
         var shadowEntityCount = new MutableInt();
         for (var listVariableDescriptor : listVariableDescriptorList) {
-            if (listVariableDescriptor.allowsUnassigned()) { // Unassigned elements count as assigned.
+            if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
                 continue;
             }
             // We count every possibly unassigned element in every list variable.
@@ -1097,7 +1097,7 @@ public class SolutionDescriptor<Solution_> {
                 return;
             }
             for (var listVariableDescriptor : listVariableDescriptorList) {
-                if (listVariableDescriptor.allowsUnassigned()) { // Unassigned elements count as assigned.
+                if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
                     continue;
                 }
                 var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();

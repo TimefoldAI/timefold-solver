@@ -47,8 +47,8 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
             EntityIndependentValueSelector<Solution_> sourceValueSelector,
             ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        var entityDescriptor = sourceValueSelector.getVariableDescriptor().getEntityDescriptor();
-        var supportsPinning = entityDescriptor.supportsPinning();
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+        var supportsPinning = listVariableDescriptor.supportsPinning();
         if (!supportsPinning) {
             // Don't incur the overhead of filtering values if there is no pinning support.
             return sourceValueSelector;
@@ -61,15 +61,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     }
                     var elementDestination = (LocationInList) elementLocation;
                     var entity = elementDestination.entity();
-                    var pinningStatus = entityDescriptor.extractPinningStatus(scoreDirector, entity);
-                    if (!pinningStatus.hasPin()) {
-                        return true;
-                    } else if (pinningStatus.entireEntityPinned()) {
-                        return false;
-                    }
-                    var firstUnpinnedIndex = pinningStatus.firstUnpinnedIndex();
-                    var index = elementDestination.index();
-                    return index >= firstUnpinnedIndex;
+                    return !listVariableDescriptor.isElementPinned(scoreDirector, entity, elementDestination.index());
                 });
     }
 

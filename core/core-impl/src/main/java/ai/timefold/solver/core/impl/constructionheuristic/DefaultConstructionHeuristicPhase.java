@@ -51,7 +51,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         // To prevent that, we need to limit the number of steps to the number of unassigned values.
         var solutionDescriptor = solverScope.getSolutionDescriptor();
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        var supportsUnassignedValues = listVariableDescriptor != null && listVariableDescriptor.allowsUnassigned();
+        var supportsUnassignedValues = listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues();
         var maxStepCount = -1;
         if (supportsUnassignedValues) {
             var workingSolution = phaseScope.getWorkingSolution();

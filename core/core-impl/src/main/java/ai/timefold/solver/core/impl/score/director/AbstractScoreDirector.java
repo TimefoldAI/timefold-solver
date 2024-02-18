@@ -416,7 +416,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        if (!variableDescriptor.allowsUnassigned()) { // Unassigned elements don't count towards the initScore here.
+        if (!variableDescriptor.allowsUnassignedValues()) { // Unassigned elements don't count towards the initScore here.
             workingInitScore++;
             assertInitScoreZeroOrLess();
         }
@@ -429,7 +429,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        if (!variableDescriptor.allowsUnassigned()) { // Unassigned elements don't count towards the initScore here.
+        if (!variableDescriptor.allowsUnassignedValues()) { // Unassigned elements don't count towards the initScore here.
             workingInitScore--;
         }
         variableListenerSupport.afterElementUnassigned(variableDescriptor, element);
@@ -440,25 +440,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             int toIndex) {
         // Pinning is implemented in generic moves, but custom moves need to take it into account as well.
         // This fail-fast exists to detect situations where pinned things are being moved, in case of user error.
-        var entityDescriptor = variableDescriptor.getEntityDescriptor();
-        var pinningStatus = entityDescriptor.extractPinningStatus(this, entity);
-        if (pinningStatus.hasPin()) {
-            if (pinningStatus.entireEntityPinned()) {
-                throw new IllegalStateException("""
-                        Attempting to change list variable (%s) on an entity (%s) which is fully pinned.
-                        This is most likely a bug in a move.
-                        Maybe you are using an improperly implemented custom move?"""
-                        .formatted(variableDescriptor, entity));
-            }
-            int firstUnpinnedIndex = pinningStatus.firstUnpinnedIndex();
-            if (fromIndex < firstUnpinnedIndex || toIndex < firstUnpinnedIndex) {
-                throw new IllegalStateException(
-                        """
-                                Attempting to change list variable (%s) on an entity (%s) in range [%d, %d), but the variable's first unpinned index is (%d).
-                                This is most likely a bug in a move.
-                                Maybe you are using an improperly implemented custom move?"""
-                                .formatted(variableDescriptor, entity, fromIndex, toIndex, firstUnpinnedIndex));
-            }
+        if (variableDescriptor.isElementPinned(this, entity, fromIndex)) {
+            throw new IllegalStateException(
+                    """
+                            Attempting to change list variable (%s) on an entity (%s) in range [%d, %d), which is partially or entirely pinned.
+                            This is most likely a bug in a move.
+                            Maybe you are using an improperly implemented custom move?"""
+                            .formatted(variableDescriptor, entity, fromIndex, toIndex));
         }
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }

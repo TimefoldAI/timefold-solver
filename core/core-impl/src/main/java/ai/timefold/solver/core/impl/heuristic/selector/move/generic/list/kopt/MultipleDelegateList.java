@@ -68,15 +68,14 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         }
     }
 
-    public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableStateSupply<?> listVariableStateSupply, Object value) {
+    public int getIndexOfValue(ListVariableStateSupply<?> listVariableStateSupply, Object value) {
         var elementLocation = listVariableStateSupply.getLocationInList(value);
         if (elementLocation instanceof LocationInList elementLocationInList) {
             var entity = elementLocationInList.entity();
+            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
             for (var i = 0; i < delegateEntities.length; i++) {
                 if (delegateEntities[i] == entity) {
-                    var firstUnpinnedIndex =
-                            listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(delegateEntities[i]);
+                    var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(delegateEntities[i]);
                     return offsets[i] + (elementLocationInList.index() - firstUnpinnedIndex);
                 }
             }
@@ -89,7 +88,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             TriConsumer<Object, Integer, Integer> action) {
         for (Object originalEntity : originalEntities) {
             action.accept(originalEntity,
-                    listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(originalEntity),
+                    listVariableDescriptor.getFirstUnpinnedIndex(originalEntity),
                     listVariableDescriptor.getListSize(originalEntity));
         }
     }

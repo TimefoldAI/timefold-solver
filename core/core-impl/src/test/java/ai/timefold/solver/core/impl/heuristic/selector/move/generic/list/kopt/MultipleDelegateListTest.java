@@ -2,8 +2,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,7 +22,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class MultipleDelegateListTest {
     @Test
@@ -36,7 +37,7 @@ public class MultipleDelegateListTest {
         @SuppressWarnings("unchecked")
         EntityDescriptor<Object> entityDescriptor = mock(EntityDescriptor.class);
 
-        Mockito.when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
+        when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
 
         ListVariableStateSupply<Object> listVariableStateSupply = mock(ListVariableStateSupply.class);
         doAnswer(invocation -> {
@@ -50,15 +51,16 @@ public class MultipleDelegateListTest {
                 case "f" -> new LocationInList("e3", 0);
                 default -> ElementLocation.unassigned();
             };
-        }).when(listVariableStateSupply).getLocationInList(Mockito.anyString());
+        }).when(listVariableStateSupply).getLocationInList(anyString());
+        when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
 
         List<String> expectedOrder = List.of("a", "b", "c", "d", "e", "f");
         for (int i = 0; i < expectedOrder.size(); i++) {
-            assertThat(combined.getIndexOfValue(listVariableDescriptor, listVariableStateSupply, expectedOrder.get(i)))
+            assertThat(combined.getIndexOfValue(listVariableStateSupply, expectedOrder.get(i)))
                     .isEqualTo(i);
         }
 
-        assertThatCode(() -> combined.getIndexOfValue(listVariableDescriptor, listVariableStateSupply, "g"))
+        assertThatCode(() -> combined.getIndexOfValue(listVariableStateSupply, "g"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Value (g) is not contained in any entity list");
     }

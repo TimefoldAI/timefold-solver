@@ -255,13 +255,13 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             if (!entityDescriptor.supportsPinning() || !entityDescriptor.hasAnyGenuineListVariables()) {
                 return;
             }
-            int pinIndex = entityDescriptor.extractFirstUnpinnedIndex(entity);
+            var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+            int pinIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
             if (entityDescriptor.isMovable(solverScope.getScoreDirector(), entity)) {
                 if (pinIndex < 0) {
                     throw new IllegalStateException("The movable planning entity (%s) has a pin index (%s) which is negative."
                             .formatted(entity, pinIndex));
                 }
-                var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
                 var listSize = listVariableDescriptor.getListSize(entity);
                 if (pinIndex > listSize) {
                     // pinIndex == listSize is allowed, as that says the pin is at the end of the list,

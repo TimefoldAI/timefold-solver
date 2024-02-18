@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -105,13 +106,13 @@ class KOptListMoveTest {
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7));
         scoreDirector.setWorkingSolution(solution);
 
-        var variableDescriptorSpy = Mockito.spy(variableDescriptor);
-        var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
+        var variableDescriptorSpy = spy(variableDescriptor);
+        var entityDescriptor = spy(TestdataListSolution.buildSolutionDescriptor()
                 .findEntityDescriptorOrFail(TestdataListEntity.class));
-        Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
-        Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
-        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
-        Mockito.when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
+        when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        when(variableDescriptorSpy.getFirstUnpinnedIndex(e1)).thenReturn(1);
+        when(entityDescriptor.supportsPinning()).thenReturn(true);
+        when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
                 variableDescriptor,
@@ -339,14 +340,14 @@ class KOptListMoveTest {
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7));
         scoreDirector.setWorkingSolution(solution);
 
-        var variableDescriptorSpy = Mockito.spy(variableDescriptor);
-        var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
+        var variableDescriptorSpy = spy(variableDescriptor);
+        var entityDescriptor = spy(TestdataListSolution.buildSolutionDescriptor()
                 .findEntityDescriptorOrFail(TestdataListEntity.class));
-        Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
-        Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
-        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
-        Mockito.when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
-        Mockito.when(entityDescriptor.isMovable(null, e2)).thenReturn(true);
+        when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        when(variableDescriptorSpy.getFirstUnpinnedIndex(e1)).thenReturn(1);
+        when(entityDescriptor.supportsPinning()).thenReturn(true);
+        when(entityDescriptor.isMovable(null, e1)).thenReturn(true);
+        when(entityDescriptor.isMovable(null, e2)).thenReturn(true);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
                 variableDescriptor,
@@ -749,6 +750,8 @@ class KOptListMoveTest {
         var pickedValues = removedEdgeList.toArray(TestdataListValue[]::new);
 
         var listVariableDataSupply = scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand());
+        listVariableDataSupply = spy(listVariableDataSupply);
+        when(listVariableDataSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptorSpy);
 
         Function<TestdataListValue, TestdataListValue> successorFunction =
                 getSuccessorFunction(listVariableDescriptorSpy, listVariableDataSupply);
@@ -783,9 +786,9 @@ class KOptListMoveTest {
         }
 
         var descriptor = new KOptDescriptor<>(tourArray, incl,
-                getMultiEntitySuccessorFunction(pickedValues, listVariableDescriptorSpy, listVariableDataSupply),
-                getMultiEntityBetweenPredicate(pickedValues, listVariableDescriptorSpy, listVariableDataSupply));
-        return descriptor.getKOptListMove(listVariableDescriptorSpy, listVariableDataSupply);
+                getMultiEntitySuccessorFunction(pickedValues, listVariableDataSupply),
+                getMultiEntityBetweenPredicate(pickedValues, listVariableDataSupply));
+        return descriptor.getKOptListMove(listVariableDataSupply);
     }
 
     private static <Node_> Function<Node_, Node_> getSuccessorFunction(ListVariableDescriptor<?> listVariableDescriptor,
@@ -795,7 +798,7 @@ class KOptListMoveTest {
             var valueList = (List<Node_>) listVariableDescriptor.getValue(entity);
             var index = listVariableStateSupply.getIndex(node);
             if (index == valueList.size() - 1) {
-                var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
+                var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
                 return valueList.get(firstUnpinnedIndex);
             } else {
                 return valueList.get(index + 1);

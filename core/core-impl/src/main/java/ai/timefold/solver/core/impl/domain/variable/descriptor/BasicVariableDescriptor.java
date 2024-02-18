@@ -20,6 +20,10 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
+    public boolean allowsUnassigned() {
+        return allowsUnassigned;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************

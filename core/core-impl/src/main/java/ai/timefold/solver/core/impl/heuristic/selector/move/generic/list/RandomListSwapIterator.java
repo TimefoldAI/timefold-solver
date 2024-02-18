@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -17,7 +16,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
 public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Iterator<Object> leftValueIterator;
     private final Iterator<Object> rightValueIterator;
 
@@ -25,7 +23,6 @@ public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator
             EntityIndependentValueSelector<Solution_> leftValueSelector,
             EntityIndependentValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
-        this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueIterator = rightValueSelector.iterator();
     }
@@ -37,6 +34,6 @@ public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator
         }
         var upcomingLeftValue = leftValueIterator.next();
         var upcomingRightValue = rightValueIterator.next();
-        return buildSwapMove(listVariableDescriptor, listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
+        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
     }
 }

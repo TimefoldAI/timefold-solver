@@ -46,7 +46,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             upcomingValue = valueIterator.next();
             destinationIterator = destinationSelector.iterator();
         }
-        var move = buildChangeMove(listVariableDescriptor, listVariableStateSupply, upcomingValue, destinationIterator);
+        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator);
         if (move == null) {
             return noUpcomingSelection();
         } else {
@@ -54,9 +54,9 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
         }
     }
 
-    static <Solution_> Move<Solution_> buildChangeMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue,
-            Iterator<ElementLocation> destinationIterator) {
+    static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
+            Object upcomingLeftValue, Iterator<ElementLocation> destinationIterator) {
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (upcomingDestination == null) {
             return null;

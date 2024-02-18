@@ -79,7 +79,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         var valueRangeDescriptorList =
                 new ArrayList<ValueRangeDescriptor<Solution_>>(valueRangeProviderMemberAccessors.length);
         var addNullInValueRange =
-                this instanceof BasicVariableDescriptor && allowsUnassigned() && valueRangeProviderMemberAccessors.length == 1;
+                this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && basicVariableDescriptor.allowsUnassigned()
+                        && valueRangeProviderMemberAccessors.length == 1;
         for (var valueRangeProviderMemberAccessor : valueRangeProviderMemberAccessors) {
             valueRangeDescriptorList
                     .add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor, addNullInValueRange));
@@ -221,17 +223,6 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return false; // ListVariableDescriptor is never chained.
     }
 
-    public final boolean allowsUnassigned() {
-        if (this instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-            return listVariableDescriptor.allowsUnassignedValues;
-        } else if (this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
-            return basicVariableDescriptor.allowsUnassigned;
-        } else {
-            throw new IllegalStateException("Impossible state: unknown variable type (%s)."
-                    .formatted(this.getClass().getSimpleName()));
-        }
-    }
-
     public abstract boolean acceptsValueType(Class<?> valueType);
 
     public boolean hasMovableChainedTrailingValueFilter() {
@@ -265,12 +256,14 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     public final boolean isInitialized(Object entity) {
         if (isListVariable()) {
             return true;
-        } else {
-            Object variable = getValue(entity);
-            if (allowsUnassigned()) {
+        } else if (this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
+            if (basicVariableDescriptor.allowsUnassigned()) {
                 return true;
             }
-            return variable != null;
+            return getValue(entity) != null;
+        } else {
+            throw new IllegalStateException("Impossible state: unknown variable type (%s)."
+                    .formatted(this.getClass().getSimpleName()));
         }
     }
 

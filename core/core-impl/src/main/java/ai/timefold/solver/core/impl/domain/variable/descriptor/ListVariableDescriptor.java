@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.descriptor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -10,6 +11,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -32,6 +34,14 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
+    public ListVariableStateDemand<Solution_> getStateDemand() {
+        return stateDemand;
+    }
+
+    public boolean allowsUnassignedValues() {
+        return allowsUnassignedValues;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
@@ -45,9 +55,9 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
 
     @Override
     protected void processValueRangeRefs(DescriptorPolicy descriptorPolicy, String[] valueRangeProviderRefs) {
-        List<String> fromEntityValueRangeProviderRefs = Arrays.stream(valueRangeProviderRefs)
+        var fromEntityValueRangeProviderRefs = Arrays.stream(valueRangeProviderRefs)
                 .filter(descriptorPolicy::hasFromEntityValueRangeProvider)
-                .collect(Collectors.toList());
+                .toList();
         if (!fromEntityValueRangeProviderRefs.isEmpty()) {
             throw new IllegalArgumentException("@" + ValueRangeProvider.class.getSimpleName()
                     + " on a @" + PlanningEntity.class.getSimpleName()
@@ -157,8 +167,52 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return getValue(entity).size();
     }
 
-    public ListVariableStateDemand<Solution_> getStateDemand() {
-        return stateDemand;
+    // ************************************************************************
+    // Pinning support
+    // ************************************************************************
+
+    public boolean supportsPinning() {
+        return entityDescriptor.supportsPinning();
+    }
+
+    public boolean isElementPinned(ScoreDirector<Solution_> scoreDirector, Object entity, int index) {
+        if (!supportsPinning()) {
+            return false;
+        } else if (!entityDescriptor.isMovable(scoreDirector, entity)) { // Skipping due to @PlanningPin.
+            return true;
+        } else {
+            return index < getFirstUnpinnedIndex(entity);
+        }
+    }
+
+    public Object getRandomUnpinnedElement(Object entity, Random workingRandom) {
+        var listVariable = getValue(entity);
+        var firstUnpinnedIndex = getFirstUnpinnedIndex(entity);
+        return listVariable.get(workingRandom.nextInt(listVariable.size() - firstUnpinnedIndex) + firstUnpinnedIndex);
+    }
+
+    public int getUnpinnedSubListSize(Object entity) {
+        var listSize = getListSize(entity);
+        var firstUnpinnedIndex = getFirstUnpinnedIndex(entity);
+        return listSize - firstUnpinnedIndex;
+    }
+
+    public List<Object> getUnpinnedSubList(Object entity) {
+        var firstUnpinnedIndex = getFirstUnpinnedIndex(entity);
+        var entityList = getValue(entity);
+        if (firstUnpinnedIndex == 0) {
+            return entityList;
+        }
+        return entityList.subList(firstUnpinnedIndex, entityList.size());
+    }
+
+    public int getFirstUnpinnedIndex(Object entity) {
+        var effectivePlanningPinToIndexReader = entityDescriptor.getEffectivePlanningPinToIndexReader();
+        if (effectivePlanningPinToIndexReader == null) { // There is no @PlanningPinToIndex.
+            return 0;
+        } else {
+            return effectivePlanningPinToIndexReader.applyAsInt(null, entity);
+        }
     }
 
 }

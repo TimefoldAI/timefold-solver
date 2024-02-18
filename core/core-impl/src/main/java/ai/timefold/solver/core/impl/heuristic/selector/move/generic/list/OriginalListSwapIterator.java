@@ -48,14 +48,15 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         }
 
         var upcomingRightValue = rightValueIterator.next();
-        return buildSwapMove(listVariableDescriptor, listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
+        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
     }
 
-    static <Solution_> Move<Solution_> buildSwapMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableStateSupply<Solution_> listVariableStateSupply, Object upcomingLeftValue, Object upcomingRightValue) {
+    static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
+            Object upcomingLeftValue, Object upcomingRightValue) {
         if (upcomingLeftValue == upcomingRightValue) {
             return NoChangeMove.getInstance();
         }
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingLeft = listVariableStateSupply.getLocationInList(upcomingLeftValue);
         var upcomingRight = listVariableStateSupply.getLocationInList(upcomingRightValue);
         var leftUnassigned = upcomingLeft instanceof UnassignedLocation;

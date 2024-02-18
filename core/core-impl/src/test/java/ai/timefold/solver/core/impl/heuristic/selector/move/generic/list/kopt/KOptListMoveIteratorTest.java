@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -131,10 +132,12 @@ public class KOptListMoveIteratorTest {
             }
             entityList.add(0, entity + "-start");
             entityList.add(entity + "-end");
-            when(mocks.listVariableDescriptor.getValue(entity)).thenReturn(entityList);
             // No pinning.
+            when(mocks.listVariableDescriptor.getValue(entity)).thenReturn(entityList);
+            when(mocks.listVariableDescriptor.getUnpinnedSubList(entity)).thenReturn(entityList);
+            when(mocks.listVariableDescriptor.getUnpinnedSubListSize(entity)).thenReturn(entityList.size());
+            when(mocks.listVariableDescriptor.getFirstUnpinnedIndex(entity)).thenReturn(0);
             when(mocks.listVariableDescriptor.getEntityDescriptor()).thenReturn(mocks.entityDescriptor);
-            when(mocks.entityDescriptor.extractFirstUnpinnedIndex(entity)).thenReturn(0);
             when(mocks.entityDescriptor.isMovable(any(), eq(entity))).thenReturn(true);
 
             entityToList.put(entity, entityList);
@@ -145,6 +148,7 @@ public class KOptListMoveIteratorTest {
                         .thenReturn(new LocationInList(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
                 when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
+                when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);
             }
             when(mocks.listVariableDescriptor.getListSize(entity)).thenReturn(entityList.size());
             offset += listSize;
@@ -229,10 +233,16 @@ public class KOptListMoveIteratorTest {
             }
             entityList.add(0, entity + "-start");
             entityList.add(entity + "-end");
-            when(mocks.listVariableDescriptor.getValue(entity)).thenReturn(entityList);
             // No pinning.
+            when(mocks.listVariableDescriptor.getValue(entity)).thenReturn(entityList);
+            when(mocks.listVariableDescriptor.getUnpinnedSubList(entity)).thenReturn(entityList);
+            when(mocks.listVariableDescriptor.getUnpinnedSubListSize(entity)).thenReturn(entityList.size());
+            when(mocks.listVariableDescriptor.getFirstUnpinnedIndex(entity)).thenReturn(0);
             when(mocks.listVariableDescriptor.getEntityDescriptor()).thenReturn(mocks.entityDescriptor);
-            when(mocks.entityDescriptor.extractFirstUnpinnedIndex(entity)).thenReturn(0);
+            doAnswer(invocation -> {
+                var random = invocation.getArgument(1, Random.class);
+                return entityList.get(random.nextInt(entityList.size()));
+            }).when(mocks.listVariableDescriptor).getRandomUnpinnedElement(eq(entity), any());
             when(mocks.entityDescriptor.isMovable(any(), eq(entity))).thenReturn(true);
 
             entityToList.put(entity, entityList);
@@ -243,6 +253,7 @@ public class KOptListMoveIteratorTest {
                         .thenReturn(new LocationInList(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
                 when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
+                when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);
             }
             when(mocks.listVariableDescriptor.getListSize(entity)).thenReturn(entityList.size());
             offset += listSize;

@@ -267,8 +267,8 @@ class TwoOptListMoveTest {
         var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
                 .findEntityDescriptorOrFail(TestdataListEntity.class));
         Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(variableDescriptorSpy.getFirstUnpinnedIndex(e1)).thenReturn(1);
         Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
-        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
 
         // 2-Opt((v6, v2), (v7, v3))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptorSpy,

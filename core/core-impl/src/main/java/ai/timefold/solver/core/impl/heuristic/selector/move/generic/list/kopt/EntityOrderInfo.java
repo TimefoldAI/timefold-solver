@@ -5,18 +5,16 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
 
-    public static <Node_> EntityOrderInfo of(Node_[] pickedValues, SingletonInverseVariableSupply inverseVariableSupply,
-            ListVariableDescriptor<?> listVariableDescriptor) {
+    public static <Node_> EntityOrderInfo of(Node_[] pickedValues, ListVariableStateSupply<?> listVariableStateSupply) {
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var entityToEntityIndex = new IdentityHashMap<Object, Integer>();
         for (int i = 1; i < pickedValues.length && pickedValues[i] != null; i++) {
             var value = pickedValues[i];
-            var entity = inverseVariableSupply.getInverseSingleton(value);
+            var entity = listVariableStateSupply.getInverseSingleton(value);
             if (!listVariableDescriptor.getEntityDescriptor().isMovable(null, entity)) {
                 throw new IllegalStateException("Impossible state: immovable entity (%s) picked through value (%s)."
                         .formatted(entity, value));
@@ -34,12 +32,12 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
         return new EntityOrderInfo(entities, entityToEntityIndex, offsets);
     }
 
-    public <Node_> EntityOrderInfo withNewNode(Node_ node, ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply) {
-        Object entity = inverseVariableSupply.getInverseSingleton(node);
+    public <Node_> EntityOrderInfo withNewNode(Node_ node, ListVariableStateSupply<?> listVariableStateSupply) {
+        Object entity = listVariableStateSupply.getInverseSingleton(node);
         if (entityToEntityIndex.containsKey(entity)) {
             return this;
         } else {
+            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
             Object[] newEntities = Arrays.copyOf(entities, entities.length + 1);
             Map<Object, Integer> newEntityToEntityIndex = new IdentityHashMap<>(entityToEntityIndex);
             int[] newOffsets = Arrays.copyOf(offsets, offsets.length + 1);
@@ -53,8 +51,8 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     }
 
     @SuppressWarnings("unchecked")
-    public <Node_> Node_ successor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableStateSupply<?> listVariableStateSupply) {
+    public <Node_> Node_ successor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(object);
         var entity = elementLocation.entity();
         var indexInEntityList = elementLocation.index();
@@ -62,31 +60,27 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
         if (indexInEntityList == listVariable.size() - 1) {
             var nextEntityIndex = (entityToEntityIndex.get(entity) + 1) % entities.length;
             var nextEntity = entities[nextEntityIndex];
-            var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
-                    .extractFirstUnpinnedIndex(nextEntity);
-            return (Node_) listVariableDescriptor.getValue(nextEntity)
-                    .get(firstUnpinnedIndexInList);
+            var firstUnpinnedIndexInList = listVariableDescriptor.getFirstUnpinnedIndex(nextEntity);
+            return (Node_) listVariableDescriptor.getElement(nextEntity, firstUnpinnedIndexInList);
         } else {
             return (Node_) listVariable.get(indexInEntityList + 1);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public <Node_> Node_ predecessor(Node_ object, ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableStateSupply<?> listVariableStateSupply) {
+    public <Node_> Node_ predecessor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(object);
         var entity = elementLocation.entity();
         var indexInEntityList = elementLocation.index();
-        var firstUnpinnedIndexInList = listVariableDescriptor.getEntityDescriptor()
-                .extractFirstUnpinnedIndex(entity);
-        var listVariable = listVariableDescriptor.getValue(entity);
+        var firstUnpinnedIndexInList = listVariableDescriptor.getFirstUnpinnedIndex(entity);
         if (indexInEntityList == firstUnpinnedIndexInList) {
             // add entities.length to ensure modulo result is positive
             int previousEntityIndex = (entityToEntityIndex.get(entity) - 1 + entities.length) % entities.length;
-            listVariable = listVariableDescriptor.getValue(entities[previousEntityIndex]);
+            var listVariable = listVariableDescriptor.getValue(entities[previousEntityIndex]);
             return (Node_) listVariable.get(listVariable.size() - 1);
         } else {
-            return (Node_) listVariable.get(indexInEntityList - 1);
+            return (Node_) listVariableDescriptor.getElement(entity, indexInEntityList - 1);
         }
     }
 

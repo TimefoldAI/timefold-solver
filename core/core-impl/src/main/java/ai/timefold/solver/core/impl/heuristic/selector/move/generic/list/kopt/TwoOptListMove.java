@@ -64,7 +64,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         this.firstEdgeEndpoint = firstEdgeEndpoint;
         this.secondEdgeEndpoint = secondEdgeEndpoint;
         if (firstEntity == secondEntity) {
-            entityFirstUnpinnedIndex = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(firstEntity);
+            entityFirstUnpinnedIndex = variableDescriptor.getFirstUnpinnedIndex(firstEntity);
             if (firstEdgeEndpoint == 0) {
                 shift = -secondEdgeEndpoint;
             } else if (secondEdgeEndpoint < firstEdgeEndpoint) {

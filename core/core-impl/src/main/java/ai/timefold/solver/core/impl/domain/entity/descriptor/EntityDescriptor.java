@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
@@ -60,7 +59,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PlanningPinToIndexReader;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
@@ -479,16 +477,6 @@ public class EntityDescriptor<Solution_> {
             effectivePlanningPinToIndexReader = null;
             return;
         }
-
-        var listVariableDescriptor = getGenuineListVariableDescriptor();
-        var planningListVariableReader = new Function<Object, List<?>>() {
-
-            @Override
-            public List<?> apply(Object o) {
-                return listVariableDescriptor.getValue(o);
-            }
-        };
-
         var planningPinIndexMemberAccessorList = new ArrayList<MemberAccessor>();
         for (EntityDescriptor<Solution_> inheritedEntityDescriptor : inheritedEntityDescriptorList) {
             if (inheritedEntityDescriptor.effectivePlanningPinToIndexReader != null) {
@@ -496,12 +484,19 @@ public class EntityDescriptor<Solution_> {
             }
         }
         planningPinIndexMemberAccessorList.addAll(declaredPlanningPinIndexMemberAccessorList);
-
-        if (planningPinIndexMemberAccessorList.isEmpty()) {
-            effectivePlanningPinToIndexReader = null;
-        } else {
-            effectivePlanningPinToIndexReader = new PlanningPinToIndexReader<>(effectiveMovableEntitySelectionFilter,
-                    planningListVariableReader, planningPinIndexMemberAccessorList.toArray(MemberAccessor[]::new));
+        switch (planningPinIndexMemberAccessorList.size()) {
+            case 0:
+                effectivePlanningPinToIndexReader = null;
+                return;
+            case 1:
+                var memberAccessor = planningPinIndexMemberAccessorList.get(0);
+                effectivePlanningPinToIndexReader = (solution, entity) -> (int) memberAccessor.executeGetter(entity);
+                return;
+            default:
+                throw new IllegalStateException(
+                        "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
+                                .formatted(entityClass, planningPinIndexMemberAccessorList.size(),
+                                        PlanningPinToIndex.class.getSimpleName(), planningPinIndexMemberAccessorList));
         }
     }
 
@@ -672,66 +667,15 @@ public class EntityDescriptor<Solution_> {
         return entityList;
     }
 
-    /**
-     * Returns the {@link PinningStatus} of the entity.
-     *
-     * @param scoreDirector
-     * @param entity
-     * @return
-     */
-    public PinningStatus extractPinningStatus(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        if (!supportsPinning()) {
-            return PinningStatus.ofUnpinned();
-        } else if (!isMovable(scoreDirector, entity)) { // Skipping due to @PlanningPin.
-            return PinningStatus.ofFullyPinned();
-        }
-        var firstUnpinnedIndex = extractFirstUnpinnedIndex(entity);
-        if (firstUnpinnedIndex == 0) {
-            return PinningStatus.ofUnpinned();
-        } else {
-            return PinningStatus.ofPinIndex(firstUnpinnedIndex);
-        }
-    }
-
-    /**
-     * Ignores {@link PlanningPin} on the entire entity.
-     * If it should be taken into account as well, use {@link #extractPinningStatus(ScoreDirector, Object)}.
-     *
-     * @param entity never null
-     * @return never null
-     */
-    public int extractFirstUnpinnedIndex(Object entity) {
-        if (effectivePlanningPinToIndexReader == null) { // There is no @PlanningPinToIndex.
-            return 0;
-        } else {
-            return effectivePlanningPinToIndexReader.applyAsInt(null, entity);
-        }
-    }
-
-    public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int firstUnpinnedIndex) {
-
-        private static final PinningStatus FULLY_PINNED = new PinningStatus(true, true, -1);
-        private static final PinningStatus UNPINNED = new PinningStatus(false, false, -1);
-
-        public static PinningStatus ofUnpinned() {
-            return UNPINNED;
-        }
-
-        public static PinningStatus ofFullyPinned() {
-            return FULLY_PINNED;
-        }
-
-        public static PinningStatus ofPinIndex(int firstUnpinnedIndex) {
-            return new PinningStatus(true, false, firstUnpinnedIndex);
-        }
-
-    }
-
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {
         solutionDescriptor.visitEntitiesByEntityClass(solution, entityClass, entity -> {
             visitor.accept(entity);
             return false; // Iterate over all entities.
         });
+    }
+
+    public PlanningPinToIndexReader<Solution_> getEffectivePlanningPinToIndexReader() {
+        return effectivePlanningPinToIndexReader;
     }
 
     public long getMaximumValueCount(Solution_ solution, Object entity) {

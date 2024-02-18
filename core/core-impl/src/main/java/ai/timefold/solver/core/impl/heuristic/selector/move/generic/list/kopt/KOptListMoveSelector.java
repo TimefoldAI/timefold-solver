@@ -62,7 +62,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     private EntityIndependentValueSelector<Solution_> filterNotAssignedValues(
             EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
             ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        if (!listVariableDescriptor.allowsUnassigned()) {
+        if (!listVariableDescriptor.allowsUnassignedValues()) {
             return entityIndependentValueSelector;
         }
         // We need to filter out unassigned vars.

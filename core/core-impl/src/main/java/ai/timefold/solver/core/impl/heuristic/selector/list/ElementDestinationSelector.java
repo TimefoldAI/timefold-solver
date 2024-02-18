@@ -87,7 +87,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     @Override
     public Iterator<ElementLocation> iterator() {
         if (randomSelection) {
-            var allowsUnassignedValues = listVariableDescriptor.allowsUnassigned();
+            var allowsUnassignedValues = listVariableDescriptor.allowsUnassignedValues();
             var entityIterator = entitySelector.iterator();
 
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
@@ -100,14 +100,13 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 return Collections.emptyIterator();
             }
             // If the list variable allows unassigned values, add the option of unassigning.
-            var entityDescriptor = entitySelector.getEntityDescriptor();
-            var stream = listVariableDescriptor.allowsUnassigned() ? Stream.of(ElementLocation.unassigned())
+            var stream = listVariableDescriptor.allowsUnassignedValues() ? Stream.of(ElementLocation.unassigned())
                     : Stream.<ElementLocation> empty();
             // Start with the first unpinned value of each entity, or zero if no pinning.
             // Entity selector is guaranteed to return only unpinned entities.
             stream = Stream.concat(stream,
                     StreamSupport.stream(entitySelector.spliterator(), false)
-                            .map(entity -> ElementLocation.of(entity, entityDescriptor.extractFirstUnpinnedIndex(entity))));
+                            .map(entity -> ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity))));
             // Filter guarantees that we only get values that are actually in one of the lists.
             // Value selector guarantees only unpinned values.
             stream = Stream.concat(stream,
@@ -238,8 +237,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 // Start with the first unpinned value of each entity, or zero if no pinning.
                 // Entity selector is guaranteed to return only unpinned entities.
                 var entity = entityIterator.next();
-                EntityDescriptor<?> entityDescriptor = entitySelector.getEntityDescriptor();
-                return new LocationInList(entity, entityDescriptor.extractFirstUnpinnedIndex(entity));
+                return new LocationInList(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
             } else { // Value selector already returns only unpinned values.
                 if (!valueIterator.hasNext()) {
                     valueIterator = getValueIterator(allowsUnassignedValues);
