@@ -98,10 +98,7 @@ public final class BavetConstraintFactory<Solution_>
             // so we'll do this expensive thing instead.
             return forEachIncludingUnassigned(sourceClass)
                     .ifExists((Class) entityClass,
-                            Joiners.filtering((A source, Object entity) -> {
-                                var list = listVariableDescriptor.getValue(entity);
-                                return list.contains(source);
-                            }));
+                            Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
                     entityDescriptor.getHasNoNullVariablesPredicateListVar(), RetrievalSemantics.STANDARD));

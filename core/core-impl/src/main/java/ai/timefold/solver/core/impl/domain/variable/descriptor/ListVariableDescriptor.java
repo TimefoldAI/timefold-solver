@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -23,6 +24,10 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
     private final ListVariableStateDemand<Solution_> stateDemand = new ListVariableStateDemand<>(this);
+    private final BiPredicate inListPredicate = (element, entity) -> {
+        var list = getValue(entity);
+        return list.contains(element);
+    };
     private boolean allowsUnassignedValues = true;
 
     // ************************************************************************
@@ -36,6 +41,10 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
 
     public ListVariableStateDemand<Solution_> getStateDemand() {
         return stateDemand;
+    }
+
+    public <A> BiPredicate<A, Object> getInListPredicate() {
+        return inListPredicate;
     }
 
     public boolean allowsUnassignedValues() {
