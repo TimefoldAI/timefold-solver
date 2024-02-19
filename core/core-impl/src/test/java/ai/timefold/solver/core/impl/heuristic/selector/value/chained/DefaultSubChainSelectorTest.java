@@ -79,7 +79,7 @@ class DefaultSubChainSelectorTest {
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> new DefaultSubChainSelector(valueSelector, true, 2, 1))
-                .withMessageContaining("at least maximumSubChainSize");
+                .withMessageContaining("less than maximumSubChainSize");
     }
 
     @Test

@@ -52,22 +52,21 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
                             .formatted(this, valueSelector, isChained));
         }
         if (valueSelector.isNeverEnding()) {
-            throw new IllegalStateException("The selector (" + this
-                    + ") has a valueSelector (" + valueSelector
-                    + ") with neverEnding (" + valueSelector.isNeverEnding() + ").");
+            throw new IllegalStateException(
+                    "The selector (%s) has a valueSelector (%s) with neverEnding (%s)."
+                            .formatted(this, valueSelector, valueSelector.isNeverEnding()));
         }
         phaseLifecycleSupport.addEventListener(valueSelector);
         phaseLifecycleSupport.addEventListener(new SelectionCacheLifecycleBridge<>(CACHE_TYPE, this));
         this.minimumSubChainSize = minimumSubChainSize;
         this.maximumSubChainSize = maximumSubChainSize;
         if (minimumSubChainSize < 1) {
-            throw new IllegalStateException("The selector (" + this
-                    + ")'s minimumSubChainSize (" + minimumSubChainSize
-                    + ") must be at least 1.");
+            throw new IllegalStateException("The selector (%s)'s minimumSubChainSize (%d) must be at least 1."
+                    .formatted(this, minimumSubChainSize));
         }
         if (minimumSubChainSize > maximumSubChainSize) {
-            throw new IllegalStateException("The minimumSubChainSize (" + minimumSubChainSize
-                    + ") must be at least maximumSubChainSize (" + maximumSubChainSize + ").");
+            throw new IllegalStateException("The minimumSubChainSize (%d) must be less than maximumSubChainSize (%d)."
+                    .formatted(minimumSubChainSize, maximumSubChainSize));
         }
     }
 
@@ -105,10 +104,9 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
         long valueSize = valueSelector.getSize();
         // Fail-fast when anchorTrailingChainList.size() could ever be too big
         if (valueSize > Integer.MAX_VALUE) {
-            throw new IllegalStateException("The selector (" + this
-                    + ") has a valueSelector (" + valueSelector
-                    + ") with valueSize (" + valueSize
-                    + ") which is higher than Integer.MAX_VALUE.");
+            throw new IllegalStateException(
+                    "The selector (%s) has a valueSelector (%s) with valueSize (%d) which is higher than Integer.MAX_VALUE."
+                            .formatted(this, valueSelector, valueSize));
         }
         List<Object> anchorList = new ArrayList<>();
         for (Object value : valueSelector) {
@@ -183,8 +181,8 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
         if (!randomSelection) {
             return new OriginalSubChainIterator(anchorTrailingChainList.listIterator());
         } else {
-            throw new IllegalStateException("The selector (" + this
-                    + ") does not support a ListIterator with randomSelection (" + randomSelection + ").");
+            throw new IllegalStateException("The selector (%s) does not support a ListIterator with randomSelection (%s)."
+                    .formatted(this, randomSelection));
         }
     }
 
@@ -198,8 +196,8 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
             }
             return it;
         } else {
-            throw new IllegalStateException("The selector (" + this
-                    + ") does not support a ListIterator with randomSelection (" + randomSelection + ").");
+            throw new IllegalStateException("The selector (%s) does not support a ListIterator with randomSelection (%s)."
+                    .formatted(this, randomSelection));
         }
     }
 
@@ -253,20 +251,17 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
 
         @Override
         public boolean hasPrevious() {
-            throw new UnsupportedOperationException("The operation hasPrevious() is not supported."
-                    + " See https://issues.redhat.com/browse/PLANNER-37");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public SubChain previous() {
-            throw new UnsupportedOperationException("The operation previous() is not supported."
-                    + " See https://issues.redhat.com/browse/PLANNER-37");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public int previousIndex() {
-            throw new UnsupportedOperationException("The operation previousIndex() is not supported."
-                    + " See https://issues.redhat.com/browse/PLANNER-37");
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -295,9 +290,8 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
             // Every SubChain has the same probability (from this point on at least).
             // A random fromIndex and random toIndex would not be fair.
             long selectionSize = calculateSubChainSelectionSize(anchorTrailingChain);
-            long selectionIndex = RandomUtils.nextLong(workingRandom, selectionSize);
             // Black magic to translate selectionIndex into fromIndex and toIndex
-            long fromIndex = selectionIndex;
+            long fromIndex = RandomUtils.nextLong(workingRandom, selectionSize);
             long subChainSize = minimumSubChainSize;
             long countInThatSize = anchorTrailingChain.getSize() - subChainSize + 1;
             while (fromIndex >= countInThatSize) {
