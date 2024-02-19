@@ -43,6 +43,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm-community'
+          set-java-home: 'false'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'

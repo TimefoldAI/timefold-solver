@@ -1,0 +1,801 @@
+[
+  {
+    "name": "java.util.ArrayList",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbDurationAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbOffsetDateTimeAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.api.domain.common.DomainAccessType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.AbstractConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicPickEarlyType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.exhaustivesearch.NodeExplorationType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.SelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionDistributionType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.SubPillarType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.LocalSearchType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.forager.FinalistPodiumType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.phase.NoChangePhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.phase.PhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.EnvironmentMode",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.SolverConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.monitoring.SolverMetric",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.random.RandomType",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMap",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMapEntry",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.Binder"
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlAccessorType",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlElement",
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "type",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlElements",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlEnum",
+    "methods": [
+      {
+        "name": "value",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlRootElement",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlSeeAlso",
+    "methods": [
+      {
+        "name": "value",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlTransient",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.XmlType",
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "factoryClass",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
+    "methods": [
+      {
+        "name": "type",
+        "parameterTypes": []
+      },
+      {
+        "name": "value",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.core.v2.model.nav.ReflectionNavigator",
+    "methods": [
+      {
+        "name": "getInstance",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayElementLeafProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayElementNodeProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayReferenceNodeProperty",
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleElementLeafProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleElementNodeProperty",
+    "queryAllPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl",
+          "org.glassfish.jaxb.runtime.v2.model.runtime.RuntimeElementPropertyInfo"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleMapNodeProperty",
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleReferenceNodeProperty",
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "org.glassfish.jersey.server.spring.SpringComponentProvider"
+  }
+]

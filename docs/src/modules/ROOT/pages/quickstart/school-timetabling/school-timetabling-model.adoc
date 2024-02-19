@@ -204,7 +204,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 public class Lesson {
 
     @PlanningId
-    private Long id;
+    private String id;
 
     private String subject;
     private String teacher;
@@ -218,14 +218,14 @@ public class Lesson {
     public Lesson() {
     }
 
-    public Lesson(Long id, String subject, String teacher, String studentGroup) {
+    public Lesson(String id, String subject, String teacher, String studentGroup) {
         this.id = id;
         this.subject = subject;
         this.teacher = teacher;
         this.studentGroup = studentGroup;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
@@ -282,7 +282,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable
 @PlanningEntity
 data class Lesson (
     @PlanningId
-    val id: Long,
+    val id: String,
     val subject: String,
     val teacher: String,
     val studentGroup: String) {
@@ -294,7 +294,7 @@ data class Lesson (
     var room: Room? = null
 
     // No-arg constructor required for Timefold
-    constructor() : this(0, "", "", "")
+    constructor() : this("0", "", "", "")
 
     override fun toString(): String = "$subject($id)"
 

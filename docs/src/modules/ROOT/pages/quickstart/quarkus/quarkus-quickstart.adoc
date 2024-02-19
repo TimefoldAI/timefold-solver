@@ -598,9 +598,9 @@ class TimetableConstraintProviderTest {
 
     @Test
     void roomConflict() {
-        Lesson firstLesson = new Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
-        Lesson conflictingLesson = new Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
-        Lesson nonConflictingLesson = new Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
+        Lesson firstLesson = new Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
+        Lesson conflictingLesson = new Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
+        Lesson nonConflictingLesson = new Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
         constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
                 .given(firstLesson, conflictingLesson, nonConflictingLesson)
                 .penalizesBy(1);
@@ -641,9 +641,9 @@ class TimetableConstraintProviderTest {
 
     @Test
     fun roomConflict() {
-        val firstLesson = Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
-        val conflictingLesson = Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
-        val nonConflictingLesson = Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+        val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
+        val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
+        val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
         constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
             .given(firstLesson, conflictingLesson, nonConflictingLesson)
             .penalizesBy(1)
