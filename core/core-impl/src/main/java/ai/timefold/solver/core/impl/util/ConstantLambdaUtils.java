@@ -64,13 +64,13 @@ public final class ConstantLambdaUtils {
     private static final QuadFunction QUAD_PICK_FOURTH = (a, b, c, d) -> d;
 
     @SuppressWarnings("rawtypes")
-    private static final ToIntFunction UNI_CONSTANT_ONE = (a) -> 1;
+    private static final ToIntFunction UNI_CONSTANT_ONE = a -> 1;
 
     @SuppressWarnings("rawtypes")
-    private static final ToLongFunction UNI_CONSTANT_ONE_LONG = (a) -> 1L;
+    private static final ToLongFunction UNI_CONSTANT_ONE_LONG = a -> 1L;
 
     @SuppressWarnings("rawtypes")
-    private static final Function UNI_CONSTANT_ONE_BIG_DECIMAL = (a) -> BigDecimal.ONE;
+    private static final Function UNI_CONSTANT_ONE_BIG_DECIMAL = a -> BigDecimal.ONE;
 
     @SuppressWarnings("rawtypes")
     private static final ToIntBiFunction BI_CONSTANT_ONE = (a, b) -> 1;
