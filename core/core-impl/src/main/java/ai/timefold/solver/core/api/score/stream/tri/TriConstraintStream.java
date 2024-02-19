@@ -1152,6 +1152,24 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     }
 
     /**
+     * As defined by {@link #penalizeLong(Score, ToLongTriFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(Score_ constraintWeight) {
+        return penalizeLong(constraintWeight, ConstantLambdaUtils.triConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #penalizeBigDecimal(Score, TriFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.triConstantOneBigDecimal());
+    }
+
+    /**
      * Applies a negative {@link Score} impact,
      * subtracting the constraintWeight multiplied by the match weight,
      * and returns a builder to apply optional constraint properties.

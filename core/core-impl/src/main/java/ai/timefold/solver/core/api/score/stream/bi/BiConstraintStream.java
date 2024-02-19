@@ -1176,6 +1176,24 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     }
 
     /**
+     * As defined by {@link #penalizeLong(Score, ToLongBiFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(Score_ constraintWeight) {
+        return penalizeLong(constraintWeight, ConstantLambdaUtils.biConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #penalizeBigDecimal(Score, BiFunction)}, where the match weight is one (1).
+     *
+     * @return never null
+     */
+    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.biConstantOneBigDecimal());
+    }
+
+    /**
      * Applies a negative {@link Score} impact,
      * subtracting the constraintWeight multiplied by the match weight,
      * and returns a builder to apply optional constraint properties.
