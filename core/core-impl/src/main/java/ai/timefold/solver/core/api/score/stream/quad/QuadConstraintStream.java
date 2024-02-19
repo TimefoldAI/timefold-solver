@@ -935,7 +935,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      *
      * @return never null
      */
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            penalizeBigDecimal(Score_ constraintWeight) {
         return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.quadConstantOneBigDecimal());
     }
 
