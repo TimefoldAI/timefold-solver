@@ -126,6 +126,9 @@ Your `pom.xml` file has the following content:
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <optimizedLaunch>false</optimizedLaunch>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -166,9 +169,15 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+tasks.named("bootRun") {
+    optimizedLaunch = false
+}
 ----
 --
 ====
+
+IMPORTANT: Optimized launch is disabled, since optimized launch disables the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 compiler], considerably decreasing the solver's performance.
 
 include::../school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
 include::../school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
@@ -778,6 +787,75 @@ Use `debug` logging to show every _step_:
 ----
 
 Use `trace` logging to show every _step_ and every _move_ per step.
+
+=== Create a native image
+
+IMPORTANT: The solver runs considerably slower in a native image due to a lack of https://www.baeldung.com/jvm-tiered-compilation#1-best-of-both-worlds[profiling based JIT optimizations that a JVM performs].
+
+If you want faster startup times or need to deploy to an environment without a JVM, you can build a native image.
+
+==== Build using Docker
+
+[tabs]
+======
+Maven::
++
+[source,shell]
+----
+$ mvn -Pnative spring-boot:build-image
+----
+
+Gradle::
++
+[source,shell]
+----
+$ gradle bootBuildImage
+----
+======
+
+Start the built Docker image using `docker run`:
+
+[source,shell]
+----
+$ docker run --rm -p 8080:8080 docker.io/library/app-name:app-version
+----
+
+==== Build using locally installed GraalVM
+
+[tabs]
+======
+Maven::
++
+. Build the native image
++
+[source,shell]
+----
+$ mvn -Pnative native:compile
+----
++
+. Run the native image
++
+[source,shell]
+----
+$ ./target/app-name
+----
+
+Gradle::
++
+. Build the native image
++
+[source,shell]
+----
+$ gradle nativeCompile
+----
++
+. Run the native image
++
+[source,shell]
+----
+$ ./build/native/nativeCompile/app-name
+----
+======
 
 == Summary
 
