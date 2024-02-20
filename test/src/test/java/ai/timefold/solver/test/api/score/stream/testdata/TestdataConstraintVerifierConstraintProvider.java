@@ -7,8 +7,6 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstComparableJustification;
-import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
 
 public final class TestdataConstraintVerifierConstraintProvider implements ConstraintProvider {
     @Override
@@ -18,8 +16,6 @@ public final class TestdataConstraintVerifierConstraintProvider implements Const
                 rewardEveryEntity(constraintFactory),
                 impactEveryEntity(constraintFactory),
                 differentStringEntityHaveDifferentValues(constraintFactory),
-                justifyWithFirstJustification(constraintFactory),
-                justifyWithFirstComparableJustification(constraintFactory)
         };
     }
 
@@ -48,19 +44,4 @@ public final class TestdataConstraintVerifierConstraintProvider implements Const
                 .penalize(HardSoftScore.ofSoft(3))
                 .asConstraint("Different String Entity Have Different Values");
     }
-
-    public Constraint justifyWithFirstJustification(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
-                .penalize(HardSoftScore.ONE_HARD)
-                .justifyWith((entity, score) -> new TestFirstJustification(1))
-                .asConstraint("Justify with first justification");
-    }
-
-    public Constraint justifyWithFirstComparableJustification(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
-                .penalize(HardSoftScore.ONE_HARD)
-                .justifyWith((entity, score) -> new TestFirstComparableJustification(1))
-                .asConstraint("Justify with first comparable justification");
-    }
-
 }

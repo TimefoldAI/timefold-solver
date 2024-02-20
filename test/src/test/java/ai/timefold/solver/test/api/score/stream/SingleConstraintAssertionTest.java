@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.Testda
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
+import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierJustificationProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSecondEntity;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSolution;
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstComparableJustification;
@@ -35,6 +36,12 @@ class SingleConstraintAssertionTest {
 
     private final ConstraintVerifier<TestdataConstraintVerifierConstraintProvider, TestdataConstraintVerifierExtendedSolution> constraintVerifier =
             ConstraintVerifier.build(new TestdataConstraintVerifierConstraintProvider(),
+                    TestdataConstraintVerifierExtendedSolution.class,
+                    TestdataConstraintVerifierFirstEntity.class,
+                    TestdataConstraintVerifierSecondEntity.class);
+
+    private final ConstraintVerifier<TestdataConstraintVerifierJustificationProvider, TestdataConstraintVerifierExtendedSolution> constraintVerifierForJustification =
+            ConstraintVerifier.build(new TestdataConstraintVerifierJustificationProvider(),
                     TestdataConstraintVerifierExtendedSolution.class,
                     TestdataConstraintVerifierFirstEntity.class,
                     TestdataConstraintVerifierSecondEntity.class);
@@ -401,14 +408,16 @@ class SingleConstraintAssertionTest {
 
         // No error
         assertThatCode(
-                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstJustification(1)))
                 .doesNotThrowAnyException();
 
         // Different justification
         assertThatCode(
-                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstJustification(2)))
                 .hasMessageContaining("Broken expectation")
@@ -424,7 +433,8 @@ class SingleConstraintAssertionTest {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
-                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstJustification(2), "Custom Message"))
                 .hasMessageContaining("Custom Message")
@@ -440,7 +450,8 @@ class SingleConstraintAssertionTest {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
-                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestSecondJustification(1)))
                 .hasMessageContaining("Broken expectation")
@@ -456,16 +467,16 @@ class SingleConstraintAssertionTest {
 
         // No error
         assertThatCode(
-                () -> constraintVerifier
-                        .verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstComparableJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstComparableJustification(1)))
                 .doesNotThrowAnyException();
 
         // Different justification
         assertThatCode(
-                () -> constraintVerifier
-                        .verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstComparableJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstComparableJustification(2)))
                 .hasMessageContaining("Broken expectation")
@@ -481,8 +492,8 @@ class SingleConstraintAssertionTest {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
-                () -> constraintVerifier
-                        .verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstComparableJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstComparableJustification(2), "Custom Message"))
                 .hasMessageContaining("Custom Message")
@@ -498,8 +509,8 @@ class SingleConstraintAssertionTest {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
-                () -> constraintVerifier
-                        .verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstComparableJustification)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestSecondComparableJustification(1)))
                 .hasMessageContaining("Broken expectation")
