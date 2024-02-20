@@ -32,7 +32,7 @@ public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_
     public <ConstraintJustification_ extends ConstraintJustification> TriConstraintBuilder<A, B, C, Score_> justifyWith(
             QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
-            throw new IllegalStateException("Justification mapping already set (" + justificationMapping + ").");
+            throw new IllegalStateException("Justification mapping already set (" + justificationMapping + ").\nMaybe the constraint calls justifyWith() twice?");
         }
         this.justificationMapping =
                 (QuadFunction<A, B, C, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);

@@ -32,7 +32,7 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
     public <ConstraintJustification_ extends ConstraintJustification> BiConstraintBuilder<A, B, Score_> justifyWith(
             TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
-            throw new IllegalStateException("Justification mapping already set (" + justificationMapping + ").");
+            throw new IllegalStateException("Justification mapping already set (" + justificationMapping + ").\nMaybe the constraint calls justifyWith() twice?");
         }
         this.justificationMapping =
                 (TriFunction<A, B, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
