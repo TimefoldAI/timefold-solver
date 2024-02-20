@@ -4,8 +4,33 @@ import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
 public interface SingleConstraintAssertion {
+
+    /**
+     * As defined by {@link #justifiesWith(ConstraintJustification)}.
+     *
+     * @param justification the expected justification.
+     * @param message sometimes null, description of the scenario being asserted
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    SingleConstraintAssertion justifiesWith(ConstraintJustification justification, String message);
+
+    /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific
+     * {@link ConstraintJustification}.
+     * <p>
+     * The justification class types must match; otherwise it fails with no match.
+     * 
+     * @param justification the expected justification.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    default SingleConstraintAssertion justifiesWith(ConstraintJustification justification) {
+        return justifiesWith(justification, null);
+    }
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific penalty.

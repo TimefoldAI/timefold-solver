@@ -16,8 +16,10 @@ import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -40,6 +42,13 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         this.score = requireNonNull(score);
         this.constraintMatchTotalCollection = new ArrayList<>(requireNonNull(constraintMatchTotalMap).values());
         this.indictmentCollection = new ArrayList<>(requireNonNull(indictmentMap).values());
+    }
+
+    @Override
+    public SingleConstraintAssertion justifiesWith(ConstraintJustification justification, String message) {
+        validateJustification(justification);
+        assertJustification(justification, message);
+        return this;
     }
 
     @Override
@@ -104,6 +113,10 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         }
     }
 
+    private void validateJustification(ConstraintJustification... justifications) {
+        Objects.requireNonNull(justifications, "The justification must be not null.");
+    }
+
     private void assertImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
         BiPredicate<Number, Number> equalityPredicate =
                 NumberEqualityUtil.getEqualityPredicate(scoreDefinition, matchWeightTotal);
@@ -132,6 +145,48 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         String constraintId = constraint.getConstraintRef().constraintId();
         String assertionMessage = buildAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
+        throw new AssertionError(assertionMessage);
+    }
+
+    private void assertJustification(ConstraintJustification justification, String message) {
+        List<ConstraintJustification> allJustification = constraintMatchTotalCollection.stream()
+                .flatMap(c -> c.getConstraintMatchSet().stream())
+                .map(c -> (ConstraintJustification) c.getJustification())
+                .filter(Objects::nonNull)
+                .toList();
+        if (allJustification.isEmpty()) {
+            throw new IllegalStateException(
+                    "Invalid state: expecting one justification for the constraint, and there is none.");
+        }
+
+        ConstraintMatch<Score_> constraintMatch = constraintMatchTotalCollection.stream()
+                .flatMap(c -> c.getConstraintMatchSet().stream())
+                .filter(c -> justification.getClass().isAssignableFrom(c.getJustification().getClass()))
+                .findFirst() // A constraint cannot have multiple justifications; we pick the first one
+                .orElse(null);
+
+        // No match
+        if (constraintMatch == null) {
+            ConstraintJustification firstJustification = constraintMatchTotalCollection.stream()
+                    .flatMap(c -> c.getConstraintMatchSet().stream())
+                    .map(c -> (ConstraintJustification) c.getJustification())
+                    .findFirst()
+                    .get();
+
+            String assertionMessage = buildAssertionErrorMessage("No match", justification, firstJustification, message);
+            throw new AssertionError(assertionMessage);
+        }
+
+        ConstraintJustification otherJustification = constraintMatch.getJustification();
+        boolean match = justification.equals(otherJustification);
+        if (justification instanceof Comparable && constraintMatch.getJustification() instanceof Comparable) {
+            match = ((Comparable) justification).compareTo(otherJustification) == 0;
+        }
+        if (match) {
+            return;
+        }
+        String assertionMessage = buildAssertionErrorMessage(constraintMatch.getConstraintRef().constraintId(), justification,
+                otherJustification, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -278,6 +333,23 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 "Constraint", constraintId,
                 expectedImpactLabel,
                 DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+    }
+
+    private String buildAssertionErrorMessage(String constraintId, ConstraintJustification expected,
+            ConstraintJustification actual, String message) {
+        String expectation = message != null ? message : "Broken expectation.";
+        String preformattedMessage = "%s%n" +
+                "%18s: %s%n" +
+                "%22s: %s%n" +
+                "%22s: %s%n";
+        return String.format(preformattedMessage,
+                expectation,
+                "Justification",
+                constraintId,
+                "Expected",
+                expected,
+                "Actual",
+                actual);
     }
 
     private String getImpactTypeLabel(ScoreImpactType scoreImpactType) {
