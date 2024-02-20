@@ -9,14 +9,22 @@ public final class TestdataAllowsUnassignedValuesListConstraintProvider implemen
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                onlyConstraint(constraintFactory)
+                entityConstraint(constraintFactory),
+                valueConstraint(constraintFactory)
         };
     }
 
-    private Constraint onlyConstraint(ConstraintFactory constraintFactory) {
+    private Constraint entityConstraint(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
                 .penalize(SimpleScore.ONE, e -> e.getValueList().size())
-                .asConstraint("First weight");
+                .asConstraint("Entity list size");
+    }
+
+    private Constraint valueConstraint(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEachIncludingUnassigned(TestdataAllowsUnassignedValuesListValue.class)
+                .filter(value -> value.getEntity() == null)
+                .penalize(SimpleScore.ONE)
+                .asConstraint("Unassigned values");
     }
 
 }

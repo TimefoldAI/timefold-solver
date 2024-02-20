@@ -1238,6 +1238,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.setValueList(List.of(v1, v2));
         var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
         var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
+        v1.setEntity(e1);
+        v1.setIndex(0);
         solution.setEntityList(List.of(e1, e2));
 
         InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector = buildScoreDirector(
