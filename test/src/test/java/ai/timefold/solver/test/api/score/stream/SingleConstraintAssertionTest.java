@@ -24,6 +24,10 @@ import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerif
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSecondEntity;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSolution;
+import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstComparableJustification;
+import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
+import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondComparableJustification;
+import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
 
 import org.junit.jupiter.api.Test;
 
@@ -388,6 +392,113 @@ class SingleConstraintAssertionTest {
                     .asConstraint("Penalize every value");
         }
 
+    }
+
+
+    @Test
+    void justifies() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // No error
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstJustification(1)))
+                .doesNotThrowAnyException();
+
+        // Different justification
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstJustification(2)))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected: TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=1]");
+    }
+
+    @Test
+    void justifiesWithCustomMessage() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstJustification(2), "Custom Message"))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining("Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected: TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=1]");
+    }
+
+    @Test
+    void justifiesWithNoMatch() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestSecondJustification(1)))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Justification: No match")
+                .hasMessageContaining("Expected: TestSecondJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=1]");
+    }
+
+    @Test
+    void justifiesComparable() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // No error
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstComparableJustification(1)))
+                .doesNotThrowAnyException();
+
+        // Different justification
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstComparableJustification(2)))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first comparable justification")
+                .hasMessageContaining("Expected: TestFirstComparableJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstComparableJustification[id=1]");
+    }
+
+    @Test
+    void justifiesComparableWithCustomMessage() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstComparableJustification(2), "Custom Message"))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining("Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first comparable justification")
+                .hasMessageContaining("Expected: TestFirstComparableJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstComparableJustification[id=1]");
+    }
+
+    @Test
+    void justifiesComparableWithNoMatch() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::justifyWithFirstComparableJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestSecondComparableJustification(1)))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Justification: No match")
+                .hasMessageContaining("Expected: TestSecondComparableJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstComparableJustification[id=1]");
     }
 
 }

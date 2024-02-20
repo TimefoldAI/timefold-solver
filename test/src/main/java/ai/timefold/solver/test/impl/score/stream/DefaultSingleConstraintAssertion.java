@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -159,34 +160,33 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                     "Invalid state: expecting one justification for the constraint, and there is none.");
         }
 
-        ConstraintMatch<Score_> constraintMatch = constraintMatchTotalCollection.stream()
+        List<ConstraintMatch<Score_>> constraintMatchList = constraintMatchTotalCollection.stream()
                 .flatMap(c -> c.getConstraintMatchSet().stream())
                 .filter(c -> justification.getClass().isAssignableFrom(c.getJustification().getClass()))
-                .findFirst() // A constraint cannot have multiple justifications; we pick the first one
-                .orElse(null);
+                .toList();
 
         // No match
-        if (constraintMatch == null) {
-            ConstraintJustification firstJustification = constraintMatchTotalCollection.stream()
-                    .flatMap(c -> c.getConstraintMatchSet().stream())
-                    .map(c -> (ConstraintJustification) c.getJustification())
-                    .findFirst()
-                    .get();
-
-            String assertionMessage = buildAssertionErrorMessage("No match", justification, firstJustification, message);
+        if (constraintMatchList.isEmpty()) {
+            String assertionMessage = buildAssertionErrorMessage("No match", justification, allJustification, message);
             throw new AssertionError(assertionMessage);
         }
 
-        ConstraintJustification otherJustification = constraintMatch.getJustification();
-        boolean match = justification.equals(otherJustification);
-        if (justification instanceof Comparable && constraintMatch.getJustification() instanceof Comparable) {
-            match = ((Comparable) justification).compareTo(otherJustification) == 0;
+        List<ConstraintJustification> otherJustifications = constraintMatchList.stream()
+                .map(c -> (ConstraintJustification) c.getJustification())
+                .toList();
+        boolean anyMatch;
+        if (justification instanceof Comparable && otherJustifications.stream().allMatch(j -> j instanceof Comparable<?>)) {
+            anyMatch = otherJustifications.stream()
+                    .anyMatch(otherJustification -> ((Comparable) justification).compareTo(otherJustification) == 0);
+        } else {
+            anyMatch = otherJustifications.stream().anyMatch(justification::equals);
         }
-        if (match) {
+        if (anyMatch) {
             return;
         }
-        String assertionMessage = buildAssertionErrorMessage(constraintMatch.getConstraintRef().constraintId(), justification,
-                otherJustification, message);
+        String assertionMessage = buildAssertionErrorMessage(
+                constraintMatchList.stream().findFirst().get().getConstraintRef().constraintId(), justification,
+                otherJustifications, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -336,20 +336,25 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     private String buildAssertionErrorMessage(String constraintId, ConstraintJustification expected,
-            ConstraintJustification actual, String message) {
+            List<ConstraintJustification> actualList, String message) {
+        String test = String.format("%22s%s", "", expected.toString());
         String expectation = message != null ? message : "Broken expectation.";
-        String preformattedMessage = "%s%n" +
+        StringBuilder preformattedMessage = new StringBuilder("%s%n" +
                 "%18s: %s%n" +
                 "%22s: %s%n" +
-                "%22s: %s%n";
-        return String.format(preformattedMessage,
-                expectation,
+                "%22s: %n");
+        List<Object> params = new LinkedList<>(List.of(expectation,
                 "Justification",
                 constraintId,
                 "Expected",
                 expected,
-                "Actual",
-                actual);
+                "Actual"));
+        for (ConstraintJustification actualJustification: actualList) {
+            preformattedMessage.append("%24s%s%n");
+            params.add("");
+            params.add(actualJustification);
+        }
+        return String.format(preformattedMessage.toString(), params.toArray());
     }
 
     private String getImpactTypeLabel(ScoreImpactType scoreImpactType) {
