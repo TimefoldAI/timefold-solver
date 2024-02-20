@@ -2999,7 +2999,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
     @Override
     @TestTemplate
     public void failWithMultipleJustifications() {
-        assertThatCode(() ->  buildScoreDirector(
+        assertThatCode(() -> buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, (entity, entity2) -> 2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
@@ -3012,7 +3012,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
     @Override
     @TestTemplate
     public void failWithMultipleIndictments() {
-        assertThatCode(() ->  buildScoreDirector(
+        assertThatCode(() -> buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, (entity, entity2) -> 2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))

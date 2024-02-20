@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamTest;
@@ -2765,7 +2764,7 @@ public abstract class AbstractQuadConstraintStreamTest
     @Override
     @TestTemplate
     public void failWithMultipleJustifications() {
-        assertThatCode(() ->buildScoreDirector(
+        assertThatCode(() -> buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getValue))
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
@@ -2780,7 +2779,7 @@ public abstract class AbstractQuadConstraintStreamTest
     @Override
     @TestTemplate
     public void failWithMultipleIndictments() {
-        assertThatCode(() ->buildScoreDirector(
+        assertThatCode(() -> buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getValue))
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))

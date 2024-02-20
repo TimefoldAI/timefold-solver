@@ -349,7 +349,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 "Expected",
                 expected,
                 "Actual"));
-        for (ConstraintJustification actualJustification: actualList) {
+        for (ConstraintJustification actualJustification : actualList) {
             preformattedMessage.append("%24s%s%n");
             params.add("");
             params.add(actualJustification);
