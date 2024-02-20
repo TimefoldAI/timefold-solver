@@ -485,18 +485,15 @@ public class EntityDescriptor<Solution_> {
         }
         planningPinIndexMemberAccessorList.addAll(declaredPlanningPinIndexMemberAccessorList);
         switch (planningPinIndexMemberAccessorList.size()) {
-            case 0:
-                effectivePlanningPinToIndexReader = null;
-                return;
-            case 1:
+            case 0 -> effectivePlanningPinToIndexReader = null;
+            case 1 -> {
                 var memberAccessor = planningPinIndexMemberAccessorList.get(0);
                 effectivePlanningPinToIndexReader = (solution, entity) -> (int) memberAccessor.executeGetter(entity);
-                return;
-            default:
-                throw new IllegalStateException(
-                        "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
-                                .formatted(entityClass, planningPinIndexMemberAccessorList.size(),
-                                        PlanningPinToIndex.class.getSimpleName(), planningPinIndexMemberAccessorList));
+            }
+            default -> throw new IllegalStateException(
+                    "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
+                            .formatted(entityClass, planningPinIndexMemberAccessorList.size(),
+                                    PlanningPinToIndex.class.getSimpleName(), planningPinIndexMemberAccessorList));
         }
     }
 

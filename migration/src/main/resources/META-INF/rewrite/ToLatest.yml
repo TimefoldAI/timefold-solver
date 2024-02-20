@@ -19,45 +19,8 @@ recipeList:
       methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUnfiltered(Class)
       newMethodName: forEachIncludingUnassigned
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory forEachIncludingNullVars(Class)
-      newMethodName: forEachIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUniquePair(..)
       newMethodName: forEachUniquePair
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream ifExistsIncludingNullVars(...)
-      newMethodName: ifExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream ifExistsOtherIncludingNullVars(...)
-      newMethodName: ifExistsOtherIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream ifNotExistsIncludingNullVars(...)
-      newMethodName: ifNotExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream ifNotExistsOtherIncludingNullVars(...)
-      newMethodName: ifNotExistsOtherIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream ifExistsIncludingNullVars(...)
-      newMethodName: ifExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream ifNotExistsIncludingNullVars(...)
-      newMethodName: ifNotExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream ifExistsIncludingNullVars(...)
-      newMethodName: ifExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream ifNotExistsIncludingNullVars(...)
-      newMethodName: ifNotExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream ifExistsIncludingNullVars(...)
-      newMethodName: ifExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream ifNotExistsIncludingNullVars(...)
-      newMethodName: ifNotExistsIncludingUnassigned
-  - org.openrewrite.java.ChangeAnnotationAttributeName:
-      annotationType: ai.timefold.solver.core.api.domain.variable.PlanningVariable
-      oldAttributeName: nullable
-      newAttributeName: allowsUnassigned
   - ai.timefold.solver.migration.v8.ScoreManagerMethodsRecipe
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: ai.timefold.solver.core.api.score.ScoreManager
