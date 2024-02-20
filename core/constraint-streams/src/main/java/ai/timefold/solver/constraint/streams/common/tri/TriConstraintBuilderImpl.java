@@ -47,7 +47,7 @@ public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_
     @Override
     public TriConstraintBuilder<A, B, C, Score_> indictWith(TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").");
+            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").\nMaybe the constraint calls indictWith() twice?");
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

@@ -48,7 +48,7 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     public QuadConstraintBuilder<A, B, C, D, Score_>
             indictWith(QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").");
+            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").\nMaybe the constraint calls indictWith() twice?");
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

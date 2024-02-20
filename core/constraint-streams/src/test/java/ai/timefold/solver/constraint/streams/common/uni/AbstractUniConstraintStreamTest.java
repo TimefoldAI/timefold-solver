@@ -3584,6 +3584,19 @@ public abstract class AbstractUniConstraintStreamTest
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
     }
 
+    @Override
+    @TestTemplate
+    public void failWithMultipleIndictments() {
+        assertThatCode(() -> buildScoreDirector(
+                factory -> factory.forEach(TestdataLavishEntity.class)
+                        .penalize(SimpleScore.ONE, entity -> 2)
+                        .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
+                        .indictWith(Set::of)
+                        .indictWith(Set::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
+    }
+
     // ************************************************************************
     // Combinations
     // ************************************************************************

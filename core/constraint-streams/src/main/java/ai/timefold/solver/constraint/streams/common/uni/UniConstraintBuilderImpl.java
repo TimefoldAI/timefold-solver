@@ -47,7 +47,7 @@ public final class UniConstraintBuilderImpl<A, Score_ extends Score<Score_>>
     @Override
     public UniConstraintBuilder<A, Score_> indictWith(Function<A, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").");
+            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").\nMaybe the constraint calls indictWith() twice?");
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

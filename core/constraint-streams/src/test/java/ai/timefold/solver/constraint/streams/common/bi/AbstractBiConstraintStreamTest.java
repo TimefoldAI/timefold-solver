@@ -3009,6 +3009,19 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
     }
 
+    @Override
+    @TestTemplate
+    public void failWithMultipleIndictments() {
+        assertThatCode(() ->  buildScoreDirector(
+                factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
+                        .penalize(SimpleScore.ONE, (entity, entity2) -> 2)
+                        .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
+                        .indictWith(Set::of)
+                        .indictWith(Set::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
+    }
+
     // ************************************************************************
     // Combinations
     // ************************************************************************

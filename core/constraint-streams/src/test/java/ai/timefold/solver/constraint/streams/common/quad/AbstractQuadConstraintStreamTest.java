@@ -2777,4 +2777,19 @@ public abstract class AbstractQuadConstraintStreamTest
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
     }
 
+    @Override
+    @TestTemplate
+    public void failWithMultipleIndictments() {
+        assertThatCode(() ->buildScoreDirector(
+                factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getValue))
+                        .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
+                        .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
+                        .penalize(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
+                        .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
+                        .indictWith(List::of)
+                        .indictWith(List::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
+    }
+
 }

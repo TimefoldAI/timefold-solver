@@ -47,7 +47,7 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
     @Override
     public BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").");
+            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").\nMaybe the constraint calls indictWith() twice?");
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

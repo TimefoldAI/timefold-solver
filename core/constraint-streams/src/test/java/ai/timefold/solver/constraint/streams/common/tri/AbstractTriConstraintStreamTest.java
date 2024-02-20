@@ -3033,4 +3033,18 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME)))
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
     }
+
+    @Override
+    @TestTemplate
+    public void failWithMultipleIndictments() {
+        assertThatCode(() -> buildScoreDirector(
+                factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getValue))
+                        .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
+                        .penalize(SimpleScore.ONE, (entity, entity2, value) -> 2)
+                        .justifyWith((a, b, c, score) -> new TestConstraintJustification<>(score, a, b, c))
+                        .indictWith(Set::of)
+                        .indictWith(Set::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
+    }
 }

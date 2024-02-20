@@ -257,4 +257,6 @@ public interface ConstraintStreamFunctionalTest {
     void impactNegativeBigDecimalCustomJustifications();
 
     void failWithMultipleJustifications();
+
+    void failWithMultipleIndictments();
 }
