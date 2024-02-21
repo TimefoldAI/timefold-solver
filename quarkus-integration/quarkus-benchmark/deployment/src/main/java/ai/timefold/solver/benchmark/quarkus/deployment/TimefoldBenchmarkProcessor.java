@@ -44,7 +44,7 @@ class TimefoldBenchmarkProcessor {
             BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
             SolverConfigBuildItem solverConfigBuildItem) {
         // We don't support benchmarking for multiple solvers
-        if (solverConfigBuildItem.getSolvetConfigMap().size() > 1) {
+        if (solverConfigBuildItem.getSolverConfigMap().size() > 1) {
             throw new ConfigurationException("""
                     When defining multiple solvers, the benchmark feature is not enabled.
                     Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");

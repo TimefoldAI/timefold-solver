@@ -89,7 +89,8 @@ The following features are only available in Timefold Solver Enterprise Edition:
 
 * <<nearbySelection,Nearby selection>>,
 * <<multithreadedSolving,multi-threaded solving>>,
-* and <<partitionedSearch,partitioned Search>>.
+* <<partitionedSearch,partitioned Search>>,
+* and <<automaticNodeSharing, automatic node sharing>>.
 
 
 [#nearbySelection]
@@ -759,5 +760,215 @@ the host is likely to hang or freeze,
 unless there is an OS specific policy in place to avoid Timefold Solver from hogging all the CPU processors.
 ====
 
+[#automaticNodeSharing]
+=== Automatic node sharing
 
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
 
+When using xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint streams], each xref:constraints-and-score/score-calculation.adoc#constraintStreamsBuildingBlocks[building block] forms a node in the score calculation network.
+When two building blocks are functionality equivalent, they can share the same node in the network.
+Sharing nodes allows the operation to be performed only once instead of multiple times, improving the performance of the solver.
+To be functionality equivalent, the following must be true:
+
+* The building blocks must represent the same operation.
+
+* The building blocks must have functionality equivalent parent building blocks.
+
+* The building blocks must have functionality equivalent inputs.
+
+For example, the building blocks below are functionality equivalent:
+
+[source,java,options="nowrap"]
+----
+Predicate<Shift> predicate = shift -> shift.getEmployee().getName().equals("Ann");
+
+var a = factory.forEach(Shift.class)
+               .filter(predicate);
+
+var b = factory.forEach(Shift.class)
+               .filter(predicate);
+----
+
+Whereas these building blocks are not functionality equivalent:
+
+[source,java,options="nowrap"]
+----
+Predicate<Shift> predicate1 = shift -> shift.getEmployee().getName().equals("Ann");
+Predicate<Shift> predicate2 = shift -> shift.getEmployee().getName().equals("Bob");
+
+// Different parents
+var a = factory.forEach(Shift.class)
+               .filter(predicate2);
+
+var b = factory.forEach(Shift.class)
+               .filter(predicate1)
+               .filter(predicate2);
+
+// Different operations
+var a = factory.forEach(Shift.class)
+               .ifExists(Employee.class);
+
+var b = factory.forEach(Shift.class)
+               .ifNotExists(Employee.class);
+
+// Different inputs
+var a = factory.forEach(Shift.class)
+               .filter(predicate1);
+
+var b = factory.forEach(Shift.class)
+               .filter(predicate2);
+----
+
+Counterintuitively, the building blocks produced by these (seemly) identical methods are not necessarily functionality equivalent:
+
+[source,java,options="nowrap"]
+----
+UniConstraintStream<Shift> a(ConstraintFactory constraintFactory) {
+    return factory.forEach(Shift.class)
+                  .filter(shift -> shift.getEmployee().getName().equals("Ann"));
+}
+
+UniConstraintStream<Shift> b(ConstraintFactory constraintFactory) {
+    return factory.forEach(Shift.class)
+                  .filter(shift -> shift.getEmployee().getName().equals("Ann"));
+}
+----
+
+The Java Virtual Machine is free to (and often does) create different instances of functionality equivalent lambdas.
+This severely limits the effectiveness of node sharing, since the only way to know two lambdas are equal is to compare their references.
+
+When automatic node sharing is used, the `ConstraintProvider` class is transformed so all lambdas are accessed via a static final field.
+So a class that looks like this:
+
+[source,java,options="nowrap"]
+----
+public class MyConstraintProvider implements ConstraintProvider {
+
+    public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        return new Constraint[] {
+            a(constraintFactory),
+            b(constraintFactory)
+        };
+    }
+
+    Constraint a(ConstraintFactory constraintFactory) {
+        return factory.forEach(Shift.class)
+                      .filter(shift -> shift.getEmployee().getName().equals("Ann"))
+                      .penalize(SimpleScore.ONE)
+                      .asConstraint("a");
+    }
+
+    Constraint b(ConstraintFactory constraintFactory) {
+        return factory.forEach(Shift.class)
+                      .filter(shift -> shift.getEmployee().getName().equals("Ann"))
+                      .penalize(SimpleScore.ONE)
+                      .asConstraint("b");
+    }
+}
+----
+
+is transformed to a class that looks like this:
+
+[source,java,options="nowrap"]
+----
+public class MyConstraintProvider implements ConstraintProvider {
+    private static final Predicate<Shift> $predicate1 = shift -> shift.getEmployee().getName().equals("Ann");
+
+    public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        return new Constraint[] {
+            a(constraintFactory),
+            b(constraintFactory)
+        };
+    }
+
+    Constraint a(ConstraintFactory constraintFactory) {
+        return factory.forEach(Shift.class)
+                      .filter($predicate1)
+                      .penalize(SimpleScore.ONE)
+                      .asConstraint("a");
+    }
+
+    Constraint b(ConstraintFactory constraintFactory) {
+        return factory.forEach(Shift.class)
+                      .filter($predicate1)
+                      .penalize(SimpleScore.ONE)
+                      .asConstraint("b");
+    }
+}
+----
+
+IMPORTANT: This transformation prevents breakpoints from being placed inside the ConstraintProvider.
+
+This allows building blocks to share the same nodes without needing the `ConstraintProvider` to be written in an awkward way.
+
+==== Configuration
+
+[tabs]
+======
+Plain Java::
+* Add `ai.timefold.solver.enterprise:timefold-solver-enterprise-asm` to your `pom.xml`:
++
+[source,xml,options="nowrap"]
+----
+<!-- ... -->
+<dependencies>
+  <dependency>
+    <groupId>ai.timefold.solver.enterprise</groupId>
+    <artifactId>timefold-solver-enterprise-asm</artifactId>
+  </dependency>
+</dependencies>
+<!-- ... -->
+----
++
+* Add `<constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+<!-- ... -->
+<scoreDirectorFactory>
+  <constraintProviderClass>org.acme.MyConstraintProvider</constraintProviderClass>
+  <constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>
+</scoreDirectorFactory>
+<!-- ... -->
+----
+
+Spring Boot::
+* Add `ai.timefold.solver.enterprise:timefold-solver-enterprise-asm` to your `pom.xml`:
++
+[source,xml,options="nowrap"]
+----
+<!-- ... -->
+<dependencies>
+  <dependency>
+    <groupId>ai.timefold.solver.enterprise</groupId>
+    <artifactId>timefold-solver-enterprise-asm</artifactId>
+  </dependency>
+</dependencies>
+<!-- ... -->
+----
++
+* Add `<constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+<!-- ... -->
+<scoreDirectorFactory>
+  <constraintProviderClass>org.acme.MyConstraintProvider</constraintProviderClass>
+  <constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>
+</scoreDirectorFactory>
+<!-- ... -->
+----
+
+Quarkus::
+Automatic node sharing is enabled by default.
+You can disable it by setting the property `quarkus.timefold.enterprise.solver.constraint-stream-automatic-node-sharing` to `false` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.enterprise.solver.constraint-stream-automatic-node-sharing=false
+----
+======
