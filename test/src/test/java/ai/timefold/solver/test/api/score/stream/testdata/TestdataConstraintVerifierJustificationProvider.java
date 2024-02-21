@@ -1,5 +1,7 @@
 package ai.timefold.solver.test.api.score.stream.testdata;
 
+import java.util.Set;
+
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -20,6 +22,7 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
         return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
                 .penalize(HardSoftScore.ONE_HARD)
                 .justifyWith((entity, score) -> new TestFirstJustification(1))
+                .indictWith(Set::of)
                 .asConstraint("Justify with first justification");
     }
 
@@ -27,6 +30,7 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
         return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
                 .penalize(HardSoftScore.ONE_HARD)
                 .justifyWith((entity, score) -> new TestFirstComparableJustification(1))
+                .indictWith(Set::of)
                 .asConstraint("Justify with first comparable justification");
     }
 

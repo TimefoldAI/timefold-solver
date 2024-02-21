@@ -19,11 +19,32 @@ public interface SingleConstraintAssertion {
     SingleConstraintAssertion justifiesWith(ConstraintJustification justification, String message);
 
     /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific indictments.
+     *
+     * @param indictments the expected indictments.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    default SingleConstraintAssertion indictsWith(Object... indictments) {
+        return indictsWith(null, indictments);
+    }
+
+    /**
+     * As defined by {@link #indictsWith(Object...)}.
+     *
+     * @param message sometimes null, description of the scenario being asserted
+     * @param indictments the expected indictments.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    SingleConstraintAssertion indictsWith(String message, Object... indictments);
+
+    /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific
      * {@link ConstraintJustification}.
      * <p>
      * The justification class types must match; otherwise it fails with no match.
-     * 
+     *
      * @param justification the expected justification.
      * @return never null
      * @throws AssertionError when the expected penalty is not observed

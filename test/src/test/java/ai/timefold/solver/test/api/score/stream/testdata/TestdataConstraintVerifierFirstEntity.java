@@ -32,4 +32,10 @@ public final class TestdataConstraintVerifierFirstEntity extends TestdataObject 
     // Complex methods
     // ************************************************************************
 
+    @Override
+    public String toString() {
+        return "TestdataConstraintVerifierFirstEntity(" +
+                "code='" + code + '\'' +
+                ')';
+    }
 }

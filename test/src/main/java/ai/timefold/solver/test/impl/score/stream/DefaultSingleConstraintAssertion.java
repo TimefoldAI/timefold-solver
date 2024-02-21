@@ -17,7 +17,6 @@ import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -33,6 +32,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     private final ScoreDefinition<Score_> scoreDefinition;
     private final Score_ score;
     private final Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
+    private final Collection<ConstraintJustification> constraintJustificationCollection;
     private final Collection<Indictment<Score_>> indictmentCollection;
 
     DefaultSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
@@ -43,12 +43,23 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         this.score = requireNonNull(score);
         this.constraintMatchTotalCollection = new ArrayList<>(requireNonNull(constraintMatchTotalMap).values());
         this.indictmentCollection = new ArrayList<>(requireNonNull(indictmentMap).values());
+        this.constraintJustificationCollection = this.constraintMatchTotalCollection.stream()
+                .flatMap(c -> c.getConstraintMatchSet().stream())
+                .map(c -> (ConstraintJustification) c.getJustification())
+                .collect(Collectors.toSet());
     }
 
     @Override
     public SingleConstraintAssertion justifiesWith(ConstraintJustification justification, String message) {
         validateJustification(justification);
         assertJustification(justification, message);
+        return this;
+    }
+
+    @Override
+    public SingleConstraintAssertion indictsWith(String message, Object... indictments) {
+        validateIndictments(indictments);
+        assertIndictments(message, indictments);
         return this;
     }
 
@@ -118,6 +129,13 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         Objects.requireNonNull(justifications, "The justification must be not null.");
     }
 
+    private void validateIndictments(Object[] indictments) {
+        Objects.requireNonNull(indictments, "The indictments must be not null.");
+        if (indictments.length == 0) {
+            Objects.requireNonNull(indictments, "The indictments must be not empty.");
+        }
+    }
+
     private void assertImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
         BiPredicate<Number, Number> equalityPredicate =
                 NumberEqualityUtil.getEqualityPredicate(scoreDefinition, matchWeightTotal);
@@ -150,44 +168,62 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     private void assertJustification(ConstraintJustification justification, String message) {
-        List<ConstraintJustification> allJustification = constraintMatchTotalCollection.stream()
-                .flatMap(c -> c.getConstraintMatchSet().stream())
-                .map(c -> (ConstraintJustification) c.getJustification())
-                .filter(Objects::nonNull)
-                .toList();
-        if (allJustification.isEmpty()) {
+        if (constraintJustificationCollection.isEmpty()) {
             throw new IllegalStateException(
                     "Invalid state: expecting one justification for the constraint, and there is none.");
         }
-
-        List<ConstraintMatch<Score_>> constraintMatchList = constraintMatchTotalCollection.stream()
-                .flatMap(c -> c.getConstraintMatchSet().stream())
-                .filter(c -> justification.getClass().isAssignableFrom(c.getJustification().getClass()))
-                .toList();
-
         // No match
-        if (constraintMatchList.isEmpty()) {
-            String assertionMessage = buildAssertionErrorMessage("No match", justification, allJustification, message);
+        if (constraintJustificationCollection.stream()
+                .noneMatch(c -> justification.getClass().isAssignableFrom(c.getClass()))) {
+            String assertionMessage = buildAssertionErrorMessage("No match", justification,
+                    constraintJustificationCollection.stream().findFirst().get(), message);
             throw new AssertionError(assertionMessage);
         }
-
-        List<ConstraintJustification> otherJustifications = constraintMatchList.stream()
-                .map(c -> (ConstraintJustification) c.getJustification())
-                .toList();
-        boolean anyMatch;
-        if (justification instanceof Comparable && otherJustifications.stream().allMatch(j -> j instanceof Comparable<?>)) {
-            anyMatch = otherJustifications.stream()
-                    .anyMatch(otherJustification -> ((Comparable) justification).compareTo(otherJustification) == 0);
-        } else {
-            anyMatch = otherJustifications.stream().anyMatch(justification::equals);
-        }
-        if (anyMatch) {
+        // Test invalid match
+        if (assertEquality(justification, constraintJustificationCollection)) {
             return;
         }
-        String assertionMessage = buildAssertionErrorMessage(
-                constraintMatchList.stream().findFirst().get().getConstraintRef().constraintId(), justification,
-                otherJustifications, message);
+        String assertionMessage = buildAssertionErrorMessage(constraint.getConstraintRef().constraintId(), justification,
+                constraintJustificationCollection.stream().findFirst().get(), message);
         throw new AssertionError(assertionMessage);
+    }
+
+    private void assertIndictments(String message, Object... indictments) {
+        if (indictmentCollection.isEmpty()) {
+            throw new IllegalStateException(
+                    "Invalid state: expecting at least one indictment for the constraint, and there is none.");
+        }
+        List<Object> noneMatchedList = new LinkedList<>();
+        List<Object> invalidMatchList = new LinkedList<>();
+        for (Object indictment : indictments) {
+            // No match
+            if (indictmentCollection.stream().map(Indictment::getIndictedObject)
+                    .noneMatch(i -> indictment.getClass().isAssignableFrom(i.getClass()))) {
+                noneMatchedList.add(indictment);
+                continue;
+            }
+            // Test invalid match
+            if (!assertEquality(indictment, indictmentCollection.stream().map(Indictment::getIndictedObject).toList())) {
+                invalidMatchList.add(indictment);
+            }
+        }
+        if (noneMatchedList.isEmpty() && invalidMatchList.isEmpty()) {
+            return;
+        }
+        String assertionMessage = buildAssertionErrorMessage(constraint.getConstraintRef().constraintId(), noneMatchedList,
+                invalidMatchList, indictmentCollection, message);
+        throw new AssertionError(assertionMessage);
+    }
+
+    private boolean assertEquality(Object target, Collection<?> otherList) {
+        boolean anyMatch;
+        if (target instanceof Comparable && otherList.stream().allMatch(o -> o instanceof Comparable<?>)) {
+            anyMatch = otherList.stream()
+                    .anyMatch(o -> ((Comparable) target).compareTo(o) == 0);
+        } else {
+            anyMatch = otherList.stream().anyMatch(target::equals);
+        }
+        return anyMatch;
     }
 
     /**
@@ -336,23 +372,61 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     private String buildAssertionErrorMessage(String constraintId, ConstraintJustification expected,
-            List<ConstraintJustification> actualList, String message) {
-        String test = String.format("%22s%s", "", expected.toString());
+            ConstraintJustification actual, String message) {
         String expectation = message != null ? message : "Broken expectation.";
-        StringBuilder preformattedMessage = new StringBuilder("%s%n" +
+        String preformattedMessage = "%s%n" +
                 "%18s: %s%n" +
                 "%22s: %s%n" +
-                "%22s: %n");
-        List<Object> params = new LinkedList<>(List.of(expectation,
-                "Justification",
-                constraintId,
-                "Expected",
-                expected,
-                "Actual"));
-        for (ConstraintJustification actualJustification : actualList) {
-            preformattedMessage.append("%24s%s%n");
-            params.add("");
-            params.add(actualJustification);
+                "%22s: %s%n";
+        return String.format(preformattedMessage, expectation, "Justification", constraintId, "Expected", expected,
+                "Actual", actual);
+    }
+
+    private String buildAssertionErrorMessage(String constraintId, Collection<Object> noneMatchedCollection,
+            Collection<Object> invalidMatchedCollection, Collection<Indictment<Score_>> indictmentCollection,
+            String message) {
+        String expectation = message != null ? message : "Broken expectation.";
+        StringBuilder preformattedMessage = new StringBuilder("%s%n")
+                .append("%18s: %s%n");
+        List<Object> params = new LinkedList<>();
+        params.add(expectation);
+        params.add("Indictment");
+        params.add(constraintId);
+        if (!noneMatchedCollection.isEmpty()) {
+            preformattedMessage.append("%22s%n");
+            preformattedMessage.append("%24s%n");
+            params.add("No match:");
+            params.add("Expected:");
+            noneMatchedCollection.forEach(indictment -> {
+                preformattedMessage.append("%26s%s%n");
+                params.add("");
+                params.add(indictment);
+            });
+            preformattedMessage.append("%24s%n");
+            params.add("Actual:");
+            indictmentCollection.forEach(indictment -> {
+                preformattedMessage.append("%26s%s%n");
+                params.add("");
+                params.add(indictment.getIndictedObject());
+            });
+        }
+        if (!invalidMatchedCollection.isEmpty()) {
+            preformattedMessage.append("%22s%n");
+            preformattedMessage.append("%24s%n");
+            params.add("Invalid match:");
+            params.add("Expected:");
+            invalidMatchedCollection.forEach(indictment -> {
+                preformattedMessage.append("%26s%s%n");
+                params.add("");
+                params.add(indictment);
+            });
+            preformattedMessage.append("%24s%n");
+            params.add("Actual:");
+            indictmentCollection.forEach(indictment -> {
+                preformattedMessage.append("%26s%s%n");
+                params.add("");
+                params.add(indictment.getIndictedObject());
+            });
         }
         return String.format(preformattedMessage.toString(), params.toArray());
     }
