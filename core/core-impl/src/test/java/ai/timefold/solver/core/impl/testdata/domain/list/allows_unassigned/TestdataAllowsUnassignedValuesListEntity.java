@@ -1,11 +1,10 @@
-package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values;
+package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -66,14 +65,6 @@ public class TestdataAllowsUnassignedValuesListEntity extends TestdataObject {
 
     public void setValueList(List<TestdataAllowsUnassignedValuesListValue> valueList) {
         this.valueList = valueList;
-    }
-
-    @PlanningPinToIndex
-    public int getPlanningPinnedToIndex() {
-        // Always return 0, since we don't want to actually pin anything,
-        // but need to "support" pinning to test branches that only occur if
-        // pinning is present
-        return 0;
     }
 
 }

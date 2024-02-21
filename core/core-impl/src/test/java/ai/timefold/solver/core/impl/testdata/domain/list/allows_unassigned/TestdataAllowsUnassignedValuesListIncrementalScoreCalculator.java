@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values;
+package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned;
 
 import java.util.ArrayList;
 import java.util.List;

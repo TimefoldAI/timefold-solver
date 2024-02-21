@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values;
+package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;

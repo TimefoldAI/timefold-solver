@@ -1,11 +1,10 @@
-package ai.timefold.solver.core.impl.solver;
+package ai.timefold.solver.constraint.streams.common;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Collections;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -16,45 +15,44 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned_values.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListValue;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractSolutionManagerTest {
 
     protected abstract ScoreDirectorFactoryConfig buildScoreDirectorFactoryConfig();
 
-    protected abstract ScoreDirectorFactoryConfig buildUnassignedScoreDirectorFactoryConfig();
+    protected abstract ScoreDirectorFactoryConfig buildUnassignedWithPinningScoreDirectorFactoryConfig();
 
     @Test
     void indictmentsPresentOnFreshExplanation() {
         // Create the environment.
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = buildScoreDirectorFactoryConfig();
-        SolverConfig solverConfig = new SolverConfig();
+        var scoreDirectorFactoryConfig = buildScoreDirectorFactoryConfig();
+        var solverConfig = new SolverConfig();
         solverConfig.setSolutionClass(TestdataSolution.class);
         solverConfig.setEntityClassList(Collections.singletonList(TestdataEntity.class));
         solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        SolutionManager<TestdataSolution, SimpleScore> solutionManager =
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solutionManager =
                 SolutionManagerTest.SolutionManagerSource.FROM_SOLVER_FACTORY.createSolutionManager(solverFactory);
 
         // Prepare the solution.
-        int entityCount = 3;
-        TestdataSolution solution = TestdataSolution.generateSolution(2, entityCount);
-        ScoreExplanation<TestdataSolution, SimpleScore> scoreExplanation = solutionManager.explain(solution);
+        var entityCount = 3;
+        var solution = TestdataSolution.generateSolution(2, entityCount);
+        var scoreExplanation = solutionManager.explain(solution);
 
         // Check for expected results.
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
             softly.assertThat(scoreExplanation.getScore())
                     .isEqualTo(SimpleScore.of(-entityCount));
             softly.assertThat(scoreExplanation.getConstraintMatchTotalMap())
                     .isNotEmpty();
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .isNotEmpty();
-            List<DefaultConstraintJustification> constraintJustificationList = (List) scoreExplanation.getJustificationList();
+            var constraintJustificationList = (List) scoreExplanation.getJustificationList();
             softly.assertThat(constraintJustificationList)
                     .isNotEmpty();
             softly.assertThat(scoreExplanation.getJustificationList(DefaultConstraintJustification.class))
@@ -65,20 +63,21 @@ public abstract class AbstractSolutionManagerTest {
     @Test
     void updateAssignedValueWithNullInverseRelation() {
         // Create the environment.
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = buildUnassignedScoreDirectorFactoryConfig();
-        SolverConfig solverConfig = new SolverConfig();
-        solverConfig.setSolutionClass(TestdataAllowsUnassignedValuesListSolution.class);
+        var scoreDirectorFactoryConfig = buildUnassignedWithPinningScoreDirectorFactoryConfig();
+        var solverConfig = new SolverConfig();
+        solverConfig.setSolutionClass(TestdataPinnedUnassignedValuesListSolution.class);
         solverConfig.setEntityClassList(
-                List.of(TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class));
+                List.of(TestdataPinnedUnassignedValuesListEntity.class,
+                        TestdataPinnedUnassignedValuesListValue.class));
         solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
-        SolverFactory<TestdataAllowsUnassignedValuesListSolution> solverFactory = SolverFactory.create(solverConfig);
-        SolutionManager<TestdataAllowsUnassignedValuesListSolution, SimpleScore> solutionManager =
+        SolverFactory<TestdataPinnedUnassignedValuesListSolution> solverFactory = SolverFactory.create(solverConfig);
+        SolutionManager<TestdataPinnedUnassignedValuesListSolution, SimpleScore> solutionManager =
                 SolutionManagerTest.SolutionManagerSource.FROM_SOLVER_FACTORY.createSolutionManager(solverFactory);
 
         // Prepare the solution.
-        var solution = new TestdataAllowsUnassignedValuesListSolution();
-        var entity = new TestdataAllowsUnassignedValuesListEntity("e1");
-        var assignedValue = new TestdataAllowsUnassignedValuesListValue("assigned");
+        var solution = new TestdataPinnedUnassignedValuesListSolution();
+        var entity = new TestdataPinnedUnassignedValuesListEntity("e1");
+        var assignedValue = new TestdataPinnedUnassignedValuesListValue("assigned");
 
         entity.setValueList(List.of(assignedValue));
 
@@ -86,8 +85,10 @@ public abstract class AbstractSolutionManagerTest {
         solution.setValueList(List.of(assignedValue));
         solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY);
 
-        assertThat(assignedValue.getEntity()).isSameAs(entity);
-        assertThat(assignedValue.getIndex()).isZero();
+        assertSoftly(softly -> {
+            softly.assertThat(assignedValue.getEntity()).isSameAs(entity);
+            softly.assertThat(assignedValue.getIndex()).isZero();
+        });
     }
 
 }
