@@ -611,7 +611,8 @@ class SingleConstraintAssertionTest {
                 .doesNotThrowAnyException();
 
         // Invalid indictment
-        TestdataConstraintVerifierFirstEntity badEntity = new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
+        TestdataConstraintVerifierFirstEntity badEntity =
+                new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
         assertThatCode(
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
@@ -649,12 +650,13 @@ class SingleConstraintAssertionTest {
     void indictsWithCustomMessage() {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
-        TestdataConstraintVerifierFirstEntity badEntity = new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
+        TestdataConstraintVerifierFirstEntity badEntity =
+                new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
         assertThatCode(
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
                         .given(solution.getEntityList().toArray())
-                    .indictsWith("Custom Message", badEntity))
+                        .indictsWith("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
                         "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
@@ -670,7 +672,7 @@ class SingleConstraintAssertionTest {
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
                         .givenSolution(solution)
-                    .indictsWith("Custom Message", badEntity))
+                        .indictsWith("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
                         "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
