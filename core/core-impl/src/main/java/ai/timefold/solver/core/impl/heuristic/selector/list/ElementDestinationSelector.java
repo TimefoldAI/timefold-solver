@@ -241,6 +241,14 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             } else { // Value selector already returns only unpinned values.
                 if (!valueIterator.hasNext()) {
                     valueIterator = getValueIterator(allowsUnassignedValues);
+                    if (!valueIterator.hasNext()) {
+                        if (allowsUnassignedValues) {
+                            return ElementLocation.unassigned();
+                        } else {
+                            // TODO
+                            throw new UnsupportedOperationException();
+                        }
+                    }
                 }
                 var value = valueIterator.next();
                 var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(value);

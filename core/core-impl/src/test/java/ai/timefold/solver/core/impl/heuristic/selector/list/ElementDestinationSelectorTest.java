@@ -119,6 +119,61 @@ class ElementDestinationSelectorTest {
     }
 
     @Test
+    void randomFullyPinned() {
+        var v1 = new TestdataPinnedWithIndexListValue("1");
+        var v2 = new TestdataPinnedWithIndexListValue("2");
+        var v3 = new TestdataPinnedWithIndexListValue("3");
+        var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v1, v2);
+        var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
+        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+
+        a.setPlanningPinToIndex(2);
+        c.setPinned(true);
+        var solution = new TestdataPinnedWithIndexListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
+
+        var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var entitySelector = mockEntitySelector(a, b, c, c);
+        var valueSelector =
+                mockNeverEndingEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v3, v2, v1);
+        var destinationSize = entitySelector.getSize() + valueSelector.getSize();
+
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+
+        // <4 => entity selector; >=4 => value selector
+        var random = new TestRandom(
+                0, // => A[0]
+                4, // => v3 => C[1]
+                1, // => B[0]
+                5, // => v2 => A[2]
+                6, // => v1 => A[1]
+                2, // => C[0]
+                -1); // (not tested)
+
+        solvingStarted(selector, scoreDirector, random);
+
+        // Initial state:
+        // - A [1, 2]
+        // - B []
+        // - C [3]
+
+        // The destinations (A[0], C[1], ...) depend on the random number, which decides whether entitySelector or valueSelector
+        // will be used; and then on the order of entities and values in the mocked selectors.
+        assertCodesOfNeverEndingIterableSelector(selector, destinationSize,
+                "A[0]",
+                "C[1]",
+                "B[0]",
+                "A[2]",
+                "A[1]",
+                "C[0]");
+
+        random.assertIntBoundJustRequested((int) destinationSize);
+    }
+
+    @Test
     void emptyIfThereAreNoEntities() {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
