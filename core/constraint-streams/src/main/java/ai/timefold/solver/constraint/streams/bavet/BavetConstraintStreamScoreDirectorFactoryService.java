@@ -43,7 +43,7 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
                                 + ") does not implement " + ConstraintProvider.class.getSimpleName() + ".");
             }
             final Class<? extends ConstraintProvider> constraintProviderClass;
-            if (Boolean.TRUE.equals(config.getConstraintStreamShareLambdas())) {
+            if (Boolean.TRUE.equals(config.getConstraintStreamAutomaticNodeSharing())) {
                 TimefoldSolverEnterpriseService enterpriseService =
                         TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.LAMBDA_SHARING);
                 constraintProviderClass =
