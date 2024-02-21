@@ -14,7 +14,8 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 justifyWithFirstJustification(constraintFactory),
-                justifyWithFirstComparableJustification(constraintFactory)
+                justifyWithFirstComparableJustification(constraintFactory),
+                justifyWithNoJustifications(constraintFactory)
         };
     }
 
@@ -32,6 +33,13 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
                 .justifyWith((entity, score) -> new TestFirstComparableJustification(1))
                 .indictWith(Set::of)
                 .asConstraint("Justify with first comparable justification");
+    }
+
+    public Constraint justifyWithNoJustifications(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
+                .filter(entity -> entity.getCode().equals("Should not filter"))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Justify without justifications and indictments");
     }
 
 }

@@ -9,14 +9,28 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 public interface SingleConstraintAssertion {
 
     /**
-     * As defined by {@link #justifiesWith(ConstraintJustification)}.
+     * As defined by {@link #justifiesWith(ConstraintJustification...)}.
      *
-     * @param justification the expected justification.
+     * @param justifications the expected justification.
      * @param message sometimes null, description of the scenario being asserted
      * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    SingleConstraintAssertion justifiesWith(ConstraintJustification justification, String message);
+    SingleConstraintAssertion justifiesWith(String message, ConstraintJustification... justifications);
+
+    /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific
+     * {@link ConstraintJustification}.
+     * <p>
+     * The justification class types must match; otherwise it fails with no match.
+     *
+     * @param justifications the expected justifications.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    default SingleConstraintAssertion justifiesWith(ConstraintJustification... justifications) {
+        return justifiesWith(null, justifications);
+    }
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific indictments.
@@ -38,20 +52,6 @@ public interface SingleConstraintAssertion {
      * @throws AssertionError when the expected penalty is not observed
      */
     SingleConstraintAssertion indictsWith(String message, Object... indictments);
-
-    /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific
-     * {@link ConstraintJustification}.
-     * <p>
-     * The justification class types must match; otherwise it fails with no match.
-     *
-     * @param justification the expected justification.
-     * @return never null
-     * @throws AssertionError when the expected penalty is not observed
-     */
-    default SingleConstraintAssertion justifiesWith(ConstraintJustification justification) {
-        return justifiesWith(justification, null);
-    }
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific penalty.
