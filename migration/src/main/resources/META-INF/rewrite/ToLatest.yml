@@ -29,5 +29,6 @@ recipeList:
   - ai.timefold.solver.migration.v8.ScoreGettersRecipe
   - ai.timefold.solver.migration.v8.ConstraintRefRecipe
   - ai.timefold.solver.migration.v8.SolverManagerBuilderRecipe
+  - ai.timefold.solver.migration.v8.NullableRecipe
   - org.openrewrite.java.RemoveUnusedImports
   - ai.timefold.solver.migration.ChangeVersion
