@@ -101,10 +101,14 @@ This feature is a commercial feature of Timefold Solver Enterprise Edition.
 It is not available in the Community Edition.
 ====
 
-In some use cases (such as TSP and VRP, but also in non-chained variable cases),
-changing entities to nearby values or swapping nearby entities can *heavily increase scalability* and improve solution quality.
+In some use cases (such as TSP and VRP, but also in other cases),
+changing entities to nearby values or swapping nearby entities leads to better results faster.
 
 image::enterprise-edition/nearbySelectionMotivation.png[align="center"]
+
+This can *heavily increase scalability* and improve solution quality:
+
+image::enterprise-edition/nearbySelectionValueProposition.png[align="center"]
 
 Nearby selection increases the probability of selecting an entity or value which is nearby to the first entity being moved in that move.
 
