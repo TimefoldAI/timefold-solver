@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
 import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
@@ -122,17 +121,6 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     private void validateMatchWeighTotal(Number matchWeightTotal) {
         if (matchWeightTotal.doubleValue() < 0) {
             throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be positive.");
-        }
-    }
-
-    private void validateJustification(ConstraintJustification... justifications) {
-        Objects.requireNonNull(justifications, "The justification must be not null.");
-    }
-
-    private void validateIndictments(Object[] indictments) {
-        Objects.requireNonNull(indictments, "The indictments must be not null.");
-        if (indictments.length == 0) {
-            Objects.requireNonNull(indictments, "The indictments must be not empty.");
         }
     }
 
@@ -297,7 +285,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         List<Number> impacts = Arrays.stream(levelNumbers)
                 .distinct()
                 .filter(matchWeight -> !Objects.equals(matchWeight, zero))
-                .collect(Collectors.toList());
+                .toList();
         switch (impacts.size()) {
             case 0:
                 return zero;

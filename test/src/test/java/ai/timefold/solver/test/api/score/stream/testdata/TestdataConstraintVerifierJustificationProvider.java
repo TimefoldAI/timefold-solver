@@ -22,7 +22,7 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
     public Constraint justifyWithFirstJustification(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
                 .penalize(HardSoftScore.ONE_HARD)
-                .justifyWith((entity, score) -> new TestFirstJustification(1))
+                .justifyWith((entity, score) -> new TestFirstJustification(entity.getCode()))
                 .indictWith(Set::of)
                 .asConstraint("Justify with first justification");
     }
@@ -30,7 +30,7 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
     public Constraint justifyWithFirstComparableJustification(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(TestdataConstraintVerifierFirstEntity.class)
                 .penalize(HardSoftScore.ONE_HARD)
-                .justifyWith((entity, score) -> new TestFirstComparableJustification(1))
+                .justifyWith((entity, score) -> new TestFirstComparableJustification(entity.getCode()))
                 .indictWith(Set::of)
                 .asConstraint("Justify with first comparable justification");
     }

@@ -32,9 +32,10 @@ public final class UniConstraintBuilderImpl<A, Score_ extends Score<Score_>>
     public <ConstraintJustification_ extends ConstraintJustification> UniConstraintBuilder<A, Score_> justifyWith(
             BiFunction<A, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
-            throw new IllegalStateException(
-                    "Justification mapping already set (%s).\nMaybe the constraint calls justifyWith() twice?"
-                            .formatted(justificationMapping));
+            throw new IllegalStateException("""
+                    Justification mapping already set (%s).
+                    Maybe the constraint calls justifyWith() twice?"""
+                    .formatted(justificationMapping));
         }
         this.justificationMapping =
                 (BiFunction<A, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
@@ -49,9 +50,10 @@ public final class UniConstraintBuilderImpl<A, Score_ extends Score<Score_>>
     @Override
     public UniConstraintBuilder<A, Score_> indictWith(Function<A, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException(
-                    "Indicted objects' mapping already set (%s).\nMaybe the constraint calls indictWith() twice?"
-                            .formatted(indictedObjectsMapping));
+            throw new IllegalStateException("""
+                    Indicted objects' mapping already set (%s).
+                    Maybe the constraint calls indictWith() twice?"""
+                    .formatted(indictedObjectsMapping));
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

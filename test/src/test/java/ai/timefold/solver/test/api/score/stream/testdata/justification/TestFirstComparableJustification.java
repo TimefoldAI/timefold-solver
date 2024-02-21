@@ -4,15 +4,15 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
 public class TestFirstComparableJustification implements ConstraintJustification, Comparable<TestFirstComparableJustification> {
 
-    private final int id;
+    private final String id;
 
-    public TestFirstComparableJustification(int id) {
+    public TestFirstComparableJustification(String id) {
         this.id = id;
     }
 
     @Override
     public int compareTo(TestFirstComparableJustification o) {
-        return this.id - o.id;
+        return this.id.compareTo(o.id);
     }
 
     @Override
