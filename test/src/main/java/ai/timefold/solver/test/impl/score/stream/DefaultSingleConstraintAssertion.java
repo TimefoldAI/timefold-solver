@@ -254,9 +254,9 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
 
     private boolean assertEquality(Object target, Collection<?> otherList) {
         boolean anyMatch;
-        if (target instanceof Comparable && otherList.stream().allMatch(o -> o instanceof Comparable<?>)) {
+        if (target instanceof Comparable targetComparable && otherList.stream().allMatch(o -> o instanceof Comparable<?>)) {
             anyMatch = otherList.stream()
-                    .anyMatch(o -> ((Comparable) target).compareTo(o) == 0);
+                    .anyMatch(o -> targetComparable.compareTo(o) == 0);
         } else {
             anyMatch = otherList.stream().anyMatch(target::equals);
         }
