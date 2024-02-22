@@ -1213,8 +1213,10 @@ its elements can use a number of built-in shadow variables.
 [#listVariableShadowVariablesInverseRelation]
 ==== Inverse relation shadow variable
 
-Use the same `@InverseRelationShadowVariable` annotation as with basic or chained planning variable to establish bi-directional relationship between the entity and the elements assigned to its list variable.
-The type of the inverse shadow variable is the planning entity itself because there is a one-to-many relationship between the entity and the element classes.
+Use the same `@InverseRelationShadowVariable` annotation as with basic or chained planning variable
+to establish bi-directional relationship between the entity and the elements assigned to its list variable.
+The type of the inverse shadow variable is the planning entity itself
+because there is a one-to-many relationship between the entity and the element classes.
 
 The planning entity side has a genuine list variable:
 
@@ -1250,6 +1252,51 @@ public class Customer {
     }
 
     public void setVehicle(Vehicle vehicle) {...}
+}
+----
+
+[#listVariableShadowVariablesIndex]
+==== Index shadow variable
+
+While the `@InverseRelationShadowVariable` allows to establish the bi-directional relationship between the entity
+and the elements assigned to its list variable,
+`@IndexShadowVariable` provides a pointer into the entity's list variable where the element is assigned.
+
+The planning entity side has a genuine list variable:
+
+[source,java]
+----
+@PlanningEntity
+public class Vehicle {
+
+    @PlanningListVariable
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+
+    public void setCustomers(List<Customer> customers) {...}
+}
+----
+
+On the element side:
+
+- Annotate the class with `@PlanningEntity` to make it a shadow planning entity.
+- <<shadowVariable,Register this class as a planning entity>>,
+otherwise Timefold Solver won't detect it and the shadow variable won't update.
+- Create a property which returns an `Integer`.
+`Integer` is required instead of `int`, as the index may be `null` if the element is not yet assigned to the list variable.
+- Annotate it with `@IndexShadowVariable` and set `sourceVariableName` to the name of the genuine planning list variable.
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @IndexShadowVariable(sourceVariableName = "customers")
+    public Integer getIndexInVehicle() {
+        return indexInVehicle;
+    }
+
 }
 ----
 
