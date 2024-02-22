@@ -73,7 +73,7 @@ public interface SingleConstraintAssertion {
      * As defined by {@link #penalizesBy(int)}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      * @deprecated Use {@link #penalizesBy(String, int)} instead
      */
@@ -105,7 +105,7 @@ public interface SingleConstraintAssertion {
      * As defined by {@link #penalizesBy(long)}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      *
      * @deprecated Use {@link #penalizesBy(String, long)} instead
@@ -118,7 +118,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(long)}.
      *
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
@@ -138,7 +138,7 @@ public interface SingleConstraintAssertion {
      * As defined by {@link #penalizesBy(BigDecimal)}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      *
      * @deprecated Use {@link #penalizesBy(String, BigDecimal)} instead
@@ -151,7 +151,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(BigDecimal)}.
      *
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
@@ -188,7 +188,7 @@ public interface SingleConstraintAssertion {
      * As defined by {@link #penalizes(long)}.
      *
      * @param message sometimes null, description of the scenario being asserted
-     * @param times   at least 0, expected number of times that the constraint will penalize
+     * @param times at least 0, expected number of times that the constraint will penalize
      * @throws AssertionError when the expected penalty is not observed
      */
     void penalizes(String message, long times);
@@ -247,7 +247,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(int)}.
      *
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
@@ -280,7 +280,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(long)}.
      *
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
@@ -313,7 +313,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(BigDecimal)}.
      *
-     * @param message          sometimes null, description of the scenario being asserted
+     * @param message sometimes null, description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
@@ -350,7 +350,7 @@ public interface SingleConstraintAssertion {
      * As defined by {@link #rewards(long)}.
      *
      * @param message sometimes null, description of the scenario being asserted
-     * @param times   at least 0, expected number of times that the constraint will reward
+     * @param times at least 0, expected number of times that the constraint will reward
      * @throws AssertionError when the expected reward is not observed
      */
     void rewards(String message, long times);
