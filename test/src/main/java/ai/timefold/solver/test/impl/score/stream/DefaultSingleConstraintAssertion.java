@@ -385,7 +385,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
     }
 
-    private String buildAssertionErrorMessage(String type, String constraintId, Collection<?> noneMatchedCollection,
+    private static String buildAssertionErrorMessage(String type, String constraintId, Collection<?> noneMatchedCollection,
             Collection<?> invalidMatchedCollection, Collection<?> actualCollection,
             String message) {
         String expectation = message != null ? message : "Broken expectation.";

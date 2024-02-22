@@ -31,7 +31,7 @@ public class NQueensConstraintProvider implements ConstraintProvider {
                 .penalize(SimpleScore.ONE)
                 .justifyWith((queen, otherQueen, simpleScore) -> new CustomHorizontalConflictJustification(queen.getId(),
                         otherQueen.getId()))
-                .indictWith((queen, otherQueen) -> List.of(queen, otherQueen))
+                .indictWith(List::of)
                 .asConstraint("Horizontal conflict");
     }
 
