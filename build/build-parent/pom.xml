@@ -46,7 +46,7 @@
     <version.assembly.plugin>3.6.0</version.assembly.plugin>
     <version.compiler.plugin>3.12.1</version.compiler.plugin>
     <version.dependency.plugin>3.6.1</version.dependency.plugin>
-    <version.exec.plugin>3.1.1</version.exec.plugin>
+    <version.exec.plugin>3.2.0</version.exec.plugin>
     <version.enforcer.plugin>3.4.1</version.enforcer.plugin>
     <version.jacoco.plugin>0.8.11</version.jacoco.plugin>
     <version.jar.plugin>3.3.0</version.jar.plugin>
