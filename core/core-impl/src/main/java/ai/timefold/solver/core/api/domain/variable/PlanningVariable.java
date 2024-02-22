@@ -36,14 +36,24 @@ public @interface PlanningVariable {
     String[] valueRangeProviderRefs() default {};
 
     /**
-     * A nullable planning variable will automatically add the planning value null
+     * A variable will automatically add the planning value null
      * to the {@link ValueRangeProvider}'s range.
      * <p>
-     * Nullable true is not compatible with {@link PlanningVariableGraphType#CHAINED} true.
-     * Nullable true is not compatible with a primitive property type.
+     * Allowing unassigned is not compatible with {@link PlanningVariableGraphType#CHAINED} true.
+     * Allowing unassigned is not compatible with a primitive property type.
      *
+     * @see PlanningListVariable#allowsUnassignedValues()
      * @return true if null is a valid value for this planning variable
      */
+    boolean allowsUnassigned() default false;
+
+    /**
+     * As defined by {@link #allowsUnassigned()}.
+     *
+     * @deprecated Use {@link #allowsUnassigned()} instead.
+     * @return true if null is a valid value for this planning variable
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
     boolean nullable() default false;
 
     /**

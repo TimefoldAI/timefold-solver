@@ -64,7 +64,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         this.firstEdgeEndpoint = firstEdgeEndpoint;
         this.secondEdgeEndpoint = secondEdgeEndpoint;
         if (firstEntity == secondEntity) {
-            entityFirstUnpinnedIndex = variableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(firstEntity);
+            entityFirstUnpinnedIndex = variableDescriptor.getFirstUnpinnedIndex(firstEntity);
             if (firstEdgeEndpoint == 0) {
                 shift = -secondEdgeEndpoint;
             } else if (secondEdgeEndpoint < firstEdgeEndpoint) {
@@ -121,8 +121,8 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     private void doTailSwap(ScoreDirector<Solution_> scoreDirector) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> firstListVariable = variableDescriptor.getListVariable(firstEntity);
-        List<Object> secondListVariable = variableDescriptor.getListVariable(secondEntity);
+        List<Object> firstListVariable = variableDescriptor.getValue(firstEntity);
+        List<Object> secondListVariable = variableDescriptor.getValue(secondEntity);
         int firstOriginalSize = firstListVariable.size();
         int secondOriginalSize = secondListVariable.size();
 
@@ -154,7 +154,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     private void doSublistReversal(ScoreDirector<Solution_> scoreDirector) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        List<Object> listVariable = variableDescriptor.getListVariable(firstEntity);
+        List<Object> listVariable = variableDescriptor.getValue(firstEntity);
 
         if (firstEdgeEndpoint < secondEdgeEndpoint) {
             if (firstEdgeEndpoint > 0) {
@@ -271,7 +271,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public Collection<?> getPlanningValues() {
         if (firstEntity == secondEntity) {
-            List<Object> listVariable = variableDescriptor.getListVariable(firstEntity);
+            List<Object> listVariable = variableDescriptor.getValue(firstEntity);
             if (firstEdgeEndpoint < secondEdgeEndpoint) {
                 return new ArrayList<>(listVariable.subList(firstEdgeEndpoint, secondEdgeEndpoint));
             } else {
@@ -280,8 +280,8 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 return CollectionUtils.concat(firstHalfReversedPath, secondHalfReversedPath);
             }
         } else {
-            List<Object> firstListVariable = variableDescriptor.getListVariable(firstEntity);
-            List<Object> secondListVariable = variableDescriptor.getListVariable(secondEntity);
+            List<Object> firstListVariable = variableDescriptor.getValue(firstEntity);
+            List<Object> secondListVariable = variableDescriptor.getValue(secondEntity);
             List<Object> firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
             List<Object> secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
             List<Object> out = new ArrayList<>(firstListVariableTail.size() + secondListVariableTail.size());

@@ -189,7 +189,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
-                                factory.forEachIncludingNullVars(TestdataEntity.class)
+                                factory.forEachIncludingUnassigned(TestdataEntity.class)
                                         .filter(a -> a.getValue() != null)
                                         .join(TestdataEntity.class,
                                                 filtering((a, b) -> {
@@ -246,7 +246,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
-                                factory.forEachIncludingNullVars(TestdataEntity.class)
+                                factory.forEachIncludingUnassigned(TestdataEntity.class)
                                         .filter(a -> a.getValue() != null)
                                         .ifExists(TestdataEntity.class,
                                                 filtering((a, b) -> {
@@ -300,7 +300,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
-                                factory.forEachIncludingNullVars(TestdataEntity.class)
+                                factory.forEachIncludingUnassigned(TestdataEntity.class)
                                         .filter(a -> a.getValue() != null)
                                         .ifNotExists(TestdataEntity.class,
                                                 filtering((a, b) -> {
@@ -359,7 +359,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
-                                factory.forEachIncludingNullVars(TestdataEntity.class)
+                                factory.forEachIncludingUnassigned(TestdataEntity.class)
                                         .map(Function.identity())
                                         .filter(e -> e.getValue() != null)
                                         .penalize(SimpleScore.ONE)

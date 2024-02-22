@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -53,7 +53,7 @@ class SubListChangeMoveTest {
 
         SubListChangeMove<TestdataListSolution> move = new SubListChangeMove<>(variableDescriptor, e1, 1, 2, e2, 0, false);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v4);
         assertThat(e2.getValueList()).containsExactly(v2, v3, v5);
@@ -78,7 +78,7 @@ class SubListChangeMoveTest {
 
         SubListChangeMove<TestdataListSolution> move = new SubListChangeMove<>(variableDescriptor, e1, 0, 3, e2, 1, true);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v4);
         assertThat(e2.getValueList()).containsExactly(v5, v3, v2, v1);
@@ -103,7 +103,7 @@ class SubListChangeMoveTest {
         SubListChangeMove<TestdataListSolution> move =
                 new SubListChangeMove<>(variableDescriptor, e1, 3, 2, e1, 0, false);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v4, v5, v1, v2, v3, v6);
 

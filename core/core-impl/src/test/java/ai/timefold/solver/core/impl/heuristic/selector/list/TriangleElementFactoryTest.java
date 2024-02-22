@@ -35,9 +35,9 @@ class TriangleElementFactoryTest {
     @MethodSource
     void triangleElementValueOf(int index, int level, int indexOnLevel) {
         TriangleElement triangleElement = TriangleElement.valueOf(index);
-        assertThat(triangleElement.getIndex()).isEqualTo(index);
-        assertThat(triangleElement.getLevel()).isEqualTo(level);
-        assertThat(triangleElement.getIndexOnLevel()).isEqualTo(indexOnLevel);
+        assertThat(triangleElement.index()).isEqualTo(index);
+        assertThat(triangleElement.level()).isEqualTo(level);
+        assertThat(triangleElement.indexOnLevel()).isEqualTo(indexOnLevel);
     }
 
     @Test
@@ -59,15 +59,15 @@ class TriangleElementFactoryTest {
 
         TriangleElement first = factory.nextElement(listSize);
         testRandom.assertIntBoundJustRequested(subListCount);
-        assertThat(first.getIndex()).isEqualTo(4); // Triangle element index.
-        assertThat(first.getLevel()).isEqualTo(3); // 3rd level, there are 3 subLists of size 5.
-        assertThat(first.getIndexOnLevel()).isEqualTo(1); // It's the 1st element on level 3.
+        assertThat(first.index()).isEqualTo(4); // Triangle element index.
+        assertThat(first.level()).isEqualTo(3); // 3rd level, there are 3 subLists of size 5.
+        assertThat(first.indexOnLevel()).isEqualTo(1); // It's the 1st element on level 3.
 
         TriangleElement last = factory.nextElement(listSize);
         testRandom.assertIntBoundJustRequested(subListCount);
-        assertThat(last.getIndex()).isEqualTo(21); // Triangle element index.
-        assertThat(last.getLevel()).isEqualTo(6); // 6th level, there are 6 subLists of size 2.
-        assertThat(last.getIndexOnLevel()).isEqualTo(6); // It's the 6th element on level 6.
+        assertThat(last.index()).isEqualTo(21); // Triangle element index.
+        assertThat(last.level()).isEqualTo(6); // 6th level, there are 6 subLists of size 2.
+        assertThat(last.indexOnLevel()).isEqualTo(6); // It's the 6th element on level 6.
     }
 
     @Test

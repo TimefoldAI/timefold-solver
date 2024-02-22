@@ -28,12 +28,12 @@ public final class TestdataPinnedListIncrementalScoreCalculator
 
     @Override
     public void beforeVariableChanged(Object entity, String variableName) {
-        throw new UnsupportedOperationException(); // Will not be called.
+        // No need to do anything.
     }
 
     @Override
     public void afterVariableChanged(Object entity, String variableName) {
-        throw new UnsupportedOperationException(); // Will not be called.
+        // No need to do anything.
     }
 
     @Override

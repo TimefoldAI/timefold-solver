@@ -11,6 +11,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.SubPillarConfigPolicy;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SubPillarType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleBridge;
@@ -52,10 +53,11 @@ public final class DefaultPillarSelector<Solution_> extends AbstractSelector<Sol
                         + ") with a entityClass (" + variableDescriptor.getEntityDescriptor().getEntityClass()
                         + ") which is not equal to the entitySelector's entityClass (" + entityClass + ").");
             }
-            if (variableDescriptor.isChained()) {
-                throw new IllegalStateException("The selector (" + this
-                        + ") has a variableDescriptor (" + variableDescriptor
-                        + ") which is chained (" + variableDescriptor.isChained() + ").");
+            boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                    && basicVariableDescriptor.isChained();
+            if (isChained) {
+                throw new IllegalStateException("The selector (%s) has a variableDescriptor (%s) which is chained (%s)."
+                        .formatted(this, variableDescriptor, isChained));
             }
         }
         if (entitySelector.isNeverEnding()) {

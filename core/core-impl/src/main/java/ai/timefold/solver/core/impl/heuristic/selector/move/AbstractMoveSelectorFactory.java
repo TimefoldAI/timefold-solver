@@ -136,7 +136,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         /*
          * Do not filter out pointless moves in Construction Heuristics and Exhaustive Search,
          * because the original value of the entity is irrelevant.
-         * If the original value is null and the variable is nullable,
+         * If the original value is null and the variable allows unassigned values,
          * the change move to null must be done too.
          */
         SelectionFilter<Solution_, Move<Solution_>> baseFilter = skipNonDoableMoves

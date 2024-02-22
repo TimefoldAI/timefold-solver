@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
@@ -25,7 +26,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityDependentSortingValueSelector;
@@ -36,7 +37,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.Reinitial
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SelectedCountLimitValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRecorder;
@@ -227,7 +228,9 @@ public class ValueSelectorFactory<Solution_>
     }
 
     private boolean hasFiltering(GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        return config.getFilterClass() != null || variableDescriptor.hasMovableChainedTrailingValueFilter();
+        return config.getFilterClass() != null ||
+                (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && basicVariableDescriptor.hasMovableChainedTrailingValueFilter());
     }
 
     protected ValueSelector<Solution_> applyFiltering(ValueSelector<Solution_> valueSelector,
@@ -239,8 +242,9 @@ public class ValueSelectorFactory<Solution_>
                 filterList.add(instanceCache.newInstance(config, "filterClass", config.getFilterClass()));
             }
             // Filter out pinned entities
-            if (variableDescriptor.hasMovableChainedTrailingValueFilter()) {
-                filterList.add(variableDescriptor.getMovableChainedTrailingValueFilter());
+            if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                    && basicVariableDescriptor.hasMovableChainedTrailingValueFilter()) {
+                filterList.add(basicVariableDescriptor.getMovableChainedTrailingValueFilter());
             }
             valueSelector = FilteringValueSelector.of(valueSelector, SelectionFilter.compose(filterList));
         }
@@ -249,7 +253,9 @@ public class ValueSelectorFactory<Solution_>
 
     protected ValueSelector<Solution_> applyInitializedChainedValueFilter(HeuristicConfigPolicy<Solution_> configPolicy,
             GenuineVariableDescriptor<Solution_> variableDescriptor, ValueSelector<Solution_> valueSelector) {
-        if (configPolicy.isInitializedChainedValueFilterEnabled() && variableDescriptor.isChained()) {
+        boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                && basicVariableDescriptor.isChained();
+        if (configPolicy.isInitializedChainedValueFilterEnabled() && isChained) {
             valueSelector = InitializedValueSelector.create(valueSelector);
         }
         return valueSelector;
@@ -489,8 +495,8 @@ public class ValueSelectorFactory<Solution_>
                         + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
             }
             valueSelector = listValueFilteringType == ListValueFilteringType.ACCEPT_ASSIGNED
-                    ? new AssignedValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
-                    : new UnassignedValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
+                    ? new AssignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
+                    : new UnassignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
         }
         return valueSelector;
     }

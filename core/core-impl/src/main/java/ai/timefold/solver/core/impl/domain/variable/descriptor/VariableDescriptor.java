@@ -79,8 +79,8 @@ public abstract class VariableDescriptor<Solution_> {
 
     public abstract void linkVariableDescriptors(DescriptorPolicy descriptorPolicy);
 
-    public boolean isGenuineListVariable() {
-        return false;
+    public final boolean isListVariable() {
+        return this instanceof ListVariableDescriptor;
     }
 
     // ************************************************************************
@@ -124,5 +124,8 @@ public abstract class VariableDescriptor<Solution_> {
         return variableMemberAccessor.getSpeedNote();
     }
 
-    public abstract boolean isGenuineAndUninitialized(Object entity);
+    public final boolean isGenuineAndUninitialized(Object entity) {
+        return this instanceof GenuineVariableDescriptor<Solution_> genuineVariableDescriptor
+                && !genuineVariableDescriptor.isInitialized(entity);
+    }
 }

@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 /**
  * IMPORTANT: The constructor of any subclass of this abstract class, should never call any of its child
@@ -71,14 +72,16 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
      * @param listVariableDescriptor never null
      * @return null if no unpinned destination was found, at which point the iterator is exhausted.
      */
-    public static ElementRef findUnpinnedDestination(Iterator<ElementRef> destinationIterator,
+    public static ElementLocation findUnpinnedDestination(Iterator<ElementLocation> destinationIterator,
             ListVariableDescriptor<?> listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
             var destination = destinationIterator.next();
-            var pinningStatus = listVariableDescriptor.getEntityDescriptor().extractPinningStatus(null, destination.entity());
-            var isPinned = pinningStatus.hasPin()
-                    && (pinningStatus.entireEntityPinned() || pinningStatus.firstUnpinnedIndex() > destination.index());
-            if (!isPinned) {
+            if (destination instanceof LocationInList locationInList) {
+                var isPinned = listVariableDescriptor.isElementPinned(null, locationInList.entity(), locationInList.index());
+                if (!isPinned) {
+                    return destination;
+                }
+            } else { // Unassigned location can not be pinned.
                 return destination;
             }
         }

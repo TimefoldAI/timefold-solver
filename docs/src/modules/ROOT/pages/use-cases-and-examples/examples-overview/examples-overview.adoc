@@ -136,7 +136,7 @@ The source code of all these examples is available on https://github.com/Timefol
 
 |xref:use-cases-and-examples/bed-allocation/bed-allocation.adoc#bedAllocation[Hospital bed planning]
 |* 1 entity class
-** 1 nullable variable
+** 1 variable with unassigned values
 |* Entity <= `2750`
 * Value <= `471`
 * Search space <= `10^6851`
@@ -158,6 +158,7 @@ The source code of all these examples is available on https://github.com/Timefol
 |* xref:constraints-and-score/overview.adoc#bendableScore[Bendable score]
 * xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained through time pattern]
 * Custom xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[VariableListener]
+* xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[Overconstrained planning]
 * xref:responding-to-change/responding-to-change.adoc#continuousPlanning[Continuous planning]
 * xref:responding-to-change/responding-to-change.adoc#realTimePlanning[Real-time planning]
 

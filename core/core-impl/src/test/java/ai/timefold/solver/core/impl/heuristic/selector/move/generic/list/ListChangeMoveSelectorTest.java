@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
+import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getPinnedListVariableDescriptor;
+import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockAllowsUnassignedValuesNeverEndingDestinationSelector;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockDestinationSelector;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockEntityIndependentValueSelector;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockNeverEndingDestinationSelector;
@@ -15,10 +17,14 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockSc
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
@@ -35,18 +41,22 @@ class ListChangeMoveSelectorTest {
         var a = TestdataListEntity.createWithValues("A", v2, v1);
         var b = TestdataListEntity.createWithValues("B");
         var c = TestdataListEntity.createWithValues("C", v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v2),
                 mockDestinationSelector(
-                        new ElementRef(a, 0),
-                        new ElementRef(b, 0),
-                        new ElementRef(c, 0),
-                        new ElementRef(c, 1),
-                        new ElementRef(a, 2),
-                        new ElementRef(a, 1)),
+                        new LocationInList(a, 0),
+                        new LocationInList(b, 0),
+                        new LocationInList(c, 0),
+                        new LocationInList(c, 1),
+                        new LocationInList(a, 2),
+                        new LocationInList(a, 1)),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -62,7 +72,7 @@ class ListChangeMoveSelectorTest {
                 // Moving 3 from C[0]
                 "3 {C[0]->A[0]}",
                 "3 {C[0]->B[0]}",
-                "3 {C[0]->C[0]}", // noop
+                "3 {C[0]->C[0]}", // undoable
                 "3 {C[0]->C[1]}", // undoable
                 "3 {C[0]->A[2]}",
                 "3 {C[0]->A[1]}",
@@ -72,9 +82,9 @@ class ListChangeMoveSelectorTest {
                 "1 {A[1]->C[0]}",
                 "1 {A[1]->C[1]}",
                 "1 {A[1]->A[2]}", // undoable
-                "1 {A[1]->A[1]}", // noop
+                "1 {A[1]->A[1]}", // undoable
                 // Moving 2 from A[0]
-                "2 {A[0]->A[0]}", // noop
+                "2 {A[0]->A[0]}", // undoable
                 "2 {A[0]->B[0]}",
                 "2 {A[0]->C[0]}",
                 "2 {A[0]->C[1]}",
@@ -103,10 +113,10 @@ class ListChangeMoveSelectorTest {
         var moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v4, v3, v1, v2),
                 mockDestinationSelector(
-                        new ElementRef(c, 0),
-                        new ElementRef(c, 1),
-                        new ElementRef(a, 2),
-                        new ElementRef(a, 1)),
+                        new LocationInList(c, 0),
+                        new LocationInList(c, 1),
+                        new LocationInList(a, 2),
+                        new LocationInList(a, 1)),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -121,7 +131,7 @@ class ListChangeMoveSelectorTest {
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
                 // Moving 3 from C[0]
-                "3 {C[0]->C[0]}", // noop
+                "3 {C[0]->C[0]}", // undoable
                 "3 {C[0]->C[1]}", // undoable
                 "3 {C[0]->A[2]}",
                 "3 {C[0]->A[1]}",
@@ -129,8 +139,74 @@ class ListChangeMoveSelectorTest {
                 "1 {A[1]->C[0]}",
                 "1 {A[1]->C[1]}",
                 "1 {A[1]->A[2]}", // undoable
-                "1 {A[1]->A[1]}" // noop
+                "1 {A[1]->A[1]}" // undoable
         );
+    }
+
+    @Test
+    void originalAllowsUnassignedValues() {
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var v3 = new TestdataAllowsUnassignedValuesListValue("3");
+        var v4 = new TestdataAllowsUnassignedValuesListValue("4");
+        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v2, v1);
+        var b = TestdataAllowsUnassignedValuesListEntity.createWithValues("B");
+        var c = TestdataAllowsUnassignedValuesListEntity.createWithValues("C", v3);
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3, v4));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var moveSelector = new ListChangeMoveSelector<>(
+                mockEntityIndependentValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector), v3, v1, v4,
+                        v2),
+                mockDestinationSelector(
+                        new LocationInList(a, 0),
+                        new LocationInList(b, 0),
+                        new LocationInList(c, 0),
+                        new LocationInList(c, 1),
+                        new LocationInList(a, 2),
+                        new LocationInList(a, 1),
+                        ElementLocation.unassigned()),
+                false);
+
+        solvingStarted(moveSelector, scoreDirector);
+
+        // First try all destinations for v3 (which is originally at C[0]),
+        // then v1 (originally at A[1]),
+        // then v4 (unassigned),
+        // then v2 (originally at A[0]).
+        assertAllCodesOfMoveSelector(moveSelector,
+                "3 {C[0]->A[0]}",
+                "3 {C[0]->B[0]}",
+                "3 {C[0]->C[0]}", // undoable
+                "3 {C[0]->C[1]}",
+                "3 {C[0]->A[2]}",
+                "3 {C[0]->A[1]}",
+                "3 {C[0]->null}",
+                "1 {A[1]->A[0]}",
+                "1 {A[1]->B[0]}",
+                "1 {A[1]->C[0]}",
+                "1 {A[1]->C[1]}",
+                "1 {A[1]->A[2]}",
+                "1 {A[1]->A[1]}", // undoable
+                "1 {A[1]->null}",
+                "4 {null->A[0]}",
+                "4 {null->B[0]}",
+                "4 {null->C[0]}",
+                "4 {null->C[1]}",
+                "4 {null->A[2]}",
+                "4 {null->A[1]}",
+                "No change",
+                "2 {A[0]->A[0]}", // undoable
+                "2 {A[0]->B[0]}",
+                "2 {A[0]->C[0]}",
+                "2 {A[0]->C[1]}",
+                "2 {A[0]->A[2]}",
+                "2 {A[0]->A[1]}",
+                "2 {A[0]->null}");
     }
 
     @Test
@@ -141,17 +217,21 @@ class ListChangeMoveSelectorTest {
         var a = TestdataListEntity.createWithValues("A", v1, v2);
         var b = TestdataListEntity.createWithValues("B");
         var c = TestdataListEntity.createWithValues("C", v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b, c));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var moveSelector = new ListChangeMoveSelector<>(
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v2, v1, v3, v3, v3),
                 mockNeverEndingDestinationSelector(
-                        new ElementRef(b, 0),
-                        new ElementRef(a, 2),
-                        new ElementRef(a, 0),
-                        new ElementRef(a, 1),
-                        new ElementRef(a, 2)),
+                        new LocationInList(b, 0),
+                        new LocationInList(a, 2),
+                        new LocationInList(a, 0),
+                        new LocationInList(a, 1),
+                        new LocationInList(a, 2)),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -194,10 +274,10 @@ class ListChangeMoveSelectorTest {
                 mockNeverEndingEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v2, v1, v4, v3,
                         v3),
                 mockPinnedNeverEndingDestinationSelector(
-                        new ElementRef(c, 0),
-                        new ElementRef(a, 2),
-                        new ElementRef(a, 1),
-                        new ElementRef(c, 0)),
+                        new LocationInList(c, 0),
+                        new LocationInList(a, 2),
+                        new LocationInList(a, 1),
+                        new LocationInList(c, 0)),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -218,107 +298,42 @@ class ListChangeMoveSelectorTest {
     }
 
     @Test
-    void constructionHeuristic() {
-        var v1 = new TestdataListValue("1");
-        var v2 = new TestdataListValue("2");
-        var v3 = new TestdataListValue("3");
-        var v4 = new TestdataListValue("4");
-        var v5 = new TestdataListValue("5");
-        var a = new TestdataListEntity("A");
-        var b = new TestdataListEntity("B");
-        var c = TestdataListEntity.createWithValues("C", v5);
-
-        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
-
-        var moveSelector = new ListChangeMoveSelector<>(
-                mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v4, v2, v5),
-                mockDestinationSelector(
-                        new ElementRef(a, 0),
-                        new ElementRef(b, 0),
-                        new ElementRef(c, 0),
-                        new ElementRef(c, 1)),
-                false);
-
-        solvingStarted(moveSelector, scoreDirector);
-
-        assertAllCodesOfMoveSelector(moveSelector,
-                // Assigning 3
-                "3 {null->A[0]}",
-                "3 {null->B[0]}",
-                "3 {null->C[0]}",
-                "3 {null->C[1]}",
-                // Assigning 1
-                "1 {null->A[0]}",
-                "1 {null->B[0]}",
-                "1 {null->C[0]}",
-                "1 {null->C[1]}",
-                // Assigning 4
-                "4 {null->A[0]}",
-                "4 {null->B[0]}",
-                "4 {null->C[0]}",
-                "4 {null->C[1]}",
-                // Assigning 2
-                "2 {null->A[0]}",
-                "2 {null->B[0]}",
-                "2 {null->C[0]}",
-                "2 {null->C[1]}",
-                // 5 is already assigned, so ListChangeMoves are selected.
-                "5 {C[0]->A[0]}",
-                "5 {C[0]->B[0]}",
-                "5 {C[0]->C[0]}",
-                "5 {C[0]->C[1]}");
-    }
-
-    @Test
-    void constructionHeuristicWithPinning() {
-        var v1 = new TestdataPinnedWithIndexListValue("1");
-        var v2 = new TestdataPinnedWithIndexListValue("2");
-        var v3 = new TestdataPinnedWithIndexListValue("3");
-        var v4 = new TestdataPinnedWithIndexListValue("4");
-        var v5 = new TestdataPinnedWithIndexListValue("5");
-        var a = new TestdataPinnedWithIndexListEntity("A");
-        var b = new TestdataPinnedWithIndexListEntity("B");
-        b.setPinned(true); // Ignore entirely.
-        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v5);
-        c.setPlanningPinToIndex(1); // Ignore v5.
-        var solution = new TestdataPinnedWithIndexListSolution();
+    void randomAllowsUnassignedValues() {
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var v3 = new TestdataAllowsUnassignedValuesListValue("3");
+        var v4 = new TestdataAllowsUnassignedValuesListValue("4");
+        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v1, v2);
+        var b = TestdataAllowsUnassignedValuesListEntity.createWithValues("B");
+        var c = TestdataAllowsUnassignedValuesListEntity.createWithValues("C", v3);
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(a, b, c));
-        solution.setValueList(List.of(v1, v2, v3, v4, v5));
+        solution.setValueList(List.of(v1, v2, v3, v4));
 
-        var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
         var moveSelector = new ListChangeMoveSelector<>(
-                mockEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v3, v1, v4, v2, v5),
-                mockDestinationSelector(
-                        new ElementRef(a, 0),
-                        new ElementRef(a, 1),
-                        new ElementRef(c, 1),
-                        new ElementRef(c, 2)),
-                false);
+                mockNeverEndingEntityIndependentValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
+                        v2, v1, v4, v3,
+                        v3, v3),
+                mockAllowsUnassignedValuesNeverEndingDestinationSelector(
+                        new LocationInList(b, 0),
+                        new LocationInList(a, 2),
+                        new LocationInList(a, 0),
+                        new LocationInList(a, 1),
+                        new LocationInList(a, 2),
+                        ElementLocation.unassigned()),
+                true);
 
         solvingStarted(moveSelector, scoreDirector);
 
-        assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
-                // Assigning 3
-                "3 {null->A[0]}",
-                "3 {null->A[1]}",
-                "3 {null->C[1]}",
-                "3 {null->C[2]}",
-                // Assigning 1
-                "1 {null->A[0]}",
-                "1 {null->A[1]}",
-                "1 {null->C[1]}",
-                "1 {null->C[2]}",
-                // Assigning 4
+        assertCodesOfNeverEndingMoveSelector(moveSelector,
+                "2 {A[1]->B[0]}",
+                "1 {A[0]->A[2]}",
                 "4 {null->A[0]}",
-                "4 {null->A[1]}",
-                "4 {null->C[1]}",
-                "4 {null->C[2]}",
-                // Assigning 2
-                "2 {null->A[0]}",
-                "2 {null->A[1]}",
-                "2 {null->C[1]}",
-                "2 {null->C[2]}");
+                "3 {C[0]->A[1]}",
+                "3 {C[0]->A[2]}");
     }
+
 }

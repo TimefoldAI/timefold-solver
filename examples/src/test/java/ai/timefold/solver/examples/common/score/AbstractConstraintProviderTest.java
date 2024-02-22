@@ -26,7 +26,7 @@ public abstract class AbstractConstraintProviderTest<ConstraintProvider_ extends
 
     protected abstract ConstraintVerifier<ConstraintProvider_, Solution_> createConstraintVerifier();
 
-    protected final Stream<? extends Arguments> getBavetConstraintVerifierImpl() {
+    protected final Stream<? extends Arguments> getConstraintVerifierImpl() {
         return Stream.of(
                 arguments(named("BAVET", bavetConstraintVerifier)));
     }

@@ -138,7 +138,7 @@ public final class ConferenceSchedulingConstraintProvider implements ConstraintP
     }
 
     Constraint speakerUnavailableTimeslot(ConstraintFactory factory) {
-        return factory.forEachIncludingNullVars(Talk.class)
+        return factory.forEachIncludingUnassigned(Talk.class)
                 .filter(talk -> talk.getTimeslot() != null)
                 .join(Speaker.class,
                         filtering((talk, speaker) -> talk.hasSpeaker(speaker)

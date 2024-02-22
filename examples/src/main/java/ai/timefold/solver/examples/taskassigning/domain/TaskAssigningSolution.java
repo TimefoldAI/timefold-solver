@@ -26,7 +26,7 @@ public class TaskAssigningSolution extends AbstractPersistable {
     @PlanningEntityCollectionProperty
     private List<Employee> employeeList;
 
-    @PlanningScore(bendableHardLevelsSize = 1, bendableSoftLevelsSize = 4)
+    @PlanningScore(bendableHardLevelsSize = 1, bendableSoftLevelsSize = 5)
     private BendableScore score;
 
     /** Relates to {@link Task#getStartTime()}. */

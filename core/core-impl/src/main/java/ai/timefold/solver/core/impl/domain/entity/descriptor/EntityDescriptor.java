@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
@@ -60,7 +59,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PlanningPinToIndexReader;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.slf4j.Logger;
@@ -90,9 +89,10 @@ public class EntityDescriptor<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Class<?> entityClass;
     private final Predicate<Object> isInitializedPredicate;
-    private final Predicate<Object> hasNoNullVariables;
     private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
 
+    private Predicate<Object> hasNoNullVariablesBasicVar;
+    private Predicate<Object> hasNoNullVariablesListVar;
     // Only declared movable filter, excludes inherited and descending movable filters
     private SelectionFilter<Solution_, Object> declaredMovableEntitySelectionFilter;
     private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
@@ -126,7 +126,6 @@ public class EntityDescriptor<Solution_> {
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
         isInitializedPredicate = this::isInitialized;
-        hasNoNullVariables = this::hasNoNullVariables;
         if (entityClass.getPackage() == null) {
             LOGGER.warn("The entityClass ({}) should be in a proper java package.", entityClass);
         }
@@ -146,7 +145,7 @@ public class EntityDescriptor<Solution_> {
      * Using entityDescriptor::isInitialized directly breaks node sharing
      * because it creates multiple instances of this {@link Predicate}.
      *
-     * @deprecated Prefer {@link #getHasNoNullVariables()}.
+     * @deprecated Prefer {@link #getHasNoNullVariablesPredicateListVar()}.
      * @return never null, always the same {@link Predicate} instance to {@link #isInitialized(Object)}
      */
     @Deprecated(forRemoval = true)
@@ -154,8 +153,35 @@ public class EntityDescriptor<Solution_> {
         return isInitializedPredicate;
     }
 
-    public Predicate<Object> getHasNoNullVariables() {
-        return hasNoNullVariables;
+    public <A> Predicate<A> getHasNoNullVariablesPredicateBasicVar() {
+        if (hasNoNullVariablesBasicVar == null) {
+            hasNoNullVariablesBasicVar = this::hasNoNullVariables;
+        }
+        return (Predicate<A>) hasNoNullVariablesBasicVar;
+    }
+
+    public <A> Predicate<A> getHasNoNullVariablesPredicateListVar() {
+        /*
+         * This code depends on all entity descriptors and solution descriptor to be fully initialized.
+         * For absolute safety, we only construct the predicate the first time it is requested.
+         * That will be during the building of the score director, when the descriptors are already set in stone.
+         */
+        if (hasNoNullVariablesListVar == null) {
+            var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+            if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(entityClass)) {
+                throw new IllegalStateException(
+                        "Impossible state: method called without an applicable list variable descriptor.");
+            }
+            var applicableShadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
+            if (applicableShadowDescriptor == null) {
+                throw new IllegalStateException(
+                        "Impossible state: method called without an applicable list variable descriptor.");
+            }
+
+            hasNoNullVariablesListVar = getHasNoNullVariablesPredicateBasicVar()
+                    .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
+        }
+        return (Predicate<A>) hasNoNullVariablesListVar;
     }
 
     // ************************************************************************
@@ -410,13 +436,13 @@ public class EntityDescriptor<Solution_> {
         }
         effectiveGenuineVariableDescriptorMap.putAll(declaredGenuineVariableDescriptorMap);
         effectiveShadowVariableDescriptorMap.putAll(declaredShadowVariableDescriptorMap);
-        effectiveVariableDescriptorMap = new LinkedHashMap<>(
-                effectiveGenuineVariableDescriptorMap.size() + effectiveShadowVariableDescriptorMap.size());
+        effectiveVariableDescriptorMap = CollectionUtils
+                .newLinkedHashMap(effectiveGenuineVariableDescriptorMap.size() + effectiveShadowVariableDescriptorMap.size());
         effectiveVariableDescriptorMap.putAll(effectiveGenuineVariableDescriptorMap);
         effectiveVariableDescriptorMap.putAll(effectiveShadowVariableDescriptorMap);
         effectiveGenuineVariableDescriptorList = new ArrayList<>(effectiveGenuineVariableDescriptorMap.values());
         effectiveGenuineListVariableDescriptorList = effectiveGenuineVariableDescriptorList.stream()
-                .filter(GenuineVariableDescriptor::isListVariable)
+                .filter(VariableDescriptor::isListVariable)
                 .map(l -> (ListVariableDescriptor<Solution_>) l)
                 .toList();
     }
@@ -451,16 +477,6 @@ public class EntityDescriptor<Solution_> {
             effectivePlanningPinToIndexReader = null;
             return;
         }
-
-        var listVariableDescriptor = getGenuineListVariableDescriptor();
-        var planningListVariableReader = new Function<Object, List<?>>() {
-
-            @Override
-            public List<?> apply(Object o) {
-                return (List<?>) listVariableDescriptor.getValue(o);
-            }
-        };
-
         var planningPinIndexMemberAccessorList = new ArrayList<MemberAccessor>();
         for (EntityDescriptor<Solution_> inheritedEntityDescriptor : inheritedEntityDescriptorList) {
             if (inheritedEntityDescriptor.effectivePlanningPinToIndexReader != null) {
@@ -468,12 +484,16 @@ public class EntityDescriptor<Solution_> {
             }
         }
         planningPinIndexMemberAccessorList.addAll(declaredPlanningPinIndexMemberAccessorList);
-
-        if (planningPinIndexMemberAccessorList.isEmpty()) {
-            effectivePlanningPinToIndexReader = null;
-        } else {
-            effectivePlanningPinToIndexReader = new PlanningPinToIndexReader<>(effectiveMovableEntitySelectionFilter,
-                    planningListVariableReader, planningPinIndexMemberAccessorList.toArray(MemberAccessor[]::new));
+        switch (planningPinIndexMemberAccessorList.size()) {
+            case 0 -> effectivePlanningPinToIndexReader = null;
+            case 1 -> {
+                var memberAccessor = planningPinIndexMemberAccessorList.get(0);
+                effectivePlanningPinToIndexReader = (solution, entity) -> (int) memberAccessor.executeGetter(entity);
+            }
+            default -> throw new IllegalStateException(
+                    "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
+                            .formatted(entityClass, planningPinIndexMemberAccessorList.size(),
+                                    PlanningPinToIndex.class.getSimpleName(), planningPinIndexMemberAccessorList));
         }
     }
 
@@ -644,61 +664,6 @@ public class EntityDescriptor<Solution_> {
         return entityList;
     }
 
-    /**
-     * Returns the {@link PinningStatus} of the entity.
-     *
-     * @param scoreDirector
-     * @param entity
-     * @return
-     */
-    public PinningStatus extractPinningStatus(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        if (!supportsPinning()) {
-            return PinningStatus.ofUnpinned();
-        } else if (!isMovable(scoreDirector, entity)) { // Skipping due to @PlanningPin.
-            return PinningStatus.ofFullyPinned();
-        }
-        var firstUnpinnedIndex = extractFirstUnpinnedIndex(entity);
-        if (firstUnpinnedIndex == 0) {
-            return PinningStatus.ofUnpinned();
-        } else {
-            return PinningStatus.ofPinIndex(firstUnpinnedIndex);
-        }
-    }
-
-    /**
-     * Ignores {@link PlanningPin} on the entire entity.
-     * If it should be taken into account as well, use {@link #extractPinningStatus(ScoreDirector, Object)}.
-     *
-     * @param entity never null
-     * @return never null
-     */
-    public int extractFirstUnpinnedIndex(Object entity) {
-        if (effectivePlanningPinToIndexReader == null) { // There is no @PlanningPinToIndex.
-            return 0;
-        } else {
-            return effectivePlanningPinToIndexReader.applyAsInt(null, entity);
-        }
-    }
-
-    public record PinningStatus(boolean hasPin, boolean entireEntityPinned, int firstUnpinnedIndex) {
-
-        private static final PinningStatus FULLY_PINNED = new PinningStatus(true, true, -1);
-        private static final PinningStatus UNPINNED = new PinningStatus(false, false, -1);
-
-        public static PinningStatus ofUnpinned() {
-            return UNPINNED;
-        }
-
-        public static PinningStatus ofFullyPinned() {
-            return FULLY_PINNED;
-        }
-
-        public static PinningStatus ofPinIndex(int firstUnpinnedIndex) {
-            return new PinningStatus(true, false, firstUnpinnedIndex);
-        }
-
-    }
-
     public void visitAllEntities(Solution_ solution, Consumer<Object> visitor) {
         solutionDescriptor.visitEntitiesByEntityClass(solution, entityClass, entity -> {
             visitor.accept(entity);
@@ -706,10 +671,14 @@ public class EntityDescriptor<Solution_> {
         });
     }
 
+    public PlanningPinToIndexReader<Solution_> getEffectivePlanningPinToIndexReader() {
+        return effectivePlanningPinToIndexReader;
+    }
+
     public long getMaximumValueCount(Solution_ solution, Object entity) {
         long maximumValueCount = 0L;
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            maximumValueCount = Math.max(maximumValueCount, variableDescriptor.getValueCount(solution, entity));
+            maximumValueCount = Math.max(maximumValueCount, variableDescriptor.getValueRangeSize(solution, entity));
         }
         return maximumValueCount;
 
@@ -719,7 +688,7 @@ public class EntityDescriptor<Solution_> {
         int genuineEntityCount = getSolutionDescriptor().getGenuineEntityCount(solution);
         long problemScale = 1L;
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            long valueCount = variableDescriptor.getValueCount(solution, entity);
+            long valueCount = variableDescriptor.getValueRangeSize(solution, entity);
             problemScale *= valueCount;
             if (variableDescriptor.isListVariable()) {
                 // This formula probably makes no sense other than that it results in the same problem scale for both
@@ -753,12 +722,18 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean hasNoNullVariables(Object entity) {
-        for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            if (variableDescriptor.getValue(entity) == null) {
-                return false;
+        return switch (effectiveGenuineVariableDescriptorList.size()) { // Avoid excessive iterator allocation.
+            case 0 -> true;
+            case 1 -> effectiveGenuineVariableDescriptorList.get(0).getValue(entity) != null;
+            default -> {
+                for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
+                    if (variableDescriptor.getValue(entity) == null) {
+                        yield false;
+                    }
+                }
+                yield true;
             }
-        }
-        return true;
+        };
     }
 
     public int countReinitializableVariables(Object entity) {

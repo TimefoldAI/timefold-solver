@@ -16,9 +16,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
 import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
 
 import org.junit.jupiter.api.Test;
@@ -26,10 +26,11 @@ import org.junit.jupiter.api.Test;
 class InitializedValueSelectorTest {
 
     @Test
-    void originalSelectionNullable() {
-        EntityDescriptor entityDescriptor = TestdataNullableEntity.buildEntityDescriptor();
-        TestdataNullableEntity e1 = new TestdataNullableEntity("e1");
-        // This variable is unable to have entities as values, but it's an interesting nullable test anyway
+    void originalSelectionAllowsUnassigned() {
+        EntityDescriptor entityDescriptor = TestdataAllowsUnassignedEntity.buildEntityDescriptor();
+        TestdataAllowsUnassignedEntity e1 = new TestdataAllowsUnassignedEntity("e1");
+        // This variable is unable to have entities as values,
+        // but it's an interesting test for allowsUnassigned=true anyway.
         GenuineVariableDescriptor variableDescriptor = entityDescriptor.getGenuineVariableDescriptor("value");
         TestdataValue v1 = new TestdataValue("v1");
         TestdataValue v2 = null;

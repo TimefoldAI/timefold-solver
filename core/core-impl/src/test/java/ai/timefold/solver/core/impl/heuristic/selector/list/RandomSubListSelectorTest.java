@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
+import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getPinnedListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.listSize;
@@ -22,6 +23,9 @@ import java.util.List;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
@@ -39,8 +43,12 @@ class RandomSubListSelectorTest {
         var v4 = new TestdataListValue("4");
         var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4);
         var b = TestdataListEntity.createWithValues("B");
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(v1, v2, v3, v4));
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var minimumSubListSize = 1;
         var maximumSubListSize = Integer.MAX_VALUE;
@@ -55,7 +63,7 @@ class RandomSubListSelectorTest {
                 minimumSubListSize,
                 maximumSubListSize);
 
-        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99);
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0);
 
         solvingStarted(selector, scoreDirector, random);
 
@@ -97,7 +105,7 @@ class RandomSubListSelectorTest {
                 minimumSubListSize,
                 maximumSubListSize);
 
-        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99);
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 0);
 
         solvingStarted(selector, scoreDirector, random);
 
@@ -110,6 +118,47 @@ class RandomSubListSelectorTest {
     }
 
     @Test
+    void randomAllowsUnassignedValues() {
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var v3 = new TestdataAllowsUnassignedValuesListValue("3");
+        var v4 = new TestdataAllowsUnassignedValuesListValue("4");
+        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v1, v2, v3);
+        var b = TestdataAllowsUnassignedValuesListEntity.createWithValues("B");
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(v1, v2, v3, v4));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var minimumSubListSize = 1;
+        var maximumSubListSize = Integer.MAX_VALUE;
+        var subListCount = 6;
+
+        // The number of subLists of [1, 2, 3] is the 3rd triangular number (6).
+        assertThat(subListCount).isEqualTo(nthTriangle(listSize(a)) + nthTriangle(listSize(b)));
+
+        var selector = new RandomSubListSelector<>(
+                mockEntitySelector(a, b),
+                mockNeverEndingEntityIndependentValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
+                        v1, v2, v3, v4),
+                minimumSubListSize,
+                maximumSubListSize);
+
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 0);
+
+        solvingStarted(selector, scoreDirector, random);
+
+        // Every possible subList is selected.
+        assertCodesOfNeverEndingIterableSelector(selector, subListCount,
+                "A[0+3]",
+                "A[0+2]", "A[1+2]",
+                "A[0+1]", "A[1+1]", "A[2+1]");
+        random.assertIntBoundJustRequested(subListCount);
+    }
+
+    @Test
     void randomWithSubListSizeBounds() {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
@@ -118,8 +167,12 @@ class RandomSubListSelectorTest {
         var v5 = new TestdataListValue("5");
         var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4, v5);
         var b = TestdataListEntity.createWithValues("B");
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(v1, v2, v3, v4, v5));
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
 
         var minimumSubListSize = 2;
         var maximumSubListSize = 3;
@@ -131,7 +184,7 @@ class RandomSubListSelectorTest {
                 minimumSubListSize,
                 maximumSubListSize);
 
-        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 99);
+        var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 0);
 
         solvingStarted(selector, scoreDirector, random);
 

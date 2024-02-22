@@ -76,38 +76,47 @@ This is called overconstrained planning.
 By default, Timefold Solver assigns all planning entities, overloads the planning values, and therefore breaks hard constraints.
 There are two ways to avoid this:
 
-* Use xref:using-timefold-solver/modeling-planning-problems.adoc#nullablePlanningVariable[nullable] planning variables, so that some entities are unassigned.
+* Use xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variables with unassigned values],
+so that some entities are unassigned.
 * Add virtual values to catch the unassigned entities.
 
 
-[#overconstrainedPlanningWithNullableVariables]
-=== Overconstrained planning with nullable variables
+[#overconstrainedPlanningWithNullValues]
+=== Overconstrained planning with `null` variable values
 
-If we handle overconstrained planning with nullable variables, the overload entities will be left unassigned:
+If we handle overconstrained planning with `null` variable values, the overload entities will be left unassigned:
 
 image::responding-to-change/overconstrainedPlanning.png[align="center"]
 
 To implement this:
 
 . Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
-. Make the planning variable xref:using-timefold-solver/modeling-planning-problems.adoc#nullablePlanningVariable[nullable].
+. Make the planning variable xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[allow unassigned values].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
 
 
 [#overconstrainedPlanningWithVirtualValues]
 === Overconstrained planning with virtual values
 
-In overconstrained planning it is often useful to know which resources are lacking.
-In overconstrained planning with virtual values, the solution indicates which resources to buy.
+If we handle overconstrained planning with virtual values,
+the overload entities will be assigned to one or more dummy values provided by the user.
+
+[NOTE]
+====
+This method is inferior to xref:overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values].
+It is likely to result in significantly worse solver performance and is also more challenging to implement.
+Null variable values should be preferred over virtual values if at all possible.
+====
 
 To implement this:
 
-. Add an additional score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
-. Add a number of virtual values. It can be difficult to determine a good formula to calculate that number:
+. Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
+. Add a number of virtual values. It can be challenging to determine a good formula to calculate that number:
 ** Do not add too many, as that will decrease solver efficiency.
 ** Importantly, do not add too few as that will lead to an infeasible solution.
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of virtual assigned entities (or a weighted sum of them).
 . Optionally, change all soft constraints to ignore virtual assigned entities.
+
 
 [#continuousPlanning]
 == Continuous planning (windowed planning)
@@ -511,7 +520,9 @@ This is a _warm start_ because its initial solution is the adjusted best solutio
 . Each solver phase runs again.
 +
 This implies the construction heuristic runs again,
-but because little or no planning variables are uninitialized (unless you have a xref:using-timefold-solver/modeling-planning-problems.adoc#nullablePlanningVariable[nullable planning variable]), it finishes much quicker than in a cold start.
+but because little or no planning variables are uninitialized
+(unless you have a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variable with unassigned values]),
+it finishes much quicker than in a cold start.
 
 . Each configured `Termination` resets (both in solver and phase configuration), but a previous call to `terminateEarly()` is not undone.
 +

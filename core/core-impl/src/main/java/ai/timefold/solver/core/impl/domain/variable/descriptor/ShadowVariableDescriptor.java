@@ -75,11 +75,6 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
     // ************************************************************************
 
     @Override
-    public boolean isGenuineAndUninitialized(Object entity) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return getSimpleEntityAndVariableName() + " shadow";
     }

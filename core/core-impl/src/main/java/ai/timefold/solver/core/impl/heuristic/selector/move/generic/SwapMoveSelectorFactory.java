@@ -154,11 +154,12 @@ public class SwapMoveSelectorFactory<Solution_>
 
     private ListSwapMoveSelectorConfig buildListSwapMoveSelectorConfig(VariableDescriptor<?> variableDescriptor,
             boolean inheritFoldedConfig) {
-        LOGGER.warn("The swapMoveSelectorConfig ({}) is being used for a list variable."
-                + " This was the only available option when the planning list variable was introduced."
-                + " We are keeping this option through the 8.x release stream for backward compatibility reasons"
-                + " but it will be removed in the next major release.\n"
-                + "Please update your solver config to use ListSwapMoveSelectorConfig now.", config);
+        LOGGER.warn(
+                """
+                        The swapMoveSelectorConfig ({}) is being used for a list variable.
+                        We are keeping this option through the 1.x release stream for backward compatibility reasons.
+                        Please update your solver config to use {} now.""",
+                config, ListSwapMoveSelectorConfig.class.getSimpleName());
         ListSwapMoveSelectorConfig listSwapMoveSelectorConfig = new ListSwapMoveSelectorConfig();
         ValueSelectorConfig childValueSelectorConfig = new ValueSelectorConfig(
                 new ValueSelectorConfig(variableDescriptor.getVariableName()));

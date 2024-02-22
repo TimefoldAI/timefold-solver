@@ -5,9 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -36,11 +38,15 @@ class TwoOptListMoveTest {
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v5, v4, v3, v6, v7, v8);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8));
+        scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v2, v5), (v3, v6))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
                 e1, e1, 2, 5);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 5);
@@ -130,11 +136,15 @@ class TwoOptListMoveTest {
         TestdataListValue v9 = new TestdataListValue("9");
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4);
         TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v5, v6, v7, v8, v9);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1, e2));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8, v9));
+        scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v2, v3), (v6, v7))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
                 e1, e2, 2, 2);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v7, v8, v9);
         assertThat(e2.getValueList()).containsExactly(v5, v6, v3, v4);
 
@@ -160,11 +170,15 @@ class TwoOptListMoveTest {
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v8, v7, v3, v4, v5, v6, v2, v1);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8));
+        scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v6, v2), (v7, v3))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
                 e1, e1, 6, 2);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v8, v1, v2, v3, v4, v5, v6, v7);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 8);
@@ -185,11 +199,15 @@ class TwoOptListMoveTest {
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v5, v2, v3, v4, v1, v7, v6);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7));
+        scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v4, v1), (v5, v2))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
                 e1, e1, 4, 1);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v5, v6, v7, v1, v2, v3, v4);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 7);
@@ -210,11 +228,15 @@ class TwoOptListMoveTest {
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v2, v1, v7, v4, v5, v6, v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7));
+        scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v4, v1), (v5, v2))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
                 e1, e1, 2, 1);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v2, v3, v6, v5, v4, v7, v1);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 7);
@@ -236,18 +258,22 @@ class TwoOptListMoveTest {
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
         TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v8, v7, v3, v4, v5, v6, v2, v1);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8));
+        scoreDirector.setWorkingSolution(solution);
 
         var variableDescriptorSpy = Mockito.spy(variableDescriptor);
         var entityDescriptor = Mockito.spy(TestdataListSolution.buildSolutionDescriptor()
                 .findEntityDescriptorOrFail(TestdataListEntity.class));
         Mockito.when(variableDescriptorSpy.getEntityDescriptor()).thenReturn(entityDescriptor);
+        Mockito.when(variableDescriptorSpy.getFirstUnpinnedIndex(e1)).thenReturn(1);
         Mockito.when(entityDescriptor.supportsPinning()).thenReturn(true);
-        Mockito.when(entityDescriptor.extractFirstUnpinnedIndex(e1)).thenReturn(1);
 
         // 2-Opt((v6, v2), (v7, v3))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptorSpy,
                 e1, e1, 6, 2);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v8, v2, v3, v4, v5, v6, v7, v1);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 8);

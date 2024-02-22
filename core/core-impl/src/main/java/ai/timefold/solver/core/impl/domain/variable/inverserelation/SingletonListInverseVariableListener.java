@@ -20,9 +20,9 @@ public class SingletonListInverseVariableListener<Solution_>
 
     @Override
     public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
-        var entityDescriptor = sourceVariableDescriptor.getEntityDescriptor();
-        if (entityDescriptor.supportsPinning()) {
+        if (sourceVariableDescriptor.supportsPinning()) {
             // Required for variable pinning, otherwise pinned values have their inverse set to null.
+            var entityDescriptor = sourceVariableDescriptor.getEntityDescriptor();
             entityDescriptor.getSolutionDescriptor()
                     .visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(), entityDescriptor.getEntityClass(),
                             entity -> {
@@ -40,7 +40,7 @@ public class SingletonListInverseVariableListener<Solution_>
 
     @Override
     public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        for (var element : sourceVariableDescriptor.getListVariable(entity)) {
+        for (var element : sourceVariableDescriptor.getValue(entity)) {
             setInverse((InnerScoreDirector<Solution_, ?>) scoreDirector, element, entity, null);
         }
     }
@@ -53,7 +53,7 @@ public class SingletonListInverseVariableListener<Solution_>
     @Override
     public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
         var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        for (var element : sourceVariableDescriptor.getListVariable(entity)) {
+        for (var element : sourceVariableDescriptor.getValue(entity)) {
             setInverse(innerScoreDirector, element, null, entity);
         }
     }
@@ -74,7 +74,7 @@ public class SingletonListInverseVariableListener<Solution_>
     @Override
     public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
         var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        var listVariable = sourceVariableDescriptor.getListVariable(entity);
+        var listVariable = sourceVariableDescriptor.getValue(entity);
         for (var i = fromIndex; i < toIndex; i++) {
             var element = listVariable.get(i);
             if (getInverseSingleton(element) != entity) {

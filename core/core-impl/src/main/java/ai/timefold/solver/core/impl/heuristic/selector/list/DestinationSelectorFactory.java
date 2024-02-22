@@ -27,30 +27,16 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         super(destinationSelectorConfig);
     }
 
-    public DestinationSelector<Solution_> buildDestinationSelector(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType,
-            boolean randomSelection) {
-        SelectionOrder selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-
-        ElementDestinationSelector<Solution_> baseDestinationSelector =
-                buildBaseDestinationSelector(configPolicy, minimumCacheType, selectionOrder);
-
-        return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector);
-    }
-
-    private ElementDestinationSelector<Solution_> buildBaseDestinationSelector(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType,
-            SelectionOrder selectionOrder) {
+    public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            SelectionCacheType minimumCacheType, boolean randomSelection) {
+        var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
         var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder);
-        return new ElementDestinationSelector<>(
-                entitySelector,
-                valueSelector,
-                selectionOrder.toRandomSelectionBoolean());
+        var baseDestinationSelector =
+                new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
+        return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector);
     }
 
     private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(

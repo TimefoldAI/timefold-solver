@@ -25,8 +25,8 @@ import ai.timefold.solver.examples.pas.domain.RoomSpecialism;
  * This is constraints for Hospital Bed Planning
  * They are based on patientAdmissionScheduleConstraints.drl (which is removed)
  * Planning Entity: BedDesignation
- * Planning Variable: Bed(nullable) - would not be prefiltered on uninitialized solutions
- * Bed is nullable so in case you need to access it members check that planning value bed is not null
+ * Planning Variable: Bed(allowsUnassigned) - would not be prefiltered on uninitialized solutions
+ * Bed allows unassigned values so in case you need to access it members check that planning value bed is not null
  */
 public class PatientAdmissionScheduleConstraintProvider implements ConstraintProvider {
 
@@ -59,7 +59,7 @@ public class PatientAdmissionScheduleConstraintProvider implements ConstraintPro
     }
 
     public Constraint femaleInMaleRoomConstraint(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachIncludingNullVars(BedDesignation.class)
+        return constraintFactory.forEachIncludingUnassigned(BedDesignation.class)
                 .filter(bd -> bd.getPatientGender() == Gender.FEMALE
                         && bd.getRoomGenderLimitation() == GenderLimitation.MALE_ONLY)
                 .penalize(HardMediumSoftScore.ofHard(50), BedDesignation::getAdmissionPartNightCount)
@@ -67,7 +67,7 @@ public class PatientAdmissionScheduleConstraintProvider implements ConstraintPro
     }
 
     public Constraint maleInFemaleRoomConstraint(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachIncludingNullVars(BedDesignation.class)
+        return constraintFactory.forEachIncludingUnassigned(BedDesignation.class)
                 .filter(bd -> bd.getPatientGender() == Gender.MALE
                         && bd.getRoomGenderLimitation() == GenderLimitation.FEMALE_ONLY)
                 .penalize(HardMediumSoftScore.ofHard(50), BedDesignation::getAdmissionPartNightCount)
@@ -89,9 +89,9 @@ public class PatientAdmissionScheduleConstraintProvider implements ConstraintPro
     }
 
     public Constraint departmentMinimumAgeConstraint(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachIncludingNullVars(Department.class)
+        return constraintFactory.forEachIncludingUnassigned(Department.class)
                 .filter(d -> d.getMinimumAge() != null)
-                .join(constraintFactory.forEachIncludingNullVars(BedDesignation.class),
+                .join(constraintFactory.forEachIncludingUnassigned(BedDesignation.class),
                         equal(Function.identity(), BedDesignation::getDepartment),
                         greaterThan(Department::getMinimumAge, BedDesignation::getPatientAge))
                 .penalize(HardMediumSoftScore.ofHard(100),
@@ -100,9 +100,9 @@ public class PatientAdmissionScheduleConstraintProvider implements ConstraintPro
     }
 
     public Constraint departmentMaximumAgeConstraint(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachIncludingNullVars(Department.class)
+        return constraintFactory.forEachIncludingUnassigned(Department.class)
                 .filter(d -> d.getMaximumAge() != null)
-                .join(constraintFactory.forEachIncludingNullVars(BedDesignation.class),
+                .join(constraintFactory.forEachIncludingUnassigned(BedDesignation.class),
                         equal(Function.identity(), BedDesignation::getDepartment),
                         lessThan(Department::getMaximumAge, BedDesignation::getPatientAge))
                 .penalize(HardMediumSoftScore.ofHard(100),
@@ -124,7 +124,7 @@ public class PatientAdmissionScheduleConstraintProvider implements ConstraintPro
 
     //Medium
     public Constraint assignEveryPatientToABedConstraint(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachIncludingNullVars(BedDesignation.class)
+        return constraintFactory.forEachIncludingUnassigned(BedDesignation.class)
                 .filter(bd -> bd.getBed() == null)
                 .penalize(HardMediumSoftScore.ONE_MEDIUM, BedDesignation::getAdmissionPartNightCount)
                 .asConstraint("assignEveryPatientToABed");

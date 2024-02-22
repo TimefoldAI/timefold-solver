@@ -23,14 +23,10 @@ public class TestdataMultiVarEntity extends TestdataObject {
         return buildEntityDescriptor().getGenuineVariableDescriptor("secondaryValue");
     }
 
-    public static GenuineVariableDescriptor<TestdataMultiVarSolution> buildVariableDescriptorForTertiaryNullableValue() {
-        return buildEntityDescriptor().getGenuineVariableDescriptor("tertiaryNullableValue");
-    }
-
     private TestdataValue primaryValue;
     private TestdataValue secondaryValue;
 
-    private TestdataOtherValue tertiaryNullableValue;
+    private TestdataOtherValue tertiaryValueAllowedUnassigned;
 
     public TestdataMultiVarEntity() {
     }
@@ -40,11 +36,11 @@ public class TestdataMultiVarEntity extends TestdataObject {
     }
 
     public TestdataMultiVarEntity(String code, TestdataValue primaryValue, TestdataValue secondaryValue,
-            TestdataOtherValue tertiaryNullableValue) {
+            TestdataOtherValue tertiaryValueAllowedUnassigned) {
         super(code);
         this.primaryValue = primaryValue;
         this.secondaryValue = secondaryValue;
-        this.tertiaryNullableValue = tertiaryNullableValue;
+        this.tertiaryValueAllowedUnassigned = tertiaryValueAllowedUnassigned;
     }
 
     @PlanningVariable(valueRangeProviderRefs = "valueRange")
@@ -65,13 +61,13 @@ public class TestdataMultiVarEntity extends TestdataObject {
         this.secondaryValue = secondaryValue;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", nullable = true)
-    public TestdataOtherValue getTertiaryNullableValue() {
-        return tertiaryNullableValue;
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", allowsUnassigned = true)
+    public TestdataOtherValue getTertiaryValueAllowedUnassigned() {
+        return tertiaryValueAllowedUnassigned;
     }
 
-    public void setTertiaryNullableValue(TestdataOtherValue tertiaryNullableValue) {
-        this.tertiaryNullableValue = tertiaryNullableValue;
+    public void setTertiaryValueAllowedUnassigned(TestdataOtherValue tertiaryValueAllowedUnassigned) {
+        this.tertiaryValueAllowedUnassigned = tertiaryValueAllowedUnassigned;
     }
 
     // ************************************************************************

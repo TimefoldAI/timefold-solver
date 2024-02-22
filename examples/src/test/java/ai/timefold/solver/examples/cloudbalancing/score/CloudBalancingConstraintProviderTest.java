@@ -83,6 +83,6 @@ class CloudBalancingConstraintProviderTest
     @Override
     protected ConstraintVerifier<CloudBalancingConstraintProvider, CloudBalance> createConstraintVerifier() {
         return ConstraintVerifier.build(new CloudBalancingConstraintProvider(), CloudBalance.class, CloudProcess.class);
-
     }
+
 }

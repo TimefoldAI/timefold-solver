@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullableCountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
@@ -44,7 +44,7 @@ public abstract class AbstractValueRangeDescriptor<Solution_> implements ValueRa
 
     protected <T> ValueRange<T> doNullInValueRangeWrapping(ValueRange<T> valueRange) {
         if (addNullInValueRange) {
-            valueRange = new NullableCountableValueRange<>((CountableValueRange) valueRange);
+            valueRange = new NullAllowingCountableValueRange<>((CountableValueRange) valueRange);
         }
         return valueRange;
     }

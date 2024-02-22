@@ -87,7 +87,7 @@ public interface TimefoldSolverEnterpriseService {
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ElementDestinationSelector<Solution_> destinationSelector);
 
-    public enum Feature {
+    enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
         NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration");

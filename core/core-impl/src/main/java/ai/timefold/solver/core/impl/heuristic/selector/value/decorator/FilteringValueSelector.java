@@ -108,7 +108,7 @@ public class FilteringValueSelector<Solution_>
                 if (bailOutEnabled) {
                     // if childValueIterator is neverEnding and nothing is accepted, bail out of the infinite loop
                     if (attemptsBeforeBailOut <= 0L) {
-                        logger.warn("Bailing out of neverEnding selector ({}) to avoid infinite loop.",
+                        logger.debug("Bailing out of neverEnding selector ({}) to avoid infinite loop.",
                                 FilteringValueSelector.this);
                         return noUpcomingSelection();
                     }

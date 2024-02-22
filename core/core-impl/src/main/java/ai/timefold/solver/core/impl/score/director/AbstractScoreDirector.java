@@ -23,6 +23,7 @@ import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.Constrain
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -57,7 +58,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final LookUpManager lookUpManager;
     private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
+    private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
+    /**
+     * The first dimension is the entity descriptor ordinal.
+     * The second dimension is the ordinal of list variable descriptor in that entity.
+     * This is a performance optimization which helps avoid requesting a new supply in before/after methods,
+     * and avoids hash lookups which would be used by the map that otherwise would have been used for this.
+     */
+    protected final ListVariableStateSupply<Solution_>[][] listVariableDataSupplies;
     protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
@@ -74,14 +83,17 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
-                ? new LookUpManager(scoreDirectorFactory.getSolutionDescriptor().getLookUpStrategyResolver())
+                ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
                 : null;
         this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
         this.scoreDirectorFactory = scoreDirectorFactory;
+        this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
+        this.listVariableDataSupplies = buildListVariableDataSupplies(solutionDescriptor, variableListenerSupport);
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
         if (scoreDirectorFactory.isTrackingWorkingSolution()) {
             this.solutionTracker = new SolutionTracker<>(getSolutionDescriptor(),
@@ -91,6 +103,24 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
+    }
+
+    private static <Solution_> ListVariableStateSupply<Solution_>[][] buildListVariableDataSupplies(
+            SolutionDescriptor<Solution_> solutionDescriptor, VariableListenerSupport<Solution_> variableListenerSupport) {
+        var entityDescriptorCollection = solutionDescriptor.getEntityDescriptors();
+        var listVariableDataSupplyArrayArray = new ListVariableStateSupply[entityDescriptorCollection.size()][];
+        for (var entityDescriptor : entityDescriptorCollection) {
+            var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+            var listVariableDataSupplyArray = new ListVariableStateSupply[variableDescriptorList.size()];
+            for (var variableDescriptor : variableDescriptorList) {
+                if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
+                    var demand = variableListenerSupport.demand(listVariableDescriptor.getStateDemand());
+                    listVariableDataSupplyArray[variableDescriptor.getOrdinal()] = demand;
+                }
+            }
+            listVariableDataSupplyArrayArray[entityDescriptor.getOrdinal()] = listVariableDataSupplyArray;
+        }
+        return listVariableDataSupplyArrayArray;
     }
 
     @Override
@@ -106,6 +136,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public ScoreDefinition<Score_> getScoreDefinition() {
         return scoreDirectorFactory.getScoreDefinition();
+    }
+
+    @Override
+    public VariableDescriptorCache<Solution_> getVariableDescriptorCache() {
+        return variableDescriptorCache;
     }
 
     @Override
@@ -334,82 +369,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Entity/variable add/change/remove methods
     // ************************************************************************
 
-    @Override
-    public final void beforeEntityAdded(Object entity) {
-        beforeEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
-    @Override
-    public final void afterEntityAdded(Object entity) {
-        afterEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
-    @Override
-    public final void beforeVariableChanged(Object entity, String variableName) {
-        VariableDescriptor<Solution_> variableDescriptor = getSolutionDescriptor()
-                .findVariableDescriptorOrFail(entity, variableName);
-        beforeVariableChanged(variableDescriptor, entity);
-    }
-
-    @Override
-    public final void afterVariableChanged(Object entity, String variableName) {
-        VariableDescriptor<Solution_> variableDescriptor = getSolutionDescriptor()
-                .findVariableDescriptorOrFail(entity, variableName);
-        afterVariableChanged(variableDescriptor, entity);
-    }
-
-    @Override
-    public void beforeListVariableElementAssigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementAssigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void afterListVariableElementAssigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementAssigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void beforeListVariableElementUnassigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableElementUnassigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void afterListVariableElementUnassigned(Object entity, String variableName, Object element) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableElementUnassigned(listVariableDescriptor, element);
-    }
-
-    @Override
-    public void beforeListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        beforeListVariableChanged(listVariableDescriptor, entity, fromIndex, toIndex);
-    }
-
-    @Override
-    public void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-        ListVariableDescriptor<Solution_> listVariableDescriptor =
-                (ListVariableDescriptor<Solution_>) getSolutionDescriptor().findVariableDescriptorOrFail(entity, variableName);
-        afterListVariableChanged(listVariableDescriptor, entity, fromIndex, toIndex);
-    }
-
-    @Override
-    public final void beforeEntityRemoved(Object entity) {
-        beforeEntityRemoved(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
-    @Override
-    public final void afterEntityRemoved(Object entity) {
-        afterEntityRemoved(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
-    }
-
     public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         variableListenerSupport.beforeEntityAdded(entityDescriptor, entity);
     }
@@ -457,8 +416,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        workingInitScore++;
-        assertInitScoreZeroOrLess();
+        if (!variableDescriptor.allowsUnassignedValues()) { // Unassigned elements don't count towards the initScore here.
+            workingInitScore++;
+            assertInitScoreZeroOrLess();
+        }
     }
 
     @Override
@@ -468,7 +429,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        workingInitScore--;
+        if (!variableDescriptor.allowsUnassignedValues()) { // Unassigned elements don't count towards the initScore here.
+            workingInitScore--;
+        }
         variableListenerSupport.afterElementUnassigned(variableDescriptor, element);
     }
 
@@ -477,25 +440,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             int toIndex) {
         // Pinning is implemented in generic moves, but custom moves need to take it into account as well.
         // This fail-fast exists to detect situations where pinned things are being moved, in case of user error.
-        var entityDescriptor = variableDescriptor.getEntityDescriptor();
-        var pinningStatus = entityDescriptor.extractPinningStatus(this, entity);
-        if (pinningStatus.hasPin()) {
-            if (pinningStatus.entireEntityPinned()) {
-                throw new IllegalStateException("""
-                        Attempting to change list variable (%s) on an entity (%s) which is fully pinned.
-                        This is most likely a bug in a move.
-                        Maybe you are using an improperly implemented custom move?"""
-                        .formatted(variableDescriptor, entity));
-            }
-            int firstUnpinnedIndex = pinningStatus.firstUnpinnedIndex();
-            if (fromIndex < firstUnpinnedIndex || toIndex < firstUnpinnedIndex) {
-                throw new IllegalStateException(
-                        """
-                                Attempting to change list variable (%s) on an entity (%s) in range [%d, %d), but the variable's first unpinned index is (%d).
-                                This is most likely a bug in a move.
-                                Maybe you are using an improperly implemented custom move?"""
-                                .formatted(variableDescriptor, entity, fromIndex, toIndex, firstUnpinnedIndex));
-            }
+        if (variableDescriptor.isElementPinned(this, entity, fromIndex)) {
+            throw new IllegalStateException(
+                    """
+                            Attempting to change list variable (%s) on an entity (%s) in range [%d, %d), which is partially or entirely pinned.
+                            This is most likely a bug in a move.
+                            Maybe you are using an improperly implemented custom move?"""
+                            .formatted(variableDescriptor, entity, fromIndex, toIndex));
         }
         variableListenerSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }

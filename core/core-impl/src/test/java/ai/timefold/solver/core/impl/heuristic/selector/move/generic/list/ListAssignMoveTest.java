@@ -2,26 +2,34 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ListAssignMoveTest {
 
-    private final InnerScoreDirector<TestdataListSolution, ?> scoreDirector = mock(InnerScoreDirector.class);
+    private final InnerScoreDirector<TestdataListSolution, ?> scoreDirector = mock(AbstractScoreDirector.class);
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
             TestdataListEntity.buildVariableDescriptorForValueList();
+
+    @BeforeEach
+    void setUp() {
+        when(scoreDirector.getSolutionDescriptor())
+                .thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+    }
 
     @Test
     void doMove() {
@@ -32,7 +40,7 @@ class ListAssignMoveTest {
 
         // v1 -> e1[0]
         ListAssignMove<TestdataListSolution> move = new ListAssignMove<>(variableDescriptor, v1, e1, 0);
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
@@ -45,7 +53,6 @@ class ListAssignMoveTest {
         // undo
         undoMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).isEmpty();
-        assertThatThrownBy(() -> undoMove.doMove(scoreDirector)).isInstanceOf(UnsupportedOperationException.class);
 
         // v2 -> e1[0]
         new ListAssignMove<>(variableDescriptor, v2, e1, 0).doMove(scoreDirector);

@@ -164,7 +164,7 @@ public class SolutionDescriptor<Solution_> {
     private final Map<String, MemberAccessor> entityMemberAccessorMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> entityCollectionMemberAccessorMap = new LinkedHashMap<>();
     private Set<Class<?>> problemFactOrEntityClassSet;
-    private List<ListVariableDescriptor<Solution_>> listVariableDescriptors;
+    private List<ListVariableDescriptor<Solution_>> listVariableDescriptorList;
     private ScoreDescriptor scoreDescriptor;
 
     private ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor;
@@ -488,7 +488,7 @@ public class SolutionDescriptor<Solution_> {
         }
         determineGlobalShadowOrder();
         problemFactOrEntityClassSet = collectEntityAndProblemFactClasses();
-        listVariableDescriptors = findListVariableDescriptors();
+        listVariableDescriptorList = findListVariableDescriptors();
         validateListVariableDescriptors();
 
         // And finally log the successful completion of processing.
@@ -555,25 +555,23 @@ public class SolutionDescriptor<Solution_> {
     }
 
     private void validateListVariableDescriptors() {
-        if (listVariableDescriptors.isEmpty()) {
+        if (listVariableDescriptorList.isEmpty()) {
             return;
         }
-
-        if (listVariableDescriptors.size() > 1) {
+        if (listVariableDescriptorList.size() > 1) {
             throw new UnsupportedOperationException(
                     "Defining multiple list variables (%s) across the model is currently not supported."
-                            .formatted(listVariableDescriptors));
+                            .formatted(listVariableDescriptorList));
         }
 
-        ListVariableDescriptor<Solution_> listVariableDescriptor = listVariableDescriptors.get(0);
-        EntityDescriptor<?> listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+        var listVariableDescriptor = listVariableDescriptorList.get(0);
+        var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
         if (listVariableEntityDescriptor.getGenuineVariableDescriptorList().size() > 1) {
-            Collection<GenuineVariableDescriptor<?>> basicVariableDescriptors =
-                    new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
-            basicVariableDescriptors.remove(listVariableDescriptor);
+            var basicVariableDescriptorList = new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
+            basicVariableDescriptorList.remove(listVariableDescriptor);
             throw new UnsupportedOperationException(
                     "Combining basic variables (%s) with list variables (%s) on a single planning entity (%s) is not supported."
-                            .formatted(basicVariableDescriptors, listVariableDescriptor,
+                            .formatted(basicVariableDescriptorList, listVariableDescriptor,
                                     listVariableDescriptor.getEntityDescriptor().getEntityClass().getCanonicalName()));
         }
     }
@@ -607,7 +605,7 @@ public class SolutionDescriptor<Solution_> {
         return getGenuineEntityDescriptors().stream()
                 .map(EntityDescriptor::getGenuineVariableDescriptorList)
                 .flatMap(Collection::stream)
-                .filter(GenuineVariableDescriptor::isListVariable)
+                .filter(VariableDescriptor::isListVariable)
                 .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
                 .collect(Collectors.toList());
     }
@@ -674,8 +672,8 @@ public class SolutionDescriptor<Solution_> {
         return problemFactOrEntityClassSet;
     }
 
-    public List<ListVariableDescriptor<Solution_>> getListVariableDescriptors() {
-        return listVariableDescriptors;
+    public ListVariableDescriptor<Solution_> getListVariableDescriptor() {
+        return listVariableDescriptorList.isEmpty() ? null : listVariableDescriptorList.get(0);
     }
 
     public SolutionCloner<Solution_> getSolutionCloner() {
@@ -1072,8 +1070,13 @@ public class SolutionDescriptor<Solution_> {
         var unassignedValueCount = new MutableInt();
         var genuineEntityCount = new MutableInt();
         var shadowEntityCount = new MutableInt();
-        for (var listVariableDescriptor : listVariableDescriptors) {
-            unassignedValueCount.add((int) listVariableDescriptor.getValueCount(solution, null));
+        for (var listVariableDescriptor : listVariableDescriptorList) {
+            if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
+                continue;
+            }
+            // We count every possibly unassigned element in every list variable.
+            // And later we subtract the assigned elements.
+            unassignedValueCount.add((int) listVariableDescriptor.getValueRangeSize(solution, null));
         }
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
@@ -1093,7 +1096,10 @@ public class SolutionDescriptor<Solution_> {
             if (!entityDescriptor.hasAnyGenuineListVariables()) {
                 return;
             }
-            for (var listVariableDescriptor : listVariableDescriptors) {
+            for (var listVariableDescriptor : listVariableDescriptorList) {
+                if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
+                    continue;
+                }
                 var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
                 if (listVariableEntityDescriptor.matchesEntity(entity)) {
                     unassignedValueCount.subtract(listVariableDescriptor.getListSize(entity));

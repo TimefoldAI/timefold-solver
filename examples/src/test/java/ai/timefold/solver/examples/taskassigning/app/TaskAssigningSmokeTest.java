@@ -20,7 +20,7 @@ class TaskAssigningSmokeTest extends SolverSmokeTest<TaskAssigningSolution, Bend
     protected Stream<TestData<BendableScore>> testData() {
         return Stream.of(
                 TestData.of(ConstraintStreamImplType.BAVET, UNSOLVED_DATA_FILE,
-                        BendableScore.of(new int[] { 0 }, new int[] { -3925, -6293940, -7772, -20463 }),
-                        BendableScore.of(new int[] { 0 }, new int[] { -3925, -6312519, -10049, -20937 })));
+                        BendableScore.of(new int[] { 0 }, new int[] { 0, -3925, -6293940, -7772, -20463 }),
+                        BendableScore.of(new int[] { 0 }, new int[] { 0, -3925, -6312519, -10049, -20937 })));
     }
 }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -192,13 +193,14 @@ class CustomVariableListenerTest {
 
         TestdataValue val1 = new TestdataValue("1");
         TestdataManyToManyShadowedEntityUniqueEvents b = new TestdataManyToManyShadowedEntityUniqueEvents("b", null, null);
-
         TestdataManyToManyShadowedSolution solution = new TestdataManyToManyShadowedSolution("solution");
-        solution.setEntityList(List.of(b));
+        solution.setEntityList(new ArrayList<>());
         solution.setValueList(List.of(val1));
         scoreDirector.setWorkingSolution(solution);
+        scoreDirector.forceTriggerVariableListeners();
 
         scoreDirector.beforeEntityAdded(b);
+        scoreDirector.getWorkingSolution().getEntityList().add(b);
         scoreDirector.afterEntityAdded(b);
         scoreDirector.beforeVariableChanged(primaryVariableDescriptor, b);
         b.setPrimaryValue(val1);

@@ -12,8 +12,6 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -42,8 +40,7 @@ class OriginalListChangeIteratorTest {
         EntityIndependentValueSelector<TestdataListSolution> valueSelector =
                 mockEntityIndependentValueSelector(listVariableDescriptor, values.toArray());
         OriginalListChangeIterator<TestdataListSolution> listChangeIterator = new OriginalListChangeIterator<>(
-                scoreDirector.getSupplyManager().demand(new SingletonListInverseVariableDemand<>(listVariableDescriptor)),
-                scoreDirector.getSupplyManager().demand(new IndexVariableDemand<>(listVariableDescriptor)),
+                scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 valueSelector,
                 new ElementDestinationSelector<>(
                         mockEntitySelector(entities.toArray(TestdataListEntity[]::new)),

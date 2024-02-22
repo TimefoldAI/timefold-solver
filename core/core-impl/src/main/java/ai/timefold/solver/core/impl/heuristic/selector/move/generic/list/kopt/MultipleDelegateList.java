@@ -12,9 +12,9 @@ import java.util.RandomAccess;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.function.TriConsumer;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 /**
  * A list that delegates get and set operations to multiple delegates.
@@ -36,8 +36,8 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         this.delegateSizes = new int[delegates.length];
         this.offsets = new int[delegates.length];
 
-        int sizeSoFar = 0;
-        for (int i = 0; i < delegates.length; i++) {
+        var sizeSoFar = 0;
+        for (var i = 0; i < delegates.length; i++) {
             delegateSizes[i] = delegates[i].size();
             offsets[i] = sizeSoFar;
             sizeSoFar += delegateSizes[i];
@@ -54,7 +54,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     @SuppressWarnings("unchecked")
     public MultipleDelegateList<T> copy() {
         List<T>[] delegateClones = new List[delegates.length];
-        for (int i = 0; i < delegates.length; i++) {
+        for (var i = 0; i < delegates.length; i++) {
             delegateClones[i] = new ArrayList<>(delegates[i]);
         }
         return new MultipleDelegateList<>(delegateEntities, delegateClones);
@@ -62,52 +62,53 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
 
     @SuppressWarnings("unchecked")
     public void applyChangesFromCopy(MultipleDelegateList<?> copy) {
-        for (int i = 0; i < delegates.length; i++) {
+        for (var i = 0; i < delegates.length; i++) {
             delegates[i].clear();
             delegates[i].addAll((List<T>) copy.delegates[i]);
         }
     }
 
-    public int getIndexOfValue(ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply,
-            Object value) {
-        Object entity = inverseVariableSupply.getInverseSingleton(value);
-        for (int i = 0; i < delegateEntities.length; i++) {
-            if (delegateEntities[i] == entity) {
-                int firstUnpinnedIndex =
-                        listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(delegateEntities[i]);
-                return offsets[i] + (indexVariableSupply.getIndex(value) - firstUnpinnedIndex);
+    public int getIndexOfValue(ListVariableStateSupply<?> listVariableStateSupply, Object value) {
+        var elementLocation = listVariableStateSupply.getLocationInList(value);
+        if (elementLocation instanceof LocationInList elementLocationInList) {
+            var entity = elementLocationInList.entity();
+            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+            for (var i = 0; i < delegateEntities.length; i++) {
+                if (delegateEntities[i] == entity) {
+                    var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(delegateEntities[i]);
+                    return offsets[i] + (elementLocationInList.index() - firstUnpinnedIndex);
+                }
             }
         }
+        // Unassigned or not found.
         throw new IllegalArgumentException("Value (" + value + ") is not contained in any entity list");
     }
 
     public void actOnAffectedElements(ListVariableDescriptor<?> listVariableDescriptor, Object[] originalEntities,
             TriConsumer<Object, Integer, Integer> action) {
-        for (int i = 0; i < originalEntities.length; i++) {
-            action.accept(originalEntities[i],
-                    listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(originalEntities[i]),
-                    listVariableDescriptor.getListSize(originalEntities[i]));
+        for (Object originalEntity : originalEntities) {
+            action.accept(originalEntity,
+                    listVariableDescriptor.getFirstUnpinnedIndex(originalEntity),
+                    listVariableDescriptor.getListSize(originalEntity));
         }
     }
 
     public void moveElementsOfDelegates(int[] newDelegateEndIndices) {
         List<T>[] newDelegateData = new List[delegates.length];
 
-        int start = 0;
-        for (int i = 0; i < newDelegateData.length; i++) {
+        var start = 0;
+        for (var i = 0; i < newDelegateData.length; i++) {
             newDelegateData[i] = List.copyOf(subList(start, newDelegateEndIndices[i] + 1));
             start = newDelegateEndIndices[i] + 1;
         }
 
-        for (int i = 0; i < delegates.length; i++) {
+        for (var i = 0; i < delegates.length; i++) {
             delegates[i].clear();
             delegates[i].addAll(newDelegateData[i]);
         }
 
-        int sizeSoFar = 0;
-        for (int i = 0; i < delegates.length; i++) {
+        var sizeSoFar = 0;
+        for (var i = 0; i < delegates.length; i++) {
             delegateSizes[i] = delegates[i].size();
             offsets[i] = sizeSoFar;
             sizeSoFar += delegateSizes[i];
@@ -126,7 +127,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
 
     @Override
     public boolean contains(Object o) {
-        for (List<T> delegate : delegates) {
+        for (var delegate : delegates) {
             if (delegate.contains(o)) {
                 return true;
             }
@@ -147,7 +148,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     @Override
     @SuppressWarnings("unchecked")
     public <T1> T1[] toArray(T1[] t1s) {
-        T1[] out = Stream.of(delegates).flatMap(Collection::stream).toArray(size -> {
+        var out = Stream.of(delegates).flatMap(Collection::stream).toArray(size -> {
             if (size <= t1s.length) {
                 return t1s;
             } else {
@@ -167,7 +168,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     }
 
     private int getDelegateIndex(int actualIndex) {
-        int delegateIndex = 0;
+        var delegateIndex = 0;
         while (delegateSizes[delegateIndex] <= actualIndex) {
             actualIndex -= delegateSizes[delegateIndex];
             delegateIndex++;
@@ -180,7 +181,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         if (i < 0 || i >= totalSize) {
             throw new IndexOutOfBoundsException("Index (" + i + ") out of bounds for a list of size (" + totalSize + ")");
         }
-        int delegateIndex = getDelegateIndex(i);
+        var delegateIndex = getDelegateIndex(i);
         return delegates[delegateIndex].get(i - offsets[delegateIndex]);
     }
 
@@ -189,7 +190,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         if (i < 0 || i >= totalSize) {
             throw new IndexOutOfBoundsException("Index (" + i + ") out of bounds for a list of size (" + totalSize + ")");
         }
-        int delegateIndex = getDelegateIndex(i);
+        var delegateIndex = getDelegateIndex(i);
         return delegates[delegateIndex].set(i - offsets[delegateIndex], t);
     }
 
@@ -199,9 +200,9 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             return -1;
         }
 
-        int delegateIndex = 0;
-        int objectIndex = -1;
-        int offset = 0;
+        var delegateIndex = 0;
+        var objectIndex = -1;
+        var offset = 0;
 
         while (delegateIndex < delegates.length && (objectIndex = delegates[delegateIndex].indexOf(o)) == -1) {
             // We do the indexOf in the while condition so offset is not updated
@@ -224,9 +225,9 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             return -1;
         }
 
-        int delegateIndex = delegates.length - 1;
-        int objectIndex = -1;
-        int offset = 0;
+        var delegateIndex = delegates.length - 1;
+        var objectIndex = -1;
+        var offset = 0;
 
         while (delegateIndex >= 0 && objectIndex == -1) {
             // We update index here so offset is updated with the containing
@@ -263,8 +264,8 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             throw new IndexOutOfBoundsException("Sublist end index (" + endExclusive + ") out of range");
         }
 
-        int startDelegateIndex = 0;
-        int endDelegateIndex = 0;
+        var startDelegateIndex = 0;
+        var endDelegateIndex = 0;
 
         while (startInclusive >= delegateSizes[startDelegateIndex]) {
             startInclusive -= delegateSizes[startDelegateIndex];
@@ -348,7 +349,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             if (other.size() != totalSize) {
                 return false;
             }
-            for (int i = 0; i < totalSize; i++) {
+            for (var i = 0; i < totalSize; i++) {
                 if (!Objects.equals(other.get(i), get(i))) {
                     return false;
                 }
@@ -380,7 +381,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
 
         @Override
         public T next() {
-            T out = parent.get(currentIndex);
+            var out = parent.get(currentIndex);
             currentIndex++;
             return out;
         }

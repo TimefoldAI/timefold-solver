@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -59,7 +59,7 @@ class ListChangeMoveTest {
 
         ListChangeMove<TestdataListSolution> move = new ListChangeMove<>(variableDescriptor, e1, 1, e2, 1);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1);
         assertThat(e2.getValueList()).containsExactly(v3, v2);
@@ -111,7 +111,7 @@ class ListChangeMoveTest {
         // Otherwise, the move is doable...
         assertThat(move.isMoveDoable(scoreDirector)).isTrue();
         // ...and when it's done...
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
         // ...V2 ends up at the destinationIndex
         assertThat(e.getValueList().indexOf(v2)).isEqualTo(destinationIndex);
         assertThat(variableDescriptor.getElement(e, destinationIndex)).isEqualTo(v2);
@@ -124,7 +124,7 @@ class ListChangeMoveTest {
         verifyNoMoreInteractions(scoreDirector);
 
         // Making an undo move...
-        AbstractMove<TestdataListSolution> undoUndoMove = undoMove.doMove(scoreDirector);
+        Move<TestdataListSolution> undoUndoMove = undoMove.doMove(scoreDirector);
         // ...produces the original move...
         assertThat(undoUndoMove).isEqualTo(move);
         // ...and returns everything to the original state.
@@ -163,10 +163,8 @@ class ListChangeMoveTest {
                 new ListChangeMove<>(variableDescriptor, e2, 0, e2, 0).rebase(destinationScoreDirector));
     }
 
-    static void assertSameProperties(
-            Object sourceEntity, int sourceIndex,
-            Object movedValue, Object destinationEntity, int destinationIndex,
-            ListChangeMove<?> move) {
+    static void assertSameProperties(Object sourceEntity, int sourceIndex, Object movedValue, Object destinationEntity,
+            int destinationIndex, ListChangeMove<?> move) {
         assertThat(move.getSourceEntity()).isSameAs(sourceEntity);
         assertThat(move.getSourceIndex()).isEqualTo(sourceIndex);
         assertThat(move.getMovedValue()).isSameAs(movedValue);

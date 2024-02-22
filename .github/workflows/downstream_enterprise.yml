@@ -2,6 +2,8 @@
 name: Downstream - Timefold Solver Enterprise Edition
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main, '*.x']
     paths-ignore:

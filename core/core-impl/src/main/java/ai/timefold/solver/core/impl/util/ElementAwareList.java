@@ -7,21 +7,14 @@ import java.util.function.Consumer;
 /**
  * Linked list that allows to add and remove an element in O(1) time.
  * Ideal for incremental operations with frequent undo.
- * <p>
- * This class is not thread-safe.
  *
  * @param <T> The element type. Often a tuple.
  */
 public final class ElementAwareList<T> implements Iterable<T> {
 
-    private ElementAwareListIterator sharedIterator;
-
     private int size = 0;
     private ElementAwareListEntry<T> first = null;
     private ElementAwareListEntry<T> last = null;
-
-    public ElementAwareList() {
-    }
 
     public ElementAwareListEntry<T> add(T tuple) {
         ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
@@ -125,27 +118,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        if (sharedIterator == null || sharedIterator.nextEntry != null) {
-            // Create a new instance on first access, or when the previous one is still in use (not fully consumed).
-            sharedIterator = new ElementAwareListIterator();
-        } else {
-            // Otherwise the instance is reused, significantly reducing garbage collector pressure when on the hot path.
-            sharedIterator.nextEntry = first;
-        }
-        return sharedIterator;
-    }
-
-    /**
-     * In order for iterator sharing to work properly,
-     * each iterator must be fully consumed.
-     * For iterators which are not fully consumed,
-     * this method can be used to free the iterator to be used by another iteration operation.
-     * This technically breaks the abstraction of this class,
-     * but the measured benefit of this change is +5% to 10% of score calculation speed
-     * on account of not creating gigabytes of iterators per minute.
-     */
-    public void prematurelyTerminateIterator() {
-        sharedIterator.nextEntry = null;
+        return new ElementAwareListIterator<>(first);
     }
 
     @Override
@@ -168,15 +141,16 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
-    private final class ElementAwareListIterator implements Iterator<T> {
+    private static final class ElementAwareListIterator<T> implements Iterator<T> {
 
-        private ElementAwareListEntry<T> nextEntry = first;
+        private ElementAwareListEntry<T> nextEntry;
+
+        public ElementAwareListIterator(ElementAwareListEntry<T> nextEntry) {
+            this.nextEntry = nextEntry;
+        }
 
         @Override
         public boolean hasNext() {
-            if (size == 0) {
-                return false;
-            }
             return nextEntry != null;
         }
 

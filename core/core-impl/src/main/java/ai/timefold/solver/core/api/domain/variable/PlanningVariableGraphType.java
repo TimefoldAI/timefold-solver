@@ -25,7 +25,7 @@ public enum PlanningVariableGraphType {
      * and C is also changed to point to A,
      * giving the result {@code A <- C <- D <- X <- B <- Y}.
      * <p>
-     * {@link PlanningVariable#nullable()} true is not compatible with this.
+     * {@link PlanningVariable#allowsUnassigned()} true is not compatible with this.
      */
     CHAINED;
 

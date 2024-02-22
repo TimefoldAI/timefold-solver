@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -34,8 +35,8 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void notChainedVariableDescriptor() {
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
-        GenuineVariableDescriptor variableDescriptor = mock(GenuineVariableDescriptor.class);
+        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(false);
 
@@ -46,8 +47,8 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void neverEndingValueSelector() {
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
-        GenuineVariableDescriptor variableDescriptor = mock(GenuineVariableDescriptor.class);
+        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
         when(valueSelector.isNeverEnding()).thenReturn(true);
@@ -59,8 +60,8 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void minimumSubChainSizeIsZero() {
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
-        GenuineVariableDescriptor variableDescriptor = mock(GenuineVariableDescriptor.class);
+        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
 
@@ -71,14 +72,14 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void minimumSubChainSizeIsGreaterThanMaximumSubChainSize() {
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
-        GenuineVariableDescriptor variableDescriptor = mock(GenuineVariableDescriptor.class);
+        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> new DefaultSubChainSelector(valueSelector, true, 2, 1))
-                .withMessageContaining("at least maximumSubChainSize");
+                .withMessageContaining("less than maximumSubChainSize");
     }
 
     @Test
@@ -105,21 +106,19 @@ class DefaultSubChainSelectorTest {
     private void assertCalculateSubChainSelectionSize(long expected, int minimumSubChainSize, int maximumSubChainSize) {
         GenuineVariableDescriptor variableDescriptor = TestdataChainedEntity.buildVariableDescriptorForChainedObject();
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-        TestdataChainedEntity b2 = new TestdataChainedEntity("b2", b1);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
+        var b2 = new TestdataChainedEntity("b2", b1);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
-        DefaultSubChainSelector selector = new DefaultSubChainSelector(
-                valueSelector, false, minimumSubChainSize, maximumSubChainSize);
+        var selector = new DefaultSubChainSelector(valueSelector, false, minimumSubChainSize, maximumSubChainSize);
         assertThat(selector.calculateSubChainSelectionSize(
                 new SubChain(Arrays.asList(a1, a2, a3, a4)))).isEqualTo(expected);
     }
@@ -130,37 +129,35 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-        TestdataChainedEntity b2 = new TestdataChainedEntity("b2", b1);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
+        var b2 = new TestdataChainedEntity("b2", b1);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, b1, b2));
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
-                valueSelector, false, 1, Integer.MAX_VALUE);
+        var subChainSelector = new DefaultSubChainSelector(valueSelector, false, 1, Integer.MAX_VALUE);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
         assertAllCodesOfSubChainSelector(subChainSelector,
@@ -177,7 +174,7 @@ class DefaultSubChainSelectorTest {
         scoreDirector.changeVariableFacade(variableDescriptor, b2, a3);
         scoreDirector.triggerVariableListeners();
 
-        AbstractStepScope stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA2);
         assertAllCodesOfSubChainSelector(subChainSelector,
@@ -191,11 +188,11 @@ class DefaultSubChainSelectorTest {
 
         subChainSelector.phaseEnded(phaseScopeA);
 
-        AbstractPhaseScope phaseScopeB = mock(AbstractPhaseScope.class);
+        var phaseScopeB = mock(AbstractPhaseScope.class);
         when(phaseScopeB.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeB);
 
-        AbstractStepScope stepScopeB1 = mock(AbstractStepScope.class);
+        var stepScopeB1 = mock(AbstractStepScope.class);
         when(stepScopeB1.getPhaseScope()).thenReturn(phaseScopeB);
         subChainSelector.stepStarted(stepScopeB1);
         assertAllCodesOfSubChainSelector(subChainSelector,
@@ -220,36 +217,34 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
+        var a0 = new TestdataChainedAnchor("a0");
+        var b0 = new TestdataChainedAnchor("b0");
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Collections.emptyList());
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, b0);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
-                valueSelector, false, 1, Integer.MAX_VALUE);
+        var subChainSelector = new DefaultSubChainSelector(valueSelector, false, 1, Integer.MAX_VALUE);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
         assertAllCodesOfSubChainSelector(subChainSelector);
         subChainSelector.stepEnded(stepScopeA1);
 
-        AbstractStepScope stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA2);
         assertAllCodesOfSubChainSelector(subChainSelector);
@@ -257,11 +252,11 @@ class DefaultSubChainSelectorTest {
 
         subChainSelector.phaseEnded(phaseScopeA);
 
-        AbstractPhaseScope phaseScopeB = mock(AbstractPhaseScope.class);
+        var phaseScopeB = mock(AbstractPhaseScope.class);
         when(phaseScopeB.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeB);
 
-        AbstractStepScope stepScopeB1 = mock(AbstractStepScope.class);
+        var stepScopeB1 = mock(AbstractStepScope.class);
         when(stepScopeB1.getPhaseScope()).thenReturn(phaseScopeB);
         subChainSelector.stepStarted(stepScopeB1);
         assertAllCodesOfSubChainSelector(subChainSelector);
@@ -280,37 +275,35 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-        TestdataChainedEntity b2 = new TestdataChainedEntity("b2", b1);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
+        var b2 = new TestdataChainedEntity("b2", b1);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, b1, b2));
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
-                valueSelector, false, 2, 3);
+        var subChainSelector = new DefaultSubChainSelector(valueSelector, false, 2, 3);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
 
@@ -335,37 +328,36 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-        TestdataChainedEntity b2 = new TestdataChainedEntity("b2", b1);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
+        var b2 = new TestdataChainedEntity("b2", b1);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, b1, b2));
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
+        var subChainSelector = new DefaultSubChainSelector(
                 valueSelector, false, 3, 3);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
 
@@ -386,34 +378,32 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4));
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
-                valueSelector, true, 1, Integer.MAX_VALUE);
+        var subChainSelector = new DefaultSubChainSelector(valueSelector, true, 1, Integer.MAX_VALUE);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         when(solverScope.getWorkingRandom()).thenReturn(new Random(0L));
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
 
@@ -444,34 +434,33 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4));
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
+        var subChainSelector = new DefaultSubChainSelector(
                 valueSelector, true, 2, 3);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         when(solverScope.getWorkingRandom()).thenReturn(new Random(0L));
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
 
@@ -497,34 +486,33 @@ class DefaultSubChainSelectorTest {
         InnerScoreDirector scoreDirector = PlannerTestUtils.mockScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4));
         scoreDirector.setWorkingSolution(solution);
 
-        EntityIndependentValueSelector valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
-                variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4);
 
-        DefaultSubChainSelector subChainSelector = new DefaultSubChainSelector(
+        var subChainSelector = new DefaultSubChainSelector(
                 valueSelector, true, 3, 3);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         when(solverScope.getWorkingRandom()).thenReturn(new Random(0L));
         subChainSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         subChainSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         subChainSelector.stepStarted(stepScopeA1);
 
@@ -545,13 +533,13 @@ class DefaultSubChainSelectorTest {
             DefaultSubChainSelector subChainSelector, SubChain... subChains) {
         Iterator<SubChain> iterator = subChainSelector.iterator();
         assertThat(iterator).isNotNull();
-        int selectionSize = subChains.length;
+        var selectionSize = subChains.length;
         Map<SubChain, AtomicInteger> subChainCountMap = new HashMap<>(selectionSize);
-        for (int i = 0; i < selectionSize * 10; i++) {
+        for (var i = 0; i < selectionSize * 10; i++) {
             collectNextSubChain(iterator, subChainCountMap);
         }
-        for (SubChain subChain : subChains) {
-            AtomicInteger count = subChainCountMap.remove(subChain);
+        for (var subChain : subChains) {
+            var count = subChainCountMap.remove(subChain);
             assertThat(count)
                     .as("The subChain (" + subChain + ") was not collected.")
                     .isNotNull();
@@ -565,7 +553,7 @@ class DefaultSubChainSelectorTest {
 
     private void collectNextSubChain(Iterator<SubChain> iterator, Map<SubChain, AtomicInteger> subChainCountMap) {
         assertThat(iterator).hasNext();
-        SubChain subChain = iterator.next();
+        var subChain = iterator.next();
         subChainCountMap.computeIfAbsent(subChain, subChain1 -> new AtomicInteger()).incrementAndGet();
     }
 }

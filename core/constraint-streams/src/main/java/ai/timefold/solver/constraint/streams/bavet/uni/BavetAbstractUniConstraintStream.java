@@ -118,9 +118,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
 
     @SafeVarargs
     @Override
-    public final <B> UniConstraintStream<A> ifExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    public final <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEachIncludingNullVars(otherClass), joiners);
+            return ifExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
         } else {
             return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
         }
@@ -144,9 +144,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
 
     @SafeVarargs
     @Override
-    public final <B> UniConstraintStream<A> ifNotExistsIncludingNullVars(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    public final <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEachIncludingNullVars(otherClass), joiners);
+            return ifNotExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
         } else {
             return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
         }

@@ -12,14 +12,23 @@ recipeList:
       oldPropertyKey: quarkus.timefold.solver.solve-length
       newPropertyKey: quarkus.timefold.solver.solve.duration
       fileMatcher: '**/application.properties'
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory from(Class)
+      newMethodName: forEach
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUnfiltered(Class)
+      newMethodName: forEachIncludingUnassigned
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUniquePair(..)
+      newMethodName: forEachUniquePair
   - ai.timefold.solver.migration.v8.ScoreManagerMethodsRecipe
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: ai.timefold.solver.core.api.score.ScoreManager
       newFullyQualifiedTypeName: ai.timefold.solver.core.api.solver.SolutionManager
       ignoreDefinition: true
-  - ai.timefold.solver.migration.v8.AsConstraintRecipe
   - ai.timefold.solver.migration.v8.ScoreGettersRecipe
   - ai.timefold.solver.migration.v8.ConstraintRefRecipe
   - ai.timefold.solver.migration.v8.SolverManagerBuilderRecipe
+  - ai.timefold.solver.migration.v8.NullableRecipe
   - org.openrewrite.java.RemoveUnusedImports
   - ai.timefold.solver.migration.ChangeVersion

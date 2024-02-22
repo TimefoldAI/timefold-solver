@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -57,7 +57,7 @@ class SubListSwapMoveTest {
 
         SubListSwapMove<TestdataListSolution> move = new SubListSwapMove<>(variableDescriptor, e1, 1, 3, e2, 0, 1, false);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v5, v4);
         assertThat(e2.getValueList()).containsExactly(v2, v3);
@@ -82,7 +82,7 @@ class SubListSwapMoveTest {
 
         SubListSwapMove<TestdataListSolution> move = new SubListSwapMove<>(variableDescriptor, e1, 0, 3, e2, 0, 2, true);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v6, v5, v4);
         assertThat(e2.getValueList()).containsExactly(v3, v2, v1);
@@ -106,7 +106,7 @@ class SubListSwapMoveTest {
 
         SubListSwapMove<TestdataListSolution> move = new SubListSwapMove<>(variableDescriptor, e1, 0, 1, e1, 4, 7, false);
 
-        AbstractMove<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v5, v6, v7, v2, v3, v4, v1);
 
@@ -156,12 +156,12 @@ class SubListSwapMoveTest {
             boolean reversing,
             SubListSwapMove<?> move) {
         SubList leftSubList = move.getLeftSubList();
-        assertThat(leftSubList.getEntity()).isSameAs(leftEntity);
-        assertThat(leftSubList.getFromIndex()).isEqualTo(leftFromIndex);
+        assertThat(leftSubList.entity()).isSameAs(leftEntity);
+        assertThat(leftSubList.fromIndex()).isEqualTo(leftFromIndex);
         assertThat(leftSubList.getToIndex()).isEqualTo(leftToIndex);
         SubList rightSubList = move.getRightSubList();
-        assertThat(rightSubList.getEntity()).isSameAs(rightEntity);
-        assertThat(rightSubList.getFromIndex()).isEqualTo(rightFromIndex);
+        assertThat(rightSubList.entity()).isSameAs(rightEntity);
+        assertThat(rightSubList.fromIndex()).isEqualTo(rightFromIndex);
         assertThat(rightSubList.getToIndex()).isEqualTo(rightToIndex);
         assertThat(move.isReversing()).isEqualTo(reversing);
     }

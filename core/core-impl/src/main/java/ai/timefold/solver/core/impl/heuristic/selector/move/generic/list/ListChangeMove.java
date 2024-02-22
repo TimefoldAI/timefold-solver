@@ -88,8 +88,7 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
      * @param destinationEntity planning entity instance to which a planning value will be moved, for example "Bob"
      * @param destinationIndex index in destinationEntity's list variable where the moved planning value will be inserted
      */
-    public ListChangeMove(
-            ListVariableDescriptor<Solution_> variableDescriptor,
+    public ListChangeMove(ListVariableDescriptor<Solution_> variableDescriptor,
             Object sourceEntity, int sourceIndex,
             Object destinationEntity, int destinationIndex) {
         this.variableDescriptor = variableDescriptor;
@@ -116,7 +115,10 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     public Object getMovedValue() {
-        return variableDescriptor.getElement(sourceEntity, sourceIndex);
+        if (planningValue == null) {
+            planningValue = variableDescriptor.getElement(sourceEntity, sourceIndex);
+        }
+        return planningValue;
     }
 
     // ************************************************************************

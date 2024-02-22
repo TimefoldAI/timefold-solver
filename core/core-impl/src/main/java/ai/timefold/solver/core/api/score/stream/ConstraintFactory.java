@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
@@ -39,6 +41,26 @@ public interface ConstraintFactory {
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
      * {@link UniConstraintStream#filter(Predicate) filtered} to only contain entities
      * for which each genuine {@link PlanningVariable} (of the sourceClass or a superclass thereof) has a non-null value.
+     * <p>
+     * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
+     * and if there exists a genuine {@link PlanningEntity} with a {@link PlanningListVariable}
+     * which accepts instances of this shadow entity as values in that list,
+     * and if that list variable {@link PlanningListVariable#allowsUnassignedValues() allows unassigned values},
+     * then this stream will filter out all sourceClass instances
+     * which are not present in any instances of that list variable.
+     * This is achieved in one of two ways:
+     *
+     * <ul>
+     * <li>If the sourceClass has {@link InverseRelationShadowVariable} field
+     * referencing instance of an entity with the list variable,
+     * the value of that field will be used to determine if the value is assigned.
+     * Null in that field means the instance of sourceClass is unassigned.</li>
+     * <li>As fallback, the value is considered assigned if there exists
+     * an instance of the entity where its list variable contains the value.
+     * This will perform significantly worse and only exists
+     * so that using the {@link InverseRelationShadowVariable} can remain optional.
+     * Adding the field is strongly recommended.</li>
+     * </ul>
      *
      * @param sourceClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
@@ -47,14 +69,27 @@ public interface ConstraintFactory {
     <A> UniConstraintStream<A> forEach(Class<A> sourceClass);
 
     /**
+     * As defined by {@link #forEachIncludingUnassigned(Class)}.
+     * 
+     * @deprecated Use {@link #forEachIncludingUnassigned(Class)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass) {
+        return forEachIncludingUnassigned(sourceClass);
+    }
+
+    /**
      * As defined by {@link #forEach(Class)},
-     * but without any filtering of null {@link PlanningEntity planning entity} variables.
+     * but without any filtering of unassigned {@link PlanningEntity planning entities}
+     * (for {@link PlanningVariable#allowsUnassigned()})
+     * or shadow entities not assigned to any applicable list variable
+     * (for {@link PlanningListVariable#allowsUnassignedValues()}).
      *
      * @param sourceClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return never null
      */
-    <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass);
+    <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass);
 
     /**
      * Create a new {@link BiConstraintStream} for every unique combination of A and another A with a higher {@link PlanningId}.
@@ -170,17 +205,17 @@ public interface ConstraintFactory {
      * Migrate uses of this method to {@link #forEach(Class)}, but first understand this:
      *
      * <ul>
-     * <li>If none of your {@link PlanningVariable planning variables} are explicitly set to nullable=true,
+     * <li>If none of your planning variables {@link PlanningVariable#allowsUnassigned() allow unassigned values},
      * then the replacement by {@link #forEach(Class)} has little to no impact.
      * Subsequent conditional propagation calls ({@link UniConstraintStream#ifExists} etc.)
      * will now also filter out planning entities with null variables,
      * consistently with {@link #forEach(Class)} family of methods and with joining.</li>
-     * <li>If any of your {@link PlanningVariable planning variables} are nullable=true,
+     * <li>If any of your planning variables {@link PlanningVariable#allowsUnassigned() allow unassigned values},
      * then there is severe impact.
      * Calls to the {@link #forEach(Class)} family of methods will now filter out planning entities with null variables,
      * so most constraints no longer need to do null checks,
      * but the constraint that penalizes unassigned entities (typically a medium constraint)
-     * must now use {@link #forEachIncludingNullVars(Class)} instead.
+     * must now use {@link #forEachIncludingUnassigned(Class)} instead.
      * Subsequent joins and conditional propagation calls will now also consistently filter out planning entities with null
      * variables.</li>
      * </ul>
@@ -196,7 +231,8 @@ public interface ConstraintFactory {
      * This filtering will NOT automatically apply to genuine planning variables of subclass planning entities of the fromClass.
      *
      * @deprecated This method is deprecated in favor of {@link #forEach(Class)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return never null
@@ -206,7 +242,7 @@ public interface ConstraintFactory {
 
     /**
      * This method is deprecated.
-     * Migrate uses of this method to {@link #forEachIncludingNullVars(Class)},
+     * Migrate uses of this method to {@link #forEachIncludingUnassigned(Class)},
      * but first understand that subsequent joins and conditional propagation calls
      * ({@link UniConstraintStream#ifExists} etc.)
      * will now also consistently filter out planning entities with null variables.
@@ -216,7 +252,7 @@ public interface ConstraintFactory {
      * As defined by {@link #from(Class)},
      * but without any filtering of uninitialized {@link PlanningEntity planning entities}.
      *
-     * @deprecated Prefer {@link #forEachIncludingNullVars(Class)}.
+     * @deprecated Prefer {@link #forEachIncludingUnassigned(Class)}.
      * @param fromClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return never null
@@ -242,7 +278,8 @@ public interface ConstraintFactory {
      * It automatically adds a {@link Joiners#lessThan(Function) lessThan} joiner on the {@link PlanningId} of A.
      *
      * @deprecated Prefer {@link #forEachUniquePair(Class)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A
@@ -273,7 +310,8 @@ public interface ConstraintFactory {
      * This method has overloaded methods with multiple {@link BiJoiner} parameters.
      *
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param joiner never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
@@ -294,7 +332,8 @@ public interface ConstraintFactory {
      * As defined by {@link #fromUniquePair(Class, BiJoiner)}.
      *
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param joiner1 never null
      * @param joiner2 never null
@@ -317,7 +356,8 @@ public interface ConstraintFactory {
      * As defined by {@link #fromUniquePair(Class, BiJoiner)}.
      *
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner, BiJoiner)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param joiner1 never null
      * @param joiner2 never null
@@ -342,7 +382,8 @@ public interface ConstraintFactory {
      * As defined by {@link #fromUniquePair(Class, BiJoiner)}.
      *
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param joiner1 never null
      * @param joiner2 never null
@@ -372,7 +413,8 @@ public interface ConstraintFactory {
      * Therefore, there are overloaded methods with up to 4 {@link BiJoiner} parameters.
      *
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner...)},
-     *             which exhibits the same behavior for both nullable and non-nullable planning variables.
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      * @param fromClass never null
      * @param joiners never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}

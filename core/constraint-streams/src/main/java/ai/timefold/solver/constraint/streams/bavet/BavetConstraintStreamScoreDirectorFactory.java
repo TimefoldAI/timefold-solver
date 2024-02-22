@@ -32,21 +32,16 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
                 expectShadowVariablesInCorrectState);
     }
 
-    public BavetConstraintSession<Score_> newSession(boolean constraintMatchEnabled, Solution_ workingSolution) {
-        return constraintSessionFactory.buildSession(constraintMatchEnabled, workingSolution);
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, boolean constraintMatchEnabled) {
+        return constraintSessionFactory.buildSession(workingSolution, constraintMatchEnabled);
     }
 
     @Override
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
-        BavetConstraintSession<Score_> session = newSession(true, null);
+        BavetConstraintSession<Score_> session = newSession(null, true);
         Arrays.stream(facts).forEach(session::insert);
         session.calculateScore(0);
         return session.getScoreInliner();
-    }
-
-    @Override
-    public SolutionDescriptor<Solution_> getSolutionDescriptor() {
-        return solutionDescriptor;
     }
 
     @Override

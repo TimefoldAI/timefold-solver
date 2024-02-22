@@ -46,6 +46,18 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         ConstructionHeuristicPhaseScope<Solution_> phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope);
         phaseStarted(phaseScope);
 
+        // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
+        // (When it exhausts all values, it will start over from the beginning.)
+        // To prevent that, we need to limit the number of steps to the number of unassigned values.
+        var solutionDescriptor = solverScope.getSolutionDescriptor();
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        var supportsUnassignedValues = listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues();
+        var maxStepCount = -1;
+        if (supportsUnassignedValues) {
+            var workingSolution = phaseScope.getWorkingSolution();
+            maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
+        }
+
         for (Placement<Solution_> placement : entityPlacer) {
             ConstructionHeuristicStepScope<Solution_> stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
@@ -73,7 +85,8 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             doStep(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
-            if (phaseTermination.isPhaseTerminated(phaseScope)) {
+            if (phaseTermination.isPhaseTerminated(phaseScope)
+                    || (supportsUnassignedValues && stepScope.getStepIndex() >= maxStepCount)) {
                 break;
             }
         }

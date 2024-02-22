@@ -152,7 +152,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * Create a new {@link BiConstraintStream} for every tuple of A, B, C and D where E exists for which the
      * {@link PentaJoiner} is true (for the properties it extracts from the facts).
      * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link PentaJoiner} parameters.
      *
@@ -162,13 +163,13 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
      *         {@link PentaJoiner} is true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner) {
-        return ifExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner });
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -178,13 +179,13 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
      *         {@link PentaJoiner}s are true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2) {
-        return ifExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner1, joiner2 });
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -195,13 +196,13 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
      *         {@link PentaJoiner}s are true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3) {
-        return ifExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3 });
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -213,10 +214,10 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
      *         {@link PentaJoiner}s are true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3,
             PentaJoiner<A, B, C, D, E> joiner4) {
-        return ifExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
@@ -233,7 +234,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
      *         {@link PentaJoiner}s are true
      */
-    <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+    <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E>... joiners);
 
     /**
@@ -328,7 +329,8 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * Create a new {@link BiConstraintStream} for every tuple of A, B, C and D where E does not exist for which the
      * {@link PentaJoiner} is true (for the properties it extracts from the facts).
      * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
-     * this method also includes instances with null variables.
+     * this method also includes entities with null variables,
+     * or entities that are not assigned to any list variable.
      * <p>
      * This method has overloaded methods with multiple {@link PentaJoiner} parameters.
      *
@@ -338,13 +340,13 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
      *         {@link PentaJoiner} is true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner) {
-        return ifNotExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner });
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -354,13 +356,13 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
      *         {@link PentaJoiner}s are true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2) {
-        return ifNotExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner1, joiner2 });
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -371,13 +373,13 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
      *         {@link PentaJoiner}s are true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3) {
-        return ifNotExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3 });
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
      * @param otherClass never null
@@ -389,14 +391,14 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
      *         {@link PentaJoiner}s are true
      */
-    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3,
             PentaJoiner<A, B, C, D, E> joiner4) {
-        return ifNotExistsIncludingNullVars(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * As defined by {@link #ifNotExistsIncludingNullVars(Class, PentaJoiner)}.
+     * As defined by {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      * <p>
      * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
@@ -409,7 +411,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
      *         {@link PentaJoiner}s are true
      */
-    <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+    <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
             PentaJoiner<A, B, C, D, E>... joiners);
 
     // ************************************************************************
@@ -1174,6 +1176,102 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * If there is no {@link ConstraintConfiguration}, use {@link #impactBigDecimal(Score, QuadFunction)} instead.
      */
     QuadConstraintBuilder<A, B, C, D, ?> impactConfigurableBigDecimal(QuadFunction<A, B, C, D, BigDecimal> matchWeigher);
+
+    // ************************************************************************
+    // Deprecated declarations
+    // ************************************************************************
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner) {
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, PentaJoiner, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2) {
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, PentaJoiner, PentaJoiner, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3) {
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, PentaJoiner, PentaJoiner, PentaJoiner, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3,
+            PentaJoiner<A, B, C, D, E> joiner4) {
+        return ifExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifExistsIncludingUnassigned(Class, PentaJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E>... joiners) {
+        return ifExistsIncludingUnassigned(otherClass, joiners);
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner) {
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2) {
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner, PentaJoiner, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3) {
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner, PentaJoiner, PentaJoiner, PentaJoiner)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3,
+            PentaJoiner<A, B, C, D, E> joiner4) {
+        return ifNotExistsIncludingUnassigned(otherClass, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * @deprecated Prefer {@link #ifNotExistsIncludingUnassigned(Class, PentaJoiner...)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingNullVars(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E>... joiners) {
+        return ifNotExistsIncludingUnassigned(otherClass, joiners);
+    }
 
     /**
      * Negatively impact the {@link Score}: subtract the constraintWeight multiplied by the match weight.

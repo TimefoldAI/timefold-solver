@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.solver;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +61,9 @@ import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
@@ -70,6 +74,10 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.Testdata
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
@@ -107,6 +115,79 @@ class DefaultSolverTest {
         List<MeterRegistry> meterRegistryList = new ArrayList<>();
         meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
         meterRegistryList.forEach(Metrics.globalRegistry::remove);
+    }
+
+    @Test
+    void constructionHeuristicWithAllowsUnassignedBasicVariable() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataAllowsUnassignedSolution.class,
+                TestdataAllowsUnassignedEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEasyScoreCalculator.class);
+        var phaseConfig = new ConstructionHeuristicPhaseConfig();
+        solverConfig.setPhaseConfigList(Collections.singletonList(phaseConfig));
+        var solverFactory = SolverFactory.<TestdataAllowsUnassignedSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var entity = new TestdataAllowsUnassignedEntity("e1");
+        entity.setValue(value1);
+        var entity2 = new TestdataAllowsUnassignedEntity("e2");
+        var entity3 = new TestdataAllowsUnassignedEntity("e3");
+
+        var solution = new TestdataAllowsUnassignedSolution();
+        solution.setEntityList(List.of(entity, entity2, entity3));
+        solution.setValueList(Arrays.asList(value1, value2));
+
+        var bestSolution = solver.solve(solution);
+        assertSoftly(softly -> {
+            softly.assertThat(bestSolution.getScore())
+                    .isEqualTo(SimpleScore.of(-1)); // No value assigned twice, null once.
+            var firstEntity = bestSolution.getEntityList().get(0);
+            var firstValue = bestSolution.getValueList().get(0);
+            softly.assertThat(firstEntity.getValue())
+                    .isEqualTo(firstValue);
+            var secondEntity = bestSolution.getEntityList().get(1);
+            var secondValue = bestSolution.getValueList().get(1);
+            softly.assertThat(secondEntity.getValue())
+                    .isEqualTo(secondValue);
+            var thirdEntity = bestSolution.getEntityList().get(2);
+            softly.assertThat(thirdEntity.getValue())
+                    .isNull();
+        });
+
+    }
+
+    @Test
+    void constructionHeuristicWithAllowsUnassignedValuesListVariable() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataAllowsUnassignedValuesListSolution.class,
+                TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedValuesListEasyScoreCalculator.class);
+        var phaseConfig = new ConstructionHeuristicPhaseConfig();
+        solverConfig.setPhaseConfigList(Collections.singletonList(phaseConfig));
+        var solverFactory = SolverFactory.<TestdataAllowsUnassignedValuesListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var value1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
+        var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
+        var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
+        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(Arrays.asList(value1, value2, value3, value4));
+
+        var bestSolution = solver.solve(solution);
+        assertSoftly(softly -> {
+            softly.assertThat(bestSolution.getScore())
+                    .isEqualTo(SimpleScore.of(-2)); // Length of the entity's value list.
+            var firstEntity = bestSolution.getEntityList().get(0);
+            var firstValue = bestSolution.getValueList().get(0);
+            var secondValue = bestSolution.getValueList().get(1);
+            softly.assertThat(firstEntity.getValueList())
+                    .containsExactly(firstValue, secondValue);
+        });
+
     }
 
     @Test
@@ -847,6 +928,35 @@ class DefaultSolverTest {
         // Finally, the initScore is 0.
         softly.assertThat(solution.getScore().initScore()).isZero();
         softly.assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void solveWithAllowsUnassignedValuesListVariable() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataAllowsUnassignedValuesListSolution.class,
+                TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedValuesListEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"))
+                .withPhases();
+        var solverFactory = SolverFactory.<TestdataAllowsUnassignedValuesListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var value1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
+        var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
+        var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
+        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(Arrays.asList(value1, value2, value3, value4));
+
+        var bestSolution = solver.solve(solution);
+        assertSoftly(softly -> {
+            softly.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(0)); // Nothing is assigned.
+            var firstEntity = bestSolution.getEntityList().get(0);
+            softly.assertThat(firstEntity.getValueList()).isEmpty();
+        });
+
     }
 
     @Test

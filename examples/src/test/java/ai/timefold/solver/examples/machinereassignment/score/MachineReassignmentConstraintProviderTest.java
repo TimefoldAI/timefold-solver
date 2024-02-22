@@ -31,10 +31,6 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 class MachineReassignmentConstraintProviderTest
         extends AbstractConstraintProviderTest<MachineReassignmentConstraintProvider, MachineReassignment> {
 
-    private final ConstraintVerifier<MachineReassignmentConstraintProvider, MachineReassignment> constraintVerifier =
-            ConstraintVerifier.build(new MachineReassignmentConstraintProvider(), MachineReassignment.class,
-                    MrProcessAssignment.class);
-
     @ConstraintProviderTest
     void maximumCapacity(ConstraintVerifier<MachineReassignmentConstraintProvider, MachineReassignment> constraintVerifier) {
         MrResource resource1 = new MrResource(0, false, 1);

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
@@ -53,8 +53,8 @@ public final class AnchorShadowVariableDescriptor<Solution_> extends ShadowVaria
                     + entityDescriptor.getEntityClass() + ").\n"
                     + entityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName));
         }
-        if (!(sourceVariableDescriptor instanceof GenuineVariableDescriptor) ||
-                !((GenuineVariableDescriptor<Solution_>) sourceVariableDescriptor).isChained()) {
+        if (!(sourceVariableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) ||
+                !basicVariableDescriptor.isChained()) {
             throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
                     + ") has an @" + AnchorShadowVariable.class.getSimpleName()
                     + " annotated property (" + variableMemberAccessor.getName()

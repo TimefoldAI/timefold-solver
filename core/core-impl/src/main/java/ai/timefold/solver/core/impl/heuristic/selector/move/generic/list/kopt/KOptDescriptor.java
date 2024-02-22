@@ -5,11 +5,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -37,12 +37,12 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         int[] inverseRemovedEdgeIndexToTourOrder, int[] addedEdgeToOtherEndpoint) {
 
     static <Node_> int[] computeInEdgesForSequentialMove(Node_[] removedEdges) {
-        int[] out = new int[removedEdges.length];
-        int k = (removedEdges.length - 1) >> 1;
+        var out = new int[removedEdges.length];
+        var k = (removedEdges.length - 1) >> 1;
 
         out[1] = removedEdges.length - 1;
         out[removedEdges.length - 1] = 1;
-        for (int i = 1; i < k; i++) {
+        for (var i = 1; i < k; i++) {
             out[2 * i + 1] = 2 * i;
             out[2 * i] = 2 * i + 1;
         }
@@ -98,10 +98,10 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                 : (betweenPredicate.test(removedEdges[removedEdgeIndexToTourOrder[1]], removedEdges[pa], removedEdges[pb]) ? -1
                         : 1);
 
-        Integer[] wrappedRemovedEdgeIndexToTourOrder = IntStream.of(removedEdgeIndexToTourOrder).boxed()
+        var wrappedRemovedEdgeIndexToTourOrder = IntStream.of(removedEdgeIndexToTourOrder).boxed()
                 .toArray(Integer[]::new);
         Arrays.sort(wrappedRemovedEdgeIndexToTourOrder, 2, k + 1, comparator);
-        for (int i = 0; i < removedEdgeIndexToTourOrder.length; i++) {
+        for (var i = 0; i < removedEdgeIndexToTourOrder.length; i++) {
             removedEdgeIndexToTourOrder[i] = wrappedRemovedEdgeIndexToTourOrder[i];
         }
 
@@ -110,7 +110,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             removedEdgeIndexToTourOrder[j] = ((i & 1) == 1) ? i + 1 : i - 1;
         }
 
-        for (int i = 1; i <= 2 * k; i++) {
+        for (var i = 1; i <= 2 * k; i++) {
             inverseRemovedEdgeIndexToTourOrder[removedEdgeIndexToTourOrder[i]] = i;
         }
     }
@@ -156,46 +156,44 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * </li>
      * </ul>
      */
-    public <Solution_> KOptListMove<Solution_> getKOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            IndexVariableSupply originalIndexVariableSupply,
-            SingletonInverseVariableSupply inverseVariableSupply) {
+    public <Solution_> KOptListMove<Solution_> getKOptListMove(ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it a no-op
-            return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, new MultipleDelegateList<>(),
-                    List.of(), 0, new int[] {});
+            return new KOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0, new int[] {});
         }
 
-        MultipleDelegateList<Node_> combinedList = computeCombinedList(listVariableDescriptor, inverseVariableSupply);
-        IndexVariableSupply indexVariableSupply = node -> combinedList.getIndexOfValue(listVariableDescriptor,
-                inverseVariableSupply, originalIndexVariableSupply, node);
-        int entityListSize = combinedList.size();
+        var combinedList = computeCombinedList(listVariableDescriptor, listVariableStateSupply);
+        IndexVariableSupply indexVariableSupply =
+                node -> combinedList.getIndexOfValue(listVariableStateSupply, node);
+        var entityListSize = combinedList.size();
         List<FlipSublistAction> out = new ArrayList<>();
-        int[] originalToCurrentIndexList = new int[entityListSize];
-        for (int index = 0; index < entityListSize; index++) {
+        var originalToCurrentIndexList = new int[entityListSize];
+        for (var index = 0; index < entityListSize; index++) {
             originalToCurrentIndexList[index] = index;
         }
 
-        boolean isMoveNotDone = true;
-        int bestOrientedPairFirstEndpoint = -1;
-        int bestOrientedPairSecondEndpoint = -1;
+        var isMoveNotDone = true;
+        var bestOrientedPairFirstEndpoint = -1;
+        var bestOrientedPairSecondEndpoint = -1;
 
         // Copy removedEdgeIndexToTourOrder and inverseRemovedEdgeIndexToTourOrder
         // to avoid mutating the original arrays (since this function mutate the arrays
         // into the sorted signed permutation (+1, +2, ...)
-        int[] currentRemovedEdgeIndexToTourOrder =
+        var currentRemovedEdgeIndexToTourOrder =
                 Arrays.copyOf(removedEdgeIndexToTourOrder, removedEdgeIndexToTourOrder.length);
-        int[] currentInverseRemovedEdgeIndexToTourOrder =
+        var currentInverseRemovedEdgeIndexToTourOrder =
                 Arrays.copyOf(inverseRemovedEdgeIndexToTourOrder, inverseRemovedEdgeIndexToTourOrder.length);
 
         FindNextReversal: while (isMoveNotDone) {
-            int maximumOrientedPairCountAfterReversal = -1;
-            for (int firstEndpoint = 1; firstEndpoint <= 2 * k - 2; firstEndpoint++) {
-                int firstEndpointCurrentTourIndex = currentRemovedEdgeIndexToTourOrder[firstEndpoint];
-                int nextEndpointTourIndex = addedEdgeToOtherEndpoint[firstEndpointCurrentTourIndex];
-                int secondEndpoint = currentInverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex];
+            var maximumOrientedPairCountAfterReversal = -1;
+            for (var firstEndpoint = 1; firstEndpoint <= 2 * k - 2; firstEndpoint++) {
+                var firstEndpointCurrentTourIndex = currentRemovedEdgeIndexToTourOrder[firstEndpoint];
+                var nextEndpointTourIndex = addedEdgeToOtherEndpoint[firstEndpointCurrentTourIndex];
+                var secondEndpoint = currentInverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex];
 
                 if (secondEndpoint >= firstEndpoint + 2 && (firstEndpoint & 1) == (secondEndpoint & 1)) {
-                    int orientedPairCountAfterReversal = ((firstEndpoint & 1) == 1)
+                    var orientedPairCountAfterReversal = ((firstEndpoint & 1) == 1)
                             ? countOrientedPairsForReversal(currentRemovedEdgeIndexToTourOrder,
                                     currentInverseRemovedEdgeIndexToTourOrder,
                                     firstEndpoint + 1,
@@ -214,7 +212,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             if (maximumOrientedPairCountAfterReversal >= 0) {
                 if ((bestOrientedPairFirstEndpoint & 1) == 1) {
                     out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
-                            combinedList, originalToCurrentIndexList,
+                            originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint + 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairSecondEndpoint]],
@@ -225,7 +223,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                             bestOrientedPairSecondEndpoint);
                 } else {
                     out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
-                            combinedList, originalToCurrentIndexList,
+                            originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint - 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairFirstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[bestOrientedPairSecondEndpoint]],
@@ -235,18 +233,18 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                             bestOrientedPairFirstEndpoint,
                             bestOrientedPairSecondEndpoint - 1);
                 }
-                continue FindNextReversal;
+                continue;
             }
 
             // There are no oriented pairs; check for a hurdle
-            for (int firstEndpoint = 1; firstEndpoint <= 2 * k - 1; firstEndpoint += 2) {
-                int firstEndpointCurrentTourIndex = currentRemovedEdgeIndexToTourOrder[firstEndpoint];
-                int nextEndpointTourIndex = addedEdgeToOtherEndpoint[firstEndpointCurrentTourIndex];
-                int secondEndpoint = currentInverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex];
+            for (var firstEndpoint = 1; firstEndpoint <= 2 * k - 1; firstEndpoint += 2) {
+                var firstEndpointCurrentTourIndex = currentRemovedEdgeIndexToTourOrder[firstEndpoint];
+                var nextEndpointTourIndex = addedEdgeToOtherEndpoint[firstEndpointCurrentTourIndex];
+                var secondEndpoint = currentInverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex];
 
                 if (secondEndpoint >= firstEndpoint + 2) {
                     out.add(getListReversalMoveForEdgePair(listVariableDescriptor, indexVariableSupply,
-                            combinedList, originalToCurrentIndexList,
+                            originalToCurrentIndexList,
                             removedEdges[currentRemovedEdgeIndexToTourOrder[firstEndpoint]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[firstEndpoint + 1]],
                             removedEdges[currentRemovedEdgeIndexToTourOrder[secondEndpoint]],
@@ -260,11 +258,11 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             isMoveNotDone = false;
         }
 
-        int startElementShift = -indexOf(originalToCurrentIndexList, 0);
-        int[] newEndIndices = new int[combinedList.delegates.length];
-        int totalOffset = 0;
-        for (int i = 0; i < newEndIndices.length; i++) {
-            int listSize = combinedList.delegateSizes[i];
+        var startElementShift = -indexOf(originalToCurrentIndexList, 0);
+        var newEndIndices = new int[combinedList.delegates.length];
+        var totalOffset = 0;
+        for (var i = 0; i < newEndIndices.length; i++) {
+            var listSize = combinedList.delegateSizes[i];
             newEndIndices[i] = totalOffset + listSize - 1;
             totalOffset += listSize;
         }
@@ -275,8 +273,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                 .toArray();
 
         newEndIndices[newEndIndices.length - 1] = originalToCurrentIndexList.length - 1;
-        return new KOptListMove<>(listVariableDescriptor, inverseVariableSupply, this, combinedList, out, startElementShift,
-                newEndIndices);
+        return new KOptListMove<>(listVariableDescriptor, this, combinedList, out, startElementShift, newEndIndices);
     }
 
     /**
@@ -297,8 +294,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     }
 
     private boolean isFeasible() {
-        int count = 0;
-        int currentEndpoint = 2 * k;
+        var count = 0;
+        var currentEndpoint = 2 * k;
 
         // This loop calculate the length of the cycle that the endpoint at removedEdges[2k] is connected
         // to by iterating the loop in reverse. We know that the successor of removedEdges[2k] is 0, which
@@ -306,8 +303,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         while (currentEndpoint != 0) {
             count++;
 
-            int currentEndpointTourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
-            int nextEndpointTourIndex = addedEdgeToOtherEndpoint[currentEndpointTourIndex];
+            var currentEndpointTourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
+            var nextEndpointTourIndex = addedEdgeToOtherEndpoint[currentEndpointTourIndex];
             currentEndpoint = inverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex] ^ 1;
         }
         return (count == k);
@@ -323,7 +320,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             int[] currentInverseRemovedEdgeIndexToTourOrder,
             int startInclusive, int endExclusive) {
         while (startInclusive < endExclusive) {
-            int savedFirstElement = currentRemovedEdgeIndexToTourOrder[startInclusive];
+            var savedFirstElement = currentRemovedEdgeIndexToTourOrder[startInclusive];
             currentRemovedEdgeIndexToTourOrder[startInclusive] = currentRemovedEdgeIndexToTourOrder[endExclusive];
             currentInverseRemovedEdgeIndexToTourOrder[currentRemovedEdgeIndexToTourOrder[endExclusive]] = startInclusive;
             currentRemovedEdgeIndexToTourOrder[endExclusive] = savedFirstElement;
@@ -371,8 +368,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                 currentInverseRemovedEdgeIndexToTourOrder,
                 left, right);
         for (i = 1; i <= 2 * k - 2; i++) {
-            int currentTourIndex = currentRemovedEdgeIndexToTourOrder[i];
-            int otherEndpointTourIndex = addedEdgeToOtherEndpoint[currentTourIndex];
+            var currentTourIndex = currentRemovedEdgeIndexToTourOrder[i];
+            var otherEndpointTourIndex = addedEdgeToOtherEndpoint[currentTourIndex];
             j = currentInverseRemovedEdgeIndexToTourOrder[otherEndpointTourIndex];
             if (j >= i + 2 && (i & 1) == (j & 1)) {
                 count++;
@@ -402,22 +399,21 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     private static <Node_> FlipSublistAction getListReversalMoveForEdgePair(
             ListVariableDescriptor<?> listVariableDescriptor,
             IndexVariableSupply indexVariableSupply,
-            MultipleDelegateList<Node_> combinedList,
             int[] originalToCurrentIndexList,
             Node_ firstEdgeStart,
             Node_ firstEdgeEnd,
             Node_ secondEdgeStart,
             Node_ secondEdgeEnd) {
-        int originalFirstEdgeStartIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(firstEdgeStart));
-        int originalFirstEdgeEndIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(firstEdgeEnd));
-        int originalSecondEdgeStartIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(secondEdgeStart));
-        int originalSecondEdgeEndIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(secondEdgeEnd));
+        var originalFirstEdgeStartIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(firstEdgeStart));
+        var originalFirstEdgeEndIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(firstEdgeEnd));
+        var originalSecondEdgeStartIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(secondEdgeStart));
+        var originalSecondEdgeEndIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(secondEdgeEnd));
 
-        int firstEndpoint = ((originalFirstEdgeStartIndex + 1) % originalToCurrentIndexList.length) == originalFirstEdgeEndIndex
+        var firstEndpoint = ((originalFirstEdgeStartIndex + 1) % originalToCurrentIndexList.length) == originalFirstEdgeEndIndex
                 ? originalFirstEdgeEndIndex
                 : originalFirstEdgeStartIndex;
 
-        int secondEndpoint =
+        var secondEndpoint =
                 ((originalSecondEdgeStartIndex + 1) % originalToCurrentIndexList.length) == originalSecondEdgeEndIndex
                         ? originalSecondEdgeEndIndex
                         : originalSecondEdgeStartIndex;
@@ -430,31 +426,26 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     @SuppressWarnings("unchecked")
     private MultipleDelegateList<Node_> computeCombinedList(ListVariableDescriptor<?> listVariableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply) {
-        Map<Object, Integer> entityToEntityIndex = new IdentityHashMap<>();
-        for (int i = 1; i < removedEdges.length; i++) {
+        var entityToEntityIndex = new IdentityHashMap<Object, Integer>();
+        for (var i = 1; i < removedEdges.length; i++) {
             entityToEntityIndex.computeIfAbsent(inverseVariableSupply.getInverseSingleton(removedEdges[i]),
                     entity -> entityToEntityIndex.size());
         }
 
-        Object[] entities = new Object[entityToEntityIndex.size()];
+        var entities = new Object[entityToEntityIndex.size()];
         List<Node_>[] entityLists = new List[entities.length];
-        for (Map.Entry<Object, Integer> entry : entityToEntityIndex.entrySet()) {
+        for (var entry : entityToEntityIndex.entrySet()) {
             int index = entry.getValue();
             Object entity = entry.getKey();
-            List<Node_> entityList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
-            int firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
-            if (firstUnpinnedIndex != 0) {
-                entityList = entityList.subList(firstUnpinnedIndex, entityList.size());
-            }
             entities[index] = entity;
-            entityLists[index] = entityList;
+            entityLists[index] = (List<Node_>) listVariableDescriptor.getUnpinnedSubList(entity);
         }
 
         return new MultipleDelegateList<>(entities, entityLists);
     }
 
     private static int indexOf(int[] search, int query) {
-        for (int i = 0; i < search.length; i++) {
+        for (var i = 0; i < search.length; i++) {
             if (search[i] == query) {
                 return i;
             }

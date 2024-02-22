@@ -85,35 +85,35 @@ public interface ConstraintStreamNodeSharingTest {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifExistsOtherIncludingNullVarsDifferentParent() {
+    default void ifExistsOtherIncludingUnassignedDifferentParent() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifNotExistsOtherIncludingNullVarsDifferentParent() {
+    default void ifNotExistsOtherIncludingUnassignedDifferentParent() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifExistsOtherIncludingNullVarsSameParentDifferentIndexer() {
+    default void ifExistsOtherIncludingUnassignedSameParentDifferentIndexer() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifNotExistsOtherIncludingNullVarsSameParentDifferentIndexer() {
+    default void ifNotExistsOtherIncludingUnassignedSameParentDifferentIndexer() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifExistsOtherIncludingNullVarsSameParentDifferentFilter() {
+    default void ifExistsOtherIncludingUnassignedSameParentDifferentFilter() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifNotExistsOtherIncludingNullVarsSameParentDifferentFilter() {
+    default void ifNotExistsOtherIncludingUnassignedSameParentDifferentFilter() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifExistsOtherIncludingNullVarsSameParentSameIndexer() {
+    default void ifExistsOtherIncludingUnassignedSameParentSameIndexer() {
         // Only Unis have this variant, so don't force it.
     }
 
-    default void ifNotExistsOtherIncludingNullVarsSameParentSameIndexer() {
+    default void ifNotExistsOtherIncludingUnassignedSameParentSameIndexer() {
         // Only Unis have this variant, so don't force it.
     }
 
@@ -121,9 +121,9 @@ public interface ConstraintStreamNodeSharingTest {
 
     void ifNotExistsDifferentParent();
 
-    void ifExistsIncludingNullVarsDifferentParent();
+    void ifExistsIncludingUnassignedDifferentParent();
 
-    void ifNotExistsIncludingNullVarsDifferentParent();
+    void ifNotExistsIncludingUnassignedDifferentParent();
 
     void ifExistsSameParentDifferentIndexer();
 
@@ -133,13 +133,13 @@ public interface ConstraintStreamNodeSharingTest {
 
     void ifNotExistsSameParentDifferentFilter();
 
-    void ifExistsIncludingNullVarsSameParentDifferentIndexer();
+    void ifExistsIncludingUnassignedSameParentDifferentIndexer();
 
-    void ifExistsIncludingNullVarsSameParentDifferentFilter();
+    void ifExistsIncludingUnassignedSameParentDifferentFilter();
 
-    void ifNotExistsIncludingNullVarsSameParentDifferentIndexer();
+    void ifNotExistsIncludingUnassignedSameParentDifferentIndexer();
 
-    void ifNotExistsIncludingNullVarsSameParentDifferentFilter();
+    void ifNotExistsIncludingUnassignedSameParentDifferentFilter();
 
     void ifExistsSameParentSameIndexer();
 
@@ -149,13 +149,13 @@ public interface ConstraintStreamNodeSharingTest {
 
     void ifNotExistsSameParentSameFilter();
 
-    void ifExistsIncludingNullVarsSameParentSameIndexer();
+    void ifExistsIncludingUnassignedSameParentSameIndexer();
 
-    void ifExistsIncludingNullVarsSameParentSameFilter();
+    void ifExistsIncludingUnassignedSameParentSameFilter();
 
-    void ifNotExistsIncludingNullVarsSameParentSameIndexer();
+    void ifNotExistsIncludingUnassignedSameParentSameIndexer();
 
-    void ifNotExistsIncludingNullVarsSameParentSameFilter();
+    void ifNotExistsIncludingUnassignedSameParentSameFilter();
 
     // ************************************************************************
     // Group by

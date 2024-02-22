@@ -3,13 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementRef;
+import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 /**
@@ -17,20 +15,13 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
  */
 public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final SingletonInverseVariableSupply inverseVariableSupply;
-    private final IndexVariableSupply indexVariableSupply;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
-    private final Iterator<ElementRef> destinationIterator;
+    private final Iterator<ElementLocation> destinationIterator;
 
-    public RandomListChangeIterator(
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector,
-            DestinationSelector<Solution_> destinationSelector) {
-        this.inverseVariableSupply = inverseVariableSupply;
-        this.indexVariableSupply = indexVariableSupply;
-        this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
+    public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+        this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationIterator = destinationSelector.iterator();
     }
@@ -40,18 +31,13 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
         if (!valueIterator.hasNext() || !destinationIterator.hasNext()) {
             return noUpcomingSelection();
         }
-
-        Object upcomingValue = valueIterator.next();
-        ElementRef destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
-        if (destination == null) {
+        var upcomingValue = valueIterator.next();
+        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue,
+                destinationIterator);
+        if (move == null) {
             return noUpcomingSelection();
+        } else {
+            return move;
         }
-        return new ListChangeMove<>(
-                listVariableDescriptor,
-                inverseVariableSupply.getInverseSingleton(upcomingValue),
-                indexVariableSupply.getIndex(upcomingValue),
-                destination.entity(),
-                destination.index());
     }
-
 }

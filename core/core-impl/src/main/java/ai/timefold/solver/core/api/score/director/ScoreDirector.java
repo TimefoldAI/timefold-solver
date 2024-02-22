@@ -46,71 +46,91 @@ public interface ScoreDirector<Solution_> {
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void beforeEntityAdded(Object entity);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void beforeEntityAdded(Object entity) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void afterEntityAdded(Object entity);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void afterEntityAdded(Object entity) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void beforeEntityRemoved(Object entity);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void beforeEntityRemoved(Object entity) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void afterEntityRemoved(Object entity);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void afterEntityRemoved(Object entity) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void beforeProblemFactAdded(Object problemFact);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void beforeProblemFactAdded(Object problemFact) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void afterProblemFactAdded(Object problemFact);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void afterProblemFactAdded(Object problemFact) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void beforeProblemPropertyChanged(Object problemFactOrEntity);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void beforeProblemPropertyChanged(Object problemFactOrEntity) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void afterProblemPropertyChanged(Object problemFactOrEntity);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void afterProblemPropertyChanged(Object problemFactOrEntity) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void beforeProblemFactRemoved(Object problemFact);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void beforeProblemFactRemoved(Object problemFact) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
      *             Use {@link ProblemChange} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    void afterProblemFactRemoved(Object problemFact);
+    @Deprecated(forRemoval = true, since = "1.8.0")
+    default void afterProblemFactRemoved(Object problemFact) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Translates an entity or fact instance (often from another {@link Thread} or JVM)

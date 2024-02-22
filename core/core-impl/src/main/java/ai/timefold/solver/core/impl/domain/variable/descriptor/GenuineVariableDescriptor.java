@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -24,11 +23,9 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPrope
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableChainedTrailingValueFilter;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -36,7 +33,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableCh
 public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescriptor<Solution_> {
 
     private ValueRangeDescriptor<Solution_> valueRangeDescriptor;
-    private SelectionFilter<Solution_, Object> movableChainedTrailingValueFilter;
     private SelectionSorter<Solution_, Object> increasingStrengthSorter;
     private SelectionSorter<Solution_, Object> decreasingStrengthSorter;
 
@@ -64,33 +60,38 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         if (valueRangeProviderRefs == null || valueRangeProviderRefs.length == 0) {
             valueRangeProviderMemberAccessors = findAnonymousValueRangeMemberAccessors(descriptorPolicy);
             if (valueRangeProviderMemberAccessors.length == 0) {
-                throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                        + ") has a @" + PlanningVariable.class.getSimpleName()
-                        + " annotated property (" + variableMemberAccessor.getName()
-                        + ") that has no valueRangeProviderRefs (" + Arrays.toString(valueRangeProviderRefs)
-                        + ") and no matching anonymous value range providers were found.");
+                throw new IllegalArgumentException("""
+                        The entityClass (%s) has a @%s annotated property (%s) that has no valueRangeProviderRefs (%s) \
+                        and no matching anonymous value range providers were found."""
+                        .formatted(entityDescriptor.getEntityClass().getSimpleName(),
+                                PlanningVariable.class.getSimpleName(),
+                                variableMemberAccessor.getName(),
+                                Arrays.toString(valueRangeProviderRefs)));
             }
         } else {
             valueRangeProviderMemberAccessors = Arrays.stream(valueRangeProviderRefs)
                     .map(ref -> findValueRangeMemberAccessor(descriptorPolicy, ref))
                     .toArray(MemberAccessor[]::new);
         }
-        List<ValueRangeDescriptor<Solution_>> valueRangeDescriptorList =
-                new ArrayList<>(valueRangeProviderMemberAccessors.length);
-        boolean addNullInValueRange = isNullable() && valueRangeProviderMemberAccessors.length == 1;
-        for (MemberAccessor valueRangeProviderMemberAccessor : valueRangeProviderMemberAccessors) {
+        var valueRangeDescriptorList =
+                new ArrayList<ValueRangeDescriptor<Solution_>>(valueRangeProviderMemberAccessors.length);
+        var addNullInValueRange =
+                this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && basicVariableDescriptor.allowsUnassigned()
+                        && valueRangeProviderMemberAccessors.length == 1;
+        for (var valueRangeProviderMemberAccessor : valueRangeProviderMemberAccessors) {
             valueRangeDescriptorList
                     .add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor, addNullInValueRange));
         }
         if (valueRangeDescriptorList.size() == 1) {
             valueRangeDescriptor = valueRangeDescriptorList.get(0);
         } else {
-            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(this, isNullable(), valueRangeDescriptorList);
+            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(this, addNullInValueRange, valueRangeDescriptorList);
         }
     }
 
     private MemberAccessor[] findAnonymousValueRangeMemberAccessors(DescriptorPolicy descriptorPolicy) {
-        boolean supportsValueRangeProviderFromEntity = !this.isListVariable();
+        boolean supportsValueRangeProviderFromEntity = !isListVariable();
         Stream<MemberAccessor> applicableValueRangeProviderAccessors =
                 supportsValueRangeProviderFromEntity ? Stream.concat(
                         descriptorPolicy.getAnonymousFromEntityValueRangeProviderSet().stream(),
@@ -201,32 +202,15 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-        if (isChained() && entityDescriptor.hasEffectiveMovableEntitySelectionFilter()) {
-            movableChainedTrailingValueFilter = new MovableChainedTrailingValueFilter<>(this);
-        } else {
-            movableChainedTrailingValueFilter = null;
-        }
+        // Overriding this method so that subclasses can override it too and call super.
+        // This way, if this method ever gets any content, it will be called by all subclasses, preventing bugs.
     }
 
     // ************************************************************************
     // Worker methods
     // ************************************************************************
 
-    public abstract boolean isListVariable();
-
-    public abstract boolean isChained();
-
-    public abstract boolean isNullable();
-
     public abstract boolean acceptsValueType(Class<?> valueType);
-
-    public boolean hasMovableChainedTrailingValueFilter() {
-        return movableChainedTrailingValueFilter != null;
-    }
-
-    public SelectionFilter<Solution_, Object> getMovableChainedTrailingValueFilter() {
-        return movableChainedTrailingValueFilter;
-    }
 
     public ValueRangeDescriptor<Solution_> getValueRangeDescriptor() {
         return valueRangeDescriptor;
@@ -241,23 +225,20 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     // ************************************************************************
 
     /**
-     * A {@link PlanningVariable#nullable() nullable} planning variable and {@link PlanningListVariable}
-     * are always considered initialized.
+     * A basic planning variable {@link PlanningVariable#allowsUnassigned() allowing unassigned}
+     * and @{@link PlanningListVariable} are always considered initialized.
      *
      * @param entity never null
      * @return true if the variable on that entity is initialized
      */
     public abstract boolean isInitialized(Object entity);
 
-    @Override
-    public boolean isGenuineAndUninitialized(Object entity) {
-        return !isInitialized(entity);
-    }
-
     /**
-     * Decides whether an entity is eligible for initialization. This is not an opposite of {@code isInitialized()} because
-     * even a {@link PlanningVariable#nullable()} variable, which is always considered initialized, is reinitializable
-     * if its value is {@code null}.
+     * Decides whether an entity is eligible for initialization.
+     * This is not an opposite of {@code isInitialized()} because
+     * even a {@link PlanningVariable#allowsUnassigned() variable that allows unassigned},
+     * which is always considered initialized,
+     * is reinitializable if its value is {@code null}.
      */
     public boolean isReinitializable(Object entity) {
         Object value = getValue(entity);
@@ -272,7 +253,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return decreasingStrengthSorter;
     }
 
-    public long getValueCount(Solution_ solution, Object entity) {
+    public long getValueRangeSize(Solution_ solution, Object entity) {
         return valueRangeDescriptor.extractValueRangeSize(solution, entity);
     }
 

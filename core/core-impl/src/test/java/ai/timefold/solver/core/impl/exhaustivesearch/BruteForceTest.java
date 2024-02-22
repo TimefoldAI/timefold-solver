@@ -15,16 +15,16 @@ import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableEntity;
-import ai.timefold.solver.core.impl.testdata.domain.nullable.TestdataNullableSolution;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.Test;
 
 class BruteForceTest {
 
     @Test
-    void doesNotIncludeNullForNonNullableVariable() {
+    void doesNotIncludeNullForVariableAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -67,26 +67,27 @@ class BruteForceTest {
     }
 
     @Test
-    void includesNullsForNullableVariable() {
+    void includesNullsForVariableNotAllowedUnassigned() {
         var solverConfig = new SolverConfig()
-                .withSolutionClass(TestdataNullableSolution.class)
-                .withEntityClasses(TestdataNullableEntity.class)
-                .withEasyScoreCalculatorClass(TestdataNullableEasyScoreCalculator.class)
+                .withSolutionClass(TestdataAllowsUnassignedSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEasyScoreCalculator.class)
                 .withPhases(new ExhaustiveSearchPhaseConfig()
                         .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
-        var solver = (DefaultSolver<TestdataNullableSolution>) SolverFactory.<TestdataNullableSolution> create(solverConfig)
+        var solver = (DefaultSolver<TestdataAllowsUnassignedSolution>) SolverFactory
+                .<TestdataAllowsUnassignedSolution> create(solverConfig)
                 .buildSolver();
 
-        var solution = TestdataNullableSolution.generateSolution(1, 2);
-        for (TestdataNullableEntity entity : solution.getEntityList()) { // Make sure nothing is set.
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(1, 2);
+        for (TestdataAllowsUnassignedEntity entity : solution.getEntityList()) { // Make sure nothing is set.
             entity.setValue(null);
         }
 
         solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
 
             @Override
-            public void stepStarted(AbstractStepScope<TestdataNullableSolution> stepScope) {
-                if (stepScope instanceof ExhaustiveSearchStepScope<TestdataNullableSolution> exhaustiveSearchStepScope) {
+            public void stepStarted(AbstractStepScope<TestdataAllowsUnassignedSolution> stepScope) {
+                if (stepScope instanceof ExhaustiveSearchStepScope<TestdataAllowsUnassignedSolution> exhaustiveSearchStepScope) {
                     if (exhaustiveSearchStepScope.getStepIndex() == 3) {
                         fail("The exhaustive search phase was not ended after 3 steps.");
                     }

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -24,10 +25,11 @@ public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Sol
         this.valueSelector = valueSelector;
         this.randomSelection = randomSelection;
         GenuineVariableDescriptor<Solution_> variableDescriptor = valueSelector.getVariableDescriptor();
-        if (variableDescriptor.isChained()) {
-            throw new IllegalStateException("The selector (" + this
-                    + ") has a variableDescriptor (" + variableDescriptor
-                    + ") which is chained (" + variableDescriptor.isChained() + ").");
+        boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                && basicVariableDescriptor.isChained();
+        if (isChained) {
+            throw new IllegalStateException("The selector (%s) has a variableDescriptor (%s) which is chained (%s)."
+                    .formatted(this, variableDescriptor, isChained));
         }
         phaseLifecycleSupport.addEventListener(pillarSelector);
         phaseLifecycleSupport.addEventListener(valueSelector);

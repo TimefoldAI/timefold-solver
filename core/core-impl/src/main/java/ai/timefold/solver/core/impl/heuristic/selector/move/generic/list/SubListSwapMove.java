@@ -45,7 +45,7 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
             SubList rightSubList,
             boolean reversing) {
         this.variableDescriptor = variableDescriptor;
-        if (leftSubList.getEntity() == rightSubList.getEntity() && leftSubList.getFromIndex() > rightSubList.getFromIndex()) {
+        if (leftSubList.entity() == rightSubList.entity() && leftSubList.fromIndex() > rightSubList.fromIndex()) {
             this.leftSubList = rightSubList;
             this.rightSubList = leftSubList;
         } else {
@@ -53,7 +53,7 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
             this.rightSubList = rightSubList;
         }
         this.reversing = reversing;
-        rightFromIndex = this.rightSubList.getFromIndex();
+        rightFromIndex = this.rightSubList.fromIndex();
         leftToIndex = this.leftSubList.getToIndex();
     }
 
@@ -72,22 +72,22 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
         // If both subLists are on the same entity, then they must not overlap.
-        return leftSubList.getEntity() != rightSubList.getEntity() || rightFromIndex >= leftToIndex;
+        return leftSubList.entity() != rightSubList.entity() || rightFromIndex >= leftToIndex;
     }
 
     @Override
     protected AbstractMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        if (leftSubList.getEntity() == rightSubList.getEntity()) {
+        if (leftSubList.entity() == rightSubList.entity()) {
             return new SubListSwapMove<>(variableDescriptor,
-                    new SubList(leftSubList.getEntity(), leftSubList.getFromIndex(), rightSubList.getLength()),
-                    new SubList(rightSubList.getEntity(),
-                            rightSubList.getFromIndex() - leftSubList.getLength() + rightSubList.getLength(),
-                            leftSubList.getLength()),
+                    new SubList(leftSubList.entity(), leftSubList.fromIndex(), rightSubList.length()),
+                    new SubList(rightSubList.entity(),
+                            rightSubList.fromIndex() - leftSubList.length() + rightSubList.length(),
+                            leftSubList.length()),
                     reversing);
         }
         return new SubListSwapMove<>(variableDescriptor,
-                new SubList(rightSubList.getEntity(), rightSubList.getFromIndex(), leftSubList.getLength()),
-                new SubList(leftSubList.getEntity(), leftSubList.getFromIndex(), rightSubList.getLength()),
+                new SubList(rightSubList.entity(), rightSubList.fromIndex(), leftSubList.length()),
+                new SubList(leftSubList.entity(), leftSubList.fromIndex(), rightSubList.length()),
                 reversing);
     }
 
@@ -95,13 +95,13 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
 
-        Object leftEntity = leftSubList.getEntity();
-        Object rightEntity = rightSubList.getEntity();
-        int leftSubListLength = leftSubList.getLength();
-        int rightSubListLength = rightSubList.getLength();
-        int leftFromIndex = leftSubList.getFromIndex();
-        List<Object> leftList = variableDescriptor.getListVariable(leftEntity);
-        List<Object> rightList = variableDescriptor.getListVariable(rightEntity);
+        Object leftEntity = leftSubList.entity();
+        Object rightEntity = rightSubList.entity();
+        int leftSubListLength = leftSubList.length();
+        int rightSubListLength = rightSubList.length();
+        int leftFromIndex = leftSubList.fromIndex();
+        List<Object> leftList = variableDescriptor.getValue(leftEntity);
+        List<Object> rightList = variableDescriptor.getValue(rightEntity);
         List<Object> leftSubListView = subList(leftSubList);
         List<Object> rightSubListView = subList(rightSubList);
         leftPlanningValueList = CollectionUtils.copy(leftSubListView, reversing);
@@ -157,8 +157,8 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     public Collection<Object> getPlanningEntities() {
         // Use LinkedHashSet for predictable iteration order.
         Set<Object> entities = new LinkedHashSet<>(2);
-        entities.add(leftSubList.getEntity());
-        entities.add(rightSubList.getEntity());
+        entities.add(leftSubList.entity());
+        entities.add(rightSubList.entity());
         return entities;
     }
 
@@ -168,8 +168,7 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     private List<Object> subList(SubList subList) {
-        // TODO move this to the descriptor?
-        return variableDescriptor.getListVariable(subList.getEntity()).subList(subList.getFromIndex(), subList.getToIndex());
+        return variableDescriptor.getValue(subList.entity()).subList(subList.fromIndex(), subList.getToIndex());
     }
 
     @Override

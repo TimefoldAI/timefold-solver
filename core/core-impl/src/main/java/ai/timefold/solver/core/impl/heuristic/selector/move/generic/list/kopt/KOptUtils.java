@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -45,24 +44,24 @@ final class KOptUtils {
      * @param kOptDescriptor The descriptor to calculate cycles for
      */
     static KOptCycle getCyclesForPermutation(KOptDescriptor<?> kOptDescriptor) {
-        int cycleCount = 0;
-        int[] removedEdgeIndexToTourOrder = kOptDescriptor.removedEdgeIndexToTourOrder();
-        int[] addedEdgeToOtherEndpoint = kOptDescriptor.addedEdgeToOtherEndpoint();
-        int[] inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.inverseRemovedEdgeIndexToTourOrder();
+        var cycleCount = 0;
+        var removedEdgeIndexToTourOrder = kOptDescriptor.removedEdgeIndexToTourOrder();
+        var addedEdgeToOtherEndpoint = kOptDescriptor.addedEdgeToOtherEndpoint();
+        var inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.inverseRemovedEdgeIndexToTourOrder();
 
-        int[] indexToCycle = new int[removedEdgeIndexToTourOrder.length];
-        BitSet remaining = new BitSet(removedEdgeIndexToTourOrder.length);
+        var indexToCycle = new int[removedEdgeIndexToTourOrder.length];
+        var remaining = new BitSet(removedEdgeIndexToTourOrder.length);
         remaining.set(1, removedEdgeIndexToTourOrder.length, true);
 
         while (!remaining.isEmpty()) {
-            int currentEndpoint = remaining.nextSetBit(0);
+            var currentEndpoint = remaining.nextSetBit(0);
             while (remaining.get(currentEndpoint)) {
                 indexToCycle[currentEndpoint] = cycleCount;
                 remaining.clear(currentEndpoint);
 
                 // Go to the endpoint connected to this one by an added edge
-                int currentEndpointTourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
-                int nextEndpointTourIndex = addedEdgeToOtherEndpoint[currentEndpointTourIndex];
+                var currentEndpointTourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
+                var nextEndpointTourIndex = addedEdgeToOtherEndpoint[currentEndpointTourIndex];
                 currentEndpoint = inverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex];
 
                 indexToCycle[currentEndpoint] = cycleCount;
@@ -77,60 +76,40 @@ final class KOptUtils {
     }
 
     static <Node_> List<Pair<Node_, Node_>> getAddedEdgeList(KOptDescriptor<Node_> kOptDescriptor) {
-        int k = kOptDescriptor.k();
+        var k = kOptDescriptor.k();
         List<Pair<Node_, Node_>> out = new ArrayList<>(2 * k);
-        int currentEndpoint = 1;
+        var currentEndpoint = 1;
 
-        Node_[] removedEdges = kOptDescriptor.removedEdges();
-        int[] addedEdgeToOtherEndpoint = kOptDescriptor.addedEdgeToOtherEndpoint();
-        int[] removedEdgeIndexToTourOrder = kOptDescriptor.removedEdgeIndexToTourOrder();
-        int[] inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.inverseRemovedEdgeIndexToTourOrder();
+        var removedEdges = kOptDescriptor.removedEdges();
+        var addedEdgeToOtherEndpoint = kOptDescriptor.addedEdgeToOtherEndpoint();
+        var removedEdgeIndexToTourOrder = kOptDescriptor.removedEdgeIndexToTourOrder();
+        var inverseRemovedEdgeIndexToTourOrder = kOptDescriptor.inverseRemovedEdgeIndexToTourOrder();
 
         // This loop iterates through the new tour created
         while (currentEndpoint != 2 * k + 1) {
             out.add(new Pair<>(removedEdges[currentEndpoint], removedEdges[addedEdgeToOtherEndpoint[currentEndpoint]]));
-            int tourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
-            int nextEndpointTourIndex = addedEdgeToOtherEndpoint[tourIndex];
+            var tourIndex = removedEdgeIndexToTourOrder[currentEndpoint];
+            var nextEndpointTourIndex = addedEdgeToOtherEndpoint[tourIndex];
             currentEndpoint = inverseRemovedEdgeIndexToTourOrder[nextEndpointTourIndex] ^ 1;
         }
         return out;
     }
 
     static <Node_> List<Pair<Node_, Node_>> getRemovedEdgeList(KOptDescriptor<Node_> kOptDescriptor) {
-        int k = kOptDescriptor.k();
-        Node_[] removedEdges = kOptDescriptor.removedEdges();
+        var k = kOptDescriptor.k();
+        var removedEdges = kOptDescriptor.removedEdges();
         List<Pair<Node_, Node_>> out = new ArrayList<>(2 * k);
-        for (int i = 1; i <= k; i++) {
+        for (var i = 1; i <= k; i++) {
             out.add(new Pair<>(removedEdges[2 * i - 1], removedEdges[2 * i]));
         }
         return out;
     }
 
     @SuppressWarnings("unchecked")
-    public static <Node_> Function<Node_, Node_> getSuccessorFunction(
-            ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
-        return (node) -> {
-            var entity = inverseVariableSupply.getInverseSingleton(node);
-            var valueList = (List<Node_>) listVariableDescriptor.getListVariable(entity);
-            var index = indexVariableSupply.getIndex(node);
-            if (index == valueList.size() - 1) {
-                var firstUnpinnedIndex = listVariableDescriptor.getEntityDescriptor().extractFirstUnpinnedIndex(entity);
-                return valueList.get(firstUnpinnedIndex);
-            } else {
-                return valueList.get(index + 1);
-            }
-        };
-    }
-
-    public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(
-            Node_[] pickedValues,
-            ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
-        return node -> entityOrderInfo.successor(node, listVariableDescriptor, indexVariableSupply, inverseVariableSupply);
+    public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(Node_[] pickedValues,
+            ListVariableStateSupply<?> listVariableStateSupply) {
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
+        return node -> entityOrderInfo.successor(node, listVariableStateSupply);
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getBetweenPredicate(IndexVariableSupply indexVariableSupply) {
@@ -150,32 +129,30 @@ final class KOptUtils {
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getMultiEntityBetweenPredicate(Node_[] pickedValues,
-            ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply,
-            IndexVariableSupply indexVariableSupply) {
-        EntityOrderInfo entityOrderInfo = EntityOrderInfo.of(pickedValues, inverseVariableSupply, listVariableDescriptor);
-        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, indexVariableSupply, inverseVariableSupply);
+            ListVariableStateSupply<?> listVariableStateSupply) {
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
+        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableStateSupply);
     }
 
     public static void flipSubarray(int[] array, int fromIndexInclusive, int toIndexExclusive) {
         if (fromIndexInclusive < toIndexExclusive) {
-            final int halfwayPoint = (toIndexExclusive - fromIndexInclusive) >> 1;
-            for (int i = 0; i < halfwayPoint; i++) {
-                int saved = array[fromIndexInclusive + i];
+            final var halfwayPoint = (toIndexExclusive - fromIndexInclusive) >> 1;
+            for (var i = 0; i < halfwayPoint; i++) {
+                var saved = array[fromIndexInclusive + i];
                 array[fromIndexInclusive + i] = array[toIndexExclusive - i - 1];
                 array[toIndexExclusive - i - 1] = saved;
             }
         } else {
-            int firstHalfSize = array.length - fromIndexInclusive;
-            int secondHalfSize = toIndexExclusive;
+            var firstHalfSize = array.length - fromIndexInclusive;
+            var secondHalfSize = toIndexExclusive;
 
             // Reverse the combined list firstHalfReversedPath + secondHalfReversedPath
             // For instance, (1, 2, 3)(4, 5, 6, 7, 8, 9) becomes
             // (9, 8, 7)(6, 5, 4, 3, 2, 1)
-            int totalLength = firstHalfSize + secondHalfSize;
+            var totalLength = firstHalfSize + secondHalfSize;
 
             // Used to rotate the list to put the first element back in its original position
-            for (int i = 0; (i < totalLength >> 1); i++) {
+            for (var i = 0; (i < totalLength >> 1); i++) {
                 int firstHalfIndex;
                 int secondHalfIndex;
 
@@ -192,7 +169,7 @@ final class KOptUtils {
                     secondHalfIndex = secondHalfSize - i - 1;
                 }
 
-                int saved = array[firstHalfIndex];
+                var saved = array[firstHalfIndex];
                 array[firstHalfIndex] = array[secondHalfIndex];
                 array[secondHalfIndex] = saved;
             }
@@ -208,9 +185,9 @@ final class KOptUtils {
     public static long getPureKOptMoveTypes(int k) {
         // This calculates the item at index k for the sequence https://oeis.org/A061714
         long totalTypes = 0;
-        for (int i = 1; i < k; i++) {
-            for (int j = 0; j <= i; j++) {
-                int sign = ((k + j - 1) % 2 == 0) ? 1 : -1;
+        for (var i = 1; i < k; i++) {
+            for (var j = 0; j <= i; j++) {
+                var sign = ((k + j - 1) % 2 == 0) ? 1 : -1;
                 totalTypes += sign * CombinatoricsUtils.binomialCoefficient(i, j) * CombinatoricsUtils.factorial(j) * (1L << j);
             }
         }

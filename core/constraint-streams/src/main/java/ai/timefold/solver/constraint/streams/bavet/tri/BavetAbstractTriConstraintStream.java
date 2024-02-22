@@ -112,10 +112,10 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @SafeVarargs
     @Override
-    public final <D> TriConstraintStream<A, B, C> ifExistsIncludingNullVars(Class<D> otherClass,
+    public final <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D>... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEachIncludingNullVars(otherClass), joiners);
+            return ifExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
         } else {
             return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
         }
@@ -140,10 +140,10 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @SafeVarargs
     @Override
-    public final <D> TriConstraintStream<A, B, C> ifNotExistsIncludingNullVars(Class<D> otherClass,
+    public final <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
             QuadJoiner<A, B, C, D>... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEachIncludingNullVars(otherClass), joiners);
+            return ifNotExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
         } else {
             return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
         }

@@ -172,21 +172,21 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     @Override
     @TestTemplate
     @SuppressWarnings("unchecked")
-    public void ifExistsIncludingNullVarsDifferentParent() {
+    public void ifExistsIncludingUnassignedDifferentParent() {
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
 
-        assertThat(baseStream.ifExistsIncludingNullVars(TestdataEntity.class))
-                .isNotSameAs(baseStream.filter(filter1).ifExistsIncludingNullVars(TestdataEntity.class));
+        assertThat(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class))
+                .isNotSameAs(baseStream.filter(filter1).ifExistsIncludingUnassigned(TestdataEntity.class));
     }
 
     @Override
     @TestTemplate
     @SuppressWarnings("unchecked")
-    public void ifNotExistsIncludingNullVarsDifferentParent() {
+    public void ifNotExistsIncludingUnassignedDifferentParent() {
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
 
-        assertThat(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class))
-                .isNotSameAs(baseStream.filter(filter1).ifNotExistsIncludingNullVars(TestdataEntity.class));
+        assertThat(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class))
+                .isNotSameAs(baseStream.filter(filter1).ifNotExistsIncludingUnassigned(TestdataEntity.class));
     }
 
     @Override
@@ -227,38 +227,38 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
 
     @Override
     @TestTemplate
-    public void ifExistsIncludingNullVarsSameParentSameIndexer() {
+    public void ifExistsIncludingUnassignedSameParentSameIndexer() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner = Joiners.equal((a, b) -> a, c -> c);
 
-        assertThat(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner))
-                .isSameAs(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner));
+        assertThat(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner))
+                .isSameAs(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner));
     }
 
     @Override
     @TestTemplate
-    public void ifExistsIncludingNullVarsSameParentSameFilter() {
+    public void ifExistsIncludingUnassignedSameParentSameFilter() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner = Joiners.filtering((a, b, c) -> a == b);
 
-        assertThat(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner))
-                .isSameAs(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner));
+        assertThat(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner))
+                .isSameAs(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner));
     }
 
     @Override
     @TestTemplate
-    public void ifNotExistsIncludingNullVarsSameParentSameIndexer() {
+    public void ifNotExistsIncludingUnassignedSameParentSameIndexer() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner = Joiners.equal((a, b) -> a, c -> c);
 
-        assertThat(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner))
-                .isSameAs(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner));
+        assertThat(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner))
+                .isSameAs(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner));
     }
 
     @Override
     @TestTemplate
-    public void ifNotExistsIncludingNullVarsSameParentSameFilter() {
+    public void ifNotExistsIncludingUnassignedSameParentSameFilter() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner = Joiners.filtering((a, b, c) -> a == b);
 
-        assertThat(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner))
-                .isSameAs(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner));
+        assertThat(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner))
+                .isSameAs(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner));
     }
 
     @Override
@@ -303,42 +303,42 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
 
     @Override
     @TestTemplate
-    public void ifExistsIncludingNullVarsSameParentDifferentIndexer() {
+    public void ifExistsIncludingUnassignedSameParentDifferentIndexer() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner1 = Joiners.equal((a, b) -> a, c -> c);
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner2 = Joiners.equal((a, b) -> b, c -> c);
 
-        assertThat(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner1))
-                .isNotSameAs(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner2));
+        assertThat(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner1))
+                .isNotSameAs(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner2));
     }
 
     @Override
     @TestTemplate
-    public void ifExistsIncludingNullVarsSameParentDifferentFilter() {
+    public void ifExistsIncludingUnassignedSameParentDifferentFilter() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner1 = Joiners.filtering((a, b, c) -> a == b);
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner2 = Joiners.filtering((a, b, c) -> a != b);
 
-        assertThat(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner1))
-                .isNotSameAs(baseStream.ifExistsIncludingNullVars(TestdataEntity.class, joiner2));
+        assertThat(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner1))
+                .isNotSameAs(baseStream.ifExistsIncludingUnassigned(TestdataEntity.class, joiner2));
     }
 
     @Override
     @TestTemplate
-    public void ifNotExistsIncludingNullVarsSameParentDifferentIndexer() {
+    public void ifNotExistsIncludingUnassignedSameParentDifferentIndexer() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner1 = Joiners.equal((a, b) -> a, c -> c);
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner2 = Joiners.equal((a, b) -> b, c -> c);
 
-        assertThat(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner1))
-                .isNotSameAs(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner2));
+        assertThat(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner1))
+                .isNotSameAs(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner2));
     }
 
     @Override
     @TestTemplate
-    public void ifNotExistsIncludingNullVarsSameParentDifferentFilter() {
+    public void ifNotExistsIncludingUnassignedSameParentDifferentFilter() {
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner1 = Joiners.filtering((a, b, c) -> a == b);
         TriJoiner<TestdataEntity, TestdataEntity, TestdataEntity> joiner2 = Joiners.filtering((a, b, c) -> a != b);
 
-        assertThat(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner1))
-                .isNotSameAs(baseStream.ifNotExistsIncludingNullVars(TestdataEntity.class, joiner2));
+        assertThat(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner1))
+                .isNotSameAs(baseStream.ifNotExistsIncludingUnassigned(TestdataEntity.class, joiner2));
     }
 
     // ************************************************************************

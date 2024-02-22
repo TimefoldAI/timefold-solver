@@ -31,6 +31,7 @@ public class TestdataPinnedListEntity extends TestdataObject {
 
     TestdataPinnedListEntity setUpShadowVariables() {
         valueList.forEach(testdataListValue -> {
+            testdataListValue.setEntity(this);
             testdataListValue.setIndex(valueList.indexOf(testdataListValue));
         });
         return this;

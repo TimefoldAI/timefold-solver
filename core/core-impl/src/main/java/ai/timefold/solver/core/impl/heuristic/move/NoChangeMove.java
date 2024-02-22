@@ -1,8 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
@@ -11,44 +8,30 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class NoChangeMove<Solution_> extends AbstractMove<Solution_> {
+public final class NoChangeMove<Solution_> extends AbstractSimplifiedMove<Solution_> {
 
-    @Override
-    public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return true;
+    public static final NoChangeMove<?> INSTANCE = new NoChangeMove<>();
+
+    public static <Solution_> NoChangeMove<Solution_> getInstance() {
+        return (NoChangeMove<Solution_>) INSTANCE;
+    }
+
+    private NoChangeMove() {
+        // No external instances allowed.
     }
 
     @Override
-    public NoChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new NoChangeMove<>();
+    public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
+        return false;
     }
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        // do nothing
+        // Do nothing.
     }
 
     @Override
-    public NoChangeMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
-        return new NoChangeMove<>();
-    }
-
-    // ************************************************************************
-    // Introspection methods
-    // ************************************************************************
-
-    @Override
-    public Collection<? extends Object> getPlanningEntities() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<? extends Object> getPlanningValues() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String toString() {
+    public String getSimpleMoveTypeDescription() {
         return "No change";
     }
 

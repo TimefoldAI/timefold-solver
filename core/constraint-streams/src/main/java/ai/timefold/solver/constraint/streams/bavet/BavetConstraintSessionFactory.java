@@ -45,8 +45,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     // Node creation
     // ************************************************************************
 
-    public BavetConstraintSession<Score_> buildSession(boolean constraintMatchEnabled,
-            Solution_ workingSolution) {
+    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, boolean constraintMatchEnabled) {
         ScoreDefinition<Score_> scoreDefinition = solutionDescriptor.getScoreDefinition();
         Score_ zeroScore = scoreDefinition.getZeroScore();
         Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet = new LinkedHashSet<>();

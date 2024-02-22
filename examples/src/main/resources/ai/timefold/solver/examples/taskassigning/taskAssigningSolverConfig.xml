@@ -17,4 +17,20 @@
   <!--<termination>-->
     <!--<minutesSpentLimit>5</minutesSpentLimit>-->
   <!--</termination>-->
+
+  <constructionHeuristic>
+  </constructionHeuristic>
+  <localSearch>
+    <unionMoveSelector>
+      <listChangeMoveSelector />
+      <listSwapMoveSelector />
+      <subListChangeMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+      </subListChangeMoveSelector>
+      <subListSwapMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+      </subListSwapMoveSelector>
+    </unionMoveSelector>
+  </localSearch>
+
 </solver>

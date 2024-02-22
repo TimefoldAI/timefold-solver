@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -54,7 +55,9 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
                         + ") which is not equal or a superclass to the leftEntitySelector's entityClass ("
                         + leftEntityDescriptor.getEntityClass() + ").");
             }
-            if (variableDescriptor.isChained()) {
+            boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                    && basicVariableDescriptor.isChained();
+            if (isChained) {
                 anyChained = true;
             }
         }
@@ -78,7 +81,9 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
             SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
             for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {
                 SingletonInverseVariableSupply inverseVariableSupply;
-                if (variableDescriptor.isChained()) {
+                boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && basicVariableDescriptor.isChained();
+                if (isChained) {
                     inverseVariableSupply = supplyManager.demand(new SingletonInverseVariableDemand<>(variableDescriptor));
                 } else {
                     inverseVariableSupply = null;

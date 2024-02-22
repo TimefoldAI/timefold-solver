@@ -32,7 +32,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     public SubListChangeMove(ListVariableDescriptor<Solution_> variableDescriptor, SubList subList, Object destinationEntity,
             int destinationIndex, boolean reversing) {
-        this(variableDescriptor, subList.getEntity(), subList.getFromIndex(), subList.getLength(), destinationEntity,
+        this(variableDescriptor, subList.entity(), subList.fromIndex(), subList.length(), destinationEntity,
                 destinationIndex, reversing);
     }
 
@@ -79,9 +79,13 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return destinationEntity != sourceEntity
-                || destinationIndex + length <= variableDescriptor.getListSize(destinationEntity)
-                        && destinationIndex != sourceIndex;
+        if (destinationEntity != sourceEntity) {
+            return true;
+        } else if (destinationIndex == sourceIndex) {
+            return false;
+        } else {
+            return destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
+        }
     }
 
     @Override
@@ -94,7 +98,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
 
-        List<Object> sourceList = variableDescriptor.getListVariable(sourceEntity);
+        List<Object> sourceList = variableDescriptor.getValue(sourceEntity);
         List<Object> subList = sourceList.subList(sourceIndex, sourceIndex + length);
         planningValues = CollectionUtils.copy(subList, reversing);
 
@@ -103,7 +107,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
             int toIndex = Math.max(sourceIndex, destinationIndex) + length;
             innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
             subList.clear();
-            variableDescriptor.getListVariable(destinationEntity).addAll(destinationIndex, planningValues);
+            variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, planningValues);
             innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         } else {
             innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
@@ -111,7 +115,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
             innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
             innerScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                     destinationIndex);
-            variableDescriptor.getListVariable(destinationEntity).addAll(destinationIndex, planningValues);
+            variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, planningValues);
             innerScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                     destinationIndex + length);
         }

@@ -309,7 +309,7 @@ public abstract class AbstractQuadConstraintStreamTest
     @Override
     @TestTemplate
     @Disabled("Would cause too many matches to meaningfully assert; cost-benefit ratio is wrong here.")
-    public void ifExistsDoesNotIncludeNullVars() {
+    public void ifExistsDoesNotIncludeUnassigned() {
 
     }
 
@@ -475,7 +475,7 @@ public abstract class AbstractQuadConstraintStreamTest
     @Override
     @TestTemplate
     @Disabled("Would cause too many matches to meaningfully assert; cost-benefit ratio is wrong here.")
-    public void ifNotExistsDoesNotIncludeNullVars() {
+    public void ifNotExistsDoesNotIncludeUnassigned() {
 
     }
 

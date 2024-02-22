@@ -47,6 +47,15 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
 public @interface PlanningListVariable {
+
+    /**
+     * If set to false (default), all elements must be assigned to some list.
+     * If set to true, elements may be left unassigned.
+     * 
+     * @see PlanningVariable#allowsUnassigned() Basic planning value equivalent.
+     */
+    boolean allowsUnassignedValues() default false;
+
     String[] valueRangeProviderRefs() default {};
 
     // TODO value comparison: https://issues.redhat.com/browse/PLANNER-2542

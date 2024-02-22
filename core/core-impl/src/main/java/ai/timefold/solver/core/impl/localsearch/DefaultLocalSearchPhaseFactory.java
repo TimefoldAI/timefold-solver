@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -20,9 +18,6 @@ import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchFor
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
@@ -190,18 +185,17 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
-        SolutionDescriptor<Solution_> solutionDescriptor = configPolicy.getSolutionDescriptor();
-        List<VariableDescriptor<Solution_>> basicVariableDescriptors = solutionDescriptor.getEntityDescriptors().stream()
+        var solutionDescriptor = configPolicy.getSolutionDescriptor();
+        var basicVariableDescriptorList = solutionDescriptor.getEntityDescriptors().stream()
                 .flatMap(entityDescriptor -> entityDescriptor.getGenuineVariableDescriptorList().stream())
                 .filter(variableDescriptor -> !variableDescriptor.isListVariable())
                 .distinct()
-                .collect(Collectors.toList());
-        List<ListVariableDescriptor<Solution_>> listVariableDescriptors =
-                solutionDescriptor.getListVariableDescriptors();
-        if (basicVariableDescriptors.isEmpty()) { // We only have list variables.
+                .toList();
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (basicVariableDescriptorList.isEmpty()) { // We only have the one list variable.
             return new UnionMoveSelectorConfig()
                     .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig());
-        } else if (listVariableDescriptors.isEmpty()) { // We only have basic variables.
+        } else if (listVariableDescriptor == null) { // We only have basic variables.
             return new UnionMoveSelectorConfig()
                     .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
         } else {

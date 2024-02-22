@@ -18,7 +18,7 @@ public record VariableSnapshot<Solution_>(VariableId<Solution_> variableId, Obje
 
     public VariableSnapshot(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         this(new VariableId<>(variableDescriptor, entity),
-                variableDescriptor.isGenuineListVariable() ? new ArrayList<>((List<?>) variableDescriptor.getValue(entity))
+                variableDescriptor.isListVariable() ? new ArrayList<>((List<?>) variableDescriptor.getValue(entity))
                         : variableDescriptor.getValue(entity));
     }
 
