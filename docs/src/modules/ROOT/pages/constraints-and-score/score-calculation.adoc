@@ -321,7 +321,7 @@ For example, in the following constraint, the indicted objects will be of type `
 ----
 
 For the purposes of creating a xref:constraints-and-score/understanding-the-score.adoc#indictmentHeatMap[heat map], the `Vehicle` is very important, but the naked `Integer` carries no semantics.
-We can remove it by providing the `indictWith(...) method with a custom indictment mapping:
+We can remove it by providing the `indictWith(...)` method with a custom indictment mapping:
 
 [source,java,options="nowrap"]
 ----
@@ -1204,6 +1204,9 @@ Consider the following constraint stream:
         return factory
                 .forEachUniquePair(Queen.class, equal(Queen::getRowIndex))
                 .penalize(SimpleScore.ONE)
+                .justifyWith((queen, otherQueen, simpleScore) -> new CustomHorizontalConflictJustification(queen.getId(),
+                        otherQueen.getId()))
+                .indictWith((queen, otherQueen) -> List.of(queen, otherQueen))
                 .asConstraint("Horizontal conflict");
     }
 ----
@@ -1224,6 +1227,8 @@ The following example uses the Constraint Verifier API to create a simple unit t
         Queen queen2 = new Queen(1, row1, column2);
         constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
                 .given(queen1, queen2)
+                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
+                .indictsWith(queen1, queen2)
                 .penalizesBy(1);
     }
 ----
@@ -1260,9 +1265,11 @@ Further down, the following code tests the constraint:
 
 [source,java,options="nowrap"]
 ----
-    constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
-            .given(queen1, queen2)
-            .penalizesBy(1);
+        constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
+                .given(queen1, queen2)
+                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
+                .indictsWith(queen1, queen2)
+                .penalizesBy(1);
 ----
 
 The `verifyThat(...)` call is used to specify a method on the `NQueensConstraintProvider` class which is under test.
@@ -1271,6 +1278,11 @@ This method must be visible to the test class, which the Java compiler enforces.
 The `given(...)` call is used to enumerate all the facts that the constraint stream operates on.
 In this case, the `given(...)` call takes the `queen1` and `queen2` instances previously created.
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
+
+The methods `justifiesWith(...)` and `indictsWith(...)` validate the expected constraint justifications and indictments
+mapped by the constraint definition.
+The constraint justification validation expects the ID of both `queen1` and `queen2`.
+Similarly, the indictment check tests if the constraint `horizontalConflict` returns both indicted queens.
 
 Finally, the `penalizesBy(...)` call completes the test, making sure that the horizontal conflict constraint, given
 one `Queen`, results in a penalty of `1`.
@@ -1286,6 +1298,10 @@ The method to use here depends on whether the constraint stream in question is t
 It will neither set nor update shadow variables.
 If the tested constraints depend on shadow variables,
 it is your responsibility to assign the correct values beforehand.
+
+When executing `justifiesWith(...)` and `indictsWith(...)`,
+comparisons are made using the standard method `equals` on the fact problem instances.
+It is also possible to provide an alternative comparison logic by implementing the `Comparable` interface.
 ====
 
 [#constraintStreamsTestingAllConstraints]
