@@ -388,6 +388,12 @@ On the server side, the `info` log shows what Timefold Solver did in those five 
 ... Solving ended: time spent (5000), best score (0hard/0soft), score calculation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
 ----
 
+[NOTE]
+====
+In production,
+https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#run.run-goal.parameter-details.optimized-launch[optimized launch] should be disabled, since optimized launch disables the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 compiler], considerably decreasing the solver's performance.
+====
+
 === Test the application
 
 A good application includes test coverage.
@@ -778,6 +784,73 @@ Use `debug` logging to show every _step_:
 ----
 
 Use `trace` logging to show every _step_ and every _move_ per step.
+
+=== Create a native image
+
+To achieve faster startup times or to deploy to an environment without a JVM, you can build a native image:
+
+==== Build using Docker
+
+[tabs]
+======
+Maven::
++
+[source,shell]
+----
+$ mvn -Pnative spring-boot:build-image
+----
+
+Gradle::
++
+[source,shell]
+----
+$ gradle bootBuildImage
+----
+======
+
+Start the built Docker image using `docker run`:
+
+[source,shell]
+----
+$ docker run --rm -p 8080:8080 docker.io/library/app-name:app-version
+----
+
+==== Build using locally installed GraalVM
+
+[tabs]
+======
+Maven::
++
+. Build the native image
++
+[source,shell]
+----
+$ mvn -Pnative native:compile
+----
++
+. Run the native image
++
+[source,shell]
+----
+$ ./target/app-name
+----
+
+Gradle::
++
+. Build the native image
++
+[source,shell]
+----
+$ gradle nativeCompile
+----
++
+. Run the native image
++
+[source,shell]
+----
+$ ./build/native/nativeCompile/app-name
+----
+======
 
 == Summary
 
