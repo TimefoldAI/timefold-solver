@@ -185,7 +185,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 continue;
             }
             // Test invalid match
-            if (!assertEquality(justification, justificationCollection)) {
+            if (justificationCollection.stream().noneMatch(justification::equals)) {
                 invalidMatchList.add(justification);
             }
         }
@@ -228,7 +228,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 continue;
             }
             // Test invalid match
-            if (!assertEquality(indictment, indictmentObjectList)) {
+            if (indictmentObjectList.stream().noneMatch(indictment::equals)) {
                 invalidMatchList.add(indictment);
             }
         }
@@ -238,17 +238,6 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
                 noneMatchedList, invalidMatchList, indictmentObjectList, message);
         throw new AssertionError(assertionMessage);
-    }
-
-    private boolean assertEquality(Object target, Collection<?> otherList) {
-        boolean anyMatch;
-        if (target instanceof Comparable targetComparable && otherList.stream().allMatch(o -> o instanceof Comparable<?>)) {
-            anyMatch = otherList.stream()
-                    .anyMatch(o -> targetComparable.compareTo(o) == 0);
-        } else {
-            anyMatch = otherList.stream().anyMatch(target::equals);
-        }
-        return anyMatch;
     }
 
     /**

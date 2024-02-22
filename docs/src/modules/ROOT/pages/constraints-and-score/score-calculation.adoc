@@ -1301,7 +1301,6 @@ it is your responsibility to assign the correct values beforehand.
 
 When executing `justifiesWith(...)` and `indictsWith(...)`,
 comparisons are made using the standard method `equals` on the fact problem instances.
-It is also possible to provide an alternative comparison logic by implementing the `Comparable` interface.
 ====
 
 [#constraintStreamsTestingAllConstraints]
