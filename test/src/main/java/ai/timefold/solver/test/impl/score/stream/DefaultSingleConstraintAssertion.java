@@ -63,25 +63,25 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public void penalizesBy(int matchWeightTotal, String message) {
+    public void penalizesBy(String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesBy(long matchWeightTotal, String message) {
+    public void penalizesBy(String message, long matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesBy(BigDecimal matchWeightTotal, String message) {
+    public void penalizesBy(String message, BigDecimal matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizes(long times, String message) {
+    public void penalizes(String message, long times) {
         assertMatchCount(ScoreImpactType.PENALTY, times, message);
     }
 
@@ -91,25 +91,25 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public void rewardsWith(int matchWeightTotal, String message) {
+    public void rewardsWith(String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsWith(long matchWeightTotal, String message) {
+    public void rewardsWith(String message, long matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsWith(BigDecimal matchWeightTotal, String message) {
+    public void rewardsWith(String message, BigDecimal matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewards(long times, String message) {
+    public void rewards(String message, long times) {
         assertMatchCount(ScoreImpactType.REWARD, times, message);
     }
 
