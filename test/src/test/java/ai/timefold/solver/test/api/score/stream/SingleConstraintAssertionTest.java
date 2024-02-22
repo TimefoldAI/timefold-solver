@@ -259,22 +259,22 @@ class SingleConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(0, "There should be no penalties"))
+                .penalizes("There should be no penalties", 0))
                 .hasMessageContaining("There should be no penalties");
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be no penalties"))
+                .penalizes("There should be no penalties", 1))
                 .hasMessageContaining("There should be no penalties");
 
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(2, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
     }
 
     private static final class TestdataAllowsUnassignedListConstraintProvider implements ConstraintProvider {
@@ -318,11 +318,11 @@ class SingleConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataDisallowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataDisallowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(2, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
     }
 
     private static final class TestdataDisallowsUnassignedListConstraintProvider implements ConstraintProvider {
@@ -366,11 +366,11 @@ class SingleConstraintAssertionTest {
                 .verifyThat(
                         TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(2, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
     }
 
     private static final class TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider
