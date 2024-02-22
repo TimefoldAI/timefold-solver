@@ -47,6 +47,8 @@ public class TestdataPinnedUnassignedValuesListEntity extends TestdataObject {
     }
 
     private List<TestdataPinnedUnassignedValuesListValue> valueList;
+    @PlanningPinToIndex
+    private int planningPinToIndex = 0;
 
     public TestdataPinnedUnassignedValuesListEntity() {
     }
@@ -71,12 +73,12 @@ public class TestdataPinnedUnassignedValuesListEntity extends TestdataObject {
         this.valueList = valueList;
     }
 
-    @PlanningPinToIndex
-    public int getPlanningPinnedToIndex() {
-        // Always return 0, since we don't want to actually pin anything,
-        // but need to "support" pinning to test branches that only occur if
-        // pinning is present
-        return 0;
+    public int getPlanningPinToIndex() {
+        return planningPinToIndex;
+    }
+
+    public void setPlanningPinToIndex(int planningPinToIndex) {
+        this.planningPinToIndex = planningPinToIndex;
     }
 
 }

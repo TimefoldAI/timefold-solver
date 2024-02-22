@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
+import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
@@ -100,6 +101,8 @@ public interface CodeAssertable {
             return () -> code;
         } else if (o instanceof SubList subList) {
             return () -> convert(subList.entity()) + "[" + subList.fromIndex() + "+" + subList.length() + "]";
+        } else if (o instanceof UnassignedLocation unassignedLocation) {
+            return unassignedLocation::toString;
         } else if (o instanceof LocationInList locationInList) {
             return () -> convert(locationInList.entity()) + "[" + locationInList.index() + "]";
         } else if (o instanceof SubChain subChain) {

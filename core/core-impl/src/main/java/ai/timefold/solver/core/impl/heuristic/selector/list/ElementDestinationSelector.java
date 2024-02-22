@@ -10,15 +10,12 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -88,13 +85,14 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     public Iterator<ElementLocation> iterator() {
         if (randomSelection) {
             var allowsUnassignedValues = listVariableDescriptor.allowsUnassignedValues();
-            var entityIterator = entitySelector.iterator();
 
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
-            var totalValueSize = getEffectiveValueSelector().getSize()
+            var effectiveValueSelector = getEffectiveValueSelector();
+            var totalValueSize = effectiveValueSelector.getSize()
                     - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
-            return new ElementLocationRandomIterator(entityIterator, totalSize, allowsUnassignedValues);
+            return new ElementLocationRandomIterator<>(listVariableStateSupply, entitySelector, effectiveValueSelector,
+                    workingRandom, totalSize, allowsUnassignedValues);
         } else {
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();
@@ -172,88 +170,4 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         return getClass().getSimpleName() + "(" + entitySelector + ", " + valueSelector + ")";
     }
 
-    private final class ElementLocationRandomIterator implements Iterator<ElementLocation> {
-        private final Iterator<Object> entityIterator;
-        private final long totalSize;
-        private final boolean allowsUnassignedValues;
-        private Iterator<Object> valueIterator;
-
-        public ElementLocationRandomIterator(Iterator<Object> entityIterator, long totalSize, boolean allowsUnassignedValues) {
-            this.entityIterator = entityIterator;
-            this.totalSize = totalSize;
-            if (totalSize < 1) {
-                throw new IllegalStateException("Impossible state: totalSize (%d) < 1"
-                        .formatted(totalSize));
-            }
-            this.allowsUnassignedValues = allowsUnassignedValues;
-            this.valueIterator = getValueIterator(allowsUnassignedValues);
-        }
-
-        private Iterator<Object> getValueIterator(boolean allowsUnassignedValues) {
-            var effectiveValueSelector = getEffectiveValueSelector();
-            if (allowsUnassignedValues) {
-                /*
-                 * In case of list variable that allows unassigned values,
-                 * unassigned elements will show up in the valueSelector.
-                 * These skew the selection probability, so we need to exclude them.
-                 * The option to unassign needs to be added to the iterator once later,
-                 * to make sure that it can get selected.
-                 *
-                 * Example: for destination elements [A, B, C] where C is not initialized,
-                 * the probability of unassigning a source element is 1/3 as it should be.
-                 * (If destination is not initialized, it means source will be unassigned.)
-                 * However, if B and C were not initialized, the probability of unassigning goes up to 2/3.
-                 * The probability should be 1/2 instead.
-                 * (Either select A as the destination, or unassign.)
-                 * If we always remove unassigned elements from the iterator,
-                 * and always add one option to unassign at the end,
-                 * we can keep the correct probabilities throughout.
-                 */
-                effectiveValueSelector =
-                        (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(effectiveValueSelector,
-                                (ScoreDirector<Solution_> scoreDirector,
-                                        Object selection) -> listVariableStateSupply.getInverseSingleton(selection) != null);
-            }
-            return effectiveValueSelector.iterator();
-        }
-
-        @Override
-        public boolean hasNext() {
-            // The valueSelector's hasNext() is insignificant.
-            // The next random destination exists if and only if there is a next entity.
-            return entityIterator.hasNext();
-        }
-
-        @Override
-        public ElementLocation next() {
-            var entitySize = entitySelector.getSize();
-            var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
-            long random = RandomUtils.nextLong(workingRandom, totalSize);
-            if (allowsUnassignedValues && random == 0) {
-                // We have already excluded all unassigned elements,
-                // the only way to get an unassigned destination is to explicitly add it.
-                return ElementLocation.unassigned();
-            } else if (random < entityBoundary) {
-                // Start with the first unpinned value of each entity, or zero if no pinning.
-                // Entity selector is guaranteed to return only unpinned entities.
-                var entity = entityIterator.next();
-                return new LocationInList(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
-            } else { // Value selector already returns only unpinned values.
-                if (!valueIterator.hasNext()) {
-                    valueIterator = getValueIterator(allowsUnassignedValues);
-                    if (!valueIterator.hasNext()) {
-                        if (allowsUnassignedValues) {
-                            return ElementLocation.unassigned();
-                        } else {
-                            // TODO
-                            throw new UnsupportedOperationException();
-                        }
-                    }
-                }
-                var value = valueIterator.next();
-                var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(value);
-                return new LocationInList(elementLocation.entity(), elementLocation.index() + 1);
-            }
-        }
-    }
 }
