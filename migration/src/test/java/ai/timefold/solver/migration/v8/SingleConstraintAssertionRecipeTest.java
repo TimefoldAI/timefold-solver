@@ -10,10 +10,7 @@ class SingleConstraintAssertionRecipeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-                SingleConstraintAssertionRecipeTest.class
-                        .getResourceAsStream("/META-INF/rewrite/ToLatestSingleConstraintAssertion.yml"),
-                "ai.timefold.solver.migration.ToLatestSingleConstraintAssertion")
+        spec.recipe(new SingleConstraintAssertionMethodsRecipe())
                 .parser(SolverManagerBuilderRecipe.buildJavaParser());
     }
 

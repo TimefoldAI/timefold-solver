@@ -75,9 +75,9 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
-     * @deprecated Use {@link #penalizesBy(String, int)} instead
+     * @deprecated Use {@link #penalizesBy(String, int)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void penalizesBy(int matchWeightTotal, String message) {
         penalizesBy(message, matchWeightTotal);
     }
@@ -108,9 +108,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      *
-     * @deprecated Use {@link #penalizesBy(String, long)} instead
+     * @deprecated Use {@link #penalizesBy(String, long)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void penalizesBy(long matchWeightTotal, String message) {
         penalizesBy(message, matchWeightTotal);
     }
@@ -141,9 +141,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      *
-     * @deprecated Use {@link #penalizesBy(String, BigDecimal)} instead
+     * @deprecated Use {@link #penalizesBy(String, BigDecimal)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void penalizesBy(BigDecimal matchWeightTotal, String message) {
         penalizesBy(message, matchWeightTotal);
     }
@@ -177,9 +177,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      *
-     * @deprecated Use {@link #penalizes(String, long)} instead
+     * @deprecated Use {@link #penalizes(String, long)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void penalizes(long times, String message) {
         penalizes(message, times);
     }
@@ -237,9 +237,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected reward is not observed
      *
-     * @deprecated Use {@link #rewardsWith(String, int)} instead
+     * @deprecated Use {@link #rewardsWith(String, int)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void rewardsWith(int matchWeightTotal, String message) {
         rewardsWith(message, matchWeightTotal);
     }
@@ -270,9 +270,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected reward is not observed
      *
-     * @deprecated Use {@link #rewardsWith(String, long)} instead
+     * @deprecated Use {@link #rewardsWith(String, long)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void rewardsWith(long matchWeightTotal, String message) {
         rewardsWith(message, matchWeightTotal);
     }
@@ -303,9 +303,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected reward is not observed
      *
-     * @deprecated Use {@link #rewardsWith(String, BigDecimal)} instead
+     * @deprecated Use {@link #rewardsWith(String, BigDecimal)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void rewardsWith(BigDecimal matchWeightTotal, String message) {
         rewardsWith(message, matchWeightTotal);
     }
@@ -339,9 +339,9 @@ public interface SingleConstraintAssertion {
      * @param message sometimes null, description of the scenario being asserted
      * @throws AssertionError when the expected reward is not observed
      *
-     * @deprecated Use {@link #rewards(String, long)} instead
+     * @deprecated Use {@link #rewards(String, long)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.7.0")
+    @Deprecated(forRemoval = true, since = "1.8.0")
     default void rewards(long times, String message) {
         rewards(message, times);
     }
