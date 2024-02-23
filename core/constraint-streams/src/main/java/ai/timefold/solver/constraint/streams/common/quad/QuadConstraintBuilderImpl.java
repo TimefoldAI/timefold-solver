@@ -32,7 +32,10 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     public <ConstraintJustification_ extends ConstraintJustification> QuadConstraintBuilder<A, B, C, D, Score_> justifyWith(
             PentaFunction<A, B, C, D, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
-            throw new IllegalStateException("Justification mapping already set (" + justificationMapping + ").");
+            throw new IllegalStateException("""
+                    Justification mapping already set (%s).
+                    Maybe the constraint calls justifyWith() twice?"""
+                    .formatted(justificationMapping));
         }
         this.justificationMapping =
                 (PentaFunction<A, B, C, D, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
@@ -48,7 +51,10 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     public QuadConstraintBuilder<A, B, C, D, Score_>
             indictWith(QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("Indicted objects' mapping already set (" + indictedObjectsMapping + ").");
+            throw new IllegalStateException("""
+                    Indicted objects' mapping already set (%s).
+                    Maybe the constraint calls indictWith() twice?"""
+                    .formatted(indictedObjectsMapping));
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

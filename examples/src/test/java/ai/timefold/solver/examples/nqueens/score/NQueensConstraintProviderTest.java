@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.examples.common.score.AbstractConstraintProviderTest;
 import ai.timefold.solver.examples.common.score.ConstraintProviderTest;
 import ai.timefold.solver.examples.nqueens.domain.Column;
+import ai.timefold.solver.examples.nqueens.domain.CustomHorizontalConflictJustification;
 import ai.timefold.solver.examples.nqueens.domain.NQueens;
 import ai.timefold.solver.examples.nqueens.domain.Queen;
 import ai.timefold.solver.examples.nqueens.domain.Row;
@@ -38,6 +39,8 @@ class NQueensConstraintProviderTest
         Queen queen2 = new Queen(1, row1, column2);
         constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
                 .given(queen1, queen2)
+                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
+                .indictsWith(queen1, queen2)
                 .penalizesBy(1);
     }
 

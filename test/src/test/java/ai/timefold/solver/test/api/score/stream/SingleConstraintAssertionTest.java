@@ -22,8 +22,11 @@ import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.Testda
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
+import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierJustificationProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSecondEntity;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSolution;
+import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
+import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +37,11 @@ class SingleConstraintAssertionTest {
                     TestdataConstraintVerifierExtendedSolution.class,
                     TestdataConstraintVerifierFirstEntity.class,
                     TestdataConstraintVerifierSecondEntity.class);
+
+    private final ConstraintVerifier<TestdataConstraintVerifierJustificationProvider, TestdataConstraintVerifierSolution> constraintVerifierForJustification =
+            ConstraintVerifier.build(new TestdataConstraintVerifierJustificationProvider(),
+                    TestdataConstraintVerifierSolution.class,
+                    TestdataConstraintVerifierFirstEntity.class);
 
     @Test
     void penalizesAndDoesNotReward() {
@@ -65,49 +73,49 @@ class SingleConstraintAssertionTest {
     void impacts() {
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
-                .penalizes(0, "There should be no penalties"))
+                .penalizes("There should be no penalties", 0))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .penalizes(0, "There should be no penalties"))
+                .penalizes("There should be no penalties", 0))
                 .hasMessageContaining("There should be no penalties")
                 .hasMessageContaining("Expected penalty");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .penalizes(1, "There should be penalties"))
+                .penalizes("There should be penalties", 1))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .penalizes(2, "There should only be one penalty"))
+                .penalizes("There should only be one penalty", 2))
                 .hasMessageContaining("There should only be one penalty")
                 .hasMessageContaining("Expected penalty");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .rewards(1, "There should not be rewards"))
+                .rewards("There should not be rewards", 1))
                 .hasMessageContaining("There should not be rewards")
                 .hasMessageContaining("Expected reward");
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
-                .rewards(0, "There should be no rewards"))
+                .rewards("There should be no rewards", 0))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .rewards(0, "There should be no rewards"))
+                .rewards("There should be no rewards", 0))
                 .hasMessageContaining("There should be no rewards")
                 .hasMessageContaining("Expected reward");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .rewards(1, "There should be rewards"))
+                .rewards("There should be rewards", 1))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .rewards(2, "There should only be one reward"))
+                .rewards("There should only be one reward", 2))
                 .hasMessageContaining("There should only be one reward")
                 .hasMessageContaining("Expected reward");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .penalizes(1, "There should not be penalties"))
+                .penalizes("There should not be penalties", 1))
                 .hasMessageContaining("There should not be penalties")
                 .hasMessageContaining("Expected penalty");
     }
@@ -116,49 +124,49 @@ class SingleConstraintAssertionTest {
     void impactsBy() {
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
-                .penalizesBy(0, "There should no penalties"))
+                .penalizesBy("There should no penalties", 0))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .penalizesBy(0, "There should be no penalties"))
+                .penalizesBy("There should be no penalties", 0))
                 .hasMessageContaining("There should be no penalties")
                 .hasMessageContaining("Expected penalty");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .penalizesBy(1, "There should be penalties"))
+                .penalizesBy("There should be penalties", 1))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .penalizesBy(2, "There should only be one penalty"))
+                .penalizesBy("There should only be one penalty", 2))
                 .hasMessageContaining("There should only be one penalty")
                 .hasMessageContaining("Expected penalty");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
-                .rewardsWith(1, "There should not be rewards"))
+                .rewardsWith("There should not be rewards", 1))
                 .hasMessageContaining("There should not be rewards")
                 .hasMessageContaining("Expected reward");
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
-                .rewardsWith(0, "There should no rewards"))
+                .rewardsWith("There should no rewards", 0))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .rewardsWith(0, "There should be no rewards"))
+                .rewardsWith("There should be no rewards", 0))
                 .hasMessageContaining("There should be no rewards")
                 .hasMessageContaining("Expected reward");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .rewardsWith(1, "There should be rewards"))
+                .rewardsWith("There should be rewards", 1))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .rewardsWith(2, "There should only be one reward"))
+                .rewardsWith("There should only be one reward", 2))
                 .hasMessageContaining("There should only be one reward")
                 .hasMessageContaining("Expected reward");
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
-                .penalizesBy(1, "There should not be penalties"))
+                .penalizesBy("There should not be penalties", 1))
                 .hasMessageContaining("There should not be penalties")
                 .hasMessageContaining("Expected penalty");
     }
@@ -169,10 +177,10 @@ class SingleConstraintAssertionTest {
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .penalizes(3, "There should be penalties.")).doesNotThrowAnyException();
+                .penalizes("There should be penalties.", 3)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .rewards(1, "There should be rewards")).hasMessageContaining("There should be rewards")
+                .rewards("There should be rewards", 1)).hasMessageContaining("There should be rewards")
                 .hasMessageContaining("Expected reward");
     }
 
@@ -182,10 +190,10 @@ class SingleConstraintAssertionTest {
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .penalizesBy(BigDecimal.valueOf(3), "There should be penalties.")).doesNotThrowAnyException();
+                .penalizesBy("There should be penalties.", BigDecimal.valueOf(3))).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .penalizesBy(new BigDecimal("3.01"), "There should be penalties."))
+                .penalizesBy("There should be penalties.", new BigDecimal("3.01")))
                 .hasMessageContaining("There should be penalties")
                 .hasMessageContaining("Expected penalty");
     }
@@ -196,10 +204,10 @@ class SingleConstraintAssertionTest {
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .rewards(3, "There should be rewards")).doesNotThrowAnyException();
+                .rewards("There should be rewards", 3)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .penalizes(1, "There should be penalties.")).hasMessageContaining("There should be penalties")
+                .penalizes("There should be penalties.", 1)).hasMessageContaining("There should be penalties")
                 .hasMessageContaining("Expected penalty");
     }
 
@@ -209,10 +217,10 @@ class SingleConstraintAssertionTest {
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .rewardsWith(BigDecimal.valueOf(3), "There should be rewards")).doesNotThrowAnyException();
+                .rewardsWith("There should be rewards", BigDecimal.valueOf(3))).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .rewardsWith(new BigDecimal("3.01"), "There should be rewards."))
+                .rewardsWith("There should be rewards.", new BigDecimal("3.01")))
                 .hasMessageContaining("There should be rewards")
                 .hasMessageContaining("Expected reward");
     }
@@ -223,13 +231,13 @@ class SingleConstraintAssertionTest {
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::differentStringEntityHaveDifferentValues)
                 .given(new TestdataConstraintVerifierSecondEntity("A", "1"),
                         new TestdataConstraintVerifierSecondEntity("B", "1"))
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
 
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::differentStringEntityHaveDifferentValues)
                 .given(new TestdataConstraintVerifierSecondEntity("A", "1"),
                         new TestdataConstraintVerifierSecondEntity("B", "1"))
-                .rewards(1, "There should be rewards")).hasMessageContaining("There should be rewards")
+                .rewards("There should be rewards", 1)).hasMessageContaining("There should be rewards")
                 .hasMessageContaining("Expected reward");
     }
 
@@ -251,22 +259,22 @@ class SingleConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(0, "There should be no penalties"))
+                .penalizes("There should be no penalties", 0))
                 .hasMessageContaining("There should be no penalties");
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be no penalties"))
+                .penalizes("There should be no penalties", 1))
                 .hasMessageContaining("There should be no penalties");
 
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(2, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
     }
 
     private static final class TestdataAllowsUnassignedListConstraintProvider implements ConstraintProvider {
@@ -310,11 +318,11 @@ class SingleConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataDisallowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataDisallowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(2, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
     }
 
     private static final class TestdataDisallowsUnassignedListConstraintProvider implements ConstraintProvider {
@@ -358,11 +366,11 @@ class SingleConstraintAssertionTest {
                 .verifyThat(
                         TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
-                .penalizes(1, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier
                 .verifyThat(TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
-                .penalizes(2, "There should be penalties")).doesNotThrowAnyException();
+                .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
     }
 
     private static final class TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider
@@ -390,4 +398,331 @@ class SingleConstraintAssertionTest {
 
     }
 
+    @Test
+    void justifies() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // No error
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstJustification("Generated Entity 0"),
+                                new TestFirstJustification("Generated Entity 1")))
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .justifiesWith(new TestFirstJustification("Generated Entity 0"),
+                                new TestFirstJustification("Generated Entity 1")))
+                .doesNotThrowAnyException();
+
+        // Different justification
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstJustification("2")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .justifiesWith(new TestFirstJustification("2")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+    }
+
+    @Test
+    void justifiesWithCustomMessage() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith("Custom Message", new TestFirstJustification("2")))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .justifiesWith("Custom Message", new TestFirstJustification("2")))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+    }
+
+    @Test
+    void justifiesWithNoMatch() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestSecondJustification("1")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("No match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestSecondJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .justifiesWith(new TestSecondJustification("1")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("No match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestSecondJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+    }
+
+    @Test
+    void justifiesEmptyMatches() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith())
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("No Justification")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWith(new TestFirstJustification("1")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("No Justification");
+    }
+
+    @Test
+    void indicts() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // No error
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith(solution.getEntityList().toArray()))
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWith(solution.getEntityList().toArray()))
+                .doesNotThrowAnyException();
+
+        // Invalid indictment
+        TestdataConstraintVerifierFirstEntity badEntity =
+                new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith(badEntity))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString());
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWith(badEntity))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString());
+    }
+
+    @Test
+    void indictsWithCustomMessage() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        TestdataConstraintVerifierFirstEntity badEntity =
+                new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith("Custom Message", badEntity))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString());
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWith("Custom Message", badEntity))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString());
+    }
+
+    @Test
+    void indictsWithNoMatch() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith(solution.getEntityList().get(0), "bad indictment"))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("No match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("bad indictment")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString());
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWith(solution.getEntityList().get(0), "bad indictment"))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("No match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("bad indictment")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString());
+    }
+
+    @Test
+    void indictEmptyMatches() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith())
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("No Indictment")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 0')")
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 1')")
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 2')");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWith(new TestFirstJustification("1")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Invalid match")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("No Indictment");
+    }
 }

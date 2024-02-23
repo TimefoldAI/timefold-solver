@@ -11,6 +11,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -2758,6 +2759,36 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.calculateScore();
         assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
+    }
+
+    @Override
+    @TestTemplate
+    public void failWithMultipleJustifications() {
+        assertThatCode(() -> buildScoreDirector(
+                factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getValue))
+                        .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
+                        .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
+                        .penalize(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
+                        .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
+                        .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
+                        .indictWith(List::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
+    }
+
+    @Override
+    @TestTemplate
+    public void failWithMultipleIndictments() {
+        assertThatCode(() -> buildScoreDirector(
+                factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getValue))
+                        .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
+                        .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
+                        .penalize(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
+                        .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
+                        .indictWith(List::of)
+                        .indictWith(List::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
     }
 
 }

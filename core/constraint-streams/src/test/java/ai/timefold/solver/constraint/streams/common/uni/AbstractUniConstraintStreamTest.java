@@ -8,6 +8,7 @@ import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.toSe
 import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
 import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -3568,6 +3569,32 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.calculateScore();
         assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
+    }
+
+    @Override
+    @TestTemplate
+    public void failWithMultipleJustifications() {
+        assertThatCode(() -> buildScoreDirector(
+                factory -> factory.forEach(TestdataLavishEntity.class)
+                        .penalize(SimpleScore.ONE, entity -> 2)
+                        .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
+                        .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
+                        .indictWith(Set::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
+    }
+
+    @Override
+    @TestTemplate
+    public void failWithMultipleIndictments() {
+        assertThatCode(() -> buildScoreDirector(
+                factory -> factory.forEach(TestdataLavishEntity.class)
+                        .penalize(SimpleScore.ONE, entity -> 2)
+                        .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
+                        .indictWith(Set::of)
+                        .indictWith(Set::of)
+                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
     }
 
     // ************************************************************************

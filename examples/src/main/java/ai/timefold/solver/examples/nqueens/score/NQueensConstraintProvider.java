@@ -2,10 +2,13 @@ package ai.timefold.solver.examples.nqueens.score;
 
 import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.examples.nqueens.domain.CustomHorizontalConflictJustification;
 import ai.timefold.solver.examples.nqueens.domain.Queen;
 
 public class NQueensConstraintProvider implements ConstraintProvider {
@@ -26,6 +29,9 @@ public class NQueensConstraintProvider implements ConstraintProvider {
     protected Constraint horizontalConflict(ConstraintFactory factory) {
         return factory.forEachUniquePair(Queen.class, equal(Queen::getRowIndex))
                 .penalize(SimpleScore.ONE)
+                .justifyWith((queen, otherQueen, simpleScore) -> new CustomHorizontalConflictJustification(queen.getId(),
+                        otherQueen.getId()))
+                .indictWith(List::of)
                 .asConstraint("Horizontal conflict");
     }
 

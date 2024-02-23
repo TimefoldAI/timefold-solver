@@ -44,5 +44,4 @@ public final class TestdataConstraintVerifierConstraintProvider implements Const
                 .penalize(HardSoftScore.ofSoft(3))
                 .asConstraint("Different String Entity Have Different Values");
     }
-
 }
