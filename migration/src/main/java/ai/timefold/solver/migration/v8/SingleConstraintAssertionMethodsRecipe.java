@@ -20,16 +20,16 @@ public final class SingleConstraintAssertionMethodsRecipe extends Recipe {
     @Override
     public List<Recipe> getRecipeList() {
         var methodsToReorder = List.of(
-                new String[] { "ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion *(int,String)",
-                        "matchWeightTotal,message",
-                        "message,matchWeightTotal" },
+                new String[] { "ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion *(int, String)",
+                        "message,matchWeightTotal",
+                        "matchWeightTotal,message" },
                 new String[] { "ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion *(long, String)",
-                        "matchWeightTotal,message",
-                        "message,matchWeightTotal" },
+                        "message,matchWeightTotal",
+                        "matchWeightTotal,message" },
                 new String[] {
                         "ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion *(java.math.BigDecimal, String)",
-                        "matchWeightTotal,message",
-                        "message,matchWeightTotal" });
+                        "message,matchWeightTotal",
+                        "matchWeightTotal,message" });
         var result = new ArrayList<Recipe>();
         methodsToReorder.forEach(method -> result
                 .add(new ReorderMethodArguments(method[0], method[1].split(","), method[2].split(","), null, null)));
