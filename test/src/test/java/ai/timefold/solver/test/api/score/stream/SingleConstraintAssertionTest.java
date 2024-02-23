@@ -398,7 +398,6 @@ class SingleConstraintAssertionTest {
 
     }
 
-
     @Test
     void justifies() {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
