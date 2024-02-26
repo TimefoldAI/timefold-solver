@@ -194,7 +194,9 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         while (restartSolver) {
             LongTaskTimer.Sample sample = solveLengthTimer.start();
             try {
-                registerSolverSpecificMetrics();
+                // solvingStarted will call registerSolverSpecificMetrics(), since
+                // the solverScope need to be fully initialized to calculate the
+                // problem's scale metrics
                 solvingStarted(solverScope);
                 runPhases(solverScope);
                 solvingEnded(solverScope);
@@ -207,9 +209,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 unregisterSolverSpecificMetrics();
             }
             restartSolver = checkProblemFactChanges();
-            if (restartSolver) {
-                solverScope.resetProblemScaleMetrics();
-            }
         }
         outerSolvingEnded(solverScope);
         return solverScope.getBestSolution();
@@ -230,6 +229,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         super.solvingStarted(solverScope);
         var startingSolverCount = solverScope.getStartingSolverCount() + 1;
         solverScope.setStartingSolverCount(startingSolverCount);
+        registerSolverSpecificMetrics();
         logger.info("Solving {}: time spent ({}), best score ({}), "
                 + "entity count ({}), variable count ({}), "
                 + "maximum value count ({}), "
@@ -246,6 +246,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     private void registerSolverSpecificMetrics() {
+        solverScope.calculateProblemScaleMetrics();
         Metrics.gauge(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), solverScope.getMonitoringTags(),
                 solverScope, SolverScope::getScoreCalculationCount);
         Metrics.gauge(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), solverScope.getMonitoringTags(),

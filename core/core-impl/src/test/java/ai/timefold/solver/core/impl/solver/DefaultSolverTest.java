@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -519,7 +518,6 @@ class DefaultSolverTest {
         final int entityCount = solution.getEntityList().size();
         final int valueCount = solution.getValueList().size();
 
-        CountDownLatch solutionWithProblemChangeReceived = new CountDownLatch(1);
         AtomicBoolean entitiesUpdated = new AtomicBoolean();
         AtomicBoolean valuesUpdated = new AtomicBoolean();
         solver.addEventListener(bestSolutionChangedEvent -> {
@@ -541,7 +539,6 @@ class DefaultSolverTest {
                     // The maximum assignable value count of any variable is 3
                     assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
                             .isEqualTo(3L);
-                    solutionWithProblemChangeReceived.countDown();
                     valuesUpdated.set(true);
                 }
             }
@@ -557,14 +554,6 @@ class DefaultSolverTest {
             problemChangeDirector.addProblemFact(new TestdataValue("added value"), workingSolution.getValueList()::add);
         });
 
-        while (!solutionWithProblemChangeReceived.await(1L, TimeUnit.SECONDS)) {
-            if (job.isDone()) {
-                // Solving must have failed if the latch did not unlock and
-                // the job is done, since the latch should be unlocked during
-                // solving.
-                throw new AssertionError("Solving failed");
-            }
-        }
         job.get();
         meterRegistry.publish(solver);
         assertThat(entitiesUpdated).isTrue();

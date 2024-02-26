@@ -229,30 +229,23 @@ public class SolverScope<Solution_> {
     }
 
     public long getWorkingSolutionEntityCount() {
-        if (problemEntityCount == null) {
-            problemEntityCount = (long) getSolutionDescriptor().getGenuineEntityCount(getWorkingSolution());
-        }
         return problemEntityCount;
     }
 
     public long getWorkingSolutionVariableCount() {
-        if (problemVariableCount == null) {
-            problemVariableCount = getSolutionDescriptor().getGenuineVariableCount(getWorkingSolution());
-        }
         return problemVariableCount;
     }
 
     public long getWorkingSolutionMaximumValueCount() {
-        if (problemMaximumAssignableValuesCount == null) {
-            problemMaximumAssignableValuesCount = getSolutionDescriptor().getMaximumValueCount(getWorkingSolution());
-        }
         return problemMaximumAssignableValuesCount;
     }
 
-    public void resetProblemScaleMetrics() {
-        problemEntityCount = null;
-        problemVariableCount = null;
-        problemMaximumAssignableValuesCount = null;
+    public void calculateProblemScaleMetrics() {
+        var solutionDescriptor = getSolutionDescriptor();
+        var workingSolution = getWorkingSolution();
+        problemEntityCount = solutionDescriptor.getGenuineVariableCount(workingSolution);
+        problemVariableCount = solutionDescriptor.getGenuineVariableCount(workingSolution);
+        problemMaximumAssignableValuesCount = solutionDescriptor.getMaximumValueCount(workingSolution);
     }
 
     /**
