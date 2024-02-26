@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.ProblemStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -44,10 +45,7 @@ public class SolverScope<Solution_> {
 
     protected Score startingInitializedScore;
 
-    protected volatile Long problemEntityCount;
-    protected volatile Long problemVariableCount;
-    protected volatile Long problemMaximumAssignableValuesCount;
-
+    protected volatile ProblemStatistics problemStatistics;
     protected volatile Solution_ bestSolution;
     protected volatile Score bestScore;
     protected Long bestSolutionTimeMillis;
@@ -228,24 +226,20 @@ public class SolverScope<Solution_> {
         return endingSystemTimeMillis - startingSystemTimeMillis;
     }
 
-    public long getWorkingSolutionEntityCount() {
-        return problemEntityCount;
+    public ProblemStatistics getProblemStatistics() {
+        return problemStatistics;
     }
 
-    public long getWorkingSolutionVariableCount() {
-        return problemVariableCount;
+    public void setProblemStatistics(ProblemStatistics problemStatistics) {
+        this.problemStatistics = problemStatistics;
     }
 
-    public long getWorkingSolutionMaximumValueCount() {
-        return problemMaximumAssignableValuesCount;
-    }
-
-    public void calculateProblemScaleMetrics() {
+    public ProblemStatistics calculateProblemStatistics(Solution_ problem) {
         var solutionDescriptor = getSolutionDescriptor();
-        var workingSolution = getWorkingSolution();
-        problemEntityCount = solutionDescriptor.getGenuineVariableCount(workingSolution);
-        problemVariableCount = solutionDescriptor.getGenuineVariableCount(workingSolution);
-        problemMaximumAssignableValuesCount = solutionDescriptor.getMaximumValueCount(workingSolution);
+        return new ProblemStatistics(solutionDescriptor.getGenuineVariableCount(problem),
+                solutionDescriptor.getGenuineVariableCount(problem),
+                solutionDescriptor.getGenuineVariableCount(problem),
+                solutionDescriptor.getProblemScale(problem));
     }
 
     /**

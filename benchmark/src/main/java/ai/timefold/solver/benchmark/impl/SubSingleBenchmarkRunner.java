@@ -14,10 +14,8 @@ import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,12 +119,9 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             subSingleStatistic.hibernatePointList();
         }
         if (!warmUp) {
-            SolverScope<Solution_> solverScope = solver.getSolverScope();
-            SolutionDescriptor<Solution_> solutionDescriptor = solverScope.getSolutionDescriptor();
-            problemBenchmarkResult.registerScale(solutionDescriptor.getGenuineEntityCount(solution),
-                    solutionDescriptor.getGenuineVariableCount(solution),
-                    solutionDescriptor.getMaximumValueCount(solution),
-                    solutionDescriptor.getProblemScale(solution));
+            var solverScope = solver.getSolverScope();
+            var solutionDescriptor = solverScope.getSolutionDescriptor();
+            problemBenchmarkResult.registerScale(solverScope.calculateProblemStatistics(solution));
             subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution));
             subSingleBenchmarkResult.setTimeMillisSpent(timeMillisSpent);
             subSingleBenchmarkResult.setScoreCalculationCount(solverScope.getScoreCalculationCount());
