@@ -236,9 +236,9 @@ public class SolverScope<Solution_> {
 
     public ProblemStatistics calculateProblemStatistics(Solution_ problem) {
         var solutionDescriptor = getSolutionDescriptor();
-        return new ProblemStatistics(solutionDescriptor.getGenuineVariableCount(problem),
+        return new ProblemStatistics(solutionDescriptor.getGenuineEntityCount(problem),
                 solutionDescriptor.getGenuineVariableCount(problem),
-                solutionDescriptor.getGenuineVariableCount(problem),
+                solutionDescriptor.getMaximumValueRangeSize(problem),
                 solutionDescriptor.getProblemScale(problem));
     }
 

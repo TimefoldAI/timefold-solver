@@ -396,7 +396,7 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(entityCount * valueCount);
         });
     }
@@ -410,7 +410,7 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
-            softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(entityCount + anchorCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(entityCount + anchorCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);
         });
     }
@@ -438,7 +438,7 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);
         });
     }

@@ -1026,7 +1026,7 @@ public class SolutionDescriptor<Solution_> {
         return result.longValue();
     }
 
-    public long getMaximumValueCount(Solution_ solution) {
+    public long getMaximumValueRangeSize(Solution_ solution) {
         return extractAllEntitiesStream(solution)
                 .mapToLong(entity -> {
                     var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
