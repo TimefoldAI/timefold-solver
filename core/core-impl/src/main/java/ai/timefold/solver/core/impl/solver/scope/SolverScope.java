@@ -239,7 +239,7 @@ public class SolverScope<Solution_> {
         return new ProblemStatistics(solutionDescriptor.getGenuineEntityCount(problem),
                 solutionDescriptor.getGenuineVariableCount(problem),
                 solutionDescriptor.getMaximumValueRangeSize(problem),
-                solutionDescriptor.getProblemScale(problem));
+                solutionDescriptor.getProblemScale(scoreDirector, problem));
     }
 
     /**

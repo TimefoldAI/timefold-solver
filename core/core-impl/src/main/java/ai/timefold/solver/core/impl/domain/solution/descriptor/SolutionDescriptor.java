@@ -47,6 +47,7 @@ import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.ProblemStatistics;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -67,6 +68,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
@@ -1038,20 +1040,45 @@ public class SolutionDescriptor<Solution_> {
 
     /**
      * Calculates an indication on how big this problem instance is.
-     * This is intentionally very loosely defined for now.
-     * This is explicitly NOT the solution space size.
+     * This is approximately 100 times the log of the solution space size,
+     * where the base of the log is {@link #getMaximumValueRangeSize}.
      *
      * @param solution never null
      * @return {@code >= 0}
      */
-    public long getProblemScale(Solution_ solution) {
+    public long getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+        long logBase = getMaximumValueRangeSize(solution);
         MutableLong result = new MutableLong();
+        MutableLong listPinnedValueCount = new MutableLong();
+        MutableLong listTotalEntityCount = new MutableLong();
+        MutableLong listMovableEntityCount = new MutableLong();
+        MutableLong listTotalValueCount = new MutableLong();
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
-                result.add(entityDescriptor.getProblemScale(solution, entity));
+                result.add(entityDescriptor.getBasicVariableProblemScale(scoreDirector, solution, entity, logBase));
+                var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+                if (listVariableDescriptor != null) {
+                    listTotalEntityCount.increment();
+                    listTotalValueCount.add(listVariableDescriptor.getValueRangeSize(solution, entity));
+                    if (entityDescriptor.isMovable(scoreDirector, entity)) {
+                        listMovableEntityCount.increment();
+                        listPinnedValueCount.add(listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                    } else {
+                        listPinnedValueCount.add(listVariableDescriptor.getListSize(entity));
+                    }
+                }
             }
         });
+        if (listTotalEntityCount.longValue() != 0L) {
+            // List variables do not support from entity value ranges
+            int totalListValueCount = listTotalValueCount.intValue() / listTotalEntityCount.intValue();
+            int totalListMovableValueCount = totalListValueCount - listPinnedValueCount.intValue();
+            int possibleTargetsForListValue = listMovableEntityCount.intValue();
+
+            result.add(MathUtils.getPossibleArrangementsScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase,
+                    totalListMovableValueCount, possibleTargetsForListValue));
+        }
         return result.longValue();
     }
 

@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.ProblemStatistics;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -60,6 +61,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.slf4j.Logger;
@@ -684,19 +686,17 @@ public class EntityDescriptor<Solution_> {
 
     }
 
-    public long getProblemScale(Solution_ solution, Object entity) {
-        int genuineEntityCount = getSolutionDescriptor().getGenuineEntityCount(solution);
-        long problemScale = 1L;
+    public long getBasicVariableProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution, Object entity,
+            long logBase) {
+        if (!isMovable(scoreDirector, entity)) {
+            // log_x(1) is 0 for all bases
+            return 0L;
+        }
+        long problemScale = 0L;
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
             long valueCount = variableDescriptor.getValueRangeSize(solution, entity);
-            problemScale *= valueCount;
-            if (variableDescriptor.isListVariable()) {
-                // This formula probably makes no sense other than that it results in the same problem scale for both
-                // chained and list variable models.
-                // TODO fix https://issues.redhat.com/browse/PLANNER-2623 to get rid of this.
-                problemScale *= valueCount;
-                problemScale /= genuineEntityCount;
-                problemScale += valueCount;
+            if (variableDescriptor instanceof BasicVariableDescriptor) {
+                problemScale += MathUtils.getScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase, valueCount);
             }
         }
         return problemScale;

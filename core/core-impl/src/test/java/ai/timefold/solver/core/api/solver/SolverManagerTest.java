@@ -340,7 +340,7 @@ class SolverManagerTest {
         assertThat(problemStatistics.entityCount()).isEqualTo(2L);
         assertThat(problemStatistics.variableCount()).isEqualTo(2L);
         assertThat(problemStatistics.maximumValueRangeSize()).isEqualTo(2L);
-        assertThat(problemStatistics.problemScale()).isEqualTo(4L);
+        assertThat(problemStatistics.formatApproximateProblemScale()).isEqualTo("2^{2}");
     }
 
     @Test
@@ -379,7 +379,7 @@ class SolverManagerTest {
         assertThat(problemStatistics.entityCount()).isEqualTo(4L);
         assertThat(problemStatistics.variableCount()).isEqualTo(4L);
         assertThat(problemStatistics.maximumValueRangeSize()).isEqualTo(4L);
-        assertThat(problemStatistics.problemScale()).isEqualTo(16L);
+        assertThat(problemStatistics.formatApproximateProblemScale()).isEqualTo("4^{4}");
 
         CompletableFuture<Void> futureChange = solverManager
                 .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
@@ -396,7 +396,7 @@ class SolverManagerTest {
         assertThat(problemStatistics.entityCount()).isEqualTo(4L);
         assertThat(problemStatistics.variableCount()).isEqualTo(4L);
         assertThat(problemStatistics.maximumValueRangeSize()).isEqualTo(5L);
-        assertThat(problemStatistics.problemScale()).isEqualTo(20L);
+        assertThat(problemStatistics.formatApproximateProblemScale()).isEqualTo("5^{4}");
     }
 
     @Test

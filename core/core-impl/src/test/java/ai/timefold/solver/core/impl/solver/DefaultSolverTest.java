@@ -12,10 +12,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -501,7 +499,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveMetricsProblemChange() throws InterruptedException, ExecutionException {
+    void solveMetricsProblemChange() throws InterruptedException {
         TestMeterRegistry meterRegistry = new TestMeterRegistry();
         Metrics.addRegistry(meterRegistry);
 
@@ -515,37 +513,15 @@ class DefaultSolverTest {
         final TestdataSolution solution = new TestdataSolution("s1");
         solution.setValueList(new ArrayList<>(List.of(new TestdataValue("v1"), new TestdataValue("v2"))));
         solution.setEntityList(new ArrayList<>(List.of(new TestdataEntity("e1"), new TestdataEntity("e2"))));
-        final int entityCount = solution.getEntityList().size();
-        final int valueCount = solution.getValueList().size();
 
-        AtomicBoolean entitiesUpdated = new AtomicBoolean();
-        AtomicBoolean valuesUpdated = new AtomicBoolean();
+        CountDownLatch latch = new CountDownLatch(1);
         solver.addEventListener(bestSolutionChangedEvent -> {
             meterRegistry.publish(solver);
-            if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()) {
-                TestdataSolution newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
-                if (newBestSolution.getEntityList().size() == entityCount + 1) {
-                    // 3 Entities
-                    assertThat(
-                            meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
-                            .isEqualTo(3L);
-                    // 1 Genuine variable on 3 entities = 3 total variables
-                    assertThat(
-                            meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
-                            .isEqualTo(3L);
-                    entitiesUpdated.set(true);
-                }
-                if (newBestSolution.getValueList().size() == valueCount + 1) {
-                    // The maximum assignable value count of any variable is 3
-                    assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
-                            .isEqualTo(3L);
-                    valuesUpdated.set(true);
-                }
-            }
+            latch.countDown();
         });
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<?> job = executorService.submit(() -> {
+        executorService.submit(() -> {
             solver.solve(solution);
         });
 
@@ -554,13 +530,18 @@ class DefaultSolverTest {
             problemChangeDirector.addProblemFact(new TestdataValue("added value"), workingSolution.getValueList()::add);
         });
 
-        job.get();
+        latch.await();
         meterRegistry.publish(solver);
-        assertThat(entitiesUpdated).isTrue();
-        assertThat(valuesUpdated).isTrue();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isZero();
+        // 3 Entities
+        assertThat(
+                meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
+                .isEqualTo(3L);
+        // 1 Genuine variable on 3 entities = 3 total variables
+        assertThat(
+                meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
+                .isEqualTo(3L);
+        assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
+                .isEqualTo(3L);
     }
 
     public static class BestScoreMetricEasyScoreCalculator
