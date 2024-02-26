@@ -609,7 +609,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     public MonitoringConfig determineMetricConfig() {
         return Objects.requireNonNullElse(monitoringConfig,
                 new MonitoringConfig().withSolverMetricList(Arrays.asList(SolverMetric.SOLVE_DURATION, SolverMetric.ERROR_COUNT,
-                        SolverMetric.SCORE_CALCULATION_COUNT)));
+                        SolverMetric.SCORE_CALCULATION_COUNT, SolverMetric.PROBLEM_ENTITY_COUNT,
+                        SolverMetric.PROBLEM_VARIABLE_COUNT, SolverMetric.PROBLEM_VALUE_COUNT)));
     }
 
     // ************************************************************************

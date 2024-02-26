@@ -12,8 +12,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -332,13 +335,28 @@ class DefaultSolverTest {
                                         Tags.empty(),
                                         null,
                                         null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
         });
         solver.solve(solution);
 
-        // Score calculation count should be removed
+        // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
         // make it return the average, and the solver holds
         // onto the solver scope, meaning it won't automatically
@@ -394,13 +412,28 @@ class DefaultSolverTest {
                                         Tags.of("tag.key", "tag.value"),
                                         null,
                                         null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
         });
         solver.solve(solution);
 
-        // Score calculation count should be removed
+        // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
         // make it return the average, and the solver holds
         // onto the solver scope, meaning it won't automatically
@@ -444,6 +477,16 @@ class DefaultSolverTest {
                 assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isOne();
                 assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION").longValue())
                         .isEqualTo(2L);
+
+                // 2 Entities
+                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
+                        .isEqualTo(2L);
+                // 1 Genuine variable on 2 entities = 2 total variables
+                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
+                        .isEqualTo(2L);
+                // The maximum assignable value count of any variable is 2
+                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
+                        .isEqualTo(2L);
                 updatedTime.set(true);
             }
         });
@@ -453,6 +496,79 @@ class DefaultSolverTest {
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
 
+        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
+        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
+        assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isZero();
+    }
+
+    @Test
+    void solveMetricsProblemChange() throws InterruptedException, ExecutionException {
+        TestMeterRegistry meterRegistry = new TestMeterRegistry();
+        Metrics.addRegistry(meterRegistry);
+
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+
+        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        meterRegistry.publish(solver);
+
+        final TestdataSolution solution = new TestdataSolution("s1");
+        solution.setValueList(new ArrayList<>(List.of(new TestdataValue("v1"), new TestdataValue("v2"))));
+        solution.setEntityList(new ArrayList<>(List.of(new TestdataEntity("e1"), new TestdataEntity("e2"))));
+        final int entityCount = solution.getEntityList().size();
+        final int valueCount = solution.getValueList().size();
+
+        CountDownLatch solutionWithProblemChangeReceived = new CountDownLatch(1);
+        AtomicBoolean entitiesUpdated = new AtomicBoolean();
+        AtomicBoolean valuesUpdated = new AtomicBoolean();
+        solver.addEventListener(bestSolutionChangedEvent -> {
+            meterRegistry.publish(solver);
+            if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()) {
+                TestdataSolution newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
+                if (newBestSolution.getEntityList().size() == entityCount + 1) {
+                    // 3 Entities
+                    assertThat(
+                            meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
+                            .isEqualTo(3L);
+                    // 1 Genuine variable on 3 entities = 3 total variables
+                    assertThat(
+                            meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
+                            .isEqualTo(3L);
+                    entitiesUpdated.set(true);
+                }
+                if (newBestSolution.getValueList().size() == valueCount + 1) {
+                    // The maximum assignable value count of any variable is 3
+                    assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
+                            .isEqualTo(3L);
+                    solutionWithProblemChangeReceived.countDown();
+                    valuesUpdated.set(true);
+                }
+            }
+        });
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<?> job = executorService.submit(() -> {
+            solver.solve(solution);
+        });
+
+        solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+            problemChangeDirector.addEntity(new TestdataEntity("added entity"), workingSolution.getEntityList()::add);
+            problemChangeDirector.addProblemFact(new TestdataValue("added value"), workingSolution.getValueList()::add);
+        });
+
+        while (!solutionWithProblemChangeReceived.await(1L, TimeUnit.SECONDS)) {
+            if (job.isDone()) {
+                // Solving must have failed if the latch did not unlock and
+                // the job is done, since the latch should be unlocked during
+                // solving.
+                throw new AssertionError("Solving failed");
+            }
+        }
+        job.get();
+        meterRegistry.publish(solver);
+        assertThat(entitiesUpdated).isTrue();
+        assertThat(valuesUpdated).isTrue();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isZero();

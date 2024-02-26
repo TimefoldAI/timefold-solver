@@ -1039,6 +1039,7 @@ public class SolutionDescriptor<Solution_> {
     /**
      * Calculates an indication on how big this problem instance is.
      * This is intentionally very loosely defined for now.
+     * This is explicitly NOT the solution space size.
      *
      * @param solution never null
      * @return {@code >= 0}

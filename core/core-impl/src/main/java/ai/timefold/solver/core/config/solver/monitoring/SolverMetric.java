@@ -36,7 +36,10 @@ public enum SolverMetric {
     PICKED_MOVE_TYPE_BEST_SCORE_DIFF("timefold.solver.move.type.best.score.diff", new PickedMoveBestScoreDiffStatistic<>(),
             true),
     PICKED_MOVE_TYPE_STEP_SCORE_DIFF("timefold.solver.move.type.step.score.diff", new PickedMoveStepScoreDiffStatistic<>(),
-            false);
+            false),
+    PROBLEM_ENTITY_COUNT("timefold.solver.problem.entities", false),
+    PROBLEM_VARIABLE_COUNT("timefold.solver.problem.variables", false),
+    PROBLEM_VALUE_COUNT("timefold.solver.problem.values", false);
 
     private final String meterId;
     @SuppressWarnings("rawtypes")

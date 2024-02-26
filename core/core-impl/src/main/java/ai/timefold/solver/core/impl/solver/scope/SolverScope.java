@@ -44,6 +44,10 @@ public class SolverScope<Solution_> {
 
     protected Score startingInitializedScore;
 
+    protected volatile Long problemEntityCount;
+    protected volatile Long problemVariableCount;
+    protected volatile Long problemMaximumAssignableValuesCount;
+
     protected volatile Solution_ bestSolution;
     protected volatile Score bestScore;
     protected Long bestSolutionTimeMillis;
@@ -222,6 +226,33 @@ public class SolverScope<Solution_> {
 
     public long getTimeMillisSpent() {
         return endingSystemTimeMillis - startingSystemTimeMillis;
+    }
+
+    public long getWorkingSolutionEntityCount() {
+        if (problemEntityCount == null) {
+            problemEntityCount = (long) getSolutionDescriptor().getGenuineEntityCount(getWorkingSolution());
+        }
+        return problemEntityCount;
+    }
+
+    public long getWorkingSolutionVariableCount() {
+        if (problemVariableCount == null) {
+            problemVariableCount = getSolutionDescriptor().getGenuineVariableCount(getWorkingSolution());
+        }
+        return problemVariableCount;
+    }
+
+    public long getWorkingSolutionMaximumValueCount() {
+        if (problemMaximumAssignableValuesCount == null) {
+            problemMaximumAssignableValuesCount = getSolutionDescriptor().getMaximumValueCount(getWorkingSolution());
+        }
+        return problemMaximumAssignableValuesCount;
+    }
+
+    public void resetProblemScaleMetrics() {
+        problemEntityCount = null;
+        problemVariableCount = null;
+        problemMaximumAssignableValuesCount = null;
     }
 
     /**

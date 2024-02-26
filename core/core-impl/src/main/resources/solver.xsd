@@ -1526,6 +1526,12 @@
       <xs:enumeration value="PICKED_MOVE_TYPE_BEST_SCORE_DIFF"/>
             
       <xs:enumeration value="PICKED_MOVE_TYPE_STEP_SCORE_DIFF"/>
+            
+      <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>
+            
+      <xs:enumeration value="PROBLEM_VARIABLE_COUNT"/>
+            
+      <xs:enumeration value="PROBLEM_VALUE_COUNT"/>
           
     </xs:restriction>
       
