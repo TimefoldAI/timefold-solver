@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -499,7 +500,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveMetricsProblemChange() throws InterruptedException {
+    void solveMetricsProblemChange() throws InterruptedException, ExecutionException {
         TestMeterRegistry meterRegistry = new TestMeterRegistry();
         Metrics.addRegistry(meterRegistry);
 
@@ -516,12 +517,16 @@ class DefaultSolverTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         solver.addEventListener(bestSolutionChangedEvent -> {
-            meterRegistry.publish(solver);
-            latch.countDown();
+            try {
+                latch.await();
+                meterRegistry.publish(solver);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(() -> {
+        var job = executorService.submit(() -> {
             solver.solve(solution);
         });
 
@@ -530,8 +535,8 @@ class DefaultSolverTest {
             problemChangeDirector.addProblemFact(new TestdataValue("added value"), workingSolution.getValueList()::add);
         });
 
-        latch.await();
-        meterRegistry.publish(solver);
+        latch.countDown();
+        job.get();
         // 3 Entities
         assertThat(
                 meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
