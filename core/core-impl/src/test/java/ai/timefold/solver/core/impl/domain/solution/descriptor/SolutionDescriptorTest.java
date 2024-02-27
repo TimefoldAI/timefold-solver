@@ -416,7 +416,7 @@ class SolutionDescriptorTest {
             // This is intentionally an over-count; it includes many invalid solutions
             // (i.e. multiple entities pointing at the same anchor/entity)
             softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
-                    .isEqualTo(entityCount * ProblemStatistics.LOG_SCALE);
+                    .isEqualTo(350);
         });
     }
 
@@ -444,7 +444,7 @@ class SolutionDescriptorTest {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
-            softly.assertThat(solutionDescriptor.getProblemScale(null, solution)).isEqualTo(42167L);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution)).isEqualTo(41486L);
         });
     }
 }

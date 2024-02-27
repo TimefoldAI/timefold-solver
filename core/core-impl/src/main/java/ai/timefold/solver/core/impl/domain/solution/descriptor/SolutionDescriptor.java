@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1038,6 +1039,18 @@ public class SolutionDescriptor<Solution_> {
                 .orElse(0L);
     }
 
+    public record ProblemScaleTracker(long logBase,
+            MutableLong basicProblemScaleLog,
+            Set<Object> visitedAnchorSet,
+            MutableLong listPinnedValueCount,
+            MutableLong listTotalEntityCount,
+            MutableLong listMovableEntityCount,
+            MutableLong listTotalValueCount) {
+        public void addBasicProblemScale(long count) {
+            basicProblemScaleLog.add(MathUtils.getScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase, count));
+        }
+    }
+
     /**
      * Calculates an indication on how big this problem instance is.
      * This is approximately 100 times the log of the solution space size,
@@ -1048,38 +1061,36 @@ public class SolutionDescriptor<Solution_> {
      */
     public long getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
         long logBase = getMaximumValueRangeSize(solution);
-        MutableLong result = new MutableLong();
-        MutableLong listPinnedValueCount = new MutableLong();
-        MutableLong listTotalEntityCount = new MutableLong();
-        MutableLong listMovableEntityCount = new MutableLong();
-        MutableLong listTotalValueCount = new MutableLong();
+        ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase,
+                new MutableLong(),
+                Collections.newSetFromMap(new IdentityHashMap<>()),
+                new MutableLong(),
+                new MutableLong(),
+                new MutableLong(),
+                new MutableLong());
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
-                result.add(entityDescriptor.getBasicVariableProblemScale(scoreDirector, solution, entity, logBase));
-                var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
-                if (listVariableDescriptor != null) {
-                    listTotalEntityCount.increment();
-                    listTotalValueCount.add(listVariableDescriptor.getValueRangeSize(solution, entity));
-                    if (entityDescriptor.isMovable(scoreDirector, entity)) {
-                        listMovableEntityCount.increment();
-                        listPinnedValueCount.add(listVariableDescriptor.getFirstUnpinnedIndex(entity));
-                    } else {
-                        listPinnedValueCount.add(listVariableDescriptor.getListSize(entity));
-                    }
-                }
+                entityDescriptor.processProblemScale(scoreDirector, solution, entity, problemScaleTracker);
             }
         });
-        if (listTotalEntityCount.longValue() != 0L) {
+        long result = problemScaleTracker.basicProblemScaleLog.longValue();
+        if (problemScaleTracker.listTotalEntityCount.longValue() != 0L) {
             // List variables do not support from entity value ranges
-            int totalListValueCount = listTotalValueCount.intValue() / listTotalEntityCount.intValue();
-            int totalListMovableValueCount = totalListValueCount - listPinnedValueCount.intValue();
-            int possibleTargetsForListValue = listMovableEntityCount.intValue();
+            int totalListValueCount =
+                    problemScaleTracker.listTotalValueCount.intValue() / problemScaleTracker.listTotalEntityCount.intValue();
+            int totalListMovableValueCount = totalListValueCount - problemScaleTracker.listPinnedValueCount.intValue();
+            int possibleTargetsForListValue = problemScaleTracker.listMovableEntityCount.intValue();
+            var listVariableDescriptor = getListVariableDescriptor();
+            if (listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues()) {
+                // Treat unassigned values as assigned to a single virtual vehicle for the sake of this calculation
+                possibleTargetsForListValue++;
+            }
 
-            result.add(MathUtils.getPossibleArrangementsScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase,
-                    totalListMovableValueCount, possibleTargetsForListValue));
+            result += MathUtils.getPossibleArrangementsScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase,
+                    totalListMovableValueCount, possibleTargetsForListValue);
         }
-        return result.longValue();
+        return result;
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {

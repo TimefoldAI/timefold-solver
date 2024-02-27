@@ -10,6 +10,7 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
@@ -33,7 +36,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.ProblemStatistics;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -61,7 +63,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.slf4j.Logger;
@@ -686,20 +687,57 @@ public class EntityDescriptor<Solution_> {
 
     }
 
-    public long getBasicVariableProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution, Object entity,
-            long logBase) {
-        if (!isMovable(scoreDirector, entity)) {
-            // log_x(1) is 0 for all bases
-            return 0L;
-        }
-        long problemScale = 0L;
+    public void processProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution, Object entity,
+            SolutionDescriptor.ProblemScaleTracker tracker) {
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
             long valueCount = variableDescriptor.getValueRangeSize(solution, entity);
-            if (variableDescriptor instanceof BasicVariableDescriptor) {
-                problemScale += MathUtils.getScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase, valueCount);
+            // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
+            if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
+                if (basicVariableDescriptor.isChained()) {
+                    // An entity is a value
+                    tracker.listTotalValueCount().increment();
+                    if (!isMovable(scoreDirector, entity)) {
+                        tracker.listPinnedValueCount().increment();
+                    }
+                    // Anchors are entities
+                    ValueRange<?> valueRange = variableDescriptor.getValueRangeDescriptor().extractValueRange(solution, entity);
+                    if (valueRange instanceof CountableValueRange<?> countableValueRange) {
+                        Iterator<?> valueIterator = countableValueRange.createOriginalIterator();
+                        while (valueIterator.hasNext()) {
+                            Object value = valueIterator.next();
+                            if (variableDescriptor.isValuePotentialAnchor(value)) {
+                                if (tracker.visitedAnchorSet().contains(value)) {
+                                    continue;
+                                }
+                                tracker.visitedAnchorSet().add(value);
+                                tracker.listTotalEntityCount().increment();
+                                tracker.listMovableEntityCount().increment();
+                                // Assumes anchors are not pinned
+                            }
+                        }
+                    } else {
+                        // Assume 0 entities (this might be impossible)
+                    }
+                } else {
+                    if (isMovable(scoreDirector, entity)) {
+                        tracker.addBasicProblemScale(valueCount);
+                    }
+                }
+            } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
+                tracker.listTotalEntityCount().increment();
+                tracker.listTotalValueCount().add(listVariableDescriptor.getValueRangeSize(solution, entity));
+                if (isMovable(scoreDirector, entity)) {
+                    tracker.listMovableEntityCount().increment();
+                    tracker.listPinnedValueCount().add(listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                } else {
+                    tracker.listPinnedValueCount().add(listVariableDescriptor.getListSize(entity));
+                }
+            } else {
+                throw new IllegalStateException(
+                        "Unhandled subclass of %s encountered (%s).".formatted(VariableDescriptor.class.getSimpleName(),
+                                variableDescriptor.getClass().getSimpleName()));
             }
         }
-        return problemScale;
     }
 
     public int countUninitializedVariables(Object entity) {

@@ -2,6 +2,8 @@ package ai.timefold.solver.core.api.solver;
 
 import java.text.DecimalFormat;
 
+import ai.timefold.solver.core.impl.util.MathUtils;
+
 /**
  * The statistics of a given problem submitted to a {@link Solver}.
  *
@@ -15,19 +17,24 @@ public record ProblemStatistics(long entityCount, long variableCount, long maxim
     /**
      * The scale used on {@link #problemScale()}
      */
-    public final static long LOG_SCALE = 100L;
-    private static DecimalFormat DECIMAL_FORMATTER = new DecimalFormat("0.##");
+    public static final long LOG_SCALE = 100L;
+    private static final DecimalFormat DECIMAL_FORMATTER = new DecimalFormat("0.##");
 
     /**
-     * Returns the unscaled problem scale
+     * Returns the approximate problem scale log in base 10.
+     * Can be used to compare sizes of solution spaces.
      * 
      * @return {@link #problemScale} divided by {@link #LOG_SCALE}.
      */
-    public long getUnscaledProblemScaleLog() {
-        return problemScale / LOG_SCALE;
+    public long getUnscaledBase10Log() {
+        return Math.round((problemScale / ((double) LOG_SCALE)) / MathUtils.getLogInBase(maximumValueRangeSize, 10));
     }
 
     public String formatApproximateProblemScale() {
+        // TODO: Should this be in base 10?
+        //  Using base maximumValueRangeSize will be more accurate
+        //  (since most entities either have 1 possible value (pinned) or maximumValueRangeSize possible values,
+        //  meaning their logs will be exactly 0 or 1 respectively).
         return "%d^{%s}".formatted(maximumValueRangeSize, DECIMAL_FORMATTER.format(problemScale / ((double) LOG_SCALE)));
     }
 }

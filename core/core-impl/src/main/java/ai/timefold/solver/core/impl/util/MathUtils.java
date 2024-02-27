@@ -12,13 +12,16 @@ public class MathUtils {
         double possibleListArrangementsLog = CombinatoricsUtils.factorialLog(listSize);
         // A*B = number of ways to place A markers on a list of B elements
         double possibleMarkerArrangementsLog = Math.log(listSize * partitions);
+        // E! = number of ways to arrange E partitions
+        double possiblePartitionPermutationsLog = CombinatoricsUtils.factorialLog(partitions);
 
         // The number of possible assignments for a list variable with V values among E entities
         // is approximated by
-        // `V! * (V * E)`
-        // This will over-count, but it is an approximation
+        // `(V! * (V * E))/E!`
         // log(a) + log(b) = log(a * b)
-        double totalPossibleValueAssignmentsLog = possibleListArrangementsLog + possibleMarkerArrangementsLog;
+        // log(a) - log(b) = log(a / b)
+        double totalPossibleValueAssignmentsLog =
+                possibleListArrangementsLog + possibleMarkerArrangementsLog - possiblePartitionPermutationsLog;
 
         // Need to change base of log to use logBase
         double totalPossibleValueAssignmentsLogInBase = totalPossibleValueAssignmentsLog / Math.log(base);
@@ -35,6 +38,10 @@ public class MathUtils {
      *         to the nearest integer.
      */
     public static long getScaledApproximateLog(long scale, long base, long value) {
-        return Math.round(scale * (Math.log(value) / Math.log(base)));
+        return Math.round(scale * getLogInBase(base, value));
+    }
+
+    public static double getLogInBase(double base, double value) {
+        return Math.log(value) / Math.log(base);
     }
 }
