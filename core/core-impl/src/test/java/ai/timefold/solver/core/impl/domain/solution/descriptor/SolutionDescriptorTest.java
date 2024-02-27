@@ -53,6 +53,7 @@ import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.T
 import ai.timefold.solver.core.impl.testdata.util.CodeAssertableArrayList;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
 
 class SolutionDescriptorTest {
@@ -416,7 +417,7 @@ class SolutionDescriptorTest {
             // This is intentionally an over-count; it includes many invalid solutions
             // (i.e. multiple entities pointing at the same anchor/entity)
             softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
-                    .isEqualTo(350);
+                    .isEqualTo(1375L);
         });
     }
 
@@ -444,7 +445,26 @@ class SolutionDescriptorTest {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
-            softly.assertThat(solutionDescriptor.getProblemScale(null, solution)).isEqualTo(41486L);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution)).isEqualTo(1383L);
         });
+    }
+
+    @Test
+    void assertProblemScaleListIsApproximatelyProblemScaleChained() {
+        int valueCount = 500;
+        int entityCount = 20;
+        SolutionDescriptor<TestdataListSolution> solutionDescriptorList = TestdataListSolution.buildSolutionDescriptor();
+        TestdataListSolution listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
+        long listPowerBase = solutionDescriptorList.getMaximumValueRangeSize(listSolution);
+        long listPowerExponent = solutionDescriptorList.getProblemScale(null, listSolution);
+        SolutionDescriptor<TestdataChainedSolution> solutionDescriptorChained =
+                TestdataChainedSolution.buildSolutionDescriptor();
+        TestdataChainedSolution solutionChained = generateChainedSolution(entityCount, valueCount);
+        long chainedPowerBase = solutionDescriptorChained.getMaximumValueRangeSize(solutionChained);
+        long chainedPowerExponent = solutionDescriptorChained.getProblemScale(null, solutionChained);
+        // Since they are using different bases, some difference is expected,
+        // but the numbers should be relatively (i.e. ~5%) close.
+        assertThat(Math.pow(listPowerBase, listPowerExponent / 100.0))
+                .isCloseTo(Math.pow(chainedPowerBase, chainedPowerExponent / 100.0), Percentage.withPercentage(5));
     }
 }

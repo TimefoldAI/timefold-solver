@@ -8,24 +8,26 @@ public class MathUtils {
 
     public static long getPossibleArrangementsScaledApproximateLog(long scale, long base,
             int listSize, int partitions) {
-        // N! = number of ways to arrange a list of N values
-        double possibleListArrangementsLog = CombinatoricsUtils.factorialLog(listSize);
-        // A*B = number of ways to place A markers on a list of B elements
-        double possibleMarkerArrangementsLog = Math.log(listSize * partitions);
-        // E! = number of ways to arrange E partitions
-        double possiblePartitionPermutationsLog = CombinatoricsUtils.factorialLog(partitions);
+        double result;
+        if (listSize == 0 || partitions == 0) {
+            // Only one way to divide an empty list, and the log of 1 is 0
+            // Likewise, there is only 1 way to divide a list into 0 partitions
+            // (since it impossible to do)
+            result = 0L;
+        } else if (partitions <= 2) {
+            // If it a single partition, it the same as the number of permutations.
+            // If it two partitions, it the same as the number of permutations of a list of size
+            // n + 1 (where we add an element to seperate the two partitions)
+            result = CombinatoricsUtils.factorialLog(listSize + partitions - 1);
+        } else {
+            // If it n > 2 partitions, (listSize + partitions - 1)! will overcount by
+            // a multiple of (partitions - 1)!
+            result = CombinatoricsUtils.factorialLog(listSize + partitions - 1)
+                    - CombinatoricsUtils.factorialLog(partitions - 1);
+        }
 
-        // The number of possible assignments for a list variable with V values among E entities
-        // is approximated by
-        // `(V! * (V * E))/E!`
-        // log(a) + log(b) = log(a * b)
-        // log(a) - log(b) = log(a / b)
-        double totalPossibleValueAssignmentsLog =
-                possibleListArrangementsLog + possibleMarkerArrangementsLog - possiblePartitionPermutationsLog;
-
-        // Need to change base of log to use logBase
-        double totalPossibleValueAssignmentsLogInBase = totalPossibleValueAssignmentsLog / Math.log(base);
-        return Math.round(scale * totalPossibleValueAssignmentsLogInBase);
+        // Need to change base to use the given base
+        return Math.round(scale * result / Math.log(base));
     }
 
     /**

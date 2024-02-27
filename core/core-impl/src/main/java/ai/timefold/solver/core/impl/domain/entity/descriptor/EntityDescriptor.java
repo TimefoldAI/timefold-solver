@@ -725,7 +725,7 @@ public class EntityDescriptor<Solution_> {
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
                 tracker.listTotalEntityCount().increment();
-                tracker.listTotalValueCount().add(listVariableDescriptor.getValueRangeSize(solution, entity));
+                tracker.listTotalValueCount().setValue(listVariableDescriptor.getValueRangeSize(solution, entity));
                 if (isMovable(scoreDirector, entity)) {
                     tracker.listMovableEntityCount().increment();
                     tracker.listPinnedValueCount().add(listVariableDescriptor.getFirstUnpinnedIndex(entity));
