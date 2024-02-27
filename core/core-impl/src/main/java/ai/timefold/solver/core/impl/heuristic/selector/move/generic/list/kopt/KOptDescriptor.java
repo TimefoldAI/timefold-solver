@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -159,7 +160,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     public <Solution_> KOptListMove<Solution_> getKOptListMove(ListVariableStateSupply<Solution_> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         if (!isFeasible()) {
-            // A KOptListMove move with an empty flip move list is not feasible, since if executed, it a no-op
+            // A KOptListMove move with an empty flip move list is not feasible, since if executed, it's a no-op.
             return new KOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0, new int[] {});
         }
 
@@ -178,8 +179,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         var bestOrientedPairSecondEndpoint = -1;
 
         // Copy removedEdgeIndexToTourOrder and inverseRemovedEdgeIndexToTourOrder
-        // to avoid mutating the original arrays (since this function mutate the arrays
-        // into the sorted signed permutation (+1, +2, ...)
+        // to avoid mutating the original arrays
+        // since this function mutates the arrays into the sorted signed permutation (+1, +2, ...).
         var currentRemovedEdgeIndexToTourOrder =
                 Arrays.copyOf(removedEdgeIndexToTourOrder, removedEdgeIndexToTourOrder.length);
         var currentInverseRemovedEdgeIndexToTourOrder =
@@ -451,6 +452,26 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
             }
         }
         return -1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof KOptDescriptor<?> that
+                && k == that.k
+                && Arrays.equals(removedEdges, that.removedEdges)
+                && Arrays.equals(removedEdgeIndexToTourOrder, that.removedEdgeIndexToTourOrder)
+                && Arrays.equals(inverseRemovedEdgeIndexToTourOrder, that.inverseRemovedEdgeIndexToTourOrder)
+                && Arrays.equals(addedEdgeToOtherEndpoint, that.addedEdgeToOtherEndpoint);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(k);
+        result = 31 * result + Arrays.hashCode(removedEdges);
+        result = 31 * result + Arrays.hashCode(removedEdgeIndexToTourOrder);
+        result = 31 * result + Arrays.hashCode(inverseRemovedEdgeIndexToTourOrder);
+        result = 31 * result + Arrays.hashCode(addedEdgeToOtherEndpoint);
+        return result;
     }
 
     public String toString() {

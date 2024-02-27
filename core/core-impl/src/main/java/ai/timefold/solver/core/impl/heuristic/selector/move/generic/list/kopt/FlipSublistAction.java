@@ -15,8 +15,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
  * For instance, given [0, 1, 2, 3, 4, 5, 6], fromIndexInclusive = 5, toIndexExclusive = 2,
  * the list after the move would be [6, 5, 2, 3, 4, 1, 0] (and not [0, 6, 5, 2, 3, 4, 1]).
  */
-record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
-        int fromIndexInclusive, int toIndexExclusive) {
+record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor, int fromIndexInclusive, int toIndexExclusive) {
 
     FlipSublistAction createUndoMove() {
         return new FlipSublistAction(variableDescriptor, fromIndexInclusive, toIndexExclusive);
@@ -38,9 +37,7 @@ record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
     }
 
     public FlipSublistAction rebase() {
-        return new FlipSublistAction(variableDescriptor,
-                fromIndexInclusive,
-                toIndexExclusive);
+        return new FlipSublistAction(variableDescriptor, fromIndexInclusive, toIndexExclusive);
     }
 
     public static <T> void flipSublist(List<T> originalList, int entityFirstUnpinnedIndex, int fromIndexInclusive,
@@ -48,33 +45,33 @@ record FlipSublistAction(ListVariableDescriptor<?> variableDescriptor,
         if (fromIndexInclusive < toIndexExclusive) {
             Collections.reverse(originalList.subList(fromIndexInclusive, toIndexExclusive));
         } else {
-            List<T> firstHalfReversedPath = originalList.subList(fromIndexInclusive, originalList.size());
-            List<T> secondHalfReversedPath = originalList.subList(entityFirstUnpinnedIndex, toIndexExclusive);
+            var firstHalfReversedPath = originalList.subList(fromIndexInclusive, originalList.size());
+            var secondHalfReversedPath = originalList.subList(entityFirstUnpinnedIndex, toIndexExclusive);
 
             // Reverse the combined list firstHalfReversedPath + secondHalfReversedPath
             // For instance, (1, 2, 3)(4, 5, 6, 7, 8, 9) becomes
             // (9, 8, 7)(6, 5, 4, 3, 2, 1)
-            int totalLength = firstHalfReversedPath.size() + secondHalfReversedPath.size();
+            var totalLength = firstHalfReversedPath.size() + secondHalfReversedPath.size();
 
-            for (int i = 0; (i < totalLength >> 1); i++) {
+            for (var i = 0; (i < totalLength >> 1); i++) {
                 if (i < firstHalfReversedPath.size()) {
                     if (i < secondHalfReversedPath.size()) {
                         // firstHalfIndex = i
-                        int secondHalfIndex = secondHalfReversedPath.size() - i - 1;
-                        T savedFirstItem = firstHalfReversedPath.get(i);
+                        var secondHalfIndex = secondHalfReversedPath.size() - i - 1;
+                        var savedFirstItem = firstHalfReversedPath.get(i);
                         firstHalfReversedPath.set(i, secondHalfReversedPath.get(secondHalfIndex));
                         secondHalfReversedPath.set(secondHalfIndex, savedFirstItem);
                     } else {
                         // firstIndex = i
-                        int secondIndex = firstHalfReversedPath.size() - i + secondHalfReversedPath.size() - 1;
-                        T savedFirstItem = firstHalfReversedPath.get(i);
+                        var secondIndex = firstHalfReversedPath.size() - i + secondHalfReversedPath.size() - 1;
+                        var savedFirstItem = firstHalfReversedPath.get(i);
                         firstHalfReversedPath.set(i, firstHalfReversedPath.get(secondIndex));
                         firstHalfReversedPath.set(secondIndex, savedFirstItem);
                     }
                 } else {
-                    int firstIndex = i - firstHalfReversedPath.size();
-                    int secondIndex = secondHalfReversedPath.size() - i - 1;
-                    T savedFirstItem = secondHalfReversedPath.get(firstIndex);
+                    var firstIndex = i - firstHalfReversedPath.size();
+                    var secondIndex = secondHalfReversedPath.size() - i - 1;
+                    var savedFirstItem = secondHalfReversedPath.get(firstIndex);
                     secondHalfReversedPath.set(firstIndex, secondHalfReversedPath.get(secondIndex));
                     secondHalfReversedPath.set(secondIndex, savedFirstItem);
                 }

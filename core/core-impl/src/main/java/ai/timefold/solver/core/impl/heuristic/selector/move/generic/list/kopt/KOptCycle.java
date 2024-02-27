@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,8 +19,22 @@ import java.util.stream.IntStream;
 record KOptCycle(int cycleCount, int[] indexToCycleIdentifier) {
 
     @Override
+    public boolean equals(Object o) {
+        return o instanceof KOptCycle that
+                && cycleCount == that.cycleCount
+                && Arrays.equals(indexToCycleIdentifier, that.indexToCycleIdentifier);
+    }
+
+    @Override
+    public int hashCode() {
+        var result = Objects.hash(cycleCount);
+        result = 31 * result + Arrays.hashCode(indexToCycleIdentifier);
+        return result;
+    }
+
+    @Override
     public String toString() {
-        String arrayString = IntStream.of(indexToCycleIdentifier)
+        var arrayString = IntStream.of(indexToCycleIdentifier)
                 .sequential()
                 .skip(1)
                 .mapToObj(Integer::toString)
