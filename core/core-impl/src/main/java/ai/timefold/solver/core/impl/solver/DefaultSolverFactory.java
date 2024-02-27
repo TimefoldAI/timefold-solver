@@ -113,6 +113,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 moveThreadCount,
                 solverConfig.getMoveThreadBufferSize(),
                 solverConfig.getThreadFactoryClass(),
+                solverConfig.getNearbyDistanceMeterClass(),
                 scoreDirectorFactory.getInitializingScoreTrend(),
                 solutionDescriptor,
                 ClassInstanceCache.create()).build();

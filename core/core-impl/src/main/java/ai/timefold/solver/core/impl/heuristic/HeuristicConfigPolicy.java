@@ -9,6 +9,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.EntityMimicRecorder;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
@@ -36,6 +37,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean reinitializeVariableFilterEnabled;
     private final boolean initializedChainedValueFilterEnabled;
     private final boolean unassignedValuesAllowed;
+    private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
 
     private final Map<String, EntityMimicRecorder<Solution_>> entityMimicRecorderMap = new HashMap<>();
     private final Map<String, SubListMimicRecorder<Solution_>> subListMimicRecorderMap = new HashMap<>();
@@ -55,6 +57,7 @@ public class HeuristicConfigPolicy<Solution_> {
         this.reinitializeVariableFilterEnabled = builder.reinitializeVariableFilterEnabled;
         this.initializedChainedValueFilterEnabled = builder.initializedChainedValueFilterEnabled;
         this.unassignedValuesAllowed = builder.unassignedValuesAllowed;
+        this.nearbyDistanceMeterClass = builder.nearbyDistanceMeterClass;
     }
 
     public EnvironmentMode getEnvironmentMode() {
@@ -109,13 +112,18 @@ public class HeuristicConfigPolicy<Solution_> {
         return unassignedValuesAllowed;
     }
 
+    public Class<? extends NearbyDistanceMeter> getNearbyDistanceMeterClass() {
+        return nearbyDistanceMeterClass;
+    }
+
     // ************************************************************************
     // Builder methods
     // ************************************************************************
 
     public Builder<Solution_> cloneBuilder() {
-        return new Builder<>(environmentMode, moveThreadCount, moveThreadBufferSize, threadFactoryClass, initializingScoreTrend,
-                solutionDescriptor, classInstanceCache).withLogIndentation(logIndentation);
+        return new Builder<>(environmentMode, moveThreadCount, moveThreadBufferSize, threadFactoryClass,
+                nearbyDistanceMeterClass, initializingScoreTrend, solutionDescriptor, classInstanceCache)
+                .withLogIndentation(logIndentation);
     }
 
     public HeuristicConfigPolicy<Solution_> createPhaseConfigPolicy() {
@@ -214,13 +222,18 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean initializedChainedValueFilterEnabled = false;
         private boolean unassignedValuesAllowed = false;
 
+        private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
+
         public Builder(EnvironmentMode environmentMode, Integer moveThreadCount, Integer moveThreadBufferSize,
-                Class<? extends ThreadFactory> threadFactoryClass, InitializingScoreTrend initializingScoreTrend,
-                SolutionDescriptor<Solution_> solutionDescriptor, ClassInstanceCache classInstanceCache) {
+                Class<? extends ThreadFactory> threadFactoryClass,
+                Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass,
+                InitializingScoreTrend initializingScoreTrend, SolutionDescriptor<Solution_> solutionDescriptor,
+                ClassInstanceCache classInstanceCache) {
             this.environmentMode = environmentMode;
             this.moveThreadCount = moveThreadCount;
             this.moveThreadBufferSize = moveThreadBufferSize;
             this.threadFactoryClass = threadFactoryClass;
+            this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
             this.initializingScoreTrend = initializingScoreTrend;
             this.solutionDescriptor = solutionDescriptor;
             this.classInstanceCache = classInstanceCache;

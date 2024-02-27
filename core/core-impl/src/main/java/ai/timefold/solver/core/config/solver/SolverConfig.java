@@ -45,6 +45,7 @@ import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
@@ -70,6 +71,7 @@ import ai.timefold.solver.core.impl.solver.random.RandomFactory;
         "domainAccessType",
         "scoreDirectorFactoryConfig",
         "terminationConfig",
+        "nearbyDistanceMeterClass",
         "phaseConfigList",
 })
 public class SolverConfig extends AbstractConfig<SolverConfig> {
@@ -239,6 +241,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     @XmlElement(name = "termination")
     private TerminationConfig terminationConfig;
+
+    protected Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass = null;
 
     @XmlElements({
             @XmlElement(name = ConstructionHeuristicPhaseConfig.XML_ELEMENT_NAME,
@@ -411,6 +415,14 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         this.terminationConfig = terminationConfig;
     }
 
+    public Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
+        return nearbyDistanceMeterClass;
+    }
+
+    public void setNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
+        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
+    }
+
     public List<PhaseConfig> getPhaseConfigList() {
         return phaseConfigList;
     }
@@ -561,6 +573,11 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    public SolverConfig withNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeterClass) {
+        this.nearbyDistanceMeterClass = distanceMeterClass;
+        return this;
+    }
+
     public SolverConfig withPhaseList(List<PhaseConfig> phaseConfigList) {
         this.phaseConfigList = phaseConfigList;
         return this;
@@ -657,6 +674,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         scoreDirectorFactoryConfig = ConfigUtils.inheritConfig(scoreDirectorFactoryConfig,
                 inheritedConfig.getScoreDirectorFactoryConfig());
         terminationConfig = ConfigUtils.inheritConfig(terminationConfig, inheritedConfig.getTerminationConfig());
+        nearbyDistanceMeterClass = ConfigUtils.inheritOverwritableProperty(nearbyDistanceMeterClass,
+                inheritedConfig.getNearbyDistanceMeterClass());
         phaseConfigList = ConfigUtils.inheritMergeableListConfig(phaseConfigList, inheritedConfig.getPhaseConfigList());
         monitoringConfig = ConfigUtils.inheritConfig(monitoringConfig, inheritedConfig.getMonitoringConfig());
         return this;

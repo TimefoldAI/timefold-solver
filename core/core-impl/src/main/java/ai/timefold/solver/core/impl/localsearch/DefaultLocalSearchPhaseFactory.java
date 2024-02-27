@@ -5,11 +5,17 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KOptMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
@@ -193,11 +199,75 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 .toList();
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (basicVariableDescriptorList.isEmpty()) { // We only have the one list variable.
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig());
+            if (configPolicy.getNearbyDistanceMeterClass() == null) {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig());
+            } else {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ListChangeMoveSelectorConfig(),
+                                new ListSwapMoveSelectorConfig(),
+                                new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("changeMoveSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("changeMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new ListSwapMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("swapMoveSelector"))
+                                        .withSecondaryValueSelectorConfig(new ValueSelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("swapMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new KOptListMoveSelectorConfig()
+                                        .withOriginSelectorConfig(new ValueSelectorConfig()
+                                                .withId("koptMoveSelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("koptMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))));
+            }
         } else if (listVariableDescriptor == null) { // We only have basic variables.
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+            if (configPolicy.getNearbyDistanceMeterClass() == null) {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+            } else {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ChangeMoveSelectorConfig(),
+                                new SwapMoveSelectorConfig(),
+                                new ChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("changeMoveSelector"))
+                                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("changeMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new SwapMoveSelectorConfig()
+                                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                .withId("swapMoveSelector")
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                                .withMimicSelectorRef("swapMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new KOptMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("koptMoveSelector")
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("koptMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))));
+            }
         } else {
             /*
              * We have a mix of basic and list variables.
@@ -206,8 +276,39 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
              * TODO Improve so that list variables get list variable selectors directly.
              * TODO PLANNER-2755 Support coexistence of basic and list variables on the same entity.
              */
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+            if (configPolicy.getNearbyDistanceMeterClass() == null) {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+            } else {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ChangeMoveSelectorConfig(),
+                                new SwapMoveSelectorConfig(),
+                                new ChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("changeMoveSelector"))
+                                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("changeMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new SwapMoveSelectorConfig()
+                                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                .withId("swapMoveSelector")
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                                .withMimicSelectorRef("swapMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new KOptMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("koptMoveSelector")
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("koptMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))));
+            }
         }
     }
 }
