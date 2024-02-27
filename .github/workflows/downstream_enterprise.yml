@@ -1,11 +1,14 @@
-# This workflow currently doesn't work as a PR can not check out a private repo due to no secrets being available.
 name: Downstream - Timefold Solver Enterprise Edition
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  # Enables the workflow to run on PRs from forks;
+  # token sharing is safe here, because enterprise is a private repo and therefore fully under our control.
+  pull_request_target:
     branches: [main, '*.x']
+    types:
+      - opened
+      - reopened
+      - synchronize
     paths-ignore:
       - 'LICENSE*'
       - '.gitignore'
@@ -27,6 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ./timefold-solver
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
 
       # Clone timefold-solver-enterprise
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
@@ -43,7 +47,7 @@ jobs:
         with:
           repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
           ref: ${{ env.TARGET_CHAIN_BRANCH }}
-          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           path: ./timefold-solver-enterprise
           fetch-depth: 0 # Otherwise merge in the next step will fail on account of not having history.
       - name: Prevent stale fork of timefold-solver-enterprise

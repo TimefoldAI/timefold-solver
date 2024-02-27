@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
@@ -103,5 +104,21 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
             // test middleIndex in [0, endIndex] or middleIndex in [startIndex, listSize)
             return middleIndex >= startIndex || middleIndex <= endIndex;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof EntityOrderInfo that
+                && Arrays.equals(entities, that.entities)
+                && Objects.equals(entityToEntityIndex, that.entityToEntityIndex)
+                && Arrays.equals(offsets, that.offsets);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(entityToEntityIndex);
+        result = 31 * result + Arrays.hashCode(entities);
+        result = 31 * result + Arrays.hashCode(offsets);
+        return result;
     }
 }
