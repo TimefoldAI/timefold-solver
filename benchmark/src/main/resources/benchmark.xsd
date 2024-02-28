@@ -353,6 +353,9 @@
           <xs:element minOccurs="0" name="termination" type="tns:terminationConfig"/>
                               
           
+          <xs:element minOccurs="0" name="nearbyDistanceMeterClass" type="xs:string"/>
+                              
+          
           <xs:choice maxOccurs="unbounded" minOccurs="0">
                                     
             
