@@ -11,7 +11,6 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KOptMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
@@ -302,71 +301,14 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
              * We have a mix of basic and list variables.
              * The "old" move selector configs handle this situation correctly but they complain of it being deprecated.
              *
+             * Combining essential variables with list variables in a single entity is not supported. Therefore,
+             * default selectors do not support enabling Nearby Selection with multiple entities.
+             *
              * TODO Improve so that list variables get list variable selectors directly.
              * TODO PLANNER-2755 Support coexistence of basic and list variables on the same entity.
              */
-            if (configPolicy.getNearbyDistanceMeterClass() == null) {
-                return new UnionMoveSelectorConfig()
-                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
-            } else {
-                return new UnionMoveSelectorConfig()
-                        .withMoveSelectors(new ChangeMoveSelectorConfig(),
-                                new SwapMoveSelectorConfig(),
-                                // Basic vars
-                                new ChangeMoveSelectorConfig()
-                                        .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withId("changeMoveSelector"))
-                                        .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                .withNearbySelectionConfig(new NearbySelectionConfig()
-                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("changeMoveSelector"))
-                                                        .withNearbyDistanceMeterClass(
-                                                                configPolicy.getNearbyDistanceMeterClass()))),
-                                new SwapMoveSelectorConfig()
-                                        .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                .withId("swapMoveSelector")
-                                                .withNearbySelectionConfig(new NearbySelectionConfig()
-                                                        .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                                                .withMimicSelectorRef("swapMoveSelector"))
-                                                        .withNearbyDistanceMeterClass(
-                                                                configPolicy.getNearbyDistanceMeterClass()))),
-                                new KOptMoveSelectorConfig()
-                                        .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withId("koptMoveSelector")
-                                                .withNearbySelectionConfig(new NearbySelectionConfig()
-                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("koptMoveSelector"))
-                                                        .withNearbyDistanceMeterClass(
-                                                                configPolicy.getNearbyDistanceMeterClass()))),
-                                // List vars
-                                new ListChangeMoveSelectorConfig()
-                                        .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withId("changeMoveSelector"))
-                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
-                                                .withNearbySelectionConfig(new NearbySelectionConfig()
-                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("changeMoveSelector"))
-                                                        .withNearbyDistanceMeterClass(
-                                                                configPolicy.getNearbyDistanceMeterClass()))),
-                                new ListSwapMoveSelectorConfig()
-                                        .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withId("swapMoveSelector"))
-                                        .withSecondaryValueSelectorConfig(new ValueSelectorConfig()
-                                                .withNearbySelectionConfig(new NearbySelectionConfig()
-                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("swapMoveSelector"))
-                                                        .withNearbyDistanceMeterClass(
-                                                                configPolicy.getNearbyDistanceMeterClass()))),
-                                new KOptListMoveSelectorConfig()
-                                        .withOriginSelectorConfig(new ValueSelectorConfig()
-                                                .withId("koptMoveSelector"))
-                                        .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withNearbySelectionConfig(new NearbySelectionConfig()
-                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("koptMoveSelector"))
-                                                        .withNearbyDistanceMeterClass(
-                                                                configPolicy.getNearbyDistanceMeterClass()))));
-            }
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
         }
     }
 }
