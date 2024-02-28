@@ -312,6 +312,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 return new UnionMoveSelectorConfig()
                         .withMoveSelectors(new ChangeMoveSelectorConfig(),
                                 new SwapMoveSelectorConfig(),
+                                // Basic vars
                                 new ChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withId("changeMoveSelector"))
@@ -332,6 +333,34 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                                 new KOptMoveSelectorConfig()
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withId("koptMoveSelector")
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("koptMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                // List vars
+                                new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("changeMoveSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("changeMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new ListSwapMoveSelectorConfig()
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withId("swapMoveSelector"))
+                                        .withSecondaryValueSelectorConfig(new ValueSelectorConfig()
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("swapMoveSelector"))
+                                                        .withNearbyDistanceMeterClass(
+                                                                configPolicy.getNearbyDistanceMeterClass()))),
+                                new KOptListMoveSelectorConfig()
+                                        .withOriginSelectorConfig(new ValueSelectorConfig()
+                                                .withId("koptMoveSelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withNearbySelectionConfig(new NearbySelectionConfig()
                                                         .withOriginValueSelectorConfig(new ValueSelectorConfig()
                                                                 .withMimicSelectorRef("koptMoveSelector"))
