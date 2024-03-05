@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.localsearch;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.UUID;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -205,93 +206,110 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         if (basicVariableDescriptorList.isEmpty()) { // We only have the one list variable.
             if (configPolicy.getNearbyDistanceMeterClass() == null) {
                 return new UnionMoveSelectorConfig()
-                        .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig());
+                        .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
+                                new KOptListMoveSelectorConfig());
             } else {
+                String changeSelectorName = "changeMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+                String swapSelectorName = "swapMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+                String koptSelectorName = "koptMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
                 return new UnionMoveSelectorConfig()
                         .withMoveSelectors(new ListChangeMoveSelectorConfig(),
                                 new ListSwapMoveSelectorConfig(),
                                 new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withId("changeMoveSelector"))
+                                                .withId(changeSelectorName))
                                         .withDestinationSelectorConfig(new DestinationSelectorConfig()
                                                 .withNearbySelectionConfig(new NearbySelectionConfig()
                                                         .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("changeMoveSelector"))
+                                                                .withMimicSelectorRef(changeSelectorName))
                                                         .withNearbyDistanceMeterClass(
                                                                 configPolicy.getNearbyDistanceMeterClass()))),
                                 new ListSwapMoveSelectorConfig()
                                         .withValueSelectorConfig(new ValueSelectorConfig()
-                                                .withId("swapMoveSelector"))
+                                                .withId(swapSelectorName))
                                         .withSecondaryValueSelectorConfig(new ValueSelectorConfig()
                                                 .withNearbySelectionConfig(new NearbySelectionConfig()
                                                         .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("swapMoveSelector"))
+                                                                .withMimicSelectorRef(swapSelectorName))
                                                         .withNearbyDistanceMeterClass(
                                                                 configPolicy.getNearbyDistanceMeterClass()))),
                                 new KOptListMoveSelectorConfig()
                                         .withOriginSelectorConfig(new ValueSelectorConfig()
-                                                .withId("koptMoveSelector"))
+                                                .withId(koptSelectorName))
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withNearbySelectionConfig(new NearbySelectionConfig()
                                                         .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                                                                .withMimicSelectorRef("koptMoveSelector"))
+                                                                .withMimicSelectorRef(koptSelectorName))
                                                         .withNearbyDistanceMeterClass(
                                                                 configPolicy.getNearbyDistanceMeterClass()))));
             }
         } else if (listVariableDescriptor == null) { // We only have basic variables.
             if (configPolicy.getNearbyDistanceMeterClass() == null) {
-                return new UnionMoveSelectorConfig()
-                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+                if (hasChainedVariable) {
+                    return new UnionMoveSelectorConfig()
+                            .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
+                                    new TailChainSwapMoveSelectorConfig());
+                } else {
+                    return new UnionMoveSelectorConfig()
+                            .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+                }
             } else {
                 if (hasChainedVariable) {
+                    String changeSelectorName = "changeMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+                    String swapSelectorName = "swapMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+                    String tailChainSelectorName =
+                            "tailChainSwapMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+
                     return new UnionMoveSelectorConfig()
                             .withMoveSelectors(new ChangeMoveSelectorConfig(),
                                     new SwapMoveSelectorConfig(),
                                     new ChangeMoveSelectorConfig()
-                                            .withEntitySelectorConfig(new EntitySelectorConfig().withId("changeMoveSelector"))
+                                            .withEntitySelectorConfig(new EntitySelectorConfig().withId(changeSelectorName))
                                             .withValueSelectorConfig(new ValueSelectorConfig()
                                                     .withNearbySelectionConfig(new NearbySelectionConfig()
                                                             .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                                                    .withMimicSelectorRef("changeMoveSelector"))
+                                                                    .withMimicSelectorRef(changeSelectorName))
                                                             .withNearbyDistanceMeterClass(
                                                                     configPolicy.getNearbyDistanceMeterClass()))),
                                     new SwapMoveSelectorConfig()
                                             .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                    .withId("swapMoveSelector"))
+                                                    .withId(swapSelectorName))
                                             .withSecondaryEntitySelectorConfig(new EntitySelectorConfig()
                                                     .withNearbySelectionConfig(new NearbySelectionConfig()
                                                             .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                                                    .withMimicSelectorRef("swapMoveSelector"))
+                                                                    .withMimicSelectorRef(swapSelectorName))
                                                             .withNearbyDistanceMeterClass(
                                                                     configPolicy.getNearbyDistanceMeterClass()))),
                                     new TailChainSwapMoveSelectorConfig()
                                             .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                    .withId("tailChainSwapMoveSelector"))
+                                                    .withId(tailChainSelectorName))
                                             .withValueSelectorConfig(new ValueSelectorConfig()
                                                     .withNearbySelectionConfig(new NearbySelectionConfig()
                                                             .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                                                    .withMimicSelectorRef("tailChainSwapMoveSelector"))
+                                                                    .withMimicSelectorRef(tailChainSelectorName))
                                                             .withNearbyDistanceMeterClass(
                                                                     configPolicy.getNearbyDistanceMeterClass()))));
                 } else {
+                    String changeSelectorName = "changeMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+                    String swapSelectorName = "swapMoveSelector-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
                     return new UnionMoveSelectorConfig()
                             .withMoveSelectors(new ChangeMoveSelectorConfig(),
                                     new SwapMoveSelectorConfig(),
                                     new ChangeMoveSelectorConfig()
-                                            .withEntitySelectorConfig(new EntitySelectorConfig().withId("changeMoveSelector"))
+                                            .withEntitySelectorConfig(new EntitySelectorConfig().withId(changeSelectorName))
                                             .withValueSelectorConfig(new ValueSelectorConfig()
                                                     .withNearbySelectionConfig(new NearbySelectionConfig()
                                                             .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                                                    .withMimicSelectorRef("changeMoveSelector"))
+                                                                    .withMimicSelectorRef(changeSelectorName))
                                                             .withNearbyDistanceMeterClass(
                                                                     configPolicy.getNearbyDistanceMeterClass()))),
                                     new SwapMoveSelectorConfig()
                                             .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                    .withId("swapMoveSelector"))
+                                                    .withId(swapSelectorName))
                                             .withSecondaryEntitySelectorConfig(new EntitySelectorConfig()
                                                     .withNearbySelectionConfig(new NearbySelectionConfig()
                                                             .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                                                    .withMimicSelectorRef("swapMoveSelector"))
+                                                                    .withMimicSelectorRef(swapSelectorName))
                                                             .withNearbyDistanceMeterClass(
                                                                     configPolicy.getNearbyDistanceMeterClass()))));
                 }
@@ -307,6 +325,11 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
              * TODO Improve so that list variables get list variable selectors directly.
              * TODO PLANNER-2755 Support coexistence of basic and list variables on the same entity.
              */
+            if (configPolicy.getNearbyDistanceMeterClass() != null) {
+                throw new IllegalArgumentException(
+                        "The configuration contains basic and list variables that are incompatible with using the nearbyDistanceMeterClass (%s)."
+                                .formatted(configPolicy.getNearbyDistanceMeterClass()));
+            }
             return new UnionMoveSelectorConfig()
                     .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
         }
