@@ -348,6 +348,11 @@ class DefaultSolverTest {
                                         Tags.empty(),
                                         null,
                                         null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
@@ -422,6 +427,11 @@ class DefaultSolverTest {
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
                                         Tags.of("tag.key", "tag.value"),
                                         null,
                                         null,
@@ -994,7 +1004,7 @@ class DefaultSolverTest {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
 
-        // Run only 7 steps at a time, although the total number of steps needed to complete CH is equal to valueCount.
+        // Run only 7 steps at a time, although the total number of steps needed to complete CH is equal to maximumValueRangeSize.
         final int stepCountLimit = 7;
         ConstructionHeuristicPhaseConfig phaseConfig = new ConstructionHeuristicPhaseConfig();
         phaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(stepCountLimit));

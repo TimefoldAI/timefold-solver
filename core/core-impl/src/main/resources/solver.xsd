@@ -1507,11 +1507,19 @@
             
       <xs:enumeration value="ERROR_COUNT"/>
             
+      <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
+            
+      <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>
+            
+      <xs:enumeration value="PROBLEM_VARIABLE_COUNT"/>
+            
+      <xs:enumeration value="PROBLEM_VALUE_COUNT"/>
+            
+      <xs:enumeration value="PROBLEM_SIZE_LOG"/>
+            
       <xs:enumeration value="BEST_SCORE"/>
             
       <xs:enumeration value="STEP_SCORE"/>
-            
-      <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
             
       <xs:enumeration value="BEST_SOLUTION_MUTATION"/>
             
@@ -1526,12 +1534,6 @@
       <xs:enumeration value="PICKED_MOVE_TYPE_BEST_SCORE_DIFF"/>
             
       <xs:enumeration value="PICKED_MOVE_TYPE_STEP_SCORE_DIFF"/>
-            
-      <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>
-            
-      <xs:enumeration value="PROBLEM_VARIABLE_COUNT"/>
-            
-      <xs:enumeration value="PROBLEM_VALUE_COUNT"/>
           
     </xs:restriction>
       

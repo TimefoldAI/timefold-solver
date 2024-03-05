@@ -36,7 +36,7 @@ import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPer
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
-import ai.timefold.solver.core.api.solver.ProblemStatistics;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -422,7 +422,7 @@ public class ProblemBenchmarkResult<Solution_> {
      *
      * @param problemStatistics never null
      */
-    public void registerScale(ProblemStatistics problemStatistics) {
+    public void registerScale(ProblemSizeStatistics problemStatistics) {
         if (entityCount == null) {
             entityCount = problemStatistics.entityCount();
         } else if (entityCount.longValue() != problemStatistics.entityCount()) {
@@ -442,20 +442,20 @@ public class ProblemBenchmarkResult<Solution_> {
             variableCount = -1L;
         }
         if (maximumValueCount == null) {
-            maximumValueCount = problemStatistics.maximumValueRangeSize();
-        } else if (maximumValueCount.longValue() != problemStatistics.maximumValueRangeSize()) {
-            LOGGER.warn("The problemBenchmarkResult ({}) has different maximumValueRangeSize values ([{},{}]).\n"
+            maximumValueCount = problemStatistics.approximateValueCount();
+        } else if (maximumValueCount.longValue() != problemStatistics.approximateValueCount()) {
+            LOGGER.warn("The problemBenchmarkResult ({}) has different approximateValueCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), maximumValueCount, problemStatistics.maximumValueRangeSize());
-            // The maximumValueRangeSize is not unknown (null), but known to be ambiguous
+                    getName(), maximumValueCount, problemStatistics.approximateValueCount());
+            // The approximateValueCount is not unknown (null), but known to be ambiguous
             maximumValueCount = -1L;
         }
         if (problemScale == null) {
-            problemScale = problemStatistics.getUnscaledBase10Log();
-        } else if (problemScale.longValue() != problemStatistics.getUnscaledBase10Log()) {
+            problemScale = problemStatistics.getApproximateProblemScaleLogAsFixedPointLong();
+        } else if (problemScale.longValue() != problemStatistics.getApproximateProblemScaleLogAsFixedPointLong()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different problemScale values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), problemScale, problemStatistics.getUnscaledBase10Log());
+                    getName(), problemScale, problemStatistics.getApproximateProblemScaleLogAsFixedPointLong());
             // The problemScale is not unknown (null), but known to be ambiguous
             problemScale = -1L;
         }

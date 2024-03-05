@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.solver.ProblemStatistics;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverStatus;
@@ -223,13 +223,15 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public ProblemStatistics getProblemStatistics() {
+    public ProblemSizeStatistics getProblemStatistics() {
         var problemStatistics = solver.getSolverScope().getProblemStatistics();
         if (problemStatistics != null) {
             return problemStatistics;
         }
         // Solving has not started yet
-        return solver.getSolverScope().calculateProblemStatistics(problemFinder.apply(problemId));
+        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(
+                solver.getSolverScope().getScoreDirector(),
+                problemFinder.apply(problemId));
     }
 
     public Termination<Solution_> getSolverTermination() {

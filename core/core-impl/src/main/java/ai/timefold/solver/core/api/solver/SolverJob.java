@@ -96,12 +96,12 @@ public interface SolverJob<Solution_, ProblemId_> {
     long getScoreCalculationCount();
 
     /**
-     * Return the {@link ProblemStatistics} for the {@link PlanningSolution problem} submitted to the
+     * Return the {@link ProblemSizeStatistics} for the {@link PlanningSolution problem} submitted to the
      * {@link SolverManager}.
      *
      * @return never null
      */
-    ProblemStatistics getProblemStatistics();
+    ProblemSizeStatistics getProblemStatistics();
 
     /**
      * Return the average number of score calculations per second since the last start.

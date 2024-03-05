@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.util;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
 public class MathUtils {
+    public static final long LOG_PRECISION = 1_000_000L;
+
     private MathUtils() {
     }
 

@@ -48,7 +48,7 @@ import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.ProblemStatistics;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -63,6 +63,7 @@ import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -1029,6 +1030,38 @@ public class SolutionDescriptor<Solution_> {
         return result.longValue();
     }
 
+    /**
+     * @param solution never null
+     * @return {@code >= 0}
+     */
+    public long getApproximateValueCount(Solution_ solution) {
+        Set<GenuineVariableDescriptor<Solution_>> genuineVariableDescriptorSet =
+                Collections.newSetFromMap(new IdentityHashMap<>());
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                genuineVariableDescriptorSet.addAll(entityDescriptor.getGenuineVariableDescriptorList());
+            }
+        });
+        MutableLong out = new MutableLong();
+        for (var variableDescriptor : genuineVariableDescriptorSet) {
+            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+            if (valueRangeDescriptor.isEntityIndependent()) {
+                var entityIndependentVariableDescriptor =
+                        (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
+                out.add(entityIndependentVariableDescriptor.extractValueRangeSize(solution));
+            } else {
+                visitEntitiesByEntityClass(solution,
+                        variableDescriptor.getEntityDescriptor().getEntityClass(),
+                        entity -> {
+                            out.add(valueRangeDescriptor.extractValueRangeSize(solution, entity));
+                            return false;
+                        });
+            }
+        }
+        return out.longValue();
+    }
+
     public long getMaximumValueRangeSize(Solution_ solution) {
         return extractAllEntitiesStream(solution)
                 .mapToLong(entity -> {
@@ -1047,19 +1080,18 @@ public class SolutionDescriptor<Solution_> {
             MutableLong listMovableEntityCount,
             MutableLong listTotalValueCount) {
         public void addBasicProblemScale(long count) {
-            basicProblemScaleLog.add(MathUtils.getScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase, count));
+            basicProblemScaleLog.add(MathUtils.getScaledApproximateLog(MathUtils.LOG_PRECISION, logBase, count));
         }
     }
 
     /**
      * Calculates an indication on how big this problem instance is.
-     * This is approximately 100 times the log of the solution space size,
-     * where the base of the log is {@link #getMaximumValueRangeSize}.
+     * This is approximately the base 10 log of the solution space size.
      *
      * @param solution never null
      * @return {@code >= 0}
      */
-    public long getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+    public double getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
         long logBase = getMaximumValueRangeSize(solution);
         ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase,
                 new MutableLong(),
@@ -1077,8 +1109,7 @@ public class SolutionDescriptor<Solution_> {
         long result = problemScaleTracker.basicProblemScaleLog.longValue();
         if (problemScaleTracker.listTotalEntityCount.longValue() != 0L) {
             // List variables do not support from entity value ranges
-            int totalListValueCount =
-                    problemScaleTracker.listTotalValueCount.intValue() / problemScaleTracker.listTotalEntityCount.intValue();
+            int totalListValueCount = problemScaleTracker.listTotalValueCount.intValue();
             int totalListMovableValueCount = totalListValueCount - problemScaleTracker.listPinnedValueCount.intValue();
             int possibleTargetsForListValue = problemScaleTracker.listMovableEntityCount.intValue();
             var listVariableDescriptor = getListVariableDescriptor();
@@ -1087,10 +1118,18 @@ public class SolutionDescriptor<Solution_> {
                 possibleTargetsForListValue++;
             }
 
-            result += MathUtils.getPossibleArrangementsScaledApproximateLog(ProblemStatistics.LOG_SCALE, logBase,
+            result += MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
                     totalListMovableValueCount, possibleTargetsForListValue);
         }
-        return result;
+        return (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
+    }
+
+    public ProblemSizeStatistics getProblemSizeStatistics(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+        return new ProblemSizeStatistics(
+                getGenuineEntityCount(solution),
+                getGenuineVariableCount(solution),
+                getApproximateValueCount(solution),
+                getProblemScale(scoreDirector, solution));
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {
