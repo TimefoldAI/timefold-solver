@@ -2,14 +2,21 @@ package ai.timefold.solver.core.impl.localsearch;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
@@ -18,6 +25,7 @@ import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchFor
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
@@ -191,23 +199,157 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 .filter(variableDescriptor -> !variableDescriptor.isListVariable())
                 .distinct()
                 .toList();
+        var hasChainedVariable = basicVariableDescriptorList.stream()
+                .filter(v -> v instanceof BasicVariableDescriptor<Solution_>)
+                .anyMatch(v -> ((BasicVariableDescriptor<?>) v).isChained());
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (basicVariableDescriptorList.isEmpty()) { // We only have the one list variable.
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig());
+            return determineDefaultListVarMoveSelectorConfig(configPolicy);
         } else if (listVariableDescriptor == null) { // We only have basic variables.
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+            return hasChainedVariable ? determineDefaultChainedMoveSelectorConfig(configPolicy)
+                    : determineDefaultBasicVarMoveSelectorConfig(configPolicy);
         } else {
             /*
              * We have a mix of basic and list variables.
              * The "old" move selector configs handle this situation correctly but they complain of it being deprecated.
              *
+             * Combining essential variables with list variables in a single entity is not supported. Therefore,
+             * default selectors do not support enabling Nearby Selection with multiple entities.
+             *
              * TODO Improve so that list variables get list variable selectors directly.
              * TODO PLANNER-2755 Support coexistence of basic and list variables on the same entity.
              */
+            if (configPolicy.getNearbyDistanceMeterClass() != null) {
+                throw new IllegalArgumentException(
+                        """
+                                The configuration contains both basic and list variables, which makes it incompatible with using a top-level nearbyDistanceMeterClass (%s).
+                                Specify move selectors manually or remove the top-level nearbyDistanceMeterClass from your solver config."""
+                                .formatted(configPolicy.getNearbyDistanceMeterClass()));
+            }
             return new UnionMoveSelectorConfig()
                     .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
         }
+    }
+
+    private UnionMoveSelectorConfig determineDefaultBasicVarMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+        if (configPolicy.getNearbyDistanceMeterClass() == null) {
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+        } else {
+            String changeSelectorName = addRandomSuffix("changeMoveSelector", configPolicy.getRandom());
+            String swapSelectorName = addRandomSuffix("swapMoveSelector", configPolicy.getRandom());
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ChangeMoveSelectorConfig(),
+                            new SwapMoveSelectorConfig(),
+                            new ChangeMoveSelectorConfig()
+                                    .withEntitySelectorConfig(new EntitySelectorConfig().withId(changeSelectorName))
+                                    .withValueSelectorConfig(new ValueSelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                            .withMimicSelectorRef(changeSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))),
+                            new SwapMoveSelectorConfig()
+                                    .withEntitySelectorConfig(new EntitySelectorConfig()
+                                            .withId(swapSelectorName))
+                                    .withSecondaryEntitySelectorConfig(new EntitySelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                            .withMimicSelectorRef(swapSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))));
+        }
+    }
+
+    private UnionMoveSelectorConfig determineDefaultChainedMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+        if (configPolicy.getNearbyDistanceMeterClass() == null) {
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
+                            new TailChainSwapMoveSelectorConfig());
+        } else {
+            String changeSelectorName = addRandomSuffix("changeMoveSelector", configPolicy.getRandom());
+            String swapSelectorName = addRandomSuffix("swapMoveSelector", configPolicy.getRandom());
+            String tailChainSelectorName = addRandomSuffix("tailChainSwapMoveSelector", configPolicy.getRandom());
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ChangeMoveSelectorConfig(),
+                            new SwapMoveSelectorConfig(),
+                            new ChangeMoveSelectorConfig()
+                                    .withEntitySelectorConfig(new EntitySelectorConfig().withId(changeSelectorName))
+                                    .withValueSelectorConfig(new ValueSelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                            .withMimicSelectorRef(changeSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))),
+                            new SwapMoveSelectorConfig()
+                                    .withEntitySelectorConfig(new EntitySelectorConfig()
+                                            .withId(swapSelectorName))
+                                    .withSecondaryEntitySelectorConfig(new EntitySelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                            .withMimicSelectorRef(swapSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))),
+                            new TailChainSwapMoveSelectorConfig()
+                                    .withEntitySelectorConfig(new EntitySelectorConfig()
+                                            .withId(tailChainSelectorName))
+                                    .withValueSelectorConfig(new ValueSelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                                            .withMimicSelectorRef(tailChainSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))));
+        }
+    }
+
+    private UnionMoveSelectorConfig determineDefaultListVarMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+        if (configPolicy.getNearbyDistanceMeterClass() == null) {
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
+                            new KOptListMoveSelectorConfig());
+        } else {
+            String changeSelectorName = addRandomSuffix("changeMoveSelector", configPolicy.getRandom());
+            String swapSelectorName = addRandomSuffix("swapMoveSelector", configPolicy.getRandom());
+            String koptSelectorName = addRandomSuffix("koptMoveSelector", configPolicy.getRandom());
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ListChangeMoveSelectorConfig(),
+                            new ListSwapMoveSelectorConfig(),
+                            new ListChangeMoveSelectorConfig()
+                                    .withValueSelectorConfig(new ValueSelectorConfig()
+                                            .withId(changeSelectorName))
+                                    .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                            .withMimicSelectorRef(changeSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))),
+                            new ListSwapMoveSelectorConfig()
+                                    .withValueSelectorConfig(new ValueSelectorConfig()
+                                            .withId(swapSelectorName))
+                                    .withSecondaryValueSelectorConfig(new ValueSelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                            .withMimicSelectorRef(swapSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))),
+                            new KOptListMoveSelectorConfig()
+                                    .withOriginSelectorConfig(new ValueSelectorConfig()
+                                            .withId(koptSelectorName))
+                                    .withValueSelectorConfig(new ValueSelectorConfig()
+                                            .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                    .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                            .withMimicSelectorRef(koptSelectorName))
+                                                    .withNearbyDistanceMeterClass(
+                                                            configPolicy.getNearbyDistanceMeterClass()))));
+        }
+    }
+
+    private String addRandomSuffix(String name, Random random) {
+        StringBuilder value = new StringBuilder(name);
+        value.append("-");
+        random.ints(97, 122) // ['a', 'z']
+                .limit(4) // 4 letters
+                .forEach(value::appendCodePoint);
+        return value.toString();
     }
 }

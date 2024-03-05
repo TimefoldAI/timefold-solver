@@ -2,6 +2,19 @@
   {
     "extension": "revapi.differences",
     "configuration": {
+      "differences": [
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "new": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"environmentMode\", \"daemon\", \"randomType\", \"randomSeed\", \"randomFactoryClass\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"domainAccessType\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"phaseConfigList\"}",
+          "newValue": "{\"environmentMode\", \"daemon\", \"randomType\", \"randomSeed\", \"randomFactoryClass\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"domainAccessType\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
+          "justification": "Adding new Nearby root property"
+        }
+      ]
     }
   }
 ]

@@ -108,11 +108,15 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
         var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
+        var randomFactory = buildRandomFactory(environmentMode);
+
         var configPolicy = new HeuristicConfigPolicy.Builder<>(
                 environmentMode,
                 moveThreadCount,
                 solverConfig.getMoveThreadBufferSize(),
                 solverConfig.getThreadFactoryClass(),
+                solverConfig.getNearbyDistanceMeterClass(),
+                randomFactory.createRandom(),
                 scoreDirectorFactory.getInitializingScoreTrend(),
                 solutionDescriptor,
                 ClassInstanceCache.create()).build();
@@ -120,7 +124,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var termination = buildTerminationConfig(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
-        var randomFactory = buildRandomFactory(environmentMode);
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
                 termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
