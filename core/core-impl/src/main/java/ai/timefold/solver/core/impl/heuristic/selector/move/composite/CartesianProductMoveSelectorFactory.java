@@ -18,6 +18,13 @@ public class CartesianProductMoveSelectorFactory<Solution_>
     @Override
     public MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
+        if (configPolicy.getNearbyDistanceMeterClass() != null) {
+            throw new IllegalArgumentException(
+                    """
+                            The cartesianProductMoveSelector (%s) is not compatible with using the top-level property nearbyDistanceMeterClass (%s).
+                            Specify move selectors manually or remove the top-level nearbyDistanceMeterClass from your solver config."""
+                            .formatted(config, configPolicy.getNearbyDistanceMeterClass()));
+        }
         List<MoveSelector<Solution_>> moveSelectorList = buildInnerMoveSelectors(config.getMoveSelectorList(),
                 configPolicy, minimumCacheType, randomSelection);
         boolean ignoreEmptyChildIterators_ = Objects.requireNonNullElse(config.getIgnoreEmptyChildIterators(), true);

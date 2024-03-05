@@ -1,14 +1,17 @@
 package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 
+import java.util.Random;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 @XmlType(propOrder = {
         "entitySelectorConfig",
@@ -80,6 +83,41 @@ public class ChangeMoveSelectorConfig extends MoveSelectorConfig<ChangeMoveSelec
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }
+    }
+
+    @Override
+    public ChangeMoveSelectorConfig enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter,
+            Random random) {
+        ChangeMoveSelectorConfig nearbyConfig = copyConfig();
+        EntitySelectorConfig entityConfig = nearbyConfig.getEntitySelectorConfig();
+        if (entityConfig == null) {
+            entityConfig = new EntitySelectorConfig();
+        }
+        String entitySelectorId = addRandomSuffix("entitySelector", random);
+        entityConfig.withId(entitySelectorId);
+        ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
+        if (valueConfig == null) {
+            valueConfig = new ValueSelectorConfig();
+        }
+        valueConfig.withNearbySelectionConfig(
+                new NearbySelectionConfig()
+                        .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                                .withMimicSelectorRef(entitySelectorId))
+                        .withNearbyDistanceMeterClass(distanceMeter));
+        nearbyConfig.withEntitySelectorConfig(entityConfig)
+                .withValueSelectorConfig(valueConfig);
+        return nearbyConfig;
+    }
+
+    @Override
+    public boolean acceptNearbySelectionAutoConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return entitySelectorConfig.getNearbySelectionConfig() != null
+                || valueSelectorConfig.getNearbySelectionConfig() != null;
     }
 
     @Override

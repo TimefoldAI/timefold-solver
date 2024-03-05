@@ -90,6 +90,12 @@ public class KOptMoveSelectorConfig extends MoveSelectorConfig<KOptMoveSelectorC
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return entitySelectorConfig.getNearbySelectionConfig() != null
+                || valueSelectorConfig.getNearbySelectionConfig() != null;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + entitySelectorConfig + ", " + valueSelectorConfig + ")";
     }

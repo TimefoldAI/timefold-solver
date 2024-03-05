@@ -152,6 +152,14 @@ public class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubListSwa
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return subListSelectorConfig.getNearbySelectionConfig() != null
+                || subListSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null
+                || secondarySubListSelectorConfig.getNearbySelectionConfig() != null
+                || secondarySubListSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + subListSelectorConfig
                 + (secondarySubListSelectorConfig == null ? "" : ", " + secondarySubListSelectorConfig) + ")";

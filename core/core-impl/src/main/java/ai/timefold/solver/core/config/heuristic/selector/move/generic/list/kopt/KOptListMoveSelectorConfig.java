@@ -1,13 +1,18 @@
 package ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt;
 
+import java.util.Random;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 @XmlType(propOrder = {
         "minimumK",
@@ -114,6 +119,40 @@ public class KOptListMoveSelectorConfig extends MoveSelectorConfig<KOptListMoveS
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }
+    }
+
+    @Override
+    public KOptListMoveSelectorConfig enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter,
+            Random random) {
+        KOptListMoveSelectorConfig nearbyConfig = copyConfig();
+        ValueSelectorConfig originConfig = nearbyConfig.getOriginSelectorConfig();
+        if (originConfig == null) {
+            originConfig = new ValueSelectorConfig();
+        }
+        String valueSelectorId = addRandomSuffix("valueSelector", random);
+        originConfig.withId(valueSelectorId);
+        ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
+        if (valueConfig == null) {
+            valueConfig = new ValueSelectorConfig();
+        }
+        valueConfig.withNearbySelectionConfig(new NearbySelectionConfig()
+                .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                        .withMimicSelectorRef(valueSelectorId))
+                .withNearbyDistanceMeterClass(distanceMeter));
+        nearbyConfig.withOriginSelectorConfig(originConfig)
+                .withValueSelectorConfig(valueConfig);
+        return nearbyConfig;
+    }
+
+    @Override
+    public boolean acceptNearbySelectionAutoConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return originSelectorConfig.getNearbySelectionConfig() != null
+                || valueSelectorConfig.getNearbySelectionConfig() != null;
     }
 
     @Override

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.config.heuristic.selector.move;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -32,6 +33,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 /**
  * General superclass for {@link ChangeMoveSelectorConfig}, etc.
@@ -279,5 +281,34 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         fixedProbabilityWeight = ConfigUtils.inheritOverwritableProperty(
                 fixedProbabilityWeight, inheritedConfig.getFixedProbabilityWeight());
     }
+
+    protected String addRandomSuffix(String name, Random random) {
+        StringBuilder value = new StringBuilder(name);
+        value.append("-");
+        random.ints(97, 122) // ['a', 'z']
+                .limit(4) // 4 letters
+                .forEach(value::appendCodePoint);
+        return value.toString();
+    }
+
+    /**
+     * Check if the selector factory accepts Nearby selection autoconfiguration.
+     *
+     * @return false by default
+     */
+    public boolean acceptNearbySelectionAutoConfiguration() {
+        return false;
+    }
+
+    /**
+     * Enables the Nearby Selection autoconfiguration.
+     *
+     * @return new instance with the Nearby Selection settings properly configured
+     */
+    public Config_ enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
+        throw new UnsupportedOperationException();
+    }
+
+    public abstract boolean hasNearbySelectionConfig();
 
 }
