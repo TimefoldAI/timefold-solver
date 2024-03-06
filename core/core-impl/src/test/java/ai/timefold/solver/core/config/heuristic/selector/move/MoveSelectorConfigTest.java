@@ -310,7 +310,7 @@ class MoveSelectorConfigTest {
         UnionMoveSelectorConfig unionChangeSelectorConfig =
                 new UnionMoveSelectorConfig(List.of(new ChangeMoveSelectorConfig()));
         UnionMoveSelectorConfig unionSwapSelectorConfig =
-                new UnionMoveSelectorConfig(List.of(new SwapMoveSelectorConfig()));
+                new UnionMoveSelectorConfig(List.of(new SwapMoveSelectorConfig(), new PillarSwapMoveSelectorConfig()));
         UnionMoveSelectorConfig config =
                 new UnionMoveSelectorConfig(List.of(unionChangeSelectorConfig, unionSwapSelectorConfig));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
@@ -334,7 +334,7 @@ class MoveSelectorConfigTest {
                 .isNotNull();
 
         UnionMoveSelectorConfig swapConfig = (UnionMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
-
+        assertThat(swapConfig.getMoveSelectorList()).hasSize(3);
         SwapMoveSelectorConfig nearbySwapConfig = (SwapMoveSelectorConfig) swapConfig.getMoveSelectorList().get(0);
         assertThat(nearbySwapConfig.hasNearbySelectionConfig()).isFalse();
 

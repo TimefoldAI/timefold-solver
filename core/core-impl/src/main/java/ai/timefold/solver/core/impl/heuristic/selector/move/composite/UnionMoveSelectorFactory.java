@@ -26,20 +26,20 @@ public class UnionMoveSelectorFactory<Solution_>
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         var moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
-            for (NearbyAutoConfigurationMoveSelectorConfig selectorConfig : config.getMoveSelectorList().stream()
-                    .filter(s -> NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(s.getClass()))
-                    .map(s -> (NearbyAutoConfigurationMoveSelectorConfig<?>) s)
-                    .toList()) {
-                if (selectorConfig.hasNearbySelectionConfig()) {
-                    throw new IllegalArgumentException(
-                            """
-                                    The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
-                                    Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
-                                    .formatted(selectorConfig, configPolicy.getNearbyDistanceMeterClass()));
+            for (MoveSelectorConfig<?> selectorConfig : config.getMoveSelectorList()) {
+                if (selectorConfig instanceof NearbyAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
+                    if (nearbySelectorConfig.hasNearbySelectionConfig()) {
+                        throw new IllegalArgumentException(
+                                """
+                                        The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
+                                        Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
+                                        .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
+                    }
+                    // Add a new configuration with Nearby Selection enabled
+                    moveSelectorConfigList
+                            .add(nearbySelectorConfig.enableNearbySelection(configPolicy.getNearbyDistanceMeterClass(),
+                                    configPolicy.getRandom()));
                 }
-                // Add a new configuration with Nearby Selection enabled
-                moveSelectorConfigList.add(selectorConfig.enableNearbySelection(configPolicy.getNearbyDistanceMeterClass(),
-                        configPolicy.getRandom()));
             }
         }
         List<MoveSelector<Solution_>> moveSelectorList =
