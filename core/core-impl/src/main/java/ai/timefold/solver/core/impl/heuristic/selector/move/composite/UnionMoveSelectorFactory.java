@@ -24,7 +24,7 @@ public class UnionMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        List<MoveSelectorConfig> moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
+        var moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
             for (NearbyAutoConfigurationMoveSelectorConfig selectorConfig : config.getMoveSelectorList().stream()
                     .filter(s -> NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(s.getClass()))

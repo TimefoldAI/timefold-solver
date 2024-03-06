@@ -22,6 +22,8 @@ public class CartesianProductMoveSelectorFactory<Solution_>
             throw new IllegalArgumentException(
                     """
                             The cartesianProductMoveSelector (%s) is not compatible with using the top-level property nearbyDistanceMeterClass (%s).
+                            Enabling nearbyDistanceMeterClass will duplicate move selector configurations that accept Nearby autoconfiguration.
+                            For example, if there are four selectors (2 non-nearby + 2 nearby), it will be A×B×C×D moves, which may be expensive.
                             Specify move selectors manually or remove the top-level nearbyDistanceMeterClass from your solver config."""
                             .formatted(config, configPolicy.getNearbyDistanceMeterClass()));
         }
