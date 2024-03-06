@@ -7,6 +7,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -25,8 +26,10 @@ public class UnionMoveSelectorFactory<Solution_>
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         List<MoveSelectorConfig> moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
-            for (MoveSelectorConfig selectorConfig : config.getMoveSelectorList().stream()
-                    .filter(MoveSelectorConfig::acceptNearbySelectionAutoConfiguration).toList()) {
+            for (NearbyAutoConfigurationMoveSelectorConfig selectorConfig : config.getMoveSelectorList().stream()
+                    .filter(s -> NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(s.getClass()))
+                    .map(s -> (NearbyAutoConfigurationMoveSelectorConfig<?>) s)
+                    .toList()) {
                 if (selectorConfig.hasNearbySelectionConfig()) {
                     throw new IllegalArgumentException(
                             """

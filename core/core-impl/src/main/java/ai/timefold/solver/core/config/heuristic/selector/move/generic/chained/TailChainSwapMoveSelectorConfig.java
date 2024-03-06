@@ -8,7 +8,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -20,7 +20,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "entitySelectorConfig",
         "valueSelectorConfig"
 })
-public class TailChainSwapMoveSelectorConfig extends MoveSelectorConfig<TailChainSwapMoveSelectorConfig> {
+public class TailChainSwapMoveSelectorConfig
+        extends NearbyAutoConfigurationMoveSelectorConfig<TailChainSwapMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "tailChainSwapMoveSelector";
 
@@ -90,7 +91,7 @@ public class TailChainSwapMoveSelectorConfig extends MoveSelectorConfig<TailChai
 
     @Override
     public TailChainSwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-                                                                 Random random) {
+            Random random) {
         TailChainSwapMoveSelectorConfig nearbyConfig = copyConfig();
         EntitySelectorConfig entityConfig = nearbyConfig.getEntitySelectorConfig();
         if (entityConfig == null) {
@@ -110,11 +111,6 @@ public class TailChainSwapMoveSelectorConfig extends MoveSelectorConfig<TailChai
         nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withValueSelectorConfig(valueConfig);
         return nearbyConfig;
-    }
-
-    @Override
-    public boolean acceptNearbySelectionAutoConfiguration() {
-        return true;
     }
 
     @Override
