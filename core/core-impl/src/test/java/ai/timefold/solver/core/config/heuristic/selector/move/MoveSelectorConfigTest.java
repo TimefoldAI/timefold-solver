@@ -232,15 +232,15 @@ class MoveSelectorConfigTest {
         ChangeMoveSelectorConfig nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(0);
         assertFalse(nearbyChangeConfig.hasNearbySelectionConfig());
 
-        SwapMoveSelectorConfig nearbySwapConfig = (SwapMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
-        assertFalse(nearbySwapConfig.hasNearbySelectionConfig());
-
-        nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(2);
+        nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
         assertNotNull(nearbyChangeConfig.getEntitySelectorConfig());
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig());
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig());
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig().getOriginEntitySelectorConfig());
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass());
+
+        SwapMoveSelectorConfig nearbySwapConfig = (SwapMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(2);
+        assertFalse(nearbySwapConfig.hasNearbySelectionConfig());
 
         nearbySwapConfig = (SwapMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(3);
         assertNotNull(nearbySwapConfig.getEntitySelectorConfig());
@@ -268,10 +268,8 @@ class MoveSelectorConfigTest {
         nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(0);
         assertFalse(nearbyChangeConfig.hasNearbySelectionConfig());
 
-        nearbySwapConfig = (SwapMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
-        assertFalse(nearbySwapConfig.hasNearbySelectionConfig());
 
-        nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(2);
+        nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
         assertNotNull(nearbyChangeConfig.getEntitySelectorConfig());
         assertEquals(SelectionOrder.PROBABILISTIC, nearbyChangeConfig.getEntitySelectorConfig().getSelectionOrder());
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig());
@@ -279,9 +277,54 @@ class MoveSelectorConfigTest {
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig().getOriginEntitySelectorConfig());
         assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass());
 
+        nearbySwapConfig = (SwapMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(2);
+        assertFalse(nearbySwapConfig.hasNearbySelectionConfig());
+
         nearbySwapConfig = (SwapMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(3);
         assertNotNull(nearbySwapConfig.getEntitySelectorConfig());
         assertNull(nearbySwapConfig.getSelectionOrder());
+        assertNotNull(nearbySwapConfig.getSecondaryEntitySelectorConfig());
+        assertNotNull(nearbySwapConfig.getSecondaryEntitySelectorConfig().getNearbySelectionConfig());
+        assertNotNull(
+                nearbySwapConfig.getSecondaryEntitySelectorConfig().getNearbySelectionConfig().getOriginEntitySelectorConfig());
+        assertNotNull(
+                nearbySwapConfig.getSecondaryEntitySelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass());
+    }
+
+    @Test
+    void assertEnableNearbyForMultipleUnionMoveSelectorConfig() {
+        // Default configuration
+        UnionMoveSelectorConfig unionChangeSelectorConfig =
+                new UnionMoveSelectorConfig(List.of(new ChangeMoveSelectorConfig()));
+        UnionMoveSelectorConfig unionSwapSelectorConfig =
+                new UnionMoveSelectorConfig(List.of(new SwapMoveSelectorConfig()));
+        UnionMoveSelectorConfig config =
+                new UnionMoveSelectorConfig(List.of(unionChangeSelectorConfig, unionSwapSelectorConfig));
+        assertFalse(config.hasNearbySelectionConfig());
+        assertTrue(config.acceptNearbySelectionAutoConfiguration());
+        UnionMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
+        assertTrue(nearbyConfig.hasNearbySelectionConfig());
+        assertNotNull(nearbyConfig);
+        assertEquals(2, nearbyConfig.getMoveSelectorList().size());
+
+        UnionMoveSelectorConfig changeConfig = (UnionMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(0);
+        ChangeMoveSelectorConfig nearbyChangeConfig = (ChangeMoveSelectorConfig) changeConfig.getMoveSelectorList().get(0);
+        assertFalse(nearbyChangeConfig.hasNearbySelectionConfig());
+
+        nearbyChangeConfig = (ChangeMoveSelectorConfig) changeConfig.getMoveSelectorList().get(1);
+        assertNotNull(nearbyChangeConfig.getEntitySelectorConfig());
+        assertNotNull(nearbyChangeConfig.getValueSelectorConfig());
+        assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig());
+        assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig().getOriginEntitySelectorConfig());
+        assertNotNull(nearbyChangeConfig.getValueSelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass());
+
+        UnionMoveSelectorConfig swapConfig = (UnionMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
+
+        SwapMoveSelectorConfig nearbySwapConfig = (SwapMoveSelectorConfig) swapConfig.getMoveSelectorList().get(0);
+        assertFalse(nearbySwapConfig.hasNearbySelectionConfig());
+
+        nearbySwapConfig = (SwapMoveSelectorConfig) swapConfig.getMoveSelectorList().get(1);
+        assertNotNull(nearbySwapConfig.getEntitySelectorConfig());
         assertNotNull(nearbySwapConfig.getSecondaryEntitySelectorConfig());
         assertNotNull(nearbySwapConfig.getSecondaryEntitySelectorConfig().getNearbySelectionConfig());
         assertNotNull(

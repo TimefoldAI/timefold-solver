@@ -174,10 +174,15 @@ public class UnionMoveSelectorConfig extends MoveSelectorConfig<UnionMoveSelecto
     public UnionMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
-        List<MoveSelectorConfig> updatedMoveSelectorList = new LinkedList<>(moveSelectorConfigList);
-        for (MoveSelectorConfig selectorConfig : moveSelectorConfigList) {
+        List<MoveSelectorConfig> updatedMoveSelectorList = new LinkedList<>();
+        for (MoveSelectorConfig<?> selectorConfig : moveSelectorConfigList) {
             if (selectorConfig.acceptNearbySelectionAutoConfiguration()) {
-                updatedMoveSelectorList.add(selectorConfig.enableNearbySelection(distanceMeter, random));
+                if (UnionMoveSelectorConfig.class.isAssignableFrom(selectorConfig.getClass())) {
+                    updatedMoveSelectorList.add(selectorConfig.enableNearbySelection(distanceMeter, random));
+                } else {
+                    updatedMoveSelectorList.add(selectorConfig.copyConfig());
+                    updatedMoveSelectorList.add(selectorConfig.enableNearbySelection(distanceMeter, random));
+                }
             }
         }
         nearbyConfig.withMoveSelectorList(updatedMoveSelectorList);
