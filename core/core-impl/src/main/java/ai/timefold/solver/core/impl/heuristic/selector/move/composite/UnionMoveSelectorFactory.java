@@ -26,7 +26,7 @@ public class UnionMoveSelectorFactory<Solution_>
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         var moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
-            for (MoveSelectorConfig<?> selectorConfig : config.getMoveSelectorList()) {
+            for (var selectorConfig : config.getMoveSelectorList()) {
                 if (selectorConfig instanceof NearbyAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
                     if (nearbySelectorConfig.hasNearbySelectionConfig()) {
                         throw new IllegalArgumentException(

@@ -170,8 +170,8 @@ public class UnionMoveSelectorConfig extends NearbyAutoConfigurationMoveSelector
     public UnionMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
-        List<MoveSelectorConfig> updatedMoveSelectorList = new LinkedList<>();
-        for (MoveSelectorConfig<?> selectorConfig : moveSelectorConfigList) {
+        var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
+        for (var selectorConfig : moveSelectorConfigList) {
             if (selectorConfig instanceof NearbyAutoConfigurationMoveSelectorConfig<?> nearbySelectorConfig) {
                 if (UnionMoveSelectorConfig.class.isAssignableFrom(nearbySelectorConfig.getClass())) {
                     updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
@@ -180,7 +180,7 @@ public class UnionMoveSelectorConfig extends NearbyAutoConfigurationMoveSelector
                     updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
                 }
             } else {
-                updatedMoveSelectorList.add(selectorConfig.copyConfig());
+                updatedMoveSelectorList.add((MoveSelectorConfig<?>) selectorConfig.copyConfig());
             }
         }
         nearbyConfig.withMoveSelectorList(updatedMoveSelectorList);
