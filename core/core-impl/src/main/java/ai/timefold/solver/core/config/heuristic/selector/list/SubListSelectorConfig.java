@@ -156,6 +156,11 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return nearbySelectionConfig != null || (valueSelectorConfig != null && valueSelectorConfig.hasNearbySelectionConfig());
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + valueSelectorConfig + ")";
     }

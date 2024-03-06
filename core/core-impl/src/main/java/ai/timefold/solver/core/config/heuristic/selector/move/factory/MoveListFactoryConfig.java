@@ -80,6 +80,11 @@ public class MoveListFactoryConfig extends MoveSelectorConfig<MoveListFactoryCon
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + moveListFactoryClass + ")";
     }

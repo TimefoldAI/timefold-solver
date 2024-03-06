@@ -362,4 +362,8 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         }
     }
 
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return nearbySelectionConfig != null;
+    }
 }

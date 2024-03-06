@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.config.heuristic.selector.move.composite;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
@@ -9,6 +11,7 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
@@ -25,12 +28,13 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 @XmlType(propOrder = {
         "moveSelectorConfigList",
         "selectorProbabilityWeightFactoryClass"
 })
-public class UnionMoveSelectorConfig extends MoveSelectorConfig<UnionMoveSelectorConfig> {
+public class UnionMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorConfig<UnionMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "unionMoveSelector";
 
@@ -160,6 +164,33 @@ public class UnionMoveSelectorConfig extends MoveSelectorConfig<UnionMoveSelecto
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));
         }
         classVisitor.accept(selectorProbabilityWeightFactoryClass);
+    }
+
+    @Override
+    public UnionMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            Random random) {
+        UnionMoveSelectorConfig nearbyConfig = copyConfig();
+        var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
+        for (var selectorConfig : moveSelectorConfigList) {
+            if (selectorConfig instanceof NearbyAutoConfigurationMoveSelectorConfig<?> nearbySelectorConfig) {
+                if (UnionMoveSelectorConfig.class.isAssignableFrom(nearbySelectorConfig.getClass())) {
+                    updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
+                } else {
+                    updatedMoveSelectorList.add(nearbySelectorConfig.copyConfig());
+                    updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
+                }
+            } else {
+                updatedMoveSelectorList.add((MoveSelectorConfig<?>) selectorConfig.copyConfig());
+            }
+        }
+        nearbyConfig.withMoveSelectorList(updatedMoveSelectorList);
+        return nearbyConfig;
+    }
+
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return moveSelectorConfigList != null
+                && moveSelectorConfigList.stream().anyMatch(MoveSelectorConfig::hasNearbySelectionConfig);
     }
 
     @Override

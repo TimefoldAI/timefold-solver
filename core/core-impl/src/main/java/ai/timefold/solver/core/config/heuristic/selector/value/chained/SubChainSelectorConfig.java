@@ -91,6 +91,11 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return valueSelectorConfig != null && valueSelectorConfig.hasNearbySelectionConfig();
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + valueSelectorConfig + ")";
     }

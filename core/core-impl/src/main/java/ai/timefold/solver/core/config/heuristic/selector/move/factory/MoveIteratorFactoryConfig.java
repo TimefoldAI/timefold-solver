@@ -78,6 +78,11 @@ public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFa
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + moveIteratorFactoryClass + ")";
     }

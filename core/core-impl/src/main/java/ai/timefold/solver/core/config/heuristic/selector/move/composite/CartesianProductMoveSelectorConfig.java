@@ -159,6 +159,12 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     }
 
     @Override
+    public boolean hasNearbySelectionConfig() {
+        return moveSelectorConfigList != null
+                && moveSelectorConfigList.stream().anyMatch(MoveSelectorConfig::hasNearbySelectionConfig);
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + moveSelectorConfigList + ")";
     }
