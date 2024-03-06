@@ -280,9 +280,4 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
                 fixedProbabilityWeight, inheritedConfig.getFixedProbabilityWeight());
     }
 
-    /**
-     * Verifies if the current configuration has any Nearby Selection settings.
-     */
-    public abstract boolean hasNearbySelectionConfig();
-
 }

@@ -85,4 +85,8 @@ public abstract class AbstractPillarMoveSelectorConfig<Config_ extends AbstractP
         }
     }
 
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return pillarSelectorConfig != null && pillarSelectorConfig.hasNearbySelectionConfig();
+    }
 }

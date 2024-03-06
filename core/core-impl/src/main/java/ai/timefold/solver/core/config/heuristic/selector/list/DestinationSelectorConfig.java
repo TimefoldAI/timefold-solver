@@ -111,4 +111,11 @@ public class DestinationSelectorConfig extends SelectorConfig<DestinationSelecto
     public String toString() {
         return getClass().getSimpleName() + "(" + entitySelectorConfig + ", " + valueSelectorConfig + ")";
     }
+
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return nearbySelectionConfig != null
+                || (entitySelectorConfig != null && entitySelectorConfig.hasNearbySelectionConfig())
+                || (valueSelectorConfig != null && valueSelectorConfig.hasNearbySelectionConfig());
+    }
 }

@@ -153,14 +153,8 @@ public class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubListSwa
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return (subListSelectorConfig != null && ((subListSelectorConfig.getNearbySelectionConfig() != null)
-                || (subListSelectorConfig.getValueSelectorConfig() != null
-                        && subListSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null)))
-                || (secondarySubListSelectorConfig != null
-                        && ((secondarySubListSelectorConfig.getNearbySelectionConfig() != null)
-                                || (secondarySubListSelectorConfig.getValueSelectorConfig() != null
-                                        && secondarySubListSelectorConfig.getValueSelectorConfig()
-                                                .getNearbySelectionConfig() != null)));
+        return (subListSelectorConfig != null && subListSelectorConfig.hasNearbySelectionConfig())
+                || (secondarySubListSelectorConfig != null && secondarySubListSelectorConfig.hasNearbySelectionConfig());
     }
 
     @Override

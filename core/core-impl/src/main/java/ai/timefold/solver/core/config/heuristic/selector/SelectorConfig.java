@@ -10,4 +10,8 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
  */
 public abstract class SelectorConfig<Config_ extends SelectorConfig<Config_>> extends AbstractConfig<Config_> {
 
+    /**
+     * Verifies if the current configuration has any Nearby Selection settings.
+     */
+    public abstract boolean hasNearbySelectionConfig();
 }

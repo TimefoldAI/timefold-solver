@@ -111,12 +111,8 @@ public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSel
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null)
-                || (destinationSelectorConfig != null && ((destinationSelectorConfig.getNearbySelectionConfig() != null)
-                        || (destinationSelectorConfig.getEntitySelectorConfig() != null
-                                && destinationSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null)
-                        || (destinationSelectorConfig.getValueSelectorConfig() != null
-                                && destinationSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null)));
+        return (valueSelectorConfig != null && valueSelectorConfig.hasNearbySelectionConfig())
+                || (destinationSelectorConfig != null && destinationSelectorConfig.hasNearbySelectionConfig());
     }
 
     @Override

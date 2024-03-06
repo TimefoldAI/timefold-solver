@@ -91,4 +91,9 @@ public class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
     public String toString() {
         return getClass().getSimpleName() + "(" + entitySelectorConfig + ")";
     }
+
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return entitySelectorConfig != null && entitySelectorConfig.hasNearbySelectionConfig();
+    }
 }

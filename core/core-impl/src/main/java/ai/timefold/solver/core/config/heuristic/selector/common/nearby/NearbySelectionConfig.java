@@ -343,4 +343,8 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
         classVisitor.accept(nearbyDistanceMeterClass);
     }
 
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return true;
+    }
 }

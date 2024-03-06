@@ -132,8 +132,8 @@ public class SwapMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorC
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return (entitySelectorConfig != null && entitySelectorConfig.getNearbySelectionConfig() != null)
-                || (secondaryEntitySelectorConfig != null && secondaryEntitySelectorConfig.getNearbySelectionConfig() != null);
+        return (entitySelectorConfig != null && entitySelectorConfig.hasNearbySelectionConfig())
+                || (secondaryEntitySelectorConfig != null && secondaryEntitySelectorConfig.hasNearbySelectionConfig());
     }
 
     @Override

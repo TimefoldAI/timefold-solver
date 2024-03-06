@@ -382,4 +382,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         return sorter;
     }
 
+    @Override
+    public boolean hasNearbySelectionConfig() {
+        return nearbySelectionConfig != null;
+    }
 }

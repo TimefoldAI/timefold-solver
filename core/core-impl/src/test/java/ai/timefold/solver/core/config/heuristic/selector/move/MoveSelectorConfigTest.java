@@ -268,7 +268,6 @@ class MoveSelectorConfigTest {
         nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(0);
         assertFalse(nearbyChangeConfig.hasNearbySelectionConfig());
 
-
         nearbyChangeConfig = (ChangeMoveSelectorConfig) nearbyConfig.getMoveSelectorList().get(1);
         assertNotNull(nearbyChangeConfig.getEntitySelectorConfig());
         assertEquals(SelectionOrder.PROBABILISTIC, nearbyChangeConfig.getEntitySelectorConfig().getSelectionOrder());

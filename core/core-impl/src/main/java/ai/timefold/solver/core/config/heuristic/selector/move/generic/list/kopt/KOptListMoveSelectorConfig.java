@@ -144,8 +144,8 @@ public class KOptListMoveSelectorConfig extends NearbyAutoConfigurationMoveSelec
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return (originSelectorConfig != null && originSelectorConfig.getNearbySelectionConfig() != null)
-                || (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null);
+        return (originSelectorConfig != null && originSelectorConfig.hasNearbySelectionConfig())
+                || (valueSelectorConfig != null && valueSelectorConfig.hasNearbySelectionConfig());
     }
 
     @Override

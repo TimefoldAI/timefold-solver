@@ -111,8 +111,8 @@ public class ChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSelecto
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return (entitySelectorConfig != null && entitySelectorConfig.getNearbySelectionConfig() != null)
-                || (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null);
+        return (entitySelectorConfig != null && entitySelectorConfig.hasNearbySelectionConfig())
+                || (valueSelectorConfig != null && valueSelectorConfig.hasNearbySelectionConfig());
     }
 
     @Override
