@@ -114,8 +114,9 @@ public class SubChainChangeMoveSelectorConfig extends MoveSelectorConfig<SubChai
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return subChainSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null
-                || valueSelectorConfig.getNearbySelectionConfig() != null;
+        return (subChainSelectorConfig != null && subChainSelectorConfig.getValueSelectorConfig() != null
+                && subChainSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null)
+                || (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null);
     }
 
     @Override

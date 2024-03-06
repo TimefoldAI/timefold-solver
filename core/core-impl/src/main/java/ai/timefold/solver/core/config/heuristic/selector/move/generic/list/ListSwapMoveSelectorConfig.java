@@ -7,9 +7,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
-import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -87,7 +85,7 @@ public class ListSwapMoveSelectorConfig extends MoveSelectorConfig<ListSwapMoveS
     }
 
     @Override
-    public ListSwapMoveSelectorConfig enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter,
+    public ListSwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         ListSwapMoveSelectorConfig nearbyConfig = copyConfig();
         ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
@@ -116,8 +114,8 @@ public class ListSwapMoveSelectorConfig extends MoveSelectorConfig<ListSwapMoveS
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return valueSelectorConfig.getNearbySelectionConfig() != null
-                || secondaryValueSelectorConfig.getNearbySelectionConfig() != null;
+        return (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null)
+                || (secondaryValueSelectorConfig != null && secondaryValueSelectorConfig.getNearbySelectionConfig() != null);
     }
 
     @Override

@@ -10,8 +10,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
-import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
@@ -27,7 +25,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListS
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -174,7 +171,7 @@ public class UnionMoveSelectorConfig extends MoveSelectorConfig<UnionMoveSelecto
     }
 
     @Override
-    public UnionMoveSelectorConfig enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter,
+    public UnionMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
         List<MoveSelectorConfig> updatedMoveSelectorList = new LinkedList<>(moveSelectorConfigList);
@@ -189,7 +186,8 @@ public class UnionMoveSelectorConfig extends MoveSelectorConfig<UnionMoveSelecto
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return moveSelectorConfigList.stream().anyMatch(MoveSelectorConfig::hasNearbySelectionConfig);
+        return moveSelectorConfigList != null
+                && moveSelectorConfigList.stream().anyMatch(MoveSelectorConfig::hasNearbySelectionConfig);
     }
 
     @Override

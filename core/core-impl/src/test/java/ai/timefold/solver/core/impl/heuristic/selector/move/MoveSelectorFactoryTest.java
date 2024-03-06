@@ -262,6 +262,11 @@ class MoveSelectorFactoryTest {
         public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public boolean hasNearbySelectionConfig() {
+            return false;
+        }
     }
 
     static class DummyMoveSelectorFactory extends AbstractMoveSelectorFactory<TestdataSolution, DummyMoveSelectorConfig> {

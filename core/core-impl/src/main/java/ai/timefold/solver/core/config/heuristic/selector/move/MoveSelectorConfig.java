@@ -305,7 +305,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
      *
      * @return new instance with the Nearby Selection settings properly configured
      */
-    public Config_ enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
+    public Config_ enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
         throw new UnsupportedOperationException();
     }
 

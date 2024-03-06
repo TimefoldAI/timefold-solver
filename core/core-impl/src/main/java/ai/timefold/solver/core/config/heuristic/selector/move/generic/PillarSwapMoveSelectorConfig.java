@@ -85,8 +85,10 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return pillarSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null
-                || secondaryPillarSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null;
+        return (pillarSelectorConfig != null && pillarSelectorConfig.getEntitySelectorConfig() != null
+                && pillarSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null)
+                || (secondaryPillarSelectorConfig != null && secondaryPillarSelectorConfig.getEntitySelectorConfig() != null
+                        && secondaryPillarSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null);
     }
 
     @Override

@@ -7,10 +7,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
-import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -89,7 +87,7 @@ public class ListChangeMoveSelectorConfig extends MoveSelectorConfig<ListChangeM
     }
 
     @Override
-    public ListChangeMoveSelectorConfig enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter,
+    public ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         ListChangeMoveSelectorConfig nearbyConfig = copyConfig();
         ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
@@ -118,10 +116,12 @@ public class ListChangeMoveSelectorConfig extends MoveSelectorConfig<ListChangeM
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return valueSelectorConfig.getNearbySelectionConfig() != null
-                || destinationSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null
-                || destinationSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null
-                || destinationSelectorConfig.getNearbySelectionConfig() != null;
+        return (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null)
+                || (destinationSelectorConfig != null && ((destinationSelectorConfig.getNearbySelectionConfig() != null)
+                        || (destinationSelectorConfig.getEntitySelectorConfig() != null
+                                && destinationSelectorConfig.getEntitySelectorConfig().getNearbySelectionConfig() != null)
+                        || (destinationSelectorConfig.getValueSelectorConfig() != null
+                                && destinationSelectorConfig.getValueSelectorConfig().getNearbySelectionConfig() != null)));
     }
 
     @Override

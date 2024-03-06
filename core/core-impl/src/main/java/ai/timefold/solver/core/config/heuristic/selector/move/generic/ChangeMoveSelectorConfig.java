@@ -86,7 +86,7 @@ public class ChangeMoveSelectorConfig extends MoveSelectorConfig<ChangeMoveSelec
     }
 
     @Override
-    public ChangeMoveSelectorConfig enableNearbySelection(Class<NearbyDistanceMeter<?, ?>> distanceMeter,
+    public ChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         ChangeMoveSelectorConfig nearbyConfig = copyConfig();
         EntitySelectorConfig entityConfig = nearbyConfig.getEntitySelectorConfig();
@@ -116,8 +116,8 @@ public class ChangeMoveSelectorConfig extends MoveSelectorConfig<ChangeMoveSelec
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return entitySelectorConfig.getNearbySelectionConfig() != null
-                || valueSelectorConfig.getNearbySelectionConfig() != null;
+        return (entitySelectorConfig != null && entitySelectorConfig.getNearbySelectionConfig() != null)
+                || (valueSelectorConfig != null && valueSelectorConfig.getNearbySelectionConfig() != null);
     }
 
     @Override
