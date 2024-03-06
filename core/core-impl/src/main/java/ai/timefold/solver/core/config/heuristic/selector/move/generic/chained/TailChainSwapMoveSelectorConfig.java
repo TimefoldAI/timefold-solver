@@ -78,8 +78,19 @@ public class TailChainSwapMoveSelectorConfig extends MoveSelectorConfig<TailChai
     }
 
     @Override
+    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+        visitCommonReferencedClasses(classVisitor);
+        if (entitySelectorConfig != null) {
+            entitySelectorConfig.visitReferencedClasses(classVisitor);
+        }
+        if (valueSelectorConfig != null) {
+            valueSelectorConfig.visitReferencedClasses(classVisitor);
+        }
+    }
+
+    @Override
     public TailChainSwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+                                                                 Random random) {
         TailChainSwapMoveSelectorConfig nearbyConfig = copyConfig();
         EntitySelectorConfig entityConfig = nearbyConfig.getEntitySelectorConfig();
         if (entityConfig == null) {
@@ -99,17 +110,6 @@ public class TailChainSwapMoveSelectorConfig extends MoveSelectorConfig<TailChai
         nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withValueSelectorConfig(valueConfig);
         return nearbyConfig;
-    }
-
-    @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
-        visitCommonReferencedClasses(classVisitor);
-        if (entitySelectorConfig != null) {
-            entitySelectorConfig.visitReferencedClasses(classVisitor);
-        }
-        if (valueSelectorConfig != null) {
-            valueSelectorConfig.visitReferencedClasses(classVisitor);
-        }
     }
 
     @Override

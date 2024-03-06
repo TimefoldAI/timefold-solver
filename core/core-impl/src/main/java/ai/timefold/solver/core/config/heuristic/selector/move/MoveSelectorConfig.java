@@ -292,7 +292,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     /**
-     * Check if the selector factory accepts Nearby selection autoconfiguration.
+     * Check if the move selector accepts Nearby autoconfiguration.
      *
      * @return false by default
      */
@@ -309,6 +309,9 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Verifies if the current configuration has any Nearby Selection settings.
+     */
     public abstract boolean hasNearbySelectionConfig();
 
 }
