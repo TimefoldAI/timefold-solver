@@ -1,0 +1,12 @@
+quarkus:
+  timefold:
+    solver:
+      environment-mode: FULL_ASSERT
+      daemon: true
+      move-thread-count: 2
+      domain-access-type: REFLECTION
+      nearby-distance-meter-class: ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter
+      termination:
+        spent-limit: 4h
+        unimproved-spent-limit: 5h
+        best-score-limit: 0

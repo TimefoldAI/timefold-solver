@@ -2,6 +2,7 @@ package ai.timefold.solver.quarkus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -115,6 +116,7 @@ class TimefoldProcessorSolverResourcesTest {
     void solverProperties() {
         // solver1
         assertEquals(EnvironmentMode.FULL_ASSERT, solverConfig.getEnvironmentMode());
+        assertNull(solverConfig.getNearbyDistanceMeterClass());
         assertTrue(solverConfig.getDaemon());
         assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
         assertEquals(null,

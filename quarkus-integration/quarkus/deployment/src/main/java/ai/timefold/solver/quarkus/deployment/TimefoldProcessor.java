@@ -38,6 +38,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.stream.JoinerService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
@@ -718,6 +719,27 @@ class TimefoldProcessor {
 
         if (solverConfig.getDomainAccessType() == null) {
             solverConfig.setDomainAccessType(DomainAccessType.GIZMO);
+        }
+
+        Optional<String> nearbyDistanceMeterClass =
+                timefoldBuildTimeConfig.getSolverConfig(solverName)
+                        .flatMap(SolverBuildTimeConfig::nearbyDistanceMeterClass);
+        if (nearbyDistanceMeterClass.isPresent()) {
+            try {
+                Class<?> nearbyClass = Class.forName(nearbyDistanceMeterClass.get(), false,
+                        Thread.currentThread().getContextClassLoader());
+
+                if (!NearbyDistanceMeter.class.isAssignableFrom(nearbyClass)) {
+                    throw new IllegalStateException(
+                            "The Nearby Selection Meter class (%s) of the solver config (%s) does not implement NearbyDistanceMeter."
+                                    .formatted(nearbyDistanceMeterClass.get(), solverName));
+                }
+                solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) nearbyClass);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(
+                        "Cannot find the Nearby Selection Meter class (%s) for the solver config (%s)."
+                                .formatted(nearbyDistanceMeterClass.get(), solverName));
+            }
         }
         // Termination properties are set at runtime
     }
