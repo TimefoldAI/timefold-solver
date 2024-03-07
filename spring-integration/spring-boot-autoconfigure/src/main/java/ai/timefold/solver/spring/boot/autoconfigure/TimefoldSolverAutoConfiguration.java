@@ -61,6 +61,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.NativeDetector;
 import org.springframework.core.env.Environment;
 
 @Configuration(proxyBeanMethods = false)
@@ -278,9 +279,13 @@ public class TimefoldSolverAutoConfiguration
         if (solverConfig.getScoreDirectorFactoryConfig() == null) {
             solverConfig.setScoreDirectorFactoryConfig(defaultScoreDirectoryFactoryConfig(entityScanner));
         }
-        if (solverProperties.isPresent() && solverProperties.get().getConstraintStreamAutomaticNodeSharing() != null) {
-            solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamAutomaticNodeSharing(
-                    solverProperties.get().getConstraintStreamAutomaticNodeSharing());
+        if (solverProperties.isPresent() && solverProperties.get().getConstraintStreamAutomaticNodeSharing() != null
+                && solverProperties.get().getConstraintStreamAutomaticNodeSharing()) {
+            if (NativeDetector.inNativeImage()) {
+                throw new UnsupportedOperationException(
+                        "Constraint stream automatic node sharing is unsupported in a Spring native image.");
+            }
+            solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamAutomaticNodeSharing(true);
         }
     }
 
