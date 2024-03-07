@@ -23,6 +23,7 @@
 * xref:integration/integration.adoc[leveloffset=+1]
 * xref:design-patterns/design-patterns.adoc[leveloffset=+1]
 * Upgrade and Migration
+** xref:upgrade-and-migration/overview.adoc[leveloffset=+1]
 ** xref:upgrade-and-migration/upgrading-to-latest-version.adoc[leveloffset=+1]
 ** xref:upgrade-and-migration/migrating-from-optaplanner.adoc[leveloffset=+1]
 * xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]
