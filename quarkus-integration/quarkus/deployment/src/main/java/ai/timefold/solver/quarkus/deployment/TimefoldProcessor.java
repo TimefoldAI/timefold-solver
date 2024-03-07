@@ -721,26 +721,18 @@ class TimefoldProcessor {
             solverConfig.setDomainAccessType(DomainAccessType.GIZMO);
         }
 
-        Optional<String> nearbyDistanceMeterClass =
-                timefoldBuildTimeConfig.getSolverConfig(solverName)
-                        .flatMap(SolverBuildTimeConfig::nearbyDistanceMeterClass);
-        if (nearbyDistanceMeterClass.isPresent()) {
-            try {
-                Class<?> nearbyClass = Class.forName(nearbyDistanceMeterClass.get(), false,
-                        Thread.currentThread().getContextClassLoader());
+        timefoldBuildTimeConfig.getSolverConfig(solverName)
+                .flatMap(SolverBuildTimeConfig::nearbyDistanceMeterClass)
+                .ifPresent(clazz -> {
+                    // We need to check the data type, as the Smallrye converter does not enforce it
+                    if (!NearbyDistanceMeter.class.isAssignableFrom(clazz)) {
+                        throw new IllegalArgumentException(
+                                "The Nearby Selection Meter class (%s) of the solver config (%s) does not implement NearbyDistanceMeter."
+                                        .formatted(clazz, solverName));
+                    }
+                    solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) clazz);
+                });
 
-                if (!NearbyDistanceMeter.class.isAssignableFrom(nearbyClass)) {
-                    throw new IllegalStateException(
-                            "The Nearby Selection Meter class (%s) of the solver config (%s) does not implement NearbyDistanceMeter."
-                                    .formatted(nearbyDistanceMeterClass.get(), solverName));
-                }
-                solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) nearbyClass);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(
-                        "Cannot find the Nearby Selection Meter class (%s) for the solver config (%s)."
-                                .formatted(nearbyDistanceMeterClass.get(), solverName));
-            }
-        }
         // Termination properties are set at runtime
     }
 

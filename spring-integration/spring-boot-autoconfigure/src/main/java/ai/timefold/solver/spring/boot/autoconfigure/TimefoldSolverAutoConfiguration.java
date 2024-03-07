@@ -35,7 +35,6 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
@@ -261,21 +260,7 @@ public class TimefoldSolverAutoConfiguration
                 solverConfig.setDomainAccessType(solverProperties.get().getDomainAccessType());
             }
             if (solverProperties.get().getNearbyDistanceMeterClass() != null) {
-                try {
-                    Class<?> nearbyClass = Class.forName(solverProperties.get().getNearbyDistanceMeterClass(), false,
-                            Thread.currentThread().getContextClassLoader());
-
-                    if (!NearbyDistanceMeter.class.isAssignableFrom(nearbyClass)) {
-                        throw new IllegalStateException(
-                                "The Nearby Selection Meter class (%s) of the solver config (%s) does not implement NearbyDistanceMeter."
-                                        .formatted(solverProperties.get().getNearbyDistanceMeterClass(), solverName));
-                    }
-                    solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) nearbyClass);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(
-                            "Cannot find the Nearby Selection Meter class (%s) for the solver config (%s)."
-                                    .formatted(solverProperties.get().getNearbyDistanceMeterClass(), solverName));
-                }
+                solverConfig.setNearbyDistanceMeterClass(solverProperties.get().getNearbyDistanceMeterClass());
             }
             if (solverProperties.get().getDaemon() != null) {
                 solverConfig.setDaemon(solverProperties.get().getDaemon());

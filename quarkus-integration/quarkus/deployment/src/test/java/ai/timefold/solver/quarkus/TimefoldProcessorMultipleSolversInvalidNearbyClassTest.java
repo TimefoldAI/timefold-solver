@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
+import io.smallrye.config.ConfigValidationException;
 
 class TimefoldProcessorMultipleSolversInvalidNearbyClassTest {
 
@@ -30,11 +31,11 @@ class TimefoldProcessorMultipleSolversInvalidNearbyClassTest {
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class, TestdataQuarkusSolutionConfigResource.class))
             .assertException(t -> assertThat(t)
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConfigValidationException.class)
                     .hasMessageContaining(
-                            "Cannot find the Nearby Selection Meter class")
+                            "The config property quarkus.timefold.solver.\"solver1\".nearby-distance-meter-class with the config value")
                     .hasMessageContaining(DummyDistanceMeter.class.getName())
-                    .hasMessageContaining("for the solver config (solver1)"));
+                    .hasMessageContaining("not found"));
 
     // Invalid class
     @RegisterExtension
@@ -47,7 +48,7 @@ class TimefoldProcessorMultipleSolversInvalidNearbyClassTest {
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class, TestdataQuarkusSolutionConfigResource.class))
             .assertException(t -> assertThat(t)
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining(
                             "The Nearby Selection Meter class")
                     .hasMessageContaining(TestdataQuarkusSolutionConfigResource.class.getName())

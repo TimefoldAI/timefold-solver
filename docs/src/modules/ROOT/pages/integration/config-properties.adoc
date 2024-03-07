@@ -54,7 +54,7 @@ endif::[]
 Enable the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby Selection] quick configuration.
 If the Nearby Selection distance meter class is specified,
 the solver evaluates the available move selectors
-and autoconfigures the Nearby Selection feature for the compatible move selectors.
+and automatically enables Nearby Selection for the compatible move selectors.
 
 {property_prefix}timefold.solver.{solver_name_prefix}termination.spent-limit::
 How long the solver can run.

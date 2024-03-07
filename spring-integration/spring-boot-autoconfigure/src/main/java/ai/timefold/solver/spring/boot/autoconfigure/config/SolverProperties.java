@@ -8,6 +8,7 @@ import java.util.Set;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -64,7 +65,7 @@ public class SolverProperties {
     /**
      * Enable the Nearby Selection quick configuration.
      */
-    private String nearbyDistanceMeterClass;
+    private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
 
     /**
      * What constraint stream implementation to use. Defaults to BAVET.
@@ -121,11 +122,11 @@ public class SolverProperties {
         this.domainAccessType = domainAccessType;
     }
 
-    public String getNearbyDistanceMeterClass() {
+    public Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
         return nearbyDistanceMeterClass;
     }
 
-    public void setNearbyDistanceMeterClass(String nearbyDistanceMeterClass) {
+    public void setNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
         this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
     }
 
@@ -191,7 +192,20 @@ public class SolverProperties {
                 setDomainAccessType(DomainAccessType.valueOf((String) value));
                 break;
             case NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME:
-                setNearbyDistanceMeterClass(value.toString());
+                try {
+                    Class<?> nearbyClass = Class.forName(value.toString(), false,
+                            Thread.currentThread().getContextClassLoader());
+
+                    if (!NearbyDistanceMeter.class.isAssignableFrom(nearbyClass)) {
+                        throw new IllegalStateException(
+                                "The Nearby Selection Meter class (%s) does not implement NearbyDistanceMeter."
+                                        .formatted(value.toString()));
+                    }
+                    setNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) nearbyClass);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalStateException(
+                            "Cannot find the Nearby Selection Meter class (%s).".formatted(value.toString()));
+                }
                 break;
             case CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME:
                 setConstraintStreamImplType(ConstraintStreamImplType.valueOf((String) value));

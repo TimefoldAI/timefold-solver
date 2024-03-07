@@ -63,7 +63,7 @@ public interface SolverBuildTimeConfig {
     /**
      * Enable the Nearby Selection quick configuration.
      */
-    Optional<String> nearbyDistanceMeterClass();
+    Optional<Class<?>> nearbyDistanceMeterClass();
 
     /**
      * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
