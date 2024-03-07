@@ -27,7 +27,7 @@ When the planning variable of a single `Shift` changes, to recalculate the score
 the normal Streams API has to execute the entire stream from scratch.
 
 [#constraintStreams]
-== Introducing constraint streams
+== Introducing Constraint Streams
 
 Constraint streams are a Functional Programming form of incremental score calculation in plain Java
 that is easy to read, write and debug.
