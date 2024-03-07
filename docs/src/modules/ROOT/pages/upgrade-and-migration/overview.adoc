@@ -10,3 +10,9 @@ In this section, you will:
 - Learn how to upgrade to the latest version of Timefold Solver automatically.
 - Find a detailed upgrade recipe for every major change we make to the Timefold Solver APIs.
 
+To find out what's new in the latest version of Timefold Solver,
+see the [Timefold Solver release notes](https://github.com/TimefoldAI/timefold-solver/releases)
+on our Github repository,
+read https://timefold.ai/blog[our blog]
+or subscribe to our newsletter.
+
