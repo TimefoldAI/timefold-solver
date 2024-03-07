@@ -322,7 +322,7 @@ class SolverManagerTest {
     }
 
     @Test
-    void testProblemStatisticsForFinishedJob() throws ExecutionException, InterruptedException {
+    void testProblemSizeStatisticsForFinishedJob() throws ExecutionException, InterruptedException {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
 
@@ -336,16 +336,16 @@ class SolverManagerTest {
                 .run();
 
         solverJob.getFinalBestSolution();
-        var problemStatistics = solverJob.getProblemStatistics();
-        assertThat(problemStatistics.entityCount()).isEqualTo(2L);
-        assertThat(problemStatistics.variableCount()).isEqualTo(2L);
-        assertThat(problemStatistics.approximateValueCount()).isEqualTo(2L);
-        assertThat(problemStatistics.formatApproximateProblemScale()).isEqualTo("~4");
+        var problemSizeStatistics = solverJob.getProblemSizeStatistics();
+        assertThat(problemSizeStatistics.entityCount()).isEqualTo(2L);
+        assertThat(problemSizeStatistics.variableCount()).isEqualTo(2L);
+        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(2L);
+        assertThat(problemSizeStatistics.formatApproximateProblemScale()).isEqualTo("~4");
     }
 
     @Test
     @Timeout(60)
-    void testProblemStatisticsForWaitingJob() throws InterruptedException, ExecutionException {
+    void testProblemSizeStatisticsForWaitingJob() throws InterruptedException, ExecutionException {
         CountDownLatch solvingPausedLatch = new CountDownLatch(1);
         PhaseConfig<?> pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
                 scoreDirector -> {
@@ -375,11 +375,11 @@ class SolverManagerTest {
                 .withBestSolutionConsumer(bestSolution::set)
                 .run();
 
-        var problemStatistics = waitingSolverJob.getProblemStatistics();
-        assertThat(problemStatistics.entityCount()).isEqualTo(4L);
-        assertThat(problemStatistics.variableCount()).isEqualTo(4L);
-        assertThat(problemStatistics.approximateValueCount()).isEqualTo(4L);
-        assertThat(problemStatistics.formatApproximateProblemScale()).isEqualTo("~256");
+        var problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
+        assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.formatApproximateProblemScale()).isEqualTo("~256");
 
         CompletableFuture<Void> futureChange = solverManager
                 .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
@@ -392,11 +392,11 @@ class SolverManagerTest {
         futureChange.get();
         assertThat(futureChange).isCompleted();
         assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
-        problemStatistics = waitingSolverJob.getProblemStatistics();
-        assertThat(problemStatistics.entityCount()).isEqualTo(4L);
-        assertThat(problemStatistics.variableCount()).isEqualTo(4L);
-        assertThat(problemStatistics.approximateValueCount()).isEqualTo(5L);
-        assertThat(problemStatistics.formatApproximateProblemScale()).isEqualTo("~625");
+        problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
+        assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(5L);
+        assertThat(problemSizeStatistics.formatApproximateProblemScale()).isEqualTo("~625");
     }
 
     @Test

@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-public class MathUtilsTest {
+class MathUtilsTest {
     // https://stackoverflow.com/a/11916946
 
     /**
@@ -182,7 +182,7 @@ public class MathUtilsTest {
     @Test
     void testGetScaledApproximateLog() {
         for (int i = 2; i < 100; i++) {
-            assertThat(MathUtils.getScaledApproximateLog(100, i, 1)).isEqualTo(0L);
+            assertThat(MathUtils.getScaledApproximateLog(100, i, 1)).isZero();
             assertThat(MathUtils.getScaledApproximateLog(100, i, i)).isEqualTo(100L);
         }
         assertThat(MathUtils.getScaledApproximateLog(100, 2, 4)).isEqualTo(200L);
@@ -196,7 +196,7 @@ public class MathUtilsTest {
     @Test
     void testGetLogInBase() {
         for (int i = 2; i < 100; i++) {
-            assertThat(MathUtils.getLogInBase(i, 1)).isEqualTo(0.0);
+            assertThat(MathUtils.getLogInBase(i, 1)).isZero();
             assertThat(MathUtils.getLogInBase(i, i)).isEqualTo(1.0);
         }
         assertThat(MathUtils.getLogInBase(2, 4)).isEqualTo(2.0);

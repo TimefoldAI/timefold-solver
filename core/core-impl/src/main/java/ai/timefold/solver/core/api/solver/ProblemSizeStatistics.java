@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.util.MathUtils;
  * @param variableCount The number of genuine variables defined by the problem.
  * @param approximateValueCount The estimated number of values defined by the problem.
  *        Can be larger than the actual value count.
- * @param approximateProblemSizeLog The estimated log_10 of the problem's search space.
+ * @param approximateProblemSizeLog The estimated log_10 of the problem's search space size.
  */
 public record ProblemSizeStatistics(long entityCount,
         long variableCount,
@@ -43,7 +43,7 @@ public record ProblemSizeStatistics(long entityCount,
         double exponentPart = Math.floor(approximateProblemSizeLog);
         double remainderPartAsExponent = approximateProblemSizeLog - exponentPart;
         double remainderPart = Math.pow(10, remainderPartAsExponent);
-        return "~%se%s".formatted(
+        return "~%s × 10^%s".formatted(
                 SIGNIFICANT_FIGURE_FORMATTER.format(remainderPart),
                 EXPONENT_FORMATTER.format(exponentPart));
     }

@@ -42,6 +42,7 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
@@ -688,16 +689,16 @@ public class EntityDescriptor<Solution_> {
     }
 
     public void processProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution, Object entity,
-            SolutionDescriptor.ProblemScaleTracker tracker) {
+            ProblemScaleTracker tracker) {
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
             long valueCount = variableDescriptor.getValueRangeSize(solution, entity);
             // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
             if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
                 if (basicVariableDescriptor.isChained()) {
                     // An entity is a value
-                    tracker.listTotalValueCount().increment();
+                    tracker.addListValueCount(1);
                     if (!isMovable(scoreDirector, entity)) {
-                        tracker.listPinnedValueCount().increment();
+                        tracker.addPinnedListValueCount(1);
                     }
                     // Anchors are entities
                     ValueRange<?> valueRange = variableDescriptor.getValueRangeDescriptor().extractValueRange(solution, entity);
@@ -706,13 +707,11 @@ public class EntityDescriptor<Solution_> {
                         while (valueIterator.hasNext()) {
                             Object value = valueIterator.next();
                             if (variableDescriptor.isValuePotentialAnchor(value)) {
-                                if (tracker.visitedAnchorSet().contains(value)) {
+                                if (tracker.isAnchorVisited(value)) {
                                     continue;
                                 }
-                                tracker.visitedAnchorSet().add(value);
-                                tracker.listTotalEntityCount().increment();
-                                tracker.listMovableEntityCount().increment();
                                 // Assumes anchors are not pinned
+                                tracker.incrementListEntityCount(true);
                             }
                         }
                     } else {
@@ -724,13 +723,13 @@ public class EntityDescriptor<Solution_> {
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                tracker.listTotalEntityCount().increment();
-                tracker.listTotalValueCount().setValue(listVariableDescriptor.getValueRangeSize(solution, entity));
+                tracker.setListTotalValueCount((int) listVariableDescriptor.getValueRangeSize(solution, entity));
                 if (isMovable(scoreDirector, entity)) {
-                    tracker.listMovableEntityCount().increment();
-                    tracker.listPinnedValueCount().add(listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                    tracker.incrementListEntityCount(true);
+                    tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
                 } else {
-                    tracker.listPinnedValueCount().add(listVariableDescriptor.getListSize(entity));
+                    tracker.incrementListEntityCount(false);
+                    tracker.addPinnedListValueCount(listVariableDescriptor.getListSize(entity));
                 }
             } else {
                 throw new IllegalStateException(

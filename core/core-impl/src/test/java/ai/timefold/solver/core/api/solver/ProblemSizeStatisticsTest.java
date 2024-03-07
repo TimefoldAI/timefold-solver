@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.util.MathUtils;
 
 import org.junit.jupiter.api.Test;
 
-public class ProblemSizeStatisticsTest {
+class ProblemSizeStatisticsTest {
 
     private static ProblemSizeStatistics getProblemSizeStatistics(long scale) {
         return new ProblemSizeStatistics(0L, 0L, 0L,
@@ -48,6 +48,6 @@ public class ProblemSizeStatisticsTest {
 
         statistics = getProblemSizeStatistics(321_123_456_789L);
         assertThat(statistics.formatApproximateProblemScale())
-                .isEqualTo("~3.211235e11");
+                .isEqualTo("~3.211235 × 10^11");
     }
 }

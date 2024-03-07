@@ -420,42 +420,42 @@ public class ProblemBenchmarkResult<Solution_> {
      * HACK to avoid loading the problem just to extract its problemScale.
      * Called multiple times, for every {@link SingleBenchmarkResult} of this {@link ProblemBenchmarkResult}.
      *
-     * @param problemStatistics never null
+     * @param problemSizeStatistics never null
      */
-    public void registerScale(ProblemSizeStatistics problemStatistics) {
+    public void registerProblemSizeStatistics(ProblemSizeStatistics problemSizeStatistics) {
         if (entityCount == null) {
-            entityCount = problemStatistics.entityCount();
-        } else if (entityCount.longValue() != problemStatistics.entityCount()) {
+            entityCount = problemSizeStatistics.entityCount();
+        } else if (entityCount.longValue() != problemSizeStatistics.entityCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different entityCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), entityCount, problemStatistics.entityCount());
+                    getName(), entityCount, problemSizeStatistics.entityCount());
             // The entityCount is not unknown (null), but known to be ambiguous
             entityCount = -1L;
         }
         if (variableCount == null) {
-            variableCount = problemStatistics.variableCount();
-        } else if (variableCount.longValue() != problemStatistics.variableCount()) {
+            variableCount = problemSizeStatistics.variableCount();
+        } else if (variableCount.longValue() != problemSizeStatistics.variableCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different variableCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), variableCount, problemStatistics.variableCount());
+                    getName(), variableCount, problemSizeStatistics.variableCount());
             // The variableCount is not unknown (null), but known to be ambiguous
             variableCount = -1L;
         }
         if (maximumValueCount == null) {
-            maximumValueCount = problemStatistics.approximateValueCount();
-        } else if (maximumValueCount.longValue() != problemStatistics.approximateValueCount()) {
+            maximumValueCount = problemSizeStatistics.approximateValueCount();
+        } else if (maximumValueCount.longValue() != problemSizeStatistics.approximateValueCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different approximateValueCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), maximumValueCount, problemStatistics.approximateValueCount());
+                    getName(), maximumValueCount, problemSizeStatistics.approximateValueCount());
             // The approximateValueCount is not unknown (null), but known to be ambiguous
             maximumValueCount = -1L;
         }
         if (problemScale == null) {
-            problemScale = problemStatistics.getApproximateProblemScaleLogAsFixedPointLong();
-        } else if (problemScale.longValue() != problemStatistics.getApproximateProblemScaleLogAsFixedPointLong()) {
+            problemScale = problemSizeStatistics.getApproximateProblemScaleLogAsFixedPointLong();
+        } else if (problemScale.longValue() != problemSizeStatistics.getApproximateProblemScaleLogAsFixedPointLong()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different problemScale values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), problemScale, problemStatistics.getApproximateProblemScaleLogAsFixedPointLong());
+                    getName(), problemScale, problemSizeStatistics.getApproximateProblemScaleLogAsFixedPointLong());
             // The problemScale is not unknown (null), but known to be ambiguous
             problemScale = -1L;
         }

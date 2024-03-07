@@ -45,7 +45,7 @@ public class SolverScope<Solution_> {
 
     protected Score startingInitializedScore;
 
-    protected volatile ProblemSizeStatistics problemStatistics;
+    protected volatile ProblemSizeStatistics problemSizeStatistics;
     protected volatile Solution_ bestSolution;
     protected volatile Score bestScore;
     protected Long bestSolutionTimeMillis;
@@ -226,12 +226,12 @@ public class SolverScope<Solution_> {
         return endingSystemTimeMillis - startingSystemTimeMillis;
     }
 
-    public ProblemSizeStatistics getProblemStatistics() {
-        return problemStatistics;
+    public ProblemSizeStatistics getProblemSizeStatistics() {
+        return problemSizeStatistics;
     }
 
-    public void setProblemStatistics(ProblemSizeStatistics problemStatistics) {
-        this.problemStatistics = problemStatistics;
+    public void setProblemSizeStatistics(ProblemSizeStatistics problemSizeStatistics) {
+        this.problemSizeStatistics = problemSizeStatistics;
     }
 
     /**

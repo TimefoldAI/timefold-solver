@@ -101,7 +101,7 @@ public interface SolverJob<Solution_, ProblemId_> {
      *
      * @return never null
      */
-    ProblemSizeStatistics getProblemStatistics();
+    ProblemSizeStatistics getProblemSizeStatistics();
 
     /**
      * Return the average number of score calculations per second since the last start.

@@ -1035,8 +1035,8 @@ public class SolutionDescriptor<Solution_> {
      * @return {@code >= 0}
      */
     public long getApproximateValueCount(Solution_ solution) {
-        Set<GenuineVariableDescriptor<Solution_>> genuineVariableDescriptorSet =
-                Collections.newSetFromMap(new IdentityHashMap<>());
+        var genuineVariableDescriptorSet =
+                Collections.newSetFromMap(new IdentityHashMap<GenuineVariableDescriptor<Solution_>, Boolean>());
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
@@ -1072,46 +1072,28 @@ public class SolutionDescriptor<Solution_> {
                 .orElse(0L);
     }
 
-    public record ProblemScaleTracker(long logBase,
-            MutableLong basicProblemScaleLog,
-            Set<Object> visitedAnchorSet,
-            MutableLong listPinnedValueCount,
-            MutableLong listTotalEntityCount,
-            MutableLong listMovableEntityCount,
-            MutableLong listTotalValueCount) {
-        public void addBasicProblemScale(long count) {
-            basicProblemScaleLog.add(MathUtils.getScaledApproximateLog(MathUtils.LOG_PRECISION, logBase, count));
-        }
-    }
-
     /**
      * Calculates an indication on how big this problem instance is.
-     * This is approximately the base 10 log of the solution space size.
+     * This is approximately the base 10 log of the search space size.
      *
      * @param solution never null
      * @return {@code >= 0}
      */
     public double getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
         long logBase = getMaximumValueRangeSize(solution);
-        ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase,
-                new MutableLong(),
-                Collections.newSetFromMap(new IdentityHashMap<>()),
-                new MutableLong(),
-                new MutableLong(),
-                new MutableLong(),
-                new MutableLong());
+        ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
                 entityDescriptor.processProblemScale(scoreDirector, solution, entity, problemScaleTracker);
             }
         });
-        long result = problemScaleTracker.basicProblemScaleLog.longValue();
-        if (problemScaleTracker.listTotalEntityCount.longValue() != 0L) {
+        long result = problemScaleTracker.getBasicProblemScaleLog();
+        if (problemScaleTracker.getListTotalEntityCount() != 0L) {
             // List variables do not support from entity value ranges
-            int totalListValueCount = problemScaleTracker.listTotalValueCount.intValue();
-            int totalListMovableValueCount = totalListValueCount - problemScaleTracker.listPinnedValueCount.intValue();
-            int possibleTargetsForListValue = problemScaleTracker.listMovableEntityCount.intValue();
+            int totalListValueCount = problemScaleTracker.getListTotalValueCount();
+            int totalListMovableValueCount = totalListValueCount - problemScaleTracker.getListPinnedValueCount();
+            int possibleTargetsForListValue = problemScaleTracker.getListMovableEntityCount();
             var listVariableDescriptor = getListVariableDescriptor();
             if (listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues()) {
                 // Treat unassigned values as assigned to a single virtual vehicle for the sake of this calculation

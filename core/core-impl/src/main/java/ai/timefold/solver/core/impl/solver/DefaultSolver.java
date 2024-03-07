@@ -239,14 +239,14 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 (randomFactory != null ? randomFactory : "not fixed"));
         logger.info(
                 "Problem scale: entity count ({}), variable count ({}), approximate value count (~{}), approximate problem scale ({}).",
-                solverScope.getProblemStatistics().entityCount(),
-                solverScope.getProblemStatistics().variableCount(),
-                solverScope.getProblemStatistics().approximateValueCount(),
-                solverScope.getProblemStatistics().formatApproximateProblemScale());
+                solverScope.getProblemSizeStatistics().entityCount(),
+                solverScope.getProblemSizeStatistics().variableCount(),
+                solverScope.getProblemSizeStatistics().approximateValueCount(),
+                solverScope.getProblemSizeStatistics().formatApproximateProblemScale());
     }
 
     private void registerSolverSpecificMetrics() {
-        solverScope.setProblemStatistics(
+        solverScope.setProblemSizeStatistics(
                 solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getScoreDirector(),
                         solverScope.getWorkingSolution()));
         solverScope.getSolverMetricSet().forEach(solverMetric -> solverMetric.register(this));
@@ -320,12 +320,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 phaseList.size(),
                 environmentMode.name(),
                 moveThreadCountDescription);
-        logger.info(
-                "Problem scale: entity count ({}), variable count ({}), approximate value count (~{}), approximate problem scale ({}).",
-                solverScope.getProblemStatistics().entityCount(),
-                solverScope.getProblemStatistics().variableCount(),
-                solverScope.getProblemStatistics().approximateValueCount(),
-                solverScope.getProblemStatistics().formatApproximateProblemScale());
         // Must be kept open for doProblemFactChange
         solverScope.getScoreDirector().close();
         solving.set(false);

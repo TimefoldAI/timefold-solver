@@ -223,10 +223,10 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public ProblemSizeStatistics getProblemStatistics() {
-        var problemStatistics = solver.getSolverScope().getProblemStatistics();
-        if (problemStatistics != null) {
-            return problemStatistics;
+    public ProblemSizeStatistics getProblemSizeStatistics() {
+        var problemSizeStatistics = solver.getSolverScope().getProblemSizeStatistics();
+        if (problemSizeStatistics != null) {
+            return problemSizeStatistics;
         }
         // Solving has not started yet
         return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(
