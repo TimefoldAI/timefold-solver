@@ -1,0 +1,9 @@
+[#upgradeAndMigration]
+= Upgrade and Migration
+:doctype: book
+:sectnums:
+:icons: font
+
+include::overview.adoc[leveloffset=+1]
+include::upgrading-to-latest-version.adoc[leveloffset=+1]
+include::migrating-from-optaplanner.adoc[leveloffset=+1]

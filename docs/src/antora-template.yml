@@ -12,5 +12,8 @@ asciidoc:
     maven-version: ${maven.min.version}
     quarkus-version: ${version.io.quarkus}
     spring-boot-version: ${version.org.springframework.boot}
+    logback-version: ${version.ch.qos.logback}
+    exec-maven-plugin-version: ${version.exec.plugin}
+    rewrite-maven-plugin-version: ${version.rewrite.plugin}
 nav:
   - modules/ROOT/nav.adoc
