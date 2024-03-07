@@ -108,8 +108,10 @@ The aforementioned quickstart unfortunately did not follow our own guidance on t
 which is why it exposed this bug.
 ====
 
+'''
+
 .icon:magic[] Constraint Streams: Rename `forEachIncludingNullVars` to `forEachIncludingUnassigned`
-[%collapsible]
+[%collapsible%open]
 ====
 To better align with the newly introduced support for
 xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables],
@@ -149,8 +151,10 @@ On `BiConstraintStream` and its `Tri` and `Quad` counterparts, the following met
 * `ifNotExistsIncludingNullVars` to `ifNotExistsIncludingUnassigned`.
 ====
 
+'''
+
 .icon:magic[] Rename `nullable` attribute of `@PlanningVariable` to `allowsUnassigned`
-[%collapsible]
+[%collapsible%open]
 ====
 To better align with the newly introduced support for
 xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables],
@@ -173,8 +177,10 @@ private Bed bed;
 ----
 ====
 
+'''
+
 .icon:magic[] Constraint Verifier: assertion methods `message` argument comes first now
-[%collapsible]
+[%collapsible%open]
 ====
 To better align with the newly introduced support for testing justifications and indictments,
 the assertion methods which accepted a `message` argument now have it as the first argument.
