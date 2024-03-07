@@ -5,15 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import ai.timefold.solver.quarkus.rest.TestdataQuarkusSolutionConfigResource;
-import ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution;
 import ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableEntity;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableListener;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -57,6 +52,7 @@ class TimefoldProcessorMultipleSolversInvalidNearbyClassTest {
                             "The Nearby Selection Meter class")
                     .hasMessageContaining(TestdataQuarkusSolutionConfigResource.class.getName())
                     .hasMessageContaining("of the solver config (solver2) does not implement NearbyDistanceMeter"));
+
     @Test
     void test() {
         fail("Should not call this method.");
