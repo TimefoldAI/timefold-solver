@@ -95,8 +95,8 @@ public interface TimefoldSolverEnterpriseService {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
         NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration"),
-        CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING("Constraint stream automatic node sharing",
-                "remove constraint stream automatic node sharing from solver configuration");
+        AUTOMATIC_NODE_SHARING("Automatic node sharing",
+                "remove automatic node sharing from solver configuration");
 
         private final String name;
         private final String workaround;
