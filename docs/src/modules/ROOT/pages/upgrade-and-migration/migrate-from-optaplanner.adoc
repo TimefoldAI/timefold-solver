@@ -1,5 +1,5 @@
-[#migratingFromOptaPlanner]
-= Migrating from OptaPlanner
+[#migrateFromOptaPlanner]
+= Migrate from OptaPlanner
 :doctype: book
 :sectnums:
 :icons: font
