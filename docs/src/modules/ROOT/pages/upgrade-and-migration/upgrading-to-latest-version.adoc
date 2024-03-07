@@ -51,14 +51,11 @@ Kotlin users need to follow the upgrade recipe and apply the steps manually.
 
 Every upgrade note indicates how likely your code will be affected by that change:
 
-- icon:exclamation-circle[role=red] *Major*: Likely to affect your code.
+- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
+- icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
 - icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, unless you have hacks.
-- icon:info-circle[role=grey] *Impl detail*: Will not affect your code, unless you have very deep hacks.
-- icon:info-circle[role=green] *Recommended*: Not a backwards-incompatible change, but you probably want to do this.
-
-Upgrade notes may also carry extra metadata telling you more about the nature of the change:
-
-- icon:magic[role=green] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
+- icon:info-circle[] *Impl detail*: Will not affect your code, unless you have very deep hacks.
+- icon:eye[] *Recommended*: Not a backwards-incompatible change, but you probably want to do this.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 Kotlin users should translate the changes accordingly.
@@ -111,7 +108,7 @@ The aforementioned quickstart unfortunately did not follow our own guidance on t
 which is why it exposed this bug.
 ====
 
-.icon:info-circle[role=green] icon:magic[role=green] Constraint Streams: Rename `forEachIncludingNullVars` to `forEachIncludingUnassigned`
+.icon:magic[] Constraint Streams: Rename `forEachIncludingNullVars` to `forEachIncludingUnassigned`
 [%collapsible]
 ====
 To better align with the newly introduced support for
@@ -152,7 +149,7 @@ On `BiConstraintStream` and its `Tri` and `Quad` counterparts, the following met
 * `ifNotExistsIncludingNullVars` to `ifNotExistsIncludingUnassigned`.
 ====
 
-.icon:info-circle[role=green] icon:magic[role=green] Rename `nullable` attribute of `@PlanningVariable` to `allowsUnassigned`
+.icon:magic[] Rename `nullable` attribute of `@PlanningVariable` to `allowsUnassigned`
 [%collapsible]
 ====
 To better align with the newly introduced support for
@@ -176,7 +173,7 @@ private Bed bed;
 ----
 ====
 
-.icon:info-circle[role=green] icon:magic[role=green] Constraint Verifier: assertion methods `message` argument comes first now
+.icon:magic[] Constraint Verifier: assertion methods `message` argument comes first now
 [%collapsible]
 ====
 To better align with the newly introduced support for testing justifications and indictments,
