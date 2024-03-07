@@ -1,5 +1,5 @@
 [#upgradingToLatestVersion]
-= Upgrading Timefold Solver to the latest version
+= Upgrading to the latest version
 :doctype: book
 :sectnums:
 :icons: font
@@ -54,7 +54,7 @@ Every upgrade note indicates how likely your code will be affected by that chang
 - icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
 - icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, unless you have hacks.
-- icon:info-circle[] *Impl detail*: Will not affect your code, unless you have very deep hacks.
+- icon:info[] *Impl detail*: Will not affect your code, unless you have very deep hacks.
 - icon:eye[] *Recommended*: Not a backwards-incompatible change, but you probably want to do this.
 
 The upgrade recipe often lists the changes as they apply to Java code.

@@ -1,5 +1,5 @@
-[#upgradingFromOptaPlannerToTimefoldSolver]
-= Upgrading from OptaPlanner to Timefold Solver
+[#migratingFromOptaPlanner]
+= Migrating from OptaPlanner
 :doctype: book
 :sectnums:
 :icons: font
