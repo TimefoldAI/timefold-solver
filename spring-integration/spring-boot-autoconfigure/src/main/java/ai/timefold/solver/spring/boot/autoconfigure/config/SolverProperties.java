@@ -18,12 +18,14 @@ public class SolverProperties {
     public static final String DAEMON_PROPERTY_NAME = "daemon";
     public static final String MOVE_THREAD_COUNT_PROPERTY_NAME = "move-thread-count";
     public static final String DOMAIN_ACCESS_TYPE_PROPERTY_NAME = "domain-access-type";
+    public static final String NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME = "nearby-distance-meter-class";
     public static final String CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME = "constraint-stream-impl-type";
     public static final String TERMINATION_PROPERTY_NAME = "termination";
     public static final Set<String> VALID_FIELD_NAMES_SET =
             Set.of(SOLVER_CONFIG_XML_PROPERTY_NAME, ENVIRONMENT_MODE_PROPERTY_NAME, DAEMON_PROPERTY_NAME,
                     MOVE_THREAD_COUNT_PROPERTY_NAME, DOMAIN_ACCESS_TYPE_PROPERTY_NAME,
-                    CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME, TERMINATION_PROPERTY_NAME);
+                    NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME, CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME,
+                    TERMINATION_PROPERTY_NAME);
 
     /**
      * A classpath resource to read the specific solver configuration XML.
@@ -58,6 +60,11 @@ public class SolverProperties {
      * and all planning annotations must be on public members.
      */
     private DomainAccessType domainAccessType;
+
+    /**
+     * Enable the Nearby Selection quick configuration.
+     */
+    private String nearbyDistanceMeterClass;
 
     /**
      * What constraint stream implementation to use. Defaults to BAVET.
@@ -112,6 +119,14 @@ public class SolverProperties {
 
     public void setDomainAccessType(DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
+    }
+
+    public String getNearbyDistanceMeterClass() {
+        return nearbyDistanceMeterClass;
+    }
+
+    public void setNearbyDistanceMeterClass(String nearbyDistanceMeterClass) {
+        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
     }
 
     /**
@@ -174,6 +189,9 @@ public class SolverProperties {
                 break;
             case DOMAIN_ACCESS_TYPE_PROPERTY_NAME:
                 setDomainAccessType(DomainAccessType.valueOf((String) value));
+                break;
+            case NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME:
+                setNearbyDistanceMeterClass(value.toString());
                 break;
             case CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME:
                 setConstraintStreamImplType(ConstraintStreamImplType.valueOf((String) value));

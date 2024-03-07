@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+    <solutionClass>ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution</solutionClass>
+    <entityClass>ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity</entityClass>
+    <scoreDirectorFactory>
+        <constraintProviderClass>
+            ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider
+        </constraintProviderClass>
+    </scoreDirectorFactory>
+    <nearbyDistanceMeterClass>ai.timefold.solver.spring.boot.autoconfigure.dummy.DummyDistanceMeter</nearbyDistanceMeterClass>
+</solver>
