@@ -2,16 +2,9 @@ package ai.timefold.solver.spring.boot.autoconfigure.config;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 public class TerminationProperties {
-
-    private static final String SPENT_LIMIT_PROERTY_NAME = "spent-limit";
-    private static final String UNIMPROVED_SPENT_LIMIT_PROERTY_NAME = "unimproved-spent-limit";
-    private static final String BEST_SCORE_LIMIT_PROERTY_NAME = "best-score-limit";
-    private static final Set<String> VALID_FIELD_NAMES_SET =
-            Set.of(SPENT_LIMIT_PROERTY_NAME, UNIMPROVED_SPENT_LIMIT_PROERTY_NAME, BEST_SCORE_LIMIT_PROERTY_NAME);
 
     /**
      * How long the solver can run.
