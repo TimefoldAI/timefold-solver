@@ -1,9 +1,7 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
-import static java.util.stream.Collectors.joining;
-
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
@@ -13,21 +11,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 public class SolverProperties {
-
-    public static final String SOLVER_CONFIG_XML_PROPERTY_NAME = "solver-config-xml";
-    public static final String ENVIRONMENT_MODE_PROPERTY_NAME = "environment-mode";
-    public static final String DAEMON_PROPERTY_NAME = "daemon";
-    public static final String MOVE_THREAD_COUNT_PROPERTY_NAME = "move-thread-count";
-    public static final String DOMAIN_ACCESS_TYPE_PROPERTY_NAME = "domain-access-type";
-    public static final String NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME = "nearby-distance-meter-class";
-    public static final String CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME = "constraint-stream-impl-type";
-    public static final String TERMINATION_PROPERTY_NAME = "termination";
-    public static final Set<String> VALID_FIELD_NAMES_SET =
-            Set.of(SOLVER_CONFIG_XML_PROPERTY_NAME, ENVIRONMENT_MODE_PROPERTY_NAME, DAEMON_PROPERTY_NAME,
-                    MOVE_THREAD_COUNT_PROPERTY_NAME, DOMAIN_ACCESS_TYPE_PROPERTY_NAME,
-                    NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME, CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME,
-                    TERMINATION_PROPERTY_NAME);
-
     /**
      * A classpath resource to read the specific solver configuration XML.
      * If this property isn't specified, that solverConfig.xml is optional.
@@ -46,7 +29,11 @@ public class SolverProperties {
      * Defaults to "false".
      */
     private Boolean daemon;
+
     /**
+     * Note: this setting is only available
+     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
+     * Enterprise Edition</a>.
      * Enable multithreaded solving for a single problem, which increases CPU consumption.
      * Defaults to "NONE".
      * Other options include "AUTO", a number or formula based on the available processor count.
@@ -74,6 +61,18 @@ public class SolverProperties {
      */
     @Deprecated(forRemoval = true, since = "1.4.0")
     private ConstraintStreamImplType constraintStreamImplType;
+
+    /**
+     * Note: this setting is only available
+     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
+     * Enterprise Edition</a>.
+     * Enable rewriting the {@link ai.timefold.solver.core.api.score.stream.ConstraintProvider} class
+     * so nodes share lambdas when possible, improving performance.
+     * When enabled, breakpoints placed in the {@link ai.timefold.solver.core.api.score.stream.ConstraintProvider}
+     * will no longer be triggered.
+     * Defaults to "false".
+     */
+    private Boolean constraintStreamAutomaticNodeSharing;
 
     @NestedConfigurationProperty
     private TerminationProperties termination;
@@ -146,6 +145,14 @@ public class SolverProperties {
         this.constraintStreamImplType = constraintStreamImplType;
     }
 
+    public Boolean getConstraintStreamAutomaticNodeSharing() {
+        return constraintStreamAutomaticNodeSharing;
+    }
+
+    public void setConstraintStreamAutomaticNodeSharing(Boolean constraintStreamAutomaticNodeSharing) {
+        this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
+    }
+
     public TerminationProperties getTermination() {
         return termination;
     }
@@ -156,17 +163,15 @@ public class SolverProperties {
 
     public void loadProperties(Map<String, Object> properties) {
         // Check if the keys are valid
-        String invalidKeys = properties.entrySet().stream()
-                .filter(e -> !VALID_FIELD_NAMES_SET.contains(e.getKey()))
-                .map(Map.Entry::getKey)
-                .collect(joining(", "));
+        var invalidKeySet = new TreeSet<>(properties.keySet());
+        invalidKeySet.removeAll(SolverProperty.getValidPropertyNames());
 
-        if (!invalidKeys.isBlank()) {
+        if (!invalidKeySet.isEmpty()) {
             throw new IllegalStateException("""
                     The properties [%s] are not valid.
                     Maybe try changing the property name to kebab-case.
                     Here is the list of valid properties: %s"""
-                    .formatted(invalidKeys, String.join(", ", VALID_FIELD_NAMES_SET)));
+                    .formatted(invalidKeySet, String.join(", ", SolverProperty.getValidPropertyNames())));
         }
         properties.forEach(this::loadProperty);
     }
@@ -175,56 +180,8 @@ public class SolverProperties {
         if (value == null) {
             return;
         }
-        switch (key) {
-            case SOLVER_CONFIG_XML_PROPERTY_NAME:
-                setSolverConfigXml(value.toString());
-                break;
-            case ENVIRONMENT_MODE_PROPERTY_NAME:
-                setEnvironmentMode(EnvironmentMode.valueOf((String) value));
-                break;
-            case DAEMON_PROPERTY_NAME:
-                setDaemon(Boolean.parseBoolean(value.toString()));
-                break;
-            case MOVE_THREAD_COUNT_PROPERTY_NAME:
-                setMoveThreadCount(value.toString());
-                break;
-            case DOMAIN_ACCESS_TYPE_PROPERTY_NAME:
-                setDomainAccessType(DomainAccessType.valueOf((String) value));
-                break;
-            case NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME:
-                try {
-                    Class<?> nearbyClass = Class.forName(value.toString(), false,
-                            Thread.currentThread().getContextClassLoader());
-
-                    if (!NearbyDistanceMeter.class.isAssignableFrom(nearbyClass)) {
-                        throw new IllegalStateException(
-                                "The Nearby Selection Meter class (%s) does not implement NearbyDistanceMeter."
-                                        .formatted(value.toString()));
-                    }
-                    setNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) nearbyClass);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(
-                            "Cannot find the Nearby Selection Meter class (%s).".formatted(value.toString()));
-                }
-                break;
-            case CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME:
-                setConstraintStreamImplType(ConstraintStreamImplType.valueOf((String) value));
-                break;
-            case TERMINATION_PROPERTY_NAME: {
-                if (value instanceof TerminationProperties terminationProperties) {
-                    setTermination(terminationProperties);
-                } else if (value instanceof Map<?, ?>) {
-                    TerminationProperties terminationProperties = new TerminationProperties();
-                    terminationProperties.loadProperties((Map<String, Object>) value);
-                    setTermination(terminationProperties);
-                } else {
-                    throw new IllegalStateException("The termination value is not valid.");
-                }
-                break;
-            }
-            default:
-                throw new IllegalStateException("The property %s is not valid.".formatted(key));
-        }
+        SolverProperty property = SolverProperty.forPropertyName(key);
+        property.update(this, value);
     }
 
 }

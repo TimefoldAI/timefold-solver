@@ -341,8 +341,10 @@ class TimefoldSolverAutoConfigurationTest {
                 .withSystemProperties(
                         "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/invalid-application.yaml")
                 .run(context -> context.getBean(SolverConfig.class)))
-                .rootCause().message().contains("The properties", "solverConfigXml", "environmentMode", "moveThreadCount",
-                        "domainAccessType", "are not valid", "Maybe try changing the property name to kebab-case");
+                .rootCause().message().contains("Cannot use global solver properties with named solvers", "solverConfigXml",
+                        "environmentMode", "moveThreadCount",
+                        "domainAccessType", "Expected all values to be maps, but values for key(s)",
+                        "Maybe try changing the property name to kebab-case");
     }
 
     @Test

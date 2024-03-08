@@ -1,11 +1,10 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
-import static ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties.VALID_FIELD_NAMES_SET;
-import static java.util.stream.Collectors.joining;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -63,22 +62,23 @@ public class TimefoldProperties {
         // multiple solvers
         this.solver = new HashMap<>();
         // Check if it is a single solver
-        if (VALID_FIELD_NAMES_SET.containsAll(solver.keySet())) {
+        if (SolverProperty.getValidPropertyNames().containsAll(solver.keySet())) {
             SolverProperties solverProperties = new SolverProperties();
             solverProperties.loadProperties(solver);
             this.solver.put(DEFAULT_SOLVER_NAME, solverProperties);
         } else {
             // The values must be an instance of map
-            String invalidKeys = solver.entrySet().stream()
+            var invalidKeySet = solver.entrySet().stream()
                     .filter(e -> e.getValue() != null && !(e.getValue() instanceof Map<?, ?>))
                     .map(Map.Entry::getKey)
-                    .collect(joining(", "));
-            if (!invalidKeys.isBlank()) {
+                    .collect(Collectors.toCollection(TreeSet::new));
+            if (!invalidKeySet.isEmpty()) {
                 throw new IllegalStateException("""
-                        The properties [%s] are not valid.
+                        Cannot use global solver properties with named solvers.
+                        Expected all values to be maps, but values for key(s) %s are not map(s).
                         Maybe try changing the property name to kebab-case.
-                        Here is the list of valid properties: %s"""
-                        .formatted(invalidKeys, String.join(", ", VALID_FIELD_NAMES_SET)));
+                        Here is the list of valid global solver properties: %s"""
+                        .formatted(invalidKeySet, String.join(", ", SolverProperty.getValidPropertyNames())));
             }
             // Multiple solvers. We load the properties per key (or solver config)
             solver.forEach((key, value) -> {

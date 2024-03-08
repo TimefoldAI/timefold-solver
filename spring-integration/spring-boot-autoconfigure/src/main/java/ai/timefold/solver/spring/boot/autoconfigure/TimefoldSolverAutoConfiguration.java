@@ -250,8 +250,8 @@ public class TimefoldSolverAutoConfiguration
                                         .collect(joining(", "))));
             }
         }
-        applyScoreDirectorFactoryProperties(entityScanner, solverConfig);
         Optional<SolverProperties> solverProperties = timefoldProperties.getSolverConfig(solverName);
+        applyScoreDirectorFactoryProperties(entityScanner, solverProperties, solverConfig);
         if (solverProperties.isPresent()) {
             if (solverProperties.get().getEnvironmentMode() != null) {
                 solverConfig.setEnvironmentMode(solverProperties.get().getEnvironmentMode());
@@ -273,9 +273,14 @@ public class TimefoldSolverAutoConfiguration
     }
 
     protected void applyScoreDirectorFactoryProperties(IncludeAbstractClassesEntityScanner entityScanner,
+            Optional<SolverProperties> solverProperties,
             SolverConfig solverConfig) {
         if (solverConfig.getScoreDirectorFactoryConfig() == null) {
             solverConfig.setScoreDirectorFactoryConfig(defaultScoreDirectoryFactoryConfig(entityScanner));
+        }
+        if (solverProperties.isPresent() && solverProperties.get().getConstraintStreamAutomaticNodeSharing() != null) {
+            solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamAutomaticNodeSharing(
+                    solverProperties.get().getConstraintStreamAutomaticNodeSharing());
         }
     }
 
