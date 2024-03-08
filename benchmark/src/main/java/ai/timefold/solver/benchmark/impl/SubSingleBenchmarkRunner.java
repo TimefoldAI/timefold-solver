@@ -121,9 +121,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         if (!warmUp) {
             var solverScope = solver.getSolverScope();
             var solutionDescriptor = solverScope.getSolutionDescriptor();
-            problemBenchmarkResult
-                    .registerProblemSizeStatistics(
-                            solutionDescriptor.getProblemSizeStatistics(solverScope.getScoreDirector(), solution));
+            problemBenchmarkResult.registerProblemSizeStatistics(solverScope.getProblemSizeStatistics());
             subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution));
             subSingleBenchmarkResult.setTimeMillisSpent(timeMillisSpent);
             subSingleBenchmarkResult.setScoreCalculationCount(solverScope.getScoreCalculationCount());
