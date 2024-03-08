@@ -4,7 +4,7 @@
 :sectnums:
 :icons: font
 
-include::overview/overview-quickstarts.adoc[leveloffset=+1]
+include::overview.adoc[leveloffset=+1]
 
 include::hello-world/hello-world-quickstart.adoc[leveloffset=+1]
 

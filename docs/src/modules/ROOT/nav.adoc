@@ -1,6 +1,6 @@
 * xref:introduction/introduction.adoc[leveloffset=+1]
 * Quickstart
-** xref:quickstart/overview/overview-quickstarts.adoc[leveloffset=+1]
+** xref:quickstart/overview.adoc[leveloffset=+1]
 ** xref:quickstart/hello-world/hello-world-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/quarkus/quarkus-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[leveloffset=+1]

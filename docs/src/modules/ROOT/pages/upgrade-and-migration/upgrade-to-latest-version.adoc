@@ -5,8 +5,7 @@
 :icons: font
 
 Timefold Solver public APIs are backwards compatible,
-but users often also use impl classes,
-many of which are documented in the reference manual too.
+but users often also use internal Solver classes which are not guaranteed to stay compatible.
 This upgrade recipe minimizes the pain to upgrade your code
 and to take advantage of the newest features in Timefold Solver.
 
@@ -54,7 +53,6 @@ Every upgrade note indicates how likely your code will be affected by that chang
 - icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
 - icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, unless you use internal classes.
-- icon:info[] *Impl detail*: Will not affect your code, unless you are using some very dark corner of Solver's internals.
 - icon:eye[] *Recommended*: Not a backwards-incompatible change, but you probably want to do this.
 
 The upgrade recipe often lists the changes as they apply to Java code.
