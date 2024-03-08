@@ -1,0 +1,211 @@
+[#upgradeToLatestVersion]
+= Upgrade to the latest version
+:doctype: book
+:sectnums:
+:icons: font
+
+Timefold Solver public APIs are backwards compatible,
+but users often also use internal Solver classes which are not guaranteed to stay compatible.
+This upgrade recipe minimizes the pain to upgrade your code
+and to take advantage of the newest features in Timefold Solver.
+
+[#automaticUpgradeToLatestVersion]
+== Automatic upgrade to the latest version
+
+For many of the upgrade steps mentioned later,
+we actually provide a migration tool that can automatically apply those changes to Java files.
+This tool is based on OpenRewrite and can be run as a Maven or Gradle plugin.
+To run the tool, execute the following command in your project directory:
+
+[tabs]
+====
+Maven::
++
+--
+[source,shell,subs=attributes+]
+----
+mvn org.openrewrite.maven:rewrite-maven-plugin:{rewrite-maven-plugin-version}:run -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+----
+--
+
+Gradle::
++
+--
+[source,shell,subs=attributes+]
+----
+curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
+----
+--
+====
+
+Having done that, you can check the local changes and commit them.
+Note that none of the upgrade steps could be automatically applied,
+and it may still be worth your while to read the rest the upgrade recipe below.
+
+For the time being,
+Kotlin users need to follow the upgrade recipe and apply the steps manually.
+
+[#manualUpgrade]
+== Manual upgrade recipe
+
+Every upgrade note indicates how likely your code will be affected by that change:
+
+- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
+- icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
+- icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, unless you use internal classes.
+- icon:eye[] *Recommended*: Not a backwards-incompatible change, but you probably want to do this.
+
+The upgrade recipe often lists the changes as they apply to Java code.
+Kotlin users should translate the changes accordingly.
+
+=== Upgrade from 1.7.0 to 1.8.0
+
+.icon:exclamation-triangle[role=red] Constraint Verifier: Check your tests if you use the planning list variable
+[%collapsible%open]
+====
+In some cases,
+especially if you've reused our https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/food-packaging[Food Packaging quickstart],
+you may see your tests failing after the upgrade.
+This is due to a bug fix in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
+which now currently handles values not present in any list variable.
+
+If your code has a shadow entity
+whose xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable] is a planning list variable
+and your test leaves that reference `null`,
+the constraints will no longer take that shadow entity into account.
+This will result in `ConstraintVerifier` failing the test,
+as the expected number of penalties/rewards will no longer match the actual number.
+
+You can solve this problem by manually assigning a value to the inverse relation shadow variable.
+
+Before in `*ConstraintProviderTest.java`:
+
+[source,java]
+----
+Job job = new Job("job1", ...);
+
+constraintVerifier.verifyThat(FoodPackagingConstraintProvider::dueDateTime)
+    .given(job)
+    .penalizesBy(...);
+----
+
+After in `*ConstraintProviderTest.java`:
+
+[source,java]
+----
+Job job = new Job("job1",  ...);
+Line line = new Line("line1", ...);
+job.setLine(line);
+
+constraintVerifier.verifyThat(FoodPackagingConstraintProvider::dueDateTime)
+    .given(job)
+    .penalizesBy(...);
+----
+
+The aforementioned quickstart unfortunately did not follow our own guidance on the use of shadow variables,
+which is why it exposed this bug.
+====
+
+'''
+
+.icon:magic[] Constraint Streams: Rename `forEachIncludingNullVars` to `forEachIncludingUnassigned`
+[%collapsible%open]
+====
+To better align with the newly introduced support for
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables],
+several methods in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams]
+which dealt with `null` variable values have been renamed.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+Constraint myConstraint(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEachIncludingNullVars(Shift.class)
+       ...;
+}
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+Constraint myConstraint(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEachIncludingUnassigned(Shift.class)
+       ...;
+}
+----
+
+Similarly, the following methods on `UniConstraintStream` have been renamed:
+
+* `ifExistsIncludingNullVars` to `ifExistsIncludingUnassigned`,
+* `ifExistsOtherIncludingNullVars` to `ifExistsOtherIncludingUnassigned`,
+* `ifNotExistsIncludingNullVars` to `ifNotExistsIncludingUnassigned`,
+* `ifNotExistsOtherIncludingNullVars` to `ifNotExistsOtherIncludingUnassigned`.
+
+On `BiConstraintStream` and its `Tri` and `Quad` counterparts, the following methods have been renamed as well:
+
+* `ifExistsIncludingNullVars` to `ifExistsIncludingUnassigned`,
+* `ifNotExistsIncludingNullVars` to `ifNotExistsIncludingUnassigned`.
+====
+
+'''
+
+.icon:magic[] Rename `nullable` attribute of `@PlanningVariable` to `allowsUnassigned`
+[%collapsible%open]
+====
+To better align with the newly introduced support for
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables],
+the `nullable` attribute of `@PlanningVariable` has been renamed to `allowsUnassigned`.
+
+Before in `*.java`:
+
+[source,java]
+----
+@PlanningVariable(nullable = true)
+private Bed bed;
+----
+
+After in `*.java`:
+
+[source,java]
+----
+@PlanningVariable(allowsUnassigned = true)
+private Bed bed;
+----
+====
+
+'''
+
+.icon:magic[] Constraint Verifier: assertion methods `message` argument comes first now
+[%collapsible%open]
+====
+To better align with the newly introduced support for testing justifications and indictments,
+the assertion methods which accepted a `message` argument now have it as the first argument.
+
+Before in `*ConstraintProviderTest.java`:
+
+[source,java]
+----
+constraintVerifier.verifyThat(MyConstraintProvider::myConstraint)
+    .given()
+    .penalizesBy(0, "There should no penalties");
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+constraintVerifier.verifyThat(MyConstraintProvider::myConstraint)
+    .given()
+    .penalizesBy("There should no penalties", 0);
+----
+
+Similarly to the `penalizesBy` method, the following methods were also affected:
+
+* `penalizes`,
+* `rewards`,
+* `rewardsWith`.
+====
+
+

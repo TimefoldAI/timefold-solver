@@ -122,7 +122,7 @@ Your `pom.xml` file has the following content:
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.4.14</version>
+        <version>{logback-version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -151,7 +151,7 @@ Your `pom.xml` file has the following content:
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>{exec-maven-plugin-version}</version>
         <configuration>
           <mainClass>org.acme.schooltimetabling.TimetableApp</mainClass>
         </configuration>
@@ -175,7 +175,7 @@ plugins {
 }
 
 def timefoldSolverVersion = "{timefold-solver-version}"
-def logbackVersion = "1.4.14"
+def logbackVersion = "{logback-version}"
 
 group = "org.acme"
 version = "1.0-SNAPSHOT"

@@ -48,7 +48,7 @@ The ability to achieve these goals relies on the number of resources available, 
 
 Specific constraints related to these resources must also be taken into account, such as the number of hours a person works, their ability to use certain machines, or compatibility between pieces of equipment.
 
-Timefold Solver helps Java^TM^ programmers solve constraint satisfaction problems efficiently.
+Timefold Solver helps Java^TM^, Kotlin and Python programmers solve constraint satisfaction problems efficiently.
 Under the hood, it combines optimization heuristics and metaheuristics with very efficient score calculation.
 
 
@@ -95,7 +95,7 @@ Some problems have three or more levels of constraints, for example hard, medium
 
 These constraints define the _score calculation_ (AKA __fitness function__) of a planning problem.
 Each solution of a planning problem can be graded with a score.
-**With Timefold Solver, score constraints are written in an Object Oriented language, such as Java^TM^ code**.
+**With Timefold Solver, problems are modeled in an object-oriented paradigm in languages such as Java^TM^, Kotlin or Python.**.
 Such code is easy, flexible and scalable.
 
 
@@ -115,7 +115,8 @@ As you can see in the examples, most instances have a lot more possible solution
 
 Timefold Solver supports several optimization algorithms to efficiently wade through that incredibly large number of possible solutions.
 Depending on the use case, some optimization algorithms perform better than others, but it's impossible to tell in advance.
-**With Timefold Solver, it is easy to switch the optimization algorithm**, by changing the solver configuration in a few lines of XML or code.
+**With Timefold Solver, it is easy to switch the optimization algorithm**,
+by changing the solver configuration in a few lines of code.
 
 [#timefoldSolverStatus]
 == Status of Timefold Solver
@@ -123,6 +124,7 @@ Depending on the use case, some optimization algorithms perform better than othe
 Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
 It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^ technologies.
 Timefold Solver works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
+It also supports Kotlin and Python.
 
 image::introduction/compatibility.png[align="center"]
 
@@ -156,15 +158,24 @@ To find out more, see xref:enterprise-edition/enterprise-edition.adoc[Enterprise
 [#backwardsCompatibility]
 == Backwards compatibility
 
-Timefold Solver separates its API and implementation:
+Timefold Solver separates its API from its implementation:
 
-* **Public API**: All classes in the package namespace *ai.timefold.solver.core.api*, *ai.timefold.solver.benchmark.api*, *ai.timefold.solver.test.api* and *ai.timefold.solver...api* are 100% *backwards compatible* in future releases (especially minor and hotfix releases).
-In rare circumstances, if the major version number changes, a few specific classes might have a few backwards incompatible changes, but those will be clearly documented in https://timefold.ai/docs/[the upgrade recipe].
-* **XML configuration**: The XML solver configuration is backwards compatible for all elements, except for elements that require the use of non-public API classes.
-The XML solver configuration is defined by the classes in the package namespace *ai.timefold.solver.core.config* and *ai.timefold.solver.benchmark.config*.
+* **Public API**: All classes in the following package namespaces are 100% *backwards compatible* in future releases,
+especially minor and hotfix releases:
+** `ai.timefold.solver.core.api`
+** `ai.timefold.solver.benchmark.api`
+** `ai.timefold.solver.test.api`
+** `ai.timefold.solver...api*`
+* **Configuration**: The solver configuration is backwards compatible for all elements,
+except for elements that require the use of non-public API classes.
+The solver configuration is defined by the classes in the following package namespaces:
+** `ai.timefold.solver.core.config`
+** `ai.timefold.solver.benchmark.config`
 * **Implementation classes**: All other classes are _not_ backwards compatible.
-They will change in future major or minor releases (but probably not in hotfix releases).
-https://timefold.ai/docs/[The upgrade recipe] describes every such relevant change and on how to quickly deal with it when upgrading to a newer version.
+They will change in future major or minor releases,
+but probably not in hotfix releases.
+
+Backwards incompatible changes will be clearly documented in xref:upgrade-and-migration/upgrade-to-latest-version.adoc#manualUpgrade[the upgrade recipe].
 
 
 [NOTE]
@@ -244,84 +255,14 @@ dependencies {
 ----
 --
 ====
+
 See also how to xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[switch To Enterprise Edition].
+
+To find out how to get started with Timefold Solver,
+see xref:quickstart/overview.adoc[Quickstarts].
 
 [#useWithOtherBuildTools]
 
 === Upgrade to the latest version
 
-Quickly upgrade your source code to the latest and greatest version of Timefold Solver,
-run this command:
-
-[tabs]
-====
-Maven::
-+
---
-[source,shell,subs=attributes+]
-----
-$ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
-  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} \
-  -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
-----
---
-Gradle::
-+
---
-[source,shell,subs=attributes+]
-----
-$ curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle
-$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version}
-$ rm upgrade-timefold.gradle
-----
---
-====
-
-It automatically replaces deprecated methods with better alternatives.
-Run your tests and commit the changes.
-
-[#buildFromSource]
-=== Build Timefold Solver from source
-
-*Prerequisites*
-
-* Set up https://git-scm.com/[Git].
-* Authenticate on GitHub using either HTTPS or SSH.
-** See https://help.github.com/articles/set-up-git/[GitHub] for more information about setting up and authenticating Git.
-* Set up http://maven.apache.org/[Maven].
-
-Build and run the examples from source.
-
-. Clone `timefold` from GitHub (or alternatively, download https://github.com/TimefoldAI/timefold-solver/zipball/main[the zipball]):
-+
-[source,sh,options="nowrap"]
-----
-$ git clone https://github.com/TimefoldAI/timefold-solver.git
-...
-----
-
-. Build it with Maven:
-+
-[source,sh,options="nowrap"]
-----
-$ cd timefold
-$ mvn clean install -DskipTests
-...
-----
-+
-[NOTE]
-====
-The first time, Maven might take a long time, because it needs to download jars.
-====
-
-. Run the examples:
-+
-[source,sh,options="nowrap"]
-----
-$ cd examples
-$ mvn exec:java
-...
-----
-
-. Edit the sources in your favorite IDE.
-
+See the dedicated section on xref:upgrade-and-migration/upgrade-to-latest-version.adoc[Upgrade and Migration].

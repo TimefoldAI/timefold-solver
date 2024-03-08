@@ -1,0 +1,61 @@
+[#migrateFromOptaPlanner]
+= Migrate from OptaPlanner
+:doctype: book
+:sectnums:
+:icons: font
+
+Timefold Solver is a faster, feature-rich and actively developed fork of OptaPlanner.
+Upgrading from OptaPlanner to Timefold Solver Community Edition only takes two minutes.
+Run the command below to upgrade your code automatically.
+
+[tabs]
+====
+Maven::
++
+--
+[source,shell,subs=attributes+]
+----
+mvn org.openrewrite.maven:rewrite-maven-plugin:{rewrite-maven-plugin-version}:run -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+----
+--
+
+Gradle::
++
+--
+[source,shell,subs=attributes+]
+----
+curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
+----
+--
+====
+
+Having done that, do a test run of the solver and commit the changes.
+If it doesn't work, just revert it instead and
+https://github.com/timefoldai/timefold-solver/issues[submit an issue].
+We'll fix it with the highest priority.
+
+Timefold Solver 1.x is backward compatible with OptaPlanner 8.x,
+except for the following changes:
+
+* Minimum Java 17 (LTS). Java 21 (LTS) and the latest Java version are also supported.
+* The Maven/Gradle GAVs changed:
+** The groupId changed from `org.optaplanner` to `ai.timefold.solver`.
+** The artifactIds changed from `optaplanner-\*` to `timefold-solver-*`.
+** ArtifactIds containing `peristence-` changed from `optaplanner-persistence-\*` to `timefold-solver-*`.
+*** For example, `optaplanner-persistence-jackson` changed to `timefold-solver-jackson`.
+* The import statements changed accordingly:
+** `import org.optaplanner...;` changed to `import ai.timefold.solver...;`.
+** `import org.optaplanner.persistence...;` changed to `import ai.timefold.solver...;` too.
+* The JEE dependencies changed from `javax` to `jakarta` to accommodate Spring 3 and Quarkus 3.
+** This is the same difference as between OptaPlanner 8.x and OptaPlanner 9.x.
+* The `OptaPlannerJacksonModule` class is now called `TimefoldJacksonModule`.
+* The deprecated `scoreDRL` support is removed, because Drools with its transitive dependencies have been removed entirely.
+* The unsecure module `persistence-xstream` is removed, because of old, unresolved CVEs in XStream.
+* The deprecated, undocumented `ScoreHibernateType` has been removed because of Jakarta.
+Use JPA's `ScoreConverter` instead.
+
+Timefold Solver 1.x does not support `scoreDRL`, nor is it upgraded automatically.
+If you're still using `scoreDRL` from OptaPlanner 7.x,
+please link:https://timefold.ai/blog/2023/migrating-score-drl-to-constraint-streams/[upgrade to Constraint Streams first].
+
+All other deprecated code remains to make upgrading easy.

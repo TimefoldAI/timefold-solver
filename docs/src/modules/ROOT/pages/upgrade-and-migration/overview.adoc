@@ -1,0 +1,18 @@
+[#upgradeAndMigrationOverview]
+= Upgrade and Migration: Overview
+:doctype: book
+:sectnums:
+:icons: font
+
+In this section, you will:
+
+- Learn how to upgrade from OptaPlanner to Timefold Solver.
+- Learn how to upgrade to the latest version of Timefold Solver automatically.
+- Find a detailed upgrade recipe for every major change we make to the Timefold Solver APIs.
+
+To find out what's new in the latest version of Timefold Solver,
+see the https://github.com/TimefoldAI/timefold-solver/releases[Timefold Solver release notes]
+in our Github repository,
+read https://timefold.ai/blog[our blog]
+or subscribe to our newsletter.
+
