@@ -237,12 +237,14 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 environmentMode.name(),
                 moveThreadCountDescription,
                 (randomFactory != null ? randomFactory : "not fixed"));
-        logger.info(
-                "Problem scale: entity count ({}), variable count ({}), approximate value count (~{}), approximate problem scale ({}).",
-                solverScope.getProblemSizeStatistics().entityCount(),
-                solverScope.getProblemSizeStatistics().variableCount(),
-                solverScope.getProblemSizeStatistics().approximateValueCount(),
-                solverScope.getProblemSizeStatistics().formatApproximateProblemScale());
+        if (logger.isInfoEnabled()) { // Formatting is expensive here.
+            var problemSizeStatistics = solverScope.getProblemSizeStatistics();
+            logger.info(
+                    "Problem scale: entity count ({}), variable count ({}), approximate value count (~{}), approximate problem scale (~{}).",
+                    problemSizeStatistics.entityCount(), problemSizeStatistics.variableCount(),
+                    problemSizeStatistics.approximateValueCount(),
+                    problemSizeStatistics.approximateProblemScaleAsFormattedString());
+        }
     }
 
     private void registerSolverSpecificMetrics() {

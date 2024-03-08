@@ -451,11 +451,11 @@ public class ProblemBenchmarkResult<Solution_> {
             maximumValueCount = -1L;
         }
         if (problemScale == null) {
-            problemScale = problemSizeStatistics.getApproximateProblemScaleLogAsFixedPointLong();
-        } else if (problemScale.longValue() != problemSizeStatistics.getApproximateProblemScaleLogAsFixedPointLong()) {
+            problemScale = problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong();
+        } else if (problemScale.longValue() != problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different problemScale values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), problemScale, problemSizeStatistics.getApproximateProblemScaleLogAsFixedPointLong());
+                    getName(), problemScale, problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong());
             // The problemScale is not unknown (null), but known to be ambiguous
             problemScale = -1L;
         }

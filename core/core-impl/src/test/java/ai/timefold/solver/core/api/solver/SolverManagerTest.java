@@ -340,7 +340,7 @@ class SolverManagerTest {
         assertThat(problemSizeStatistics.entityCount()).isEqualTo(2L);
         assertThat(problemSizeStatistics.variableCount()).isEqualTo(2L);
         assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(2L);
-        assertThat(problemSizeStatistics.formatApproximateProblemScale()).isEqualTo("~4");
+        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("4");
     }
 
     @Test
@@ -379,7 +379,7 @@ class SolverManagerTest {
         assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
         assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
         assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(4L);
-        assertThat(problemSizeStatistics.formatApproximateProblemScale()).isEqualTo("~256");
+        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("256");
 
         CompletableFuture<Void> futureChange = solverManager
                 .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
@@ -396,7 +396,7 @@ class SolverManagerTest {
         assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
         assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
         assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(5L);
-        assertThat(problemSizeStatistics.formatApproximateProblemScale()).isEqualTo("~625");
+        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("625");
     }
 
     @Test
