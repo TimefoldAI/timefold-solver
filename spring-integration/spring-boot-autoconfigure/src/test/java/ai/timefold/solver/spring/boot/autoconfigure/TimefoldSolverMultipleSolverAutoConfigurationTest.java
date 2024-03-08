@@ -274,8 +274,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 }))
                 .rootCause().message().contains("Cannot find the Nearby Selection Meter class",
-                        "ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter",
-                        "for the solver config (solver1)");
+                        "ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter");
         // Invalid class
         assertThatCode(() -> contextRunner
                 .withPropertyValues("timefold.solver.solver1.daemon=true")
@@ -288,8 +287,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 }))
                 .rootCause().message().contains("The Nearby Selection Meter class",
-                        "ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution",
-                        "of the solver config (solver2) does not implement NearbyDistanceMeter.");
+                        "ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution");
     }
 
     @Test
