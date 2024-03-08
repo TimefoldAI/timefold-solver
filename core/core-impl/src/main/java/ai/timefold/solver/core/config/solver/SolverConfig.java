@@ -518,6 +518,11 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    public SolverConfig withClassLoader(ClassLoader classLoader) {
+        this.setClassLoader(classLoader);
+        return this;
+    }
+
     /**
      * As defined by {@link ScoreDirectorFactoryConfig#withEasyScoreCalculatorClass(Class)}, but returns this.
      *
