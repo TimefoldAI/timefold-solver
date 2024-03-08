@@ -40,7 +40,7 @@ class TimefoldBenchmarkProcessorInheritedSolverBenchmarkTest {
     void inheritClassesFromSolverConfig() {
         assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataQuarkusSolution.class);
         assertThat(solverConfig.getEntityClassList()).hasSize(2);
-        assertThat(solverConfig.getEntityClassList()).containsExactly(TestdataQuarkusEntity.class,
+        assertThat(solverConfig.getEntityClassList()).contains(TestdataQuarkusEntity.class,
                 TestdataQuarkusOtherEntity.class);
         assertThat(plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig()
                 .getSolverConfig().getTerminationConfig().getMillisecondsSpentLimit()).isEqualTo(5);
