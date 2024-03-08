@@ -1,6 +1,6 @@
 package ai.timefold.solver.benchmark.quarkus;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
@@ -9,7 +9,6 @@ import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuark
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -28,12 +27,11 @@ class TimefoldBenchmarkProcessorMissingSpentLimitWithXmlTest {
 
     @Test
     void benchmark() throws InterruptedException {
-        IllegalStateException exception = Assertions.assertThrows(IllegalStateException.class,
-                () -> new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(new PlannerBenchmarkConfig(), null).get());
-        assertThat(exception.getMessage()).contains("At least one of the properties",
-                "quarkus.timefold.benchmark.solver.termination.spent-limit",
-                "quarkus.timefold.benchmark.solver.termination.best-score-limit",
-                "quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit",
-                "is required if termination is not configured");
+        assertThatCode(() -> new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(new PlannerBenchmarkConfig(), null).get())
+                .hasMessageContainingAll("At least one of the properties",
+                        "quarkus.timefold.benchmark.solver.termination.spent-limit",
+                        "quarkus.timefold.benchmark.solver.termination.best-score-limit",
+                        "quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit",
+                        "is required if termination is not configured");
     }
 }

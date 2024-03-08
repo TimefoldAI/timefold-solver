@@ -1,6 +1,6 @@
 package ai.timefold.solver.quarkus;
 
-import java.util.concurrent.ExecutionException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import jakarta.inject.Inject;
 
@@ -12,7 +12,6 @@ import ai.timefold.solver.quarkus.testdata.gizmo.PrivateNoArgsConstructorSolutio
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -28,18 +27,15 @@ class TimefoldProcessorOnlyMultiConstructorTest {
                             PrivateNoArgsConstructorSolution.class,
                             PrivateNoArgsConstructorEntity.class,
                             OnlyMultiArgsConstructorEntity.class))
-            .assertException(throwable -> {
-                Assertions.assertEquals(
-                        "Class (" + OnlyMultiArgsConstructorEntity.class.getName()
-                                + ") must have a no-args constructor so it can be constructed by Timefold.",
-                        throwable.getMessage());
-            });
+            .assertException(t -> assertThat(t).hasMessageContainingAll("Class (",
+                    OnlyMultiArgsConstructorEntity.class.getName(),
+                    ") must have a no-args constructor so it can be constructed by Timefold."));
 
     @Inject
     SolverManager<PrivateNoArgsConstructorSolution, Long> solverManager;
 
     @Test
-    void canConstructBeansWithPrivateConstructors() throws ExecutionException, InterruptedException {
+    void canConstructBeansWithPrivateConstructors() {
     }
 
 }

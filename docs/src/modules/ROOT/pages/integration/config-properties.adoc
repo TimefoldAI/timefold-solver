@@ -50,6 +50,12 @@ Defaults to `REFLECTION`.
 The other possible value is `GIZMO`.
 endif::[]
 
+{property_prefix}timefold.solver.{solver_name_prefix}nearby-distance-meter-class::
+Enable the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby Selection] quick configuration.
+If the Nearby Selection distance meter class is specified,
+the solver evaluates the available move selectors
+and automatically enables Nearby Selection for the compatible move selectors.
+
 {property_prefix}timefold.solver.{solver_name_prefix}termination.spent-limit::
 How long the solver can run.
 For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.

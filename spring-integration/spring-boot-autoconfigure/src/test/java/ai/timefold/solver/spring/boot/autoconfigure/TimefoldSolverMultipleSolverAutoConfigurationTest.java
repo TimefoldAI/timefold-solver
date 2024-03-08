@@ -261,6 +261,36 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     }
 
     @Test
+    void invalidNearbyClass() {
+        // Class not found
+        assertThatCode(() -> contextRunner
+                .withPropertyValues("timefold.solver.solver1.daemon=true")
+                .withPropertyValues(
+                        "timefold.solver.solver1.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter")
+                .withPropertyValues("timefold.solver.solver2.daemon=false")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
+                }))
+                .rootCause().message().contains("Cannot find the Nearby Selection Meter class",
+                        "ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter");
+        // Invalid class
+        assertThatCode(() -> contextRunner
+                .withPropertyValues("timefold.solver.solver1.daemon=true")
+                .withPropertyValues("timefold.solver.solver2.daemon=false")
+                .withPropertyValues(
+                        "timefold.solver.solver2.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
+                }))
+                .rootCause().message().contains("The Nearby Selection Meter class",
+                        "ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution");
+    }
+
+    @Test
     void solverPropertiesWithoutLoadingBenchmark() {
         contextRunner
                 .withPropertyValues("timefold.solver.solver1.environment-mode=FULL_ASSERT")

@@ -259,6 +259,9 @@ public class TimefoldSolverAutoConfiguration
             if (solverProperties.get().getDomainAccessType() != null) {
                 solverConfig.setDomainAccessType(solverProperties.get().getDomainAccessType());
             }
+            if (solverProperties.get().getNearbyDistanceMeterClass() != null) {
+                solverConfig.setNearbyDistanceMeterClass(solverProperties.get().getNearbyDistanceMeterClass());
+            }
             if (solverProperties.get().getDaemon() != null) {
                 solverConfig.setDaemon(solverProperties.get().getDaemon());
             }

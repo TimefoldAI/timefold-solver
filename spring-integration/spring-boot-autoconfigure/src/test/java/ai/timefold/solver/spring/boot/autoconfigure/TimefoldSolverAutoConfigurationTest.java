@@ -3,6 +3,7 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -193,6 +194,18 @@ class TimefoldSolverAutoConfigurationTest {
     }
 
     @Test
+    void solverNearbyConfigXml_property() {
+        contextRunner
+                .withPropertyValues(
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/nearbySolverConfig.xml")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
+                });
+    }
+
+    @Test
     void solverConfigXml_solverPropertyPrecedence() {
         contextRunner
                 .withPropertyValues(
@@ -264,6 +277,40 @@ class TimefoldSolverAutoConfigurationTest {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                 });
+        contextRunner
+                .withPropertyValues(
+                        "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.dummy.DummyDistanceMeter")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
+                });
+    }
+
+    @Test
+    void invalidNearbyClass() {
+        // Class not found
+        assertThatCode(() -> contextRunner
+                .withPropertyValues(
+                        "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
+                }))
+                .rootCause().message().contains("Cannot find the Nearby Selection Meter class",
+                        "ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter");
+        // Invalid class
+        assertThatCode(() -> contextRunner
+                .withPropertyValues(
+                        "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution")
+                .run(context -> {
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig).isNotNull();
+                    assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
+                }))
+                .rootCause().message().contains("The Nearby Selection Meter class",
+                        "ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution");
     }
 
     @Test
@@ -274,6 +321,8 @@ class TimefoldSolverAutoConfigurationTest {
                         "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/application.yaml")
                 .run(context -> {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                    assertNotNull(solverConfig);
+                    assertNotNull(solverConfig.getNearbyDistanceMeterClass());
                     assertEquals(EnvironmentMode.FULL_ASSERT, solverConfig.getEnvironmentMode());
                     assertTrue(solverConfig.getDaemon());
                     assertEquals("2", solverConfig.getMoveThreadCount());

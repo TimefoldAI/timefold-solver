@@ -8,6 +8,7 @@ import java.util.Set;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -18,12 +19,14 @@ public class SolverProperties {
     public static final String DAEMON_PROPERTY_NAME = "daemon";
     public static final String MOVE_THREAD_COUNT_PROPERTY_NAME = "move-thread-count";
     public static final String DOMAIN_ACCESS_TYPE_PROPERTY_NAME = "domain-access-type";
+    public static final String NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME = "nearby-distance-meter-class";
     public static final String CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME = "constraint-stream-impl-type";
     public static final String TERMINATION_PROPERTY_NAME = "termination";
     public static final Set<String> VALID_FIELD_NAMES_SET =
             Set.of(SOLVER_CONFIG_XML_PROPERTY_NAME, ENVIRONMENT_MODE_PROPERTY_NAME, DAEMON_PROPERTY_NAME,
                     MOVE_THREAD_COUNT_PROPERTY_NAME, DOMAIN_ACCESS_TYPE_PROPERTY_NAME,
-                    CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME, TERMINATION_PROPERTY_NAME);
+                    NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME, CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME,
+                    TERMINATION_PROPERTY_NAME);
 
     /**
      * A classpath resource to read the specific solver configuration XML.
@@ -58,6 +61,11 @@ public class SolverProperties {
      * and all planning annotations must be on public members.
      */
     private DomainAccessType domainAccessType;
+
+    /**
+     * Enable the Nearby Selection quick configuration.
+     */
+    private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
 
     /**
      * What constraint stream implementation to use. Defaults to BAVET.
@@ -112,6 +120,14 @@ public class SolverProperties {
 
     public void setDomainAccessType(DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
+    }
+
+    public Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
+        return nearbyDistanceMeterClass;
+    }
+
+    public void setNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
+        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
     }
 
     /**
@@ -174,6 +190,22 @@ public class SolverProperties {
                 break;
             case DOMAIN_ACCESS_TYPE_PROPERTY_NAME:
                 setDomainAccessType(DomainAccessType.valueOf((String) value));
+                break;
+            case NEARBY_DISTANCE_METER_CLASS_PROPERTY_NAME:
+                try {
+                    Class<?> nearbyClass = Class.forName(value.toString(), false,
+                            Thread.currentThread().getContextClassLoader());
+
+                    if (!NearbyDistanceMeter.class.isAssignableFrom(nearbyClass)) {
+                        throw new IllegalStateException(
+                                "The Nearby Selection Meter class (%s) does not implement NearbyDistanceMeter."
+                                        .formatted(value.toString()));
+                    }
+                    setNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) nearbyClass);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalStateException(
+                            "Cannot find the Nearby Selection Meter class (%s).".formatted(value.toString()));
+                }
                 break;
             case CONSTRAINT_STREAM_IMPL_TYPE_PROPERTY_NAME:
                 setConstraintStreamImplType(ConstraintStreamImplType.valueOf((String) value));

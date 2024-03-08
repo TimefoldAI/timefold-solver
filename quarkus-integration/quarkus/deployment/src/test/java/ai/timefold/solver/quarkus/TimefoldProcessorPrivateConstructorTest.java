@@ -1,5 +1,7 @@
 package ai.timefold.solver.quarkus;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
@@ -12,7 +14,6 @@ import ai.timefold.solver.quarkus.testdata.gizmo.PrivateNoArgsConstructorSolutio
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -39,8 +40,8 @@ class TimefoldProcessorPrivateConstructorTest {
                         new PrivateNoArgsConstructorEntity("2"),
                         new PrivateNoArgsConstructorEntity("3")));
         PrivateNoArgsConstructorSolution solution = solverManager.solve(1L, problem).getFinalBestSolution();
-        Assertions.assertEquals(0, solution.score.score());
-        Assertions.assertEquals(2, solution.someField);
+        assertThat(solution.score.score()).isZero();
+        assertThat(solution.someField).isEqualTo(2);
     }
 
 }
