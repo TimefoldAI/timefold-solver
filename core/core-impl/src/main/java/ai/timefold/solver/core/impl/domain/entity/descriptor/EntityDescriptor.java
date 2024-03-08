@@ -715,7 +715,12 @@ public class EntityDescriptor<Solution_> {
                             }
                         }
                     } else {
-                        // Assume 0 entities (this might be impossible)
+                        throw new IllegalStateException("""
+                                The value range (%s) for variable (%s) is not countable.
+                                Verify that a @%s does not return a %s when it can return %s or %s.
+                                """.formatted(valueRange, variableDescriptor.getSimpleEntityAndVariableName(),
+                                ValueRangeProvider.class.getSimpleName(), ValueRange.class.getSimpleName(),
+                                CountableValueRange.class.getSimpleName(), Collection.class.getSimpleName()));
                     }
                 } else {
                     if (isMovable(scoreDirector, entity)) {
