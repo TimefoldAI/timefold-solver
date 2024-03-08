@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -44,6 +45,7 @@ public class SolverScope<Solution_> {
 
     protected Score startingInitializedScore;
 
+    protected volatile ProblemSizeStatistics problemSizeStatistics;
     protected volatile Solution_ bestSolution;
     protected volatile Score bestScore;
     protected Long bestSolutionTimeMillis;
@@ -222,6 +224,14 @@ public class SolverScope<Solution_> {
 
     public long getTimeMillisSpent() {
         return endingSystemTimeMillis - startingSystemTimeMillis;
+    }
+
+    public ProblemSizeStatistics getProblemSizeStatistics() {
+        return problemSizeStatistics;
+    }
+
+    public void setProblemSizeStatistics(ProblemSizeStatistics problemSizeStatistics) {
+        this.problemSizeStatistics = problemSizeStatistics;
     }
 
     /**

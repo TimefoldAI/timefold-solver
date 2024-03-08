@@ -10,6 +10,7 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
@@ -39,6 +42,7 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
@@ -684,22 +688,60 @@ public class EntityDescriptor<Solution_> {
 
     }
 
-    public long getProblemScale(Solution_ solution, Object entity) {
-        int genuineEntityCount = getSolutionDescriptor().getGenuineEntityCount(solution);
-        long problemScale = 1L;
+    public void processProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution, Object entity,
+            ProblemScaleTracker tracker) {
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
             long valueCount = variableDescriptor.getValueRangeSize(solution, entity);
-            problemScale *= valueCount;
-            if (variableDescriptor.isListVariable()) {
-                // This formula probably makes no sense other than that it results in the same problem scale for both
-                // chained and list variable models.
-                // TODO fix https://issues.redhat.com/browse/PLANNER-2623 to get rid of this.
-                problemScale *= valueCount;
-                problemScale /= genuineEntityCount;
-                problemScale += valueCount;
+            // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
+            if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
+                if (basicVariableDescriptor.isChained()) {
+                    // An entity is a value
+                    tracker.addListValueCount(1);
+                    if (!isMovable(scoreDirector, entity)) {
+                        tracker.addPinnedListValueCount(1);
+                    }
+                    // Anchors are entities
+                    ValueRange<?> valueRange = variableDescriptor.getValueRangeDescriptor().extractValueRange(solution, entity);
+                    if (valueRange instanceof CountableValueRange<?> countableValueRange) {
+                        Iterator<?> valueIterator = countableValueRange.createOriginalIterator();
+                        while (valueIterator.hasNext()) {
+                            Object value = valueIterator.next();
+                            if (variableDescriptor.isValuePotentialAnchor(value)) {
+                                if (tracker.isAnchorVisited(value)) {
+                                    continue;
+                                }
+                                // Assumes anchors are not pinned
+                                tracker.incrementListEntityCount(true);
+                            }
+                        }
+                    } else {
+                        throw new IllegalStateException("""
+                                The value range (%s) for variable (%s) is not countable.
+                                Verify that a @%s does not return a %s when it can return %s or %s.
+                                """.formatted(valueRange, variableDescriptor.getSimpleEntityAndVariableName(),
+                                ValueRangeProvider.class.getSimpleName(), ValueRange.class.getSimpleName(),
+                                CountableValueRange.class.getSimpleName(), Collection.class.getSimpleName()));
+                    }
+                } else {
+                    if (isMovable(scoreDirector, entity)) {
+                        tracker.addBasicProblemScale(valueCount);
+                    }
+                }
+            } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
+                tracker.setListTotalValueCount((int) listVariableDescriptor.getValueRangeSize(solution, entity));
+                if (isMovable(scoreDirector, entity)) {
+                    tracker.incrementListEntityCount(true);
+                    tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                } else {
+                    tracker.incrementListEntityCount(false);
+                    tracker.addPinnedListValueCount(listVariableDescriptor.getListSize(entity));
+                }
+            } else {
+                throw new IllegalStateException(
+                        "Unhandled subclass of %s encountered (%s).".formatted(VariableDescriptor.class.getSimpleName(),
+                                variableDescriptor.getClass().getSimpleName()));
             }
         }
-        return problemScale;
     }
 
     public int countUninitializedVariables(Object entity) {

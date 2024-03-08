@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -61,12 +63,14 @@ import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
@@ -1026,7 +1030,39 @@ public class SolutionDescriptor<Solution_> {
         return result.longValue();
     }
 
-    public long getMaximumValueCount(Solution_ solution) {
+    /**
+     * @param solution never null
+     * @return {@code >= 0}
+     */
+    public long getApproximateValueCount(Solution_ solution) {
+        var genuineVariableDescriptorSet =
+                Collections.newSetFromMap(new IdentityHashMap<GenuineVariableDescriptor<Solution_>, Boolean>());
+        visitAllEntities(solution, entity -> {
+            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isGenuine()) {
+                genuineVariableDescriptorSet.addAll(entityDescriptor.getGenuineVariableDescriptorList());
+            }
+        });
+        MutableLong out = new MutableLong();
+        for (var variableDescriptor : genuineVariableDescriptorSet) {
+            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+            if (valueRangeDescriptor.isEntityIndependent()) {
+                var entityIndependentVariableDescriptor =
+                        (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
+                out.add(entityIndependentVariableDescriptor.extractValueRangeSize(solution));
+            } else {
+                visitEntitiesByEntityClass(solution,
+                        variableDescriptor.getEntityDescriptor().getEntityClass(),
+                        entity -> {
+                            out.add(valueRangeDescriptor.extractValueRangeSize(solution, entity));
+                            return false;
+                        });
+            }
+        }
+        return out.longValue();
+    }
+
+    public long getMaximumValueRangeSize(Solution_ solution) {
         return extractAllEntitiesStream(solution)
                 .mapToLong(entity -> {
                     var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
@@ -1038,20 +1074,44 @@ public class SolutionDescriptor<Solution_> {
 
     /**
      * Calculates an indication on how big this problem instance is.
-     * This is intentionally very loosely defined for now.
+     * This is approximately the base 10 log of the search space size.
      *
      * @param solution never null
      * @return {@code >= 0}
      */
-    public long getProblemScale(Solution_ solution) {
-        MutableLong result = new MutableLong();
+    public double getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+        long logBase = getMaximumValueRangeSize(solution);
+        ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
-                result.add(entityDescriptor.getProblemScale(solution, entity));
+                entityDescriptor.processProblemScale(scoreDirector, solution, entity, problemScaleTracker);
             }
         });
-        return result.longValue();
+        long result = problemScaleTracker.getBasicProblemScaleLog();
+        if (problemScaleTracker.getListTotalEntityCount() != 0L) {
+            // List variables do not support from entity value ranges
+            int totalListValueCount = problemScaleTracker.getListTotalValueCount();
+            int totalListMovableValueCount = totalListValueCount - problemScaleTracker.getListPinnedValueCount();
+            int possibleTargetsForListValue = problemScaleTracker.getListMovableEntityCount();
+            var listVariableDescriptor = getListVariableDescriptor();
+            if (listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues()) {
+                // Treat unassigned values as assigned to a single virtual vehicle for the sake of this calculation
+                possibleTargetsForListValue++;
+            }
+
+            result += MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
+                    totalListMovableValueCount, possibleTargetsForListValue);
+        }
+        return (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
+    }
+
+    public ProblemSizeStatistics getProblemSizeStatistics(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+        return new ProblemSizeStatistics(
+                getGenuineEntityCount(solution),
+                getGenuineVariableCount(solution),
+                getApproximateValueCount(solution),
+                getProblemScale(scoreDirector, solution));
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {

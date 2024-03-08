@@ -322,6 +322,84 @@ class SolverManagerTest {
     }
 
     @Test
+    void testProblemSizeStatisticsForFinishedJob() throws ExecutionException, InterruptedException {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        var problem = PlannerTestUtils.generateTestdataSolution("s1", 2);
+        var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                .withProblemId(2L)
+                .withProblem(problem)
+                .run();
+
+        solverJob.getFinalBestSolution();
+        var problemSizeStatistics = solverJob.getProblemSizeStatistics();
+        assertThat(problemSizeStatistics.entityCount()).isEqualTo(2L);
+        assertThat(problemSizeStatistics.variableCount()).isEqualTo(2L);
+        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(2L);
+        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("4");
+    }
+
+    @Test
+    @Timeout(60)
+    void testProblemSizeStatisticsForWaitingJob() throws InterruptedException, ExecutionException {
+        CountDownLatch solvingPausedLatch = new CountDownLatch(1);
+        PhaseConfig<?> pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
+                scoreDirector -> {
+                    try {
+                        solvingPausedLatch.await();
+                    } catch (InterruptedException e) {
+                        fail("CountDownLatch failed.");
+                    }
+                });
+
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
+        // Allow only a single active solver.
+        SolverManagerConfig solverManagerConfig = new SolverManagerConfig().withParallelSolverCount("1");
+        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
+
+        // The first solver waits until the test sends a problem change.
+        solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
+
+        // The second solver is scheduled and waits for the fist solver to finish.
+        final long secondProblemId = 2L;
+        final int entityAndValueCount = 4;
+        AtomicReference<TestdataSolution> bestSolution = new AtomicReference<>();
+        var waitingSolverJob = solverManager.solveBuilder()
+                .withProblemId(secondProblemId)
+                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
+                .withBestSolutionConsumer(bestSolution::set)
+                .run();
+
+        var problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
+        assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("256");
+
+        CompletableFuture<Void> futureChange = solverManager
+                .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
+                    problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
+                            workingSolution.getValueList()::add);
+                });
+
+        // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
+        solvingPausedLatch.countDown();
+        futureChange.get();
+        assertThat(futureChange).isCompleted();
+        assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
+        problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
+        assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
+        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(5L);
+        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("625");
+    }
+
+    @Test
     void testSolveBuilderForExistingSolvingMethods() {
         SolverJobBuilder<TestdataSolution, Long> solverJobBuilder = mock(SolverJobBuilder.class);
         SolverManager<TestdataSolution, Long> solverManager = mock(SolverManager.class);

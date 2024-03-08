@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -332,13 +333,33 @@ class DefaultSolverTest {
                                         Tags.empty(),
                                         null,
                                         null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
         });
         solver.solve(solution);
 
-        // Score calculation count should be removed
+        // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
         // make it return the average, and the solver holds
         // onto the solver scope, meaning it won't automatically
@@ -394,13 +415,33 @@ class DefaultSolverTest {
                                         Tags.of("tag.key", "tag.value"),
                                         null,
                                         null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
         });
         solver.solve(solution);
 
-        // Score calculation count should be removed
+        // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
         // make it return the average, and the solver holds
         // onto the solver scope, meaning it won't automatically
@@ -444,6 +485,16 @@ class DefaultSolverTest {
                 assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isOne();
                 assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION").longValue())
                         .isEqualTo(2L);
+
+                // 2 Entities
+                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
+                        .isEqualTo(2L);
+                // 1 Genuine variable on 2 entities = 2 total variables
+                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
+                        .isEqualTo(2L);
+                // The maximum assignable value count of any variable is 2
+                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
+                        .isEqualTo(2L);
                 updatedTime.set(true);
             }
         });
@@ -456,6 +507,56 @@ class DefaultSolverTest {
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isZero();
+    }
+
+    @Test
+    void solveMetricsProblemChange() throws InterruptedException, ExecutionException {
+        TestMeterRegistry meterRegistry = new TestMeterRegistry();
+        Metrics.addRegistry(meterRegistry);
+
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+
+        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        meterRegistry.publish(solver);
+
+        final TestdataSolution solution = new TestdataSolution("s1");
+        solution.setValueList(new ArrayList<>(List.of(new TestdataValue("v1"), new TestdataValue("v2"))));
+        solution.setEntityList(new ArrayList<>(List.of(new TestdataEntity("e1"), new TestdataEntity("e2"))));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        solver.addEventListener(bestSolutionChangedEvent -> {
+            try {
+                latch.await();
+                meterRegistry.publish(solver);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        var job = executorService.submit(() -> {
+            solver.solve(solution);
+        });
+
+        solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+            problemChangeDirector.addEntity(new TestdataEntity("added entity"), workingSolution.getEntityList()::add);
+            problemChangeDirector.addProblemFact(new TestdataValue("added value"), workingSolution.getValueList()::add);
+        });
+
+        latch.countDown();
+        job.get();
+        // 3 Entities
+        assertThat(
+                meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
+                .isEqualTo(3L);
+        // 1 Genuine variable on 3 entities = 3 total variables
+        assertThat(
+                meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
+                .isEqualTo(3L);
+        assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
+                .isEqualTo(3L);
     }
 
     public static class BestScoreMetricEasyScoreCalculator
@@ -903,7 +1004,7 @@ class DefaultSolverTest {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
 
-        // Run only 7 steps at a time, although the total number of steps needed to complete CH is equal to valueCount.
+        // Run only 7 steps at a time, although the total number of steps needed to complete CH is equal to maximumValueRangeSize.
         final int stepCountLimit = 7;
         ConstructionHeuristicPhaseConfig phaseConfig = new ConstructionHeuristicPhaseConfig();
         phaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(stepCountLimit));

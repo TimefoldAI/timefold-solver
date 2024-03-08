@@ -29,7 +29,6 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.LongTaskTimer;
-import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
@@ -188,17 +187,15 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         LongTaskTimer solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         Counter errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
-        // Score Calculation Count is specific per solver
-        Metrics.gauge(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), solverScope.getMonitoringTags(),
-                solverScope, SolverScope::getScoreCalculationCount);
-        solverScope.getSolverMetricSet().forEach(solverMetric -> solverMetric.register(this));
-
         solverScope.setBestSolution(problem);
         outerSolvingStarted(solverScope);
         boolean restartSolver = true;
         while (restartSolver) {
             LongTaskTimer.Sample sample = solveLengthTimer.start();
             try {
+                // solvingStarted will call registerSolverSpecificMetrics(), since
+                // the solverScope need to be fully initialized to calculate the
+                // problem's scale metrics
                 solvingStarted(solverScope);
                 runPhases(solverScope);
                 solvingEnded(solverScope);
@@ -208,12 +205,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 throw e;
             } finally {
                 sample.stop();
-                Metrics.globalRegistry.remove(new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                        solverScope.getMonitoringTags(),
-                        null,
-                        null,
-                        Meter.Type.GAUGE));
-                solverScope.getSolverMetricSet().forEach(solverMetric -> solverMetric.unregister(this));
+                unregisterSolverSpecificMetrics();
             }
             restartSolver = checkProblemFactChanges();
         }
@@ -234,16 +226,36 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         solverScope.startingNow();
         solverScope.getScoreDirector().resetCalculationCount();
         super.solvingStarted(solverScope);
-        int startingSolverCount = solverScope.getStartingSolverCount() + 1;
+        var startingSolverCount = solverScope.getStartingSolverCount() + 1;
         solverScope.setStartingSolverCount(startingSolverCount);
-        logger.info("Solving {}: time spent ({}), best score ({}), environment mode ({}), "
-                + "move thread count ({}), random ({}).",
+        registerSolverSpecificMetrics();
+        logger.info("Solving {}: time spent ({}), best score ({}), "
+                + "environment mode ({}), move thread count ({}), random ({}).",
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
                 solverScope.getBestScore(),
                 environmentMode.name(),
                 moveThreadCountDescription,
                 (randomFactory != null ? randomFactory : "not fixed"));
+        if (logger.isInfoEnabled()) { // Formatting is expensive here.
+            var problemSizeStatistics = solverScope.getProblemSizeStatistics();
+            logger.info(
+                    "Problem scale: entity count ({}), variable count ({}), approximate value count (~{}), approximate problem scale (~{}).",
+                    problemSizeStatistics.entityCount(), problemSizeStatistics.variableCount(),
+                    problemSizeStatistics.approximateValueCount(),
+                    problemSizeStatistics.approximateProblemScaleAsFormattedString());
+        }
+    }
+
+    private void registerSolverSpecificMetrics() {
+        solverScope.setProblemSizeStatistics(
+                solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getScoreDirector(),
+                        solverScope.getWorkingSolution()));
+        solverScope.getSolverMetricSet().forEach(solverMetric -> solverMetric.register(this));
+    }
+
+    private void unregisterSolverSpecificMetrics() {
+        solverScope.getSolverMetricSet().forEach(solverMetric -> solverMetric.unregister(this));
     }
 
     private void assertCorrectSolutionState() {
@@ -302,8 +314,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        // Must be kept open for doProblemFactChange
-        solverScope.getScoreDirector().close();
         logger.info("Solving ended: time spent ({}), best score ({}), score calculation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
@@ -312,6 +322,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 phaseList.size(),
                 environmentMode.name(),
                 moveThreadCountDescription);
+        // Must be kept open for doProblemFactChange
+        solverScope.getScoreDirector().close();
         solving.set(false);
     }
 

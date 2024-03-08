@@ -4,17 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.ToDoubleFunction;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.statistic.BestScoreStatistic;
 import ai.timefold.solver.core.impl.statistic.BestSolutionMutationCountStatistic;
 import ai.timefold.solver.core.impl.statistic.MemoryUseStatistic;
 import ai.timefold.solver.core.impl.statistic.PickedMoveBestScoreDiffStatistic;
 import ai.timefold.solver.core.impl.statistic.PickedMoveStepScoreDiffStatistic;
+import ai.timefold.solver.core.impl.statistic.SolverScopeStatistic;
 import ai.timefold.solver.core.impl.statistic.SolverStatistic;
 import ai.timefold.solver.core.impl.statistic.StatelessSolverStatistic;
 
@@ -25,9 +28,23 @@ import io.micrometer.core.instrument.Tags;
 public enum SolverMetric {
     SOLVE_DURATION("timefold.solver.solve.duration", false),
     ERROR_COUNT("timefold.solver.errors", false),
+    SCORE_CALCULATION_COUNT("timefold.solver.score.calculation.count",
+            SolverScope::getScoreCalculationCount,
+            false),
+    PROBLEM_ENTITY_COUNT("timefold.solver.problem.entities",
+            solverScope -> solverScope.getProblemSizeStatistics().entityCount(),
+            false),
+    PROBLEM_VARIABLE_COUNT("timefold.solver.problem.variables",
+            solverScope -> solverScope.getProblemSizeStatistics().variableCount(),
+            false),
+    PROBLEM_VALUE_COUNT("timefold.solver.problem.values",
+            solverScope -> solverScope.getProblemSizeStatistics().approximateValueCount(),
+            false),
+    PROBLEM_SIZE_LOG("timefold.solver.problem.size.log",
+            solverScope -> solverScope.getProblemSizeStatistics().approximateProblemSizeLog(),
+            false),
     BEST_SCORE("timefold.solver.best.score", new BestScoreStatistic<>(), true),
     STEP_SCORE("timefold.solver.step.score", false),
-    SCORE_CALCULATION_COUNT("timefold.solver.score.calculation.count", false),
     BEST_SOLUTION_MUTATION("timefold.solver.best.solution.mutation", new BestSolutionMutationCountStatistic<>(), true),
     MOVE_COUNT_PER_STEP("timefold.solver.step.move.count", false),
     MEMORY_USE("jvm.memory.used", new MemoryUseStatistic<>(), false),
@@ -50,6 +67,10 @@ public enum SolverMetric {
 
     SolverMetric(String meterId, boolean isBestSolutionBased, boolean isConstraintMatchBased) {
         this(meterId, new StatelessSolverStatistic<>(), isBestSolutionBased, isConstraintMatchBased);
+    }
+
+    SolverMetric(String meterId, ToDoubleFunction<SolverScope<Object>> gaugeFunction, boolean isBestSolutionBased) {
+        this(meterId, new SolverScopeStatistic<>(meterId, gaugeFunction), isBestSolutionBased, false);
     }
 
     SolverMetric(String meterId, SolverStatistic<?> registerFunction, boolean isBestSolutionBased) {

@@ -36,6 +36,7 @@ import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPer
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -419,45 +420,42 @@ public class ProblemBenchmarkResult<Solution_> {
      * HACK to avoid loading the problem just to extract its problemScale.
      * Called multiple times, for every {@link SingleBenchmarkResult} of this {@link ProblemBenchmarkResult}.
      *
-     * @param registeringEntityCount {@code >= 0}
-     * @param registeringVariableCount {@code >= 0}
-     * @param registeringProblemScale {@code >= 0}
+     * @param problemSizeStatistics never null
      */
-    public void registerScale(long registeringEntityCount, long registeringVariableCount,
-            long registeringMaximumValueCount, long registeringProblemScale) {
+    public void registerProblemSizeStatistics(ProblemSizeStatistics problemSizeStatistics) {
         if (entityCount == null) {
-            entityCount = registeringEntityCount;
-        } else if (entityCount.longValue() != registeringEntityCount) {
+            entityCount = problemSizeStatistics.entityCount();
+        } else if (entityCount.longValue() != problemSizeStatistics.entityCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different entityCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), entityCount, registeringEntityCount);
+                    getName(), entityCount, problemSizeStatistics.entityCount());
             // The entityCount is not unknown (null), but known to be ambiguous
             entityCount = -1L;
         }
         if (variableCount == null) {
-            variableCount = registeringVariableCount;
-        } else if (variableCount.longValue() != registeringVariableCount) {
+            variableCount = problemSizeStatistics.variableCount();
+        } else if (variableCount.longValue() != problemSizeStatistics.variableCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different variableCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), variableCount, registeringVariableCount);
+                    getName(), variableCount, problemSizeStatistics.variableCount());
             // The variableCount is not unknown (null), but known to be ambiguous
             variableCount = -1L;
         }
         if (maximumValueCount == null) {
-            maximumValueCount = registeringMaximumValueCount;
-        } else if (maximumValueCount.longValue() != registeringMaximumValueCount) {
-            LOGGER.warn("The problemBenchmarkResult ({}) has different maximumValueCount values ([{},{}]).\n"
+            maximumValueCount = problemSizeStatistics.approximateValueCount();
+        } else if (maximumValueCount.longValue() != problemSizeStatistics.approximateValueCount()) {
+            LOGGER.warn("The problemBenchmarkResult ({}) has different approximateValueCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), maximumValueCount, registeringMaximumValueCount);
-            // The maximumValueCount is not unknown (null), but known to be ambiguous
+                    getName(), maximumValueCount, problemSizeStatistics.approximateValueCount());
+            // The approximateValueCount is not unknown (null), but known to be ambiguous
             maximumValueCount = -1L;
         }
         if (problemScale == null) {
-            problemScale = registeringProblemScale;
-        } else if (problemScale.longValue() != registeringProblemScale) {
+            problemScale = problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong();
+        } else if (problemScale.longValue() != problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different problemScale values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), problemScale, registeringProblemScale);
+                    getName(), problemScale, problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong());
             // The problemScale is not unknown (null), but known to be ambiguous
             problemScale = -1L;
         }

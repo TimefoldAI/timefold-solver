@@ -49,9 +49,15 @@ import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.T
 import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataProblemFactIsPlanningEntityCollectionPropertySolution;
 import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataUnknownFactTypeSolution;
 import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataUnsupportedWildcardSolution;
+import ai.timefold.solver.core.impl.testdata.domain.valuerange.TestdataValueRangeEntity;
+import ai.timefold.solver.core.impl.testdata.domain.valuerange.TestdataValueRangeSolution;
+import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.impl.testdata.util.CodeAssertableArrayList;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.impl.util.MathUtils;
 
+import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
 
 class SolutionDescriptorTest {
@@ -396,8 +402,51 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
-            softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(entityCount * valueCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
+                    .isEqualTo(20.0);
+        });
+    }
+
+    @Test
+    void problemScaleMultipleValueRanges() {
+        var solutionDescriptor = TestdataValueRangeSolution.buildSolutionDescriptor();
+        var solution = new TestdataValueRangeSolution("Solution");
+        solution.setEntityList(List.of(new TestdataValueRangeEntity("A")));
+        final long entityCount = 1L;
+        final long valueCount = 3L;
+        final long variableCount = 8L;
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * variableCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(3L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(variableCount * valueCount);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
+                    .isCloseTo(Math.log10(Math.pow(valueCount, variableCount)), Percentage.withPercentage(1.0));
+        });
+    }
+
+    @Test
+    void problemScaleEntityProvidingValueRange() {
+        var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
+        var solution = new TestdataEntityProvidingSolution("Solution");
+        TestdataValue v1 = new TestdataValue("1");
+        TestdataValue v2 = new TestdataValue("2");
+        solution.setEntityList(List.of(
+                new TestdataEntityProvidingEntity("A",
+                        List.of(v1, v2)),
+                new TestdataEntityProvidingEntity("B",
+                        List.of(v1, v2, new TestdataValue("3")))));
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
+
+            // Add 1 to the value range sizes, since the value range allows unassigned
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(4L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(3L + 4L);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
+                    .isCloseTo(Math.log10(3 * 4), Percentage.withPercentage(1.0));
         });
     }
 
@@ -410,8 +459,12 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
-            softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(entityCount + anchorCount);
-            softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(entityCount + anchorCount);
+            // 1 unchained value is inside the solution
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(entityCount + anchorCount + 1);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
+                    .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 10, 500, 20)
+                            / (double) MathUtils.LOG_PRECISION, Percentage.withPercentage(1.0));
         });
     }
 
@@ -438,8 +491,28 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getMaximumValueCount(solution)).isEqualTo(valueCount);
-            softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(260000);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
+                    .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 10, 500, 20)
+                            / (double) MathUtils.LOG_PRECISION, Percentage.withPercentage(1.0));
         });
+    }
+
+    @Test
+    void assertProblemScaleListIsApproximatelyProblemScaleChained() {
+        int valueCount = 500;
+        int entityCount = 20;
+        SolutionDescriptor<TestdataListSolution> solutionDescriptorList = TestdataListSolution.buildSolutionDescriptor();
+        TestdataListSolution listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
+        double listPowerExponent = solutionDescriptorList.getProblemScale(null, listSolution);
+        SolutionDescriptor<TestdataChainedSolution> solutionDescriptorChained =
+                TestdataChainedSolution.buildSolutionDescriptor();
+        TestdataChainedSolution solutionChained = generateChainedSolution(entityCount, valueCount);
+        double chainedPowerExponent = solutionDescriptorChained.getProblemScale(null, solutionChained);
+        // Since they are using different bases in calculation, some difference is expected,
+        // but the numbers should be relatively (i.e. ~1%) close.
+        assertThat(Math.pow(10, listPowerExponent))
+                .isCloseTo(Math.pow(10, chainedPowerExponent), Percentage.withPercentage(1));
     }
 }
