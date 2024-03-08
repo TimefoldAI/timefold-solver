@@ -2,8 +2,6 @@ package ai.timefold.solver.benchmark.quarkus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
