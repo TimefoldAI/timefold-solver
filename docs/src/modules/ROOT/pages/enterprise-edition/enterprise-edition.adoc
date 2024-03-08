@@ -770,7 +770,7 @@ It is not available in the Community Edition.
 ====
 
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
-This can massively improve score calculation speed if the repeated operation is computationally expensive.
+This can significantly improve score calculation speed if the repeated operation is computationally expensive.
 
 ==== Configuration
 
@@ -809,22 +809,25 @@ quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true
 ----
 ======
 
-IMPORTANT: Debugging breakpoints put inside your constraints will not be respected, because the ConstraintProvider class will be transformed when this feature is enabled.
+[IMPORTANT]
+====
+Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
+====
 
 ==== What is node sharing?
 
 When using xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint streams], each xref:constraints-and-score/score-calculation.adoc#constraintStreamsBuildingBlocks[building block] forms a node in the score calculation network.
-When two building blocks are functionality equivalent, they can share the same node in the network.
+When two building blocks are functionally equivalent, they can share the same node in the network.
 Sharing nodes allows the operation to be performed only once instead of multiple times, improving the performance of the solver.
-To be functionality equivalent, the following must be true:
+To be functionally equivalent, the following must be true:
 
 * The building blocks must represent the same operation.
 
-* The building blocks must have functionality equivalent parent building blocks.
+* The building blocks must have functionally equivalent parent building blocks.
 
-* The building blocks must have functionality equivalent inputs.
+* The building blocks must have functionally equivalent inputs.
 
-For example, the building blocks below are functionality equivalent:
+For example, the building blocks below are functionally equivalent:
 
 [source,java,options="nowrap"]
 ----
@@ -837,7 +840,7 @@ var b = factory.forEach(Shift.class)
                .filter(predicate);
 ----
 
-Whereas these building blocks are not functionality equivalent:
+Whereas these building blocks are not functionally equivalent:
 
 [source,java,options="nowrap"]
 ----
@@ -867,7 +870,7 @@ var b = factory.forEach(Shift.class)
                .filter(predicate2);
 ----
 
-Counterintuitively, the building blocks produced by these (seemly) identical methods are not necessarily functionality equivalent:
+Counterintuitively, the building blocks produced by these (seemly) identical methods are not necessarily functionally equivalent:
 
 [source,java,options="nowrap"]
 ----
@@ -882,11 +885,11 @@ UniConstraintStream<Shift> b(ConstraintFactory constraintFactory) {
 }
 ----
 
-The Java Virtual Machine is free to (and often does) create different instances of functionality equivalent lambdas.
+The Java Virtual Machine is free to (and often does) create different instances of functionally equivalent lambdas.
 This severely limits the effectiveness of node sharing, since the only way to know two lambdas are equal is to compare their references.
 
 When automatic node sharing is used, the `ConstraintProvider` class is transformed so all lambdas are accessed via a static final field.
-So a class that looks like this:
+Consider the following input class:
 
 [source,java,options="nowrap"]
 ----
@@ -915,7 +918,7 @@ public class MyConstraintProvider implements ConstraintProvider {
 }
 ----
 
-is transformed to a class that looks like this:
+When automatic node sharing is enabled, the class will be transformed to look like this:
 
 [source,java,options="nowrap"]
 ----
@@ -945,6 +948,6 @@ public class MyConstraintProvider implements ConstraintProvider {
 }
 ----
 
-IMPORTANT: This transformation prevents breakpoints from being placed inside the ConstraintProvider.
+This transformation means that debugging breakpoints placed inside the original `ConstraintProvider` will not be honored in the transformed `ConstraintProvider`.
 
-This allows building blocks to share functionality equivalent parents without needing the `ConstraintProvider` to be written in an awkward way.
+From the above, you can see how this feature allows building blocks to share functionally equivalent parents, without needing the `ConstraintProvider` to be written in an awkward way.
