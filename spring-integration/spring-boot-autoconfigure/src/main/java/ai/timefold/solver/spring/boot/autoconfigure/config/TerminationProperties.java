@@ -1,20 +1,10 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
-import static java.util.stream.Collectors.joining;
-
 import java.time.Duration;
 import java.util.Map;
-import java.util.Set;
-
-import org.springframework.boot.convert.DurationStyle;
+import java.util.TreeSet;
 
 public class TerminationProperties {
-
-    private static final String SPENT_LIMIT_PROERTY_NAME = "spent-limit";
-    private static final String UNIMPROVED_SPENT_LIMIT_PROERTY_NAME = "unimproved-spent-limit";
-    private static final String BEST_SCORE_LIMIT_PROERTY_NAME = "best-score-limit";
-    private static final Set<String> VALID_FIELD_NAMES_SET =
-            Set.of(SPENT_LIMIT_PROERTY_NAME, UNIMPROVED_SPENT_LIMIT_PROERTY_NAME, BEST_SCORE_LIMIT_PROERTY_NAME);
 
     /**
      * How long the solver can run.
@@ -66,17 +56,15 @@ public class TerminationProperties {
 
     public void loadProperties(Map<String, Object> properties) {
         // Check if the keys are valid
-        String invalidKeys = properties.entrySet().stream()
-                .filter(e -> !VALID_FIELD_NAMES_SET.contains(e.getKey()))
-                .map(Map.Entry::getKey)
-                .collect(joining(", "));
+        var invalidKeySet = new TreeSet<>(properties.keySet());
+        invalidKeySet.removeAll(TerminationProperty.getValidPropertyNames());
 
-        if (!invalidKeys.isBlank()) {
+        if (!invalidKeySet.isEmpty()) {
             throw new IllegalStateException("""
                     The termination properties [%s] are not valid.
                     Maybe try changing the property name to kebab-case.
                     Here is the list of valid properties: %s"""
-                    .formatted(invalidKeys, String.join(", ", VALID_FIELD_NAMES_SET)));
+                    .formatted(invalidKeySet, String.join(", ", TerminationProperty.getValidPropertyNames())));
         }
         properties.forEach(this::loadProperty);
     }
@@ -85,19 +73,8 @@ public class TerminationProperties {
         if (value == null) {
             return;
         }
-        switch (key) {
-            case SPENT_LIMIT_PROERTY_NAME:
-                setSpentLimit(DurationStyle.detectAndParse((String) value));
-                break;
-            case UNIMPROVED_SPENT_LIMIT_PROERTY_NAME:
-                setUnimprovedSpentLimit(DurationStyle.detectAndParse((String) value));
-                break;
-            case BEST_SCORE_LIMIT_PROERTY_NAME:
-                setBestScoreLimit(value.toString());
-                break;
-            default:
-                throw new IllegalStateException("The property %s is not valid.".formatted(key));
-        }
+        var property = TerminationProperty.forPropertyName(key);
+        property.update(this, value);
     }
 
 }

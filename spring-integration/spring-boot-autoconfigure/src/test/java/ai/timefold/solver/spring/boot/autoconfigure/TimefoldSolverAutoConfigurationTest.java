@@ -36,6 +36,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.Testdata
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringObject;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution;
+import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperty;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleConstraintProviderSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleEasyScoreConstraintSpringTestConfiguration;
@@ -63,10 +64,12 @@ import ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.core.NativeDetector;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
@@ -75,6 +78,8 @@ class TimefoldSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner emptyContextRunner;
+    private final ApplicationContextRunner fakeNativeWithNodeSharingContextRunner;
+    private final ApplicationContextRunner fakeNativeWithoutNodeSharingContextRunner;
     private final ApplicationContextRunner benchmarkContextRunner;
     private final ApplicationContextRunner noUserConfigurationContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
@@ -93,6 +98,18 @@ class TimefoldSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(EmptySpringTestConfiguration.class);
+        fakeNativeWithNodeSharingContextRunner = new ApplicationContextRunner()
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
+                .withUserConfiguration(NormalSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.%s=true"
+                        .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
+        fakeNativeWithoutNodeSharingContextRunner = new ApplicationContextRunner()
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
+                .withUserConfiguration(NormalSpringTestConfiguration.class)
+                .withPropertyValues("timefold.solver.%s=false"
+                        .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
         benchmarkContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class,
@@ -131,6 +148,43 @@ class TimefoldSolverAutoConfigurationTest {
                 .run(context -> {
                     assertThat(context.getStartupFailure()).isNull();
                 });
+    }
+
+    @Test
+    void nodeSharingFailFastInNativeImage() {
+        try (var nativeDetectorMock = Mockito.mockStatic(NativeDetector.class)) {
+            nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);
+            fakeNativeWithNodeSharingContextRunner
+                    .run(context -> {
+                        Throwable startupFailure = context.getStartupFailure();
+                        assertThat(startupFailure)
+                                .isInstanceOf(UnsupportedOperationException.class)
+                                .hasMessageContainingAll("node sharing", "unsupported", "native");
+                    });
+        }
+
+    }
+
+    @Test
+    void nodeSharingDisabledWorksInNativeImage() {
+        try (var nativeDetectorMock = Mockito.mockStatic(NativeDetector.class)) {
+            nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);
+            fakeNativeWithoutNodeSharingContextRunner
+                    .run(context -> {
+                        SolverConfig solverConfig = context.getBean(SolverConfig.class);
+                        assertThat(solverConfig).isNotNull();
+                        assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
+                        assertThat(solverConfig.getEntityClassList())
+                                .isEqualTo(Collections.singletonList(TestdataSpringEntity.class));
+                        assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass())
+                                .isEqualTo(TestdataSpringConstraintProvider.class);
+                        // Properties defined in solverConfig.xml
+                        assertThat(solverConfig.getTerminationConfig().getSecondsSpentLimit().longValue()).isEqualTo(2L);
+                        SolverFactory<TestdataSpringSolution> solverFactory = context.getBean(SolverFactory.class);
+                        assertThat(solverFactory).isNotNull();
+                        assertThat(solverFactory.buildSolver()).isNotNull();
+                    });
+        }
     }
 
     @Test
@@ -341,8 +395,10 @@ class TimefoldSolverAutoConfigurationTest {
                 .withSystemProperties(
                         "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/invalid-application.yaml")
                 .run(context -> context.getBean(SolverConfig.class)))
-                .rootCause().message().contains("The properties", "solverConfigXml", "environmentMode", "moveThreadCount",
-                        "domainAccessType", "are not valid", "Maybe try changing the property name to kebab-case");
+                .rootCause().message().contains("Cannot use global solver properties with named solvers", "solverConfigXml",
+                        "environmentMode", "moveThreadCount",
+                        "domainAccessType", "Expected all values to be maps, but values for key(s)",
+                        "Maybe try changing the property name to kebab-case");
     }
 
     @Test

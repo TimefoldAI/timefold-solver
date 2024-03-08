@@ -3,6 +3,7 @@ package ai.timefold.solver.core.enterprise;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -57,6 +58,9 @@ public interface TimefoldSolverEnterpriseService {
         return service;
     }
 
+    Class<? extends ConstraintProvider>
+            buildLambdaSharedConstraintProvider(Class<? extends ConstraintProvider> originalConstraintProvider);
+
     <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(int moveThreadCount,
             Termination<Solution_> termination, ConstructionHeuristicForager<Solution_> forager,
             EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy);
@@ -90,7 +94,9 @@ public interface TimefoldSolverEnterpriseService {
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
-        NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration");
+        NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration"),
+        AUTOMATIC_NODE_SHARING("Automatic node sharing",
+                "remove automatic node sharing from solver configuration");
 
         private final String name;
         private final String workaround;

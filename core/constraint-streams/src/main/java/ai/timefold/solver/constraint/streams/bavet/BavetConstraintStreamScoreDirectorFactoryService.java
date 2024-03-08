@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorType;
@@ -41,9 +42,19 @@ public final class BavetConstraintStreamScoreDirectorFactoryService<Solution_, S
                         "The constraintProviderClass (" + config.getConstraintProviderClass()
                                 + ") does not implement " + ConstraintProvider.class.getSimpleName() + ".");
             }
+            final Class<? extends ConstraintProvider> constraintProviderClass;
+            if (Boolean.TRUE.equals(config.getConstraintStreamAutomaticNodeSharing())) {
+                TimefoldSolverEnterpriseService enterpriseService =
+                        TimefoldSolverEnterpriseService
+                                .loadOrFail(TimefoldSolverEnterpriseService.Feature.AUTOMATIC_NODE_SHARING);
+                constraintProviderClass =
+                        enterpriseService.buildLambdaSharedConstraintProvider(config.getConstraintProviderClass());
+            } else {
+                constraintProviderClass = config.getConstraintProviderClass();
+            }
             return () -> {
                 ConstraintProvider constraintProvider = ConfigUtils.newInstance(config,
-                        "constraintProviderClass", config.getConstraintProviderClass());
+                        "constraintProviderClass", constraintProviderClass);
                 ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                         config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
                 return buildScoreDirectorFactory(solutionDescriptor, constraintProvider, environmentMode);

@@ -575,7 +575,7 @@ class TimefoldProcessor {
         // Using the same name for synthetic beans is impossible, even if they are different types. Therefore, we allow
         // only the injection of SolverManager, except for the default solver, which can inject all resources to be
         // retro-compatible.
-        solverConfigBuildItem.getSolvetConfigMap().forEach((key, value) -> {
+        solverConfigBuildItem.getSolverConfigMap().forEach((key, value) -> {
             if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
                 // The two configuration resources are required for DefaultTimefoldBeanProvider produce all available
                 // managed beans for the default solver
@@ -635,7 +635,7 @@ class TimefoldProcessor {
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
         syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
                 .scope(ApplicationScoped.class)
-                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolvetConfigMap(), runtimeConfig,
+                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(), runtimeConfig,
                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                 solverConfigBuildItem
                                         .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),

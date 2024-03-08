@@ -107,6 +107,8 @@
                     
           <xs:element minOccurs="0" name="constraintStreamImplType" type="tns:constraintStreamImplType"/>
                     
+          <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="xs:boolean"/>
+                    
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="incrementalScoreCalculatorCustomProperties" type="tns:jaxbAdaptedMap"/>

@@ -69,6 +69,17 @@
           "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig",
           "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig>",
           "justification": "Adding support for Nearby Selection autoconfiguration"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "new": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"constraintStreamAutomaticNodeSharing\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "justification": "Add support for automatic constraint stream node sharing outside of Quarkus for Timefold Solver Enterprise edition users."
         }
       ]
     }
