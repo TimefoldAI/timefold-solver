@@ -251,41 +251,45 @@ public class TimefoldSolverAutoConfiguration
                                         .collect(joining(", "))));
             }
         }
-        Optional<SolverProperties> solverProperties = timefoldProperties.getSolverConfig(solverName);
-        applyScoreDirectorFactoryProperties(entityScanner, solverProperties, solverConfig);
-        if (solverProperties.isPresent()) {
-            if (solverProperties.get().getEnvironmentMode() != null) {
-                solverConfig.setEnvironmentMode(solverProperties.get().getEnvironmentMode());
-            }
-            if (solverProperties.get().getDomainAccessType() != null) {
-                solverConfig.setDomainAccessType(solverProperties.get().getDomainAccessType());
-            }
-            if (solverProperties.get().getNearbyDistanceMeterClass() != null) {
-                solverConfig.setNearbyDistanceMeterClass(solverProperties.get().getNearbyDistanceMeterClass());
-            }
-            if (solverProperties.get().getDaemon() != null) {
-                solverConfig.setDaemon(solverProperties.get().getDaemon());
-            }
-            if (solverProperties.get().getMoveThreadCount() != null) {
-                solverConfig.setMoveThreadCount(solverProperties.get().getMoveThreadCount());
-            }
-            applyTerminationProperties(solverConfig, solverProperties.get().getTermination());
-        }
+        timefoldProperties.getSolverConfig(solverName)
+                .ifPresentOrElse(
+                        solverProperties -> applyScoreDirectorFactoryProperties(entityScanner, solverConfig, solverProperties),
+                        () -> applyScoreDirectorFactoryProperties(entityScanner, solverConfig));
     }
 
-    protected void applyScoreDirectorFactoryProperties(IncludeAbstractClassesEntityScanner entityScanner,
-            Optional<SolverProperties> solverProperties,
-            SolverConfig solverConfig) {
-        if (solverConfig.getScoreDirectorFactoryConfig() == null) {
-            solverConfig.setScoreDirectorFactoryConfig(defaultScoreDirectoryFactoryConfig(entityScanner));
-        }
-        if (solverProperties.isPresent() && solverProperties.get().getConstraintStreamAutomaticNodeSharing() != null
-                && solverProperties.get().getConstraintStreamAutomaticNodeSharing()) {
+    private void applyScoreDirectorFactoryProperties(IncludeAbstractClassesEntityScanner entityScanner,
+            SolverConfig solverConfig, SolverProperties solverProperties) {
+        applyScoreDirectorFactoryProperties(entityScanner, solverConfig);
+        if (solverProperties.getConstraintStreamAutomaticNodeSharing() != null
+                && solverProperties.getConstraintStreamAutomaticNodeSharing()) {
             if (NativeDetector.inNativeImage()) {
                 throw new UnsupportedOperationException(
                         "Constraint stream automatic node sharing is unsupported in a Spring native image.");
             }
             solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamAutomaticNodeSharing(true);
+        }
+        if (solverProperties.getEnvironmentMode() != null) {
+            solverConfig.setEnvironmentMode(solverProperties.getEnvironmentMode());
+        }
+        if (solverProperties.getDomainAccessType() != null) {
+            solverConfig.setDomainAccessType(solverProperties.getDomainAccessType());
+        }
+        if (solverProperties.getNearbyDistanceMeterClass() != null) {
+            solverConfig.setNearbyDistanceMeterClass(solverProperties.getNearbyDistanceMeterClass());
+        }
+        if (solverProperties.getDaemon() != null) {
+            solverConfig.setDaemon(solverProperties.getDaemon());
+        }
+        if (solverProperties.getMoveThreadCount() != null) {
+            solverConfig.setMoveThreadCount(solverProperties.getMoveThreadCount());
+        }
+        applyTerminationProperties(solverConfig, solverProperties.getTermination());
+    }
+
+    private void applyScoreDirectorFactoryProperties(IncludeAbstractClassesEntityScanner entityScanner,
+            SolverConfig solverConfig) {
+        if (solverConfig.getScoreDirectorFactoryConfig() == null) {
+            solverConfig.setScoreDirectorFactoryConfig(defaultScoreDirectoryFactoryConfig(entityScanner));
         }
     }
 
