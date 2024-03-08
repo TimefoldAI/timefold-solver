@@ -66,7 +66,9 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
             ClassLoader classLoader, SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
         // Load all known Score Director Factories via SPI.
         ServiceLoader<ScoreDirectorFactoryService> scoreDirectorFactoryServiceLoader =
-                ServiceLoader.load(ScoreDirectorFactoryService.class);
+                classLoader == null
+                        ? ServiceLoader.load(ScoreDirectorFactoryService.class)
+                        : ServiceLoader.load(ScoreDirectorFactoryService.class, classLoader);
         Map<ScoreDirectorType, Supplier<AbstractScoreDirectorFactory<Solution_, Score_>>> scoreDirectorFactorySupplierMap =
                 new EnumMap<>(ScoreDirectorType.class);
         for (ScoreDirectorFactoryService<Solution_, Score_> service : scoreDirectorFactoryServiceLoader) {
