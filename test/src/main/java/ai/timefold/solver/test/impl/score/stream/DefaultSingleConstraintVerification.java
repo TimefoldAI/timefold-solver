@@ -2,9 +2,9 @@ package ai.timefold.solver.test.impl.score.stream;
 
 import java.util.Objects;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintVerification;
 
 public final class DefaultSingleConstraintVerification<Solution_, Score_ extends Score<Score_>>

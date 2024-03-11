@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -14,6 +13,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 
 /**
  * Represents a {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier} with pre-set values

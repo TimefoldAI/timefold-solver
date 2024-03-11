@@ -1,1 +1,1 @@
-ai.timefold.solver.constraint.streams.bavet.BavetConstraintStreamScoreDirectorFactoryService
+ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintStreamScoreDirectorFactoryService

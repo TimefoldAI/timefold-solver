@@ -7,9 +7,6 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactoryService;
-import ai.timefold.solver.constraint.streams.common.InnerConstraintFactory;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -19,6 +16,9 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorType;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactoryService;
+import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 
 /**
  * Designed for access from a single thread.

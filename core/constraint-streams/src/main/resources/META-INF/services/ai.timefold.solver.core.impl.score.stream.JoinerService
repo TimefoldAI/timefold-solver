@@ -1,1 +1,1 @@
-ai.timefold.solver.constraint.streams.common.DefaultJoinerService
+ai.timefold.solver.core.impl.score.stream.common.DefaultJoinerService
