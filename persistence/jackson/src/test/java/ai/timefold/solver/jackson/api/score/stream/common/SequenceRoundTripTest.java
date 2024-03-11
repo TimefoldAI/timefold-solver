@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.SequenceCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
