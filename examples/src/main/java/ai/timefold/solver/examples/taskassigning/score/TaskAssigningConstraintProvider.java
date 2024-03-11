@@ -9,7 +9,7 @@ import ai.timefold.solver.examples.taskassigning.domain.Employee;
 import ai.timefold.solver.examples.taskassigning.domain.Priority;
 import ai.timefold.solver.examples.taskassigning.domain.Task;
 
-public final class TaskAssigningConstraintProvider implements ConstraintProvider {
+public class TaskAssigningConstraintProvider implements ConstraintProvider {
 
     private static final int BENDABLE_SCORE_HARD_LEVELS_SIZE = 1;
     private static final int BENDABLE_SCORE_SOFT_LEVELS_SIZE = 5;

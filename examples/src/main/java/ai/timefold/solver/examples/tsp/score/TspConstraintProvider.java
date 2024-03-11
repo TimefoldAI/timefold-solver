@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.examples.tsp.domain.Domicile;
 import ai.timefold.solver.examples.tsp.domain.Visit;
 
-public final class TspConstraintProvider implements ConstraintProvider {
+public class TspConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {

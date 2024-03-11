@@ -19,54 +19,14 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.examples.tennis.domain.TeamAssignment;
 import ai.timefold.solver.examples.tennis.domain.UnavailabilityPenalty;
 
-public final class TennisConstraintProvider implements ConstraintProvider {
+public class TennisConstraintProvider implements ConstraintProvider {
 
-    private static <A> UniConstraintCollector<A, ?, LoadBalanceData> loadBalance(
-            Function<A, Object> groupKey) {
-        return new UniConstraintCollector<A, LoadBalanceData, LoadBalanceData>() {
-
-            @Override
-            public Supplier<LoadBalanceData> supplier() {
-                return LoadBalanceData::new;
-            }
-
-            @Override
-            public BiFunction<LoadBalanceData, A, Runnable> accumulator() {
-                return (resultContainer, a) -> {
-                    Object mapped = groupKey.apply(a);
-                    return resultContainer.apply(mapped);
-                };
-            }
-
-            @Override
-            public Function<LoadBalanceData, LoadBalanceData> finisher() {
-                return Function.identity();
-            }
-        };
+    private static <A> UniConstraintCollector<A, ?, LoadBalanceData> loadBalance(Function<A, Object> groupKey) {
+        return new LoadBalanceUniConstraintCollector<>(groupKey);
     }
 
-    private static <A, B> BiConstraintCollector<A, B, ?, LoadBalanceData> loadBalance(
-            BiFunction<A, B, Object> groupKey) {
-        return new BiConstraintCollector<A, B, LoadBalanceData, LoadBalanceData>() {
-
-            @Override
-            public Supplier<LoadBalanceData> supplier() {
-                return LoadBalanceData::new;
-            }
-
-            @Override
-            public TriFunction<LoadBalanceData, A, B, Runnable> accumulator() {
-                return (resultContainer, a, b) -> {
-                    Object mapped = groupKey.apply(a, b);
-                    return resultContainer.apply(mapped);
-                };
-            }
-
-            @Override
-            public Function<LoadBalanceData, LoadBalanceData> finisher() {
-                return Function.identity();
-            }
-        };
+    private static <A, B> BiConstraintCollector<A, B, ?, LoadBalanceData> loadBalance(BiFunction<A, B, Object> groupKey) {
+        return new LoadBalanceBiConstraintCollector<>(groupKey);
     }
 
     @Override
@@ -118,7 +78,7 @@ public final class TennisConstraintProvider implements ConstraintProvider {
                 .asConstraint("evenlyConfrontationCount");
     }
 
-    private static final class LoadBalanceData {
+    public static final class LoadBalanceData {
 
         private final Map<Object, Long> groupCountMap = new LinkedHashMap<>(0);
         // the sum of squared deviation from zero
@@ -143,8 +103,63 @@ public final class TennisConstraintProvider implements ConstraintProvider {
 
     }
 
-    private record Pair<A, B>(A key, B value) {
+    public record Pair<A, B>(A key, B value) {
 
     }
 
+    public static class LoadBalanceUniConstraintCollector<A>
+            implements UniConstraintCollector<A, LoadBalanceData, LoadBalanceData> {
+
+        private final Function<A, Object> groupKey;
+
+        public LoadBalanceUniConstraintCollector(Function<A, Object> groupKey) {
+            this.groupKey = groupKey;
+        }
+
+        @Override
+        public Supplier<LoadBalanceData> supplier() {
+            return LoadBalanceData::new;
+        }
+
+        @Override
+        public BiFunction<LoadBalanceData, A, Runnable> accumulator() {
+            return (resultContainer, a) -> {
+                Object mapped = groupKey.apply(a);
+                return resultContainer.apply(mapped);
+            };
+        }
+
+        @Override
+        public Function<LoadBalanceData, LoadBalanceData> finisher() {
+            return Function.identity();
+        }
+    }
+
+    public static class LoadBalanceBiConstraintCollector<A, B>
+            implements BiConstraintCollector<A, B, LoadBalanceData, LoadBalanceData> {
+
+        private final BiFunction<A, B, Object> groupKey;
+
+        public LoadBalanceBiConstraintCollector(BiFunction<A, B, Object> groupKey) {
+            this.groupKey = groupKey;
+        }
+
+        @Override
+        public Supplier<LoadBalanceData> supplier() {
+            return LoadBalanceData::new;
+        }
+
+        @Override
+        public TriFunction<LoadBalanceData, A, B, Runnable> accumulator() {
+            return (resultContainer, a, b) -> {
+                Object mapped = groupKey.apply(a, b);
+                return resultContainer.apply(mapped);
+            };
+        }
+
+        @Override
+        public Function<LoadBalanceData, LoadBalanceData> finisher() {
+            return Function.identity();
+        }
+    }
 }
