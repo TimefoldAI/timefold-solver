@@ -18,7 +18,7 @@
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    This module contains implementation of the solver and various optional scoring mechanisms.
+    This module contains implementation of the solver and various scoring mechanisms.
   </description>
   <url>https://timefold.ai</url>
 
@@ -27,7 +27,6 @@
   <modules>
     <module>core</module>
     <module>core-impl</module>
-    <module>constraint-streams</module>
   </modules>
 
 </project>

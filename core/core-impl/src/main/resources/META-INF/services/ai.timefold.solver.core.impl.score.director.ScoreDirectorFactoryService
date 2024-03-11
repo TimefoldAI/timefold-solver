@@ -1,2 +1,3 @@
 ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactoryService
 ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactoryService
+ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintStreamScoreDirectorFactoryService

@@ -35,10 +35,6 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-constraint-streams</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-core-impl</artifactId>
       <type>test-jar</type>
       <scope>test</scope>

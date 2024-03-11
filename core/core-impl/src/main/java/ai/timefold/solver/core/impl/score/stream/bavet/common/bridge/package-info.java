@@ -4,7 +4,7 @@
  * while aft bridges go after.
  * <p>
  * Aft bridges are node-shared,
- * therefore their {@link java.lang.Object#equals(java.lang.Object)} and {@link java.lang.Object#hashCode()} (java.lang.Object)}
+ * therefore their {@link java.lang.Object#equals(Object)} and {@link java.lang.Object#hashCode()} (java.lang.Object)}
  * methods are overridden to reference the bridged stream,
  * which carries all the equality data.
  * <p>
