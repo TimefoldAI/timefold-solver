@@ -89,7 +89,7 @@
     <!-- Testing -->
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -148,7 +148,6 @@
           <ignoredUsedUndeclaredDependencies>
             <dependency>org.springframework.boot:spring-boot</dependency>
             <dependency>org.springframework:*</dependency>
-            <dependency>ai.timefold.solver:timefold-solver-core-impl</dependency>
           </ignoredUsedUndeclaredDependencies>
           <ignoredUnusedDeclaredDependencies>
             <dependency>org.springframework.boot:*</dependency>

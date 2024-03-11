@@ -144,7 +144,7 @@ class TimefoldProcessor {
     @BuildStep
     IndexDependencyBuildItem indexDependencyBuildItem() {
         // Add @PlanningEntity and other annotations in the Jandex index for Gizmo
-        return new IndexDependencyBuildItem("ai.timefold.solver", "timefold-solver-core-impl");
+        return new IndexDependencyBuildItem("ai.timefold.solver", "timefold-solver-core");
     }
 
     @BuildStep(onlyIf = NativeBuild.class)

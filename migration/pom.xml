@@ -94,7 +94,7 @@
 
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
