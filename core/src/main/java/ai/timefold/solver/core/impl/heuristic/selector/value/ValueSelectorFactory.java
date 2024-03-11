@@ -454,8 +454,7 @@ public class ValueSelectorFactory<Solution_>
     private ValueSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ValueSelector<Solution_> valueSelector) {
-        return TimefoldSolverEnterpriseService
-                .loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
+        return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, entityDescriptor, minimumCacheType, resolvedSelectionOrder,
                         valueSelector);
     }

@@ -4,7 +4,6 @@ import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
@@ -36,7 +34,6 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
-import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
@@ -81,10 +78,8 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
 import io.quarkus.deployment.recording.RecorderContext;
-import io.quarkus.deployment.util.ServiceUtil;
 import io.quarkus.devui.spi.JsonRPCProvidersBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
@@ -102,27 +97,6 @@ class TimefoldProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem("timefold-solver");
-    }
-
-    @BuildStep
-    void registerSpi(BuildProducer<ServiceProviderBuildItem> services) {
-        Stream.of(TimefoldSolverEnterpriseService.class)
-                .forEach(service -> registerSpi(service, services));
-    }
-
-    private static void registerSpi(Class<?> serviceClass, BuildProducer<ServiceProviderBuildItem> services) {
-        String serviceName = serviceClass.getName();
-        String service = "META-INF/services/" + serviceName;
-        try {
-            // Find out all the provider implementation classes listed in the service files.
-            Set<String> implementationSet =
-                    ServiceUtil.classNamesNamedIn(Thread.currentThread().getContextClassLoader(), service);
-            // Register every listed implementation class, so they can be instantiated in native-image at run-time.
-            services.produce(new ServiceProviderBuildItem(serviceName, implementationSet.toArray(new String[0])));
-        } catch (IOException e) {
-            throw new IllegalStateException("Impossible state: Failed registering service " + serviceClass.getCanonicalName(),
-                    e);
-        }
     }
 
     @BuildStep

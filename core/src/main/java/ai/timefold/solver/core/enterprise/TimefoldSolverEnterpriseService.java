@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.enterprise;
 
-import java.util.ServiceLoader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -34,28 +34,36 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 public interface TimefoldSolverEnterpriseService {
 
     static String identifySolverVersion() {
-        var packaging = TimefoldSolverEnterpriseService.load() == null ? "Community Edition" : "Enterprise Edition";
+        var packaging = "Community Edition";
+        try {
+            TimefoldSolverEnterpriseService.load();
+            packaging = "Enterprise Edition";
+        } catch (Exception e) {
+            // No need to do anything, just checking if Enterprise exists.
+        }
         var version = SolverFactory.class.getPackage().getImplementationVersion();
         return packaging + " " + (version == null ? "(Development snapshot)" : "v" + version);
     }
 
-    static TimefoldSolverEnterpriseService load() {
-        var serviceLoader = ServiceLoader.load(TimefoldSolverEnterpriseService.class);
-        var iterator = serviceLoader.iterator();
-        return iterator.hasNext() ? iterator.next() : null;
+    static TimefoldSolverEnterpriseService load() throws ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, InstantiationException, IllegalAccessException {
+        // Avoids ServiceLoader by using reflection directly.
+        var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
+                .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
+        return clz.getDeclaredConstructor().newInstance();
     }
 
     static TimefoldSolverEnterpriseService loadOrFail(Feature feature) {
-        var service = load();
-        if (service == null) {
+        try {
+            return load();
+        } catch (Exception cause) {
             throw new IllegalStateException("""
                      %s requested but Timefold Solver Enterprise Edition not found on classpath
                      Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency,
                      or %s.
                     "Note: Timefold Solver Enterprise Edition is a commercial product."""
-                    .formatted(feature.getName(), feature.getWorkaround()));
+                    .formatted(feature.getName(), feature.getWorkaround()), cause);
         }
-        return service;
     }
 
     Class<? extends ConstraintProvider>

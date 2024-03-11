@@ -172,8 +172,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (moveThreadCount == null) {
             decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
         } else {
-            decider = TimefoldSolverEnterpriseService
-                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
+            decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                     .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
         }
         if (environmentMode.isNonIntrusiveFullAsserted()) {

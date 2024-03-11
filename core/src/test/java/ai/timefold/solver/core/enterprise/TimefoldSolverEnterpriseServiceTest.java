@@ -7,8 +7,8 @@ class TimefoldSolverEnterpriseServiceTest {
 
     @Test
     void failsOnLoad() {
-        Assertions.assertThat(TimefoldSolverEnterpriseService.load())
-                .isNull();
+        Assertions.assertThatThrownBy(TimefoldSolverEnterpriseService::load)
+                .isInstanceOf(ClassNotFoundException.class);
     }
 
     @Test

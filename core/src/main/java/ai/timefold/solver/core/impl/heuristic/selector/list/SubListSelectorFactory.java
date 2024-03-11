@@ -108,8 +108,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         if (nearbySelectionConfig == null) {
             return subListSelector;
         }
-        return TimefoldSolverEnterpriseService
-                .loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
+        return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 

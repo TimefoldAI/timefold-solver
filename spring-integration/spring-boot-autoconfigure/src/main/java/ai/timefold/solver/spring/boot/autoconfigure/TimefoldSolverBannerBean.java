@@ -13,7 +13,7 @@ public class TimefoldSolverBannerBean implements InitializingBean {
     private static final Log LOG = LogFactory.getLog(TimefoldSolverBannerBean.class);
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         LOG.info("Using Timefold Solver " + TimefoldSolverEnterpriseService.identifySolverVersion() + ".");
     }
 }

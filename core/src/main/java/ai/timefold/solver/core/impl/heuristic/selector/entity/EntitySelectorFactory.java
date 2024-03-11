@@ -175,8 +175,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             NearbySelectionConfig nearbySelectionConfig, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, EntitySelector<Solution_> entitySelector) {
-        return TimefoldSolverEnterpriseService
-                .loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
+        return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, nearbySelectionConfig, minimumCacheType,
                         resolvedSelectionOrder, entitySelector);
     }
