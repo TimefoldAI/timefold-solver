@@ -34,8 +34,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                 .withEasyScoreCalculatorClass(TestdataConstraintWeightEasyScoreCalculator.class);
         ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
-                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
     @Override
@@ -46,8 +45,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                 .withEasyScoreCalculatorClass(TestdataPinnedListEasyScoreCalculator.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
-                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
     @Override
@@ -58,8 +56,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                 .withEasyScoreCalculatorClass(TestdataPinnedWithIndexListEasyScoreCalculator.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
-                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
     @Test
@@ -83,8 +80,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
     private <Score_ extends Score<Score_>> ScoreDirectorFactory<TestdataSolution> buildTestdataScoreDirectoryFactory(
             ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
         return new ScoreDirectorFactoryFactory<TestdataSolution, Score_>(config)
-                .buildScoreDirectorFactory(getClass().getClassLoader(), environmentMode,
-                        TestdataSolution.buildSolutionDescriptor());
+                .buildScoreDirectorFactory(environmentMode, TestdataSolution.buildSolutionDescriptor());
     }
 
     private ScoreDirectorFactory<TestdataSolution> buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {

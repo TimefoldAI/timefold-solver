@@ -183,8 +183,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                         ScoreDirectorFactoryConfig::new);
         ScoreDirectorFactoryFactory<Solution_, ?> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig_);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(solverConfig.getClassLoader(), environmentMode,
-                solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(environmentMode, solutionDescriptor);
     }
 
     public RandomFactory buildRandomFactory(EnvironmentMode environmentMode_) {

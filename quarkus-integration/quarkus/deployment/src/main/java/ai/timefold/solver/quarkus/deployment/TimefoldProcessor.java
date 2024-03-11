@@ -39,7 +39,6 @@ import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryService;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
@@ -107,7 +106,7 @@ class TimefoldProcessor {
 
     @BuildStep
     void registerSpi(BuildProducer<ServiceProviderBuildItem> services) {
-        Stream.of(ScoreDirectorFactoryService.class, TimefoldSolverEnterpriseService.class)
+        Stream.of(TimefoldSolverEnterpriseService.class)
                 .forEach(service -> registerSpi(service, services));
     }
 

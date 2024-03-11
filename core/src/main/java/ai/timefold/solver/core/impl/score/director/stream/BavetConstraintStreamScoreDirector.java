@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.bavet;
+package ai.timefold.solver.core.impl.score.director.stream;
 
 import java.util.Map;
 
@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
 /**
  * FP streams implementation of {@link ScoreDirector}, which only recalculates the {@link Score}

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.bavet;
+package ai.timefold.solver.core.impl.score.director.stream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
@@ -26,8 +26,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                 .withConstraintStreamImplType(ConstraintStreamImplType.BAVET);
         ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
-                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
     @Override
@@ -38,8 +37,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                 .withConstraintProviderClass(TestdataPinnedListConstraintProvider.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
-                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
     @Override
@@ -50,8 +48,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                 .withConstraintProviderClass(TestdataPinnedWithIndexListConstraintProvider.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(getClass().getClassLoader(),
-                EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
 }

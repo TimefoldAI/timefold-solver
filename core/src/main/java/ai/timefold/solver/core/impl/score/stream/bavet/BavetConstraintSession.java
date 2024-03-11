@@ -8,6 +8,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;

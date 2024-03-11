@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirector
  */
-public class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
+public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, EasyScoreDirectorFactory<Solution_, Score_>> {
 
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;

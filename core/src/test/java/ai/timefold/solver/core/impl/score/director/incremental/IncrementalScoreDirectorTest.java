@@ -53,13 +53,9 @@ class IncrementalScoreDirectorTest {
         when(scoreDirectorFactory.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         IncrementalScoreCalculator<TestdataShadowingChainedSolution, SimpleScore> incrementalScoreCalculator =
                 mock(IncrementalScoreCalculator.class);
+        when(incrementalScoreCalculator.calculateScore()).thenReturn(SimpleScore.of(100));
         try (var scoreDirector =
-                new IncrementalScoreDirector<>(scoreDirectorFactory, false, false, true, incrementalScoreCalculator) {
-                    @Override
-                    public SimpleScore calculateScore() {
-                        return SimpleScore.of(-100);
-                    }
-                }) {
+                new IncrementalScoreDirector<>(scoreDirectorFactory, false, false, true, incrementalScoreCalculator)) {
             scoreDirector.setWorkingSolution(solution);
             reset(incrementalScoreCalculator);
 

@@ -24,28 +24,32 @@ import ai.timefold.solver.core.impl.util.Triple;
 /**
  * {@link Indexer Indexers} form a parent-child hierarchy,
  * each child has exactly one parent.
- * {@link NoneIndexer} is always at the bottom of the hierarchy,
+ * {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.NoneIndexer} is always at the bottom of the hierarchy,
  * never a parent unless it is the only indexer.
  * Parent indexers delegate to their children,
- * until they reach the ultimate {@link NoneIndexer}.
+ * until they reach the ultimate {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.NoneIndexer}.
  * <p>
  * Example 1: EQUAL+LESS_THAN joiner will become EqualsIndexer -> ComparisonIndexer -> NoneIndexer.
  * <p>
  * Indexers have an id, which is the position of the indexer in the chain.
  * Top-most indexer has id 0, and the id increases as we go down the hierarchy.
- * Each {@link AbstractTuple tuple} is assigned an {@link IndexProperties} instance,
+ * Each {@link AbstractTuple tuple} is assigned an
+ * {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties} instance,
  * which determines its location in the index.
- * {@link IndexProperties} instances are built from {@link AbstractJoiner joiners}
+ * {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties} instances are built from
+ * {@link AbstractJoiner joiners}
  * using methods such as {@link #buildUniLeftMapping()} and {@link #buildRightMapping()}.
- * Each {@link IndexProperties#toKey(int) index keyFunction} has an id,
+ * Each {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties#toKey(int) index keyFunction} has an
+ * id,
  * and this id matches the id of the indexer;
- * each keyFunction in {@link IndexProperties} is associated with a single indexer.
+ * each keyFunction in {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties} is associated with a
+ * single indexer.
  * <p>
  * Comparison joiners result in a single indexer each,
  * whereas equal joiners will be merged into a single indexer if they are consecutive.
  * In the latter case,
  * a composite keyFunction is created of type {@link Pair}, {@link TriTuple},
- * {@link Quadruple} or {@link IndexerKey},
+ * {@link Quadruple} or {@link ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerKey},
  * based on the length of the composite keyFunction (number of equals joiners in sequence).
  *
  * <ul>
@@ -91,14 +95,15 @@ public class IndexerFactory<Right_> {
         return joiner.getJoinerCount() > 0;
     }
 
-    public <A> Function<A, IndexProperties> buildUniLeftMapping() {
+    public <A> Function<A, ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties> buildUniLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> a -> NoneIndexProperties.INSTANCE;
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield a -> new SingleIndexProperties<>(mapping.apply(a));
+                yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                        mapping.apply(a));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -140,7 +145,7 @@ public class IndexerFactory<Right_> {
                                 for (int i = 0; i < mappingCount; i++) {
                                     result[i] = mappings[i].apply(a);
                                 }
-                                return new IndexerKey(result);
+                                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerKey(result);
                             };
                         }
                     };
@@ -151,18 +156,21 @@ public class IndexerFactory<Right_> {
                 switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield a -> new SingleIndexProperties<>(keyFunction.apply(a));
+                        yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                                keyFunction.apply(a));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
+                        yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.TwoIndexProperties<>(
+                                keyFunction1.apply(a), keyFunction2.apply(a));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a),
+                        yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ThreeIndexProperties<>(
+                                keyFunction1.apply(a), keyFunction2.apply(a),
                                 keyFunction3.apply(a));
                     }
                     default -> {
@@ -171,7 +179,7 @@ public class IndexerFactory<Right_> {
                             for (int i = 0; i < keyFunctionCount; i++) {
                                 arr[i] = keyFunctionList.get(i).apply(a);
                             }
-                            return new ManyIndexProperties(arr);
+                            return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ManyIndexProperties(arr);
                         };
                     }
                 }
@@ -179,14 +187,16 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B> BiFunction<A, B, IndexProperties> buildBiLeftMapping() {
+    public <A, B> BiFunction<A, B, ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties>
+            buildBiLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> (a, b) -> NoneIndexProperties.INSTANCE;
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b) -> new SingleIndexProperties<>(mapping.apply(a, b));
+                yield (a, b) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                        mapping.apply(a, b));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -228,7 +238,7 @@ public class IndexerFactory<Right_> {
                                 for (int i = 0; i < mappingCount; i++) {
                                     result[i] = mappings[i].apply(a, b);
                                 }
-                                return new IndexerKey(result);
+                                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerKey(result);
                             };
                         }
                     };
@@ -239,18 +249,22 @@ public class IndexerFactory<Right_> {
                 switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b) -> new SingleIndexProperties<>(keyFunction.apply(a, b));
+                        yield (a,
+                                b) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                                        keyFunction.apply(a, b));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b) -> new TwoIndexProperties<>(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
+                        yield (a, b) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.TwoIndexProperties<>(
+                                keyFunction1.apply(a, b), keyFunction2.apply(a, b));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b) -> new ThreeIndexProperties<>(keyFunction1.apply(a, b), keyFunction2.apply(a, b),
+                        yield (a, b) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ThreeIndexProperties<>(
+                                keyFunction1.apply(a, b), keyFunction2.apply(a, b),
                                 keyFunction3.apply(a, b));
                     }
                     default -> {
@@ -259,7 +273,7 @@ public class IndexerFactory<Right_> {
                             for (int i = 0; i < keyFunctionCount; i++) {
                                 arr[i] = keyFunctionList.get(i).apply(a, b);
                             }
-                            return new ManyIndexProperties(arr);
+                            return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ManyIndexProperties(arr);
                         };
                     }
                 }
@@ -267,14 +281,16 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B, C> TriFunction<A, B, C, IndexProperties> buildTriLeftMapping() {
+    public <A, B, C> TriFunction<A, B, C, ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties>
+            buildTriLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> (a, b, c) -> NoneIndexProperties.INSTANCE;
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b, c) -> new SingleIndexProperties<>(mapping.apply(a, b, c));
+                yield (a, b, c) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                        mapping.apply(a, b, c));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -317,7 +333,7 @@ public class IndexerFactory<Right_> {
                                 for (int i = 0; i < mappingCount; i++) {
                                     result[i] = mappings[i].apply(a, b, c);
                                 }
-                                return new IndexerKey(result);
+                                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerKey(result);
                             };
                         }
                     };
@@ -328,19 +344,25 @@ public class IndexerFactory<Right_> {
                 switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b, c) -> new SingleIndexProperties<>(keyFunction.apply(a, b, c));
+                        yield (a, b,
+                                c) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                                        keyFunction.apply(a, b, c));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b, c) -> new TwoIndexProperties<>(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
+                        yield (a, b,
+                                c) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.TwoIndexProperties<>(
+                                        keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b, c) -> new ThreeIndexProperties<>(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
-                                keyFunction3.apply(a, b, c));
+                        yield (a, b,
+                                c) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ThreeIndexProperties<>(
+                                        keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
+                                        keyFunction3.apply(a, b, c));
                     }
                     default -> {
                         yield (a, b, c) -> {
@@ -348,7 +370,7 @@ public class IndexerFactory<Right_> {
                             for (int i = 0; i < keyFunctionCount; i++) {
                                 arr[i] = keyFunctionList.get(i).apply(a, b, c);
                             }
-                            return new ManyIndexProperties(arr);
+                            return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ManyIndexProperties(arr);
                         };
                     }
                 }
@@ -356,14 +378,16 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B, C, D> QuadFunction<A, B, C, D, IndexProperties> buildQuadLeftMapping() {
+    public <A, B, C, D> QuadFunction<A, B, C, D, ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties>
+            buildQuadLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> (a, b, c, d) -> NoneIndexProperties.INSTANCE;
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b, c, d) -> new SingleIndexProperties<>(mapping.apply(a, b, c, d));
+                yield (a, b, c, d) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                        mapping.apply(a, b, c, d));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -406,7 +430,7 @@ public class IndexerFactory<Right_> {
                                 for (int i = 0; i < mappingCount; i++) {
                                     result[i] = mappings[i].apply(a, b, c, d);
                                 }
-                                return new IndexerKey(result);
+                                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerKey(result);
                             };
                         }
                     };
@@ -417,21 +441,27 @@ public class IndexerFactory<Right_> {
                 switch (keyFunctionList.size()) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b, c, d) -> new SingleIndexProperties<>(keyFunction.apply(a, b, c, d));
+                        yield (a, b, c,
+                                d) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                                        keyFunction.apply(a, b, c, d));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b, c, d) -> new TwoIndexProperties<>(keyFunction1.apply(a, b, c, d),
-                                keyFunction2.apply(a, b, c, d));
+                        yield (a, b, c,
+                                d) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.TwoIndexProperties<>(
+                                        keyFunction1.apply(a, b, c, d),
+                                        keyFunction2.apply(a, b, c, d));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b, c, d) -> new ThreeIndexProperties<>(keyFunction1.apply(a, b, c, d),
-                                keyFunction2.apply(a, b, c, d),
-                                keyFunction3.apply(a, b, c, d));
+                        yield (a, b, c,
+                                d) -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ThreeIndexProperties<>(
+                                        keyFunction1.apply(a, b, c, d),
+                                        keyFunction2.apply(a, b, c, d),
+                                        keyFunction3.apply(a, b, c, d));
                     }
                     default -> {
                         yield (a, b, c, d) -> {
@@ -439,7 +469,7 @@ public class IndexerFactory<Right_> {
                             for (int i = 0; i < keyFunctionCount; i++) {
                                 arr[i] = keyFunctionList.get(i).apply(a, b, c, d);
                             }
-                            return new ManyIndexProperties(arr);
+                            return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ManyIndexProperties(arr);
                         };
                     }
                 }
@@ -447,13 +477,14 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public Function<Right_, IndexProperties> buildRightMapping() {
+    public Function<Right_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties> buildRightMapping() {
         var joinerCount = joiner.getJoinerCount();
         return switch (joinerCount) {
             case 0 -> a -> NoneIndexProperties.INSTANCE;
             case 1 -> {
                 var mapping = joiner.getRightMapping(0);
-                yield a -> new SingleIndexProperties<>(mapping.apply(a));
+                yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                        mapping.apply(a));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -495,7 +526,7 @@ public class IndexerFactory<Right_> {
                                 for (int i = 0; i < mappingCount; i++) {
                                     result[i] = mappings[i].apply(a);
                                 }
-                                return new IndexerKey(result);
+                                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerKey(result);
                             };
                         }
                     };
@@ -506,18 +537,21 @@ public class IndexerFactory<Right_> {
                 switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield a -> new SingleIndexProperties<>(keyFunction.apply(a));
+                        yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.SingleIndexProperties<>(
+                                keyFunction.apply(a));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
+                        yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.TwoIndexProperties<>(
+                                keyFunction1.apply(a), keyFunction2.apply(a));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a),
+                        yield a -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ThreeIndexProperties<>(
+                                keyFunction1.apply(a), keyFunction2.apply(a),
                                 keyFunction3.apply(a));
                     }
                     default -> {
@@ -526,7 +560,7 @@ public class IndexerFactory<Right_> {
                             for (int i = 0; i < keyFunctionCount; i++) {
                                 arr[i] = keyFunctionList.get(i).apply(a);
                             }
-                            return new ManyIndexProperties(arr);
+                            return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ManyIndexProperties(arr);
                         };
                     }
                 }
@@ -534,24 +568,26 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
+    public <T> ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T> buildIndexer(boolean isLeftBridge) {
         /*
          * Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
          * (<A, B> becomes <B, A>.)
          */
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
-            return new NoneIndexer<>();
+            return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.NoneIndexer<>();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             if (joinerType == JoinerType.EQUAL) {
-                return new EqualsIndexer<>(NoneIndexer::new);
+                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.EqualsIndexer<>(NoneIndexer::new);
             } else {
-                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip(), NoneIndexer::new);
+                return new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ComparisonIndexer<>(
+                        isLeftBridge ? joinerType : joinerType.flip(), NoneIndexer::new);
             }
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
-        Supplier<Indexer<T>> downstreamIndexerSupplier = NoneIndexer::new;
+        Supplier<ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> downstreamIndexerSupplier =
+                NoneIndexer::new;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
@@ -559,11 +595,14 @@ public class IndexerFactory<Right_> {
             var effectivelyFinalIndexPropertyId = indexPropertyId;
             if (joinerType == JoinerType.EQUAL) {
                 downstreamIndexerSupplier =
-                        () -> new EqualsIndexer<>(effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
+                        () -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.EqualsIndexer<>(
+                                effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
             } else {
                 var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, effectivelyFinalIndexPropertyId,
-                        actualDownstreamIndexerSupplier);
+                downstreamIndexerSupplier =
+                        () -> new ai.timefold.solver.core.impl.score.stream.bavet.common.index.ComparisonIndexer<>(
+                                actualJoinerType, effectivelyFinalIndexPropertyId,
+                                actualDownstreamIndexerSupplier);
             }
             indexPropertyId--;
         }
