@@ -69,7 +69,7 @@ import ai.timefold.solver.examples.conferencescheduling.domain.Talk;
  * In this case, it is better to reduce the size of the joins even at the expense of duplicating some calculations.
  * In other words, time saved by caching those calculations is far outweighed by the time spent in unrestricted joins.
  */
-public final class ConferenceSchedulingConstraintProvider implements ConstraintProvider {
+public class ConferenceSchedulingConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {

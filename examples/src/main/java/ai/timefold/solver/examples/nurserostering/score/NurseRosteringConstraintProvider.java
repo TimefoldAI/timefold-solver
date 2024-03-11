@@ -417,6 +417,6 @@ public class NurseRosteringConstraintProvider implements ConstraintProvider {
                 .asConstraint("unwantedPatternShiftType3DaysPattern");
     }
 
-    private record Pair<A, B>(A a, B b) {
+    public record Pair<A, B>(A a, B b) {
     }
 }

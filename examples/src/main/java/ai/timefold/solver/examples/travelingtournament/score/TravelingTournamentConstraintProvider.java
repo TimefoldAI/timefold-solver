@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.examples.travelingtournament.domain.Day;
 import ai.timefold.solver.examples.travelingtournament.domain.Match;
 
-public final class TravelingTournamentConstraintProvider implements ConstraintProvider {
+public class TravelingTournamentConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
