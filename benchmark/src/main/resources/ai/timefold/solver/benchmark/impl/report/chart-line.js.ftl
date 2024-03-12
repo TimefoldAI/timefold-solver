@@ -18,9 +18,6 @@
 var ${chartId} = new Chart(document.getElementById('${chartId}'), {
     type: 'line',
     data: {
-        labels: [
-            <#list chart.keys() as key>${key?cn}<#sep>, </#sep></#list>
-        ],
         datasets: [
             <#list chart.datasets() as dataset>{
                   label: '${dataset.label()}',
@@ -34,7 +31,7 @@ var ${chartId} = new Chart(document.getElementById('${chartId}'), {
                     borderWidth: 1
                   </#if>,
                   data: [
-                    <#list dataset.data() as datum><#if datum??>${datum?cn}</#if><#sep>, </#sep></#list>
+                    <#list chart.points(dataset.label()) as datum>{x: ${datum.key()?cn}, y: ${datum.value()?cn}}<#sep>, </#sep></#list>
                   ]
                 }<#sep>, </#sep>
             </#list>
