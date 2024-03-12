@@ -58,6 +58,34 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 Kotlin users should translate the changes accordingly.
 
+=== Upgrade from 1.8.0 to 1.9.0
+
+.icon:info-circle[role=yellow] Several internal modules folded into `timefold-solver-core`
+[%collapsible%open]
+====
+The following JAR files have been merged into `timefold-solver-core`:
+
+- `timefold-solver-core-impl`,
+- `timefold-solver-constraint-streams`.
+
+`timefold-solver-core` was previously an empty module that served as an aggregator for the above modules.
+Now it contains the source code for both modules directly.
+The automatic module name for this module is `ai.timefold.solver.core`.
+
+The root package of Constraint Streams implementation classes has changed.
+If you have any custom code that references these classes,
+you will need to update the imports to point `ai.timefold.solver.core.impl.score.stream.bavet`.
+
+Finally, with the folding of these modules into `timefold-solver-core`,
+the solver no longer relies on `ServiceLoader`s to find implementations of Constraint Streams,
+or to find the Enterprise Edition.
+
+None of these changes are likely to affect you,
+unless you have chosen to depend on internal classes and modules.
+====
+
+'''
+
 === Upgrade from 1.7.0 to 1.8.0
 
 .icon:exclamation-triangle[role=red] Constraint Verifier: Check your tests if you use the planning list variable
