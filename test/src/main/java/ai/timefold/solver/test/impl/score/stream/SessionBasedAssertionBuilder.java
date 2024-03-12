@@ -2,10 +2,10 @@ package ai.timefold.solver.test.impl.score.stream;
 
 import java.util.Objects;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.constraint.streams.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 final class SessionBasedAssertionBuilder<Solution_, Score_ extends Score<Score_>> {
 

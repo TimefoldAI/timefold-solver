@@ -13,15 +13,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraint;
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.constraint.streams.common.ScoreImpactType;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
 

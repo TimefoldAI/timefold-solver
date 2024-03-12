@@ -2,10 +2,10 @@ package ai.timefold.solver.test.impl.score.stream;
 
 import java.util.Objects;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintVerification;
 
 public final class DefaultMultiConstraintVerification<Solution_, Score_ extends Score<Score_>>

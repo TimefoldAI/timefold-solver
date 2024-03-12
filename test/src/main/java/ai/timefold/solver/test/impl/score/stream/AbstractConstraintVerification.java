@@ -3,8 +3,8 @@ package ai.timefold.solver.test.impl.score.stream;
 import java.util.Arrays;
 import java.util.Collection;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
