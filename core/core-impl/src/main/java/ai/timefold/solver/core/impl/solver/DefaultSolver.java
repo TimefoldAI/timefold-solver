@@ -240,7 +240,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         if (logger.isInfoEnabled()) { // Formatting is expensive here.
             var problemSizeStatistics = solverScope.getProblemSizeStatistics();
             logger.info(
-                    "Problem scale: entity count ({}), variable count ({}), approximate value count (~{}), approximate problem scale (~{}).",
+                    "Problem scale: entity count ({}), variable count ({}), approximate value count ({}), approximate problem scale ({}).",
                     problemSizeStatistics.entityCount(), problemSizeStatistics.variableCount(),
                     problemSizeStatistics.approximateValueCount(),
                     problemSizeStatistics.approximateProblemScaleAsFormattedString());
