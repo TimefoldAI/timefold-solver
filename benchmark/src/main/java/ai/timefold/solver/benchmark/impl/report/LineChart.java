@@ -187,7 +187,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     public static final class Builder<X extends Number & Comparable<X>, Y extends Number & Comparable<Y>> {
-        private static final int MAX_CHART_WIDTH = 1280;
+        private static final int MAX_CHART_WIDTH = 3840;
         private final Map<String, NavigableMap<X, Y>> data = new LinkedHashMap<>();
         private final Set<String> favoriteSet = new HashSet<>();
 
@@ -223,13 +223,13 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
              * This allows Chart.js to only draw the absolute minimum necessary points.
              */
             data.values().forEach(map -> {
-                List<Entry<X, Y>> entries = map.entrySet().stream().toList();
+                var entries = map.entrySet().stream().toList();
                 if (entries.size() < 3) {
                     return;
                 }
                 for (int i = 0; i < entries.size() - 2; i++) {
-                    Entry<X, Y> entry1 = entries.get(i);
-                    Entry<X, Y> entry2 = entries.get(i + 1);
+                    var entry1 = entries.get(i);
+                    var entry2 = entries.get(i + 1);
                     if (!entry1.getValue().equals(entry2.getValue())) {
                         continue;
                     }
@@ -245,7 +245,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
              * Largest-Triangle-Three-Buckets algorithm to down-sample the data.
              */
             Map<String, Map<X, Y>> datasetMap = new LinkedHashMap<>(data.size());
-            for (Entry<String, NavigableMap<X, Y>> entry : data.entrySet()) {
+            for (var entry : data.entrySet()) {
                 datasetMap.put(entry.getKey(), largestTriangleThreeBuckets(entry.getValue(), MAX_CHART_WIDTH));
             }
             // We need to merge all the keys after the down-sampling process to create a consistent X values list.
@@ -260,9 +260,9 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
              * Specifying the data like this helps avoid Chart.js quirks during rendering.
              */
             List<Dataset<Y>> datasetList = new ArrayList<>(data.size());
-            for (Entry<String, Map<X, Y>> entry : datasetMap.entrySet()) {
+            for (var entry : datasetMap.entrySet()) {
                 List<Y> datasetData = new ArrayList<>(xValues.size());
-                Map<X, Y> dataset = entry.getValue();
+                var dataset = entry.getValue();
                 for (X xValue : xValues) {
                     Y yValue = dataset.get(xValue);
                     datasetData.add(yValue);
