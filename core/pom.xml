@@ -121,6 +121,11 @@
       <plugin>
         <groupId>org.revapi</groupId>
         <artifactId>revapi-maven-plugin</artifactId>
+        <configuration> <!-- Remove this override when oldTimefoldVersion is >= 1.9.0 -->
+          <oldArtifacts>
+            <artifact>${project.groupId}:timefold-solver-core-impl:${revapi.oldTimefoldVersion}</artifact>
+          </oldArtifacts>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
