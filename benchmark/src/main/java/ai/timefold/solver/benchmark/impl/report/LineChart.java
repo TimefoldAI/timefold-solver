@@ -17,12 +17,16 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.IntStream;
+
+import ai.timefold.solver.core.impl.util.Pair;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -44,7 +48,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     static <Number_ extends Number & Comparable<Number_>> BigDecimal min(List<Number_> values) {
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return BigDecimal.ZERO;
         }
         double min = Collections.min(values).doubleValue();
@@ -61,7 +65,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     static <Number_ extends Number & Comparable<Number_>> BigDecimal max(List<Number_> values) {
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return BigDecimal.ZERO;
         }
         double max = Collections.max(values).doubleValue();
@@ -113,6 +117,16 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
             return false;
         }
         return useLogarithmicProblemScale(getYValues());
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public List<Pair<X, Y>> points(String label) {
+        Dataset<Y> dataset = datasets().stream().filter(d -> d.label().equals(label)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Dataset %s not found.".formatted(label)));
+        return IntStream.range(0, dataset.data().size())
+                .filter(i -> dataset.data().get(i) != null)
+                .mapToObj(i -> new Pair<>(keys().get(i), dataset.data().get(i)))
+                .toList();
     }
 
     static <N extends Number & Comparable<N>> boolean useLogarithmicProblemScale(List<N> seriesList) {
@@ -173,7 +187,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
     }
 
     public static final class Builder<X extends Number & Comparable<X>, Y extends Number & Comparable<Y>> {
-
+        private static final int MAX_CHART_WIDTH = 3840;
         private final Map<String, NavigableMap<X, Y>> data = new LinkedHashMap<>();
         private final Set<String> favoriteSet = new HashSet<>();
 
@@ -209,25 +223,35 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
              * This allows Chart.js to only draw the absolute minimum necessary points.
              */
             data.values().forEach(map -> {
-                List<Map.Entry<X, Y>> entries = map.entrySet().stream().toList();
+                var entries = map.entrySet().stream().toList();
                 if (entries.size() < 3) {
                     return;
                 }
                 for (int i = 0; i < entries.size() - 2; i++) {
-                    Map.Entry<X, Y> entry1 = entries.get(i);
-                    Map.Entry<X, Y> entry2 = entries.get(i + 1);
+                    var entry1 = entries.get(i);
+                    var entry2 = entries.get(i + 1);
                     if (!entry1.getValue().equals(entry2.getValue())) {
                         continue;
                     }
-                    Map.Entry<X, Y> entry3 = entries.get(i + 2);
+                    Entry<X, Y> entry3 = entries.get(i + 2);
                     if (entry2.getValue().equals(entry3.getValue())) {
                         map.remove(entry2.getKey());
                     }
                 }
             });
-            // Then find all points on the X axis across all data sets.
+            /*
+             * Sometimes, when the dataset size is large, it can cause the browser to freeze or use excessive memory
+             * while rendering the line chart. To solve the issue of a large volume of data points, we use the
+             * Largest-Triangle-Three-Buckets algorithm to down-sample the data.
+             */
+            Map<String, Map<X, Y>> datasetMap = new LinkedHashMap<>(data.size());
+            for (var entry : data.entrySet()) {
+                datasetMap.put(entry.getKey(), largestTriangleThreeBuckets(entry.getValue(), MAX_CHART_WIDTH));
+            }
+            // We need to merge all the keys after the down-sampling process to create a consistent X values list.
+            // The xValues list size can be "MAX_CHART_WIDTH * data.size" in the worst case.
             List<X> xValues = data.values().stream()
-                    .flatMap(m -> m.keySet().stream())
+                    .flatMap(k -> k.keySet().stream())
                     .distinct()
                     .sorted(Comparable::compareTo)
                     .toList();
@@ -236,18 +260,97 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
              * Specifying the data like this helps avoid Chart.js quirks during rendering.
              */
             List<Dataset<Y>> datasetList = new ArrayList<>(data.size());
-            for (String datasetLabel : data.keySet()) {
-                NavigableMap<X, Y> dataset = data.get(datasetLabel);
+            for (var entry : datasetMap.entrySet()) {
                 List<Y> datasetData = new ArrayList<>(xValues.size());
+                var dataset = entry.getValue();
                 for (X xValue : xValues) {
                     Y yValue = dataset.get(xValue);
                     datasetData.add(yValue);
                 }
-                datasetList.add(new Dataset<>(datasetLabel, datasetData, favoriteSet.contains(datasetLabel)));
+                datasetList.add(new Dataset<>(entry.getKey(), datasetData, favoriteSet.contains(entry.getKey())));
             }
             return new LineChart<>(fileName, title, xLabel, yLabel, xValues, datasetList, stepped, timeOnX, timeOnY);
         }
 
-    }
+        /**
+         * The method uses the Largest-Triangle-Three-Buckets approach to reduce the size of the data points list.
+         * 
+         * @param datasetDataMap The ordered map of data points
+         * @param sampleSize The final sample size
+         * 
+         * @return The compressed data
+         *
+         * @see https://github.com/sveinn-steinarsson/flot-downsample/
+         */
+        private Map<X, Y> largestTriangleThreeBuckets(NavigableMap<X, Y> datasetDataMap, int sampleSize) {
+            if (datasetDataMap.size() <= sampleSize) {
+                return datasetDataMap;
+            }
+            LinkedHashMap<X, Y> sampled = new LinkedHashMap<>(sampleSize);
+            List<X> keys = new ArrayList<>(datasetDataMap.keySet());
 
+            // Bucket size. Leave room for start and end data points
+            double every = (double) (datasetDataMap.size() - 2) / (double) (sampleSize - 2);
+
+            int a = 0; // Initially a is the first point in the triangle
+            int nextA = 0;
+            Y maxAreaPoint = null;
+            double maxArea;
+            double area;
+
+            // Always add the first point
+            datasetDataMap.entrySet().stream().findFirst().ifPresent(e -> sampled.put(e.getKey(), e.getValue()));
+
+            for (int i = 0; i < sampleSize - 2; i++) {
+
+                // Calculate point average for next bucket (containing c)
+                double avgX = 0.0D;
+                double avgY = 0.0D;
+                int avgRangeStart = (int) Math.floor((i + 1) * every) + 1;
+                int avgRangeEnd = (int) Math.floor((i + 2) * every) + 1;
+                avgRangeEnd = Math.min(avgRangeEnd, datasetDataMap.size());
+
+                int avgRangeLength = avgRangeEnd - avgRangeStart;
+
+                while (avgRangeStart < avgRangeEnd) {
+                    avgX += keys.get(avgRangeStart).doubleValue();
+                    avgY += datasetDataMap.get(keys.get(avgRangeStart)).doubleValue();
+                    avgRangeStart++;
+                }
+                avgX /= avgRangeLength;
+                avgY /= avgRangeLength;
+
+                // Get the range for this bucket
+                int rangeOffs = (int) Math.floor(i * every) + 1;
+                int rangeTo = (int) Math.floor((i + 1) * every) + 1;
+
+                // Point a
+                double pointAX = keys.get(a).doubleValue();
+                double pointAY = datasetDataMap.get(keys.get(a)).doubleValue();
+
+                maxArea = -1;
+
+                while (rangeOffs < rangeTo) {
+                    // Calculate triangle area over three buckets
+                    area = Math.abs((pointAX - avgX) * (datasetDataMap.get(keys.get(rangeOffs)).doubleValue() - pointAY)
+                            - (pointAX - keys.get(rangeOffs).doubleValue()) * (avgY - pointAY)) * 0.5D;
+                    if (area > maxArea) {
+                        maxArea = area;
+                        maxAreaPoint = datasetDataMap.get(keys.get(rangeOffs));
+                        // Next a is this b
+                        nextA = rangeOffs;
+                    }
+                    rangeOffs++;
+                }
+                // Pick this point from the bucket
+                sampled.put(keys.get(nextA), maxAreaPoint);
+                // This a is the next a (chosen b)
+                a = nextA;
+            }
+
+            // Always add last
+            sampled.put(keys.get(keys.size() - 1), datasetDataMap.get(keys.get(keys.size() - 1)));
+            return sampled;
+        }
+    }
 }
