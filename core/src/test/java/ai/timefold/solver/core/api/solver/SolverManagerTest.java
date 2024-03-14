@@ -52,6 +52,7 @@ import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotated
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -231,6 +232,9 @@ class SolverManagerTest {
         assertThat(errorInConsumer.get())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("exceptionInConsumer");
+        // Accessing the job's final best solution is necessary to guarantee that the solver is no longer solving.
+        Assertions.assertThatCode(solverJob1::getFinalBestSolution).doesNotThrowAnyException();
+        // Otherwise, the following assertion could fail.
         assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
         assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
     }
