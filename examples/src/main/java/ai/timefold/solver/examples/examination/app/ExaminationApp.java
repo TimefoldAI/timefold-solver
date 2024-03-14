@@ -6,7 +6,6 @@ import java.util.Set;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.persistence.AbstractSolutionExporter;
 import ai.timefold.solver.examples.common.persistence.AbstractSolutionImporter;
-import ai.timefold.solver.examples.curriculumcourse.app.CurriculumCourseApp;
 import ai.timefold.solver.examples.examination.domain.Examination;
 import ai.timefold.solver.examples.examination.persistence.ExaminationExporter;
 import ai.timefold.solver.examples.examination.persistence.ExaminationImporter;
