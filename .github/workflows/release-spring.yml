@@ -42,7 +42,7 @@ jobs:
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
           git checkout -b "v$TIMEFOLD_SOLVER_VERSION"
-          ../timefold-solver/.github/scripts/sprint_initializr_bump_solver.sh
+          ../timefold-solver/.github/scripts/spring_initializr_bump_solver.sh
           git add $SPRING_INITIALIZR_YAML_FILE_PATH
           git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" 
-          gh pr create --head $(git branch --show-current) --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body-file .github/workflows/release-pr-spring-body.md
+          gh pr create --head $(git branch --show-current) --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body-file ../timefold-solver/.github/workflows/release-pr-spring-body.md
