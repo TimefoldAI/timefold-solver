@@ -3,26 +3,12 @@ updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: daily
-      time: '05:00'
+      interval: weekly
     open-pull-requests-limit: 10
     target-branch: "main"
     commit-message:
       prefix: "deps: "
-  - package-ecosystem: maven
-    directory: "/"
-    schedule:
-      interval: daily
-      time: '06:00'
-    open-pull-requests-limit: 10
-    target-branch: "0.8.x"
-    commit-message:
-      prefix: "deps: "
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major","version-update:semver-minor"]  
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
-      time: '07:00'
+      interval: weekly
