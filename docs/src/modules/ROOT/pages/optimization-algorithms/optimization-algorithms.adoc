@@ -62,9 +62,9 @@ The business wants the optimal solution, but they also have other requirements:
 * Available time: The solution must be found in time, before it becomes useless to execute.
 * Reliability: Every data set must have at least a decent result (better than a human planner).
 
-Given these requirements, and despite the promises of some salesmen, it is usually impossible for anyone or anything to find the optimal solution.
+Given these requirements, and despite the promises of some salesmen,
+it is usually impossible for anyone or anything to find the optimal solution.
 Therefore, Timefold Solver focuses on finding the best solution in available time.
-In xref:use-cases-and-examples/examples-overview/examples-overview.adoc#examplesOverview["realistic, independent competitions"], it often comes out as the best _reusable_ software.
 
 The nature of NP-complete problems make scaling a prime concern.
 

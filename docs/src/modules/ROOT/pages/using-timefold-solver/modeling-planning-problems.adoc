@@ -400,7 +400,7 @@ For example in vehicle routing with time windows: the arrival time at a customer
 image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
 
 When the customers for a vehicle change, the arrival time for each customer is automatically adjusted.
-For more information, see the xref:use-cases-and-examples/vehicle-routing/vehicle-routing.adoc#vehicleRoutingDomainModel[vehicle routing domain model].
+For more information, see the xref:quickStart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
 
 From a score calculation perspective, a shadow variable is like any other planning variable.
 From an optimization perspective, Timefold Solver effectively only optimizes the genuine variables (and mostly ignores the shadow variables): it just assures that when a genuine variable changes, any dependent shadow variables are changed accordingly.
@@ -1118,7 +1118,7 @@ if you need any of the following planning techniques:
 
 For example, the vehicle routing problem can be modeled as follows:
 
-image::use-cases-and-examples/vehicle-routing/vehicleRoutingClassDiagram.png[]
+image::quickstart/vehicle-routing/vehicleRoutingClassDiagramAnnotated.png[]
 
 This model is closer to the reality than the chained model.
 Each vehicle has a list of customers to go to in the order given by the list.

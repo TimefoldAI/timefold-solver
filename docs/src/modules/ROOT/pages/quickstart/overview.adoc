@@ -1,7 +1,9 @@
 [#quickStartOverview]
 = Overview
 :page-aliases: quickstart/quickstart.adoc, \
-    development/development.adoc
+    development/development.adoc, \
+    use-cases-and-examples/use-cases-and-examples.adoc, \
+    overview-quickstarts.adoc
 :imagesdir: ../..
 
 IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository
@@ -26,5 +28,5 @@ image::quickstart/school-timetabling/schoolTimetablingInputOutput.png[]
 You can also find out
 how to build xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStart[Vehicle Routing with Quarkus].
 
-For other use cases, take a look at https://github.com/TimefoldAI/timefold-quickstarts[the timefold-quickstarts repository]
-and the xref:use-cases-and-examples/use-cases-and-examples.adoc#useCasesAndExamples[use cases chapter].
+For other use cases,
+take a look at https://github.com/TimefoldAI/timefold-quickstarts[the `timefold-quickstarts` Github repository].
