@@ -1,32 +1,17 @@
 package ai.timefold.solver.examples.app;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Graphics;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.stream.Stream;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 
 import ai.timefold.solver.examples.cloudbalancing.app.CloudBalancingApp;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.swingui.OpenBrowserAction;
 import ai.timefold.solver.examples.common.swingui.SolverAndPersistenceFrame;
-import ai.timefold.solver.examples.conferencescheduling.app.ConferenceSchedulingApp;
 import ai.timefold.solver.examples.curriculumcourse.app.CurriculumCourseApp;
 import ai.timefold.solver.examples.examination.app.ExaminationApp;
 import ai.timefold.solver.examples.flightcrewscheduling.app.FlightCrewSchedulingApp;
@@ -100,7 +85,6 @@ public class TimefoldExamplesApp extends JFrame {
                 new NurseRosteringApp(),
                 new TaskAssigningApp(),
                 new CloudBalancingApp(),
-                new ConferenceSchedulingApp(),
                 new PatientAdmissionScheduleApp(),
                 new MachineReassignmentApp(),
                 new CurriculumCourseApp(),
