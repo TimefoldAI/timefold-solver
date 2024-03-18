@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: [cloudbalancing, conferencescheduling, curriculumcourse, examination, flightcrewscheduling, machinereassignment, meetingscheduling, nqueens, nurserostering, pas, projectjobscheduling, taskassigning, tennis, travelingtournament, tsp, vehiclerouting]
+        example: [cloudbalancing, curriculumcourse, examination, flightcrewscheduling, machinereassignment, meetingscheduling, nqueens, nurserostering, pas, projectjobscheduling, taskassigning, tennis, travelingtournament, tsp, vehiclerouting]
     steps:
       - name: Checkout timefold-solver
         uses: actions/checkout@v4

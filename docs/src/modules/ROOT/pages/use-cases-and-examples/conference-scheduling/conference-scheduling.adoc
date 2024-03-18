@@ -10,7 +10,7 @@ Assign each conference talk to a timeslot and a room, after the talks have been 
 
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingMilestonesTimeline.png[align="center"]
 
-Timeslots can overlap. It reads/writes to/from an `*.xlsx` file that can be edited with LibreOffice or Excel.
+Timeslots can overlap.
 
 image::use-cases-and-examples/conference-scheduling/conferenceSchedulingProblem.png[align="center"]
 
@@ -90,13 +90,6 @@ image::use-cases-and-examples/conference-scheduling/conferenceSchedulingValuePro
 108talks-18timeslots-10rooms has 108 talks, 18 timeslots and 10 rooms with a search space of 10^243.
 216talks-18timeslots-20rooms has 216 talks, 18 timeslots and 20 rooms with a search space of 10^552.
 ----
-
-
-[#conferenceSchedulingArchitecture]
-== Architecture
-
-image::use-cases-and-examples/conference-scheduling/conferenceSchedulingArchitecture.png[align="center"]
-
 
 [#conferenceSchedulingDomainModel]
 == Domain model
