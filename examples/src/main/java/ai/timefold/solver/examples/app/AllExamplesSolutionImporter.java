@@ -2,7 +2,6 @@ package ai.timefold.solver.examples.app;
 
 import ai.timefold.solver.examples.cloudbalancing.persistence.CloudBalancingGenerator;
 import ai.timefold.solver.examples.common.app.LoggingMain;
-import ai.timefold.solver.examples.conferencescheduling.persistence.ConferenceSchedulingGenerator;
 import ai.timefold.solver.examples.curriculumcourse.persistence.CurriculumCourseImporter;
 import ai.timefold.solver.examples.examination.persistence.ExaminationImporter;
 import ai.timefold.solver.examples.flightcrewscheduling.persistence.FlightCrewSchedulingGenerator;
@@ -26,7 +25,6 @@ public class AllExamplesSolutionImporter extends LoggingMain {
 
     public void importAll() {
         CloudBalancingGenerator.main(new String[0]);
-        ConferenceSchedulingGenerator.main(new String[0]);
         CurriculumCourseImporter.main(new String[0]);
         ExaminationImporter.main(new String[0]);
         FlightCrewSchedulingGenerator.main(new String[0]);
