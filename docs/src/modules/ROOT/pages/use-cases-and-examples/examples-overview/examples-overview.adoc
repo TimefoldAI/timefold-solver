@@ -193,16 +193,6 @@ The source code of all these examples is available on https://github.com/Timefol
 * http://mat.tepper.cmu.edu/TOURN/[TTP]
 |* Custom xref:optimization-algorithms/optimization-algorithms.adoc#moveListFactory[MoveListFactory]
 
-|xref:use-cases-and-examples/conference-scheduling/conference-scheduling.adoc#conferenceScheduling[Conference scheduling]
-|* 1 entity class
-** 2 variables
-|* Entity <= `216`
-* Value <= `18` and <= `20`
-* Search space <= `10^552`
-|* No
-* Defined by us
-|
-
 |xref:use-cases-and-examples/flight-crew-scheduling/flight-crew-scheduling.adoc#flightCrewScheduling[Flight crew scheduling]
 |* 1 entity class
 ** 1 variable
