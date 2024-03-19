@@ -14,7 +14,7 @@ public class PlanningCloneableList<T> extends AbstractList<T> implements Plannin
     }
 
     @Override
-    public PlanningCloneableList<T> createEmptyInstance() {
+    public PlanningCloneableList<T> createNewInstance() {
         return new PlanningCloneableList<>();
     }
 

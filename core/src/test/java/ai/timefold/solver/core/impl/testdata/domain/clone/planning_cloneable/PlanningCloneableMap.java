@@ -15,7 +15,7 @@ public class PlanningCloneableMap<K, V> extends AbstractMap<K, V> implements Pla
     }
 
     @Override
-    public PlanningCloneableMap<K, V> createEmptyInstance() {
+    public PlanningCloneableMap<K, V> createNewInstance() {
         return new PlanningCloneableMap<>();
     }
 

@@ -108,8 +108,14 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         if (existingClone != null) {
             return existingClone;
         }
+
         Class<C> declaringClass = (Class<C>) original.getClass();
-        C clone = constructClone(declaringClass);
+        C clone;
+        if (original instanceof PlanningCloneable<?> planningCloneable) {
+            clone = (C) planningCloneable.createNewInstance();
+        } else {
+            clone = constructClone(declaringClass);
+        }
         originalToCloneMap.put(original, clone);
         copyFields(declaringClass, original, clone, unprocessedQueue, declaringClassMetadata);
         return clone;
@@ -192,11 +198,11 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     @SuppressWarnings("unchecked")
     private static <E> Collection<E> constructCloneCollection(Collection<E> originalCollection) {
         // TODO Don't hardcode all standard collections
+        if (originalCollection instanceof PlanningCloneable<?> planningCloneable) {
+            return (Collection<E>) planningCloneable.createNewInstance();
+        }
         if (originalCollection instanceof LinkedList) {
             return new LinkedList<>();
-        }
-        if (originalCollection instanceof PlanningCloneable<?> planningClonable) {
-            return (Collection<E>) planningClonable.createEmptyInstance();
         }
         var size = originalCollection.size();
         if (originalCollection instanceof Set) {
@@ -235,12 +241,12 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     @SuppressWarnings("unchecked")
     private static <K, V> Map<K, V> constructCloneMap(Map<K, V> originalMap) {
         // Normally, a Map will never be selected for cloning, but extending implementations might anyway.
+        if (originalMap instanceof PlanningCloneable<?> planningCloneable) {
+            return (Map<K, V>) planningCloneable.createNewInstance();
+        }
         if (originalMap instanceof SortedMap<K, V> map) {
             var setComparator = map.comparator();
             return new TreeMap<>(setComparator);
-        }
-        if (originalMap instanceof PlanningCloneable<?> planningClonable) {
-            return (Map<K, V>) planningClonable.createEmptyInstance();
         }
         var originalMapSize = originalMap.size();
         if (!(originalMap instanceof LinkedHashMap)) {

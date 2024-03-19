@@ -324,7 +324,16 @@ public class GizmoSolutionClonerImplementor {
             GizmoSolutionOrEntityDescriptor solutionSubclassDescriptor =
                     memoizedSolutionOrEntityDescriptorMap.computeIfAbsent(solutionSubclass,
                             (key) -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, solutionSubclass));
-            ResultHandle clone = isSubclassBranch.newInstance(MethodDescriptor.ofConstructor(solutionSubclass));
+
+            ResultHandle clone;
+            if (PlanningCloneable.class.isAssignableFrom(solutionSubclass)) {
+                clone = isSubclassBranch.invokeInterfaceMethod(
+                        MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance", Object.class),
+                        thisObj);
+                clone = isSubclassBranch.checkCast(clone, solutionSubclass);
+            } else {
+                clone = isSubclassBranch.newInstance(MethodDescriptor.ofConstructor(solutionSubclass));
+            }
 
             isSubclassBranch.invokeInterfaceMethod(
                     MethodDescriptor.ofMethod(Map.class, "put", Object.class, Object.class, Object.class),
@@ -602,7 +611,7 @@ public class GizmoSolutionClonerImplementor {
 
         if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
             var emptyInstance = bytecodeCreator
-                    .invokeInterfaceMethod(MethodDescriptor.ofMethod(PlanningCloneable.class, "createEmptyInstance",
+                    .invokeInterfaceMethod(MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance",
                             Object.class), bytecodeCreator.checkCast(toClone, PlanningCloneable.class));
             bytecodeCreator.assign(cloneCollection,
                     bytecodeCreator.checkCast(emptyInstance,
@@ -707,7 +716,7 @@ public class GizmoSolutionClonerImplementor {
         ResultHandle cloneMap;
         if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
             var emptyInstance = bytecodeCreator
-                    .invokeInterfaceMethod(MethodDescriptor.ofMethod(PlanningCloneable.class, "createEmptyInstance",
+                    .invokeInterfaceMethod(MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance",
                             Object.class), bytecodeCreator.checkCast(toClone, PlanningCloneable.class));
             cloneMap = bytecodeCreator.checkCast(emptyInstance, Map.class);
         } else {
@@ -976,7 +985,15 @@ public class GizmoSolutionClonerImplementor {
                 toClone,
                 cloneMap);
 
-        ResultHandle cloneObj = noCloneBranch.newInstance(MethodDescriptor.ofConstructor(entityClass));
+        ResultHandle cloneObj;
+        if (PlanningCloneable.class.isAssignableFrom(entityClass)) {
+            cloneObj = noCloneBranch.invokeInterfaceMethod(
+                    MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance", Object.class),
+                    toClone);
+            cloneObj = noCloneBranch.checkCast(cloneObj, entityClass);
+        } else {
+            cloneObj = noCloneBranch.newInstance(MethodDescriptor.ofConstructor(entityClass));
+        }
         noCloneBranch.invokeInterfaceMethod(
                 MethodDescriptor.ofMethod(Map.class, "put", Object.class, Object.class, Object.class),
                 cloneMap, toClone, cloneObj);

@@ -40,6 +40,7 @@ import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.TestdataDe
 import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.TestdataVariousTypes;
 import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningEntity;
 import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningSolution;
+import ai.timefold.solver.core.impl.testdata.domain.clone.planning_cloneable.PlanningCloneableEntity;
 import ai.timefold.solver.core.impl.testdata.domain.clone.planning_cloneable.PlanningCloneableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBasedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBasedSolution;
@@ -1121,13 +1122,13 @@ public abstract class AbstractSolutionClonerTest {
     }
 
     @Test
-    void clonePlanningCloneableLists() {
+    void clonePlanningCloneableItems() {
         var solutionDescriptor = PlanningCloneableSolution.buildSolutionDescriptor();
         var cloner = createSolutionCloner(solutionDescriptor);
 
-        var entityA = new TestdataEntity("A");
-        var entityB = new TestdataEntity("B");
-        var entityC = new TestdataEntity("C");
+        var entityA = new PlanningCloneableEntity("A");
+        var entityB = new PlanningCloneableEntity("B");
+        var entityC = new PlanningCloneableEntity("C");
 
         var original = new PlanningCloneableSolution(List.of(entityA, entityB, entityC));
         var clone = cloner.cloneSolution(original);
