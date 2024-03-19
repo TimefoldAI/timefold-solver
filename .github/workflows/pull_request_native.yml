@@ -1,0 +1,43 @@
+name: GraalVM Native
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'LICENSE*'
+      - '.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+
+jobs:
+  native:
+    concurrency:
+      group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.module }}-${{ matrix.java-version }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ["spring-integration", "quarkus-integration"]
+        java-version: [ 17, 21, 22 ] #Latest two LTS + latest non-LTS.
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: ${{matrix.java-version}}
+          distribution: 'graalvm-community'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
+
+      - name: Quickly build timefold-solver
+        run: mvn -B -Dquickly clean install
+
+      - name: Test timefold-solver in Native mode
+        run: |
+          cd ${{matrix.module}}
+          mvn -B -Dnative verify
