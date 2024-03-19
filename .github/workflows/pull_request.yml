@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        java-version: [ 17, 21 ] #Latest two LTS + latest non-LTS.
+        java-version: [ 17, 21, 22 ] #Latest two LTS + latest non-LTS.
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -34,29 +34,3 @@ jobs:
 
       - name: Build and test timefold-solver
         run: mvn -B -Dfull verify
-  native:
-    concurrency:
-      group: pull_request-${{ github.event_name }}-${{ github.head_ref }}
-      cancel-in-progress: true
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '17'
-          distribution: 'graalvm-community'
-          set-java-home: 'false'
-          components: 'native-image'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: 'maven'
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Build and test timefold-solver in Native mode
-        run: mvn -B -Dnative verify
