@@ -40,6 +40,7 @@ import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.TestdataDe
 import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.TestdataVariousTypes;
 import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningEntity;
 import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningSolution;
+import ai.timefold.solver.core.impl.testdata.domain.clone.planning_cloneable.PlanningCloneableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBasedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataEntityCollectionPropertyEntity;
@@ -1117,6 +1118,50 @@ public abstract class AbstractSolutionClonerTest {
 
         assertThat(clone.shadowEntityList.get(0))
                 .isNotSameAs(original.shadowEntityList.get(0));
+    }
+
+    @Test
+    void clonePlanningCloneableLists() {
+        var solutionDescriptor = PlanningCloneableSolution.buildSolutionDescriptor();
+        var cloner = createSolutionCloner(solutionDescriptor);
+
+        var entityA = new TestdataEntity("A");
+        var entityB = new TestdataEntity("B");
+        var entityC = new TestdataEntity("C");
+
+        var original = new PlanningCloneableSolution(List.of(entityA, entityB, entityC));
+        var clone = cloner.cloneSolution(original);
+
+        assertThat(clone.entityList)
+                .hasSize(3)
+                .isNotSameAs(original.entityList)
+                .first()
+                .isNotNull();
+
+        assertThat(clone.entityList.get(0))
+                .isNotSameAs(original.entityList.get(0))
+                .hasFieldOrPropertyWithValue("code", "A");
+
+        assertThat(clone.entityList.get(1))
+                .isNotSameAs(original.entityList.get(1))
+                .hasFieldOrPropertyWithValue("code", "B");
+
+        assertThat(clone.entityList.get(2))
+                .isNotSameAs(original.entityList.get(2))
+                .hasFieldOrPropertyWithValue("code", "C");
+
+        assertThat(clone.codeToEntity)
+                .hasSize(3)
+                .isNotSameAs(original.codeToEntity);
+
+        assertThat(clone.codeToEntity.get("A"))
+                .isSameAs(clone.entityList.get(0));
+
+        assertThat(clone.codeToEntity.get("B"))
+                .isSameAs(clone.entityList.get(1));
+
+        assertThat(clone.codeToEntity.get("C"))
+                .isSameAs(clone.entityList.get(2));
     }
 
 }
