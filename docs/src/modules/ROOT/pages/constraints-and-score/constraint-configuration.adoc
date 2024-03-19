@@ -40,7 +40,7 @@ and annotate that field or property with `@ConstraintConfigurationProvider`:
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class ConferenceSolution {
+public class ConferenceSchedule {
 
     @ConstraintConfigurationProvider
     private ConferenceConstraintConfiguration constraintConfiguration;
@@ -84,7 +84,7 @@ public class ConferenceConstraintConfiguration {
 ----
 
 The type of the constraint weights must be the same score class as xref:using-timefold-solver/modeling-planning-problems.adoc#scoreOfASolution[the planning solution's score member].
-For example in conference scheduling, `ConferenceSolution.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
+For example in conference scheduling, `ConferenceSchedule.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
 both return a `HardMediumSoftScore`.
 
 A constraint weight cannot be null.
