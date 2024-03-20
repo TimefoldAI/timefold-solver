@@ -37,25 +37,27 @@ To create a good domain model, read the xref:design-patterns/design-patterns.ado
 == Problem fact
 
 A problem fact is any JavaBean (POJO) with getters that does not change during planning.
-For example in n queens, the columns and rows are problem facts:
+For example in school timetabling, the timeslots and rooms are problem facts:
 
 [source,java,options="nowrap"]
 ----
-public class Column {
+public class Timeslot {
 
-    private int index;
+    DayOfWeek dayOfWeek;
+    LocalTime startTime;
+    LocalTime endTime;
 
-    // ... getters
+    ...
 }
 ----
 
 [source,java,options="nowrap"]
 ----
-public class Row {
+public class Room {
 
-    private int index;
+    String name;
 
-    // ... getters
+    ...
 }
 ----
 
@@ -98,49 +100,35 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 [#planningEntityAnnotation]
 === Planning entity annotation
 
-A planning entity is a JavaBean (POJO) that changes during solving, for example a `Queen` that changes to another row.
-A planning problem has multiple planning entities, for example for a single n queens problem, each `Queen` is a planning entity.
-But there is usually only one planning entity class, for example the `Queen` class.
+A planning entity is a JavaBean (POJO) that changes during solving, for example a `Lesson` that changes timeslots.
+A planning problem has multiple planning entities; in school timetabling for example, each `Lesson` is a planning entity.
+But there is usually only one planning entity class, for example the `Lesson` class.
 
 A planning entity class needs to be annotated with the `@PlanningEntity` annotation.
 
 Each planning entity class has one or more _planning variables_ (which can be <<planningVariable,genuine>> or <<shadowVariable,shadows>>).
 It should also have one or more _defining_ properties.
-For example in n queens, a `Queen` is defined by its `Column` and has a planning variable ``Row``.
-This means that a Queen's column never changes during solving, while its row does change.
+For example in school timetabling, a `Lesson` is defined by its subject, teacher and a student group,
+and has planning variables for its timeslot and room.
+This means that `Lesson`'s subject, teacher and student group never changes during solving,
+while its timeslot and room do.
 
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
-public class Queen {
+public class Lesson {
 
-    private Column column;
-
-    // Planning variables: changes during planning, between score calculations.
-    private Row row;
-
-    // ... getters and setters
-}
-----
-
-A planning entity class can have multiple planning variables.
-For example, a `Lecture` is defined by its `Course` and its index in that course (because one course has multiple lectures).
-Each `Lecture` needs to be scheduled into a `Period` and a `Room` so it has two planning variables (period and room).
-For example: the course Mathematics has eight lectures per week, of which the first lecture is Monday morning at 08:00 in room 212.
-
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Lecture {
-
-    private Course course;
-    private int lectureIndexInCourse;
+    private String subject;
+    private String teacher;
+    private String studentGroup;
 
     // Planning variables: changes during planning, between score calculations.
-    private Period period;
+    @PlanningVariable
+    private Timeslot timeslot;
+    @PlanningVariable
     private Room room;
 
-    // ...
+    // ... getters and setters
 }
 ----
 
@@ -151,7 +139,7 @@ The solver configuration needs to declare each planning entity class:
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
-  <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
+  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
   ...
 </solver>
 ----
@@ -215,8 +203,9 @@ For example, in bin packing: small item < medium item < big item.
 Although most algorithms start with the more difficult entities first, they just reverse the ordering.
 ====
 
-_None of the current planning variable states should be used to compare planning entity difficulty._ During Construction Heuristics, those variables are likely to be `null` anyway.
-For example, a ``Queen``'s `row` variable should not be used.
+_None of the current planning variable states should be used to compare planning entity difficulty._
+During Construction Heuristics, those variables are likely to be `null` anyway.
+For example, a ``Lessons``'s `timeslot` variable should not be used.
 
 
 [#planningVariable]
@@ -228,28 +217,32 @@ For example, a ``Queen``'s `row` variable should not be used.
 
 A planning variable is a JavaBean property (so a getter and setter) on a planning entity.
 It points to a planning value, which changes during planning.
-For example, a ``Queen``'s `row` property is a genuine planning variable.
-Note that even though a ``Queen``'s `row` property changes to another `Row` during planning, no `Row` instance itself is changed.
+For example, a ``Lessons``'s `timeslot` property is a genuine planning variable.
+Note that even though a ``Lessons``'s `timeslot` property changes to another `Timeslot` during planning,
+no `Timeslot` instance itself is changed.
 Normally planning variables are genuine, but advanced cases can also have <<shadowVariable,shadows>>.
 
-A genuine planning variable getter needs to be annotated with the `@PlanningVariable` annotation, optionally with a non-empty `valueRangeProviderRefs` property.
+A genuine planning variable getter needs to be annotated with the `@PlanningVariable` annotation,
+optionally with a non-empty `valueRangeProviderRefs` property.
 
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
-public class Queen {
+public class Lesson {
     ...
 
-    private Row row;
+    private Timeslot timeslot;
 
     @PlanningVariable
-    public Row getRow() {
-        return row;
+    public Row getTimeslot() {
+        return timestlot;
     }
 
-    public void setRow(Row row) {
-        this.row = row;
+    public void setTimeslot(Timeslot timeslot) {
+        this.timestlot = timeslot;
     }
+
+    ...
 
 }
 ----
@@ -269,18 +262,21 @@ xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating 
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
-public class Queen {
+public class Lesson {
     ...
 
     @PlanningVariable
-    private Row row;
+    private Timeslot timeslot;
+
+    ...
 
 }
 ----
 
 [NOTE]
 ====
-For more advanced planning variables used to model precedence relationships, see xref:#planningListVariable[planning list variable] and xref:#chainedPlanningVariable[chained planning variable].
+For more advanced planning variables used to model precedence relationships,
+see xref:#planningListVariable[planning list variable] and xref:#chainedPlanningVariable[chained planning variable].
 ====
 
 
@@ -704,7 +700,7 @@ Primitive types (such as ``int``) are not allowed.
 ====
 
 A planning value range is the set of possible planning values for a planning variable.
-This set can be a countable (for example row ``1``, ``2``, `3` or ``4``) or uncountable (for example any `double` between `0.0` and ``1.0``).
+Planning value ranges need to be countable, meaning there needs to be a finite number of possible planning values.
 
 
 [#planningValueRangeProvider]
@@ -747,20 +743,20 @@ Any value from that `Collection` is a possible planning value for this planning 
 [source,java,options="nowrap"]
 ----
     @PlanningVariable
-    public Row getRow() {
-        return row;
+    public Timeslot getTimeslot() {
+        return timeslot;
     }
 ----
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class NQueens {
+public class Timetable {
     ...
 
     @ValueRangeProvider
-    public List<Row> getRowList() {
-        return rowList;
+    public List<Timeslot> getTimeslots() {
+        return timeslots;
     }
 
 }
@@ -777,11 +773,11 @@ xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class NQueens {
+public class Timetable {
     ...
 
     @ValueRangeProvider
-    private List<Row> rowList;
+    private List<Timeslot> timeslots;
 
 }
 ----
@@ -1035,8 +1031,9 @@ Strength should be implemented ascending: weaker values are lower, stronger valu
 For example in bin packing: small container < medium container < big container.
 ====
 
-_None of the current planning variable state in any of the planning entities should be used to compare planning values._ During construction heuristics, those variables are likely to be ``null``.
-For example, none of the `row` variables of any `Queen` may be used to determine the strength of a ``Row``.
+_None of the current planning variable state in any of the planning entities should be used to compare planning values._
+During construction heuristics, those variables are likely to be ``null``.
+For example, none of the `timeslot` variables of any `Lesson` may be used to determine the strength of a ``Timeslot``.
 
 
 [#planningListVariable]
@@ -1405,10 +1402,13 @@ Notice how two value range providers are usually combined:
 A dataset for a planning problem needs to be wrapped in a class for the `Solver` to solve.
 That solution class represents both the planning problem and (if solved) a solution.
 It is annotated with a `@PlanningSolution` annotation.
-For example in n queens, the solution class is the `NQueens` class, which contains a `Column` list, a `Row` list, and a `Queen` list.
+For example in school timetabling,
+the solution class is the `Timetable` class, which contains a `Timeslot` list, a `Room` list, and a `Lesson` list.
 
 A planning problem is actually an unsolved planning solution or - stated differently - an uninitialized solution.
-For example in n queens, that `NQueens` class has the `@PlanningSolution` annotation, yet every `Queen` in an unsolved `NQueens` class is not yet assigned to a `Row` (their `row` property is ``null``). That's not a feasible solution.
+For example in school timetabling, that `Timetable` class has the `@PlanningSolution` annotation,
+yet every `Lesson` in an unsolved `Timetable` class is not yet assigned to a `Timeslot` (their `timeslot` property is ``null``).
+That's not a feasible solution.
 It's not even a possible solution.
 It's an uninitialized solution.
 
@@ -1418,22 +1418,23 @@ It's an uninitialized solution.
 
 A solution class holds all problem facts, planning entities and a score.
 It is annotated with a `@PlanningSolution` annotation.
-For example, an `NQueens` instance holds a list of all columns, all rows and all `Queen` instances:
+For example, an `Timetable` instance holds a list of all timeslots, all rooms and all `Lesson` instances:
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class NQueens {
+public class Timetable {
+
+    private String name;
 
     // Problem facts
-    private int n;
-    private List<Column> columnList;
-    private List<Row> rowList;
+    private List<Timeslot> timeslots;
+    private List<Room> rooms;
 
     // Planning entities
-    private List<Queen> queenList;
+    private List<Lesson> lessons;
 
-    private SimpleScore score;
+    private HardSoftScore score;
 
     ...
 }
@@ -1441,12 +1442,12 @@ public class NQueens {
 
 The solver configuration needs to declare the planning solution class:
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
-  <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
+  <solutionClass>org.acme.schooltimetabling.Timetable</solutionClass>
   ...
 </solver>
 ----
@@ -1468,14 +1469,14 @@ It gets those collection(s) by calling every getter (or field) that is annotated
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class NQueens {
+public class Timetable {
     ...
 
-    private List<Queen> queenList;
+    private List<Lesson> lessons;
 
     @PlanningEntityCollectionProperty
-    public List<Queen> getQueenList() {
-        return queenList;
+    public List<Lesson> getLessons() {
+        return lessons;
     }
 
 }
@@ -1509,6 +1510,8 @@ Most use cases use a xref:constraints-and-score/overview.adoc#hardSoftScore[Hard
 @PlanningSolution
 public class Timetable {
 
+    ...
+
     @PlanningScore
     private HardSoftScore score;
 
@@ -1520,6 +1523,8 @@ public class Timetable {
     public void setScore(HardSoftScore score) {
         this.score = score;
     }
+
+    ...
 
 }
 ----
@@ -1536,26 +1541,24 @@ For xref:constraints-and-score/score-calculation.adoc[Constraint Streams],
 Timefold Solver needs to extract the problem fact instances from the solution instance.
 It gets those collection(s) by calling every method (or field) that is annotated with ``@ProblemFactCollectionProperty``.
 All objects returned by those methods are available to use by Constraint Streams.
-For example in `NQueens` all `Column` and `Row` instances are problem facts.
+For example in `Timetable` all `Timeslot` and `Room` instances are problem facts.
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class NQueens {
+public class Timetable {
+
     ...
 
-    private List<Column> columnList;
-    private List<Row> rowList;
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
 
     @ProblemFactCollectionProperty
-    public List<Column> getColumnList() {
-        return columnList;
-    }
+    @ValueRangeProvider
+    private List<Room> rooms;
 
-    @ProblemFactCollectionProperty
-    public List<Row> getRowList() {
-        return rowList;
-    }
+    ...
 
 }
 ----
@@ -1615,7 +1618,9 @@ For example in examination, a cached problem fact `TopicConflict` is created for
     }
 ----
 
-Where a score constraint needs to check that no two exams with a topic that shares a student are scheduled close together (depending on the constraint: at the same time, in a row, or in the same day), the `TopicConflict` instance can be used as a problem fact, rather than having to combine every two `Student` instances.
+Where a score constraint needs to check that no two exams with a topic that shares a student are scheduled close together
+(depending on the constraint: at the same time, in a row, or in the same day),
+the `TopicConflict` instance can be used as a problem fact, rather than having to combine every two `Student` instances.
 
 
 [#autoDiscoverSolutionProperties]
@@ -1723,54 +1728,27 @@ To use a custom cloner, configure it on the planning solution:
 
 [source,java,options="nowrap"]
 ----
-@PlanningSolution(solutionCloner = NQueensSolutionCloner.class)
-public class NQueens {
+@PlanningSolution(solutionCloner = TimetableSolutionCloner.class)
+public class Timetable {
     ...
 }
 ----
 
-For example, a `NQueens` planning clone only deep clones all `Queen` instances.
-So when the original solution changes (later on during planning) and one or more ``Queen`` instances change,
+For example, a `Timetable` planning clone only deep clones all `Timetable` instances.
+So when the original solution changes (later on during planning) and one or more ``Timetable`` instances change,
 the planning clone isn't affected.
 
-[source,java,options="nowrap"]
-----
-public class NQueensSolutionCloner implements SolutionCloner<NQueens> {
-
-    @Override
-    public NQueens cloneSolution(CloneLedger ledger, NQueens original) {
-        NQueens clone = new NQueens();
-        ledger.registerClone(original, clone);
-        clone.setId(original.getId());
-        clone.setN(original.getN());
-        clone.setColumnList(original.getColumnList());
-        clone.setRowList(original.getRowList());
-        List<Queen> queenList = original.getQueenList();
-        List<Queen> clonedQueenList = new ArrayList<Queen>(queenList.size());
-        for (Queen originalQueen : queenList) {
-            Queen cloneQueen = new Queen();
-            ledger.registerClone(originalQueen, cloneQueen);
-            cloneQueen.setId(originalQueen.getId());
-            cloneQueen.setColumn(originalQueen.getColumn());
-            cloneQueen.setRow(originalQueen.getRow());
-            clonedQueenList.add(cloneQueen);
-        }
-        clone.setQueenList(clonedQueenList);
-        clone.setScore(original.getScore());
-        return clone;
-    }
-
-}
-----
-
 _The `cloneSolution()` method should only deep clone the planning entities._
-Notice that the problem facts, such as `Column` and `Row` are normally _not_ cloned: even their `List` instances are _not_ cloned.
-If the problem facts were cloned too, then you would have to make sure that the new planning entity clones also refer to the new problem facts clones used by the cloned solution.
-For example, if you were to clone all `Row` instances, then each `Queen` clone and the `NQueens` clone itself should refer to those new `Row` clones.
+The problem facts, such as `Timeslot` and `Room` are normally _not_ cloned: even their `List` instances are _not_ cloned.
+If the problem facts were cloned too,
+then you would have to make sure that the new planning entity clones also refer to the new problem facts clones used by the cloned solution.
+For example, if you were to clone all `Timeslot` instances,
+then each `Lesson` clone and the `Timetable` clone itself should refer to those new `Timeslot` clones.
 
 [WARNING]
 ====
-Cloning an entity with a <<chainedPlanningVariable,chained>> variable is devious: a variable of an entity A might point to another entity B.
+Cloning an entity with a <<chainedPlanningVariable,chained>> variable is devious:
+a variable of an entity A might point to another entity B.
 If A is cloned, then its variable must point to the clone of B, not the original B.
 ====
 
@@ -1778,39 +1756,10 @@ If A is cloned, then its variable must point to the clone of B, not the original
 [#createAnUninitializedSolution]
 === Create an uninitialized solution
 
-Create a `@PlanningSolution` instance to represent your planning problem's dataset, so it can be set on the `Solver` as the planning problem to solve.
-For example in n queens, an `NQueens` instance is created with the required `Column` and `Row` instances and every `Queen` set to a different `column` and every `row` set to ``null``.
-
-[source,java,options="nowrap"]
-----
-    private NQueens createNQueens(int n) {
-        NQueens nQueens = new NQueens();
-        nQueens.setId(0L);
-        nQueens.setN(n);
-        nQueens.setColumnList(createColumnList(nQueens));
-        nQueens.setRowList(createRowList(nQueens));
-        nQueens.setQueenList(createQueenList(nQueens));
-        return nQueens;
-    }
-
-    private List<Queen> createQueenList(NQueens nQueens) {
-        int n = nQueens.getN();
-        List<Queen> queenList = new ArrayList<Queen>(n);
-        long id = 0L;
-        for (Column column : nQueens.getColumnList()) {
-            Queen queen = new Queen();
-            queen.setId(id);
-            id++;
-            queen.setColumn(column);
-            // Notice that we leave the PlanningVariable properties on null
-            queenList.add(queen);
-        }
-        return queenList;
-    }
-----
-
-.Uninitialized Solution for the Four Queens Puzzle
-image::using-timefold-solver/modeling-planning-problems/uninitializedNQueens04.png[align="left"]
-
+Create a `@PlanningSolution` instance to represent your planning problem's dataset,
+so it can be set on the `Solver` as the planning problem to solve.
+For example in school timetabling, a `Lesson` instance is created with the required `Lesson` instances,
+but their timeslots and rooms are set to `null`.
 Usually, most of this data comes from your data layer,
-and your solution implementation just aggregates that data and creates the uninitialized planning entity instances to plan.
+and your solution implementation just aggregates that data
+and creates the uninitialized planning entity instances for the solver to plan

@@ -64,7 +64,7 @@ regardless if the constraints are positive or negative.
 
 Most planning problems have only negative constraints and therefore have a negative score.
 In that case, the score is the sum of the weight of the negative constraints being broken, with a perfect score of 0.
-For example in n queens, the score is the negative of the number of queen pairs which can attack each other.
+For example in vehicle routing, the score is the negative of the total distance driven by all vehicles.
 
 Negative and positive constraints can be combined, even in the same score level.
 
@@ -482,14 +482,14 @@ To verify the constraints against an independent implementation, configure a ``a
   <environmentMode>FAST_ASSERT</environmentMode>
   ...
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>...ConstraintProvider</constraintProviderClass>
     <assertionScoreDirectorFactory>
-      <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+      <easyScoreCalculatorClass>...EasyScoreCalculator</easyScoreCalculatorClass>
     </assertionScoreDirectorFactory>
   </scoreDirectorFactory>
 ----
 
-This way, the `NQueensConstraintProvider` implementation is validated by the ``EasyScoreCalculator``.
+This way, the `ConstraintProvider` implementation is validated by the ``EasyScoreCalculator``.
 
 [NOTE]
 ====

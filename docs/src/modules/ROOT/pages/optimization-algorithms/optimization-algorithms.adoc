@@ -816,7 +816,8 @@ For example, the move below changes queen `C` from row `0` to row ``2``:
 image::optimization-algorithms/singleMoveNQueens04.png[align="center"]
 
 The new solution is called a _neighbor_ of the original solution, because it can be reached in a single ``Move``.
-Although a single move can change multiple queens, the neighbors of a solution should always be a very small subset of all possible solutions.
+Although a single move can change multiple queens,
+the neighbors of a solution should always be a tiny subset of all possible solutions.
 For example, on that original solution, these are all possible ``changeMove``s:
 
 image::optimization-algorithms/possibleMovesNQueens04.png[align="center"]
@@ -1156,7 +1157,8 @@ and step caching scales badly memory wise.
 [#subPillars]
 ===== Sub pillars
 
-A sub pillar is a subset of entities that share the same value(s) for their variable(s). For example if queen A, B, C and D are all located on row 0, they are a pillar and `[A, D]` is one of the many sub pillars.
+A sub pillar is a subset of entities that share the same value(s) for their variable(s).
+For example if queen A, B, C and D are all located on row 0, they are a pillar and `[A, D]` is one of the many sub pillars.
 
 There are several ways how sub pillars can be selected by the `subPillarType` property:
 
@@ -2089,41 +2091,6 @@ public interface SelectionSorterWeightFactory<Solution_, T> {
 }
 ----
 
-[source,java,options="nowrap"]
-----
-public class QueenDifficultyWeightFactory implements SelectionSorterWeightFactory<NQueens, Queen> {
-
-    public QueenDifficultyWeight createSorterWeight(NQueens nQueens, Queen queen) {
-        int distanceFromMiddle = calculateDistanceFromMiddle(nQueens.getN(), queen.getColumnIndex());
-        return new QueenDifficultyWeight(queen, distanceFromMiddle);
-    }
-
-    ...
-
-    public static class QueenDifficultyWeight implements Comparable<QueenDifficultyWeight> {
-
-        private final Queen queen;
-        private final int distanceFromMiddle;
-
-        public QueenDifficultyWeight(Queen queen, int distanceFromMiddle) {
-            this.queen = queen;
-            this.distanceFromMiddle = distanceFromMiddle;
-        }
-
-        public int compareTo(QueenDifficultyWeight other) {
-            return new CompareToBuilder()
-                    // The more difficult queens have a lower distance to the middle
-                    .append(other.distanceFromMiddle, distanceFromMiddle) // Decreasing
-                    // Tie breaker
-                    .append(queen.getColumnIndex(), other.queen.getColumnIndex())
-                    .toComparison();
-        }
-
-    }
-
-}
-----
-
 You'll also need to configure it (unless it's annotated on the domain model and automatically applied by the optimization algorithm):
 
 [source,xml,options="nowrap"]
@@ -2131,7 +2098,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterWeightFactoryClass>...QueenDifficultyWeightFactory</sorterWeightFactoryClass>
+      <sorterWeightFactoryClass>...MyDifficultyWeightFactory</sorterWeightFactoryClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
@@ -2852,7 +2819,8 @@ Exhaustive Search variants suffer from two big scalability issues:
 * They scale terribly memory wise.
 * They scale horribly performance wise.
 
-As shown in these time spent graphs from the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker], Brute Force and Branch And Bound both hit a performance scalability wall.
+As shown in these time spent graphs from the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker],
+Brute Force and Branch And Bound both hit a performance scalability wall.
 For example, on N queens it hits wall at a few dozen queens:
 
 image::optimization-algorithms/exhaustiveSearchScalabilityNQueens.png[align="center"]
@@ -2894,7 +2862,8 @@ It never changes a planning entity after it has been assigned.
 
 image::optimization-algorithms/firstFitNQueens04.png[align="center"]
 
-Notice that it starts with putting `Queen` A into row 0 (and never moving it later), which makes it impossible to reach the optimal solution.
+Notice that it starts with putting `Queen` A into row 0 (and never moving it later),
+which makes it impossible to reach the optimal solution.
 Suffixing this construction heuristic with metaheuristics can remedy that.
 
 
@@ -3727,27 +3696,15 @@ The search path is highlighted by the green arrows.
 At each step it tries all selected moves, but unless it's the step, it doesn't investigate that solution further.
 This is one of the reasons why Local Search is very scalable.
 
-As shown above, Local Search solves the four queens problem by starting with the starting solution and make the following steps sequentially:
+Local Search solves the four queens problem by starting with the starting solution and make the following steps sequentially:
 
 . _B0 to B3_
 . _D0 to D2_
 . _A0 to A1_
 
-Turn on `debug` logging for the category `ai.timefold.solver` to show those steps in the log:
-
-[source,options="nowrap"]
-----
-INFO  Solving started: time spent (0), best score (-6), environment mode (REPRODUCIBLE), random (JDK with seed 0).
-DEBUG     LS step (0), time spent (20), score (-3), new best score (-3), accepted/selected move count (12/12), picked move (Queen-1 {Row-0 -> Row-3}).
-DEBUG     LS step (1), time spent (31), score (-1), new best score (-1), accepted/selected move count (12/12), picked move (Queen-3 {Row-0 -> Row-2}).
-DEBUG     LS step (2), time spent (40), score (0), new best score (0), accepted/selected move count (12/12), picked move (Queen-0 {Row-0 -> Row-1}).
-INFO  Local Search phase (0) ended: time spent (41), best score (0), score calculation speed (5000/sec), step total (3).
-INFO  Solving ended: time spent (41), best score (0), score calculation speed (5000/sec), phase total (1), environment mode (REPRODUCIBLE).
-----
-
-Notice that a log message includes the `toString()` method of the `Move` implementation which returns for example $$"$$``Queen-1 {Row-0 -> Row-3}``".
-
-A naive Local Search configuration solves the four queens problem in three steps, by evaluating only 37 possible solutions (three steps with 12 moves each + one starting solution), which is only a fraction of all 256 possible solutions.
+A naive Local Search configuration solves the four queens problem in three steps,
+by evaluating only 37 possible solutions (three steps with 12 moves each + one starting solution),
+which is only a fraction of all 256 possible solutions.
 It solves 16 queens in 31 steps, by evaluating only 7441 out of 18446744073709551616 possible solutions.
 By using a xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[Construction Heuristics] phase first,
 it's even a lot more efficient.
@@ -3758,7 +3715,8 @@ it's even a lot more efficient.
 
 Local Search decides the next step with the aid of three configurable components:
 
-* A `MoveSelector` which selects the possible moves of the current solution. See the chapter xref:optimization-algorithms/optimization-algorithms.adoc[move and neighborhood selection].
+* A `MoveSelector` which selects the possible moves of the current solution.
+See xref:optimization-algorithms/optimization-algorithms.adoc[move and neighborhood selection].
 * An `Acceptor` which filters out unacceptable moves.
 * A `Forager` which gathers accepted moves and picks the next step from them.
 
@@ -3779,31 +3737,18 @@ The solver phase configuration looks like this:
   </localSearch>
 ----
 
-In the example below, the `MoveSelector` generated the moves shown with the blue lines, the `Acceptor` accepted all of them and the `Forager` picked the move __B0 to B3__.
+In the example below, the `MoveSelector` generated the moves shown with the blue lines,
+the `Acceptor` accepted all of them and the `Forager` picked the move __B0 to B3__.
 
 image::optimization-algorithms/decideNextStepNQueens04.png[align="center"]
 
-xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on `trace` logging] to show the decision making in the log:
+xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on `trace` logging] to show the decision making in the log.
 
-[source,options="nowrap"]
-----
-INFO  Solver started: time spent (0), score (-6), new best score (-6), random (JDK with seed 0).
-TRACE         Move index (0) not doable, ignoring move (Queen-0 {Row-0 -> Row-0}).
-TRACE         Move index (1), score (-4), accepted (true), move (Queen-0 {Row-0 -> Row-1}).
-TRACE         Move index (2), score (-4), accepted (true), move (Queen-0 {Row-0 -> Row-2}).
-TRACE         Move index (3), score (-4), accepted (true), move (Queen-0 {Row-0 -> Row-3}).
-...
-TRACE         Move index (6), score (-3), accepted (true), move (Queen-1 {Row-0 -> Row-3}).
-...
-TRACE         Move index (9), score (-3), accepted (true), move (Queen-2 {Row-0 -> Row-3}).
-...
-TRACE         Move index (12), score (-4), accepted (true), move (Queen-3 {Row-0 -> Row-3}).
-DEBUG     LS step (0), time spent (6), score (-3), new best score (-3), accepted/selected move count (12/12), picked move (Queen-1 {Row-0 -> Row-3}).
-...
-----
-
-Because the last solution can degrade (for example in Tabu Search), the `Solver` remembers the best solution it has encountered through the entire search path.
-Each time the current solution is better than the last best solution, the current solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[cloned] and referenced as the new best solution.
+Because the last solution can degrade (for example in Tabu Search),
+the `Solver` remembers the best solution it has encountered through the entire search path.
+Each time the current solution is better than the last best solution,
+the current solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[cloned]
+and referenced as the new best solution.
 
 image::optimization-algorithms/localSearchScoreOverTime.png[align="center"]
 
@@ -3854,13 +3799,17 @@ To evaluate only a random subset of all the moves, use:
   </forager>
 ----
 
-Unlike the n queens problem, real world problems require the use of ``acceptedCountLimit``.
-Start from an `acceptedCountLimit` that takes a step in less than two seconds. xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on INFO logging] to see the step times.
+Unlike the N-queens problem, real world problems require the use of ``acceptedCountLimit``.
+Start from an `acceptedCountLimit` that takes a step in less than two seconds.
+xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on INFO logging] to see the step times.
 Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak the value.
 
 [IMPORTANT]
 ====
-With a low `acceptedCountLimit` (so a fast stepping algorithm), it is recommended to avoid using `selectionOrder` SHUFFLED because the shuffling generates a random number for every element in the selector, taking up a lot of time, but only a few elements are actually selected.
+With a low `acceptedCountLimit` (so a fast stepping algorithm),
+it is recommended to avoid using `selectionOrder` SHUFFLED
+because the shuffling generates a random number for every element in the selector,
+taking up a lot of time, but only a few elements are actually selected.
 ====
 
 
@@ -3911,7 +3860,8 @@ If multiple selected moves tie for the best move, one of them is randomly chosen
 image::optimization-algorithms/hillClimbingNQueens04.png[align="center"]
 
 Notice that once a queen has moved, it can be moved again later.
-This is a good thing, because in an NP-complete problem it's impossible to predict what will be the optimal final value for a planning variable.
+This is a good thing,
+because in an NP-complete problem it's impossible to predict what will be the optimal final value for a planning variable.
 
 
 [#hillClimbingStuckInLocalOptima]
@@ -3966,18 +3916,10 @@ Tabu Search is a Local Search that maintains a tabu list to avoid getting stuck 
 The tabu list holds recently used objects that are _taboo_ to use for now.
 Moves that involve an object in the tabu list, are not accepted.
 The tabu list objects can be anything related to the move, such as the planning entity, planning value, move, solution, ...
-{nbsp}
-Here's an example with entity tabu for four queens, so the queens are put in the tabu list:
+
+See example with entity tabu for four queens, so the queens are put in the tabu list:
 
 image::optimization-algorithms/entityTabuSearch.png[align="center"]
-
-[NOTE]
-====
-It's called Tabu Search, not Taboo Search.
-There is no spelling error.
-====
-
-Scientific paper: _Tabu Search - Part 1 and Part 2_ by Fred Glover (1989 - 1990)
 
 
 [#tabuSearchConfiguration]
@@ -4017,7 +3959,9 @@ A Tabu Search acceptor should be combined with a high ``acceptedCountLimit``, su
 
 Timefold Solver implements several tabu types:
 
-* _Planning entity tabu_ (recommended) makes the planning entities of recent steps tabu. For example, for N queens it makes the recently moved queens tabu. It's recommended to start with this tabu type.
+* _Planning entity tabu_ (recommended) makes the planning entities of recent steps tabu.
+For example, for school timetabling it makes the recently moved lessons tabu.
+It's recommended to start with this tabu type.
 +
 [source,xml,options="nowrap"]
 ----
@@ -4034,7 +3978,8 @@ To avoid hard coding the tabu size, configure a tabu ratio, relative to the numb
       <entityTabuRatio>0.02</entityTabuRatio>
     </acceptor>
 ----
-* _Planning value tabu_ makes the planning values of recent steps tabu. For example, for N queens it makes the recently moved to rows tabu.
+* _Planning value tabu_ makes the planning values of recent steps tabu.
+For example, for school timetablig it makes the recently assigned timeslots tabu.
 +
 [source,xml,options="nowrap"]
 ----

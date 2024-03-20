@@ -12,17 +12,18 @@ Configure the `SolverFactory` with a solver configuration XML file, provided as 
 
 [source,java,options="nowrap"]
 ----
-       SolverFactory<NQueens> solverFactory = SolverFactory.createFromXmlResource(
-               "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
-       Solver<NQueens> solver = solverFactory.buildSolver();
+       SolverFactory<Timetable> solverFactory = SolverFactory.createFromXmlResource(
+               "org/acme/schooltimetabling/solverConfig.xml");
+       Solver<Timetable> solver = solverFactory.buildSolver();
 ----
 
 In a typical project (following the Maven directory structure),
-that solverConfig XML file would be located at ``$PROJECT_DIR/src/main/resources/ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml``.
+that solverConfig XML file would be located at ``$PROJECT_DIR/src/main/resources/aorg/acme/schooltimetabling/solverConfig.xml``.
 Alternatively, a `SolverFactory` can be created from a ``File`` with ``SolverFactory.createFromXmlFile()``.
 However, for portability reasons, a classpath resource is recommended.
 
-Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``, which is the class representing a <<planningProblemAndPlanningSolution,planning problem and solution>>.
+Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``,
+which is the class representing a <<planningProblemAndPlanningSolution,planning problem and solution>>.
 
 A solver configuration XML file looks like this:
 
@@ -32,12 +33,12 @@ A solver configuration XML file looks like this:
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <!-- Define the model -->
-  <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
-  <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
+  <solutionClass>org.acme.schooltimetabling.domain.Timetable</solutionClass>
+  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
 
   <!-- Define the score function -->
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>org.acme.schooltimetabling.solver.TimetableConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
 
   <!-- Configure the optimization algorithms (optional) -->
@@ -73,13 +74,12 @@ For example, to change the running time based on system property, before buildin
 
 [source,java,options="nowrap"]
 ----
-        SolverConfig solverConfig = SolverConfig.createFromXmlResource(
-                "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
+        SolverConfig solverConfig = SolverConfig.createFromXmlResource("org/acme/schooltimetabling/solverConfig.xml");
         solverConfig.withTerminationConfig(new TerminationConfig()
                         .withMinutesSpentLimit(userInput));
 
-        SolverFactory<NQueens> solverFactory = SolverFactory.create(solverConfig);
-        Solver<NQueens> solver = solverFactory.buildSolver();
+        SolverFactory<Timetable> solverFactory = SolverFactory.create(solverConfig);
+        Solver<Timetable> solver = solverFactory.buildSolver();
 ----
 
 Every element in the solver configuration XML is available as a `$$*$$Config` class
@@ -99,8 +99,7 @@ and copy it with the copy constructor for each user request:
     private SolverConfig template;
 
     public void init() {
-        template = SolverConfig.createFromXmlResource(
-                "ai/timefold/solver/examples/nqueens/solver/nqueensSolverConfig.xml");
+        template = SolverConfig.createFromXmlResource("org/acme/schooltimetabling/solverConfig.xml");
         template.setTerminationConfig(new TerminationConfig());
     }
 
@@ -108,8 +107,8 @@ and copy it with the copy constructor for each user request:
     public void userRequest(..., long userInput) {
         SolverConfig solverConfig = new SolverConfig(template); // Copy it
         solverConfig.getTerminationConfig().setMinutesSpentLimit(userInput);
-        SolverFactory<NQueens> solverFactory = SolverFactory.create(solverConfig);
-        Solver<NQueens> solver = solverFactory.buildSolver();
+        SolverFactory<Timetable> solverFactory = SolverFactory.create(solverConfig);
+        Solver<Timetable> solver = solverFactory.buildSolver();
         ...
     }
 ----
@@ -118,7 +117,8 @@ and copy it with the copy constructor for each user request:
 [#annotationAlternatives]
 == Annotation alternatives
 
-Timefold Solver needs to be told which classes in your domain model are planning entities, which properties are planning variables, etc.
+Timefold Solver needs to be told which classes in your domain model are planning entities,
+which properties are planning variables, etc.
 There are several ways to deliver this information:
 
 * Add class annotations and JavaBean property annotations on the domain model (recommended).
@@ -126,10 +126,8 @@ The property annotations must be on the getter method, not on the setter method.
 Such a getter does not need to be public.
 * Add class annotations and field annotations on the domain model.
 Such a field does not need to be public.
-* No annotations: externalize the domain configuration in an XML file.
-This is https://issues.redhat.com/browse/PLANNER-151[not yet supported].
 
-This manual focuses on the first manner, but every feature supports all three manners, even if it's not explicitly mentioned.
+This manual focuses on the first manner, but every feature supports both, even if it's not explicitly mentioned.
 
 [#domainAccess]
 == Domain access

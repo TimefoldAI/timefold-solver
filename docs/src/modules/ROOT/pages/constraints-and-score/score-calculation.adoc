@@ -1204,14 +1204,12 @@ Consider the following constraint stream:
 
 [source,java,options="nowrap"]
 ----
-    protected Constraint horizontalConflict(ConstraintFactory factory) {
-        return factory
-                .forEachUniquePair(Queen.class, equal(Queen::getRowIndex))
-                .penalize(SimpleScore.ONE)
-                .justifyWith((queen, otherQueen, simpleScore) -> new CustomHorizontalConflictJustification(queen.getId(),
-                        otherQueen.getId()))
-                .indictWith((queen, otherQueen) -> List.of(queen, otherQueen))
-                .asConstraint("Horizontal conflict");
+    Constraint vehicleCapacity(ConstraintFactory factory) {
+        return factory.forEach(Vehicle.class)
+                .filter(vehicle -> vehicle.getTotalDemand() > vehicle.getCapacity())
+                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                        vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
+                .asConstraint(VEHICLE_CAPACITY);
     }
 ----
 
@@ -1219,77 +1217,76 @@ The following example uses the Constraint Verifier API to create a simple unit t
 
 [source,java,options="nowrap"]
 ----
-    private ConstraintVerifier<NQueensConstraintProvider, NQueens> constraintVerifier
-            = ConstraintVerifier.build(new NQueensConstraintProvider(), NQueens.class, Queen.class);
+    private ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutePlan> constraintVerifier
+            = ConstraintVerifier.build(new VehicleRoutingConstraintProvider(), Vehicle.class, Visit.class);
 
     @Test
-    public void horizontalConflictWithTwoQueens() {
-        Row row1 = new Row(0);
-        Column column1 = new Column(0);
-        Column column2 = new Column(1);
-        Queen queen1 = new Queen(0, row1, column1);
-        Queen queen2 = new Queen(1, row1, column2);
-        constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
-                .given(queen1, queen2)
-                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
-                .indictsWith(queen1, queen2)
-                .penalizesBy(1);
+    void vehicleCapacity() {
+        LocalDateTime tomorrow_07_00 = LocalDateTime.of(TOMORROW, LocalTime.of(7, 0));
+        LocalDateTime tomorrow_08_00 = LocalDateTime.of(TOMORROW, LocalTime.of(8, 0));
+        LocalDateTime tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0));
+        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
+        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit1);
+        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit2);
+
+        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
+                .given(vehicleA, visit1, visit2)
+                .penalizesBy(20);
     }
 ----
 
-This test ensures that the horizontal conflict constraint assigns a penalty of `1` when there are two queens on the same
-row.
+This test ensures that, if a vehicle capacity is exceeded, that the constraint penalizes accordingly.
 The following line creates a shared `ConstraintVerifier` instance and initializes the instance with the
-`NQueensConstraintProvider`:
+`VehicleRoutingConstraintProvider`:
 
 
 [source,java,options="nowrap"]
 ----
-    private ConstraintVerifier<NQueensConstraintProvider, NQueens> constraintVerifier
-            = ConstraintVerifier.build(new NQueensConstraintProvider(), NQueens.class, Queen.class);
+    private ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutePlan> constraintVerifier
+            = ConstraintVerifier.build(new VehicleRoutingConstraintProvider(), Vehicle.class, Visit.class);
 ----
 
 The `@Test` annotation indicates that the method is a unit test in a testing framework of your choice.
 Constraint Verifier works with many testing frameworks including JUnit and AssertJ.
 
 The first part of the test prepares the test data.
-In this case, the test data includes two instances of the `Queen` planning entity and their dependencies
-(`Row`, `Column`):
+In this case, the test data includes a vehicle and a visit:
 
 [source,java,options="nowrap"]
 ----
-        Row row1 = new Row(0);
-        Column column1 = new Column(0);
-        Column column2 = new Column(1);
-        Queen queen1 = new Queen(0, row1, column1);
-        Queen queen2 = new Queen(1, row1, column2);
+        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
+        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit1);
+        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit2);
 ----
 
 Further down, the following code tests the constraint:
 
 [source,java,options="nowrap"]
 ----
-        constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
-                .given(queen1, queen2)
-                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
-                .indictsWith(queen1, queen2)
-                .penalizesBy(1);
+        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
+                .given(vehicleA, visit1, visit2)
+                .penalizesBy(20);
 ----
 
-The `verifyThat(...)` call is used to specify a method on the `NQueensConstraintProvider` class which is under test.
+The `verifyThat(...)` call is used to specify a method on the `VehicleRoutingConstraintProvider` class which is under test.
 This method must be visible to the test class, which the Java compiler enforces.
 
 The `given(...)` call is used to enumerate all the facts that the constraint stream operates on.
-In this case, the `given(...)` call takes the `queen1` and `queen2` instances previously created.
+In this case, the `given(...)` call takes the `vehicleA`, `visit1` and `visit2` instances previously created.
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
 
-The methods `justifiesWith(...)` and `indictsWith(...)` validate the expected constraint justifications and indictments
-mapped by the constraint definition.
-The constraint justification validation expects the ID of both `queen1` and `queen2`.
-Similarly, the indictment check tests if the constraint `horizontalConflict` returns both indicted queens.
+[NOTE]
+====
+You can also use methods `justifiesWith(...)` and `indictsWith(...)`
+to validate the expected constraint justifications and indictments mapped by the constraint definition.
+====
 
-Finally, the `penalizesBy(...)` call completes the test, making sure that the horizontal conflict constraint, given
-one `Queen`, results in a penalty of `1`.
+Finally, the `penalizesBy(...)` call completes the test,
+making sure that the given constraint under the given conditions penalizes by the `20`.
 This number is a product of multiplying the match weight, as defined in the constraint stream, by the number of matches.
 
 Alternatively, you can use a `rewardsWith(...)` call to check for rewards instead of penalties.
@@ -1317,19 +1314,27 @@ Consider the following test:
 ----
     @Test
     public void givenFactsMultipleConstraints() {
-        Queen queen1 = new Queen(0, row1, column1);
-        Queen queen2 = new Queen(1, row2, column2);
-        Queen queen3 = new Queen(2, row3, column3);
+        LocalDateTime tomorrow_07_00 = LocalDateTime.of(TOMORROW, LocalTime.of(7, 0));
+        LocalDateTime tomorrow_08_00 = LocalDateTime.of(TOMORROW, LocalTime.of(8, 0));
+        LocalDateTime tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0));
+        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
+        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit1);
+        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit2);
+
         constraintVerifier.verifyThat()
-                .given(queen1, queen2, queen3)
-                .scores(SimpleScore.of(-3));
+                .given(vehicleA, visit1, visit2)
+                .scores(HardSoftScore.ofSoft(20));
     }
 ----
 
 There are only two notable differences to the previous example.
-First, the `verifyThat()` call takes no argument here, signifying that the entire `ConstraintProvider` instance is
+
+- The `verifyThat()` call takes no argument here, signifying that the entire `ConstraintProvider` instance is
 being tested.
-Second, instead of either a `penalizesBy()` or `rewardsWith()` call, the `scores(...)` method is used.
+(But for the sake of simplicity, we will assume it still only contains the one constraint we've seen previously.)
+- Instead of either a `penalizesBy()` or `rewardsWith()` call, the `scores(...)` method is used.
 This runs the `ConstraintProvider` on the given facts and returns a sum of ``Score``s of all constraint matches resulting
 from the given facts.
 
@@ -1393,8 +1398,7 @@ An easy way to implement your score calculation in Java.
 ** Does not scale because there is no xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
 ** Can not xref:constraints-and-score/understanding-the-score.adoc[explain the score].
 
-To start using Easy Java score calculation,
-implement the one method of the interface ``EasyScoreCalculator``:
+To start using Easy Java score calculation, implement the one method of the interface ``EasyScoreCalculator``:
 
 [source,java,options="nowrap"]
 ----
@@ -1405,48 +1409,12 @@ public interface EasyScoreCalculator<Solution_, Score_ extends Score<Score_>> {
 }
 ----
 
-For example in N-queens:
-
-[source,java,options="nowrap"]
-----
-public class NQueensEasyScoreCalculator
-    implements EasyScoreCalculator<NQueens, SimpleScore> {
-
-    @Override
-    public SimpleScore calculateScore(NQueens nQueens) {
-        int n = nQueens.getN();
-        List<Queen> queenList = nQueens.getQueenList();
-
-        int score = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                Queen leftQueen = queenList.get(i);
-                Queen rightQueen = queenList.get(j);
-                if (leftQueen.getRow() != null && rightQueen.getRow() != null) {
-                    if (leftQueen.getRowIndex() == rightQueen.getRowIndex()) {
-                        score--;
-                    }
-                    if (leftQueen.getAscendingDiagonalIndex() == rightQueen.getAscendingDiagonalIndex()) {
-                        score--;
-                    }
-                    if (leftQueen.getDescendingDiagonalIndex() == rightQueen.getDescendingDiagonalIndex()) {
-                        score--;
-                    }
-                }
-            }
-        }
-        return SimpleScore.valueOf(score);
-    }
-
-}
-----
-
 Configure it in the solver configuration:
 
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+    <easyScoreCalculatorClass>...MyEasyScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
@@ -1508,113 +1476,18 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
 
 image::constraints-and-score/score-calculation/incrementalScoreCalculatorSequenceDiagram.png[align="center"]
 
-For example in n queens:
-
-[source,java,options="nowrap"]
-----
-public class NQueensAdvancedIncrementalScoreCalculator
-    implements IncrementalScoreCalculator<NQueens, SimpleScore> {
-
-    private Map<Integer, List<Queen>> rowIndexMap;
-    private Map<Integer, List<Queen>> ascendingDiagonalIndexMap;
-    private Map<Integer, List<Queen>> descendingDiagonalIndexMap;
-
-    private int score;
-
-    public void resetWorkingSolution(NQueens nQueens) {
-        int n = nQueens.getN();
-        rowIndexMap = new HashMap<Integer, List<Queen>>(n);
-        ascendingDiagonalIndexMap = new HashMap<Integer, List<Queen>>(n * 2);
-        descendingDiagonalIndexMap = new HashMap<Integer, List<Queen>>(n * 2);
-        for (int i = 0; i < n; i++) {
-            rowIndexMap.put(i, new ArrayList<Queen>(n));
-            ascendingDiagonalIndexMap.put(i, new ArrayList<Queen>(n));
-            descendingDiagonalIndexMap.put(i, new ArrayList<Queen>(n));
-            if (i != 0) {
-                ascendingDiagonalIndexMap.put(n - 1 + i, new ArrayList<Queen>(n));
-                descendingDiagonalIndexMap.put((-i), new ArrayList<Queen>(n));
-            }
-        }
-        score = 0;
-        for (Queen queen : nQueens.getQueenList()) {
-            insert(queen);
-        }
-    }
-
-    public void beforeEntityAdded(Object entity) {
-        // Do nothing
-    }
-
-    public void afterEntityAdded(Object entity) {
-        insert((Queen) entity);
-    }
-
-    public void beforeVariableChanged(Object entity, String variableName) {
-        retract((Queen) entity);
-    }
-
-    public void afterVariableChanged(Object entity, String variableName) {
-        insert((Queen) entity);
-    }
-
-    public void beforeEntityRemoved(Object entity) {
-        retract((Queen) entity);
-    }
-
-    public void afterEntityRemoved(Object entity) {
-        // Do nothing
-    }
-
-    private void insert(Queen queen) {
-        Row row = queen.getRow();
-        if (row != null) {
-            int rowIndex = queen.getRowIndex();
-            List<Queen> rowIndexList = rowIndexMap.get(rowIndex);
-            score -= rowIndexList.size();
-            rowIndexList.add(queen);
-            List<Queen> ascendingDiagonalIndexList = ascendingDiagonalIndexMap.get(queen.getAscendingDiagonalIndex());
-            score -= ascendingDiagonalIndexList.size();
-            ascendingDiagonalIndexList.add(queen);
-            List<Queen> descendingDiagonalIndexList = descendingDiagonalIndexMap.get(queen.getDescendingDiagonalIndex());
-            score -= descendingDiagonalIndexList.size();
-            descendingDiagonalIndexList.add(queen);
-        }
-    }
-
-    private void retract(Queen queen) {
-        Row row = queen.getRow();
-        if (row != null) {
-            List<Queen> rowIndexList = rowIndexMap.get(queen.getRowIndex());
-            rowIndexList.remove(queen);
-            score += rowIndexList.size();
-            List<Queen> ascendingDiagonalIndexList = ascendingDiagonalIndexMap.get(queen.getAscendingDiagonalIndex());
-            ascendingDiagonalIndexList.remove(queen);
-            score += ascendingDiagonalIndexList.size();
-            List<Queen> descendingDiagonalIndexList = descendingDiagonalIndexMap.get(queen.getDescendingDiagonalIndex());
-            descendingDiagonalIndexList.remove(queen);
-            score += descendingDiagonalIndexList.size();
-        }
-    }
-
-    public SimpleScore calculateScore() {
-        return SimpleScore.valueOf(score);
-    }
-
-}
-----
-
 Configure it in the solver configuration:
 
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensAdvancedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>...MyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
 [IMPORTANT]
 ====
-A piece of incremental score calculator code can be difficult to write and to review.
+Incremental score calculator code can be difficult to write and to review.
 xref:constraints-and-score/overview.adoc#invalidScoreDetection[Assert its correctness] by using an ``EasyScoreCalculator`` to fulfill
 the assertions triggered by the ``environmentMode``.
 ====

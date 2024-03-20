@@ -40,12 +40,8 @@ When a solution changes, incremental score calculation (AKA delta based score ca
 calculates the delta with the previous state to find the new ``Score``,
 instead of recalculating the entire score on every solution evaluation.
 
-For example, when a single queen A moves from row `1` to ``2``,
-it will not bother to check if queen B and C can attack each other, since neither of them changed:
-
-image::constraints-and-score/performance/incrementalScoreCalculationNQueens04.png[align="center"]
-
-Similarly in employee rostering:
+For example, when a shift in employee rostering is reassigned from Ann to Beth,
+it will not bother to check any other employees, since neither of them changed:
 
 image::constraints-and-score/performance/incrementalScoreCalculationEmployeeRostering.png[align="center"]
 
@@ -74,8 +70,8 @@ then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#c
 
 If you know a certain constraint can never be broken, or it is always broken,
 do not write a score constraint for it.
-For example in n queens, the score calculation does not check if multiple queens occupy the same column,
-because a ``Queen``'s `column` never changes and every solution starts with each `Queen` on a different ``column``.
+For example in vehicle routing, if you know that a vehicle can never visit a certain location,
+do not include it in the value range and it will never become a valid option for the solver to try.
 
 [NOTE]
 ====
