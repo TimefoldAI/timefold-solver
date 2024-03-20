@@ -59,7 +59,7 @@ public class Row {
 }
 ----
 
-A problem fact can reference other problem facts of course:
+A problem fact can reference other problem facts:
 
 [source,java,options="nowrap"]
 ----
@@ -189,7 +189,7 @@ whereas planning entities will.
 === Planning entity difficulty
 
 Some optimization algorithms work more efficiently if they have an estimation of which planning entities are more difficult to plan.
-For example: in bin packing bigger items are harder to fit, in course scheduling lectures with more students are more difficult to schedule, and in n queens the middle queens are more difficult to fit on the board.
+For example: in bin packing bigger items are harder to fit.
 
 [NOTE]
 ====
@@ -694,7 +694,7 @@ In the example above, D could have also been ordered after E (or F) because ther
 Timefold Solver guarantees that:
 
 * The first ``VariableListener``'s `after*()` methods trigger _after_ the last genuine variable has changed. Therefore the genuine variables (A and B in the example above) are guaranteed to be in a consistent state across all its instances (with values A1, A2 and B1 in the example above) because the entire `Move` has been applied.
-* The second ``VariableListener``'s `after*()` methods trigger _after_ the last first shadow variable has changed. Therefore the first shadow variable (C in the example above) are guaranteed to be in a consistent state across all its instances (with values C1 and C2 in the example above). And of course the genuine variables too.
+* The second ``VariableListener``'s `after*()` methods trigger _after_ the last first shadow variable has changed. Therefore the first shadow variable (C in the example above) are guaranteed to be in a consistent state across all its instances (with values C1 and C2 in the example above). And the genuine variables too.
 * And so forth.
 
 Timefold Solver does not guarantee the order in which the `after*()` methods are called for the _same_``VariableListener`` with different parameters (such as A1 and A2 in the example above), although they are likely to be in the order in which they were affected.
@@ -1032,7 +1032,7 @@ The `ValueRangeFactory` has creation methods for several value class types:
 === Planning value strength
 
 Some optimization algorithms work a bit more efficiently if they have an estimation of which planning values are stronger, which means they are more likely to satisfy a planning entity.
-For example: in bin packing bigger containers are more likely to fit an item and in course scheduling bigger rooms are less likely to break the student capacity constraint.
+For example: in bin packing bigger containers are more likely to fit an item.
 Usually, the efficiency gain of planning value strength is far less than that of <<planningEntityDifficulty,planning entity difficulty>>.
 
 [NOTE]
@@ -1900,25 +1900,5 @@ For example in n queens, an `NQueens` instance is created with the required `Col
 .Uninitialized Solution for the Four Queens Puzzle
 image::using-timefold-solver/modeling-planning-problems/uninitializedNQueens04.png[align="left"]
 
-Usually, most of this data comes from your data layer, and your solution implementation just aggregates that data and creates the uninitialized planning entity instances to plan:
-
-[source,java,options="nowrap"]
-----
-        private void createLectureList(CourseSchedule schedule) {
-            List<Course> courseList = schedule.getCourseList();
-            List<Lecture> lectureList = new ArrayList<Lecture>(courseList.size());
-            long id = 0L;
-            for (Course course : courseList) {
-                for (int i = 0; i < course.getLectureSize(); i++) {
-                    Lecture lecture = new Lecture();
-                    lecture.setId(id);
-                    id++;
-                    lecture.setCourse(course);
-                    lecture.setLectureIndexInCourse(i);
-                    // Notice that we leave the PlanningVariable properties (period and room) on null
-                    lectureList.add(lecture);
-                }
-            }
-            schedule.setLectureList(lectureList);
-        }
-----
+Usually, most of this data comes from your data layer,
+and your solution implementation just aggregates that data and creates the uninitialized planning entity instances to plan.

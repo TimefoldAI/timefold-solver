@@ -68,17 +68,6 @@ and the `Employee` relationship a planning variable as shown in the following ex
 +
 image::design-patterns/employeeShiftRosteringModelingGuideB.png[align="center"]
 
-In the following diagram, each row is a different example and shows the relationship in that example's data model. For the *N Queens* example, the Queen entity has a Row planning variable, which stores objects of type `row`. Many Queens may point to one Row.
-
-image::design-patterns/entityVariableAndValueExamples.png[align="center"]
-
-[NOTE]
-====
-Course scheduling is different because it uses two xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[planning variables].
-Vehicle routing is different because it uses a xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable].
-Traveling salesman is different because it uses a xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained planning variable].
-====
-
 [#assigningTimeToPlanningEntities]
 == Assigning time to planning entities
 

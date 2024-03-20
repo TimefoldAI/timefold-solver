@@ -42,7 +42,7 @@ This search space size calculation includes infeasible solutions (if they can be
 * The optimal solution might be infeasible.
 * There are many types of hard constraints that cannot be incorporated in the formula practically. For example, in Cloud Balancing, try incorporating the CPU capacity constraint in the formula.
 
-Even in cases where adding some of the hard constraints in the formula is practical (for example, Course Scheduling), the resulting search space is still huge.
+Even in cases where adding some of the hard constraints in the formula is practical, the resulting search space is still huge.
 ====
 
 An algorithm that checks every possible solution (even with pruning, such as in <<branchAndBound,Branch And Bound>>) can easily run for billions of years on a single real-life planning problem.
@@ -1062,7 +1062,6 @@ Advanced configuration:
 The `secondaryEntitySelector` is rarely needed: if it is not specified, entities from the same `entitySelector` are swapped.
 
 If one or more `variableNameInclude` properties are specified, not all planning variables will be swapped, but only those specified.
-For example for course scheduling, specifying only `variableNameInclude` room will make it only swap room, not period.
 
 This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on any xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained] variables.
 
@@ -1648,7 +1647,7 @@ Advanced configuration:
 ----
       <entitySelector>
         ... <!-- Normal selector properties -->
-        <entityClass>ai.timefold.solver.examples.curriculumcourse.domain.Lecture</entityClass>
+        <entityClass>org.acme.vehiclerouting.domain.Vehicle</entityClass>
       </entitySelector>
 ----
 
@@ -1872,7 +1871,8 @@ This combination is often a worthy competitor for medium use cases, especially w
 There can be certain moves that you don't want to select, because:
 
 * The move is pointless and would only waste CPU time.
-For example, swapping two lectures of the same course will result in the same score and the same schedule because all lectures of one course are interchangeable (same teacher, same students, same topic).
+For example, swapping two lectures of the same course will result in the same score and the same schedule,
+because all lectures of one course are interchangeable (same teacher, same students, same topic).
 * Doing the move would break xref:constraints-and-score/performance.adoc#buildInHardConstraint[a built-in hard constraint],
 so the solution would be infeasible but the score function doesn't check built-in hard constraints for performance reasons.
 For example, don't change a gym lecture to a room which is not a gym room.
@@ -1937,12 +1937,13 @@ public class DifferentCourseSwapMoveFilter implements SelectionFilter<CourseSche
 }
 ----
 
-Configure the `filterClass` on every targeted `moveSelector` (potentially both in the Local Search and the Construction Heuristics if it filters ``ChangeMove``s):
+Configure the `filterClass` on every targeted `moveSelector`
+(potentially both in the Local Search and the Construction Heuristics if it filters ``ChangeMove``s):
 
 [source,xml,options="nowrap"]
 ----
     <swapMoveSelector>
-      <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
+      <filterClass>...DifferentCourseSwapMoveFilter</filterClass>
     </swapMoveSelector>
 ----
 
@@ -1970,7 +1971,7 @@ Configure the `filterClass` on every targeted `entitySelector` (potentially both
 ----
     <changeMoveSelector>
       <entitySelector>
-        <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.LongLectureSelectionFilter</filterClass>
+        <filterClass>...LongLectureSelectionFilter</filterClass>
       </entitySelector>
     </changeMoveSelector>
 ----
@@ -2000,7 +2001,7 @@ Configure the `filterClass` on every targeted `valueSelector` (potentially both 
 ----
     <changeMoveSelector>
       <valueSelector>
-        <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.LongPeriodSelectionFilter</filterClass>
+        <filterClass>...LongPeriodSelectionFilter</filterClass>
       </valueSelector>
     </changeMoveSelector>
 ----
@@ -3746,10 +3747,6 @@ Scales better, at the cost of solution quality. The order of the planning variab
 ----
 
 The second way scales better, so it can be worth to switch to it.
-For example, in a course scheduling example with 200 rooms and 40 periods,
-a cartesian product selects 8{nbsp}000 moves per entity (1 step per entity).
-On the other hand, a sequential approach only selects 240 moves per entity (2 steps per entity),
-ending the Construction Heuristic 3 times faster.
 Especially for three or more planning variables, the scaling difference is huge.
 For example, with three variables of 1{nbsp}000 values each,
 a cartesian product selects 1{nbsp}000{nbsp}000{nbsp}000 moves per entity (1 step per entity).

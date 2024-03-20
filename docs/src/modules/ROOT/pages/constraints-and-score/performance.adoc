@@ -96,7 +96,9 @@ the constraint will be disabled and have no performance impact at all.
 Instead of implementing a hard constraint, it can sometimes be built in.
 For example, if `Lecture` A should never be assigned to `Room` X, but it uses `ValueRangeProvider` on Solution,
 so the `Solver` will often try to assign it to `Room` X too (only to find out that it breaks a hard constraint).
-Use xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity] or xref:optimization-algorithms/optimization-algorithms.adoc#filteredSelection[filtered selection] to define that Course A should only be assigned a `Room` different than X.
+Use xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity]
+or xref:optimization-algorithms/optimization-algorithms.adoc#filteredSelection[filtered selection]
+to define that Course A should only be assigned a `Room` different than X.
 
 This can give a good performance gain in some use cases, not just because the score calculation is faster,
 but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
