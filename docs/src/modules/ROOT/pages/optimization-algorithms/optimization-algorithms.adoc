@@ -25,11 +25,9 @@ For example:
 * 64 queens has more than `10^115` possible solutions (``64^64``).
 * Most real-life planning problems have an incredible number of possible solutions and only one or a few optimal solutions.
 
-For comparison: the minimal number of atoms in the known universe (10^80). As a planning problem gets bigger, the search space tends to blow up really fast.
+For comparison: the minimal number of atoms in the known universe (10^80).
+As a planning problem gets bigger, the search space tends to blow up really fast.
 Adding only one extra planning entity or planning value can heavily multiply the running time of some algorithms.
-
-image::optimization-algorithms/cloudBalanceSearchSpaceSize.png[align="center"]
-
 Calculating the number of possible solutions depends on the design of the domain model:
 
 image::optimization-algorithms/searchSpaceSizeCalculation.png[align="center"]
@@ -40,7 +38,7 @@ image::optimization-algorithms/searchSpaceSizeCalculation.png[align="center"]
 This search space size calculation includes infeasible solutions (if they can be represented by the model), because:
 
 * The optimal solution might be infeasible.
-* There are many types of hard constraints that cannot be incorporated in the formula practically. For example, in Cloud Balancing, try incorporating the CPU capacity constraint in the formula.
+* There are many types of hard constraints that cannot be incorporated in the formula practically.
 
 Even in cases where adding some of the hard constraints in the formula is practical, the resulting search space is still huge.
 ====
@@ -686,21 +684,9 @@ public interface Solver<Solution_> {
 ----
 
 The ``BestSolutionChangedEvent``'s `newBestSolution` may not be initialized or feasible.
-Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases:
-
-[source,java,options="nowrap"]
-----
-    solver.addEventListener(new SolverEventListener<CloudBalance>() {
-        public void bestSolutionChanged(BestSolutionChangedEvent<CloudBalance> event) {
-            // Ignore infeasible (including uninitialized) solutions
-            if (event.getNewBestSolution().getScore().isFeasible()) {
-                ...
-            }
-        }
-    });
-----
-
-Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions, but also accept infeasible solutions.
+Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases.
+Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
+but also accept infeasible solutions.
 
 [WARNING]
 ====
@@ -924,19 +910,19 @@ The root of this tree is a `MoveSelector` which is injected into the optimizatio
 
 |<<changeMoveSelector,Change move>>
 |Change 1 entity's variable
-|`+Process-A {Computer-1 -> Computer-2}+`
+|`+Lesson-A {Room-1 -> Room-2}+`
 
 |<<swapMoveSelector,Swap move>>
 |Swap all variables of 2 entities
-|`+Process-A {Computer-1} <-> Process-B {Computer-2}+`
+|`+Lesson-A {Room-1} <-> Lesson-B {Room-2}+`
 
 |<<pillarChangeMoveSelector,Pillar change move>>
 |Change a set of entities with the same value
-|`+[Process-A, Process-B, Process-C] {Computer-1 -> Computer-2}+`
+|`+[Lesson-A, Lesson-B, Lesson-C] {Room-1 -> Room-2}+`
 
 |<<pillarSwapMoveSelector,Pillar swap move>>
 |Swap 2 sets of entities with the same values
-|`+[Process-A, Process-B, Process-C] {Computer-1} <-> [Process-E, Process-F] {Computer-2}+`
+|`+[Lesson-A, Lesson-B, Lesson-C] {Room-1} <-> [Lesson-E, Lesson-F] {Room-2}+`
 
 |<<listChangeMoveSelector,List change move>>
 |Move a list element to a different index or to another entity's list variable
@@ -2058,11 +2044,11 @@ An easy way to sort a `Selector` is with a plain old ``Comparator``:
 
 [source,java,options="nowrap"]
 ----
-public class CloudProcessDifficultyComparator implements Comparator<CloudProcess> {
+public class VisitDifficultyComparator implements Comparator<Visit> {
 
-    public int compare(CloudProcess a, CloudProcess b) {
+    public int compare(Visit a, Visit b) {
         return new CompareToBuilder()
-                .append(a.getRequiredMultiplicand(), b.getRequiredMultiplicand())
+                .append(a.getServiceDuration(), b.getServiceDuration())
                 .append(a.getId(), b.getId())
                 .toComparison();
     }
@@ -2077,7 +2063,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterComparatorClass>...CloudProcessDifficultyComparator</sorterComparatorClass>
+      <sorterComparatorClass>...VisitDifficultyComparator</sorterComparatorClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
@@ -2217,7 +2203,8 @@ public interface SelectionProbabilityWeightFactory<Solution_, T> {
     </entitySelector>
 ----
 
-For example, if there are three entities: process A (probabilityWeight 2.0), process B (probabilityWeight 0.5) and process C (probabilityWeight 0.5), then process A will be selected four times more than B and C.
+Assume the following entities: process A (probabilityWeight 2.0), process B (probabilityWeight 0.5) and process C (probabilityWeight 0.5).
+Then process A will be selected four times more than B and C.
 
 [NOTE]
 ====
@@ -2339,39 +2326,15 @@ public interface Move<Solution_> {
 
 To implement a custom move, it's recommended to extend `AbstractMove` instead implementing `Move` directly.
 Timefold Solver calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
-For example in cloud balancing, this move changes one process to another computer:
-
-[source,java,options="nowrap"]
-----
-public class CloudComputerChangeMove extends AbstractMove<CloudBalance> {
-
-    private CloudProcess cloudProcess;
-    private CloudComputer toCloudComputer;
-
-    public CloudComputerChangeMove(CloudProcess cloudProcess, CloudComputer toCloudComputer) {
-        this.cloudProcess = cloudProcess;
-        this.toCloudComputer = toCloudComputer;
-    }
-
-    @Override
-    protected void doMoveOnGenuineVariables(ScoreDirector<CloudBalance> scoreDirector) {
-        scoreDirector.beforeVariableChanged(cloudProcess, "computer");
-        cloudProcess.setComputer(toCloudComputer);
-        scoreDirector.afterVariableChanged(cloudProcess, "computer");
-    }
-
-    // ...
-
-}
-----
 
 The implementation must notify the `ScoreDirector` of any changes it makes to planning entity's variables:
 Call the `scoreDirector.beforeVariableChanged(Object, String)` and `scoreDirector.afterVariableChanged(Object, String)`
 methods directly before and after modifying an entity's planning variable.
 
-The example move above is a fine-grained move because it changes only one planning variable.
-On the other hand, a coarse-grained move changes multiple entities or multiple planning variables
-in a single move, usually to avoid breaking hard constraints by making multiple related changes at once.
+In principle, there are two types of moves:
+- Fine-grained, such as a change move, only changes one planning variable.
+- Coarse-grained move changes multiple entities or multiple planning variables in a single move,
+usually to avoid breaking hard constraints by making multiple related changes at once.
 For example, a swap move is really just two change moves, but it keeps those two changes together.
 
 [WARNING]
@@ -2381,59 +2344,27 @@ it must not change any of the problem facts as that will cause score corruption.
 Use xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning] to change problem facts while solving.
 ====
 
-Timefold Solver automatically filters out _non doable moves_ by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
+Timefold Solver automatically filters out _non doable moves_
+by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
 A _non doable move_ is:
 
 * A move that changes nothing on the current solution.
-For example, moving process `P1` on computer `X` to computer `X` is not doable, because it is already there.
+For example, moving visit `V1` from vehicle `X` to vehicle `X` is not doable, because it is already there.
 * A move that is impossible to do on the current solution.
-For example, moving process `P1` to computer `Q`  (when `Q` isn't in the list of computers) is not doable
+For example, moving visit `V1` to vehicle `Y`  (when `Y` isn't in the list of vehicles) is not doable,
 because it would assign a planning value that's not inside the planning variable's value range.
 
-In the cloud balancing example, a move which assigns a process to the computer it's already assigned to is not doable:
-
-[source,java,options="nowrap"]
-----
-    @Override
-    public boolean isMoveDoable(ScoreDirector<CloudBalance> scoreDirector) {
-        return !Objects.equals(cloudProcess.getComputer(), toCloudComputer);
-    }
-----
-
-We don't need to check if `toCloudComputer` is in the value range,
-because we only generate moves for which that is the case.
 A move that is currently not doable can become doable when the working solution changes in a later step,
 otherwise we probably shouldn't have created it in the first place.
 
 Each move has an __undo move__: a move (normally of the same type) which does the exact opposite.
-In the cloud balancing example the undo move of `P1 {X -> Y}` is the move `P1 {Y -> X}`.
-The undo move of a move is created when the `Move` is being done on the current solution,
-before the genuine variables change:
-
-[source,java,options="nowrap"]
-----
-    @Override
-    public CloudComputerChangeMove createUndoMove(ScoreDirector<CloudBalance> scoreDirector) {
-        return new CloudComputerChangeMove(cloudProcess, cloudProcess.getComputer());
-    }
-----
-
-Notice that if `P1` would have already been moved to `Y`, the undo move would create the move `P1 {Y -> Y}`,
-instead of the move `P1 {Y -> X}`.
 
 A solver phase might do and undo the same `Move` more than once.
 In fact, many solver phases will iteratively do and undo a number of moves to evaluate them,
 before selecting one of those and doing that move again (without undoing it the last time).
 
 Always implement the `toString()` method to keep Timefold Solver's logs readable.
-Keep it non-verbose and make it consistent with <<genericMoveSelectorsOverview,the generic moves>>:
-
-[source,java,options="nowrap"]
-----
-    public String toString() {
-        return cloudProcess + " {" + cloudProcess.getComputer() + " -> " + toCloudComputer + "}";
-    }
-----
+Keep it short, but give all the information you want to see in the logs.
 
 Optionally, implement the `getSimpleMoveTypeDescription()` method to support
 xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedMoveTypeBestScoreDiffOverTimeStatistic[picked move statistics]:
@@ -2442,7 +2373,7 @@ xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedM
 ----
     @Override
     public String getSimpleMoveTypeDescription() {
-        return "CloudComputerChangeMove(CloudProcess.computer)";
+        return "ChangeMove(Visit.vehicle)";
     }
 ----
 
@@ -2455,9 +2386,9 @@ the custom move must implement the `rebase()` method:
 [source,java,options="nowrap"]
 ----
     @Override
-    public CloudComputerChangeMove rebase(ScoreDirector<CloudBalance> destinationScoreDirector) {
-        return new CloudComputerChangeMove(destinationScoreDirector.lookUpWorkingObject(cloudProcess),
-                destinationScoreDirector.lookUpWorkingObject(toCloudComputer));
+    public MyCustomMove rebase(ScoreDirector<MySolution> destinationScoreDirector) {
+        return new MyCustomMove(destinationScoreDirector.lookUpWorkingObject(myEntity),
+                destinationScoreDirector.lookUpWorkingObject(myValue));
     }
 ----
 
@@ -2484,12 +2415,12 @@ They are called after the `Move` has already been done.
 ----
     @Override
     public Collection<? extends Object> getPlanningEntities() {
-        return Collections.singletonList(cloudProcess);
+        return Collections.singletonList(myEntity);
     }
 
     @Override
     public Collection<? extends Object> getPlanningValues() {
-        return Collections.singletonList(toCloudComputer);
+        return Collections.singletonList(myValue);
     }
 ----
 
@@ -2501,12 +2432,12 @@ and return all their values (to which they are changing) in ``getPlanningValues(
 ----
     @Override
     public Collection<? extends Object> getPlanningEntities() {
-        return Arrays.asList(leftCloudProcess, rightCloudProcess);
+        return Arrays.asList(leftEntity, rightEntity);
     }
 
     @Override
     public Collection<? extends Object> getPlanningValues() {
-        return Arrays.asList(leftCloudProcess.getComputer(), rightCloudProcess.getComputer());
+        return Arrays.asList(leftValue, rightValue);
     }
 ----
 
@@ -2515,36 +2446,10 @@ and return all their values (to which they are changing) in ``getPlanningValues(
 ===== Custom move: `equals()` and `hashCode()`
 
 A `Move` must implement the `equals()` and `hashCode()` methods for <<tabuSearch,move tabu>>.
-Two moves which make the same change on a solution, should be equal ideally.
+Two moves which make the same change on a solution should ideally be equal.
 
-[source,java,options="nowrap"]
-----
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof CloudComputerChangeMove) {
-            CloudComputerChangeMove other = (CloudComputerChangeMove) o;
-            return new EqualsBuilder()
-                    .append(cloudProcess, other.cloudProcess)
-                    .append(toCloudComputer, other.toCloudComputer)
-                    .isEquals();
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-                .append(cloudProcess)
-                .append(toCloudComputer)
-                .toHashCode();
-    }
-----
-
-Notice that it checks if the other move is an instance of the same move type.
-This `instanceof` check is important because a move are compared to a move of another move type.
+Always check if the two move classes are equal.
+This `instanceof` check is important because a move may be compared to a move of another move type.
 For example a `ChangeMove` and `SwapMove` are compared.
 
 [#generatingCustomMoves]
@@ -2567,33 +2472,12 @@ public interface MoveListFactory<Solution_> {
 }
 ----
 
-For example:
-
-[source,java,options="nowrap"]
-----
-public class CloudComputerChangeMoveFactory implements MoveListFactory<CloudBalance> {
-
-    @Override
-    public List<CloudComputerChangeMove> createMoveList(CloudBalance cloudBalance) {
-        List<CloudComputerChangeMove> moveList = new ArrayList<>();
-        List<CloudComputer> cloudComputerList = cloudBalance.getComputerList();
-        for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
-            for (CloudComputer cloudComputer : cloudComputerList) {
-                moveList.add(new CloudComputerChangeMove(cloudProcess, cloudComputer));
-            }
-        }
-        return moveList;
-    }
-
-}
-----
-
 Simple configuration (which can be nested in a `unionMoveSelector` just like any other ``MoveSelector``):
 
 [source,xml,options="nowrap"]
 ----
     <moveListFactory>
-      <moveListFactoryClass>ai.timefold.solver.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
+      <moveListFactoryClass>...MyMoveFactory</moveListFactoryClass>
     </moveListFactory>
 ----
 
@@ -2603,7 +2487,7 @@ Advanced configuration:
 ----
     <moveListFactory>
       ... <!-- Normal moveSelector properties -->
-      <moveListFactoryClass>ai.timefold.solver.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
+      <moveListFactoryClass>...MyMoveFactory</moveListFactoryClass>
       <moveListFactoryCustomProperties>
         ...<!-- Custom properties -->
       </moveListFactoryCustomProperties>
@@ -2973,11 +2857,9 @@ For example, on N queens it hits wall at a few dozen queens:
 
 image::optimization-algorithms/exhaustiveSearchScalabilityNQueens.png[align="center"]
 
-In most use cases, such as Cloud Balancing, the wall appears out of thin air:
-
-image::optimization-algorithms/exhaustiveSearchScalabilityCloudBalance.png[align="center"]
-
-*Exhaustive Search hits this wall on small datasets already, so in production these optimizations algorithms are mostly useless.* Use Construction Heuristics with Local Search instead: those can handle thousands of queens/computers easily.
+In most use cases, the wall appears out of thin air.
+*Exhaustive Search hits this wall on small datasets already, so in production these optimizations algorithms are mostly useless.*
+Use Construction Heuristics with Local Search instead: those can handle thousands of entities easily.
 
 [NOTE]
 ====

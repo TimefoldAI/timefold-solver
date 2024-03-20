@@ -54,13 +54,12 @@ load a few datasets and benchmark them. For example, with 3 datasets:
 [source,java,options="nowrap"]
 ----
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfigXmlResource(
-        "ai/timefold/solver/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
+        "org/acme/vehiclerouting/solverConfig.xml");
 
-CloudBalance dataset1 = ...;
-CloudBalance dataset2 = ...;
-CloudBalance dataset3 = ...;
-PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(
-        dataset1, dataset2, dataset3);
+VehicleRoutePlan dataset1 = ...;
+VehicleRoutePlan dataset2 = ...;
+VehicleRoutePlan dataset3 = ...;
+PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(dataset1, dataset2, dataset3);
 benchmark.benchmarkAndShowReportInBrowser();
 ----
 
@@ -81,7 +80,7 @@ Configure it with a benchmark configuration XML file, provided as a classpath re
 [source,java,options="nowrap"]
 ----
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlResource(
-        "ai/timefold/solver/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
+        "org/acme/vehiclerouting/benchmarkConfig.xml");
 PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
 benchmark.benchmarkAndShowReportInBrowser();
 ----
@@ -95,7 +94,7 @@ A benchmark configuration XML file looks like this:
 <?xml version="1.0" encoding="UTF-8"?>
 <plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
-  <benchmarkDirectory>local/data/nqueens</benchmarkDirectory>
+  <benchmarkDirectory>local/data/</benchmarkDirectory>
 
   <inheritedSolverBenchmark>
     <solver>
@@ -103,8 +102,8 @@ A benchmark configuration XML file looks like this:
     </solver>
     <problemBenchmarks>
       ...
-      <inputSolutionFile>data/cloudbalancing/unsolved/100computers-300processes.json</inputSolutionFile>
-      <inputSolutionFile>data/cloudbalancing/unsolved/200computers-600processes.json</inputSolutionFile>
+      <inputSolutionFile>dataset1.json</inputSolutionFile>
+      <inputSolutionFile>dataset2.json</inputSolutionFile>
     </problemBenchmarks>
   </inheritedSolverBenchmark>
 
@@ -130,7 +129,7 @@ A benchmark configuration XML file looks like this:
 ----
 
 This `PlannerBenchmark` tries three configurations (Tabu Search, Simulated Annealing and Late Acceptance)
-on two data sets (``100computers-300processes`` and ``200computers-600processes``), so it runs six solvers.
+on two data sets (``dataset1`` and ``dataset2``), so it runs six solvers.
 
 Every `<solverBenchmark>` element contains a solver configuration and one or more `<inputSolutionFile>` elements.
 It runs the solver configuration on each of those unsolved solution files.
@@ -952,7 +951,8 @@ image::using-timefold-solver/benchmarking-and-tweaking/pickedMoveTypeStepScoreDi
 [#parallelBenchmarkingOnMultipleThreads]
 ==== Parallel benchmarking on multiple threads
 
-If you have multiple processors available on your computer, you can run multiple benchmarks in parallel on multiple threads to get your benchmarks results faster:
+If you have multiple CPU cores available on your device,
+you can run multiple benchmarks in parallel on multiple threads to get your benchmarks results faster:
 
 [source,xml,options="nowrap"]
 ----
@@ -989,7 +989,8 @@ If it's higher, it will be automatically decreased.
 
 [NOTE]
 ====
-If you have a computer with slow or unreliable cooling, increasing the `parallelBenchmarkCount` above one (even on ``AUTO``) may overheat your CPU.
+If you have a computer with slow or unreliable cooling,
+increasing the `parallelBenchmarkCount` above one (even on ``AUTO``) may overheat your CPU.
 
 The `sensors` command can help you detect if this is the case.
 It is available in the package `lm_sensors` or `lm-sensors` in most Linux distributions.
@@ -1128,7 +1129,7 @@ And build it with the class ``PlannerBenchmarkFactory``:
 [source,java,options="nowrap"]
 ----
         PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromFreemarkerXmlResource(
-                "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl");
+                "org/acme/vehiclerouting/solverConfig.xml");
         PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
 ----
 
@@ -1157,7 +1158,7 @@ To display that UI, provide a benchmark config to the `BenchmarkAggregatorFrame`
 ----
     public static void main(String[] args) {
         BenchmarkAggregatorFrame.createAndDisplayFromXmlResource(
-                "ai/timefold/solver/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
+                "org/acme/vehiclerouting/solverConfig.xml");
     }
 ----
 

@@ -200,40 +200,10 @@ To attain a schedule in which certain entities are scheduled earlier in the sche
 Only consider adding planning entity difficulty too if it can make the solver more efficient.
 ====
 
-To allow the heuristics to take advantage of that domain specific information, set a `difficultyComparatorClass` to the `@PlanningEntity` annotation:
-
-[source,java,options="nowrap"]
-----
-@PlanningEntity(difficultyComparatorClass = CloudProcessDifficultyComparator.class)
-public class CloudProcess {
-    // ...
-}
-----
-
-[source,java,options="nowrap"]
-----
-public class CloudProcessDifficultyComparator implements Comparator<CloudProcess> {
-
-    public int compare(CloudProcess a, CloudProcess b) {
-        return new CompareToBuilder()
-                .append(a.getRequiredMultiplicand(), b.getRequiredMultiplicand())
-                .append(a.getId(), b.getId())
-                .toComparison();
-    }
-
-}
-----
-
+To allow the heuristics to take advantage of that domain specific information,
+set a `difficultyComparatorClass` to the `@PlanningEntity` annotation.
 Alternatively, you can also set a `difficultyWeightFactoryClass` to the `@PlanningEntity` annotation,
 so that you have access to the rest of the problem facts from the solution too:
-
-[source,java,options="nowrap"]
-----
-@PlanningEntity(difficultyWeightFactoryClass = QueenDifficultyWeightFactory.class)
-public class Queen {
-    // ...
-}
-----
 
 See xref:optimization-algorithms/optimization-algorithms.adoc#sortedSelection[sorted selection] for more information.
 
@@ -420,39 +390,39 @@ There are several built-in shadow variables:
 [#bidirectionalVariable]
 === Bi-directional variable (inverse relation shadow variable)
 
-Two variables are bi-directional if their instances always point to each other (unless one side points to `null` and the other side does not exist).
+Two variables are bi-directional if their instances always point to each other,
+unless one side points to `null` and the other side does not exist.
 So if A references B, then B references A.
 
-image::using-timefold-solver/modeling-planning-problems/bidirectionalVariable.png[align="center"]
-
 For a non-chained planning variable, the bi-directional relationship must be a many-to-one relationship.
-To map a bi-directional relationship between two planning variables, annotate the source side (which is the genuine side) as a normal planning variable:
+To map a bi-directional relationship between two planning variables,
+annotate the source side (which is the genuine side) as a normal planning variable:
 
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
-public class CloudProcess {
+public class Lesson {
 
     @PlanningVariable(...)
-    public CloudComputer getComputer() {
-        return computer;
-    }
-    public void setComputer(CloudComputer computer) {...}
+    public Timeslot timeslot;
+
+    ...
 
 }
 ----
 
-And then annotate the other side (which is the shadow side) with a `@InverseRelationShadowVariable` annotation on a `Collection` (usually a `Set` or ``List``) property:
+And then annotate the other side (which is the shadow side)
+with a `@InverseRelationShadowVariable` annotation on a `Collection` (usually a `Set` or ``List``) property:
 
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
-public class CloudComputer {
+public class Timeslot {
 
-    @InverseRelationShadowVariable(sourceVariableName = "computer")
-    public List<CloudProcess> getProcessList() {
-        return processList;
-    }
+    @InverseRelationShadowVariable(sourceVariableName = "timeslot")
+    public List<Timeslot> timeslotList;
+
+    ...
 
 }
 ----
@@ -1044,45 +1014,18 @@ To affect the score function, xref:constraints-and-score/overview.adoc#formalize
 Only consider adding planning value strength too if it can make the solver more efficient.
 ====
 
-To allow the heuristics to take advantage of that domain specific information, set a `strengthComparatorClass` to the `@PlanningVariable` annotation:
-
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(..., strengthComparatorClass = CloudComputerStrengthComparator.class)
-    public CloudComputer getComputer() {
-        return computer;
-    }
-----
-
-[source,java,options="nowrap"]
-----
-public class CloudComputerStrengthComparator implements Comparator<CloudComputer> {
-
-    public int compare(CloudComputer a, CloudComputer b) {
-        return new CompareToBuilder()
-                .append(a.getMultiplicand(), b.getMultiplicand())
-                .append(b.getCost(), a.getCost()) // Descending (but this is debatable)
-                .append(a.getId(), b.getId())
-                .toComparison();
-    }
-
-}
-----
+To allow the heuristics to take advantage of that domain specific information,
+set a `strengthComparatorClass` to the `@PlanningVariable` annotation.
 
 [NOTE]
 ====
-If you have multiple planning value classes in the _same_ value range, the `strengthComparatorClass` needs to implement a `Comparator` of a common superclass (for example ``Comparator<Object>``) and be able to handle comparing instances of those different classes.
+If you have multiple planning value classes in the _same_ value range,
+the `strengthComparatorClass` needs to implement a `Comparator` of a common superclass (for example ``Comparator<Object>``)
+and be able to handle comparing instances of those different classes.
 ====
 
-Alternatively, you can also set a `strengthWeightFactoryClass` to the `@PlanningVariable` annotation, so you have access to the rest of the problem facts from the solution too:
-
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(..., strengthWeightFactoryClass = RowStrengthWeightFactory.class)
-    public Row getRow() {
-        return row;
-    }
-----
+Alternatively, you can also set a `strengthWeightFactoryClass` to the `@PlanningVariable` annotation,
+so you have access to the rest of the problem facts from the solution too.
 
 See xref:optimization-algorithms/optimization-algorithms.adoc#sortedSelection[sorted selection] for more information.
 
@@ -1559,35 +1502,14 @@ Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> 
 A `@PlanningSolution` class requires a score property (or field), which is annotated with a `@PlanningScore` annotation.
 The score property is `null` if the score hasn't been calculated yet.
 The `score` property is typed to the specific `Score` implementation of your use case.
-For example, `NQueens` uses a xref:constraints-and-score/overview.adoc#simpleScore[SimpleScore]:
+Most use cases use a xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore]:
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class NQueens {
-    ...
-
-    private SimpleScore score;
+public class Timetable {
 
     @PlanningScore
-    public SimpleScore getScore() {
-        return score;
-    }
-    public void setScore(SimpleScore score) {
-        this.score = score;
-    }
-
-}
-----
-
-Most use cases use a xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore] instead:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class CloudBalance {
-    ...
-
     private HardSoftScore score;
 
     @PlanningScore
@@ -1700,25 +1622,15 @@ Where a score constraint needs to check that no two exams with a topic that shar
 === Auto discover solution properties
 
 Instead of configuring each property (or field) annotation explicitly,
-some can also be deduced automatically by Timefold Solver.
-For example, on the cloud balancing example:
+some can also be deduced automatically by Timefold Solver:
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution(autoDiscoverMemberType = AutoDiscoverMemberType.FIELD)
-public class CloudBalance {
+public class VehicleRoutePlan {
 
-    // Auto discovered as @ProblemFactCollectionProperty
-    @ValueRangeProvider
-    private List<CloudComputer> computerList;
+        ...
 
-    // Auto discovered as @PlanningEntityCollectionProperty
-    private List<CloudProcess> processList;
-
-    // Auto discovered as @PlanningScore
-    private HardSoftScore score;
-
-    ...
 }
 ----
 

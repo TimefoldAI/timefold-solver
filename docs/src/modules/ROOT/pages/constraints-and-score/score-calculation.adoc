@@ -338,7 +338,8 @@ We can remove it by providing the `indictWith(...)` method with a custom indictm
 ----
 
 The same mechanism can also be used to transform any of the indicted objects to any other object.
-To present the constraint matches to the user or to send them over the wire where they can be further processed, use the `justifyWith(...)` method to provide a custom constraint justification:
+To present the constraint matches to the user or to send them over the wire where they can be further processed,
+use the `justifyWith(...)` method to provide a custom constraint justification:
 
 [source,java,options="nowrap"]
 ----
@@ -543,9 +544,9 @@ If planning entities are used as group keys, their hashCode must not be computed
 Failure to follow this recommendation may result in runtime exceptions being thrown.
 ====
 
-For example, the following code snippet first groups all processes by the computer they run on, sums up all the power
-required by the processes on that computer using the `ConstraintCollectors.sum(...)` collector, and finally penalizes
-every computer whose processes consume more power than is available.
+For example, the following code snippet first groups all visits by the vehicle that will be used,
+counts them using the `ConstraintCollectors.count(...)` collector,
+and finally penalizes every vehicle which makes more than 10 visits:
 
 [source,java,options="nowrap"]
 ----
@@ -553,21 +554,21 @@ import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.*;
 
 ...
 
-private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
-            .filter((computer, requiredCpuPower) -> requiredCpuPower > computer.getCpuPower())
+private Constraint tooManyVisits(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, count())
+            .filter((vehicle, visitCount) -> visitCount > 10)
             .penalize(HardSoftScore.ONE_HARD,
-                    (computer, requiredCpuPower) -> requiredCpuPower - computer.getCpuPower())
-            .asConstraint("requiredCpuPowerTotal");
+                    (vehicle, visitCount) -> visitCount - 10)
+            .asConstraint("tooManyVisits");
 }
 ----
 
 [NOTE]
 ====
 Information might be lost during grouping.
-In the previous example, `filter()` and all subsequent operations no longer have direct access to the original
-`CloudProcess` instance.
+In the previous example,
+`filter()` and all later operations no longer have direct access to the original `Visit` instance.
 ====
 
 There are many collectors available out of the box.
@@ -627,18 +628,19 @@ The distinct count is collected in an `int`. Variants of this collector:
 [#collectorsSum]
 ==== `sum()` collector
 
-To sum the values of a particular property of all elements per group, use the `ConstraintCollectors.sum(...)`
-collector. The following code snippet first groups all processes by the computer they run on and sums up all the power
-required by the processes on that computer using the `ConstraintCollectors.sum(...)` collector.
+To sum the values of a particular property of all elements per group,
+use the `ConstraintCollectors.sum(...)` collector.
+The following code snippet first groups all visits by the vehicle that will be used,
+and sums up all the service durations using the `ConstraintCollectors.sum(...)` collector.
 
 [source,java,options="nowrap"]
 ----
-private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
+private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, sum(Visit::getServiceDuration))
             .penalize(HardSoftScore.ONE_SOFT,
-                    (computer, requiredCpuPower) -> requiredCpuPower)
-            .asConstraint("requiredCpuPowerTotal");
+                    (vehicle, totalServiceDuration) -> totalServiceDuration)
+            .asConstraint("totalServiceDuration");
 }
 ----
 
@@ -657,17 +659,17 @@ The sum is collected in an `int`. Variants of this collector:
 
 To calculate the average of a particular property of all elements per group, use the `ConstraintCollectors.average(...)`
 collector.
-The following code snippet first groups all processes by the computer they run on and averages all the power
-required by the processes on that computer using the `ConstraintCollectors.average(...)` collector.
+The following code snippet first groups all visits by the vehicle that will be used,
+and sums up all the service durations using the `ConstraintCollectors.sum(...)` collector.
 
 [source,java,options="nowrap"]
 ----
-private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, average(CloudProcess::getRequiredCpuPower))
+private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, sum(Visit::getServiceDuration))
             .penalize(HardSoftScore.ONE_SOFT,
-                    (computer, averageCpuPower) -> averageCpuPower)
-            .asConstraint("averageCpuPower");
+                    (vehicle, totalServiceDuration) -> totalServiceDuration)
+            .asConstraint("totalServiceDuration");
 }
 ----
 
@@ -689,16 +691,17 @@ To extract the minimum or maximum per group, use the `ConstraintCollectors.min(.
 These collectors operate on values of properties which are `Comparable` (such as `Integer`, `String` or `Duration`),
 although there are also variants of these collectors which allow you to provide your own `Comparator`.
 
-The following example finds a computer which runs the most power-demanding process:
+The following code snippet first groups all visits by the vehicle that will be used,
+and finds the maximum in the group using the `ConstraintCollectors.sum(...)` collector.
 
 [source,java,options="nowrap"]
 ----
-private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, max(CloudProcess::getRequiredCpuPower))
-            .penalize(HardSoftScore.ONE_HARD,
-                    (computer, biggestProcess) -> ...)
-            .asConstraint("computerWithBiggestProcess");
+private Constraint maxServiceDuration(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, max(Visit::getServiceDuration))
+            .penalize(HardSoftScore.ONE_SOFT,
+                    (vehicle, maxServiceDuration) -> maxServiceDuration)
+            .asConstraint("maxServiceDuration");
 }
 ----
 
@@ -715,16 +718,16 @@ See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Compa
 
 To extract all elements per group into a collection, use the `ConstraintCollectors.toList(...)`.
 
-The following example retrieves all processes running on a computer in a `List`:
+The following example retrieves all visits for a given vehicle in a `List`:
 
 [source,java,options="nowrap"]
 ----
-private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, toList())
+private Constraint vehicleAndItsVisits(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, toList())
             .penalize(HardSoftScore.ONE_HARD,
-                    (computer, processList) -> ...)
-            .asConstraint("computerAndItsProcesses");
+                    (vehicle, visitList) -> ...)
+            .asConstraint("vehicleAndItsVisits");
 }
 ----
 
@@ -826,20 +829,20 @@ The constraint collector framework enables you to create constraint collectors w
 This is achieved using the `ConstraintCollectors.conditionally(...)` constraint collector.
 
 This collector accepts a predicate, and another collector to which it will delegate if the predicate is true.
-The following example returns a count of long-running processes assigned to a given computer,
-excluding processes which are not long-running:
+The following example returns a count of long-running visits with assigned to a given vehicle,
+where the customer asked for evening delivery:
 
 [source,java,options="nowrap"]
 ----
-private Constraint computerWithLongRunningProcesses(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, conditionally(
-                    CloudProcess::isLongRunning,
+private Constraint visitWithEveningDelivery(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, conditionally(
+                    Visit::isEveningDelivery,
                     count()
             ))
             .penalize(HardSoftScore.ONE_HARD,
-                    (computer, longRunningProcessCount) -> ...)
-            .asConstraint("longRunningProcesses");
+                    (vehicle, eveningDeliveryCount) -> ...)
+            .asConstraint("visitWithEveningDelivery");
 }
 ----
 
@@ -925,16 +928,16 @@ absence of some other object.
 
 image::constraints-and-score/score-calculation/constraintStreamIfExists.png[align="center"]
 
-The following example penalizes computers which have at least one process running:
+The following example penalizes vehicles which have at least one visit:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint runningComputer(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudComputer.class)
-                .ifExists(CloudProcess.class, Joiners.equal(Function.identity(), CloudProcess::getComputer))
+    private Constraint deployedVehicle(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Vehicle.class)
+                .ifExists(Visit.class, Joiners.equal(Function.identity(), Visit::getVehicle))
                 .penalize(HardSoftScore.ONE_SOFT,
-                        computer -> ...)
-                .asConstraint("runningComputer");
+                        vehicle -> ...)
+                .asConstraint("deployedVehicle");
     }
 ----
 
@@ -947,16 +950,16 @@ Conversely, if the `ifNotExists()` building block is used (as well as the `ifNot
 
 [source,java,options="nowrap"]
 ----
-    private Constraint unusedComputer(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudComputer.class)
-                .ifNotExists(CloudProcess.class, Joiners.equal(Function.identity(), CloudProcess::getComputer))
-                .penalize(HardSoftScore.ONE_HARD,
-                        computer -> ...)
-                .asConstraint("unusedComputer");
+    private Constraint idleVehicle(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Vehicle.class)
+                .ifNotExists(Visit.class, Joiners.equal(Function.identity(), Visit::getVehicle))
+                .penalize(HardSoftScore.ONE_SOFT,
+                        vehicle -> ...)
+                .asConstraint("idleVehicle");
     }
 ----
 
-Here, only the computers without processes running are penalized.
+Here, only the vehicles without any visits are penalized.
 
 Also note the use of the `Joiner` class to limit the constraint matches.
 For a description of available joiners, see <<constraintStreamsJoin,joining>>.
@@ -981,28 +984,29 @@ The result of such mapping is another constraint stream of the mapped tuples.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class) // UniConstraintStream<CloudProcess>
-                .map(CloudProcess::getComputer)           // UniConstraintStream<CloudComputer>
+    private Constraint visits(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Visit.class) // UniConstraintStream<Visit>
+                .map(Visit::getName)                  // UniConstraintStream<String>
                 ...
     }
 ----
 
 [NOTE]
 ====
-In the example above, the mapping function produces duplicate tuples if two different ``CloudProcess``es share a single `CloudComputer`.
-That is, such `CloudComputer` appears in the resulting constraint stream twice.
+In the example above, the mapping function produces duplicate tuples if two different ``Visit``s share a name.
+That is, such visit name appears in the resulting constraint stream twice.
 See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
 
-Mapping can be used to transform streams of all cardinalities.
-The following example maps a pair of `CloudProcess` instances to a pair of `CloudComputer` instances running them:
+Mapping can be used to transform streams of all cardinalities,
+and even between cardinalities.
+The following example maps a pair of `Visit` instances to a pair of their names:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachUniquePair(CloudProcess.class)      // BiConstraintStream<CloudProcess, CloudProcess>
-                .map(CloudProcess::getComputer, CloudProcess::getComputer)  // BiConstraintStream<CloudComputer, CloudComputer>
+    private Constraint visits(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEachUniquePair(Visit.class)                        // BiConstraintStream<Visit, Visit>
+                .map((visit1, visit2) -> Pair.of(visit1.getName(), visit2.getName()))  // UniConstraintStream<Pair<String, String>>
                 ...
     }
 ----
@@ -1037,10 +1041,10 @@ to have the duplicate copies eliminated.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class) // UniConstraintStream<CloudProcess>
-                .map(CloudProcess::getComputer)           // UniConstraintStream<CloudComputer>
-                .distinct()                               // The same, each CloudComputer just once.
+    private Constraint visits(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Visit.class) // UniConstraintStream<Visit>
+                .map(Visit::getName)                  // UniConstraintStream<String>
+                .distinct()                           // The same, each name just once.
                 ...
     }
 ----

@@ -50,7 +50,7 @@ The `timefold-solver-jpa` jar provides a JPA score converter for every built-in 
 ----
 @PlanningSolution
 @Entity
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     @Convert(converter = HardSoftScoreConverter.class)
@@ -118,7 +118,7 @@ To fix that, configure the appropriate ``ScoreJaxbAdapter``:
 ----
 @PlanningSolution
 @XmlRootElement @XmlAccessorType(XmlAccessType.FIELD)
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     @XmlJavaTypeAdapter(HardSoftScoreJaxbAdapter.class)
@@ -132,10 +132,10 @@ For example, this generates pretty XML:
 
 [source,xml,options="nowrap"]
 ----
-<cloudBalance>
+<vehicleRoutePlan>
    ...
    <score>0hard/-200soft</score>
-</cloudBalance>
+</vehicleRoutePlan>
 ----
 
 The same applies for a bendable score:
@@ -191,7 +191,7 @@ The `TimefoldJacksonModule` fixes that, by using `HardSoftScoreJacksonSerializer
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     private HardSoftScore score;
@@ -239,13 +239,14 @@ public class Schedule {
 ----
 ====
 
-When a field is the `Score` supertype (instead of a specific type such as `HardSoftScore`), it uses `PolymorphicScoreJacksonSerializer` and `PolymorphicScoreJacksonDeserializer`
-to record the score type in JSON too, otherwise it would be impossible to deserialize it:
+When a field is the `Score` supertype (instead of a specific type such as `HardSoftScore`),
+it uses `PolymorphicScoreJacksonSerializer` and `PolymorphicScoreJacksonDeserializer` to record the score type in JSON too,
+otherwise it would be impossible to deserialize it:
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     private Score score;
@@ -992,13 +993,12 @@ _to all modules_ in your `module-info.java` file:
 
 [source,java,options="nowrap"]
 ----
-module ai.timefold.solver.cloudbalancing {
+module org.acme.vehiclerouting {
     requires ai.timefold.solver.core;
     ...
 
-    opens ai.timefold.solver.examples.cloudbalancing; // Solver configuration
-    opens ai.timefold.solver.examples.cloudbalancing.domain; // Domain classes
-    opens ai.timefold.solver.examples.cloudbalancing.score; // Constraints
+    opens org.acme.vehiclerouting.domain; // Domain classes
+    opens org.acme.vehiclerouting.solver; // Constraints
     ...
 }
 ----

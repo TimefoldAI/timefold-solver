@@ -378,20 +378,7 @@ for example on the database ID:
 
 [source,java,options="nowrap"]
 ----
-public class CloudComputer {
-
-    @PlanningId
-    private Long id;
-
-    ...
-}
-----
-
-Or alternatively, on another type of ID:
-
-[source,java,options="nowrap"]
-----
-public class User {
+public class Visit {
 
     @PlanningId
     private String username;
@@ -543,7 +530,7 @@ Simplest configuration:
 [source,xml,options="nowrap"]
 ----
   <partitionedSearch>
-    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>...MyPartitioner</solutionPartitionerClass>
   </partitionedSearch>
 ----
 
@@ -556,7 +543,7 @@ Advanced configuration:
 ----
   <partitionedSearch>
     ...
-    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>...MyPartitioner</solutionPartitionerClass>
     <runnablePartThreadLimit>4</runnablePartThreadLimit>
 
     <constructionHeuristic>...</constructionHeuristic>
@@ -585,7 +572,7 @@ followed by a non-partitioned Local Search phase:
 [source,xml,options="nowrap"]
 ----
   <partitionedSearch>
-    <solutionPartitionerClass>...CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>...MyPartitioner</solutionPartitionerClass>
 
     <constructionHeuristic/>
     <localSearch>
@@ -610,7 +597,7 @@ To use a custom `SolutionPartitioner`, configure one on the Partitioned Search p
 [source,xml,options="nowrap"]
 ----
   <partitionedSearch>
-    <solutionPartitionerClass>ai.timefold.solver.examples.cloudbalancing.optional.partitioner.CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>...MyPartitioner</solutionPartitionerClass>
   </partitionedSearch>
 ----
 
@@ -629,77 +616,6 @@ The `size()` of the returned `List` is the `partCount` (the number of partitions
 This can be decided dynamically, for example, based on the size of the non-partitioned solution.
 The `partCount` is unrelated to the `runnablePartThreadLimit`.
 
-For example:
-
-[source,java,options="nowrap"]
-----
-public class CloudBalancePartitioner implements SolutionPartitioner<CloudBalance> {
-
-    private int partCount = 4;
-    private int minimumProcessListSize = 75;
-
-    @Override
-    public List<CloudBalance> splitWorkingSolution(ScoreDirector<CloudBalance> scoreDirector, Integer runnablePartThreadLimit) {
-        CloudBalance originalSolution = scoreDirector.getWorkingSolution();
-        List<CloudComputer> originalComputerList = originalSolution.getComputerList();
-        List<CloudProcess> originalProcessList = originalSolution.getProcessList();
-        int partCount = this.partCount;
-        if (originalProcessList.size() / partCount < minimumProcessListSize) {
-            partCount = originalProcessList.size() / minimumProcessListSize;
-        }
-        List<CloudBalance> partList = new ArrayList<>(partCount);
-        for (int i = 0; i < partCount; i++) {
-            CloudBalance partSolution = new CloudBalance(originalSolution.getId(),
-                    new ArrayList<>(originalComputerList.size() / partCount + 1),
-                    new ArrayList<>(originalProcessList.size() / partCount + 1));
-            partList.add(partSolution);
-        }
-
-        int partIndex = 0;
-        Map<Long, Pair<Integer, CloudComputer>> idToPartIndexAndComputerMap = new HashMap<>(originalComputerList.size());
-        for (CloudComputer originalComputer : originalComputerList) {
-            CloudBalance part = partList.get(partIndex);
-            CloudComputer computer = new CloudComputer(
-                    originalComputer.getId(),
-                    originalComputer.getCpuPower(), originalComputer.getMemory(),
-                    originalComputer.getNetworkBandwidth(), originalComputer.getCost());
-            part.getComputerList().add(computer);
-            idToPartIndexAndComputerMap.put(computer.getId(), Pair.of(partIndex, computer));
-            partIndex = (partIndex + 1) % partList.size();
-        }
-
-        partIndex = 0;
-        for (CloudProcess originalProcess : originalProcessList) {
-            CloudBalance part = partList.get(partIndex);
-            CloudProcess process = new CloudProcess(
-                    originalProcess.getId(),
-                    originalProcess.getRequiredCpuPower(), originalProcess.getRequiredMemory(),
-                    originalProcess.getRequiredNetworkBandwidth());
-            part.getProcessList().add(process);
-            if (originalProcess.getComputer() != null) {
-                Pair<Integer, CloudComputer> partIndexAndComputer = idToPartIndexAndComputerMap.get(
-                        originalProcess.getComputer().getId());
-                if (partIndexAndComputer == null) {
-                    throw new IllegalStateException("The initialized process (" + originalProcess
-                            + ") has a computer (" + originalProcess.getComputer()
-                            + ") which doesn't exist in the originalSolution (" + originalSolution + ").");
-                }
-                if (partIndex != partIndexAndComputer.getLeft().intValue()) {
-                    throw new IllegalStateException("The initialized process (" + originalProcess
-                            + ") with partIndex (" + partIndex
-                            + ") has a computer (" + originalProcess.getComputer()
-                            + ") which belongs to another partIndex (" + partIndexAndComputer.getLeft() + ").");
-                }
-                process.setComputer(partIndexAndComputer.getRight());
-            }
-            partIndex = (partIndex + 1) % partList.size();
-        }
-        return partList;
-    }
-
-}
-----
-
 To configure values of a `SolutionPartitioner` dynamically in the solver configuration
 (so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
 add the `solutionPartitionerCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
@@ -707,7 +623,7 @@ add the `solutionPartitionerCustomProperties` element and use xref:using-timefol
 [source,xml,options="nowrap"]
 ----
   <partitionedSearch>
-    <solutionPartitionerClass>...CloudBalancePartitioner</solutionPartitionerClass>
+    <solutionPartitionerClass>...MyPartitioner</solutionPartitionerClass>
     <solutionPartitionerCustomProperties>
       <property name="myPartCount" value="8"/>
       <property name="myMinimumProcessListSize" value="100"/>

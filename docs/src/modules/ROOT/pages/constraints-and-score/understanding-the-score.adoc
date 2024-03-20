@@ -13,8 +13,8 @@ The easiest way to do that during development is to print the score summary:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
-System.out.println(solutionManager.explain(solution));
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+System.out.println(solutionManager.explain(vehicleRoutePlan));
 ----
 
 For example in vehicle routing,
@@ -70,8 +70,8 @@ need to describe the solution to the user, use the `SolutionManager` API:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(cloudBalance);
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 ----
 
 `ScoreAnalysis` is a JSON-friendly representation of the score,
@@ -190,20 +190,20 @@ get the `Indictment` map from the ``ScoreExplanation``:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<CloudBalance, HardSoftScore> scoreManager = SolutionManager.create(solverFactory);
-ScoreExplanation<CloudBalance, HardSoftScore> scoreExplanation = solutionManager.explain(cloudBalance);
-Map<Object, Indictment<HardSoftScore>> indictmentMap = scoreExplanation.getIndictmentMap();
-for (CloudProcess process : cloudBalance.getProcessList()) {
-    Indictment<HardSoftScore> indictment = indictmentMap.get(process);
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreExplanation<VehicleRoutePlan, HardSoftLongScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
+Map<Object, Indictment<HardSoftLongScore>> indictmentMap = scoreExplanation.getIndictmentMap();
+for (Visit visit : vehicleRoutePlan.getVisitList()) {
+    Indictment<HardSoftLongScore> indictment = indictmentMap.get(visit);
     if (indictment == null) {
         continue;
     }
     // The score impact of that planning entity
-    HardSoftScore totalScore = indictment.getScore();
+    HardSoftLongScore totalScore = indictment.getScore();
 
-    for (ConstraintMatch<HardSoftScore> constraintMatch : indictment.getConstraintMatchSet()) {
+    for (ConstraintMatch<HardSoftLongScore> constraintMatch : indictment.getConstraintMatchSet()) {
         String constraintName = constraintMatch.getConstraintName();
-        HardSoftScore score = constraintMatch.getScore();
+        HardSoftLongScore score = constraintMatch.getScore();
         ...
     }
 }

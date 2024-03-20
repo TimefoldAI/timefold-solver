@@ -447,40 +447,70 @@ For more detailed monitoring, Timefold Solver can be configured to monitor addit
 
 The following metrics are available:
 
-- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"): Measure the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
+- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"):
+Measurse the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
 
-- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"): Measures the number of errors that occur while solving.
+- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"):
+Measures the number of errors that occur while solving.
 
-- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"): Measures the number of score calculations Timefold Solver performed.
+- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"):
+Measures the number of score calculations Timefold Solver performed.
 
-- `PROBLEM_ENTITY_COUNT` (default, Micrometer meter id: "timefold.solver.problem.entities"): Measures the number of entities in the problem submitted to Timefold Solver.
+- `PROBLEM_ENTITY_COUNT` (default, Micrometer meter id: "timefold.solver.problem.entities"):
+Measures the number of entities in the problem submitted to Timefold Solver.
 
-- `PROBLEM_VARIABLE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.variables"): Measures the number of genuine variables in the problem submitted to Timefold Solver.
+- `PROBLEM_VARIABLE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.variables"):
+Measures the number of genuine variables in the problem submitted to Timefold Solver.
 
-- `PROBLEM_VALUE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.values"): Measures the approximate number of planning values in the problem submitted to Timefold Solver.
+- `PROBLEM_VALUE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.values"):
+Measures the approximate number of planning values in the problem submitted to Timefold Solver.
 
-- `PROBLEM_SIZE_LOG` (default, Micrometer meter id: "timefold.solver.problem.size.log"): Measures the approximate log 10 of the search space size for the problem submitted to Timefold Solver.
+- `PROBLEM_SIZE_LOG` (default, Micrometer meter id: "timefold.solver.problem.size.log"):
+Measures the approximate log 10 of the search space size for the problem submitted to Timefold Solver.
 
-- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"): Measures the score of the best solution Timefold Solver found so far.
-There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
+- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"):
+Measures the score of the best solution Timefold Solver found so far.
+There are separate meters for each level of the score.
+For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
 
-- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"): Measures the score of each step Timefold Solver takes.
-There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
+- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"):
+Measures the score of each step Timefold Solver takes.
+There are separate meters for each level of the score.
+For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
 
-- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"): Measures the number of changed planning variables between consecutive best solutions.
+- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"):
+Measures the number of changed planning variables between consecutive best solutions.
 
-- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"): Measures the number of moves evaluated in a step.
+- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"):
+Measures the number of moves evaluated in a step.
 
-- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"): Measures the amount of memory used across the JVM. This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
+- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"):
+Measures the amount of memory used across the JVM.
+This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
 
-- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"): Measures the score impact of each constraint on the best solution Timefold Solver found so far.
-There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"):
+Measures the score impact of each constraint on the best solution Timefold Solver found so far.
+There are separate meters for each level of the score, with tags for each constraint.
+For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example",
+there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
 
-- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"): Measures the score impact of each constraint on the current step. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"):
+Measures the score impact of each constraint on the current step.
+There are separate meters for each level of the score, with tags for each constraint.
+For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example",
+there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
 
-- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"):
+Measures how much a particular move type improves the best solution.
+There are separate meters for each level of the score, with a tag for the move type.
+For instance, for a `HardSoftScore` and a `ChangeMove` for the room of a lesson,
+there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Lesson.room)`.
 
-- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"):
+Measures how much a particular move type improves the best solution.
+There are separate meters for each level of the score, with a tag for the move type.
+For instance, for a `HardSoftScore` and a `ChangeMove` for the room of a lesson,
+there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Lesson.room)`.
 
 [#randomNumberGenerator]
 == Random number generator
@@ -539,8 +569,8 @@ Otherwise, build a `SolverManager` instance with the `create(...)` method:
 
 [source,java,options="nowrap"]
 ----
-SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../cloudBalancingSolverConfig.xml");
-SolverManager<CloudBalance, UUID> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
+SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../solverConfig.xml");
+SolverManager<VehicleRoutePlan, String> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
 ----
 
 Each problem submitted to the `SolverManager.solve(...)` methods needs a unique problem ID.
@@ -560,15 +590,15 @@ To retrieve the best solution, after solving terminates normally, use `SolverJob
 
 [source,java,options="nowrap"]
 ----
-CloudBalance problem1 = ...;
-UUID problemId = UUID.randomUUID();
+VehicleRoutePlan problem1 = ...;
+String problemId = UUID.randomUUID().toString();
 // Returns immediately
-SolverJob<CloudBalance, UUID> solverJob = solverManager.solve(problemId, problem1);
+SolverJob<VehicleRoutePlan, String> solverJob = solverManager.solve(problemId, problem1);
 ...
-CloudBalance solution1;
+
 try {
     // Returns only after solving terminates
-    solution1 = solverJob.getFinalBestSolution();
+    VehicleRoutePlan solution1 = solverJob.getFinalBestSolution();
 } catch (InterruptedException | ExecutionException e) {
     throw ...;
 }
