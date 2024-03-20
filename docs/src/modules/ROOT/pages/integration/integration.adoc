@@ -69,7 +69,8 @@ To avoid this limitation, https://docs.jboss.org/hibernate/orm/current/userguide
 ==== JPA and Hibernate: planning cloning
 
 In JPA and Hibernate, there is usually a `@ManyToOne` relationship from most problem fact classes to the planning solution class.
-Therefore, the problem fact classes reference the planning solution class, which implies that when the solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning cloned], they need to be cloned too.
+Therefore, the problem fact classes reference the planning solution class,
+which implies that when the solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning cloned], they need to be cloned too.
 Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
 
 [source,java,options="nowrap"]
