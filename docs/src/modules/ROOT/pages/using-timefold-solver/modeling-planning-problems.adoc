@@ -1354,7 +1354,8 @@ public class Customer {
 
 Chained planning variable is one way to implement the xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
 This pattern is used for some use cases, such as TSP and vehicle routing.
-Use the chained planning variable to implement this pattern if you plan to use some of the advanced planning features,
+Only use the chained planning variable to implement this pattern
+if you plan to use some of the advanced planning features
 that are not yet supported by the <<planningListVariable,planning list variable>>.
 
 Chained planning variable allows the planning entities to point to each other and form a chain.
