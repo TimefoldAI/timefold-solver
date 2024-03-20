@@ -1,7 +1,6 @@
 package ai.timefold.solver.examples.app;
 
 import ai.timefold.solver.examples.common.app.LoggingMain;
-import ai.timefold.solver.examples.conferencescheduling.persistence.ConferenceSchedulingGenerator;
 import ai.timefold.solver.examples.examination.persistence.ExaminationImporter;
 import ai.timefold.solver.examples.flightcrewscheduling.persistence.FlightCrewSchedulingGenerator;
 import ai.timefold.solver.examples.meetingscheduling.persistence.MeetingSchedulingGenerator;
@@ -19,7 +18,6 @@ public class AllExamplesSolutionImporter extends LoggingMain {
     }
 
     public void importAll() {
-        ConferenceSchedulingGenerator.main(new String[0]);
         ExaminationImporter.main(new String[0]);
         FlightCrewSchedulingGenerator.main(new String[0]);
         MeetingSchedulingGenerator.main(new String[0]);
