@@ -53,12 +53,34 @@ Every upgrade note indicates how likely your code will be affected by that chang
 - icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
 - icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, unless you use internal classes.
-- icon:eye[] *Recommended*: Not a backwards-incompatible change, but you probably want to do this.
+- icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 Kotlin users should translate the changes accordingly.
 
 === Upgrade from 1.8.0 to 1.9.0
+
+.icon:info-circle[role=yellow] Removed several of the old examples
+====
+We have started the process of removing the ancient Swing-based examples.
+In the first wave, we have removed the following examples from the `examples` module:
+
+- `cloudbalancing`,
+- `conferencescheduling`,
+- `curriculumcourse`,
+- `machinereassignment`,
+- `nqueens`
+- `tsp`
+- and `vehiclerouting`.
+
+You can find better, more modern implementations of `vehiclerouting` and `conferencescheduling` in our quickstarts.
+The other examples on the list were removed without replacement as we didn't see sufficient traction.
+
+Going forward, our intention is to convert every other current example into a quickstart
+and remove the original Swing-based examples from the solver codebase entirely.
+====
+
+'''
 
 .icon:info-circle[role=yellow] Several internal modules folded into `timefold-solver-core`
 [%collapsible%open]
