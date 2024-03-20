@@ -618,6 +618,148 @@ class Resource {
 
 **Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
 
+[#multithreadedQuarkus]
+=== Solving with multiple threads
+
+In order to solve problems using multiple threads,
+switch to xref:../enterprise-edition/enterprise-edition.adoc[Enterprise Edition].
+The initial steps configure the enterprise repository and its dependencies.
+Then, the `application.properties` is updated with the multithread setting.
+
+First, add the following repository to your project:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following repository to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<project>
+  ...
+  <repositories>
+    <repository>
+      <id>timefold-solver-enterprise</id>
+      <name>Timefold Solver Enterprise Edition</name>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
+    </repository>
+  </repositories>
+  ...
+</project>
+----
+--
+Gradle::
++
+--
+Add the following repository to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+repositories {
+  mavenCentral()
+  maven {
+    url "https://timefold.jfrog.io/artifactory/releases/"
+  }
+}
+----
+--
+====
+
+Configure all module versions by updating the project with the following dependency:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following `BOM` to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+  <dependencyManagement>
+    <dependencies>
+      ...
+      <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-bom</artifactId>
+          <version>${version.ai.timefold.solver}</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
+    </dependencies>
+    ...
+  </dependencyManagement>
+----
+--
+Gradle::
++
+--
+Add the following to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+
+dependencies {
+    ...
+    implementation platform("ai.timefold.solver.enterprise:timefold-solver-enterprise-bom:${timefoldVersion}")
+    ...
+}
+----
+--
+====
+
+Update your Timefold Quarkus dependency to use the enterprise version:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following dependency to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<dependencies>
+    ...
+    <dependency>
+      <groupId>ai.timefold.solver.enterprise</groupId>
+      <artifactId>timefold-solver-enterprise-quarkus</artifactId>
+    </dependency>
+    ...
+</dependencies>
+----
+--
+Gradle::
++
+--
+Add the following dependency to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+dependencies {
+    ...
+    implementation "ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus"
+    ...
+}
+----
+--
+====
+
+After properly configuring the Timefold Enterprise Edition,
+update the `application.properties` file with the multi-thread setting.
+
+[source,properties]
+----
+quarkus.timefold.solver.move-thread-count=AUTO
+----
+
+The provided setting enable the xref:../enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+process automatically.
+When the `AUTO` setting is enabled,
+the Timefold Solver determines the optimal number of move threads to run in parallel.
+
 [#integrationWithSpringBoot]
 == Spring Boot
 
@@ -977,6 +1119,154 @@ class Resource {
 --
 ====
 **Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
+
+[#multithreadedSpringBoot]
+=== Solving with multiple threads
+
+In order to solve problems using multiple threads,
+switch to xref:../enterprise-edition/enterprise-edition.adoc[Enterprise Edition].
+The initial steps configure the enterprise repository and its dependencies.
+Then, the `application.properties` is updated with the multithread setting.
+
+First, add the following repository to your project:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following repository to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<project>
+  ...
+  <repositories>
+    <repository>
+      <id>timefold-solver-enterprise</id>
+      <name>Timefold Solver Enterprise Edition</name>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
+    </repository>
+  </repositories>
+  ...
+</project>
+----
+--
+Gradle::
++
+--
+Add the following repository to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+repositories {
+  mavenCentral()
+  maven {
+    url "https://timefold.jfrog.io/artifactory/releases/"
+  }
+}
+----
+--
+====
+
+Configure all module versions by updating the project with the following dependency:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following `BOM` to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+  <dependencyManagement>
+    <dependencies>
+      ...
+      <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-bom</artifactId>
+          <version>${version.ai.timefold.solver}</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
+    </dependencies>
+    ...
+  </dependencyManagement>
+----
+--
+Gradle::
++
+--
+Add the following to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+
+dependencies {
+    ...
+    implementation platform("ai.timefold.solver.enterprise:timefold-solver-enterprise-bom:${timefoldVersion}")
+    ...
+}
+----
+--
+====
+
+Update your Timefold Spring Boot dependency to use the enterprise version:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following dependency to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<dependencies>
+    ...
+    <dependency>
+        <groupId>ai.timefold.solver.enterprise</groupId>
+        <artifactId>timefold-solver-enterprise-spring-boot-starter</artifactId>
+    </dependency>
+    ...
+</dependencies>
+----
+--
+Gradle::
++
+--
+Add the following dependency to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+dependencies {
+    ...
+    implementation "ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter"
+    ...
+}
+----
+--
+====
+
+After properly configuring the Timefold Enterprise Edition,
+update the `application.properties` file with the multi-thread setting.
+
+[source,properties]
+----
+timefold.solver.move-thread-count=AUTO
+----
+
+The provided setting enable the xref:../enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+process automatically.
+When the `AUTO` setting is enabled,
+the Timefold Solver determines the optimal number of move threads to run in parallel.
+
+[#integrationWithSpringBoot]
+== Spring Boot
+
+To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
+and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot Java quick start].
 
 [#integrationWithOtherEnvironments]
 == Other environments
