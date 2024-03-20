@@ -301,49 +301,11 @@ To pin the entire list, preventing any modifications to the list whatsoever,
 
 Replanning an existing plan can be very disruptive.
 If the plan affects humans (such as employees, drivers, ...), very disruptive changes are often undesirable.
-In such cases, nonvolatile replanning helps by restricting planning freedom: the gain of changing a plan must be higher than the disruption it causes.
+In such cases, nonvolatile replanning helps by restricting planning freedom:
+the gain of changing a plan must be higher than the disruption it causes.
 This is usually implemented by taxing all planning entities that change.
 
 image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
-
-In the machine reassignment example, the entity has both the planning variable `machine` and its original value ``originalMachine``:
-
-[source,java,options="nowrap"]
-----
-@PlanningEntity(...)
-public class ProcessAssignment {
-
-    private MrProcess process;
-    private Machine originalMachine;
-    private Machine machine;
-
-    public Machine getOriginalMachine() {...}
-
-    @PlanningVariable(...)
-    public Machine getMachine() {...}
-
-    public boolean isMoved() {
-        return originalMachine != null && originalMachine != machine;
-    }
-
-    ...
-}
-----
-
-During planning, the planning variable `machine` changes.
-By comparing it with the originalMachine, a change in plan can be penalized:
-
-[source,options="nowrap"]
-----
-rule "processMoved"
-    when
-        ProcessAssignment(moved == true)
-    then
-        scoreHolder.addSoftConstraintMatch(kcontext, -1000);
-end
-----
-
-The soft penalty of `-1000` means that a better solution is only accepted if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
 
 
 [#realTimePlanning]

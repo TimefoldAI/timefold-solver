@@ -1040,7 +1040,6 @@ Understand these guidelines to decide the hardware for a Timefold Solver service
 
 * **RAM memory**: Provision plenty, but no need to provide more.
 ** The problem dataset, loaded before Timefold Solver is called, often consumes the most memory. It depends on the problem scale.
-*** For example, in the Machine Reassignment example some datasets use over 1GB in memory. But in most examples, they use just a few MB.
 *** If this is a problem, review the domain class structure: remove classes or fields that Timefold Solver doesn't need during solving.
 *** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
 ** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.

@@ -279,8 +279,8 @@ Implement your own `SolutionFileIO` implementation and configure it with the `so
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>ai.timefold.solver.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
-      <inputSolutionFile>data/machinereassignment/import/model_a1_1.txt</inputSolutionFile>
+      <solutionFileIOClass>...MyXlsxSolutionFileIO</solutionFileIOClass>
+      <inputSolutionFile>data/model.xslx</inputSolutionFile>
       ...
     </problemBenchmarks>
 ----

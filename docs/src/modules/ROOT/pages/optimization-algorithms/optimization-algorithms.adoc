@@ -736,25 +736,6 @@ public interface CustomPhaseCommand<Solution_> {
 }
 ----
 
-For example, implement `CustomPhaseCommand` and its `changeWorkingSolution()` method:
-
-[source,java,options="nowrap"]
-----
-public class ToOriginalMachineSolutionInitializer implements CustomPhaseCommand<MachineReassignment> {
-
-    public void changeWorkingSolution(ScoreDirector<MachineReassignment> scoreDirector) {
-        MachineReassignment machineReassignment = scoreDirector.getWorkingSolution();
-        for (MrProcessAssignment processAssignment : machineReassignment.getProcessAssignmentList()) {
-            scoreDirector.beforeVariableChanged(processAssignment, "machine");
-            processAssignment.setMachine(processAssignment.getOriginalMachine());
-            scoreDirector.afterVariableChanged(processAssignment, "machine");
-            scoreDirector.triggerVariableListeners();
-        }
-    }
-
-}
-----
-
 [WARNING]
 ====
 Any change on the planning entities in a `CustomPhaseCommand` must be notified to the ``ScoreDirector``.
@@ -775,7 +756,7 @@ Configure the `CustomPhaseCommand` in the solver configuration:
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
   <customPhase>
-    <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+    <customPhaseCommandClass>...MyCustomPhase</customPhaseCommandClass>
   </customPhase>
   ... <!-- Other phases -->
 </solver>

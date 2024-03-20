@@ -1648,48 +1648,8 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
 }
 ----
 
-For example in machine reassignment, create one `ConstraintMatchTotal` per constraint type and call `addConstraintMatch()` for each constraint match:
-
-[source,java,options="nowrap"]
-----
-public class MachineReassignmentIncrementalScoreCalculator
-        implements ConstraintMatchAwareIncrementalScoreCalculator<MachineReassignment, HardSoftLongScore> {
-    ...
-
-    @Override
-    public void resetWorkingSolution(MachineReassignment workingSolution, boolean constraintMatchEnabled) {
-        resetWorkingSolution(workingSolution);
-        // ignore constraintMatchEnabled, it is always presumed enabled
-    }
-
-    @Override
-    public Collection<ConstraintMatchTotal<HardSoftLongScore>> getConstraintMatchTotals() {
-        ConstraintMatchTotal<HardSoftLongScore> maximumCapacityMatchTotal = new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE,
-            "maximumCapacity", HardSoftLongScore.ZERO);
-        ...
-        for (MrMachineScorePart machineScorePart : machineScorePartMap.values()) {
-            for (MrMachineCapacityScorePart machineCapacityScorePart : machineScorePart.machineCapacityScorePartList) {
-                if (machineCapacityScorePart.maximumAvailable < 0L) {
-                    maximumCapacityMatchTotal.addConstraintMatch(
-                            Arrays.asList(machineCapacityScorePart.machineCapacity),
-                            HardSoftLongScore.valueOf(machineCapacityScorePart.maximumAvailable, 0));
-                }
-            }
-        }
-        ...
-        List<ConstraintMatchTotal<HardSoftLongScore>> constraintMatchTotalList = new ArrayList<>(4);
-        constraintMatchTotalList.add(maximumCapacityMatchTotal);
-        ...
-        return constraintMatchTotalList;
-    }
-
-    @Override
-    public Map<Object, Indictment<HardSoftLongScore>> getIndictmentMap() {
-        return null; // Calculate it non-incrementally from getConstraintMatchTotals()
-    }
-}
-----
-
-That `getConstraintMatchTotals()` code often duplicates some of the logic of the normal `IncrementalScoreCalculator` methods.
-Constraint Streams doesn't have this disadvantage, because they are constraint match aware automatically when needed,
+Typically it means creating one `ConstraintMatchTotal` per constraint type
+and calling `addConstraintMatch()` for each constraint match.
+`getConstraintMatchTotals()` code often duplicates some logic of the normal `IncrementalScoreCalculator` methods.
+Constraint Streams doesn't have this disadvantage, because they are aware of constraint matches by design,
 without any extra domain-specific code.
