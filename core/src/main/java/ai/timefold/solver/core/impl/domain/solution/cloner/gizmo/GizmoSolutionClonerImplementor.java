@@ -33,6 +33,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoClassLoade
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
+import ai.timefold.solver.core.impl.domain.solution.cloner.PlanningCloneable;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.util.MutableReference;
 
@@ -323,7 +324,16 @@ public class GizmoSolutionClonerImplementor {
             GizmoSolutionOrEntityDescriptor solutionSubclassDescriptor =
                     memoizedSolutionOrEntityDescriptorMap.computeIfAbsent(solutionSubclass,
                             (key) -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, solutionSubclass));
-            ResultHandle clone = isSubclassBranch.newInstance(MethodDescriptor.ofConstructor(solutionSubclass));
+
+            ResultHandle clone;
+            if (PlanningCloneable.class.isAssignableFrom(solutionSubclass)) {
+                clone = isSubclassBranch.invokeInterfaceMethod(
+                        MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance", Object.class),
+                        thisObj);
+                clone = isSubclassBranch.checkCast(clone, solutionSubclass);
+            } else {
+                clone = isSubclassBranch.newInstance(MethodDescriptor.ofConstructor(solutionSubclass));
+            }
 
             isSubclassBranch.invokeInterfaceMethod(
                     MethodDescriptor.ofMethod(Map.class, "put", Object.class, Object.class, Object.class),
@@ -599,7 +609,14 @@ public class GizmoSolutionClonerImplementor {
         ResultHandle size = bytecodeCreator
                 .invokeInterfaceMethod(MethodDescriptor.ofMethod(Collection.class, "size", int.class), toClone);
 
-        if (List.class.isAssignableFrom(deeplyClonedFieldClass)) {
+        if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
+            var emptyInstance = bytecodeCreator
+                    .invokeInterfaceMethod(MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance",
+                            Object.class), bytecodeCreator.checkCast(toClone, PlanningCloneable.class));
+            bytecodeCreator.assign(cloneCollection,
+                    bytecodeCreator.checkCast(emptyInstance,
+                            Collection.class));
+        } else if (List.class.isAssignableFrom(deeplyClonedFieldClass)) {
             bytecodeCreator.assign(cloneCollection,
                     bytecodeCreator.newInstance(MethodDescriptor.ofConstructor(ArrayList.class, int.class), size));
         } else if (Set.class.isAssignableFrom(deeplyClonedFieldClass)) {
@@ -696,33 +713,41 @@ public class GizmoSolutionClonerImplementor {
             Class<?> deeplyClonedFieldClass, java.lang.reflect.Type type, ResultHandle toClone,
             AssignableResultHandle cloneResultHolder, ResultHandle createdCloneMap,
             SortedSet<Class<?>> deepClonedClassesSortedSet) {
-        Class<?> holderClass = deeplyClonedFieldClass;
-        try {
-            holderClass.getConstructor();
-        } catch (NoSuchMethodException e) {
-            if (LinkedHashMap.class.isAssignableFrom(holderClass)) {
-                holderClass = LinkedHashMap.class;
-            } else if (ConcurrentHashMap.class.isAssignableFrom(holderClass)) {
-                holderClass = ConcurrentHashMap.class;
-            } else {
-                // Default to LinkedHashMap
-                holderClass = LinkedHashMap.class;
+        ResultHandle cloneMap;
+        if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
+            var emptyInstance = bytecodeCreator
+                    .invokeInterfaceMethod(MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance",
+                            Object.class), bytecodeCreator.checkCast(toClone, PlanningCloneable.class));
+            cloneMap = bytecodeCreator.checkCast(emptyInstance, Map.class);
+        } else {
+            Class<?> holderClass = deeplyClonedFieldClass;
+            try {
+                holderClass.getConstructor();
+            } catch (NoSuchMethodException e) {
+                if (LinkedHashMap.class.isAssignableFrom(holderClass)) {
+                    holderClass = LinkedHashMap.class;
+                } else if (ConcurrentHashMap.class.isAssignableFrom(holderClass)) {
+                    holderClass = ConcurrentHashMap.class;
+                } else {
+                    // Default to LinkedHashMap
+                    holderClass = LinkedHashMap.class;
+                }
+            }
+
+            ResultHandle size =
+                    bytecodeCreator.invokeInterfaceMethod(MethodDescriptor.ofMethod(Map.class, "size", int.class), toClone);
+            try {
+                holderClass.getConstructor(int.class);
+                cloneMap = bytecodeCreator.newInstance(MethodDescriptor.ofConstructor(holderClass, int.class), size);
+            } catch (NoSuchMethodException e) {
+                cloneMap = bytecodeCreator.newInstance(MethodDescriptor.ofConstructor(holderClass));
             }
         }
 
-        ResultHandle cloneMap;
-        ResultHandle size =
-                bytecodeCreator.invokeInterfaceMethod(MethodDescriptor.ofMethod(Map.class, "size", int.class), toClone);
         ResultHandle entrySet = bytecodeCreator
                 .invokeInterfaceMethod(MethodDescriptor.ofMethod(Map.class, "entrySet", Set.class), toClone);
         ResultHandle iterator = bytecodeCreator
                 .invokeInterfaceMethod(MethodDescriptor.ofMethod(Iterable.class, "iterator", Iterator.class), entrySet);
-        try {
-            holderClass.getConstructor(int.class);
-            cloneMap = bytecodeCreator.newInstance(MethodDescriptor.ofConstructor(holderClass, int.class), size);
-        } catch (NoSuchMethodException e) {
-            cloneMap = bytecodeCreator.newInstance(MethodDescriptor.ofConstructor(holderClass));
-        }
 
         BytecodeCreator whileLoopBlock = bytecodeCreator.whileLoop(conditionBytecode -> {
             ResultHandle hasNext = conditionBytecode
@@ -960,7 +985,15 @@ public class GizmoSolutionClonerImplementor {
                 toClone,
                 cloneMap);
 
-        ResultHandle cloneObj = noCloneBranch.newInstance(MethodDescriptor.ofConstructor(entityClass));
+        ResultHandle cloneObj;
+        if (PlanningCloneable.class.isAssignableFrom(entityClass)) {
+            cloneObj = noCloneBranch.invokeInterfaceMethod(
+                    MethodDescriptor.ofMethod(PlanningCloneable.class, "createNewInstance", Object.class),
+                    toClone);
+            cloneObj = noCloneBranch.checkCast(cloneObj, entityClass);
+        } else {
+            cloneObj = noCloneBranch.newInstance(MethodDescriptor.ofConstructor(entityClass));
+        }
         noCloneBranch.invokeInterfaceMethod(
                 MethodDescriptor.ofMethod(Map.class, "put", Object.class, Object.class, Object.class),
                 cloneMap, toClone, cloneObj);

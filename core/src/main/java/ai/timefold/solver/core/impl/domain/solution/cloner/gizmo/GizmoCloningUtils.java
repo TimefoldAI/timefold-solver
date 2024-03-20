@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
+import ai.timefold.solver.core.impl.domain.solution.cloner.PlanningCloneable;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 public final class GizmoCloningUtils {
@@ -27,7 +28,8 @@ public final class GizmoCloningUtils {
             deepClonedClassSet.add(clazz);
             for (Field field : getAllFields(clazz)) {
                 deepClonedClassSet.addAll(getDeepClonedTypeArguments(solutionDescriptor, field.getGenericType()));
-                if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)) {
+                if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)
+                        && !PlanningCloneable.class.isAssignableFrom(field.getType())) {
                     deepClonedClassSet.add(field.getType());
                 }
             }
