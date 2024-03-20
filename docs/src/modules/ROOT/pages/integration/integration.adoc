@@ -1262,12 +1262,6 @@ process automatically.
 When the `AUTO` setting is enabled,
 the Timefold Solver determines the optimal number of move threads to run in parallel.
 
-[#integrationWithSpringBoot]
-== Spring Boot
-
-To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
-and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot Java quick start].
-
 [#integrationWithOtherEnvironments]
 == Other environments
 
