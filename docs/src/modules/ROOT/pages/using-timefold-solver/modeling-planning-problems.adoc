@@ -1424,7 +1424,7 @@ public interface Standstill {
 
 That interface is the return type of the planning variable.
 Furthermore, the planning variable is chained.
-For example TSP's `Visit`:
+For example, TSP's `Visit` would look like this:
 
 [source,java,options="nowrap"]
 ----
