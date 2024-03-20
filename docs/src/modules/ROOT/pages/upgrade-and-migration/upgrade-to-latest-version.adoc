@@ -68,6 +68,7 @@ In the first wave, we have removed the following examples from the `examples` mo
 - `cloudbalancing`,
 - `conferencescheduling`,
 - `curriculumcourse`,
+- `examination`,
 - `machinereassignment`,
 - `nqueens`
 - `tsp`
