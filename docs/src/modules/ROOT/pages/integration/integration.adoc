@@ -626,6 +626,11 @@ switch to xref:../enterprise-edition/enterprise-edition.adoc[Enterprise Edition]
 The initial steps configure the enterprise repository and its dependencies.
 Then, the `application.properties` is updated with the multithread setting.
 
+[NOTE]
+====
+The multithread feature is a commercial feature of Timefold Solver Enterprise Edition.
+====
+
 First, add the following repository to your project:
 
 [tabs]
@@ -760,6 +765,65 @@ process automatically.
 When the `AUTO` setting is enabled,
 the Timefold Solver determines the optimal number of move threads to run in parallel.
 
+Configuring Timefold's multithread-solving capability is simple
+and can significantly improve the solving performance.
+
+The xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed] is one excellent metric
+to demonstrate the benefit of using multi-threaded incremental solving.
+It allows measuring the speed of the solver in evaluating the solution space.
+
+Let's take the following benchmark comparison chart for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
+
+image::integration/vehicleRoutingBenchmark.png[align="center"]
+
+The image illustrates the speed of score calculation with different numbers of threads running for 10 minutes each.
+Using four or two threads resulted in a significant improvement.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+The result of the calculations are described in the following table:
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|22,217/s
+
+|One thread
+|44,907/s
+
+|Two threads
+|93,066/s
+
+|Four threads
+|184,633/s
+|===
+
+The following image shows the score calculation speed when running the Maintenance Scheduling Problem.
+
+image::integration/maintenanceSchedulingBenchmark.png[align="center"]
+
+The results also indicate significant improvements when employing additional threads.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|6,431/s
+
+|One thread
+|24,451/s
+
+|Two threads
+|39,754/s
+
+|Four threads
+|54,194/s
+|===
 [#integrationWithSpringBoot]
 == Spring Boot
 
@@ -1128,6 +1192,11 @@ switch to xref:../enterprise-edition/enterprise-edition.adoc[Enterprise Edition]
 The initial steps configure the enterprise repository and its dependencies.
 Then, the `application.properties` is updated with the multithread setting.
 
+[NOTE]
+====
+The multithread feature is a commercial feature of Timefold Solver Enterprise Edition.
+====
+
 First, add the following repository to your project:
 
 [tabs]
@@ -1261,6 +1330,66 @@ The provided setting enable the xref:../enterprise-edition/enterprise-edition.ad
 process automatically.
 When the `AUTO` setting is enabled,
 the Timefold Solver determines the optimal number of move threads to run in parallel.
+
+Configuring Timefold's multithread-solving capability is simple
+and can significantly improve the solving performance.
+
+The xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed] is one excellent metric
+to demonstrate the benefit of using multi-threaded incremental solving.
+It allows measuring the speed of the solver in evaluating the solution space.
+
+Let's take the following benchmark comparison chart for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
+
+image::integration/vehicleRoutingBenchmark.png[align="center"]
+
+The image illustrates the speed of score calculation with different numbers of threads running for 10 minutes each.
+Using four or two threads resulted in a significant improvement.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+The result of the calculations are described in the following table:
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|22,217/s
+
+|One thread
+|44,907/s
+
+|Two threads
+|93,066/s
+
+|Four threads
+|184,633/s
+|===
+
+The following image shows the score calculation speed when running the Maintenance Scheduling Problem.
+
+image::integration/maintenanceSchedulingBenchmark.png[align="center"]
+
+The results also indicate significant improvements when employing additional threads.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|6,431/s
+
+|One thread
+|24,451/s
+
+|Two threads
+|39,754/s
+
+|Four threads
+|54,194/s
+|===
 
 [#integrationWithOtherEnvironments]
 == Other environments
