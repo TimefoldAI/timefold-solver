@@ -367,25 +367,6 @@ and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSp
 ====
 
 
-[#customThreadFactory]
-==== Custom thread factory (WildFly, GAE, ...)
-
-The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
-where arbitrary thread creation should be avoided,
-such as most application servers (including WildFly) or Google App Engine.
-
-Configure the `ThreadFactory` on the solver to create the <<multithreadedIncrementalSolving,move threads>>
-and the <<partitionedSearch,Partition Search threads>> with it:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
-  ...
-</solver>
-----
-
 [#multithreadedIncrementalSolving]
 ==== Multi-threaded incremental solving
 
@@ -455,6 +436,27 @@ Unless you're deeply familiar with the inner workings of multi-threaded solving,
 
 To run in an environment that doesn't like arbitrary thread creation,
 use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factory>>.
+
+
+
+[#customThreadFactory]
+==== Custom thread factory (WildFly, GAE, ...)
+
+The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
+where arbitrary thread creation should be avoided,
+such as most application servers (including WildFly) or Google App Engine.
+
+Configure the `ThreadFactory` on the solver to create the <<multithreadedIncrementalSolving,move threads>>
+and the <<partitionedSearch,Partition Search threads>> with it:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
+  ...
+</solver>
+----
 
 
 [#partitionedSearch]
