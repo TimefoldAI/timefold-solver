@@ -772,15 +772,7 @@ The xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calc
 to demonstrate the benefit of using multi-threaded incremental solving.
 It allows measuring the speed of the solver in evaluating the solution space.
 
-Let's take the following benchmark comparison chart for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
-
-image::integration/vehicleRoutingBenchmark.png[align="center"]
-
-The image illustrates the speed of score calculation with different numbers of threads running for 10 minutes each.
-Using four or two threads resulted in a significant improvement.
-Solving with four threads has improved the calculation speed by approximately *8 times*.
-
-The result of the calculations are described in the following table:
+Let's take the following comparison table for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
 
 [cols="1,1"]
 |===
@@ -790,9 +782,6 @@ The result of the calculations are described in the following table:
 |No threads
 |22,217/s
 
-|One thread
-|44,907/s
-
 |Two threads
 |93,066/s
 
@@ -800,12 +789,12 @@ The result of the calculations are described in the following table:
 |184,633/s
 |===
 
-The following image shows the score calculation speed when running the Maintenance Scheduling Problem.
 
-image::integration/maintenanceSchedulingBenchmark.png[align="center"]
-
-The results also indicate significant improvements when employing additional threads.
+The table shows the average speed of score calculation with different numbers of threads running for 10 minutes each.
+Using four or two threads resulted in a significant improvement.
 Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+The following table shows the score calculation speed when solving the Maintenance Scheduling Problem.
 
 [cols="1,1"]
 |===
@@ -815,15 +804,16 @@ Solving with four threads has improved the calculation speed by approximately *8
 |No threads
 |6,431/s
 
-|One thread
-|24,451/s
-
 |Two threads
 |39,754/s
 
 |Four threads
 |54,194/s
 |===
+
+The results also indicate significant improvements when employing additional threads.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
 [#integrationWithSpringBoot]
 == Spring Boot
 
@@ -1338,15 +1328,7 @@ The xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calc
 to demonstrate the benefit of using multi-threaded incremental solving.
 It allows measuring the speed of the solver in evaluating the solution space.
 
-Let's take the following benchmark comparison chart for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
-
-image::integration/vehicleRoutingBenchmark.png[align="center"]
-
-The image illustrates the speed of score calculation with different numbers of threads running for 10 minutes each.
-Using four or two threads resulted in a significant improvement.
-Solving with four threads has improved the calculation speed by approximately *8 times*.
-
-The result of the calculations are described in the following table:
+Let's take the following comparison table for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
 
 [cols="1,1"]
 |===
@@ -1356,9 +1338,6 @@ The result of the calculations are described in the following table:
 |No threads
 |22,217/s
 
-|One thread
-|44,907/s
-
 |Two threads
 |93,066/s
 
@@ -1366,12 +1345,12 @@ The result of the calculations are described in the following table:
 |184,633/s
 |===
 
-The following image shows the score calculation speed when running the Maintenance Scheduling Problem.
 
-image::integration/maintenanceSchedulingBenchmark.png[align="center"]
-
-The results also indicate significant improvements when employing additional threads.
+The table shows the average speed of score calculation with different numbers of threads running for 10 minutes each.
+Using four or two threads resulted in a significant improvement.
 Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+The following table shows the score calculation speed when solving the Maintenance Scheduling Problem.
 
 [cols="1,1"]
 |===
@@ -1381,15 +1360,15 @@ Solving with four threads has improved the calculation speed by approximately *8
 |No threads
 |6,431/s
 
-|One thread
-|24,451/s
-
 |Two threads
 |39,754/s
 
 |Four threads
 |54,194/s
 |===
+
+The results also indicate significant improvements when employing additional threads.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
 
 [#integrationWithOtherEnvironments]
 == Other environments
