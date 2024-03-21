@@ -366,36 +366,6 @@ A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `
 and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
-[#planningId]
-==== `@PlanningId`
-
-For some functionality (such as multi-threaded solving and real-time planning),
-Timefold Solver needs to map problem facts and planning entities to an ID.
-Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
-
-To enable such functionality, specify the `@PlanningId` annotation on the identification field or getter method,
-for example on the database ID:
-
-[source,java,options="nowrap"]
-----
-public class Visit {
-
-    @PlanningId
-    private String username;
-
-    ...
-}
-----
-
-A `@PlanningId` property must be:
-
-* Unique for that specific class
-** It does not need to be unique across different problem fact classes
-(unless in that rare case that those classes are mixed in the same value range or planning entity collection).
-* An instance of a type that implements `Object.hashCode()` and `Object.equals()`.
-** It's recommended to use the type `Integer`, `int`, `Long`, `long`, `String` or `UUID`.
-* Never `null` by the time `Solver.solve()` is called.
-
 
 [#customThreadFactory]
 ==== Custom thread factory (WildFly, GAE, ...)
