@@ -307,6 +307,41 @@ This is usually implemented by taxing all planning entities that change.
 
 image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
 
+In conference scheduling, the entity has both a planning variable `timeslot` and its original value ``publishedTimeslot``:
+
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Talk {
+
+    ...
+
+    @PlanningVariable
+    private Timeslot timeslot;
+
+    private Timeslot publishedTimeslot;
+
+    ...
+}
+----
+
+During planning, the planning variable `timeslot` changes.
+By writing a constraint comparing it with the `publishedTimeslot`, a change in plan can be penalized:
+
+[source,java,options="nowrap"]
+----
+    Constraint publishedTimeslot(ConstraintFactory factory) {
+        return factory.forEach(Talk.class)
+                .filter(talk -> talk.getPublishedTimeslot() != null
+                        && talk.getTimeslot() != talk.getPublishedTimeslot())
+                .penalizeConfigurable()
+                .asConstraint("Published timeslot");
+    }
+----
+
+By configuring a penalty weight of `-1000` we can express that a solution will only be accepted
+if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
+
 
 [#realTimePlanning]
 == Real-time planning

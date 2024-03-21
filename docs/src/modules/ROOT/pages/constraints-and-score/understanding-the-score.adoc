@@ -193,7 +193,7 @@ get the `Indictment` map from the ``ScoreExplanation``:
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 ScoreExplanation<VehicleRoutePlan, HardSoftLongScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
 Map<Object, Indictment<HardSoftLongScore>> indictmentMap = scoreExplanation.getIndictmentMap();
-for (Visit visit : vehicleRoutePlan.getVisitList()) {
+for (Visit visit : vehicleRoutePlan.getVisits()) {
     Indictment<HardSoftLongScore> indictment = indictmentMap.get(visit);
     if (indictment == null) {
         continue;

@@ -537,22 +537,22 @@ For example, the `VehicleUpdatingVariableListener` assures that every `Customer`
 
 [source,java,options="nowrap"]
 ----
-public class VehicleUpdatingVariableListener implements VariableListener<VehicleRoutingSolution, Customer> {
+public class VehicleUpdatingVariableListener implements VariableListener<VehicleRoutePlan, Customer> {
 
-    public void afterEntityAdded(ScoreDirector<VehicleRoutingSolution> scoreDirector, Customer customer) {
+    public void afterEntityAdded(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit customer) {
         updateVehicle(scoreDirector, customer);
     }
 
-    public void afterVariableChanged(ScoreDirector<VehicleRoutingSolution> scoreDirector, Customer customer) {
+    public void afterVariableChanged(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit customer) {
         updateVehicle(scoreDirector, customer);
     }
 
     ...
 
-    protected void updateVehicle(ScoreDirector<VehicleRoutingSolution> scoreDirector, Customer sourceCustomer) {
+    protected void updateVehicle(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit sourceCustomer) {
         Standstill previousStandstill = sourceCustomer.getPreviousStandstill();
         Vehicle vehicle = previousStandstill == null ? null : previousStandstill.getVehicle();
-        Customer shadowCustomer = sourceCustomer;
+        Visit shadowCustomer = sourceCustomer;
         while (shadowCustomer != null && shadowCustomer.getVehicle() != vehicle) {
             scoreDirector.beforeVariableChanged(shadowCustomer, "vehicle");
             shadowCustomer.setVehicle(vehicle);
@@ -1756,10 +1756,42 @@ If A is cloned, then its variable must point to the clone of B, not the original
 [#createAnUninitializedSolution]
 === Create an uninitialized solution
 
-Create a `@PlanningSolution` instance to represent your planning problem's dataset,
-so it can be set on the `Solver` as the planning problem to solve.
-For example in school timetabling, a `Lesson` instance is created with the required `Lesson` instances,
-but their timeslots and rooms are set to `null`.
+Create a `@PlanningSolution` instance to represent your planning problem's dataset, so it can be set on the `Solver` as the planning problem to solve.
+
+For example in school timetabling, an `Timetable` instance is created with the required `Room` and `Timeslot` instances
+and every `Lesson` has its planning variables set to `null`:
+
+[source,java,options="nowrap"]
+----
+    public static Timetable generateDemoData(DemoData demoData) {
+        List<Timeslot> timeslots = new ArrayList<>(10);
+        long nextTimeslotId = 0L;
+        timeslots.add(new Timeslot(Long.toString(nextTimeslotId++), DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
+        timeslots.add(new Timeslot(Long.toString(nextTimeslotId++), DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
+        timeslots.add(new Timeslot(Long.toString(nextTimeslotId++), DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
+        timeslots.add(new Timeslot(Long.toString(nextTimeslotId++), DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
+        timeslots.add(new Timeslot(Long.toString(nextTimeslotId++), DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
+        ...
+
+        List<Room> rooms = new ArrayList<>(3);
+        long nextRoomId = 0L;
+        rooms.add(new Room(Long.toString(nextRoomId++), "Room A"));
+        rooms.add(new Room(Long.toString(nextRoomId++), "Room B"));
+        rooms.add(new Room(Long.toString(nextRoomId++), "Room C"));
+
+        List<Lesson> lessons = new ArrayList<>();
+        long nextLessonId = 0L;
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Physics", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Chemistry", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Biology", "C. Darwin", "9th grade"));
+        ...
+
+        return new Timetable(demoData.name(), timeslots, rooms, lessons);
+    }
+----
+
 Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data
-and creates the uninitialized planning entity instances for the solver to plan
+and creates the uninitialized planning entity instances for th solver to plan:

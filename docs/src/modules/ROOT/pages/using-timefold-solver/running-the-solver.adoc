@@ -602,22 +602,22 @@ call `solve(...)` for each dataset:
 
 [source,java,options="nowrap"]
 ----
-public class TimeTableService {
+public class TimetableService {
 
-    private SolverManager<TimeTable, Long> solverManager;
+    private SolverManager<Timetable, Long> solverManager;
 
     // Returns immediately, call it for every dataset
-    public void solveBatch(Long timeTableId) {
-        solverManager.solve(timeTableId,
+    public void solveBatch(Long timetableId) {
+        solverManager.solve(timetableId,
                 // Called once, when solving starts
                 this::findById,
                 // Called once, when solving ends
                 this::save);
     }
 
-    public TimeTable findById(Long timeTableId) {...}
+    public Timetable findById(Long timetableId) {...}
 
-    public void save(TimeTable timeTable) {...}
+    public void save(Timetable timetable) {...}
 
 }
 ----
@@ -638,25 +638,25 @@ To handle intermediate best solutions, use `solveAndListen(...)`:
 
 [source,java,options="nowrap"]
 ----
-public class TimeTableService {
+public class TimetableService {
 
-    private SolverManager<TimeTable, Long> solverManager;
+    private SolverManager<Timetable, Long> solverManager;
 
     // Returns immediately
-    public void solveLive(Long timeTableId) {
-        solverManager.solveAndListen(timeTableId,
+    public void solveLive(Long timetableId) {
+        solverManager.solveAndListen(timetableId,
                 // Called once, when solving starts
                 this::findById,
                 // Called multiple times, for every best solution change
                 this::save);
     }
 
-    public TimeTable findById(Long timeTableId) {...}
+    public Timetable findById(Long timetableId) {...}
 
-    public void save(TimeTable timeTable) {...}
+    public void save(Timetable timetable) {...}
 
-    public void stopSolving(Long timeTableId) {
-        solverManager.terminateEarly(timeTableId);
+    public void stopSolving(Long timetableId) {
+        solverManager.terminateEarly(timetableId);
     }
 
 }

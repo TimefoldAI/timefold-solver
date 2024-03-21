@@ -23,7 +23,7 @@ Annotate it with `@ConstraintConfiguration`:
 [source,java,options="nowrap"]
 ----
 @ConstraintConfiguration
-public class VehicleRoutingConstraintConfiguration {
+public class ConferenceConstraintConfiguration {
     ...
 }
 ----
@@ -40,10 +40,10 @@ and annotate that field or property with `@ConstraintConfigurationProvider`:
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class VehicleRoutingSolution {
+public class ConferenceSchedule {
 
     @ConstraintConfigurationProvider
-    private VehicleRoutingConstraintConfiguration constraintConfiguration;
+    private ConferenceConstraintConfiguration constraintConfiguration;
 
     ...
 }
@@ -55,6 +55,11 @@ there is no need to add a `@ProblemFactProperty` annotation.
 
 The constraint configuration class holds the <<constraintWeight,constraint weights>>,
 but it can also hold constraint parameters.
+For example in conference scheduling, the minimum pause constraint has a constraint weight (like any other constraint),
+but it also has a constraint parameter that defines the length of the minimum pause between two talks of the same speaker.
+That pause length depends on the conference (= the planning problem):
+in some big conferences 20 minutes isn't enough to go from one room to the other.
+That pause length is a field in the constraint configuration without a `@ConstraintWeight` annotation.
 
 
 [#constraintWeight]
@@ -64,28 +69,29 @@ In the constraint configuration class, add a `@ConstraintWeight` field or proper
 
 [source,java,options="nowrap"]
 ----
-@ConstraintConfiguration(constraintPackage = "...vehiclerouting.score")
-public class VehicleRoutingConstraintConfiguration {
+@ConstraintConfiguration(constraintPackage = "...conferencescheduling.score")
+public class ConferenceConstraintConfiguration {
 
-    @ConstraintWeight("vehicleCapacity")
-    private HardSoftScore vehicleCapacity = HardSoftScore.ofHard(1);
-    @ConstraintWeight("serviceFinishedAfterMaxEndTime")
-    private HardLongScore serviceFinishedAfterMaxEndTime = HardSoftScore.ofHard(1);
+    @ConstraintWeight("Speaker conflict")
+    private HardMediumSoftScore speakerConflict = HardMediumSoftScore.ofHard(10);
 
-    @ConstraintWeight("minimizeTravelTime")
-    private HardSoftScore minimizeTravelTime = HardSoftScore.ofSoft(1);
+    @ConstraintWeight("Theme track conflict")
+    private HardMediumSoftScore themeTrackConflict = HardMediumSoftScore.ofSoft(10);
+    @ConstraintWeight("Content conflict")
+    private HardMediumSoftScore contentConflict = HardMediumSoftScore.ofSoft(100);
 
     ...
 }
 ----
 
 The type of the constraint weights must be the same score class as xref:using-timefold-solver/modeling-planning-problems.adoc#scoreOfASolution[the planning solution's score member].
-For example in vehicle routing, `VehicleRoutingSolution.getScore()` and `VehicleRoutingConstraintConfiguration.getVehicleCapacity()`
-both return a `HardSoftScore`.
+For example in conference scheduling, `ConferenceSchedule.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
+both return a `HardMediumSoftScore`.
 
 A constraint weight cannot be null.
 Give each constraint weight a default value, but expose them in a UI so the business users can tweak them.
-The example above uses the `ofHard()` and `ofSoft()` methods to do that.
+The example above uses the `ofHard()`, `ofMedium()` and `ofSoft()` methods to do that.
+Notice how it defaults the _"Content conflict"_ constraint as ten times more important than the _"Theme track conflict"_ constraint.
 Normally, a constraint weight only uses one score level,
 but it's possible to use multiple score levels (at a small performance cost).
 
@@ -107,36 +113,38 @@ for example in xref:constraints-and-score/score-calculation.adoc[Constraint Stre
 
 [source,java,options="nowrap"]
 ----
-public class VehicleRoutingConstraintProvider implements ConstraintProvider {
+public class ConferenceSchedulingConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
-                vehicleCapacity(factory),
-                serviceFinishedAfterMaxEndTime(factory),
-                minimizeTravelTime(factory)
+                speakerConflict(factory),
+                themeTrackConflict(factory),
+                contentConflict(factory),
+                ...
         };
     }
 
-    protected Constraint vehicleCapacity(ConstraintFactory factory) {
-        return factory.forEach(Vehicle.class)
+    protected Constraint speakerConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(...)
                 ...
-                .penalizeConfigurable(vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
-                .asConstraint("vehicleCapacity");
+                .penalizeConfigurable("Speaker conflict", ...);
     }
 
-    protected Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
-        return factory.forEach(Visit.class)
+    protected Constraint themeTrackConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(...)
                 ...
-                .penalizeConfigurable(Visit::getServiceFinishedDelayInMinutes)
-                .asConstraint("serviceFinishedAfterMaxEndTime");
+                .penalizeConfigurable("Theme track conflict", ...);
     }
 
-    protected Constraint minimizeTravelTime(ConstraintFactory factory) {
-        return factory.forEach(Vehicle.class)
-                .penalizeConfigurable(Vehicle::getTotalDrivingTimeSeconds)
-                .asConstraint("minimizeTravelTime");
+    protected Constraint contentConflict(ConstraintFactory factory) {
+        return factory.forEachUniquePair(...)
+                ...
+                .penalizeConfigurable("Content conflict", ...);
     }
+
+    ...
+
 }
 ----
 
@@ -144,20 +152,27 @@ Each of the constraint weights defines the score level and score weight of their
 The constraint implementation calls `rewardConfigurable()` or `penalizeConfigurable()` and the constraint weight is automatically applied.
 
 If the constraint implementation provides a match weight, that *match weight is multiplied with the constraint weight*.
-For example, in the following configuration,
-each vehicle's total driving time is multiplied by 100 before it is added to the score.
+For example, the _"Content conflict"_ constraint weight defaults to `100soft`
+and the constraint implementation penalizes each match based on the number of shared content tags and the overlapping duration of the two talks:
 
 [source,java,options="nowrap"]
 ----
-    @ConstraintWeight("minimizeTravelTime")
-    private HardSoftScore minimizeTravelTime = HardSoftScore.ofSoft(100);
+    @ConstraintWeight("Content conflict")
+    private HardMediumSoftScore contentConflict = HardMediumSoftScore.ofSoft(100);
 ----
 
 [source,java,options="nowrap"]
 ----
-Constraint minimizeTravelTime(ConstraintFactory factory) {
-    return factory.forEach(Vehicle.class)
-            .penalizeConfigurable(Vehicle::getTotalDrivingTimeSeconds)
-            .asConstraint(minimizeTravelTime);
+Constraint contentConflict(ConstraintFactory factory) {
+    return factory.forEachUniquePair(Talk.class,
+        overlapping(t -> t.getTimeslot().getStartDateTime(),
+            t -> t.getTimeslot().getEndDateTime()),
+        filtering((talk1, talk2) -> talk1.overlappingContentCount(talk2) > 0))
+        .penalizeConfigurable("Content conflict",
+                (talk1, talk2) -> talk1.overlappingContentCount(talk2)
+                        * talk1.overlappingDurationInMinutes(talk2));
 }
 ----
+
+So when 2 overlapping talks share only 1 content tag and overlap by 60 minutes, the score is impacted by `-6000soft`.
+But when 2 overlapping talks share 3 content tags, the match weight is 180, so the score is impacted by `-18000soft`.
