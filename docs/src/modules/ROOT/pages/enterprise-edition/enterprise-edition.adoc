@@ -496,6 +496,309 @@ Unless you're deeply familiar with the inner workings of multi-threaded solving,
 To run in an environment that doesn't like arbitrary thread creation,
 use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factory>>.
 
+[#multithreadedQuarkus]
+==== Using Quarkus with Multi-threaded Incremental Solving
+
+In order to utilize multiple threads with Quarkus,
+follow all necessary steps to configure your project using the xref:../integration/integration.adoc#integrationWithQuarkus[community version]
+and then switch to the xref:#switchToEnterpriseEdition[Enterprise Edition].
+
+The initial steps configure the repository and its dependencies.
+Then, the `application.properties` is updated with the multithread setting.
+
+First, configure all module versions by updating the project with the following dependency:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following `BOM` to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+  <dependencyManagement>
+    <dependencies>
+      ...
+      <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-bom</artifactId>
+          <version>${version.ai.timefold.solver}</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
+    </dependencies>
+    ...
+  </dependencyManagement>
+----
+--
+Gradle::
++
+--
+Add the following to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+
+dependencies {
+    ...
+    implementation platform("ai.timefold.solver.enterprise:timefold-solver-enterprise-bom:${timefoldVersion}")
+    ...
+}
+----
+--
+====
+
+Update your Timefold Quarkus dependency to use the enterprise version:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following dependency to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<dependencies>
+    ...
+    <dependency>
+      <groupId>ai.timefold.solver.enterprise</groupId>
+      <artifactId>timefold-solver-enterprise-quarkus</artifactId>
+    </dependency>
+    ...
+</dependencies>
+----
+--
+Gradle::
++
+--
+Add the following dependency to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+dependencies {
+    ...
+    implementation "ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus"
+    ...
+}
+----
+--
+====
+
+After properly configuring the Timefold Enterprise Edition,
+update the `application.properties` file with the multi-thread setting.
+
+[source,properties]
+----
+quarkus.timefold.solver.move-thread-count=AUTO
+----
+
+The provided setting enable the xref:../enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+process automatically.
+When the `AUTO` setting is enabled,
+the Timefold Solver determines the optimal number of move threads to run in parallel.
+
+Configuring Timefold's multithread-solving capability is simple
+and can significantly improve the solving performance.
+
+The xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed] is one excellent metric
+to demonstrate the benefit of using multi-threaded incremental solving.
+It allows measuring the speed of the solver in evaluating the solution space.
+
+Let's take the following comparison table for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|22,217/s
+
+|Two threads
+|93,066/s
+
+|Four threads
+|184,633/s
+|===
+
+
+The table shows the average speed of score calculation with different numbers of threads running for 10 minutes each.
+Using four or two threads resulted in a significant improvement.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+The following table shows the score calculation speed when solving the Maintenance Scheduling Problem.
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|6,431/s
+
+|Two threads
+|39,754/s
+
+|Four threads
+|54,194/s
+|===
+
+The results also indicate significant improvements when employing additional threads.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+[#multithreadedSpringBoot]
+==== Using Spring Boot with Multi-threaded Incremental Solving
+
+In order to utilize multiple threads with Quarkus,
+follow all necessary steps to configure your project using the xref:../integration/integration.adoc#integrationWithSpringBoot[community version]
+and then switch to the xref:#switchToEnterpriseEdition[Enterprise Edition].
+
+The initial steps configure the repository and its dependencies.
+Then, the `application.properties` is updated with the multithread setting.
+
+First, configure all module versions by updating the project with the following dependency:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following `BOM` to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+  <dependencyManagement>
+    <dependencies>
+      ...
+      <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-bom</artifactId>
+          <version>${version.ai.timefold.solver}</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
+    </dependencies>
+    ...
+  </dependencyManagement>
+----
+--
+Gradle::
++
+--
+Add the following to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+
+dependencies {
+    ...
+    implementation platform("ai.timefold.solver.enterprise:timefold-solver-enterprise-bom:${timefoldVersion}")
+    ...
+}
+----
+--
+====
+
+Update your Timefold Spring Boot dependency to use the enterprise version:
+
+[tabs]
+====
+Maven::
++
+--
+Add the following dependency to your `pom.xml`:
+
+[source,xml,options="nowrap"]
+----
+<dependencies>
+    ...
+    <dependency>
+        <groupId>ai.timefold.solver.enterprise</groupId>
+        <artifactId>timefold-solver-enterprise-spring-boot-starter</artifactId>
+    </dependency>
+    ...
+</dependencies>
+----
+--
+Gradle::
++
+--
+Add the following dependency to your `build.gradle`:
+
+[source,groovy,options="nowrap"]
+----
+dependencies {
+    ...
+    implementation "ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter"
+    ...
+}
+----
+--
+====
+
+After properly configuring the Timefold Enterprise Edition,
+update the `application.properties` file with the multi-thread setting.
+
+[source,properties]
+----
+quarkus.timefold.solver.move-thread-count=AUTO
+----
+
+The provided setting enable the xref:../enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+process automatically.
+When the `AUTO` setting is enabled,
+the Timefold Solver determines the optimal number of move threads to run in parallel.
+
+Configuring Timefold's multithread-solving capability is simple
+and can significantly improve the solving performance.
+
+The xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed] is one excellent metric
+to demonstrate the benefit of using multi-threaded incremental solving.
+It allows measuring the speed of the solver in evaluating the solution space.
+
+Let's take the following comparison table for the xref:../quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing Problem].
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|22,217/s
+
+|Two threads
+|93,066/s
+
+|Four threads
+|184,633/s
+|===
+
+
+The table shows the average speed of score calculation with different numbers of threads running for 10 minutes each.
+Using four or two threads resulted in a significant improvement.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
+
+The following table shows the score calculation speed when solving the Maintenance Scheduling Problem.
+
+[cols="1,1"]
+|===
+|*Configuration*
+|*Score Calculation Average*
+
+|No threads
+|6,431/s
+
+|Two threads
+|39,754/s
+
+|Four threads
+|54,194/s
+|===
+
+The results also indicate significant improvements when employing additional threads.
+Solving with four threads has improved the calculation speed by approximately *8 times*.
 
 [#partitionedSearch]
 === Partitioned search
