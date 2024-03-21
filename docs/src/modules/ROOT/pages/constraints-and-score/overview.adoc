@@ -64,7 +64,7 @@ regardless if the constraints are positive or negative.
 
 Most planning problems have only negative constraints and therefore have a negative score.
 In that case, the score is the sum of the weight of the negative constraints being broken, with a perfect score of 0.
-For example in n queens, the score is the negative of the number of queen pairs which can attack each other.
+For example, in vehicle routing, the score is the negative of the total distance driven by all vehicles.
 
 Negative and positive constraints can be combined, even in the same score level.
 
@@ -78,7 +78,7 @@ on a certain planning entity set, it is called a __constraint match__.
 Not all score constraints are equally important.
 If breaking one constraint is equally bad as breaking another constraint x times,
 then those two constraints have a different weight (but they are in the same score level).
-For example in vehicle routing, you can make one _unhappy driver_ constraint match count
+For example, in vehicle routing, you can make one _unhappy driver_ constraint match count
 as much as two _fuel tank usage_ constraint matches:
 
 image::constraints-and-score/overview/scoreWeighting.png[align="center"]
@@ -89,8 +89,9 @@ Alternatively, score weighting is also often used to create social xref:constrai
 For example, a nurse, who requests a free day, pays a higher weight on New Years eve than on a normal day.
 
 The weight of a constraint match can depend on the planning entities involved.
-For example in cloud balancing, the weight of the soft constraint match for an active `Computer`
-is the maintenance `cost` of that `Computer` (which differs per computer).
+For example, in vehicle routing,
+a weight of using an 18-wheeler truck to make the delivery will be higher than a weight of a delivery van,
+as the latter will be cheaper to run.
 
 Putting a good weight on a constraint is often a difficult analytical decision,
 because it is about making choices and trade-offs against other constraints.
@@ -142,11 +143,15 @@ image::constraints-and-score/overview/scoreFoldingIsBroken.png[align="center"]
 
 [NOTE]
 ====
-Your business might tell you that your hard constraints all have the same weight, because they cannot be broken (so the weight does not matter). This is not true because if no feasible solution exists for a specific dataset, the least infeasible solution allows the business to estimate how many business resources they are lacking.
-For example in cloud balancing, how many new computers to buy.
+Your business might tell you that your hard constraints all have the same weight,
+because they cannot be broken (so the weight does not matter).
+This is not true because if no feasible solution exists for a specific dataset,
+the least infeasible solution allows the business to estimate how many business resources they are lacking.
 
 Furthermore, it will likely create a xref:constraints-and-score/performance.adoc#scoreTrap[score trap].
-For example in cloud balance if a `Computer` has seven CPU too little for its ``Process``es, then it must be weighted seven times as much as if it had only one CPU too little.
+For example, in vehicle routing if a vehicle exceeds its capacity by 15 tons,
+it must be penalized three times as much as if it had only exceeded its capacity by five tons.
+(Possibly even exponentially weighted.)
 ====
 
 Three or more score levels are also supported.
@@ -237,7 +242,7 @@ The `Score` implementation is configured in the solution domain class:
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class CloudBalance {
+public class VehicleRoutePlan {
     ...
 
     @PlanningScore
@@ -447,7 +452,7 @@ Many of those have an `InitializingScoreTrend` that only goes down:
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>...MyConstraintProvider</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 ----
@@ -457,7 +462,7 @@ Alternatively, you can also specify the trend for each score level separately:
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.examples.cloudbalancing.score.CloudBalancingConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>...MyConstraintProvider</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN/ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 ----
@@ -477,14 +482,14 @@ To verify the constraints against an independent implementation, configure a ``a
   <environmentMode>FAST_ASSERT</environmentMode>
   ...
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>...ConstraintProvider</constraintProviderClass>
     <assertionScoreDirectorFactory>
-      <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+      <easyScoreCalculatorClass>...EasyScoreCalculator</easyScoreCalculatorClass>
     </assertionScoreDirectorFactory>
   </scoreDirectorFactory>
 ----
 
-This way, the `NQueensConstraintProvider` implementation is validated by the ``EasyScoreCalculator``.
+This way, the `ConstraintProvider` implementation is validated by the ``EasyScoreCalculator``.
 
 [NOTE]
 ====

@@ -301,49 +301,46 @@ To pin the entire list, preventing any modifications to the list whatsoever,
 
 Replanning an existing plan can be very disruptive.
 If the plan affects humans (such as employees, drivers, ...), very disruptive changes are often undesirable.
-In such cases, nonvolatile replanning helps by restricting planning freedom: the gain of changing a plan must be higher than the disruption it causes.
+In such cases, nonvolatile replanning helps by restricting planning freedom:
+the gain of changing a plan must be higher than the disruption it causes.
 This is usually implemented by taxing all planning entities that change.
 
 image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
 
-In the machine reassignment example, the entity has both the planning variable `machine` and its original value ``originalMachine``:
+In conference scheduling, the entity has both a planning variable `timeslot` and its original value ``publishedTimeslot``:
 
 [source,java,options="nowrap"]
 ----
-@PlanningEntity(...)
-public class ProcessAssignment {
+@PlanningEntity
+public class Talk {
 
-    private MrProcess process;
-    private Machine originalMachine;
-    private Machine machine;
+    ...
 
-    public Machine getOriginalMachine() {...}
+    @PlanningVariable
+    private Timeslot timeslot;
 
-    @PlanningVariable(...)
-    public Machine getMachine() {...}
-
-    public boolean isMoved() {
-        return originalMachine != null && originalMachine != machine;
-    }
+    private Timeslot publishedTimeslot;
 
     ...
 }
 ----
 
-During planning, the planning variable `machine` changes.
-By comparing it with the originalMachine, a change in plan can be penalized:
+During planning, the planning variable `timeslot` changes.
+By writing a constraint comparing it with the `publishedTimeslot`, a change in plan can be penalized:
 
-[source,options="nowrap"]
+[source,java,options="nowrap"]
 ----
-rule "processMoved"
-    when
-        ProcessAssignment(moved == true)
-    then
-        scoreHolder.addSoftConstraintMatch(kcontext, -1000);
-end
+    Constraint publishedTimeslot(ConstraintFactory factory) {
+        return factory.forEach(Talk.class)
+                .filter(talk -> talk.getPublishedTimeslot() != null
+                        && talk.getTimeslot() != talk.getPublishedTimeslot())
+                .penalizeConfigurable()
+                .asConstraint("Published timeslot");
+    }
 ----
 
-The soft penalty of `-1000` means that a better solution is only accepted if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
+By configuring a penalty weight of `-1000` we can express that a solution will only be accepted
+if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
 
 
 [#realTimePlanning]
@@ -453,35 +450,7 @@ Usually it reuses the same instances of the problem facts and problem fact colle
 * The clone must use different, cloned instances of the entities and entity collections.
 Changes to an original Solution entity’s variables must not affect its clone.
 
-[#problemChangeExample]
-==== Cloud balancing `ProblemChange` example
-
-Consider the following example of a `ProblemChange` implementation in the cloud balancing use case:
-
-[source,java,options="nowrap"]
-----
-    public void deleteComputer(final CloudComputer computer) {
-        solver.addProblemChange((cloudBalance, problemChangeDirector) -> {
-            CloudComputer workingComputer = problemChangeDirector.lookUpWorkingObject(computer);
-            if (workingComputer == null) {
-                throw new IllegalStateException("A computer " + computer + " does not exist. Maybe it has been already deleted.");
-            }
-            // First remove the problem fact from all planning entities that use it
-            for (CloudProcess process : cloudBalance.getProcessList()) {
-                if (process.getComputer() == workingComputer) {
-                    problemChangeDirector.changeVariable(process, "computer",
-                            workingProcess -> workingProcess.setComputer(null));
-                }
-            }
-            // A SolutionCloner does not clone problem fact lists (such as computerList)
-            // Shallow clone the computerList so only workingSolution is affected, not bestSolution or guiSolution
-            ArrayList<CloudComputer> computerList = new ArrayList<>(cloudBalance.getComputerList());
-            cloudBalance.setComputerList(computerList);
-            // Remove the problem fact itself
-            problemChangeDirector.removeProblemFact(workingComputer, computerList::remove);
-        });
-    }
-----
+When implementing problem changes, consider the following:
 
 . Any change in a `ProblemChange` must be done on the `@PlanningSolution` instance of ``scoreDirector.getWorkingSolution()``.
 
@@ -560,13 +529,14 @@ Do not forget to call `Solver.terminateEarly()` when your application needs to s
 
 . Subscribe to the `xref:optimization-algorithms/optimization-algorithms.adoc#SolverEventListener[BestSolutionChangedEvent]` to process new best solutions found by the solver thread.
 +
-A `BestSolutionChangedEvent` does not guarantee that every `ProblemChange` has been processed already, nor that the solution is initialized and feasible.
+A `BestSolutionChangedEvent` does not guarantee that every `ProblemChange` has been processed already,
+nor that the solution is initialized and feasible.
 
 . To ignore ``BestSolutionChangedEvent``s with such invalid solutions, do the following:
 +
 [source,java,options="nowrap"]
 ----
-    public void bestSolutionChanged(BestSolutionChangedEvent<CloudBalance> event) {
+    public void bestSolutionChanged(BestSolutionChangedEvent<VehicleRoutePlain> event) {
         if (event.isEveryProblemChangeProcessed()
                 // Ignore infeasible (including uninitialized) solutions
                 && event.getNewBestSolution().getScore().isFeasible()) {
@@ -575,7 +545,8 @@ A `BestSolutionChangedEvent` does not guarantee that every `ProblemChange` has b
     }
 ----
 
-. Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions, but do accept infeasible solutions too.
+. Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
+but do accept infeasible solutions too.
 
 
 [#recommendedFitAPI]

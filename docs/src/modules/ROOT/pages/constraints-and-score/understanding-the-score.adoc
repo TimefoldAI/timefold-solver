@@ -13,28 +13,23 @@ The easiest way to do that during development is to print the score summary:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
-System.out.println(solutionManager.explain(solution));
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+System.out.println(solutionManager.explain(vehicleRoutePlan));
 ----
 
-For example in conference scheduling,
-this prints that talk `S51` is responsible for breaking the hard constraint `Speaker required room tag`:
+For example, in vehicle routing,
+this prints that talk `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
 
 ----
-Explanation of score (-1hard/-806soft):
+Explanation of score (0hard/-10343soft):
     Constraint matches:
-        -1hard: constraint (Speaker required room tag) has 1 matches:
-            -1hard: justified with ([S51])
-        -340soft: constraint (Theme track conflict) has 32 matches:
-            -20soft: justified with ([S68, S66])
-            -20soft: justified with ([S61, S44])
+        -10343soft: constraint (minimizeTravelTime) has 6 matches:
+            -2335soft: justified with (MinimizeTravelTimeJustification[vehicleName=1, totalDrivingTimeSeconds=2335, description=Vehicle '1' total travel time is 0 hours 39 minutes.])
             ...
         ...
-    Indictments (top 5 of 72):
-        -1hard/-22soft: indicted with (S51) has 12 matches:
-            -1hard: constraint (Speaker required room tag)
-            -10soft: constraint (Theme track conflict)
-            ...
+    Indictments (top 5 of 6):
+        -2335soft: indicted with (1) has 1 matches:
+            -2335soft: constraint (minimizeTravelTime)
         ...
 ----
 
@@ -75,8 +70,8 @@ need to describe the solution to the user, use the `SolutionManager` API:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<CloudBalance, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(cloudBalance);
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 ----
 
 `ScoreAnalysis` is a JSON-friendly representation of the score,
@@ -195,20 +190,20 @@ get the `Indictment` map from the ``ScoreExplanation``:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<CloudBalance, HardSoftScore> scoreManager = SolutionManager.create(solverFactory);
-ScoreExplanation<CloudBalance, HardSoftScore> scoreExplanation = solutionManager.explain(cloudBalance);
-Map<Object, Indictment<HardSoftScore>> indictmentMap = scoreExplanation.getIndictmentMap();
-for (CloudProcess process : cloudBalance.getProcessList()) {
-    Indictment<HardSoftScore> indictment = indictmentMap.get(process);
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreExplanation<VehicleRoutePlan, HardSoftLongScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
+Map<Object, Indictment<HardSoftLongScore>> indictmentMap = scoreExplanation.getIndictmentMap();
+for (Visit visit : vehicleRoutePlan.getVisits()) {
+    Indictment<HardSoftLongScore> indictment = indictmentMap.get(visit);
     if (indictment == null) {
         continue;
     }
     // The score impact of that planning entity
-    HardSoftScore totalScore = indictment.getScore();
+    HardSoftLongScore totalScore = indictment.getScore();
 
-    for (ConstraintMatch<HardSoftScore> constraintMatch : indictment.getConstraintMatchSet()) {
+    for (ConstraintMatch<HardSoftLongScore> constraintMatch : indictment.getConstraintMatchSet()) {
         String constraintName = constraintMatch.getConstraintName();
-        HardSoftScore score = constraintMatch.getScore();
+        HardSoftLongScore score = constraintMatch.getScore();
         ...
     }
 }

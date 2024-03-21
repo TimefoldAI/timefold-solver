@@ -22,24 +22,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import ai.timefold.solver.examples.cloudbalancing.app.CloudBalancingApp;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.swingui.OpenBrowserAction;
 import ai.timefold.solver.examples.common.swingui.SolverAndPersistenceFrame;
-import ai.timefold.solver.examples.curriculumcourse.app.CurriculumCourseApp;
-import ai.timefold.solver.examples.examination.app.ExaminationApp;
 import ai.timefold.solver.examples.flightcrewscheduling.app.FlightCrewSchedulingApp;
-import ai.timefold.solver.examples.machinereassignment.app.MachineReassignmentApp;
 import ai.timefold.solver.examples.meetingscheduling.app.MeetingSchedulingApp;
-import ai.timefold.solver.examples.nqueens.app.NQueensApp;
 import ai.timefold.solver.examples.nurserostering.app.NurseRosteringApp;
 import ai.timefold.solver.examples.pas.app.PatientAdmissionScheduleApp;
 import ai.timefold.solver.examples.projectjobscheduling.app.ProjectJobSchedulingApp;
 import ai.timefold.solver.examples.taskassigning.app.TaskAssigningApp;
 import ai.timefold.solver.examples.tennis.app.TennisApp;
 import ai.timefold.solver.examples.travelingtournament.app.TravelingTournamentApp;
-import ai.timefold.solver.examples.tsp.app.TspApp;
-import ai.timefold.solver.examples.vehiclerouting.app.VehicleRoutingApp;
 
 public class TimefoldExamplesApp extends JFrame {
 
@@ -92,23 +85,17 @@ public class TimefoldExamplesApp extends JFrame {
     }
 
     private JPanel createExamplesPanel() {
-        JPanel panel = new JPanel(new GridLayout(0, 4, 5, 5));
+        JPanel panel = new JPanel(new GridLayout(0, 3, 5, 5));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        Stream.of(new VehicleRoutingApp(),
-                new NurseRosteringApp(),
+        Stream.of(new NurseRosteringApp(),
                 new TaskAssigningApp(),
-                new CloudBalancingApp(),
                 new PatientAdmissionScheduleApp(),
-                new MachineReassignmentApp(),
-                new CurriculumCourseApp(),
                 new ProjectJobSchedulingApp(),
-                new ExaminationApp(),
                 new MeetingSchedulingApp(),
                 new TravelingTournamentApp(),
                 new TennisApp(),
-                new FlightCrewSchedulingApp(),
-                new TspApp(), new NQueensApp())
+                new FlightCrewSchedulingApp())
                 .map(this::createExampleButton)
                 .forEach(panel::add);
 

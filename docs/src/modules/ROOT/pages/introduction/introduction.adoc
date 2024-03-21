@@ -73,7 +73,7 @@ In fact, there's a $ 1,000,000 reward for anyone that proves if https://en.wikip
 The implication of this is pretty dire: solving your problem is probably harder than you anticipated, because the two common techniques won't suffice:
 
 * A Brute Force algorithm (even a smarter variant) will take too long.
-* A quick algorithm, for example in bin packing, __putting in the largest items first__, will return a solution that is far from optimal.
+* A quick algorithm, such as in bin packing, __putting in the largest items first__, will return a solution that is far from optimal.
 
 By using advanced optimization algorithms, *Timefold Solver does find a near-optimal solution in reasonable time for such planning problems.*
 
@@ -90,8 +90,8 @@ Some problems have positive constraints too:
 
 * A _positive soft constraint (or reward)_ should be fulfilled if possible. For example: __Teacher B likes to teach on Monday morning__.
 
-Some basic problems (such as xref:use-cases-and-examples/nqueens/nqueens.adoc#nQueens[N queens]) only have hard constraints.
-Some problems have three or more levels of constraints, for example hard, medium and soft constraints.
+Some basic problems only have hard constraints.
+Some problems have three or more levels of constraints - hard, medium and soft constraints.
 
 These constraints define the _score calculation_ (AKA __fitness function__) of a planning problem.
 Each solution of a planning problem can be graded with a score.

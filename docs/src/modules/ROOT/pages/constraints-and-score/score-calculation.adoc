@@ -108,7 +108,7 @@ Add the following code to your solver configuration:
     <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
       <scoreDirectorFactory>
-        <constraintProviderClass>org.acme.schooltimetabling.solver.TimeTableConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>org.acme.schooltimetabling.solver.TimetableConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       ...
     </solver>
@@ -338,7 +338,8 @@ We can remove it by providing the `indictWith(...)` method with a custom indictm
 ----
 
 The same mechanism can also be used to transform any of the indicted objects to any other object.
-To present the constraint matches to the user or to send them over the wire where they can be further processed, use the `justifyWith(...)` method to provide a custom constraint justification:
+To present the constraint matches to the user or to send them over the wire where they can be further processed,
+use the `justifyWith(...)` method to provide a custom constraint justification:
 
 [source,java,options="nowrap"]
 ----
@@ -543,9 +544,9 @@ If planning entities are used as group keys, their hashCode must not be computed
 Failure to follow this recommendation may result in runtime exceptions being thrown.
 ====
 
-For example, the following code snippet first groups all processes by the computer they run on, sums up all the power
-required by the processes on that computer using the `ConstraintCollectors.sum(...)` collector, and finally penalizes
-every computer whose processes consume more power than is available.
+For example, the following code snippet first groups all visits by the vehicle that will be used,
+counts them using the `ConstraintCollectors.count(...)` collector,
+and finally penalizes every vehicle which makes more than 10 visits:
 
 [source,java,options="nowrap"]
 ----
@@ -553,21 +554,21 @@ import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.*;
 
 ...
 
-private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
-            .filter((computer, requiredCpuPower) -> requiredCpuPower > computer.getCpuPower())
+private Constraint tooManyVisits(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, count())
+            .filter((vehicle, visitCount) -> visitCount > 10)
             .penalize(HardSoftScore.ONE_HARD,
-                    (computer, requiredCpuPower) -> requiredCpuPower - computer.getCpuPower())
-            .asConstraint("requiredCpuPowerTotal");
+                    (vehicle, visitCount) -> visitCount - 10)
+            .asConstraint("tooManyVisits");
 }
 ----
 
 [NOTE]
 ====
 Information might be lost during grouping.
-In the previous example, `filter()` and all subsequent operations no longer have direct access to the original
-`CloudProcess` instance.
+In the previous example,
+`filter()` and all later operations no longer have direct access to the original `Visit` instance.
 ====
 
 There are many collectors available out of the box.
@@ -627,18 +628,19 @@ The distinct count is collected in an `int`. Variants of this collector:
 [#collectorsSum]
 ==== `sum()` collector
 
-To sum the values of a particular property of all elements per group, use the `ConstraintCollectors.sum(...)`
-collector. The following code snippet first groups all processes by the computer they run on and sums up all the power
-required by the processes on that computer using the `ConstraintCollectors.sum(...)` collector.
+To sum the values of a particular property of all elements per group,
+use the `ConstraintCollectors.sum(...)` collector.
+The following code snippet first groups all visits by the vehicle that will be used,
+and sums up all the service durations using the `ConstraintCollectors.sum(...)` collector.
 
 [source,java,options="nowrap"]
 ----
-private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, sum(CloudProcess::getRequiredCpuPower))
+private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, sum(Visit::getServiceDuration))
             .penalize(HardSoftScore.ONE_SOFT,
-                    (computer, requiredCpuPower) -> requiredCpuPower)
-            .asConstraint("requiredCpuPowerTotal");
+                    (vehicle, totalServiceDuration) -> totalServiceDuration)
+            .asConstraint("totalServiceDuration");
 }
 ----
 
@@ -657,17 +659,17 @@ The sum is collected in an `int`. Variants of this collector:
 
 To calculate the average of a particular property of all elements per group, use the `ConstraintCollectors.average(...)`
 collector.
-The following code snippet first groups all processes by the computer they run on and averages all the power
-required by the processes on that computer using the `ConstraintCollectors.average(...)` collector.
+The following code snippet first groups all visits by the vehicle that will be used,
+and sums up all the service durations using the `ConstraintCollectors.sum(...)` collector.
 
 [source,java,options="nowrap"]
 ----
-private Constraint requiredCpuPowerTotal(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, average(CloudProcess::getRequiredCpuPower))
+private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, sum(Visit::getServiceDuration))
             .penalize(HardSoftScore.ONE_SOFT,
-                    (computer, averageCpuPower) -> averageCpuPower)
-            .asConstraint("averageCpuPower");
+                    (vehicle, totalServiceDuration) -> totalServiceDuration)
+            .asConstraint("totalServiceDuration");
 }
 ----
 
@@ -689,16 +691,17 @@ To extract the minimum or maximum per group, use the `ConstraintCollectors.min(.
 These collectors operate on values of properties which are `Comparable` (such as `Integer`, `String` or `Duration`),
 although there are also variants of these collectors which allow you to provide your own `Comparator`.
 
-The following example finds a computer which runs the most power-demanding process:
+The following code snippet first groups all visits by the vehicle that will be used,
+and finds the maximum in the group using the `ConstraintCollectors.sum(...)` collector.
 
 [source,java,options="nowrap"]
 ----
-private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, max(CloudProcess::getRequiredCpuPower))
-            .penalize(HardSoftScore.ONE_HARD,
-                    (computer, biggestProcess) -> ...)
-            .asConstraint("computerWithBiggestProcess");
+private Constraint maxServiceDuration(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, max(Visit::getServiceDuration))
+            .penalize(HardSoftScore.ONE_SOFT,
+                    (vehicle, maxServiceDuration) -> maxServiceDuration)
+            .asConstraint("maxServiceDuration");
 }
 ----
 
@@ -715,16 +718,16 @@ See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Compa
 
 To extract all elements per group into a collection, use the `ConstraintCollectors.toList(...)`.
 
-The following example retrieves all processes running on a computer in a `List`:
+The following example retrieves all visits for a given vehicle in a `List`:
 
 [source,java,options="nowrap"]
 ----
-private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, toList())
+private Constraint vehicleAndItsVisits(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, toList())
             .penalize(HardSoftScore.ONE_HARD,
-                    (computer, processList) -> ...)
-            .asConstraint("computerAndItsProcesses");
+                    (vehicle, visitList) -> ...)
+            .asConstraint("vehicleAndItsVisits");
 }
 ----
 
@@ -826,20 +829,20 @@ The constraint collector framework enables you to create constraint collectors w
 This is achieved using the `ConstraintCollectors.conditionally(...)` constraint collector.
 
 This collector accepts a predicate, and another collector to which it will delegate if the predicate is true.
-The following example returns a count of long-running processes assigned to a given computer,
-excluding processes which are not long-running:
+The following example returns a count of long-running visits with assigned to a given vehicle,
+where the customer asked for evening delivery:
 
 [source,java,options="nowrap"]
 ----
-private Constraint computerWithLongRunningProcesses(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(CloudProcess.class)
-            .groupBy(CloudProcess::getComputer, conditionally(
-                    CloudProcess::isLongRunning,
+private Constraint visitWithEveningDelivery(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Visit.class)
+            .groupBy(Visit::getVehicle, conditionally(
+                    Visit::isEveningDelivery,
                     count()
             ))
             .penalize(HardSoftScore.ONE_HARD,
-                    (computer, longRunningProcessCount) -> ...)
-            .asConstraint("longRunningProcesses");
+                    (vehicle, eveningDeliveryCount) -> ...)
+            .asConstraint("visitWithEveningDelivery");
 }
 ----
 
@@ -925,16 +928,16 @@ absence of some other object.
 
 image::constraints-and-score/score-calculation/constraintStreamIfExists.png[align="center"]
 
-The following example penalizes computers which have at least one process running:
+The following example penalizes vehicles which have at least one visit:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint runningComputer(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudComputer.class)
-                .ifExists(CloudProcess.class, Joiners.equal(Function.identity(), CloudProcess::getComputer))
+    private Constraint deployedVehicle(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Vehicle.class)
+                .ifExists(Visit.class, Joiners.equal(Function.identity(), Visit::getVehicle))
                 .penalize(HardSoftScore.ONE_SOFT,
-                        computer -> ...)
-                .asConstraint("runningComputer");
+                        vehicle -> ...)
+                .asConstraint("deployedVehicle");
     }
 ----
 
@@ -947,16 +950,16 @@ Conversely, if the `ifNotExists()` building block is used (as well as the `ifNot
 
 [source,java,options="nowrap"]
 ----
-    private Constraint unusedComputer(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudComputer.class)
-                .ifNotExists(CloudProcess.class, Joiners.equal(Function.identity(), CloudProcess::getComputer))
-                .penalize(HardSoftScore.ONE_HARD,
-                        computer -> ...)
-                .asConstraint("unusedComputer");
+    private Constraint idleVehicle(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Vehicle.class)
+                .ifNotExists(Visit.class, Joiners.equal(Function.identity(), Visit::getVehicle))
+                .penalize(HardSoftScore.ONE_SOFT,
+                        vehicle -> ...)
+                .asConstraint("idleVehicle");
     }
 ----
 
-Here, only the computers without processes running are penalized.
+Here, only the vehicles without any visits are penalized.
 
 Also note the use of the `Joiner` class to limit the constraint matches.
 For a description of available joiners, see <<constraintStreamsJoin,joining>>.
@@ -981,28 +984,29 @@ The result of such mapping is another constraint stream of the mapped tuples.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class) // UniConstraintStream<CloudProcess>
-                .map(CloudProcess::getComputer)           // UniConstraintStream<CloudComputer>
+    private Constraint visits(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Visit.class) // UniConstraintStream<Visit>
+                .map(Visit::getName)                  // UniConstraintStream<String>
                 ...
     }
 ----
 
 [NOTE]
 ====
-In the example above, the mapping function produces duplicate tuples if two different ``CloudProcess``es share a single `CloudComputer`.
-That is, such `CloudComputer` appears in the resulting constraint stream twice.
+In the example above, the mapping function produces duplicate tuples if two different ``Visit``s share a name.
+That is, such visit name appears in the resulting constraint stream twice.
 See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
 
-Mapping can be used to transform streams of all cardinalities.
-The following example maps a pair of `CloudProcess` instances to a pair of `CloudComputer` instances running them:
+Mapping can be used to transform streams of all cardinalities,
+and even between cardinalities.
+The following example maps a pair of `Visit` instances to a pair of their names:
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEachUniquePair(CloudProcess.class)      // BiConstraintStream<CloudProcess, CloudProcess>
-                .map(CloudProcess::getComputer, CloudProcess::getComputer)  // BiConstraintStream<CloudComputer, CloudComputer>
+    private Constraint visits(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEachUniquePair(Visit.class)                        // BiConstraintStream<Visit, Visit>
+                .map((visit1, visit2) -> Pair.of(visit1.getName(), visit2.getName()))  // UniConstraintStream<Pair<String, String>>
                 ...
     }
 ----
@@ -1037,10 +1041,10 @@ to have the duplicate copies eliminated.
 
 [source,java,options="nowrap"]
 ----
-    private Constraint computerWithBiggestProcess(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(CloudProcess.class) // UniConstraintStream<CloudProcess>
-                .map(CloudProcess::getComputer)           // UniConstraintStream<CloudComputer>
-                .distinct()                               // The same, each CloudComputer just once.
+    private Constraint visits(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Visit.class) // UniConstraintStream<Visit>
+                .map(Visit::getName)                  // UniConstraintStream<String>
+                .distinct()                           // The same, each name just once.
                 ...
     }
 ----
@@ -1200,14 +1204,12 @@ Consider the following constraint stream:
 
 [source,java,options="nowrap"]
 ----
-    protected Constraint horizontalConflict(ConstraintFactory factory) {
-        return factory
-                .forEachUniquePair(Queen.class, equal(Queen::getRowIndex))
-                .penalize(SimpleScore.ONE)
-                .justifyWith((queen, otherQueen, simpleScore) -> new CustomHorizontalConflictJustification(queen.getId(),
-                        otherQueen.getId()))
-                .indictWith((queen, otherQueen) -> List.of(queen, otherQueen))
-                .asConstraint("Horizontal conflict");
+    Constraint vehicleCapacity(ConstraintFactory factory) {
+        return factory.forEach(Vehicle.class)
+                .filter(vehicle -> vehicle.getTotalDemand() > vehicle.getCapacity())
+                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                        vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
+                .asConstraint(VEHICLE_CAPACITY);
     }
 ----
 
@@ -1215,77 +1217,76 @@ The following example uses the Constraint Verifier API to create a simple unit t
 
 [source,java,options="nowrap"]
 ----
-    private ConstraintVerifier<NQueensConstraintProvider, NQueens> constraintVerifier
-            = ConstraintVerifier.build(new NQueensConstraintProvider(), NQueens.class, Queen.class);
+    private ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutePlan> constraintVerifier
+            = ConstraintVerifier.build(new VehicleRoutingConstraintProvider(), Vehicle.class, Visit.class);
 
     @Test
-    public void horizontalConflictWithTwoQueens() {
-        Row row1 = new Row(0);
-        Column column1 = new Column(0);
-        Column column2 = new Column(1);
-        Queen queen1 = new Queen(0, row1, column1);
-        Queen queen2 = new Queen(1, row1, column2);
-        constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
-                .given(queen1, queen2)
-                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
-                .indictsWith(queen1, queen2)
-                .penalizesBy(1);
+    void vehicleCapacity() {
+        LocalDateTime tomorrow_07_00 = LocalDateTime.of(TOMORROW, LocalTime.of(7, 0));
+        LocalDateTime tomorrow_08_00 = LocalDateTime.of(TOMORROW, LocalTime.of(8, 0));
+        LocalDateTime tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0));
+        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
+        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit1);
+        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit2);
+
+        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
+                .given(vehicleA, visit1, visit2)
+                .penalizesBy(20);
     }
 ----
 
-This test ensures that the horizontal conflict constraint assigns a penalty of `1` when there are two queens on the same
-row.
+This test ensures that, if a vehicle capacity is exceeded, that the constraint penalizes accordingly.
 The following line creates a shared `ConstraintVerifier` instance and initializes the instance with the
-`NQueensConstraintProvider`:
+`VehicleRoutingConstraintProvider`:
 
 
 [source,java,options="nowrap"]
 ----
-    private ConstraintVerifier<NQueensConstraintProvider, NQueens> constraintVerifier
-            = ConstraintVerifier.build(new NQueensConstraintProvider(), NQueens.class, Queen.class);
+    private ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutePlan> constraintVerifier
+            = ConstraintVerifier.build(new VehicleRoutingConstraintProvider(), Vehicle.class, Visit.class);
 ----
 
 The `@Test` annotation indicates that the method is a unit test in a testing framework of your choice.
 Constraint Verifier works with many testing frameworks including JUnit and AssertJ.
 
 The first part of the test prepares the test data.
-In this case, the test data includes two instances of the `Queen` planning entity and their dependencies
-(`Row`, `Column`):
+In this case, the test data includes a vehicle and a visit:
 
 [source,java,options="nowrap"]
 ----
-        Row row1 = new Row(0);
-        Column column1 = new Column(0);
-        Column column2 = new Column(1);
-        Queen queen1 = new Queen(0, row1, column1);
-        Queen queen2 = new Queen(1, row1, column2);
+        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
+        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit1);
+        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit2);
 ----
 
 Further down, the following code tests the constraint:
 
 [source,java,options="nowrap"]
 ----
-        constraintVerifier.verifyThat(NQueensConstraintProvider::horizontalConflict)
-                .given(queen1, queen2)
-                .justifiesWith(new CustomHorizontalConflictJustification(queen1.getId(), queen2.getId()))
-                .indictsWith(queen1, queen2)
-                .penalizesBy(1);
+        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
+                .given(vehicleA, visit1, visit2)
+                .penalizesBy(20);
 ----
 
-The `verifyThat(...)` call is used to specify a method on the `NQueensConstraintProvider` class which is under test.
+The `verifyThat(...)` call is used to specify a method on the `VehicleRoutingConstraintProvider` class which is under test.
 This method must be visible to the test class, which the Java compiler enforces.
 
 The `given(...)` call is used to enumerate all the facts that the constraint stream operates on.
-In this case, the `given(...)` call takes the `queen1` and `queen2` instances previously created.
+In this case, the `given(...)` call takes the `vehicleA`, `visit1` and `visit2` instances previously created.
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
 
-The methods `justifiesWith(...)` and `indictsWith(...)` validate the expected constraint justifications and indictments
-mapped by the constraint definition.
-The constraint justification validation expects the ID of both `queen1` and `queen2`.
-Similarly, the indictment check tests if the constraint `horizontalConflict` returns both indicted queens.
+[NOTE]
+====
+You can also use methods `justifiesWith(...)` and `indictsWith(...)`
+to validate the expected constraint justifications and indictments mapped by the constraint definition.
+====
 
-Finally, the `penalizesBy(...)` call completes the test, making sure that the horizontal conflict constraint, given
-one `Queen`, results in a penalty of `1`.
+Finally, the `penalizesBy(...)` call completes the test,
+making sure that the given constraint under the given conditions penalizes by the `20`.
 This number is a product of multiplying the match weight, as defined in the constraint stream, by the number of matches.
 
 Alternatively, you can use a `rewardsWith(...)` call to check for rewards instead of penalties.
@@ -1313,19 +1314,27 @@ Consider the following test:
 ----
     @Test
     public void givenFactsMultipleConstraints() {
-        Queen queen1 = new Queen(0, row1, column1);
-        Queen queen2 = new Queen(1, row2, column2);
-        Queen queen3 = new Queen(2, row3, column3);
+        LocalDateTime tomorrow_07_00 = LocalDateTime.of(TOMORROW, LocalTime.of(7, 0));
+        LocalDateTime tomorrow_08_00 = LocalDateTime.of(TOMORROW, LocalTime.of(8, 0));
+        LocalDateTime tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0));
+        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
+        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit1);
+        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
+        vehicleA.getVisits().add(visit2);
+
         constraintVerifier.verifyThat()
-                .given(queen1, queen2, queen3)
-                .scores(SimpleScore.of(-3));
+                .given(vehicleA, visit1, visit2)
+                .scores(HardSoftScore.ofSoft(20));
     }
 ----
 
 There are only two notable differences to the previous example.
-First, the `verifyThat()` call takes no argument here, signifying that the entire `ConstraintProvider` instance is
+
+- The `verifyThat()` call takes no argument here, signifying that the entire `ConstraintProvider` instance is
 being tested.
-Second, instead of either a `penalizesBy()` or `rewardsWith()` call, the `scores(...)` method is used.
+(But for the sake of simplicity, we will assume it still only contains the one constraint we've seen previously.)
+- Instead of either a `penalizesBy()` or `rewardsWith()` call, the `scores(...)` method is used.
 This runs the `ConstraintProvider` on the given facts and returns a sum of ``Score``s of all constraint matches resulting
 from the given facts.
 
@@ -1389,8 +1398,7 @@ An easy way to implement your score calculation in Java.
 ** Does not scale because there is no xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
 ** Can not xref:constraints-and-score/understanding-the-score.adoc[explain the score].
 
-To start using Easy Java score calculation,
-implement the one method of the interface ``EasyScoreCalculator``:
+To start using Easy Java score calculation, implement the one method of the interface ``EasyScoreCalculator``:
 
 [source,java,options="nowrap"]
 ----
@@ -1401,48 +1409,12 @@ public interface EasyScoreCalculator<Solution_, Score_ extends Score<Score_>> {
 }
 ----
 
-For example in N-queens:
-
-[source,java,options="nowrap"]
-----
-public class NQueensEasyScoreCalculator
-    implements EasyScoreCalculator<NQueens, SimpleScore> {
-
-    @Override
-    public SimpleScore calculateScore(NQueens nQueens) {
-        int n = nQueens.getN();
-        List<Queen> queenList = nQueens.getQueenList();
-
-        int score = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                Queen leftQueen = queenList.get(i);
-                Queen rightQueen = queenList.get(j);
-                if (leftQueen.getRow() != null && rightQueen.getRow() != null) {
-                    if (leftQueen.getRowIndex() == rightQueen.getRowIndex()) {
-                        score--;
-                    }
-                    if (leftQueen.getAscendingDiagonalIndex() == rightQueen.getAscendingDiagonalIndex()) {
-                        score--;
-                    }
-                    if (leftQueen.getDescendingDiagonalIndex() == rightQueen.getDescendingDiagonalIndex()) {
-                        score--;
-                    }
-                }
-            }
-        }
-        return SimpleScore.valueOf(score);
-    }
-
-}
-----
-
 Configure it in the solver configuration:
 
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensEasyScoreCalculator</easyScoreCalculatorClass>
+    <easyScoreCalculatorClass>...MyEasyScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
@@ -1504,113 +1476,18 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
 
 image::constraints-and-score/score-calculation/incrementalScoreCalculatorSequenceDiagram.png[align="center"]
 
-For example in n queens:
-
-[source,java,options="nowrap"]
-----
-public class NQueensAdvancedIncrementalScoreCalculator
-    implements IncrementalScoreCalculator<NQueens, SimpleScore> {
-
-    private Map<Integer, List<Queen>> rowIndexMap;
-    private Map<Integer, List<Queen>> ascendingDiagonalIndexMap;
-    private Map<Integer, List<Queen>> descendingDiagonalIndexMap;
-
-    private int score;
-
-    public void resetWorkingSolution(NQueens nQueens) {
-        int n = nQueens.getN();
-        rowIndexMap = new HashMap<Integer, List<Queen>>(n);
-        ascendingDiagonalIndexMap = new HashMap<Integer, List<Queen>>(n * 2);
-        descendingDiagonalIndexMap = new HashMap<Integer, List<Queen>>(n * 2);
-        for (int i = 0; i < n; i++) {
-            rowIndexMap.put(i, new ArrayList<Queen>(n));
-            ascendingDiagonalIndexMap.put(i, new ArrayList<Queen>(n));
-            descendingDiagonalIndexMap.put(i, new ArrayList<Queen>(n));
-            if (i != 0) {
-                ascendingDiagonalIndexMap.put(n - 1 + i, new ArrayList<Queen>(n));
-                descendingDiagonalIndexMap.put((-i), new ArrayList<Queen>(n));
-            }
-        }
-        score = 0;
-        for (Queen queen : nQueens.getQueenList()) {
-            insert(queen);
-        }
-    }
-
-    public void beforeEntityAdded(Object entity) {
-        // Do nothing
-    }
-
-    public void afterEntityAdded(Object entity) {
-        insert((Queen) entity);
-    }
-
-    public void beforeVariableChanged(Object entity, String variableName) {
-        retract((Queen) entity);
-    }
-
-    public void afterVariableChanged(Object entity, String variableName) {
-        insert((Queen) entity);
-    }
-
-    public void beforeEntityRemoved(Object entity) {
-        retract((Queen) entity);
-    }
-
-    public void afterEntityRemoved(Object entity) {
-        // Do nothing
-    }
-
-    private void insert(Queen queen) {
-        Row row = queen.getRow();
-        if (row != null) {
-            int rowIndex = queen.getRowIndex();
-            List<Queen> rowIndexList = rowIndexMap.get(rowIndex);
-            score -= rowIndexList.size();
-            rowIndexList.add(queen);
-            List<Queen> ascendingDiagonalIndexList = ascendingDiagonalIndexMap.get(queen.getAscendingDiagonalIndex());
-            score -= ascendingDiagonalIndexList.size();
-            ascendingDiagonalIndexList.add(queen);
-            List<Queen> descendingDiagonalIndexList = descendingDiagonalIndexMap.get(queen.getDescendingDiagonalIndex());
-            score -= descendingDiagonalIndexList.size();
-            descendingDiagonalIndexList.add(queen);
-        }
-    }
-
-    private void retract(Queen queen) {
-        Row row = queen.getRow();
-        if (row != null) {
-            List<Queen> rowIndexList = rowIndexMap.get(queen.getRowIndex());
-            rowIndexList.remove(queen);
-            score += rowIndexList.size();
-            List<Queen> ascendingDiagonalIndexList = ascendingDiagonalIndexMap.get(queen.getAscendingDiagonalIndex());
-            ascendingDiagonalIndexList.remove(queen);
-            score += ascendingDiagonalIndexList.size();
-            List<Queen> descendingDiagonalIndexList = descendingDiagonalIndexMap.get(queen.getDescendingDiagonalIndex());
-            descendingDiagonalIndexList.remove(queen);
-            score += descendingDiagonalIndexList.size();
-        }
-    }
-
-    public SimpleScore calculateScore() {
-        return SimpleScore.valueOf(score);
-    }
-
-}
-----
-
 Configure it in the solver configuration:
 
 [source,xml,options="nowrap"]
 ----
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>ai.timefold.solver.examples.nqueens.optional.score.NQueensAdvancedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>...MyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
 ----
 
 [IMPORTANT]
 ====
-A piece of incremental score calculator code can be difficult to write and to review.
+Incremental score calculator code can be difficult to write and to review.
 xref:constraints-and-score/overview.adoc#invalidScoreDetection[Assert its correctness] by using an ``EasyScoreCalculator`` to fulfill
 the assertions triggered by the ``environmentMode``.
 ====
@@ -1648,48 +1525,8 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
 }
 ----
 
-For example in machine reassignment, create one `ConstraintMatchTotal` per constraint type and call `addConstraintMatch()` for each constraint match:
-
-[source,java,options="nowrap"]
-----
-public class MachineReassignmentIncrementalScoreCalculator
-        implements ConstraintMatchAwareIncrementalScoreCalculator<MachineReassignment, HardSoftLongScore> {
-    ...
-
-    @Override
-    public void resetWorkingSolution(MachineReassignment workingSolution, boolean constraintMatchEnabled) {
-        resetWorkingSolution(workingSolution);
-        // ignore constraintMatchEnabled, it is always presumed enabled
-    }
-
-    @Override
-    public Collection<ConstraintMatchTotal<HardSoftLongScore>> getConstraintMatchTotals() {
-        ConstraintMatchTotal<HardSoftLongScore> maximumCapacityMatchTotal = new DefaultConstraintMatchTotal<>(CONSTRAINT_PACKAGE,
-            "maximumCapacity", HardSoftLongScore.ZERO);
-        ...
-        for (MrMachineScorePart machineScorePart : machineScorePartMap.values()) {
-            for (MrMachineCapacityScorePart machineCapacityScorePart : machineScorePart.machineCapacityScorePartList) {
-                if (machineCapacityScorePart.maximumAvailable < 0L) {
-                    maximumCapacityMatchTotal.addConstraintMatch(
-                            Arrays.asList(machineCapacityScorePart.machineCapacity),
-                            HardSoftLongScore.valueOf(machineCapacityScorePart.maximumAvailable, 0));
-                }
-            }
-        }
-        ...
-        List<ConstraintMatchTotal<HardSoftLongScore>> constraintMatchTotalList = new ArrayList<>(4);
-        constraintMatchTotalList.add(maximumCapacityMatchTotal);
-        ...
-        return constraintMatchTotalList;
-    }
-
-    @Override
-    public Map<Object, Indictment<HardSoftLongScore>> getIndictmentMap() {
-        return null; // Calculate it non-incrementally from getConstraintMatchTotals()
-    }
-}
-----
-
-That `getConstraintMatchTotals()` code often duplicates some of the logic of the normal `IncrementalScoreCalculator` methods.
-Constraint Streams doesn't have this disadvantage, because they are constraint match aware automatically when needed,
+Typically it means creating one `ConstraintMatchTotal` per constraint type
+and calling `addConstraintMatch()` for each constraint match.
+`getConstraintMatchTotals()` code often duplicates some logic of the normal `IncrementalScoreCalculator` methods.
+Constraint Streams doesn't have this disadvantage, because they are aware of constraint matches by design,
 without any extra domain-specific code.

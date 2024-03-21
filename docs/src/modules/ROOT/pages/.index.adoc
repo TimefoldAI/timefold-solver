@@ -20,7 +20,6 @@ endif::[]
 
 include::introduction/introduction.adoc[leveloffset=+1]
 include::quickstart/.quickstart.adoc[leveloffset=+1]
-include::use-cases-and-examples/use-cases-and-examples.adoc[leveloffset=+1]
 include::using-timefold-solver/.using-timefold-solver.adoc[leveloffset=+1]
 include::constraints-and-score/.constraints-and-score.adoc[leveloffset=+1]
 include::optimization-algorithms/optimization-algorithms.adoc[leveloffset=+1]

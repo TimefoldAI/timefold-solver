@@ -25,11 +25,9 @@ For example:
 * 64 queens has more than `10^115` possible solutions (``64^64``).
 * Most real-life planning problems have an incredible number of possible solutions and only one or a few optimal solutions.
 
-For comparison: the minimal number of atoms in the known universe (10^80). As a planning problem gets bigger, the search space tends to blow up really fast.
+For comparison: the minimal number of atoms in the known universe (10^80).
+As a planning problem gets bigger, the search space tends to blow up really fast.
 Adding only one extra planning entity or planning value can heavily multiply the running time of some algorithms.
-
-image::optimization-algorithms/cloudBalanceSearchSpaceSize.png[align="center"]
-
 Calculating the number of possible solutions depends on the design of the domain model:
 
 image::optimization-algorithms/searchSpaceSizeCalculation.png[align="center"]
@@ -40,9 +38,9 @@ image::optimization-algorithms/searchSpaceSizeCalculation.png[align="center"]
 This search space size calculation includes infeasible solutions (if they can be represented by the model), because:
 
 * The optimal solution might be infeasible.
-* There are many types of hard constraints that cannot be incorporated in the formula practically. For example, in Cloud Balancing, try incorporating the CPU capacity constraint in the formula.
+* There are many types of hard constraints that cannot be incorporated in the formula practically.
 
-Even in cases where adding some of the hard constraints in the formula is practical (for example, Course Scheduling), the resulting search space is still huge.
+Even in cases where adding some of the hard constraints in the formula is practical, the resulting search space is still huge.
 ====
 
 An algorithm that checks every possible solution (even with pruning, such as in <<branchAndBound,Branch And Bound>>) can easily run for billions of years on a single real-life planning problem.
@@ -62,9 +60,9 @@ The business wants the optimal solution, but they also have other requirements:
 * Available time: The solution must be found in time, before it becomes useless to execute.
 * Reliability: Every data set must have at least a decent result (better than a human planner).
 
-Given these requirements, and despite the promises of some salesmen, it is usually impossible for anyone or anything to find the optimal solution.
+Given these requirements, and despite the promises of some salesmen,
+it is usually impossible for anyone or anything to find the optimal solution.
 Therefore, Timefold Solver focuses on finding the best solution in available time.
-In xref:use-cases-and-examples/examples-overview/examples-overview.adoc#examplesOverview["realistic, independent competitions"], it often comes out as the best _reusable_ software.
 
 The nature of NP-complete problems make scaling a prime concern.
 
@@ -686,21 +684,9 @@ public interface Solver<Solution_> {
 ----
 
 The ``BestSolutionChangedEvent``'s `newBestSolution` may not be initialized or feasible.
-Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases:
-
-[source,java,options="nowrap"]
-----
-    solver.addEventListener(new SolverEventListener<CloudBalance>() {
-        public void bestSolutionChanged(BestSolutionChangedEvent<CloudBalance> event) {
-            // Ignore infeasible (including uninitialized) solutions
-            if (event.getNewBestSolution().getScore().isFeasible()) {
-                ...
-            }
-        }
-    });
-----
-
-Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions, but also accept infeasible solutions.
+Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases.
+Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
+but also accept infeasible solutions.
 
 [WARNING]
 ====
@@ -736,25 +722,6 @@ public interface CustomPhaseCommand<Solution_> {
 }
 ----
 
-For example, implement `CustomPhaseCommand` and its `changeWorkingSolution()` method:
-
-[source,java,options="nowrap"]
-----
-public class ToOriginalMachineSolutionInitializer implements CustomPhaseCommand<MachineReassignment> {
-
-    public void changeWorkingSolution(ScoreDirector<MachineReassignment> scoreDirector) {
-        MachineReassignment machineReassignment = scoreDirector.getWorkingSolution();
-        for (MrProcessAssignment processAssignment : machineReassignment.getProcessAssignmentList()) {
-            scoreDirector.beforeVariableChanged(processAssignment, "machine");
-            processAssignment.setMachine(processAssignment.getOriginalMachine());
-            scoreDirector.afterVariableChanged(processAssignment, "machine");
-            scoreDirector.triggerVariableListeners();
-        }
-    }
-
-}
-----
-
 [WARNING]
 ====
 Any change on the planning entities in a `CustomPhaseCommand` must be notified to the ``ScoreDirector``.
@@ -775,7 +742,7 @@ Configure the `CustomPhaseCommand` in the solver configuration:
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
   <customPhase>
-    <customPhaseCommandClass>ai.timefold.solver.examples.machinereassignment.solver.solution.initializer.ToOriginalMachineSolutionInitializer</customPhaseCommandClass>
+    <customPhaseCommandClass>...MyCustomPhase</customPhaseCommandClass>
   </customPhase>
   ... <!-- Other phases -->
 </solver>
@@ -849,7 +816,8 @@ For example, the move below changes queen `C` from row `0` to row ``2``:
 image::optimization-algorithms/singleMoveNQueens04.png[align="center"]
 
 The new solution is called a _neighbor_ of the original solution, because it can be reached in a single ``Move``.
-Although a single move can change multiple queens, the neighbors of a solution should always be a very small subset of all possible solutions.
+Although a single move can change multiple queens,
+the neighbors of a solution should always be a tiny subset of all possible solutions.
 For example, on that original solution, these are all possible ``changeMove``s:
 
 image::optimization-algorithms/possibleMovesNQueens04.png[align="center"]
@@ -943,19 +911,19 @@ The root of this tree is a `MoveSelector` which is injected into the optimizatio
 
 |<<changeMoveSelector,Change move>>
 |Change 1 entity's variable
-|`+Process-A {Computer-1 -> Computer-2}+`
+|`+Lesson-A {Room-1 -> Room-2}+`
 
 |<<swapMoveSelector,Swap move>>
 |Swap all variables of 2 entities
-|`+Process-A {Computer-1} <-> Process-B {Computer-2}+`
+|`+Lesson-A {Room-1} <-> Lesson-B {Room-2}+`
 
 |<<pillarChangeMoveSelector,Pillar change move>>
 |Change a set of entities with the same value
-|`+[Process-A, Process-B, Process-C] {Computer-1 -> Computer-2}+`
+|`+[Lesson-A, Lesson-B, Lesson-C] {Room-1 -> Room-2}+`
 
 |<<pillarSwapMoveSelector,Pillar swap move>>
 |Swap 2 sets of entities with the same values
-|`+[Process-A, Process-B, Process-C] {Computer-1} <-> [Process-E, Process-F] {Computer-2}+`
+|`+[Lesson-A, Lesson-B, Lesson-C] {Room-1} <-> [Lesson-E, Lesson-F] {Room-2}+`
 
 |<<listChangeMoveSelector,List change move>>
 |Move a list element to a different index or to another entity's list variable
@@ -1081,7 +1049,6 @@ Advanced configuration:
 The `secondaryEntitySelector` is rarely needed: if it is not specified, entities from the same `entitySelector` are swapped.
 
 If one or more `variableNameInclude` properties are specified, not all planning variables will be swapped, but only those specified.
-For example for course scheduling, specifying only `variableNameInclude` room will make it only swap room, not period.
 
 This move selector only supports <<cacheType,phase or solver caching>> if it doesn't apply on any xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained] variables.
 
@@ -1190,7 +1157,8 @@ and step caching scales badly memory wise.
 [#subPillars]
 ===== Sub pillars
 
-A sub pillar is a subset of entities that share the same value(s) for their variable(s). For example if queen A, B, C and D are all located on row 0, they are a pillar and `[A, D]` is one of the many sub pillars.
+A sub pillar is a subset of entities that share the same value(s) for their variable(s).
+For example if queen A, B, C and D are all located on row 0, they are a pillar and `[A, D]` is one of the many sub pillars.
 
 There are several ways how sub pillars can be selected by the `subPillarType` property:
 
@@ -1667,7 +1635,7 @@ Advanced configuration:
 ----
       <entitySelector>
         ... <!-- Normal selector properties -->
-        <entityClass>ai.timefold.solver.examples.curriculumcourse.domain.Lecture</entityClass>
+        <entityClass>org.acme.vehiclerouting.domain.Vehicle</entityClass>
       </entitySelector>
 ----
 
@@ -1891,7 +1859,8 @@ This combination is often a worthy competitor for medium use cases, especially w
 There can be certain moves that you don't want to select, because:
 
 * The move is pointless and would only waste CPU time.
-For example, swapping two lectures of the same course will result in the same score and the same schedule because all lectures of one course are interchangeable (same teacher, same students, same topic).
+For example, swapping two lectures of the same course will result in the same score and the same schedule,
+because all lectures of one course are interchangeable (same teacher, same students, same topic).
 * Doing the move would break xref:constraints-and-score/performance.adoc#buildInHardConstraint[a built-in hard constraint],
 so the solution would be infeasible but the score function doesn't check built-in hard constraints for performance reasons.
 For example, don't change a gym lecture to a room which is not a gym room.
@@ -1956,12 +1925,13 @@ public class DifferentCourseSwapMoveFilter implements SelectionFilter<CourseSche
 }
 ----
 
-Configure the `filterClass` on every targeted `moveSelector` (potentially both in the Local Search and the Construction Heuristics if it filters ``ChangeMove``s):
+Configure the `filterClass` on every targeted `moveSelector`
+(potentially both in the Local Search and the Construction Heuristics if it filters ``ChangeMove``s):
 
 [source,xml,options="nowrap"]
 ----
     <swapMoveSelector>
-      <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.DifferentCourseSwapMoveFilter</filterClass>
+      <filterClass>...DifferentCourseSwapMoveFilter</filterClass>
     </swapMoveSelector>
 ----
 
@@ -1989,7 +1959,7 @@ Configure the `filterClass` on every targeted `entitySelector` (potentially both
 ----
     <changeMoveSelector>
       <entitySelector>
-        <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.LongLectureSelectionFilter</filterClass>
+        <filterClass>...LongLectureSelectionFilter</filterClass>
       </entitySelector>
     </changeMoveSelector>
 ----
@@ -2019,7 +1989,7 @@ Configure the `filterClass` on every targeted `valueSelector` (potentially both 
 ----
     <changeMoveSelector>
       <valueSelector>
-        <filterClass>ai.timefold.solver.examples.curriculumcourse.solver.move.LongPeriodSelectionFilter</filterClass>
+        <filterClass>...LongPeriodSelectionFilter</filterClass>
       </valueSelector>
     </changeMoveSelector>
 ----
@@ -2076,11 +2046,11 @@ An easy way to sort a `Selector` is with a plain old ``Comparator``:
 
 [source,java,options="nowrap"]
 ----
-public class CloudProcessDifficultyComparator implements Comparator<CloudProcess> {
+public class VisitDifficultyComparator implements Comparator<Visit> {
 
-    public int compare(CloudProcess a, CloudProcess b) {
+    public int compare(Visit a, Visit b) {
         return new CompareToBuilder()
-                .append(a.getRequiredMultiplicand(), b.getRequiredMultiplicand())
+                .append(a.getServiceDuration(), b.getServiceDuration())
                 .append(a.getId(), b.getId())
                 .toComparison();
     }
@@ -2095,7 +2065,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterComparatorClass>...CloudProcessDifficultyComparator</sorterComparatorClass>
+      <sorterComparatorClass>...VisitDifficultyComparator</sorterComparatorClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
@@ -2121,41 +2091,6 @@ public interface SelectionSorterWeightFactory<Solution_, T> {
 }
 ----
 
-[source,java,options="nowrap"]
-----
-public class QueenDifficultyWeightFactory implements SelectionSorterWeightFactory<NQueens, Queen> {
-
-    public QueenDifficultyWeight createSorterWeight(NQueens nQueens, Queen queen) {
-        int distanceFromMiddle = calculateDistanceFromMiddle(nQueens.getN(), queen.getColumnIndex());
-        return new QueenDifficultyWeight(queen, distanceFromMiddle);
-    }
-
-    ...
-
-    public static class QueenDifficultyWeight implements Comparable<QueenDifficultyWeight> {
-
-        private final Queen queen;
-        private final int distanceFromMiddle;
-
-        public QueenDifficultyWeight(Queen queen, int distanceFromMiddle) {
-            this.queen = queen;
-            this.distanceFromMiddle = distanceFromMiddle;
-        }
-
-        public int compareTo(QueenDifficultyWeight other) {
-            return new CompareToBuilder()
-                    // The more difficult queens have a lower distance to the middle
-                    .append(other.distanceFromMiddle, distanceFromMiddle) // Decreasing
-                    // Tie breaker
-                    .append(queen.getColumnIndex(), other.queen.getColumnIndex())
-                    .toComparison();
-        }
-
-    }
-
-}
-----
-
 You'll also need to configure it (unless it's annotated on the domain model and automatically applied by the optimization algorithm):
 
 [source,xml,options="nowrap"]
@@ -2163,7 +2098,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterWeightFactoryClass>...QueenDifficultyWeightFactory</sorterWeightFactoryClass>
+      <sorterWeightFactoryClass>...MyDifficultyWeightFactory</sorterWeightFactoryClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
@@ -2235,7 +2170,8 @@ public interface SelectionProbabilityWeightFactory<Solution_, T> {
     </entitySelector>
 ----
 
-For example, if there are three entities: process A (probabilityWeight 2.0), process B (probabilityWeight 0.5) and process C (probabilityWeight 0.5), then process A will be selected four times more than B and C.
+Assume the following entities: lesson A (probabilityWeight 2.0), lesson B (probabilityWeight 0.5) and lesson C (probabilityWeight 0.5).
+Then lesson A will be selected four times more than B and C.
 
 [NOTE]
 ====
@@ -2331,7 +2267,7 @@ Instead of using the generic ``Move``s (such as ``ChangeMove``) you can also imp
 Generic and custom ``MoveSelector``s can be <<combiningMultipleMoveSelectors,combined>> as desired.
 
 A custom `Move` can be tailored to work to the advantage of your constraints.
-For example in examination scheduling, changing the period of an exam A
+For example, in examination scheduling, changing the period of an exam A
 would also change the period of all the other exams that need to coincide with exam A.
 
 A custom `Move` is far more work to implement and much harder to avoid bugs than a generic ``Move``.
@@ -2357,25 +2293,25 @@ public interface Move<Solution_> {
 
 To implement a custom move, it's recommended to extend `AbstractMove` instead implementing `Move` directly.
 Timefold Solver calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
-For example in cloud balancing, this move changes one process to another computer:
+For example, in school timetabling, this move changes one lesson to another timeslot:
 
 [source,java,options="nowrap"]
 ----
-public class CloudComputerChangeMove extends AbstractMove<CloudBalance> {
+public class TimeslotChangeMove extends AbstractMove<Timetable> {
 
-    private CloudProcess cloudProcess;
-    private CloudComputer toCloudComputer;
+    private Lesson lesson;
+    private Timeslot toTimeslot;
 
-    public CloudComputerChangeMove(CloudProcess cloudProcess, CloudComputer toCloudComputer) {
-        this.cloudProcess = cloudProcess;
-        this.toCloudComputer = toCloudComputer;
+    public CloudComputerChangeMove(Lesson lesson, Timeslot toTimeslot) {
+        this.lesson = lesson;
+        this.toTimeslot = toTimeslot;
     }
 
     @Override
-    protected void doMoveOnGenuineVariables(ScoreDirector<CloudBalance> scoreDirector) {
-        scoreDirector.beforeVariableChanged(cloudProcess, "computer");
-        cloudProcess.setComputer(toCloudComputer);
-        scoreDirector.afterVariableChanged(cloudProcess, "computer");
+    protected void doMoveOnGenuineVariables(ScoreDirector<Timetable> scoreDirector) {
+        scoreDirector.beforeVariableChanged(lesson, "timeslot");
+        lesson.setTimeslot(toTimeslot);
+        scoreDirector.afterVariableChanged(lesson, "timeslot");
     }
 
     // ...
@@ -2403,41 +2339,41 @@ Timefold Solver automatically filters out _non doable moves_ by calling the `isM
 A _non doable move_ is:
 
 * A move that changes nothing on the current solution.
-For example, moving process `P1` on computer `X` to computer `X` is not doable, because it is already there.
+For example, moving lesson `L1` from timeslot `X` to timeslot `X` is not doable, because it is already there.
 * A move that is impossible to do on the current solution.
-For example, moving process `P1` to computer `Q`  (when `Q` isn't in the list of computers) is not doable
+For example, moving lesson `L1` to timeslot `Q`  (when `Q` isn't in the list of lessons) is not doable
 because it would assign a planning value that's not inside the planning variable's value range.
 
-In the cloud balancing example, a move which assigns a process to the computer it's already assigned to is not doable:
+In the school timetabling example, a move which assigns a lesson to the timeslot it's already assigned to is not doable:
 
 [source,java,options="nowrap"]
 ----
     @Override
-    public boolean isMoveDoable(ScoreDirector<CloudBalance> scoreDirector) {
-        return !Objects.equals(cloudProcess.getComputer(), toCloudComputer);
+    public boolean isMoveDoable(ScoreDirector<Timetable> scoreDirector) {
+        return !Objects.equals(lesson.getTimeslot(), toTimeslot);
     }
 ----
 
-We don't need to check if `toCloudComputer` is in the value range,
+We don't need to check if `toTimeslot` is in the value range,
 because we only generate moves for which that is the case.
 A move that is currently not doable can become doable when the working solution changes in a later step,
 otherwise we probably shouldn't have created it in the first place.
 
 Each move has an __undo move__: a move (normally of the same type) which does the exact opposite.
-In the cloud balancing example the undo move of `P1 {X -> Y}` is the move `P1 {Y -> X}`.
+In the cloud balancing example the undo move of `L1 {X -> Y}` is the move `L1 {Y -> X}`.
 The undo move of a move is created when the `Move` is being done on the current solution,
 before the genuine variables change:
 
 [source,java,options="nowrap"]
 ----
     @Override
-    public CloudComputerChangeMove createUndoMove(ScoreDirector<CloudBalance> scoreDirector) {
-        return new CloudComputerChangeMove(cloudProcess, cloudProcess.getComputer());
+    public TimeslotChangeMove createUndoMove(ScoreDirector<Timetable> scoreDirector) {
+        return new TimeslotChangeMove(lesson, lesson.getTimeslot());
     }
 ----
 
-Notice that if `P1` would have already been moved to `Y`, the undo move would create the move `P1 {Y -> Y}`,
-instead of the move `P1 {Y -> X}`.
+Notice that if `L1` would have already been moved to `Y`, the undo move would create the move `L1 {Y -> Y}`,
+instead of the move `L1 {Y -> X}`.
 
 A solver phase might do and undo the same `Move` more than once.
 In fact, many solver phases will iteratively do and undo a number of moves to evaluate them,
@@ -2449,7 +2385,7 @@ Keep it non-verbose and make it consistent with <<genericMoveSelectorsOverview,t
 [source,java,options="nowrap"]
 ----
     public String toString() {
-        return cloudProcess + " {" + cloudProcess.getComputer() + " -> " + toCloudComputer + "}";
+        return lesson + " {" + lesson.getTimeslot() + " -> " + toTimeslot + "}";
     }
 ----
 
@@ -2460,7 +2396,7 @@ xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedM
 ----
     @Override
     public String getSimpleMoveTypeDescription() {
-        return "CloudComputerChangeMove(CloudProcess.computer)";
+        return "TimeslotChangeMove(Lesson.timeslot)";
     }
 ----
 
@@ -2473,9 +2409,9 @@ the custom move must implement the `rebase()` method:
 [source,java,options="nowrap"]
 ----
     @Override
-    public CloudComputerChangeMove rebase(ScoreDirector<CloudBalance> destinationScoreDirector) {
-        return new CloudComputerChangeMove(destinationScoreDirector.lookUpWorkingObject(cloudProcess),
-                destinationScoreDirector.lookUpWorkingObject(toCloudComputer));
+    public TimeslotChangeMove rebase(ScoreDirector<Timetable> destinationScoreDirector) {
+        return new TimeslotChangeMove(destinationScoreDirector.lookUpWorkingObject(lesson),
+                destinationScoreDirector.lookUpWorkingObject(toTimeslot));
     }
 ----
 
@@ -2502,12 +2438,12 @@ They are called after the `Move` has already been done.
 ----
     @Override
     public Collection<? extends Object> getPlanningEntities() {
-        return Collections.singletonList(cloudProcess);
+        return Collections.singletonList(lesson);
     }
 
     @Override
     public Collection<? extends Object> getPlanningValues() {
-        return Collections.singletonList(toCloudComputer);
+        return Collections.singletonList(toTimeslot);
     }
 ----
 
@@ -2519,12 +2455,12 @@ and return all their values (to which they are changing) in ``getPlanningValues(
 ----
     @Override
     public Collection<? extends Object> getPlanningEntities() {
-        return Arrays.asList(leftCloudProcess, rightCloudProcess);
+        return Arrays.asList(leftLesson, rightLesson);
     }
 
     @Override
     public Collection<? extends Object> getPlanningValues() {
-        return Arrays.asList(leftCloudProcess.getComputer(), rightCloudProcess.getComputer());
+        return Arrays.asList(leftLesson.getTimeslot(), rightLesson.getTimeslot());
     }
 ----
 
@@ -2539,24 +2475,16 @@ Two moves which make the same change on a solution, should be equal ideally.
 ----
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof CloudComputerChangeMove) {
-            CloudComputerChangeMove other = (CloudComputerChangeMove) o;
-            return new EqualsBuilder()
-                    .append(cloudProcess, other.cloudProcess)
-                    .append(toCloudComputer, other.toCloudComputer)
-                    .isEquals();
-        } else {
-            return false;
-        }
+        return o instanceof TimeslotChangeMove other
+                && lesson.equals(other.lesson)
+                && toTimeslot.equals(other.toTimeslot);
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .append(cloudProcess)
-                .append(toCloudComputer)
+                .append(lesson)
+                .append(toTimeslot)
                 .toHashCode();
     }
 ----
@@ -2585,33 +2513,12 @@ public interface MoveListFactory<Solution_> {
 }
 ----
 
-For example:
-
-[source,java,options="nowrap"]
-----
-public class CloudComputerChangeMoveFactory implements MoveListFactory<CloudBalance> {
-
-    @Override
-    public List<CloudComputerChangeMove> createMoveList(CloudBalance cloudBalance) {
-        List<CloudComputerChangeMove> moveList = new ArrayList<>();
-        List<CloudComputer> cloudComputerList = cloudBalance.getComputerList();
-        for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
-            for (CloudComputer cloudComputer : cloudComputerList) {
-                moveList.add(new CloudComputerChangeMove(cloudProcess, cloudComputer));
-            }
-        }
-        return moveList;
-    }
-
-}
-----
-
 Simple configuration (which can be nested in a `unionMoveSelector` just like any other ``MoveSelector``):
 
 [source,xml,options="nowrap"]
 ----
     <moveListFactory>
-      <moveListFactoryClass>ai.timefold.solver.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
+      <moveListFactoryClass>...MyMoveFactory</moveListFactoryClass>
     </moveListFactory>
 ----
 
@@ -2621,7 +2528,7 @@ Advanced configuration:
 ----
     <moveListFactory>
       ... <!-- Normal moveSelector properties -->
-      <moveListFactoryClass>ai.timefold.solver.examples.cloudbalancing.optional.solver.move.CloudComputerChangeMoveFactory</moveListFactoryClass>
+      <moveListFactoryClass>...MyMoveFactory</moveListFactoryClass>
       <moveListFactoryCustomProperties>
         ...<!-- Custom properties -->
       </moveListFactoryCustomProperties>
@@ -2986,16 +2893,15 @@ Exhaustive Search variants suffer from two big scalability issues:
 * They scale terribly memory wise.
 * They scale horribly performance wise.
 
-As shown in these time spent graphs from the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker], Brute Force and Branch And Bound both hit a performance scalability wall.
+As shown in these time spent graphs from the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker],
+Brute Force and Branch And Bound both hit a performance scalability wall.
 For example, on N queens it hits wall at a few dozen queens:
 
 image::optimization-algorithms/exhaustiveSearchScalabilityNQueens.png[align="center"]
 
-In most use cases, such as Cloud Balancing, the wall appears out of thin air:
-
-image::optimization-algorithms/exhaustiveSearchScalabilityCloudBalance.png[align="center"]
-
-*Exhaustive Search hits this wall on small datasets already, so in production these optimizations algorithms are mostly useless.* Use Construction Heuristics with Local Search instead: those can handle thousands of queens/computers easily.
+In most use cases, the wall appears out of thin air.
+*Exhaustive Search hits this wall on small datasets already, so in production these optimizations algorithms are mostly useless.*
+Use Construction Heuristics with Local Search instead: those can handle thousands of entities easily.
 
 [NOTE]
 ====
@@ -3030,7 +2936,8 @@ It never changes a planning entity after it has been assigned.
 
 image::optimization-algorithms/firstFitNQueens04.png[align="center"]
 
-Notice that it starts with putting `Queen` A into row 0 (and never moving it later), which makes it impossible to reach the optimal solution.
+Notice that it starts with putting `Queen` A into row 0 (and never moving it later),
+which makes it impossible to reach the optimal solution.
 Suffixing this construction heuristic with metaheuristics can remedy that.
 
 
@@ -3765,10 +3672,6 @@ Scales better, at the cost of solution quality. The order of the planning variab
 ----
 
 The second way scales better, so it can be worth to switch to it.
-For example, in a course scheduling example with 200 rooms and 40 periods,
-a cartesian product selects 8{nbsp}000 moves per entity (1 step per entity).
-On the other hand, a sequential approach only selects 240 moves per entity (2 steps per entity),
-ending the Construction Heuristic 3 times faster.
 Especially for three or more planning variables, the scaling difference is huge.
 For example, with three variables of 1{nbsp}000 values each,
 a cartesian product selects 1{nbsp}000{nbsp}000{nbsp}000 moves per entity (1 step per entity).
@@ -3867,27 +3770,15 @@ The search path is highlighted by the green arrows.
 At each step it tries all selected moves, but unless it's the step, it doesn't investigate that solution further.
 This is one of the reasons why Local Search is very scalable.
 
-As shown above, Local Search solves the four queens problem by starting with the starting solution and make the following steps sequentially:
+Local Search solves the four queens problem by starting with the starting solution and make the following steps sequentially:
 
 . _B0 to B3_
 . _D0 to D2_
 . _A0 to A1_
 
-Turn on `debug` logging for the category `ai.timefold.solver` to show those steps in the log:
-
-[source,options="nowrap"]
-----
-INFO  Solving started: time spent (0), best score (-6), environment mode (REPRODUCIBLE), random (JDK with seed 0).
-DEBUG     LS step (0), time spent (20), score (-3), new best score (-3), accepted/selected move count (12/12), picked move (Queen-1 {Row-0 -> Row-3}).
-DEBUG     LS step (1), time spent (31), score (-1), new best score (-1), accepted/selected move count (12/12), picked move (Queen-3 {Row-0 -> Row-2}).
-DEBUG     LS step (2), time spent (40), score (0), new best score (0), accepted/selected move count (12/12), picked move (Queen-0 {Row-0 -> Row-1}).
-INFO  Local Search phase (0) ended: time spent (41), best score (0), score calculation speed (5000/sec), step total (3).
-INFO  Solving ended: time spent (41), best score (0), score calculation speed (5000/sec), phase total (1), environment mode (REPRODUCIBLE).
-----
-
-Notice that a log message includes the `toString()` method of the `Move` implementation which returns for example $$"$$``Queen-1 {Row-0 -> Row-3}``".
-
-A naive Local Search configuration solves the four queens problem in three steps, by evaluating only 37 possible solutions (three steps with 12 moves each + one starting solution), which is only a fraction of all 256 possible solutions.
+A naive Local Search configuration solves the four queens problem in three steps,
+by evaluating only 37 possible solutions (three steps with 12 moves each + one starting solution),
+which is only a fraction of all 256 possible solutions.
 It solves 16 queens in 31 steps, by evaluating only 7441 out of 18446744073709551616 possible solutions.
 By using a xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[Construction Heuristics] phase first,
 it's even a lot more efficient.
@@ -3898,7 +3789,8 @@ it's even a lot more efficient.
 
 Local Search decides the next step with the aid of three configurable components:
 
-* A `MoveSelector` which selects the possible moves of the current solution. See the chapter xref:optimization-algorithms/optimization-algorithms.adoc[move and neighborhood selection].
+* A `MoveSelector` which selects the possible moves of the current solution.
+See xref:optimization-algorithms/optimization-algorithms.adoc[move and neighborhood selection].
 * An `Acceptor` which filters out unacceptable moves.
 * A `Forager` which gathers accepted moves and picks the next step from them.
 
@@ -3919,31 +3811,18 @@ The solver phase configuration looks like this:
   </localSearch>
 ----
 
-In the example below, the `MoveSelector` generated the moves shown with the blue lines, the `Acceptor` accepted all of them and the `Forager` picked the move __B0 to B3__.
+In the example below, the `MoveSelector` generated the moves shown with the blue lines,
+the `Acceptor` accepted all of them and the `Forager` picked the move __B0 to B3__.
 
 image::optimization-algorithms/decideNextStepNQueens04.png[align="center"]
 
-xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on `trace` logging] to show the decision making in the log:
+xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on `trace` logging] to show the decision making in the log.
 
-[source,options="nowrap"]
-----
-INFO  Solver started: time spent (0), score (-6), new best score (-6), random (JDK with seed 0).
-TRACE         Move index (0) not doable, ignoring move (Queen-0 {Row-0 -> Row-0}).
-TRACE         Move index (1), score (-4), accepted (true), move (Queen-0 {Row-0 -> Row-1}).
-TRACE         Move index (2), score (-4), accepted (true), move (Queen-0 {Row-0 -> Row-2}).
-TRACE         Move index (3), score (-4), accepted (true), move (Queen-0 {Row-0 -> Row-3}).
-...
-TRACE         Move index (6), score (-3), accepted (true), move (Queen-1 {Row-0 -> Row-3}).
-...
-TRACE         Move index (9), score (-3), accepted (true), move (Queen-2 {Row-0 -> Row-3}).
-...
-TRACE         Move index (12), score (-4), accepted (true), move (Queen-3 {Row-0 -> Row-3}).
-DEBUG     LS step (0), time spent (6), score (-3), new best score (-3), accepted/selected move count (12/12), picked move (Queen-1 {Row-0 -> Row-3}).
-...
-----
-
-Because the last solution can degrade (for example in Tabu Search), the `Solver` remembers the best solution it has encountered through the entire search path.
-Each time the current solution is better than the last best solution, the current solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[cloned] and referenced as the new best solution.
+Because the last solution can degrade (such as in Tabu Search),
+the `Solver` remembers the best solution it has encountered through the entire search path.
+Each time the current solution is better than the last best solution,
+the current solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[cloned]
+and referenced as the new best solution.
 
 image::optimization-algorithms/localSearchScoreOverTime.png[align="center"]
 
@@ -3994,13 +3873,17 @@ To evaluate only a random subset of all the moves, use:
   </forager>
 ----
 
-Unlike the n queens problem, real world problems require the use of ``acceptedCountLimit``.
-Start from an `acceptedCountLimit` that takes a step in less than two seconds. xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on INFO logging] to see the step times.
+Unlike the N-queens problem, real world problems require the use of ``acceptedCountLimit``.
+Start from an `acceptedCountLimit` that takes a step in less than two seconds.
+xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on INFO logging] to see the step times.
 Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak the value.
 
 [IMPORTANT]
 ====
-With a low `acceptedCountLimit` (so a fast stepping algorithm), it is recommended to avoid using `selectionOrder` SHUFFLED because the shuffling generates a random number for every element in the selector, taking up a lot of time, but only a few elements are actually selected.
+With a low `acceptedCountLimit` (so a fast stepping algorithm),
+it is recommended to avoid using `selectionOrder` SHUFFLED
+because the shuffling generates a random number for every element in the selector,
+taking up a lot of time, but only a few elements are actually selected.
 ====
 
 
@@ -4051,7 +3934,8 @@ If multiple selected moves tie for the best move, one of them is randomly chosen
 image::optimization-algorithms/hillClimbingNQueens04.png[align="center"]
 
 Notice that once a queen has moved, it can be moved again later.
-This is a good thing, because in an NP-complete problem it's impossible to predict what will be the optimal final value for a planning variable.
+This is a good thing,
+because in an NP-complete problem it's impossible to predict what will be the optimal final value for a planning variable.
 
 
 [#hillClimbingStuckInLocalOptima]
@@ -4106,18 +3990,10 @@ Tabu Search is a Local Search that maintains a tabu list to avoid getting stuck 
 The tabu list holds recently used objects that are _taboo_ to use for now.
 Moves that involve an object in the tabu list, are not accepted.
 The tabu list objects can be anything related to the move, such as the planning entity, planning value, move, solution, ...
-{nbsp}
-Here's an example with entity tabu for four queens, so the queens are put in the tabu list:
+
+See example with entity tabu for four queens, so the queens are put in the tabu list:
 
 image::optimization-algorithms/entityTabuSearch.png[align="center"]
-
-[NOTE]
-====
-It's called Tabu Search, not Taboo Search.
-There is no spelling error.
-====
-
-Scientific paper: _Tabu Search - Part 1 and Part 2_ by Fred Glover (1989 - 1990)
 
 
 [#tabuSearchConfiguration]
@@ -4157,7 +4033,9 @@ A Tabu Search acceptor should be combined with a high ``acceptedCountLimit``, su
 
 Timefold Solver implements several tabu types:
 
-* _Planning entity tabu_ (recommended) makes the planning entities of recent steps tabu. For example, for N queens it makes the recently moved queens tabu. It's recommended to start with this tabu type.
+* _Planning entity tabu_ (recommended) makes the planning entities of recent steps tabu.
+For example, for school timetabling it makes the recently moved lessons tabu.
+It's recommended to start with this tabu type.
 +
 [source,xml,options="nowrap"]
 ----
@@ -4174,7 +4052,8 @@ To avoid hard coding the tabu size, configure a tabu ratio, relative to the numb
       <entityTabuRatio>0.02</entityTabuRatio>
     </acceptor>
 ----
-* _Planning value tabu_ makes the planning values of recent steps tabu. For example, for N queens it makes the recently moved to rows tabu.
+* _Planning value tabu_ makes the planning values of recent steps tabu.
+For example, for school timetablig it makes the recently assigned timeslots tabu.
 +
 [source,xml,options="nowrap"]
 ----
@@ -4473,7 +4352,7 @@ If there's no improving move however, it prefers moves which improve a softer sc
 [#strategicOscillationConfiguration]
 ==== Configuration
 
-Configure a ``finalistPodiumType``, for example in a Tabu Search configuration:
+Configure a ``finalistPodiumType``, such as in a Tabu Search configuration:
 
 [source,xml,options="nowrap"]
 ----

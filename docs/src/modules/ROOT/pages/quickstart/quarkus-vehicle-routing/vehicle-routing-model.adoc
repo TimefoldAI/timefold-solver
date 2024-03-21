@@ -1,3 +1,4 @@
+[#vrpQuarkusQuickStartDomainModel]
 = Model the domain objects
 :imagesdir: ../..
 

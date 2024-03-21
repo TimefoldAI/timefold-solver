@@ -50,7 +50,7 @@ The `timefold-solver-jpa` jar provides a JPA score converter for every built-in 
 ----
 @PlanningSolution
 @Entity
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     @Convert(converter = HardSoftScoreConverter.class)
@@ -69,7 +69,8 @@ To avoid this limitation, https://docs.jboss.org/hibernate/orm/current/userguide
 ==== JPA and Hibernate: planning cloning
 
 In JPA and Hibernate, there is usually a `@ManyToOne` relationship from most problem fact classes to the planning solution class.
-Therefore, the problem fact classes reference the planning solution class, which implies that when the solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning cloned], they need to be cloned too.
+Therefore, the problem fact classes reference the planning solution class,
+which implies that when the solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning cloned], they need to be cloned too.
 Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
 
 [source,java,options="nowrap"]
@@ -117,7 +118,7 @@ To fix that, configure the appropriate ``ScoreJaxbAdapter``:
 ----
 @PlanningSolution
 @XmlRootElement @XmlAccessorType(XmlAccessType.FIELD)
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     @XmlJavaTypeAdapter(HardSoftScoreJaxbAdapter.class)
@@ -131,10 +132,10 @@ For example, this generates pretty XML:
 
 [source,xml,options="nowrap"]
 ----
-<cloudBalance>
+<vehicleRoutePlan>
    ...
    <score>0hard/-200soft</score>
-</cloudBalance>
+</vehicleRoutePlan>
 ----
 
 The same applies for a bendable score:
@@ -190,7 +191,7 @@ The `TimefoldJacksonModule` fixes that, by using `HardSoftScoreJacksonSerializer
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     private HardSoftScore score;
@@ -238,13 +239,14 @@ public class Schedule {
 ----
 ====
 
-When a field is the `Score` supertype (instead of a specific type such as `HardSoftScore`), it uses `PolymorphicScoreJacksonSerializer` and `PolymorphicScoreJacksonDeserializer`
-to record the score type in JSON too, otherwise it would be impossible to deserialize it:
+When a field is the `Score` supertype (instead of a specific type such as `HardSoftScore`),
+it uses `PolymorphicScoreJacksonSerializer` and `PolymorphicScoreJacksonDeserializer` to record the score type in JSON too,
+otherwise it would be impossible to deserialize it:
 
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class CloudBalance {
+public class VehicleRoutePlan {
 
     @PlanningScore
     private Score score;
@@ -991,13 +993,12 @@ _to all modules_ in your `module-info.java` file:
 
 [source,java,options="nowrap"]
 ----
-module ai.timefold.solver.cloudbalancing {
+module org.acme.vehiclerouting {
     requires ai.timefold.solver.core;
     ...
 
-    opens ai.timefold.solver.examples.cloudbalancing; // Solver configuration
-    opens ai.timefold.solver.examples.cloudbalancing.domain; // Domain classes
-    opens ai.timefold.solver.examples.cloudbalancing.score; // Constraints
+    opens org.acme.vehiclerouting.domain; // Domain classes
+    opens org.acme.vehiclerouting.solver; // Constraints
     ...
 }
 ----
@@ -1018,12 +1019,14 @@ But despite that, both can benefit if the human planner becomes the supervisor o
 ** When the business changes, the score function often needs to change too.
 The human planner can notify the developers to add, change or remove score constraints.
 * *The human planner is always in control of Timefold Solver.*
-** As shown in the course scheduling example, the human planner can pin down one or more planning variables to a specific planning value.
+** The human planner can pin down one or more planning variables to a specific planning value.
 Because they are xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned],
 Timefold Solver does not change them: it optimizes the planning around the enforcements made by the human.
 If the human planner pins down all planning variables, he/she sidelines Timefold Solver completely.
-** In a prototype implementation, the human planner occasionally uses pinning to intervene, but as the implementation matures, this should become obsolete.
-The feature should be kept available as a reassurance for the humans, and in the event that the business changes dramatically before the score constraints are adjusted accordingly.
+** In a prototype implementation, the human planner occasionally uses pinning to intervene,
+but as the implementation matures, this should become obsolete.
+The feature should be kept available as a reassurance for the humans,
+and in the event that the business changes dramatically before the score constraints are adjusted accordingly.
 
 For this reason, it is recommended that the human planner is actively involved in your project.
 
@@ -1040,7 +1043,6 @@ Understand these guidelines to decide the hardware for a Timefold Solver service
 
 * **RAM memory**: Provision plenty, but no need to provide more.
 ** The problem dataset, loaded before Timefold Solver is called, often consumes the most memory. It depends on the problem scale.
-*** For example, in the Machine Reassignment example some datasets use over 1GB in memory. But in most examples, they use just a few MB.
 *** If this is a problem, review the domain class structure: remove classes or fields that Timefold Solver doesn't need during solving.
 *** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
 ** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.

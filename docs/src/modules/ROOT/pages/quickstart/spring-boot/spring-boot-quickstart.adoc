@@ -30,7 +30,8 @@ by using AI to adhere to hard and soft scheduling _constraints_, such as the fol
 
 Mathematically speaking, school timetabling is an _NP-hard_ problem.
 This means it is difficult to scale.
-Simply brute force iterating through all possible combinations takes millions of years for a non-trivial data set, even on a supercomputer.
+Simply brute force iterating through all possible combinations takes millions of years for a non-trivial data set,
+even on a supercomputer.
 Luckily, AI constraint solvers such as Timefold Solver have advanced algorithms
 that deliver a near-optimal solution in a reasonable amount of time.
 

@@ -50,11 +50,12 @@ public class ConferenceSchedule {
 ----
 
 The `@ConstraintConfigurationProvider` annotation automatically exposes the constraint configuration
-as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact], there is no need to add a `@ProblemFactProperty` annotation.
+as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
+there is no need to add a `@ProblemFactProperty` annotation.
 
 The constraint configuration class holds the <<constraintWeight,constraint weights>>,
 but it can also hold constraint parameters.
-For example in conference scheduling, the minimum pause constraint has a constraint weight (like any other constraint),
+For example, in conference scheduling, the minimum pause constraint has a constraint weight (like any other constraint),
 but it also has a constraint parameter that defines the length of the minimum pause between two talks of the same speaker.
 That pause length depends on the conference (= the planning problem):
 in some big conferences 20 minutes isn't enough to go from one room to the other.
@@ -84,13 +85,13 @@ public class ConferenceConstraintConfiguration {
 ----
 
 The type of the constraint weights must be the same score class as xref:using-timefold-solver/modeling-planning-problems.adoc#scoreOfASolution[the planning solution's score member].
-For example in conference scheduling, `ConferenceSchedule.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
+For example, in conference scheduling, `ConferenceSchedule.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
 both return a `HardMediumSoftScore`.
 
 A constraint weight cannot be null.
 Give each constraint weight a default value, but expose them in a UI so the business users can tweak them.
 The example above uses the `ofHard()`, `ofMedium()` and `ofSoft()` methods to do that.
-Notice how it defaults the _content conflict_ constraint as ten times more important than the _theme track conflict_ constraint.
+Notice how it defaults the _"Content conflict"_ constraint as ten times more important than the _"Theme track conflict"_ constraint.
 Normally, a constraint weight only uses one score level,
 but it's possible to use multiple score levels (at a small performance cost).
 
@@ -108,11 +109,11 @@ to use a different constraint package than some other weights.
 
 So every constraint weight ends up with a constraint package and a constraint name.
 Each constraint weight links with a constraint implementation,
-for example in xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]:
+for example, in xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]:
 
 [source,java,options="nowrap"]
 ----
-public final class ConferenceSchedulingConstraintProvider implements ConstraintProvider {
+public class ConferenceSchedulingConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
@@ -151,7 +152,7 @@ Each of the constraint weights defines the score level and score weight of their
 The constraint implementation calls `rewardConfigurable()` or `penalizeConfigurable()` and the constraint weight is automatically applied.
 
 If the constraint implementation provides a match weight, that *match weight is multiplied with the constraint weight*.
-For example, the _content conflict_ constraint weight defaults to `100soft`
+For example, the _"Content conflict"_ constraint weight defaults to `100soft`
 and the constraint implementation penalizes each match based on the number of shared content tags and the overlapping duration of the two talks:
 
 [source,java,options="nowrap"]

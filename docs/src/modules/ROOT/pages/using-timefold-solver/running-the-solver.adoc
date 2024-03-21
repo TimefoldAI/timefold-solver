@@ -41,17 +41,18 @@ Just provide the planning problem as argument to the `solve()` method and it wil
 
 [source,java,options="nowrap"]
 ----
-    NQueens problem = ...;
-    NQueens bestSolution = solver.solve(problem);
+    Timetable problem = ...;
+    Timetable bestSolution = solver.solve(problem);
 ----
 
-For example in n queens, the `solve()` method will return an `NQueens` instance with every `Queen` assigned to a ``Row``.
+In school timetabling,
+the `solve()` method will return a `Timetable` instance with every `Lesson` assigned to a `Teacher` and a `Timeslot`.
 
-.Best Solution for the Four Queens Puzzle in 8ms (Also an Optimal Solution)
-image::using-timefold-solver/running-the-solver/solvedNQueens04.png[align="left"]
-
-The `solve(Solution)` method can take a long time (depending on the problem size and the solver configuration). The `Solver` intelligently wades through xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space] of possible solutions and remembers the best solution it encounters during solving.
-Depending on a number of factors (including problem size, how much time the `Solver` has, the solver configuration, ...), xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[that best solution might or might not be an optimal solution].
+The `solve(Solution)` method can take a long time (depending on the problem size and the solver configuration).
+The `Solver` intelligently wades through xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space] of possible solutions
+and remembers the best solution it encounters during solving.
+Depending on a number of factors (including problem size, how much time the `Solver` has, the solver configuration, ...),
+xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[that best solution might or might not be an optimal solution].
 
 [NOTE]
 ====
@@ -264,18 +265,20 @@ For example, set it to `debug` logging, to see when the phases end and how fast 
 
 [source,options="nowrap"]
 ----
-INFO  Solving started: time spent (3), best score (-4init/0), random (JDK with seed 0).
-DEBUG     CH step (0), time spent (5), score (-3init/0), selected move count (1), picked move (Queen-2 {null -> Row-0}).
-DEBUG     CH step (1), time spent (7), score (-2init/0), selected move count (3), picked move (Queen-1 {null -> Row-2}).
-DEBUG     CH step (2), time spent (10), score (-1init/0), selected move count (4), picked move (Queen-3 {null -> Row-3}).
-DEBUG     CH step (3), time spent (12), score (-1), selected move count (4), picked move (Queen-0 {null -> Row-1}).
-INFO  Construction Heuristic phase (0) ended: time spent (12), best score (-1), score calculation speed (9000/sec), step total (4).
-DEBUG     LS step (0), time spent (19), score (-1),     best score (-1), accepted/selected move count (12/12), picked move (Queen-1 {Row-2 -> Row-3}).
-DEBUG     LS step (1), time spent (24), score (0), new best score (0), accepted/selected move count (9/12), picked move (Queen-3 {Row-3 -> Row-2}).
-INFO  Local Search phase (1) ended: time spent (24), best score (0), score calculation speed (4000/sec), step total (2).
-INFO  Solving ended: time spent (24), best score (0), score calculation speed (7000/sec), phase total (2), environment mode (REPRODUCIBLE).
+INFO  Solving started: time spent (31), best score (-8init/0hard/0soft), environment mode (REPRODUCIBLE), move thread count (NONE), random (JDK with seed 0).
+INFO  Problem scale: entity count (4), variable count (8), approximate value count (4), approximate problem scale (256).
+DEBUG     CH step (0), time spent (47), score (-6init/0hard/0soft), selected move count (4), picked move ([Math(0) {null -> Room A}, Math(0) {null -> MONDAY 08:30}]).
+DEBUG     CH step (1), time spent (50), score (-4init/0hard/0soft), selected move count (4), picked move ([Physics(1) {null -> Room A}, Physics(1) {null -> MONDAY 09:30}]).
+DEBUG     CH step (2), time spent (51), score (-2init/-1hard/-1soft), selected move count (4), picked move ([Chemistry(2) {null -> Room B}, Chemistry(2) {null -> MONDAY 08:30}]).
+DEBUG     CH step (3), time spent (52), score (-2hard/-1soft), selected move count (4), picked move ([Biology(3) {null -> Room A}, Biology(3) {null -> MONDAY 08:30}]).
+INFO  Construction Heuristic phase (0) ended: time spent (53), best score (-2hard/-1soft), score calculation speed (1066/sec), step total (4).
+DEBUG     LS step (0), time spent (56), score (-2hard/0soft), new best score (-2hard/0soft), accepted/selected move count (1/1), picked move (Chemistry(2) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 09:30}).
+DEBUG     LS step (1), time spent (60), score (-2hard/1soft), new best score (-2hard/1soft), accepted/selected move count (1/2), picked move (Math(0) {Room A, MONDAY 08:30} <-> Physics(1) {Room B, MONDAY 08:30}).
+DEBUG     LS step (2), time spent (60), score (-2hard/0soft),     best score (-2hard/1soft), accepted/selected move count (1/1), picked move (Math(0) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 08:30}).
+...
+INFO  Local Search phase (1) ended: time spent (100), best score (0hard/1soft), score calculation speed (2021/sec), step total (59).
+INFO  Solving ended: time spent (100), best score (0hard/1soft), score calculation speed (1100/sec), phase total (2), environment mode (REPRODUCIBLE), move thread count (NONE).
 ----
-
 All time spent values are in milliseconds.
 
 Everything is logged to http://www.slf4j.org/[SLF4J], which is a simple logging facade
@@ -315,32 +318,6 @@ most appenders (including the console) cause congestion with `debug` and `trace`
 Switch to an async appender to avoid this problem or turn off `debug` logging.
 ====
 
-If instead, you are still using Log4j 1.x (and you do not want to switch to its faster successor, Logback), add the bridge dependency:
-
-[source,xml,options="nowrap"]
-----
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.x</version>
-    </dependency>
-----
-
-And configure the logging level on the package `ai.timefold.solver` in your `log4j.xml` file:
-
-[source,xml,options="nowrap"]
-----
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
-  <category name="ai.timefold.solver">
-    <priority value="debug" />
-  </category>
-
-  ...
-
-</log4j:configuration>
-----
-
 [NOTE]
 ====
 In a multitenant application, multiple `Solver` instances might be running at the same time.
@@ -354,7 +331,7 @@ To separate their logging into distinct files, surround the `solve()` call with 
 ----
 
 Then configure your logger to use different files for each ``${tenant.name}``.
-For example in Logback, use a `SiftingAppender` in ``logback.xml``:
+In Logback, use a `SiftingAppender` in ``logback.xml``:
 
 [source,xml,options="nowrap"]
 ----
@@ -447,40 +424,70 @@ For more detailed monitoring, Timefold Solver can be configured to monitor addit
 
 The following metrics are available:
 
-- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"): Measure the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
+- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"):
+Measurse the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
 
-- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"): Measures the number of errors that occur while solving.
+- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"):
+Measures the number of errors that occur while solving.
 
-- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"): Measures the number of score calculations Timefold Solver performed.
+- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"):
+Measures the number of score calculations Timefold Solver performed.
 
-- `PROBLEM_ENTITY_COUNT` (default, Micrometer meter id: "timefold.solver.problem.entities"): Measures the number of entities in the problem submitted to Timefold Solver.
+- `PROBLEM_ENTITY_COUNT` (default, Micrometer meter id: "timefold.solver.problem.entities"):
+Measures the number of entities in the problem submitted to Timefold Solver.
 
-- `PROBLEM_VARIABLE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.variables"): Measures the number of genuine variables in the problem submitted to Timefold Solver.
+- `PROBLEM_VARIABLE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.variables"):
+Measures the number of genuine variables in the problem submitted to Timefold Solver.
 
-- `PROBLEM_VALUE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.values"): Measures the approximate number of planning values in the problem submitted to Timefold Solver.
+- `PROBLEM_VALUE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.values"):
+Measures the approximate number of planning values in the problem submitted to Timefold Solver.
 
-- `PROBLEM_SIZE_LOG` (default, Micrometer meter id: "timefold.solver.problem.size.log"): Measures the approximate log 10 of the search space size for the problem submitted to Timefold Solver.
+- `PROBLEM_SIZE_LOG` (default, Micrometer meter id: "timefold.solver.problem.size.log"):
+Measures the approximate log 10 of the search space size for the problem submitted to Timefold Solver.
 
-- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"): Measures the score of the best solution Timefold Solver found so far.
-There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
+- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"):
+Measures the score of the best solution Timefold Solver found so far.
+There are separate meters for each level of the score.
+For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
 
-- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"): Measures the score of each step Timefold Solver takes.
-There are separate meters for each level of the score. For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
+- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"):
+Measures the score of each step Timefold Solver takes.
+There are separate meters for each level of the score.
+For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
 
-- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"): Measures the number of changed planning variables between consecutive best solutions.
+- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"):
+Measures the number of changed planning variables between consecutive best solutions.
 
-- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"): Measures the number of moves evaluated in a step.
+- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"):
+Measures the number of moves evaluated in a step.
 
-- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"): Measures the amount of memory used across the JVM. This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
+- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"):
+Measures the amount of memory used across the JVM.
+This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
 
-- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"): Measures the score impact of each constraint on the best solution Timefold Solver found so far.
-There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"):
+Measures the score impact of each constraint on the best solution Timefold Solver found so far.
+There are separate meters for each level of the score, with tags for each constraint.
+For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example",
+there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
 
-- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"): Measures the score impact of each constraint on the current step. There are separate meters for each level of the score, with tags for each constraint. For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example", there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
+- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"):
+Measures the score impact of each constraint on the current step.
+There are separate meters for each level of the score, with tags for each constraint.
+For instance, for a `HardSoftScore` for a constraint "Minimize Cost" in package "com.example",
+there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with tags "constraint.package=com.example" and "constraint.name=Minimize Cost".
 
-- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"):
+Measures how much a particular move type improves the best solution.
+There are separate meters for each level of the score, with a tag for the move type.
+For instance, for a `HardSoftScore` and a `ChangeMove` for the room of a lesson,
+there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Lesson.room)`.
 
-- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"): Measures how much a particular move type improves the best solution. There are separate meters for each level of the score, with a tag for the move type. For instance, for a `HardSoftScore` and a `ChangeMove` for the computer of a process, there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Process.computer)`.
+- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"):
+Measures how much a particular move type improves the best solution.
+There are separate meters for each level of the score, with a tag for the move type.
+For instance, for a `HardSoftScore` and a `ChangeMove` for the room of a lesson,
+there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Lesson.room)`.
 
 [#randomNumberGenerator]
 == Random number generator
@@ -539,8 +546,8 @@ Otherwise, build a `SolverManager` instance with the `create(...)` method:
 
 [source,java,options="nowrap"]
 ----
-SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../cloudBalancingSolverConfig.xml");
-SolverManager<CloudBalance, UUID> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
+SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../solverConfig.xml");
+SolverManager<VehicleRoutePlan, String> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
 ----
 
 Each problem submitted to the `SolverManager.solve(...)` methods needs a unique problem ID.
@@ -560,15 +567,15 @@ To retrieve the best solution, after solving terminates normally, use `SolverJob
 
 [source,java,options="nowrap"]
 ----
-CloudBalance problem1 = ...;
-UUID problemId = UUID.randomUUID();
+VehicleRoutePlan problem1 = ...;
+String problemId = UUID.randomUUID().toString();
 // Returns immediately
-SolverJob<CloudBalance, UUID> solverJob = solverManager.solve(problemId, problem1);
+SolverJob<VehicleRoutePlan, String> solverJob = solverManager.solve(problemId, problem1);
 ...
-CloudBalance solution1;
+
 try {
     // Returns only after solving terminates
-    solution1 = solverJob.getFinalBestSolution();
+    VehicleRoutePlan solution1 = solverJob.getFinalBestSolution();
 } catch (InterruptedException | ExecutionException e) {
     throw ...;
 }
@@ -595,22 +602,22 @@ call `solve(...)` for each dataset:
 
 [source,java,options="nowrap"]
 ----
-public class TimeTableService {
+public class TimetableService {
 
-    private SolverManager<TimeTable, Long> solverManager;
+    private SolverManager<Timetable, Long> solverManager;
 
     // Returns immediately, call it for every dataset
-    public void solveBatch(Long timeTableId) {
-        solverManager.solve(timeTableId,
+    public void solveBatch(Long timetableId) {
+        solverManager.solve(timetableId,
                 // Called once, when solving starts
                 this::findById,
                 // Called once, when solving ends
                 this::save);
     }
 
-    public TimeTable findById(Long timeTableId) {...}
+    public Timetable findById(Long timetableId) {...}
 
-    public void save(TimeTable timeTable) {...}
+    public void save(Timetable timetable) {...}
 
 }
 ----
@@ -631,25 +638,25 @@ To handle intermediate best solutions, use `solveAndListen(...)`:
 
 [source,java,options="nowrap"]
 ----
-public class TimeTableService {
+public class TimetableService {
 
-    private SolverManager<TimeTable, Long> solverManager;
+    private SolverManager<Timetable, Long> solverManager;
 
     // Returns immediately
-    public void solveLive(Long timeTableId) {
-        solverManager.solveAndListen(timeTableId,
+    public void solveLive(Long timetableId) {
+        solverManager.solveAndListen(timetableId,
                 // Called once, when solving starts
                 this::findById,
                 // Called multiple times, for every best solution change
                 this::save);
     }
 
-    public TimeTable findById(Long timeTableId) {...}
+    public Timetable findById(Long timetableId) {...}
 
-    public void save(TimeTable timeTable) {...}
+    public void save(Timetable timetable) {...}
 
-    public void stopSolving(Long timeTableId) {
-        solverManager.terminateEarly(timeTableId);
+    public void stopSolving(Long timetableId) {
+        solverManager.terminateEarly(timetableId);
     }
 
 }

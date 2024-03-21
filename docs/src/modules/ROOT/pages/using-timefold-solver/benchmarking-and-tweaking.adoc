@@ -54,13 +54,12 @@ load a few datasets and benchmark them. For example, with 3 datasets:
 [source,java,options="nowrap"]
 ----
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfigXmlResource(
-        "ai/timefold/solver/examples/cloudbalancing/solver/cloudBalancingSolverConfig.xml");
+        "org/acme/vehiclerouting/solverConfig.xml");
 
-CloudBalance dataset1 = ...;
-CloudBalance dataset2 = ...;
-CloudBalance dataset3 = ...;
-PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(
-        dataset1, dataset2, dataset3);
+VehicleRoutePlan dataset1 = ...;
+VehicleRoutePlan dataset2 = ...;
+VehicleRoutePlan dataset3 = ...;
+PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(dataset1, dataset2, dataset3);
 benchmark.benchmarkAndShowReportInBrowser();
 ----
 
@@ -81,7 +80,7 @@ Configure it with a benchmark configuration XML file, provided as a classpath re
 [source,java,options="nowrap"]
 ----
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlResource(
-        "ai/timefold/solver/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
+        "org/acme/vehiclerouting/benchmarkConfig.xml");
 PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
 benchmark.benchmarkAndShowReportInBrowser();
 ----
@@ -95,7 +94,7 @@ A benchmark configuration XML file looks like this:
 <?xml version="1.0" encoding="UTF-8"?>
 <plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
-  <benchmarkDirectory>local/data/nqueens</benchmarkDirectory>
+  <benchmarkDirectory>local/data/</benchmarkDirectory>
 
   <inheritedSolverBenchmark>
     <solver>
@@ -103,8 +102,8 @@ A benchmark configuration XML file looks like this:
     </solver>
     <problemBenchmarks>
       ...
-      <inputSolutionFile>data/cloudbalancing/unsolved/100computers-300processes.json</inputSolutionFile>
-      <inputSolutionFile>data/cloudbalancing/unsolved/200computers-600processes.json</inputSolutionFile>
+      <inputSolutionFile>dataset1.json</inputSolutionFile>
+      <inputSolutionFile>dataset2.json</inputSolutionFile>
     </problemBenchmarks>
   </inheritedSolverBenchmark>
 
@@ -130,7 +129,7 @@ A benchmark configuration XML file looks like this:
 ----
 
 This `PlannerBenchmark` tries three configurations (Tabu Search, Simulated Annealing and Late Acceptance)
-on two data sets (``100computers-300processes`` and ``200computers-600processes``), so it runs six solvers.
+on two data sets (``dataset1`` and ``dataset2``), so it runs six solvers.
 
 Every `<solverBenchmark>` element contains a solver configuration and one or more `<inputSolutionFile>` elements.
 It runs the solver configuration on each of those unsolved solution files.
@@ -139,7 +138,8 @@ The `inputSolutionFile` is read by a <<solutionFileIO,SolutionFileIO>>, relative
 
 [NOTE]
 ====
-Use a forward slash (``/``) as the file separator (for example in the element ``<inputSolutionFile>``). That will work on any platform (including Windows).
+Use a forward slash (``/``) as the file separator (such as in the element ``<inputSolutionFile>``).
+That will work on any platform (including Windows).
 
 Do not use backslash (``\``) as the file separator: that breaks portability because it does not work on Linux and Mac.
 ====
@@ -150,7 +150,8 @@ The benchmark report is written in the directory specified by the `<benchmarkDir
 ====
 It's recommended that the `benchmarkDirectory` is a directory that is ignored for source control and not cleaned by your build system.
 This way the generated files are not bloating your source control and they aren't lost when doing a clean build.
-For example in git, it should be added to ``.gitignore``. Usually that directory is called ``local``.
+In git, it should be added to ``.gitignore``.
+Usually that directory is called ``local``.
 ====
 
 If an `Exception` or `Error` occurs in a single benchmark,
@@ -201,10 +202,10 @@ To read and write solutions in JSON format via Jackson, extend the `JacksonSolut
 
 [source,java,options="nowrap"]
 ----
-public class NQueensJsonSolutionFileIO extends JacksonSolutionFileIO<NQueens> {
-    public NQueensJsonSolutionFileIO() {
-        // NQueens is the @PlanningSolution class.
-        super(NQueens.class);
+public class VehicleRoutingSolutionFileIO extends JacksonSolutionFileIO<VehicleRoutePlan> {
+    public VehicleRoutingSolutionFileIO() {
+        // VehicleRoutePlan is the @PlanningSolution class.
+        super(VehicleRoutePlan.class);
     }
 }
 ----
@@ -214,10 +215,10 @@ You could create your desired object mapper as a dependency to the JacksonSoluti
 
 [source,java,options="nowrap"]
 ----
-public class NQueensJsonSolutionFileIO extends JacksonSolutionFileIO<NQueens> {
-    public NQueensJsonSolutionFileIO() {
-        // NQueens is the @PlanningSolution class.
-        super(NQueens.class,
+public class VehicleRoutePlanJsonSolutionFileIO extends JacksonSolutionFileIO<VehicleRoutePlan> {
+    public VehicleRoutePlanJsonSolutionFileIO() {
+        // VehicleRoutePlan is the @PlanningSolution class.
+        super(VehicleRoutePlan.class,
                 new ObjectMapper()
                         .registerModule(new JavaTimeModule())
                         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -232,8 +233,8 @@ Then use it in the benchmark configuration like so:
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensJsonSolutionFileIO</solutionFileIOClass>
-      <inputSolutionFile>data/nqueens/unsolved/32queens.json</inputSolutionFile>
+      <solutionFileIOClass>...VehicleRoutePlanJsonSolutionFileIO</solutionFileIOClass>
+      <inputSolutionFile>dataset01.json</inputSolutionFile>
       ...
     </problemBenchmarks>
 ----
@@ -246,10 +247,10 @@ To read and write solutions in the XML format via Java Architecture for XML Bind
 
 [source,java,options="nowrap"]
 ----
-public class NQueensXmlSolutionFileIO extends JaxbSolutionFileIO<NQueens> {
-    public NQueensXmlSolutionFileIO() {
-        // NQueens is the @PlanningSolution class.
-        super(NQueens.class);
+public class VehicleRoutePlanXmlSolutionFileIO extends JaxbSolutionFileIO<VehicleRoutePlan> {
+    public VehicleRoutePlanXmlSolutionFileIO() {
+        // VehicleRoutePlan is the @PlanningSolution class.
+        super(VehicleRoutePlan.class);
     }
 }
 ----
@@ -259,8 +260,8 @@ and use it in the benchmark configuration:
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
-      <inputSolutionFile>data/nqueens/unsolved/32queens.xml</inputSolutionFile>
+      <solutionFileIOClass>...VehicleRoutePlanSolutionFileIO</solutionFileIOClass>
+      <inputSolutionFile>dataset01.xml</inputSolutionFile>
       ...
     </problemBenchmarks>
 ----
@@ -274,13 +275,14 @@ or large performance degradation.
 [#customSolutionFileIO]
 ==== Custom `SolutionFileIO`: serialize to and from a custom format
 
-Implement your own `SolutionFileIO` implementation and configure it with the `solutionFileIOClass` element to write to a custom format (such as a txt or a binary format):
+Implement your own `SolutionFileIO` implementation
+and configure it with the `solutionFileIOClass` element to write to a custom format (such as a txt or a binary format):
 
 [source,xml,options="nowrap"]
 ----
     <problemBenchmarks>
-      <solutionFileIOClass>ai.timefold.solver.examples.machinereassignment.persistence.MachineReassignmentFileIO</solutionFileIOClass>
-      <inputSolutionFile>data/machinereassignment/import/model_a1_1.txt</inputSolutionFile>
+      <solutionFileIOClass>...MyXlsxSolutionFileIO</solutionFileIOClass>
+      <inputSolutionFile>dataset01.xslx</inputSolutionFile>
       ...
     </problemBenchmarks>
 ----
@@ -357,24 +359,24 @@ To quickly configure and run a benchmark for typical solver configs, use a `solv
 <?xml version="1.0" encoding="UTF-8"?>
 <plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
-  <benchmarkDirectory>local/data/nqueens</benchmarkDirectory>
+  <benchmarkDirectory>local/</benchmarkDirectory>
 
   <inheritedSolverBenchmark>
     <solver>
-      <solutionClass>ai.timefold.solver.examples.nqueens.domain.NQueens</solutionClass>
-      <entityClass>ai.timefold.solver.examples.nqueens.domain.Queen</entityClass>
+      <solutionClass>org.acme.vehiclerouting.domain.VehicleRoutePlan</solutionClass>
+      <entityClass>org.acme.vehiclerouting.domain.Vehicle</entityClass>
+      <entityClass>org.acme.vehiclerouting.domain.Visit</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>ai.timefold.solver.examples.nqueens.score.NQueensConstraintProvider</constraintProviderClass>
-        <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+        <constraintProviderClass>org.acme.vehiclerouting.solver.VehicleRoutingConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <minutesSpentLimit>1</minutesSpentLimit>
       </termination>
     </solver>
     <problemBenchmarks>
-      <solutionFileIOClass>ai.timefold.solver.examples.nqueens.persistence.NQueensSolutionFileIO</solutionFileIOClass>
-      <inputSolutionFile>data/nqueens/unsolved/32queens.json</inputSolutionFile>
-      <inputSolutionFile>data/nqueens/unsolved/64queens.json</inputSolutionFile>
+      <solutionFileIOClass>org.acme.vehiclerouting.persistence.VehicleRoutePlanSolutionFileIO</solutionFileIOClass>
+      <inputSolutionFile>data/dataset01.json</inputSolutionFile>
+      <inputSolutionFile>data/dataset02.json</inputSolutionFile>
     </problemBenchmarks>
   </inheritedSolverBenchmark>
 
@@ -630,7 +632,7 @@ To configure one or more, add a `problemStatisticType` line for each one:
 ----
 <plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
-  <benchmarkDirectory>local/data/nqueens/solved</benchmarkDirectory>
+  <benchmarkDirectory>local/</benchmarkDirectory>
   <inheritedSolverBenchmark>
     <problemBenchmarks>
       ...
@@ -833,12 +835,13 @@ To configure one, add a `singleStatisticType` line:
 ----
 <plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
-  <benchmarkDirectory>local/data/nqueens/solved</benchmarkDirectory>
+  ...
   <inheritedSolverBenchmark>
     <problemBenchmarks>
       ...
       <problemStatisticType>...</problemStatisticType>
       <singleStatisticType>PICKED_MOVE_TYPE_BEST_SCORE_DIFF</singleStatisticType>
+      ...
     </problemBenchmarks>
     ...
   </inheritedSolverBenchmark>
@@ -952,7 +955,8 @@ image::using-timefold-solver/benchmarking-and-tweaking/pickedMoveTypeStepScoreDi
 [#parallelBenchmarkingOnMultipleThreads]
 ==== Parallel benchmarking on multiple threads
 
-If you have multiple processors available on your computer, you can run multiple benchmarks in parallel on multiple threads to get your benchmarks results faster:
+If you have multiple CPU cores available on your device,
+you can run multiple benchmarks in parallel on multiple threads to get your benchmarks results faster:
 
 [source,xml,options="nowrap"]
 ----
@@ -989,7 +993,8 @@ If it's higher, it will be automatically decreased.
 
 [NOTE]
 ====
-If you have a computer with slow or unreliable cooling, increasing the `parallelBenchmarkCount` above one (even on ``AUTO``) may overheat your CPU.
+If you have a computer with slow or unreliable cooling,
+increasing the `parallelBenchmarkCount` above one (even on ``AUTO``) may overheat your CPU.
 
 The `sensors` command can help you detect if this is the case.
 It is available in the package `lm_sensors` or `lm-sensors` in most Linux distributions.
@@ -1128,7 +1133,7 @@ And build it with the class ``PlannerBenchmarkFactory``:
 [source,java,options="nowrap"]
 ----
         PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromFreemarkerXmlResource(
-                "ai/timefold/solver/examples/cloudbalancing/optional/benchmark/cloudBalancingBenchmarkConfigTemplate.xml.ftl");
+                "org/acme/vehiclerouting/solverConfig.xml");
         PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
 ----
 
@@ -1157,7 +1162,7 @@ To display that UI, provide a benchmark config to the `BenchmarkAggregatorFrame`
 ----
     public static void main(String[] args) {
         BenchmarkAggregatorFrame.createAndDisplayFromXmlResource(
-                "ai/timefold/solver/examples/cloudbalancing/benchmark/cloudBalancingBenchmarkConfig.xml");
+                "org/acme/vehiclerouting/solverConfig.xml");
     }
 ----
 
