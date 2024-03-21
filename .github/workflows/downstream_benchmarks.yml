@@ -1,0 +1,104 @@
+name: Downstream - Integration Tests
+
+on:
+  # Enables the workflow to run on PRs from forks;
+  # token sharing is safe here, because enterprise is a private repo and therefore fully under our control.
+  pull_request_target:
+    branches: [main] # Benchmarks aren't branched, so they will only ever work against current main.
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths-ignore:
+      - 'LICENSE*'
+      - '.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pr-${{ github.event_name }}-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 120
+    steps:
+      # Clone timefold-solver
+      # No need to check for stale repo, as Github merges the main repo into the fork automatically.
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          path: ./timefold-solver
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+
+      - name: Setup Temurin 21 and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        shell: bash
+        run: mvn -B -Dquickly clean install
+
+      # Clone timefold-solver-enterprise
+      - name: Find the proper timefold-solver-enterprise repo and branch
+        env:
+          CHAIN_USER: ${{ github.actor }}
+          CHAIN_BRANCH: ${{ github.head_ref }}
+          CHAIN_REPO: "timefold-solver-enterprise"
+          CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
+        shell: bash
+        run: ./timefold-solver/.github/scripts/check_chain_repo.sh
+      - name: Checkout timefold-solver-enterprise
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
+          ref: ${{ env.TARGET_CHAIN_BRANCH }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge in the next step will fail on account of not having history.
+      - name: Prevent stale fork of timefold-solver-enterprise
+        env:
+          BLESSED_REPO: "timefold-solver-enterprise"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
+        shell: bash
+        working-directory: ./timefold-solver-enterprise
+        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
+
+      - name: Quickly build timefold-solver-enterprise
+        working-directory: ./timefold-solver-enterprise
+        shell: bash
+        run: mvn -B -Dquickly clean install
+
+      # Clone timefold-solver-benchmarks
+      - name: Find the proper timefold-solver-benchmarks repo and branch
+        env:
+          CHAIN_USER: ${{ github.actor }}
+          CHAIN_BRANCH: ${{ github.head_ref }}
+          CHAIN_REPO: "timefold-solver-benchmarks"
+          CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
+        shell: bash
+        run: ./timefold-solver/.github/scripts/check_chain_repo.sh
+      - name: Checkout timefold-solver-benchmarks
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
+          ref: ${{ env.TARGET_CHAIN_BRANCH }}
+          path: ./timefold-solver-benchmarks
+          fetch-depth: 0 # Otherwise merge in the next step will fail on account of not having history.
+      - name: Prevent stale fork of timefold-solver-benchmarks
+        env:
+          BLESSED_REPO: "timefold-solver-benchmarks"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
+        shell: bash
+        working-directory: ./timefold-solver-benchmarks
+        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
+
+      - name: Build and test timefold-solver-benchmarks
+        working-directory: ./timefold-solver-benchmarks
+        shell: bash
+        run: mvn -B -DskipJMH clean verify
