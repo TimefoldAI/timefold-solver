@@ -2170,8 +2170,8 @@ public interface SelectionProbabilityWeightFactory<Solution_, T> {
     </entitySelector>
 ----
 
-Assume the following entities: process A (probabilityWeight 2.0), process B (probabilityWeight 0.5) and process C (probabilityWeight 0.5).
-Then process A will be selected four times more than B and C.
+Assume the following entities: lesson A (probabilityWeight 2.0), lesson B (probabilityWeight 0.5) and lesson C (probabilityWeight 0.5).
+Then lesson A will be selected four times more than B and C.
 
 [NOTE]
 ====
@@ -2293,15 +2293,39 @@ public interface Move<Solution_> {
 
 To implement a custom move, it's recommended to extend `AbstractMove` instead implementing `Move` directly.
 Timefold Solver calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
+For example in cloud balancing, this move changes one process to another computer:
+
+[source,java,options="nowrap"]
+----
+public class TimeslotChangeMove extends AbstractMove<Timetable> {
+
+    private Lesson lesson;
+    private Timeslot toTimeslot;
+
+    public CloudComputerChangeMove(Lesson lesson, Timeslot toTimeslot) {
+        this.lesson = lesson;
+        this.toTimeslot = toTimeslot;
+    }
+
+    @Override
+    protected void doMoveOnGenuineVariables(ScoreDirector<Timetable> scoreDirector) {
+        scoreDirector.beforeVariableChanged(lesson, "timeslot");
+        lesson.setTimeslot(toTimeslot);
+        scoreDirector.afterVariableChanged(lesson, "timeslot");
+    }
+
+    // ...
+
+}
+----
 
 The implementation must notify the `ScoreDirector` of any changes it makes to planning entity's variables:
 Call the `scoreDirector.beforeVariableChanged(Object, String)` and `scoreDirector.afterVariableChanged(Object, String)`
 methods directly before and after modifying an entity's planning variable.
 
-In principle, there are two types of moves:
-- Fine-grained, such as a change move, only changes one planning variable.
-- Coarse-grained move changes multiple entities or multiple planning variables in a single move,
-usually to avoid breaking hard constraints by making multiple related changes at once.
+The example move above is a fine-grained move because it changes only one planning variable.
+On the other hand, a coarse-grained move changes multiple entities or multiple planning variables
+in a single move, usually to avoid breaking hard constraints by making multiple related changes at once.
 For example, a swap move is really just two change moves, but it keeps those two changes together.
 
 [WARNING]
@@ -2311,27 +2335,59 @@ it must not change any of the problem facts as that will cause score corruption.
 Use xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning] to change problem facts while solving.
 ====
 
-Timefold Solver automatically filters out _non doable moves_
-by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
+Timefold Solver automatically filters out _non doable moves_ by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
 A _non doable move_ is:
 
 * A move that changes nothing on the current solution.
-For example, moving visit `V1` from vehicle `X` to vehicle `X` is not doable, because it is already there.
+For example, moving lesson `L1` from timeslot `X` to timeslot `X` is not doable, because it is already there.
 * A move that is impossible to do on the current solution.
-For example, moving visit `V1` to vehicle `Y`  (when `Y` isn't in the list of vehicles) is not doable,
+For example, moving lesson `L1` to timeslot `Q`  (when `Q` isn't in the list of lessons) is not doable
 because it would assign a planning value that's not inside the planning variable's value range.
 
+In the school timetabling example, a move which assigns a lesson to the timeslot it's already assigned to is not doable:
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public boolean isMoveDoable(ScoreDirector<Timetable> scoreDirector) {
+        return !Objects.equals(lesson.getTimeslot(), toTimeslot);
+    }
+----
+
+We don't need to check if `toTimeslot` is in the value range,
+because we only generate moves for which that is the case.
 A move that is currently not doable can become doable when the working solution changes in a later step,
 otherwise we probably shouldn't have created it in the first place.
 
 Each move has an __undo move__: a move (normally of the same type) which does the exact opposite.
+In the cloud balancing example the undo move of `L1 {X -> Y}` is the move `L1 {Y -> X}`.
+The undo move of a move is created when the `Move` is being done on the current solution,
+before the genuine variables change:
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public TimeslotChangeMove createUndoMove(ScoreDirector<Timetable> scoreDirector) {
+        return new TimeslotChangeMove(lesson, lesson.getTimeslot());
+    }
+----
+
+Notice that if `L1` would have already been moved to `Y`, the undo move would create the move `L1 {Y -> Y}`,
+instead of the move `L1 {Y -> X}`.
 
 A solver phase might do and undo the same `Move` more than once.
 In fact, many solver phases will iteratively do and undo a number of moves to evaluate them,
 before selecting one of those and doing that move again (without undoing it the last time).
 
 Always implement the `toString()` method to keep Timefold Solver's logs readable.
-Keep it short, but give all the information you want to see in the logs.
+Keep it non-verbose and make it consistent with <<genericMoveSelectorsOverview,the generic moves>>:
+
+[source,java,options="nowrap"]
+----
+    public String toString() {
+        return lesson + " {" + lesson.getTimeslot() + " -> " + toTimeslot + "}";
+    }
+----
 
 Optionally, implement the `getSimpleMoveTypeDescription()` method to support
 xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedMoveTypeBestScoreDiffOverTimeStatistic[picked move statistics]:
@@ -2340,7 +2396,7 @@ xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedM
 ----
     @Override
     public String getSimpleMoveTypeDescription() {
-        return "ChangeMove(Visit.vehicle)";
+        return "TimeslotChangeMove(Lesson.timeslot)";
     }
 ----
 
@@ -2353,9 +2409,9 @@ the custom move must implement the `rebase()` method:
 [source,java,options="nowrap"]
 ----
     @Override
-    public MyCustomMove rebase(ScoreDirector<MySolution> destinationScoreDirector) {
-        return new MyCustomMove(destinationScoreDirector.lookUpWorkingObject(myEntity),
-                destinationScoreDirector.lookUpWorkingObject(myValue));
+    public TimeslotChangeMove rebase(ScoreDirector<Timetable> destinationScoreDirector) {
+        return new TimeslotChangeMove(destinationScoreDirector.lookUpWorkingObject(lesson),
+                destinationScoreDirector.lookUpWorkingObject(toTimeslot));
     }
 ----
 
@@ -2382,12 +2438,12 @@ They are called after the `Move` has already been done.
 ----
     @Override
     public Collection<? extends Object> getPlanningEntities() {
-        return Collections.singletonList(myEntity);
+        return Collections.singletonList(lesson);
     }
 
     @Override
     public Collection<? extends Object> getPlanningValues() {
-        return Collections.singletonList(myValue);
+        return Collections.singletonList(toTimeslot);
     }
 ----
 
@@ -2399,12 +2455,12 @@ and return all their values (to which they are changing) in ``getPlanningValues(
 ----
     @Override
     public Collection<? extends Object> getPlanningEntities() {
-        return Arrays.asList(leftEntity, rightEntity);
+        return Arrays.asList(leftLesson, rightLesson);
     }
 
     @Override
     public Collection<? extends Object> getPlanningValues() {
-        return Arrays.asList(leftValue, rightValue);
+        return Arrays.asList(leftLesson.getTimeslot(), rightLesson.getTimeslot());
     }
 ----
 
@@ -2413,10 +2469,28 @@ and return all their values (to which they are changing) in ``getPlanningValues(
 ===== Custom move: `equals()` and `hashCode()`
 
 A `Move` must implement the `equals()` and `hashCode()` methods for <<tabuSearch,move tabu>>.
-Two moves which make the same change on a solution should ideally be equal.
+Two moves which make the same change on a solution, should be equal ideally.
 
-Always check if the two move classes are equal.
-This `instanceof` check is important because a move may be compared to a move of another move type.
+[source,java,options="nowrap"]
+----
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof TimeslotChangeMove other
+                && lesson.equals(other.lesson)
+                && toTimeslot.equals(other.toTimeslot);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(lesson)
+                .append(toTimeslot)
+                .toHashCode();
+    }
+----
+
+Notice that it checks if the other move is an instance of the same move type.
+This `instanceof` check is important because a move are compared to a move of another move type.
 For example a `ChangeMove` and `SwapMove` are compared.
 
 [#generatingCustomMoves]
