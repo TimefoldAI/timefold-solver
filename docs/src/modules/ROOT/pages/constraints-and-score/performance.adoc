@@ -70,7 +70,7 @@ then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#c
 
 If you know a certain constraint can never be broken, or it is always broken,
 do not write a score constraint for it.
-For example in vehicle routing, if you know that a vehicle can never visit a certain location,
+For example, in vehicle routing, if you know that a vehicle can never visit a certain location,
 do not include it in the value range and it will never become a valid option for the solver to try.
 
 [NOTE]

@@ -64,7 +64,7 @@ regardless if the constraints are positive or negative.
 
 Most planning problems have only negative constraints and therefore have a negative score.
 In that case, the score is the sum of the weight of the negative constraints being broken, with a perfect score of 0.
-For example in vehicle routing, the score is the negative of the total distance driven by all vehicles.
+For example, in vehicle routing, the score is the negative of the total distance driven by all vehicles.
 
 Negative and positive constraints can be combined, even in the same score level.
 
@@ -78,7 +78,7 @@ on a certain planning entity set, it is called a __constraint match__.
 Not all score constraints are equally important.
 If breaking one constraint is equally bad as breaking another constraint x times,
 then those two constraints have a different weight (but they are in the same score level).
-For example in vehicle routing, you can make one _unhappy driver_ constraint match count
+For example, in vehicle routing, you can make one _unhappy driver_ constraint match count
 as much as two _fuel tank usage_ constraint matches:
 
 image::constraints-and-score/overview/scoreWeighting.png[align="center"]
@@ -149,7 +149,7 @@ This is not true because if no feasible solution exists for a specific dataset,
 the least infeasible solution allows the business to estimate how many business resources they are lacking.
 
 Furthermore, it will likely create a xref:constraints-and-score/performance.adoc#scoreTrap[score trap].
-For example in vehicle routing if a vehicle exceeds its capacity by 15 tons,
+For example, in vehicle routing if a vehicle exceeds its capacity by 15 tons,
 it must be penalized three times as much as if it had only exceeded its capacity by five tons.
 (Possibly even exponentially weighted.)
 ====

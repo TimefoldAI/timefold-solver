@@ -138,7 +138,8 @@ The `inputSolutionFile` is read by a <<solutionFileIO,SolutionFileIO>>, relative
 
 [NOTE]
 ====
-Use a forward slash (``/``) as the file separator (for example in the element ``<inputSolutionFile>``). That will work on any platform (including Windows).
+Use a forward slash (``/``) as the file separator (such as in the element ``<inputSolutionFile>``).
+That will work on any platform (including Windows).
 
 Do not use backslash (``\``) as the file separator: that breaks portability because it does not work on Linux and Mac.
 ====
@@ -149,7 +150,8 @@ The benchmark report is written in the directory specified by the `<benchmarkDir
 ====
 It's recommended that the `benchmarkDirectory` is a directory that is ignored for source control and not cleaned by your build system.
 This way the generated files are not bloating your source control and they aren't lost when doing a clean build.
-For example in git, it should be added to ``.gitignore``. Usually that directory is called ``local``.
+In git, it should be added to ``.gitignore``.
+Usually that directory is called ``local``.
 ====
 
 If an `Exception` or `Error` occurs in a single benchmark,

@@ -2267,7 +2267,7 @@ Instead of using the generic ``Move``s (such as ``ChangeMove``) you can also imp
 Generic and custom ``MoveSelector``s can be <<combiningMultipleMoveSelectors,combined>> as desired.
 
 A custom `Move` can be tailored to work to the advantage of your constraints.
-For example in examination scheduling, changing the period of an exam A
+For example, in examination scheduling, changing the period of an exam A
 would also change the period of all the other exams that need to coincide with exam A.
 
 A custom `Move` is far more work to implement and much harder to avoid bugs than a generic ``Move``.
@@ -2293,7 +2293,7 @@ public interface Move<Solution_> {
 
 To implement a custom move, it's recommended to extend `AbstractMove` instead implementing `Move` directly.
 Timefold Solver calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
-For example in cloud balancing, this move changes one process to another computer:
+For example, in school timetabling, this move changes one lesson to another timeslot:
 
 [source,java,options="nowrap"]
 ----
@@ -3818,7 +3818,7 @@ image::optimization-algorithms/decideNextStepNQueens04.png[align="center"]
 
 xref:using-timefold-solver/running-the-solver.adoc#logging[Turn on `trace` logging] to show the decision making in the log.
 
-Because the last solution can degrade (for example in Tabu Search),
+Because the last solution can degrade (such as in Tabu Search),
 the `Solver` remembers the best solution it has encountered through the entire search path.
 Each time the current solution is better than the last best solution,
 the current solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[cloned]
@@ -4352,7 +4352,7 @@ If there's no improving move however, it prefers moves which improve a softer sc
 [#strategicOscillationConfiguration]
 ==== Configuration
 
-Configure a ``finalistPodiumType``, for example in a Tabu Search configuration:
+Configure a ``finalistPodiumType``, such as in a Tabu Search configuration:
 
 [source,xml,options="nowrap"]
 ----

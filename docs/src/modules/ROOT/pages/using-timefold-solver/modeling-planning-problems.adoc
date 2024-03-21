@@ -37,7 +37,7 @@ To create a good domain model, read the xref:design-patterns/design-patterns.ado
 == Problem fact
 
 A problem fact is any JavaBean (POJO) with getters that does not change during planning.
-For example in school timetabling, the timeslots and rooms are problem facts:
+In school timetabling, the timeslots and rooms are problem facts:
 
 [source,java,options="nowrap"]
 ----
@@ -108,7 +108,7 @@ A planning entity class needs to be annotated with the `@PlanningEntity` annotat
 
 Each planning entity class has one or more _planning variables_ (which can be <<planningVariable,genuine>> or <<shadowVariable,shadows>>).
 It should also have one or more _defining_ properties.
-For example in school timetabling, a `Lesson` is defined by its subject, teacher and a student group,
+In school timetabling, a `Lesson` is defined by its subject, teacher and a student group,
 and has planning variables for its timeslot and room.
 This means that `Lesson`'s subject, teacher and student group never changes during solving,
 while its timeslot and room do.
@@ -189,9 +189,32 @@ Only consider adding planning entity difficulty too if it can make the solver mo
 ====
 
 To allow the heuristics to take advantage of that domain specific information,
-set a `difficultyComparatorClass` to the `@PlanningEntity` annotation.
+set a `difficultyComparatorClass` to the `@PlanningEntity` annotation:
+
+[source,java,options="nowrap"]
+----
+@PlanningEntity(difficultyComparatorClass = VisitDifficultyComparator.class)
+public class Visit {
+    // ...
+}
+----
+
+[source,java,options="nowrap"]
+----
+public class VisitDifficultyComparator implements Comparator<Visit> {
+
+    public int compare(Visit a, Visit b) {
+        return new CompareToBuilder()
+                .append(a.getServiceDuration(), b.getServiceDuration())
+                .append(a.getId(), b.getId())
+                .toComparison();
+    }
+
+}
+----
+
 Alternatively, you can also set a `difficultyWeightFactoryClass` to the `@PlanningEntity` annotation,
-so that you have access to the rest of the problem facts from the solution too:
+so that you have access to the rest of the problem facts from the solution too.
 
 See xref:optimization-algorithms/optimization-algorithms.adoc#sortedSelection[sorted selection] for more information.
 
@@ -205,7 +228,7 @@ Although most algorithms start with the more difficult entities first, they just
 
 _None of the current planning variable states should be used to compare planning entity difficulty._
 During Construction Heuristics, those variables are likely to be `null` anyway.
-For example, a ``Lessons``'s `timeslot` variable should not be used.
+For example, a ``Lesson``'s `timeslot` variable should not be used.
 
 
 [#planningVariable]
@@ -217,8 +240,8 @@ For example, a ``Lessons``'s `timeslot` variable should not be used.
 
 A planning variable is a JavaBean property (so a getter and setter) on a planning entity.
 It points to a planning value, which changes during planning.
-For example, a ``Lessons``'s `timeslot` property is a genuine planning variable.
-Note that even though a ``Lessons``'s `timeslot` property changes to another `Timeslot` during planning,
+For example, a ``Lesson``'s `timeslot` property is a genuine planning variable.
+Note that even though a ``Lesson``'s `timeslot` property changes to another `Timeslot` during planning,
 no `Timeslot` instance itself is changed.
 Normally planning variables are genuine, but advanced cases can also have <<shadowVariable,shadows>>.
 
@@ -361,7 +384,9 @@ A solution is initialized if all of its planning entities are initialized.
 
 A shadow variable is a planning variable whose correct value can be deduced from the state of the <<planningVariable,genuine planning variables>>.
 Even though such a variable violates the principle of normalization by definition, in some use cases it can be very practical to use a shadow variable, especially to express the constraints more naturally.
-For example in vehicle routing with time windows: the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle (and the known travel times between two locations).
+In vehicle routing with time windows,
+the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle
+(and the known travel times between two locations).
 
 image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
 
@@ -1011,7 +1036,29 @@ Only consider adding planning value strength too if it can make the solver more 
 ====
 
 To allow the heuristics to take advantage of that domain specific information,
-set a `strengthComparatorClass` to the `@PlanningVariable` annotation.
+set a `strengthComparatorClass` to the `@PlanningVariable` annotation:
+
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(..., strengthComparatorClass = VehicleStrengthComparator.class)
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+----
+
+[source,java,options="nowrap"]
+----
+public class VehicleStrengthComparator implements Comparator<Vehicle> {
+
+    public int compare(Vehicle a, Vehicle b) {
+        return new CompareToBuilder()
+                .append(a.getCapacity(), b.getCapacity())
+                .append(a.getId(), b.getId())
+                .toComparison();
+    }
+
+}
+----
 
 [NOTE]
 ====
@@ -1028,7 +1075,7 @@ See xref:optimization-algorithms/optimization-algorithms.adoc#sortedSelection[so
 [IMPORTANT]
 ====
 Strength should be implemented ascending: weaker values are lower, stronger values are higher.
-For example in bin packing: small container < medium container < big container.
+In bin packing, small container < medium container < big container.
 ====
 
 _None of the current planning variable state in any of the planning entities should be used to compare planning values._
@@ -1402,11 +1449,11 @@ Notice how two value range providers are usually combined:
 A dataset for a planning problem needs to be wrapped in a class for the `Solver` to solve.
 That solution class represents both the planning problem and (if solved) a solution.
 It is annotated with a `@PlanningSolution` annotation.
-For example in school timetabling,
+In school timetabling,
 the solution class is the `Timetable` class, which contains a `Timeslot` list, a `Room` list, and a `Lesson` list.
 
 A planning problem is actually an unsolved planning solution or - stated differently - an uninitialized solution.
-For example in school timetabling, that `Timetable` class has the `@PlanningSolution` annotation,
+In school timetabling, that `Timetable` class has the `@PlanningSolution` annotation,
 yet every `Lesson` in an unsolved `Timetable` class is not yet assigned to a `Timeslot` (their `timeslot` property is ``null``).
 That's not a feasible solution.
 It's not even a possible solution.
@@ -1541,7 +1588,7 @@ For xref:constraints-and-score/score-calculation.adoc[Constraint Streams],
 Timefold Solver needs to extract the problem fact instances from the solution instance.
 It gets those collection(s) by calling every method (or field) that is annotated with ``@ProblemFactCollectionProperty``.
 All objects returned by those methods are available to use by Constraint Streams.
-For example in `Timetable` all `Timeslot` and `Room` instances are problem facts.
+For example, in `Timetable` all `Timeslot` and `Room` instances are problem facts.
 
 [source,java,options="nowrap"]
 ----
@@ -1589,10 +1636,12 @@ Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> 
 [#cachedProblemFact]
 ==== Cached problem fact
 
-A cached problem fact is a problem fact that does not exist in the real domain model, but is calculated before the `Solver` really starts solving.
-The problem facts methods have the opportunity to enrich the domain model with such cached problem facts, which can lead to simpler and faster score constraints.
+A cached problem fact is a problem fact that does not exist in the real domain model,
+but is calculated before the `Solver` really starts solving.
+The problem facts methods have the opportunity to enrich the domain model with such cached problem facts,
+which can lead to simpler and faster score constraints.
 
-For example in examination, a cached problem fact `TopicConflict` is created for every two ``Topic``s which share at least one ``Student``.
+For example, in examination, a cached problem fact `TopicConflict` is created for every two ``Topic``s which share at least one ``Student``.
 
 [source,java,options="nowrap"]
 ----
@@ -1758,7 +1807,7 @@ If A is cloned, then its variable must point to the clone of B, not the original
 
 Create a `@PlanningSolution` instance to represent your planning problem's dataset, so it can be set on the `Solver` as the planning problem to solve.
 
-For example in school timetabling, an `Timetable` instance is created with the required `Room` and `Timeslot` instances
+In school timetabling, a `Timetable` instance is created with the required `Room` and `Timeslot` instances
 and every `Lesson` has its planning variables set to `null`:
 
 [source,java,options="nowrap"]

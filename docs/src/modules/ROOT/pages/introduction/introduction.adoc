@@ -73,7 +73,7 @@ In fact, there's a $ 1,000,000 reward for anyone that proves if https://en.wikip
 The implication of this is pretty dire: solving your problem is probably harder than you anticipated, because the two common techniques won't suffice:
 
 * A Brute Force algorithm (even a smarter variant) will take too long.
-* A quick algorithm, for example in bin packing, __putting in the largest items first__, will return a solution that is far from optimal.
+* A quick algorithm, such as in bin packing, __putting in the largest items first__, will return a solution that is far from optimal.
 
 By using advanced optimization algorithms, *Timefold Solver does find a near-optimal solution in reasonable time for such planning problems.*
 

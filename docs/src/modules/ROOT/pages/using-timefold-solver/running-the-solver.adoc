@@ -45,7 +45,7 @@ Just provide the planning problem as argument to the `solve()` method and it wil
     Timetable bestSolution = solver.solve(problem);
 ----
 
-For example in school timetabling,
+In school timetabling,
 the `solve()` method will return a `Timetable` instance with every `Lesson` assigned to a `Teacher` and a `Timeslot`.
 
 The `solve(Solution)` method can take a long time (depending on the problem size and the solver configuration).
@@ -331,7 +331,7 @@ To separate their logging into distinct files, surround the `solve()` call with 
 ----
 
 Then configure your logger to use different files for each ``${tenant.name}``.
-For example in Logback, use a `SiftingAppender` in ``logback.xml``:
+In Logback, use a `SiftingAppender` in ``logback.xml``:
 
 [source,xml,options="nowrap"]
 ----

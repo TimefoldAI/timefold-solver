@@ -17,7 +17,7 @@ SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionM
 System.out.println(solutionManager.explain(vehicleRoutePlan));
 ----
 
-For example in vehicle routing,
+For example, in vehicle routing,
 this prints that talk `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
 
 ----
