@@ -689,7 +689,9 @@ It is not available in the Community Edition.
 ====
 
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
-This can significantly improve score calculation speed if the repeated operation is computationally expensive.
+This can significantly improve score calculation speed if the repeated operation is computationally expensive:
+
+image::enterprise-edition/nodeSharingValueProposition.png[align="center"]
 
 ==== Configuration
 
