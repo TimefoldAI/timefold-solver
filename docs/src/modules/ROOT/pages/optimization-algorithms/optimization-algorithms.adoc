@@ -2422,7 +2422,7 @@ This allows multi-threaded solving to migrate moves from one thread to another.
 
 The `lookUpWorkingObject()` method translates a planning entity instance or problem fact instance
 from one working solution to that of the destination's working solution.
-Internally it often uses a mapping technique based on the xref:optimization-algorithms/optimization-algorithms.adoc#planningId[planning ID].
+Internally it often uses a mapping technique based on the xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
 
 To rebase lists or arrays in bulk, use `rebaseList()` and `rebaseArray()` on `AbstractMove`.
 

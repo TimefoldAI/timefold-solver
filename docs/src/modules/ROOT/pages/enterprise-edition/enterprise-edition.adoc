@@ -346,19 +346,20 @@ It is not available in the Community Edition.
 
 There are several ways of doing multi-threaded solving:
 
-* *Multitenancy*: solve different datasets in parallel
-** The `SolverManager` will make it even easier to set this up, in a future version.
+* *<<multithreadedIncrementalSolving,Multi-threaded incremental solving>>*:
+Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
+** Donate a portion of your CPU cores to Timefold Solver to scale up the score calculation speed and get the same results in fraction of the time.
+* *<<partitionedSearch,Partitioned Search>>*:
+Split 1 dataset in multiple parts and solve them independently.
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
-** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the most appropriate algorithm, although that's only on average.
-** Use multi-threaded incremental solving instead.
-* *Partitioned Search*: Split 1 dataset in multiple parts and solve them independently.
-** Configure a <<partitionedSearch,Partitioned Search>>.
-* *Multi-threaded incremental solving*: solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
-** Donate a portion of your CPU cores to Timefold Solver to scale up the score calculation speed and get the same results in fraction of the time.
-** Configure <<multithreadedIncrementalSolving,multi-threaded incremental solving>>.
+** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
+* *Multitenancy*: solve different datasets in parallel.
+** The xref:using-timefold-solver/running-the-solver.adoc#solverManager[`SolverManager`] can help with that.
 
 image::enterprise-edition/multiThreadingStrategies.png[align="center"]
+
+In this section, we will focus on multi-threaded incremental solving and partitioned search.
 
 [NOTE]
 ====
@@ -366,89 +367,111 @@ A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `
 and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
-[#planningId]
-==== `@PlanningId`
-
-For some functionality (such as multi-threaded solving and real-time planning),
-Timefold Solver needs to map problem facts and planning entities to an ID.
-Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
-
-To enable such functionality, specify the `@PlanningId` annotation on the identification field or getter method,
-for example on the database ID:
-
-[source,java,options="nowrap"]
-----
-public class Visit {
-
-    @PlanningId
-    private String username;
-
-    ...
-}
-----
-
-A `@PlanningId` property must be:
-
-* Unique for that specific class
-** It does not need to be unique across different problem fact classes
-(unless in that rare case that those classes are mixed in the same value range or planning entity collection).
-* An instance of a type that implements `Object.hashCode()` and `Object.equals()`.
-** It's recommended to use the type `Integer`, `int`, `Long`, `long`, `String` or `UUID`.
-* Never `null` by the time `Solver.solve()` is called.
-
-
-[#customThreadFactory]
-==== Custom thread factory (WildFly, GAE, ...)
-
-The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
-where arbitrary thread creation should be avoided,
-such as most application servers (including WildFly) or Google App Engine.
-
-Configure the `ThreadFactory` on the solver to create the <<multithreadedIncrementalSolving,move threads>>
-and the <<partitionedSearch,Partition Search threads>> with it:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
-  ...
-</solver>
-----
 
 [#multithreadedIncrementalSolving]
 ==== Multi-threaded incremental solving
+
+With this feature, the solver can run significantly faster, 
+getting you the right solution earlier.
+It is especially useful for large datasets, 
+where score calculation speed is the bottleneck.
+
+The following table shows the observed score calculation speeds
+of the Vehicle Routing Problem and the Maintenance Scheduling Problem,
+as the number of threads increases:
+
+|===
+|Number of Threads |Vehicle Routing |Maintenance Scheduling
+
+|1
+|~ 22,000
+|~  6,000
+
+|2
+|~ 40,000
+|~ 11,000
+
+|4
+|~ 70,000
+|~ 19,000
+|===
+
+As we can see, the speed increases with the number of threads,
+but the scaling is not exactly linear due to the overhead of managing communication between multiple threads.
+Above 4 move threads,
+this overhead tends to dominate and therefore we do not recommend scaling over that threshold.
+
+[NOTE]
+====
+These numbers are strongly dependent on move selector configuration,
+size of the dataset and performance of individual constraints.
+We believe they are indicative of the speedups you can expect from this feature,
+but your mileage may vary significantly.
+====
+
+===== Enabling multi-threaded incremental solving
 
 Enable multi-threaded incremental solving by <<planningId,adding a @PlanningId annotation>>
 on every planning entity class and planning value class.
 Then configure a `moveThreadCount`:
 
+[tabs]
+====
+Quarkus::
++
+--
+Add the following to your `application.properties`:
+
+[source,properties]
+----
+quarkus.timefold.solver.move-thread-count=AUTO
+----
+--
+Spring::
++
+--
+Add the following to your `application.properties`:
+
+[source,properties]
+----
+timefold.solver.move-thread-count=AUTO
+----
+--
+Java::
++
+--
+[source,java,options="nowrap"]
+Use the `SolverConfig` class:
+
+----
+SolverConfig solverConfig = new SolverConfig()
+    ...
+    .withMoveThreadCount("AUTO");
+----
+--
+XML::
++
+--
+Add the following to your `solverConfig.xml`:
+
 [source,xml,options="nowrap"]
 ----
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <moveThreadCount>AUTO</moveThreadCount>
-  ...
+xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+
+    ...
+    <moveThreadCount>AUTO</moveThreadCount>
+    ...
+
 </solver>
 ----
+--
+====
 
-That one extra line heavily improves the score calculation speed,
-presuming that your machine has enough free CPU cores.
+Setting `moveThreadCount` to `AUTO` allows Timefold Solver to decide how many move threads to run in parallel.
+This formula is based on experience and does not hog all CPU cores on a multi-core machine.
 
-Advanced configuration:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <moveThreadCount>4</moveThreadCount>
-  <moveThreadBufferSize>10</moveThreadBufferSize>
-  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
-  ...
-</solver>
-----
-
-A `moveThreadCount` of `4` xref:integration/integration.adoc#sizingHardwareAndSoftware[saturates almost 5 CPU cores]:
+A `moveThreadCount` of `4` xref:integration/integration.adoc#sizingHardwareAndSoftware[saturates almost 5 CPU cores].
 the 4 move threads fill up 4 CPU cores completely
 and the solver thread uses most of another CPU core.
 
@@ -458,14 +481,17 @@ The following ``moveThreadCount``s are supported:
 * ``AUTO``: Let Timefold Solver decide how many move threads to run in parallel.
 On machines or containers with little or no CPUs, this falls back to the single threaded code.
 * Static number: The number of move threads to run in parallel.
-+
-[source,xml,options="nowrap"]
-----
-<moveThreadCount>4</moveThreadCount>
-----
-+
 This can be `1` to enforce running the multi-threaded code with only 1 move thread
 (which is less efficient than `NONE`).
+
+[IMPORTANT]
+====
+In cloud environments where resource use is billed by the hour,
+consider the trade-off between cost of the extra CPU cores needed and the time saved.
+Compute nodes with higher CPU core counts are typically more expensive to run
+and therefore you may end up paying more for the same result,
+even though the actual compute time needed will be less.
+====
 
 It is counter-effective to set a `moveThreadCount`
 that is higher than the number of available CPU cores,
@@ -479,6 +505,21 @@ A run of the same solver configuration on 2 machines with a different number of 
 is still reproducible, unless the `moveThreadCount` is set to `AUTO` or a function of `availableProcessorCount`.
 ====
 
+===== Advanced configuration
+
+There are additional parameters you can supply to your `solverConfig.xml`:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <moveThreadCount>4</moveThreadCount>
+  <moveThreadBufferSize>10</moveThreadBufferSize>
+  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
+  ...
+</solver>
+----
+
 The `moveThreadBufferSize` power tweaks the number of moves that are selected but won't be foraged.
 Setting it too low reduces performance, but setting it too high too.
 Unless you're deeply familiar with the inner workings of multi-threaded solving, don't configure this parameter.
@@ -488,7 +529,7 @@ use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factor
 
 
 [#partitionedSearch]
-=== Partitioned search
+==== Partitioned search
 
 [NOTE]
 ====
@@ -497,7 +538,7 @@ It is not available in the Community Edition.
 ====
 
 [#partitionedSearchAlgorithm]
-==== Algorithm description
+===== Algorithm description
 
 It is often more efficient to partition large data sets (usually above 5000 planning entities)
 into smaller pieces and solve them separately.
@@ -523,7 +564,7 @@ without any of the constraints crossing boundaries between partitions.
 
 
 [#partitionedSearchConfiguration]
-==== Configuration
+===== Configuration
 
 Simplest configuration:
 
@@ -586,11 +627,11 @@ followed by a non-partitioned Local Search phase:
 
 
 [#partitioningASolution]
-==== Partitioning a solution
+===== Partitioning a solution
 
 
 [#customSolutionPartitioner]
-===== Custom `SolutionPartitioner`
+====== Custom `SolutionPartitioner`
 
 To use a custom `SolutionPartitioner`, configure one on the Partitioned Search phase:
 
@@ -633,7 +674,7 @@ add the `solutionPartitionerCustomProperties` element and use xref:using-timefol
 
 
 [#runnablePartThreadLimit]
-==== Runnable part thread limit
+===== Runnable part thread limit
 
 When running a multi-threaded solver, such as Partitioned Search, CPU power can quickly become a scarce resource,
 which can cause other processes or threads to hang or freeze.
@@ -678,6 +719,27 @@ If the `runnablePartThreadLimit` is equal to or higher than the number of availa
 the host is likely to hang or freeze,
 unless there is an OS specific policy in place to avoid Timefold Solver from hogging all the CPU processors.
 ====
+
+
+[#customThreadFactory]
+==== Custom thread factory (WildFly, GAE, ...)
+
+The `threadFactoryClass` allows to plug in a custom `ThreadFactory` for environments
+where arbitrary thread creation should be avoided,
+such as most application servers (including WildFly) or Google App Engine.
+
+Configure the `ThreadFactory` on the solver to create the <<multithreadedIncrementalSolving,move threads>>
+and the <<partitionedSearch,Partition Search threads>> with it:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
+  ...
+</solver>
+----
+
 
 [#automaticNodeSharing]
 === Automatic node sharing
