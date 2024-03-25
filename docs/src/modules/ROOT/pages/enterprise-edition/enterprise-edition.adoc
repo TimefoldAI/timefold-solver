@@ -353,14 +353,13 @@ Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-s
 Split 1 dataset in multiple parts and solve them independently.
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
-** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the most appropriate algorithm, although that's only on average.
-** Use multi-threaded incremental solving instead.
-* *Multitenancy*: solve different datasets in parallel
-** The `SolverManager` will make it even easier to set this up, in a future version.
-
-In this section, we will focus on multi-threaded incremental solving.
+** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
+* *Multitenancy*: solve different datasets in parallel.
+** The xref:using-timefold-solver/running-the-solver.adoc#solverManager[`SolverManager`] can help with that.
 
 image::enterprise-edition/multiThreadingStrategies.png[align="center"]
+
+In this section, we will focus on multi-threaded incremental solving and partitioned search.
 
 [NOTE]
 ====
