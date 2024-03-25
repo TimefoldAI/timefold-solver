@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class AndCompositeTermination<Solution_> extends AbstractCompositeTermination<Solution_> {
+public final class AndCompositeTermination<Solution_> extends AbstractCompositeTermination<Solution_> {
 
     public AndCompositeTermination(List<Termination<Solution_>> terminationList) {
         super(terminationList);

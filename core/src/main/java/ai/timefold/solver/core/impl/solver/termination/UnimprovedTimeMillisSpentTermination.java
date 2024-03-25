@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final long unimprovedTimeMillisSpentLimit;
 

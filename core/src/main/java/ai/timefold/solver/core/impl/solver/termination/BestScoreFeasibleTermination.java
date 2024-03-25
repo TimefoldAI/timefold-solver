@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final int feasibleLevelsSize;
     private final double[] timeGradientWeightFeasibleNumbers;

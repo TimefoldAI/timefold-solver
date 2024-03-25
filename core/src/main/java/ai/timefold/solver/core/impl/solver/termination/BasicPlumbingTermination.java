@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  * Concurrency notes:
  * Condition predicate on ({@link #problemFactChangeQueue} is not empty or {@link #terminatedEarly} is true).
  */
-public class BasicPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class BasicPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
 
     protected final boolean daemon;
 

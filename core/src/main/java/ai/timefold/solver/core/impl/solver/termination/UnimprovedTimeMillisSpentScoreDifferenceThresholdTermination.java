@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
+public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
         extends AbstractTermination<Solution_> {
 
     private final long unimprovedTimeMillisSpentLimit;
