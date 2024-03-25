@@ -372,8 +372,10 @@ and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSp
 [#multithreadedIncrementalSolving]
 ==== Multi-threaded incremental solving
 
-With this feature, the solver can run significantly faster, getting you the right solution earlier.
-It is especially useful for large datasets, where score calculation speed is the bottleneck.
+With this feature, the solver can run significantly faster, 
+getting you the right solution earlier.
+It is especially useful for large datasets, 
+where score calculation speed is the bottleneck.
 
 The following table shows the observed score calculation speeds
 of the Vehicle Routing Problem and the Maintenance Scheduling Problem,
@@ -396,7 +398,7 @@ as the number of threads increases:
 |===
 
 As we can see, the speed increases with the number of threads,
-but the scaling is not exactly linear due to the overhead of managing communication between multiple thread.
+but the scaling is not exactly linear due to the overhead of managing communication between multiple threads.
 Above 4 move threads,
 this overhead tends to dominate and therefore we do not recommend scaling over that threshold.
 
