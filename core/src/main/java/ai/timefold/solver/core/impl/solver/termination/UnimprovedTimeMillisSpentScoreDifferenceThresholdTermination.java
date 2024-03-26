@@ -23,6 +23,8 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
     // safeTimeMillis is until when we're safe from termination
     private long solverSafeTimeMillis = -1L;
     private long phaseSafeTimeMillis = -1L;
+    private boolean currentPhaseSendsBestSolutionEvents = false;
+    private long phaseStartedTimeMillis = -1L;
 
     public UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination(
             long unimprovedTimeMillisSpentLimit,
@@ -66,6 +68,17 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseSafeTimeMillis = phaseScope.getStartingSystemTimeMillis() + unimprovedTimeMillisSpentLimit;
+        /*
+         * Construction heuristics and similar phases only trigger best solution events at the end.
+         * This means that these phases only provide a meaningful result at their end.
+         * Unimproved time spent termination is not useful for these phases,
+         * as it would terminate the solver prematurely,
+         * skipping any useful phases that follow it, such as local search.
+         * We avoid that by never terminating during these phases,
+         * and resetting the counter to zero when the next phase starts.
+         */
+        currentPhaseSendsBestSolutionEvents = phaseScope.phaseSendsBestSolutionEvents();
+        phaseStartedTimeMillis = clock.millis();
     }
 
     @Override
@@ -75,6 +88,9 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return;
+        }
         if (stepScope.getBestScoreImproved()) {
             SolverScope<Solution_> solverScope = stepScope.getPhaseScope().getSolverScope();
             long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
@@ -83,7 +99,7 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
                 Pair<Long, Score> bestScoreImprovement = it.next();
                 Score scoreDifference = bestScore.subtract(bestScoreImprovement.value());
                 boolean timeLimitNotYetReached = bestScoreImprovement.key()
-                        + unimprovedTimeMillisSpentLimit >= bestSolutionTimeMillis;
+                        + unimprovedTimeMillisSpentLimit >= getUnimprovedTimeMillisSpent(bestSolutionTimeMillis);
                 boolean scoreImprovedOverThreshold = scoreDifference.compareTo(unimprovedScoreDifferenceThreshold) >= 0;
                 if (scoreImprovedOverThreshold && timeLimitNotYetReached) {
                     it.remove();
@@ -98,17 +114,28 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
         }
     }
 
+    private long getUnimprovedTimeMillisSpent(long bestSolutionTimeMillis) {
+        long now = clock.millis();
+        return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
+    }
+
     // ************************************************************************
     // Terminated methods
     // ************************************************************************
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return false;
+        }
         return isTerminated(solverSafeTimeMillis);
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return false;
+        }
         return isTerminated(phaseSafeTimeMillis);
     }
 
@@ -127,11 +154,17 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return 0.0;
+        }
         return calculateTimeGradient(solverSafeTimeMillis);
     }
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return 0.0;
+        }
         return calculateTimeGradient(phaseSafeTimeMillis);
     }
 

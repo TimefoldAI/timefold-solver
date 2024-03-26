@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.assertj.core.api.Assertions.withPrecision;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
@@ -34,17 +35,13 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
 
     @Test
     void scoreImproves_terminationIsPostponed() {
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
-        AbstractPhaseScope<TestdataSolution> phaseScope = mock(LocalSearchPhaseScope.class);
-        AbstractStepScope<TestdataSolution> stepScope = mock(LocalSearchStepScope.class);
-        Clock clock = mock(Clock.class);
+        var solverScope = new SolverScope<TestdataSolution>();
+        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
+        var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
+        var clock = mock(Clock.class);
 
-        Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<>(
-                1000L,
-                SimpleScore.of(7),
-                clock);
-        doReturn(solverScope).when(phaseScope).getSolverScope();
-        doReturn(phaseScope).when(stepScope).getPhaseScope();
+        var termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<TestdataSolution>(1000L,
+                SimpleScore.of(7), clock);
 
         // first step
         when(clock.millis()).thenReturn(START_TIME_MILLIS);
