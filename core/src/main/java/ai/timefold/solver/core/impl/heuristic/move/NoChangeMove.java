@@ -31,6 +31,11 @@ public final class NoChangeMove<Solution_> extends AbstractSimplifiedMove<Soluti
     }
 
     @Override
+    public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
+        return (Move<Solution_>) INSTANCE;
+    }
+
+    @Override
     public String getSimpleMoveTypeDescription() {
         return "No change";
     }

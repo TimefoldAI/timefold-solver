@@ -112,8 +112,9 @@ public interface Move<Solution_> {
      * @return never null, a new move that does the same change as this move on another solution instance
      */
     default Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
-        throw new UnsupportedOperationException("The custom move class (" + getClass()
-                + ") doesn't implement the rebase() method, so multithreaded solving is impossible.");
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the rebase() method, so multithreaded solving is impossible."
+                        .formatted(getClass()));
     }
 
     // ************************************************************************
@@ -145,8 +146,9 @@ public interface Move<Solution_> {
      * @return never null
      */
     default Collection<? extends Object> getPlanningEntities() {
-        throw new UnsupportedOperationException("The custom move class (" + getClass()
-                + ") doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible.");
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible."
+                        .formatted(getClass()));
     }
 
     /**
@@ -162,8 +164,9 @@ public interface Move<Solution_> {
      * @return never null
      */
     default Collection<? extends Object> getPlanningValues() {
-        throw new UnsupportedOperationException("The custom move class (" + getClass()
-                + ") doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible.");
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible."
+                        .formatted(getClass()));
     }
 
 }
