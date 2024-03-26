@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -66,6 +68,16 @@ class ListUnassignMoveTest {
         assertThat(e1.getValueList()).hasSize(3);
         verify(scoreDirector).beforeListVariableElementAssigned(variableDescriptor, v3);
         verify(scoreDirector).afterListVariableElementAssigned(variableDescriptor, v3);
+    }
+
+    @Test
+    void rebase() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        var destinationScoreDirector = mockRebasingScoreDirector(solutionDescriptor, new Object[][] {});
+        var move = new ListUnassignMove<TestdataSolution>(null, null, 0);
+        var rebasedMove = move.rebase(destinationScoreDirector);
+        assertThat(rebasedMove).isNotSameAs(move);
     }
 
     @Test
