@@ -5,6 +5,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public class ListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solution_> {
@@ -55,6 +56,12 @@ public class ListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solution
         movedValue = listVariable.remove(sourceIndex);
         innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
         innerScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
+    }
+
+    @Override
+    public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
+        return new ListUnassignMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(sourceEntity),
+                sourceIndex);
     }
 
     // ************************************************************************
