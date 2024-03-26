@@ -133,7 +133,7 @@ which is stable enough to share with the employees, so they can plan their socia
 
 image::responding-to-change/continuousPlanningPatientAdmissionSchedule.png[align="center"]
 
-In the hospital bed planning example above, notice the difference between the original planning of November 1st and the new planning of November 5th:
+In the bed allocation scheduling example above, notice the difference between the original planning of November 1st and the new planning of November 5th:
 some problem facts (F, H, I, J, K) changed in the meantime, which results in unrelated planning entities (G) changing too.
 
 The planning window can be split up in several stages:
