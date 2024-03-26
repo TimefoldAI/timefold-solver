@@ -19,6 +19,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final SolverScope<Solution_> solverScope;
+    protected final boolean phaseSendsBestSolutionEvents;
 
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
@@ -29,12 +30,33 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
-    public AbstractPhaseScope(SolverScope<Solution_> solverScope) {
+    /**
+     * As defined by #AbstractPhaseScope(SolverScope, boolean),
+     * with the phaseSendsBestSolutionEvents parameter set to true.
+     */
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope) {
+        this(solverScope, true);
+    }
+
+    /**
+     *
+     * @param solverScope never null
+     * @param phaseSendsBestSolutionEvents set to false if the phase only sends one best solution event at the end,
+     *        or none at all;
+     *        this is typical for construction heuristics,
+     *        whose result only matters when it reached its natural end.
+     */
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, boolean phaseSendsBestSolutionEvents) {
         this.solverScope = solverScope;
+        this.phaseSendsBestSolutionEvents = phaseSendsBestSolutionEvents;
     }
 
     public SolverScope<Solution_> getSolverScope() {
         return solverScope;
+    }
+
+    public boolean phaseSendsBestSolutionEvents() {
+        return phaseSendsBestSolutionEvents;
     }
 
     public Long getStartingSystemTimeMillis() {

@@ -11,6 +11,8 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
     private final long unimprovedTimeMillisSpentLimit;
 
     private final Clock clock;
+    private boolean currentPhaseSendsBestSolutionEvents = false;
+    private long phaseStartedTimeMillis = -1L;
 
     public UnimprovedTimeMillisSpentTermination(long unimprovedTimeMillisSpentLimit) {
         this(unimprovedTimeMillisSpentLimit, Clock.systemUTC());
@@ -29,26 +31,50 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         return unimprovedTimeMillisSpentLimit;
     }
 
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        /*
+         * Construction heuristics and similar phases only trigger best solution events at the end.
+         * This means that these phases only provide a meaningful result at their end.
+         * Unimproved time spent termination is not useful for these phases,
+         * as it would terminate the solver prematurely,
+         * skipping any useful phases that follow it, such as local search.
+         * We avoid that by never terminating during these phases,
+         * and resetting the counter to zero when the next phase starts.
+         */
+        currentPhaseSendsBestSolutionEvents = phaseScope.phaseSendsBestSolutionEvents();
+        phaseStartedTimeMillis = clock.millis();
+    }
+
     // ************************************************************************
     // Terminated methods
     // ************************************************************************
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return false;
+        }
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return false;
+        }
         long bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
     protected boolean isTerminated(long bestSolutionTimeMillis) {
+        return getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) >= unimprovedTimeMillisSpentLimit;
+    }
+
+    private long getUnimprovedTimeMillisSpent(long bestSolutionTimeMillis) {
         long now = clock.millis();
-        long unimprovedTimeMillisSpent = now - bestSolutionTimeMillis;
-        return unimprovedTimeMillisSpent >= unimprovedTimeMillisSpentLimit;
+        return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
     }
 
     // ************************************************************************
@@ -68,9 +94,10 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
     }
 
     protected double calculateTimeGradient(long bestSolutionTimeMillis) {
-        long now = clock.millis();
-        long unimprovedTimeMillisSpent = now - bestSolutionTimeMillis;
-        double timeGradient = unimprovedTimeMillisSpent / ((double) unimprovedTimeMillisSpentLimit);
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return 0.0;
+        }
+        double timeGradient = getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) / ((double) unimprovedTimeMillisSpentLimit);
         return Math.min(timeGradient, 1.0);
     }
 

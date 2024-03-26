@@ -459,6 +459,13 @@ Just like <<timeMillisSpentTermination,time spent termination>>, combinations ar
 
 It is preffered to configure this termination on a specific `Phase` (such as ``<localSearch>``) instead of on the `Solver` itself.
 
+Several phases, such as construction heuristics, do not count towards this termination because
+they only trigger new best solution events when they are done.
+If such a phase is encountered, the termination is disabled and when the next phase is encountered,
+the termination is enabled again and the timer resets back to zero.
+In the most typical case, where a local search phase follows a construction heuristic phase,
+the termination will only trigger if the local search phase does not improve the best solution for the specified time.
+
 [NOTE]
 ====
 This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` ``REPRODUCIBLE``)
@@ -589,7 +596,8 @@ This is useful for hardware performance independent runs.
 ----
 
 If the score has not improved recently, it is unlikely to improve in a reasonable timeframe.
-It has been observed that once a new best solution is found (even after a long time without improvement on the best solution), the next few steps tend to improve the best solution.
+It has been observed that once a new best solution is found (even after a long time without improvement on the best solution),
+the next few steps tend to improve the best solution.
 
 This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
 
