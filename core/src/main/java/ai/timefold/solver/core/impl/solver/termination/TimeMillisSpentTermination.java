@@ -11,8 +11,8 @@ public final class TimeMillisSpentTermination<Solution_> extends AbstractTermina
     public TimeMillisSpentTermination(long timeMillisSpentLimit) {
         this.timeMillisSpentLimit = timeMillisSpentLimit;
         if (timeMillisSpentLimit < 0L) {
-            throw new IllegalArgumentException("The timeMillisSpentLimit (" + timeMillisSpentLimit
-                    + ") cannot be negative.");
+            throw new IllegalArgumentException("The timeMillisSpentLimit (%d) cannot be negative."
+                    .formatted(timeMillisSpentLimit));
         }
     }
 
@@ -36,7 +36,7 @@ public final class TimeMillisSpentTermination<Solution_> extends AbstractTermina
         return isTerminated(phaseTimeMillisSpent);
     }
 
-    protected boolean isTerminated(long timeMillisSpent) {
+    private boolean isTerminated(long timeMillisSpent) {
         return timeMillisSpent >= timeMillisSpentLimit;
     }
 
@@ -56,7 +56,7 @@ public final class TimeMillisSpentTermination<Solution_> extends AbstractTermina
         return calculateTimeGradient(phaseTimeMillisSpent);
     }
 
-    protected double calculateTimeGradient(long timeMillisSpent) {
+    private double calculateTimeGradient(long timeMillisSpent) {
         double timeGradient = timeMillisSpent / ((double) timeMillisSpentLimit);
         return Math.min(timeGradient, 1.0);
     }

@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public sealed abstract class AbstractTermination<Solution_>
+public abstract sealed class AbstractTermination<Solution_>
         extends PhaseLifecycleListenerAdapter<Solution_>
         implements Termination<Solution_>
         permits AbstractCompositeTermination, BasicPlumbingTermination, BestScoreFeasibleTermination, BestScoreTermination,

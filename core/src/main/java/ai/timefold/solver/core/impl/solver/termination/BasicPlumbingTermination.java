@@ -16,13 +16,11 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  */
 public final class BasicPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
 
-    protected final boolean daemon;
+    private final boolean daemon;
+    private final BlockingQueue<ProblemChangeAdapter<Solution_>> problemFactChangeQueue = new LinkedBlockingQueue<>();
 
-    protected boolean terminatedEarly = false;
-
-    protected BlockingQueue<ProblemChangeAdapter<Solution_>> problemFactChangeQueue = new LinkedBlockingQueue<>();
-
-    protected boolean problemFactChangesBeingProcessed = false;
+    private boolean terminatedEarly = false;
+    private boolean problemFactChangesBeingProcessed = false;
 
     public BasicPlumbingTermination(boolean daemon) {
         this.daemon = daemon;

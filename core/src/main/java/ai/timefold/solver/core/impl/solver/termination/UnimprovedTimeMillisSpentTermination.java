@@ -18,11 +18,11 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         this(unimprovedTimeMillisSpentLimit, Clock.systemUTC());
     }
 
-    protected UnimprovedTimeMillisSpentTermination(long unimprovedTimeMillisSpentLimit, Clock clock) {
+    UnimprovedTimeMillisSpentTermination(long unimprovedTimeMillisSpentLimit, Clock clock) {
         this.unimprovedTimeMillisSpentLimit = unimprovedTimeMillisSpentLimit;
         if (unimprovedTimeMillisSpentLimit < 0L) {
-            throw new IllegalArgumentException("The unimprovedTimeMillisSpentLimit (" + unimprovedTimeMillisSpentLimit
-                    + ") cannot be negative.");
+            throw new IllegalArgumentException("The unimprovedTimeMillisSpentLimit (%d) cannot be negative."
+                    .formatted(unimprovedTimeMillisSpentLimit));
         }
         this.clock = clock;
     }
@@ -68,7 +68,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         return isTerminated(bestSolutionTimeMillis);
     }
 
-    protected boolean isTerminated(long bestSolutionTimeMillis) {
+    private boolean isTerminated(long bestSolutionTimeMillis) {
         return getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) >= unimprovedTimeMillisSpentLimit;
     }
 
@@ -93,7 +93,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         return calculateTimeGradient(bestSolutionTimeMillis);
     }
 
-    protected double calculateTimeGradient(long bestSolutionTimeMillis) {
+    private double calculateTimeGradient(long bestSolutionTimeMillis) {
         if (!currentPhaseSendsBestSolutionEvents) {
             return 0.0;
         }

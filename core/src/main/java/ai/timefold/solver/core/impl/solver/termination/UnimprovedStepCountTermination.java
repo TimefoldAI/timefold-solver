@@ -11,13 +11,9 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
     public UnimprovedStepCountTermination(int unimprovedStepCountLimit) {
         this.unimprovedStepCountLimit = unimprovedStepCountLimit;
         if (unimprovedStepCountLimit < 0) {
-            throw new IllegalArgumentException("The unimprovedStepCountLimit (" + unimprovedStepCountLimit
-                    + ") cannot be negative.");
+            throw new IllegalArgumentException("The unimprovedStepCountLimit (%d) cannot be negative."
+                    .formatted(unimprovedStepCountLimit));
         }
-    }
-
-    public int getUnimprovedStepCountLimit() {
-        return unimprovedStepCountLimit;
     }
 
     // ************************************************************************
@@ -36,7 +32,7 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
         return unimprovedStepCount >= unimprovedStepCountLimit;
     }
 
-    protected int calculateUnimprovedStepCount(AbstractPhaseScope<Solution_> phaseScope) {
+    private static int calculateUnimprovedStepCount(AbstractPhaseScope<?> phaseScope) {
         int bestStepIndex = phaseScope.getBestSolutionStepIndex();
         int lastStepIndex = phaseScope.getLastCompletedStepScope().getStepIndex();
         return lastStepIndex - bestStepIndex;
