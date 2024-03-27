@@ -89,7 +89,7 @@ Choose the right representation type for your use case:
 There are also several designs for assigning a planning entity to a starting time (or date):
 
 * If the starting time is fixed beforehand, it is not a planning variable (in that solver).
-** For example: in Hospital Bed Planning the arrival day of each patient is fixed beforehand.
+** For example: in Bed Allocation Scheduling, the arrival day of each patient is fixed beforehand.
 ** This is common in xref:responding-to-change/responding-to-change.adoc#multiStagePlanning[multi-stage planning],
 when the starting time has been decided already in an earlier planning stage.
 
