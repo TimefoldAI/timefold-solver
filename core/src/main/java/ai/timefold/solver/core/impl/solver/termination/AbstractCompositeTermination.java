@@ -15,7 +15,9 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  * @see AndCompositeTermination
  * @see OrCompositeTermination
  */
-public abstract class AbstractCompositeTermination<Solution_> extends AbstractTermination<Solution_> {
+public abstract sealed class AbstractCompositeTermination<Solution_>
+        extends AbstractTermination<Solution_>
+        permits AndCompositeTermination, OrCompositeTermination {
 
     protected final List<Termination<Solution_>> terminationList;
 

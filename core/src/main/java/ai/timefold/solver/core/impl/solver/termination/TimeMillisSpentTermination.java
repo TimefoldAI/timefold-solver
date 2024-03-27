@@ -4,15 +4,15 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class TimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class TimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final long timeMillisSpentLimit;
 
     public TimeMillisSpentTermination(long timeMillisSpentLimit) {
         this.timeMillisSpentLimit = timeMillisSpentLimit;
         if (timeMillisSpentLimit < 0L) {
-            throw new IllegalArgumentException("The timeMillisSpentLimit (" + timeMillisSpentLimit
-                    + ") cannot be negative.");
+            throw new IllegalArgumentException("The timeMillisSpentLimit (%d) cannot be negative."
+                    .formatted(timeMillisSpentLimit));
         }
     }
 
@@ -26,17 +26,17 @@ public class TimeMillisSpentTermination<Solution_> extends AbstractTermination<S
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        long solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
+        var solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
         return isTerminated(solverTimeMillisSpent);
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        long phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
+        var phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
         return isTerminated(phaseTimeMillisSpent);
     }
 
-    protected boolean isTerminated(long timeMillisSpent) {
+    private boolean isTerminated(long timeMillisSpent) {
         return timeMillisSpent >= timeMillisSpentLimit;
     }
 
@@ -46,18 +46,18 @@ public class TimeMillisSpentTermination<Solution_> extends AbstractTermination<S
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        long solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
+        var solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
         return calculateTimeGradient(solverTimeMillisSpent);
     }
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        long phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
+        var phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
         return calculateTimeGradient(phaseTimeMillisSpent);
     }
 
-    protected double calculateTimeGradient(long timeMillisSpent) {
-        double timeGradient = timeMillisSpent / ((double) timeMillisSpentLimit);
+    private double calculateTimeGradient(long timeMillisSpent) {
+        var timeGradient = timeMillisSpent / ((double) timeMillisSpentLimit);
         return Math.min(timeGradient, 1.0);
     }
 

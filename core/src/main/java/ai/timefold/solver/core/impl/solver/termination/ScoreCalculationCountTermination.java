@@ -5,15 +5,16 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class ScoreCalculationCountTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class ScoreCalculationCountTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final long scoreCalculationCountLimit;
 
     public ScoreCalculationCountTermination(long scoreCalculationCountLimit) {
         this.scoreCalculationCountLimit = scoreCalculationCountLimit;
         if (scoreCalculationCountLimit < 0L) {
-            throw new IllegalArgumentException("The scoreCalculationCountLimit (" + scoreCalculationCountLimit
-                    + ") cannot be negative.");
+            throw new IllegalArgumentException(
+                    "The scoreCalculationCountLimit (%d) cannot be negative."
+                            .formatted(scoreCalculationCountLimit));
         }
     }
 
@@ -31,8 +32,8 @@ public class ScoreCalculationCountTermination<Solution_> extends AbstractTermina
         return isTerminated(phaseScope.getScoreDirector());
     }
 
-    protected boolean isTerminated(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        long scoreCalculationCount = scoreDirector.getCalculationCount();
+    private boolean isTerminated(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        var scoreCalculationCount = scoreDirector.getCalculationCount();
         return scoreCalculationCount >= scoreCalculationCountLimit;
     }
 
@@ -50,9 +51,9 @@ public class ScoreCalculationCountTermination<Solution_> extends AbstractTermina
         return calculateTimeGradient(phaseScope.getScoreDirector());
     }
 
-    protected double calculateTimeGradient(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        long scoreCalculationCount = scoreDirector.getCalculationCount();
-        double timeGradient = scoreCalculationCount / ((double) scoreCalculationCountLimit);
+    private double calculateTimeGradient(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        var scoreCalculationCount = scoreDirector.getCalculationCount();
+        var timeGradient = scoreCalculationCount / ((double) scoreCalculationCountLimit);
         return Math.min(timeGradient, 1.0);
     }
 
@@ -67,7 +68,8 @@ public class ScoreCalculationCountTermination<Solution_> extends AbstractTermina
             // The ScoreDirector.calculationCount of partitions is maxed, not summed.
             return new ScoreCalculationCountTermination<>(scoreCalculationCountLimit);
         } else {
-            throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
+            throw new IllegalStateException("The childThreadType (%s) is not implemented."
+                    .formatted(childThreadType));
         }
     }
 

@@ -4,9 +4,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class ChildThreadPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class ChildThreadPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
 
-    protected boolean terminateChildren = false;
+    private boolean terminateChildren = false;
 
     // ************************************************************************
     // Plumbing worker methods
@@ -18,7 +18,7 @@ public class ChildThreadPlumbingTermination<Solution_> extends AbstractTerminati
      * @return true if termination hasn't been requested previously
      */
     public synchronized boolean terminateChildren() {
-        boolean terminationEarlySuccessful = !terminateChildren;
+        var terminationEarlySuccessful = !terminateChildren;
         terminateChildren = true;
         return terminationEarlySuccessful;
     }

@@ -22,7 +22,7 @@ public class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseScope<So
     private ExhaustiveSearchStepScope<Solution_> lastCompletedStepScope;
 
     public ExhaustiveSearchPhaseScope(SolverScope<Solution_> solverScope) {
-        super(solverScope);
+        super(solverScope, false);
         lastCompletedStepScope = new ExhaustiveSearchStepScope<>(this, -1);
     }
 

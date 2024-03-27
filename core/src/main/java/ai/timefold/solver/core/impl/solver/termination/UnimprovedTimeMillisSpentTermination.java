@@ -6,27 +6,44 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final long unimprovedTimeMillisSpentLimit;
-
     private final Clock clock;
+
+    private boolean currentPhaseSendsBestSolutionEvents = false;
+    private long phaseStartedTimeMillis = -1L;
 
     public UnimprovedTimeMillisSpentTermination(long unimprovedTimeMillisSpentLimit) {
         this(unimprovedTimeMillisSpentLimit, Clock.systemUTC());
     }
 
-    protected UnimprovedTimeMillisSpentTermination(long unimprovedTimeMillisSpentLimit, Clock clock) {
+    UnimprovedTimeMillisSpentTermination(long unimprovedTimeMillisSpentLimit, Clock clock) {
         this.unimprovedTimeMillisSpentLimit = unimprovedTimeMillisSpentLimit;
         if (unimprovedTimeMillisSpentLimit < 0L) {
-            throw new IllegalArgumentException("The unimprovedTimeMillisSpentLimit (" + unimprovedTimeMillisSpentLimit
-                    + ") cannot be negative.");
+            throw new IllegalArgumentException("The unimprovedTimeMillisSpentLimit (%d) cannot be negative."
+                    .formatted(unimprovedTimeMillisSpentLimit));
         }
         this.clock = clock;
     }
 
     public long getUnimprovedTimeMillisSpentLimit() {
         return unimprovedTimeMillisSpentLimit;
+    }
+
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        /*
+         * Construction heuristics and similar phases only trigger best solution events at the end.
+         * This means that these phases only provide a meaningful result at their end.
+         * Unimproved time spent termination is not useful for these phases,
+         * as it would terminate the solver prematurely,
+         * skipping any useful phases that follow it, such as local search.
+         * We avoid that by never terminating during these phases,
+         * and resetting the counter to zero when the next phase starts.
+         */
+        currentPhaseSendsBestSolutionEvents = phaseScope.isPhaseSendingBestSolutionEvents();
+        phaseStartedTimeMillis = clock.millis();
     }
 
     // ************************************************************************
@@ -41,14 +58,20 @@ public class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTer
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        long bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
+        var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
-    protected boolean isTerminated(long bestSolutionTimeMillis) {
-        long now = clock.millis();
-        long unimprovedTimeMillisSpent = now - bestSolutionTimeMillis;
-        return unimprovedTimeMillisSpent >= unimprovedTimeMillisSpentLimit;
+    private boolean isTerminated(long bestSolutionTimeMillis) {
+        if (!currentPhaseSendsBestSolutionEvents) { // This phase never terminates early.
+            return false;
+        }
+        return getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) >= unimprovedTimeMillisSpentLimit;
+    }
+
+    private long getUnimprovedTimeMillisSpent(long bestSolutionTimeMillis) {
+        var now = clock.millis();
+        return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
     }
 
     // ************************************************************************
@@ -63,14 +86,15 @@ public class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTer
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        long bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
+        var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return calculateTimeGradient(bestSolutionTimeMillis);
     }
 
-    protected double calculateTimeGradient(long bestSolutionTimeMillis) {
-        long now = clock.millis();
-        long unimprovedTimeMillisSpent = now - bestSolutionTimeMillis;
-        double timeGradient = unimprovedTimeMillisSpent / ((double) unimprovedTimeMillisSpentLimit);
+    private double calculateTimeGradient(long bestSolutionTimeMillis) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return 0.0;
+        }
+        var timeGradient = getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) / ((double) unimprovedTimeMillisSpentLimit);
         return Math.min(timeGradient, 1.0);
     }
 

@@ -8,20 +8,19 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final int feasibleLevelsSize;
     private final double[] timeGradientWeightFeasibleNumbers;
 
-    public BestScoreFeasibleTermination(ScoreDefinition scoreDefinition, double[] timeGradientWeightFeasibleNumbers) {
-        feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
+    public BestScoreFeasibleTermination(ScoreDefinition<?> scoreDefinition, double[] timeGradientWeightFeasibleNumbers) {
+        this.feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
         this.timeGradientWeightFeasibleNumbers = timeGradientWeightFeasibleNumbers;
-        if (timeGradientWeightFeasibleNumbers.length != feasibleLevelsSize - 1) {
+        if (timeGradientWeightFeasibleNumbers.length != this.feasibleLevelsSize - 1) {
             throw new IllegalStateException(
-                    "The timeGradientWeightNumbers (" + Arrays.toString(timeGradientWeightFeasibleNumbers)
-                            + ")'s length (" + timeGradientWeightFeasibleNumbers.length
-                            + ") is not 1 less than the feasibleLevelsSize (" + scoreDefinition.getFeasibleLevelsSize()
-                            + ").");
+                    "The timeGradientWeightNumbers (%s)'s length (%d) is not 1 less than the feasibleLevelsSize (%d)."
+                            .formatted(Arrays.toString(timeGradientWeightFeasibleNumbers),
+                                    timeGradientWeightFeasibleNumbers.length, scoreDefinition.getFeasibleLevelsSize()));
         }
     }
 
@@ -32,10 +31,10 @@ public class BestScoreFeasibleTermination<Solution_> extends AbstractTermination
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated((Score) phaseScope.getBestScore());
+        return isTerminated(phaseScope.getBestScore());
     }
 
-    protected boolean isTerminated(Score bestScore) {
+    private static boolean isTerminated(Score<?> bestScore) {
         return bestScore.isFeasible();
     }
 
@@ -49,7 +48,7 @@ public class BestScoreFeasibleTermination<Solution_> extends AbstractTermination
         return calculateFeasibilityTimeGradient((Score) phaseScope.getStartingScore(), (Score) phaseScope.getBestScore());
     }
 
-    protected <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(Score_ startScore, Score_ score) {
+    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(Score_ startScore, Score_ score) {
         if (startScore == null || !startScore.isSolutionInitialized()) {
             return 0.0;
         }
