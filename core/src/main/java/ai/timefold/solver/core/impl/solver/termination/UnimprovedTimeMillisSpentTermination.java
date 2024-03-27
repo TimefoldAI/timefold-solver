@@ -42,7 +42,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
          * We avoid that by never terminating during these phases,
          * and resetting the counter to zero when the next phase starts.
          */
-        currentPhaseSendsBestSolutionEvents = phaseScope.phaseSendsBestSolutionEvents();
+        currentPhaseSendsBestSolutionEvents = phaseScope.isPhaseSendingBestSolutionEvents();
         phaseStartedTimeMillis = clock.millis();
     }
 
@@ -52,23 +52,20 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return false;
-        }
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return false;
-        }
         var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
     private boolean isTerminated(long bestSolutionTimeMillis) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return false;
+        }
         return getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) >= unimprovedTimeMillisSpentLimit;
     }
 

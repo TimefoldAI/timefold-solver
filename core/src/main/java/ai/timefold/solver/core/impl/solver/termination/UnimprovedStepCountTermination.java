@@ -28,13 +28,13 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        int unimprovedStepCount = calculateUnimprovedStepCount(phaseScope);
+        var unimprovedStepCount = calculateUnimprovedStepCount(phaseScope);
         return unimprovedStepCount >= unimprovedStepCountLimit;
     }
 
     private static int calculateUnimprovedStepCount(AbstractPhaseScope<?> phaseScope) {
-        int bestStepIndex = phaseScope.getBestSolutionStepIndex();
-        int lastStepIndex = phaseScope.getLastCompletedStepScope().getStepIndex();
+        var bestStepIndex = phaseScope.getBestSolutionStepIndex();
+        var lastStepIndex = phaseScope.getLastCompletedStepScope().getStepIndex();
         return lastStepIndex - bestStepIndex;
     }
 
@@ -50,8 +50,8 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        int unimprovedStepCount = calculateUnimprovedStepCount(phaseScope);
-        double timeGradient = unimprovedStepCount / ((double) unimprovedStepCountLimit);
+        var unimprovedStepCount = calculateUnimprovedStepCount(phaseScope);
+        var timeGradient = unimprovedStepCount / ((double) unimprovedStepCountLimit);
         return Math.min(timeGradient, 1.0);
     }
 

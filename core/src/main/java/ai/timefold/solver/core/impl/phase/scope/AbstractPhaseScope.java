@@ -19,7 +19,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final SolverScope<Solution_> solverScope;
-    protected final boolean phaseSendsBestSolutionEvents;
+    protected final boolean phaseSendingBestSolutionEvents;
 
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
@@ -32,7 +32,7 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     /**
      * As defined by #AbstractPhaseScope(SolverScope, boolean),
-     * with the phaseSendsBestSolutionEvents parameter set to true.
+     * with the phaseSendingBestSolutionEvents parameter set to true.
      */
     protected AbstractPhaseScope(SolverScope<Solution_> solverScope) {
         this(solverScope, true);
@@ -41,22 +41,22 @@ public abstract class AbstractPhaseScope<Solution_> {
     /**
      *
      * @param solverScope never null
-     * @param phaseSendsBestSolutionEvents set to false if the phase only sends one best solution event at the end,
+     * @param phaseSendingBestSolutionEvents set to false if the phase only sends one best solution event at the end,
      *        or none at all;
      *        this is typical for construction heuristics,
      *        whose result only matters when it reached its natural end.
      */
-    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, boolean phaseSendsBestSolutionEvents) {
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, boolean phaseSendingBestSolutionEvents) {
         this.solverScope = solverScope;
-        this.phaseSendsBestSolutionEvents = phaseSendsBestSolutionEvents;
+        this.phaseSendingBestSolutionEvents = phaseSendingBestSolutionEvents;
     }
 
     public SolverScope<Solution_> getSolverScope() {
         return solverScope;
     }
 
-    public boolean phaseSendsBestSolutionEvents() {
-        return phaseSendsBestSolutionEvents;
+    public boolean isPhaseSendingBestSolutionEvents() {
+        return phaseSendingBestSolutionEvents;
     }
 
     public Long getStartingSystemTimeMillis() {

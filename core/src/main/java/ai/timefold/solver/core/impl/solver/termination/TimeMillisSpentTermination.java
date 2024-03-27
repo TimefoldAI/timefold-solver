@@ -26,13 +26,13 @@ public final class TimeMillisSpentTermination<Solution_> extends AbstractTermina
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        long solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
+        var solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
         return isTerminated(solverTimeMillisSpent);
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        long phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
+        var phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
         return isTerminated(phaseTimeMillisSpent);
     }
 
@@ -46,18 +46,18 @@ public final class TimeMillisSpentTermination<Solution_> extends AbstractTermina
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        long solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
+        var solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
         return calculateTimeGradient(solverTimeMillisSpent);
     }
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        long phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
+        var phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
         return calculateTimeGradient(phaseTimeMillisSpent);
     }
 
     private double calculateTimeGradient(long timeMillisSpent) {
-        double timeGradient = timeMillisSpent / ((double) timeMillisSpentLimit);
+        var timeGradient = timeMillisSpent / ((double) timeMillisSpentLimit);
         return Math.min(timeGradient, 1.0);
     }
 

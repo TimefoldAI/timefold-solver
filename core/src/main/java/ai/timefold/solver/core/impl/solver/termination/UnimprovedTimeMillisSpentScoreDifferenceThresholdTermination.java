@@ -68,7 +68,7 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
          * We avoid that by never terminating during these phases,
          * and resetting the counter to zero when the next phase starts.
          */
-        currentPhaseSendsBestSolutionEvents = phaseScope.phaseSendsBestSolutionEvents();
+        currentPhaseSendsBestSolutionEvents = phaseScope.isPhaseSendingBestSolutionEvents();
     }
 
     @Override
@@ -110,21 +110,18 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return false;
-        }
         return isTerminated(solverSafeTimeMillis);
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return false;
-        }
         return isTerminated(phaseSafeTimeMillis);
     }
 
     private boolean isTerminated(long safeTimeMillis) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return false;
+        }
         // It's possible that there is already an improving move in the forager
         // that will end up pushing the safeTimeMillis further
         // but that doesn't change the fact that the best score didn't improve enough in the specified time interval.
@@ -139,21 +136,18 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return 0.0;
-        }
         return calculateTimeGradient(solverSafeTimeMillis);
     }
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return 0.0;
-        }
         return calculateTimeGradient(phaseSafeTimeMillis);
     }
 
     private double calculateTimeGradient(long safeTimeMillis) {
+        if (!currentPhaseSendsBestSolutionEvents) {
+            return 0.0;
+        }
         var now = clock.millis();
         var unimprovedTimeMillisSpent = now - (safeTimeMillis - unimprovedTimeMillisSpentLimit);
         var timeGradient = unimprovedTimeMillisSpent / ((double) unimprovedTimeMillisSpentLimit);
