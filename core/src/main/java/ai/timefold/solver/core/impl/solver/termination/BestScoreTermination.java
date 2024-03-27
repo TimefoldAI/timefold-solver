@@ -14,19 +14,19 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
     private final Score bestScoreLimit;
     private final double[] timeGradientWeightNumbers;
 
-    public BestScoreTermination(ScoreDefinition scoreDefinition, Score bestScoreLimit, double[] timeGradientWeightNumbers) {
+    public BestScoreTermination(ScoreDefinition<?> scoreDefinition, Score<?> bestScoreLimit,
+            double[] timeGradientWeightNumbers) {
         levelsSize = scoreDefinition.getLevelsSize();
         this.bestScoreLimit = bestScoreLimit;
         if (bestScoreLimit == null) {
-            throw new IllegalArgumentException("The bestScoreLimit (" + bestScoreLimit
-                    + ") cannot be null.");
+            throw new IllegalArgumentException("The bestScoreLimit cannot be null.");
         }
         this.timeGradientWeightNumbers = timeGradientWeightNumbers;
         if (timeGradientWeightNumbers.length != levelsSize - 1) {
             throw new IllegalStateException(
-                    "The timeGradientWeightNumbers (" + Arrays.toString(timeGradientWeightNumbers)
-                            + ")'s length (" + timeGradientWeightNumbers.length
-                            + ") is not 1 less than the levelsSize (" + scoreDefinition.getLevelsSize() + ").");
+                    "The timeGradientWeightNumbers (%s)'s length (%d) is not 1 less than the levelsSize (%d)."
+                            .formatted(Arrays.toString(timeGradientWeightNumbers), timeGradientWeightNumbers.length,
+                                    scoreDefinition.getLevelsSize()));
         }
     }
 
@@ -44,7 +44,7 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
         return isTerminated(phaseScope.isBestSolutionInitialized(), (Score) phaseScope.getBestScore());
     }
 
-    protected boolean isTerminated(boolean bestSolutionInitialized, Score bestScore) {
+    private boolean isTerminated(boolean bestSolutionInitialized, Score bestScore) {
         return bestSolutionInitialized && bestScore.compareTo(bestScoreLimit) >= 0;
     }
 
@@ -54,8 +54,8 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        Score startingInitializedScore = solverScope.getStartingInitializedScore();
-        Score bestScore = solverScope.getBestScore();
+        var startingInitializedScore = solverScope.getStartingInitializedScore();
+        var bestScore = solverScope.getBestScore();
         return calculateTimeGradient(startingInitializedScore, bestScoreLimit, bestScore);
     }
 
@@ -66,12 +66,11 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
         return calculateTimeGradient(startingInitializedScore, bestScoreLimit, bestScore);
     }
 
-    protected <Score_ extends Score<Score_>> double calculateTimeGradient(Score_ startScore, Score_ endScore,
-            Score_ score) {
-        Score_ totalDiff = endScore.subtract(startScore);
-        Number[] totalDiffNumbers = totalDiff.toLevelNumbers();
-        Score_ scoreDiff = score.subtract(startScore);
-        Number[] scoreDiffNumbers = scoreDiff.toLevelNumbers();
+    <Score_ extends Score<Score_>> double calculateTimeGradient(Score_ startScore, Score_ endScore, Score_ score) {
+        var totalDiff = endScore.subtract(startScore);
+        var totalDiffNumbers = totalDiff.toLevelNumbers();
+        var scoreDiff = score.subtract(startScore);
+        var scoreDiffNumbers = scoreDiff.toLevelNumbers();
         if (scoreDiffNumbers.length != totalDiffNumbers.length) {
             throw new IllegalStateException("The startScore (" + startScore + "), endScore (" + endScore
                     + ") and score (" + score + ") don't have the same levelsSize.");
@@ -90,9 +89,9 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
      */
     static double calculateTimeGradient(Number[] totalDiffNumbers, Number[] scoreDiffNumbers,
             double[] timeGradientWeightNumbers, int levelDepth) {
-        double timeGradient = 0.0;
-        double remainingTimeGradient = 1.0;
-        for (int i = 0; i < levelDepth; i++) {
+        var timeGradient = 0.0;
+        var remainingTimeGradient = 1.0;
+        for (var i = 0; i < levelDepth; i++) {
             double levelTimeGradientWeight;
             if (i != (levelDepth - 1)) {
                 levelTimeGradientWeight = remainingTimeGradient * timeGradientWeightNumbers[i];
@@ -101,8 +100,8 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
                 levelTimeGradientWeight = remainingTimeGradient;
                 remainingTimeGradient = 0.0;
             }
-            double totalDiffLevel = totalDiffNumbers[i].doubleValue();
-            double scoreDiffLevel = scoreDiffNumbers[i].doubleValue();
+            var totalDiffLevel = totalDiffNumbers[i].doubleValue();
+            var scoreDiffLevel = scoreDiffNumbers[i].doubleValue();
             if (scoreDiffLevel == totalDiffLevel) {
                 // Max out this level
                 timeGradient += levelTimeGradientWeight;
@@ -118,7 +117,7 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
                 // timeGradient += 0.0
                 break;
             } else {
-                double levelTimeGradient = scoreDiffLevel / totalDiffLevel;
+                var levelTimeGradient = scoreDiffLevel / totalDiffLevel;
                 timeGradient += levelTimeGradient * levelTimeGradientWeight;
             }
 

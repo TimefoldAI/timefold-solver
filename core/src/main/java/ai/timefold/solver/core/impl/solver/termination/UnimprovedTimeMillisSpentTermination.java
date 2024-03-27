@@ -9,8 +9,8 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 public final class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final long unimprovedTimeMillisSpentLimit;
-
     private final Clock clock;
+
     private boolean currentPhaseSendsBestSolutionEvents = false;
     private long phaseStartedTimeMillis = -1L;
 
@@ -64,7 +64,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         if (!currentPhaseSendsBestSolutionEvents) {
             return false;
         }
-        long bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
+        var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
@@ -73,7 +73,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
     }
 
     private long getUnimprovedTimeMillisSpent(long bestSolutionTimeMillis) {
-        long now = clock.millis();
+        var now = clock.millis();
         return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
     }
 
@@ -89,7 +89,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        long bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
+        var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return calculateTimeGradient(bestSolutionTimeMillis);
     }
 
@@ -97,7 +97,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         if (!currentPhaseSendsBestSolutionEvents) {
             return 0.0;
         }
-        double timeGradient = getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) / ((double) unimprovedTimeMillisSpentLimit);
+        var timeGradient = getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) / ((double) unimprovedTimeMillisSpentLimit);
         return Math.min(timeGradient, 1.0);
     }
 

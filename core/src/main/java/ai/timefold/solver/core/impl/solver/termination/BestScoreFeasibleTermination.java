@@ -13,7 +13,7 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
     private final int feasibleLevelsSize;
     private final double[] timeGradientWeightFeasibleNumbers;
 
-    public BestScoreFeasibleTermination(ScoreDefinition scoreDefinition, double[] timeGradientWeightFeasibleNumbers) {
+    public BestScoreFeasibleTermination(ScoreDefinition<?> scoreDefinition, double[] timeGradientWeightFeasibleNumbers) {
         this.feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
         this.timeGradientWeightFeasibleNumbers = timeGradientWeightFeasibleNumbers;
         if (timeGradientWeightFeasibleNumbers.length != this.feasibleLevelsSize - 1) {
@@ -31,10 +31,10 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated((Score) phaseScope.getBestScore());
+        return isTerminated(phaseScope.getBestScore());
     }
 
-    private static boolean isTerminated(Score bestScore) {
+    private static boolean isTerminated(Score<?> bestScore) {
         return bestScore.isFeasible();
     }
 

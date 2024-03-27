@@ -25,12 +25,12 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
     private boolean currentPhaseSendsBestSolutionEvents = false;
 
     public UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination(long unimprovedTimeMillisSpentLimit,
-            Score unimprovedScoreDifferenceThreshold) {
+            Score<?> unimprovedScoreDifferenceThreshold) {
         this(unimprovedTimeMillisSpentLimit, unimprovedScoreDifferenceThreshold, Clock.systemUTC());
     }
 
     UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination(long unimprovedTimeMillisSpentLimit,
-            Score unimprovedScoreDifferenceThreshold, Clock clock) {
+            Score<?> unimprovedScoreDifferenceThreshold, Clock clock) {
         this.unimprovedTimeMillisSpentLimit = unimprovedTimeMillisSpentLimit;
         if (unimprovedTimeMillisSpentLimit < 0L) {
             throw new IllegalArgumentException("The unimprovedTimeMillisSpentLimit (%d) cannot be negative."
