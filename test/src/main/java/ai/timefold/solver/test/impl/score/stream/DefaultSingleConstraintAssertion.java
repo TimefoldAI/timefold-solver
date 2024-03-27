@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
@@ -52,13 +53,13 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
 
     @Override
     public SingleConstraintAssertion justifiesWith(String message, ConstraintJustification... justifications) {
-        assertJustification(message, justifications);
+        assertJustification(message, false, justifications);
         return this;
     }
 
     @Override
     public SingleConstraintAssertion indictsWith(String message, Object... indictments) {
-        assertIndictments(message, indictments);
+        assertIndictments(message, false, indictments);
         return this;
     }
 
@@ -155,7 +156,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         throw new AssertionError(assertionMessage);
     }
 
-    private void assertJustification(String message, ConstraintJustification... justifications) {
+    private void assertJustification(String message, boolean completeValidation, ConstraintJustification... justifications) {
         // Valid empty comparison
         boolean emptyJustifications = justifications == null || justifications.length == 0;
         if (emptyJustifications && justificationCollection.isEmpty()) {
@@ -165,7 +166,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         // No justifications
         if (emptyJustifications && !justificationCollection.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
-                    emptyList(), emptyList(), Arrays.asList(justifications), justificationCollection, message);
+                    justificationCollection, emptyList(), emptyList(), justificationCollection, message);
             throw new AssertionError(assertionMessage);
         }
 
@@ -176,28 +177,28 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             throw new AssertionError(assertionMessage);
         }
 
-        List<Object> noneMatchedList = new LinkedList<>();
-        List<Object> invalidMatchList = new LinkedList<>();
+        List<Object> expectedNotFound = new LinkedList<>();
         for (Object justification : justifications) {
-            // No match
-            if (justificationCollection.stream().noneMatch(j -> justification.getClass().isAssignableFrom(j.getClass()))) {
-                noneMatchedList.add(justification);
-                continue;
-            }
             // Test invalid match
             if (justificationCollection.stream().noneMatch(justification::equals)) {
-                invalidMatchList.add(justification);
+                expectedNotFound.add(justification);
             }
         }
-        if (noneMatchedList.isEmpty() && invalidMatchList.isEmpty()) {
+        List<ConstraintJustification> unexpectedFound = emptyList();
+        if (completeValidation) {
+            unexpectedFound = justificationCollection.stream()
+                    .filter(justification -> Stream.of(justification).noneMatch(justification::equals))
+                    .toList();
+        }
+        if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {
             return;
         }
         String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
-                noneMatchedList, invalidMatchList, Arrays.asList(justifications), justificationCollection, message);
+                unexpectedFound, expectedNotFound, Arrays.asList(justifications), justificationCollection, message);
         throw new AssertionError(assertionMessage);
     }
 
-    private void assertIndictments(String message, Object... indictments) {
+    private void assertIndictments(String message, boolean completeValidation, Object... indictments) {
         boolean emptyIndictments = indictments == null || indictments.length == 0;
         // Valid empty comparison
         if (emptyIndictments && indictmentCollection.isEmpty()) {
@@ -208,7 +209,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         Collection<Object> indictmentObjectList = indictmentCollection.stream().map(Indictment::getIndictedObject).toList();
         if (emptyIndictments && !indictmentObjectList.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
-                    emptyList(), emptyList(), Arrays.asList(indictments), indictmentObjectList, message);
+                    indictmentObjectList, emptyList(), emptyList(), indictmentObjectList, message);
             throw new AssertionError(assertionMessage);
         }
 
@@ -219,24 +220,24 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             throw new AssertionError(assertionMessage);
         }
 
-        List<Object> noneMatchedList = new LinkedList<>();
-        List<Object> invalidMatchList = new LinkedList<>();
+        List<Object> expectedNotFound = new LinkedList<>();
         for (Object indictment : indictments) {
-            // No match
-            if (indictmentObjectList.stream().noneMatch(j -> indictment.getClass().isAssignableFrom(j.getClass()))) {
-                noneMatchedList.add(indictment);
-                continue;
-            }
             // Test invalid match
             if (indictmentObjectList.stream().noneMatch(indictment::equals)) {
-                invalidMatchList.add(indictment);
+                expectedNotFound.add(indictment);
             }
         }
-        if (noneMatchedList.isEmpty() && invalidMatchList.isEmpty()) {
+        List<Object> unexpectedFound = emptyList();
+        if (completeValidation) {
+            unexpectedFound = indictmentObjectList.stream()
+                    .filter(indictment -> Arrays.stream(indictments).noneMatch(indictment::equals))
+                    .toList();
+        }
+        if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {
             return;
         }
         String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
-                noneMatchedList, invalidMatchList, Arrays.asList(indictments), indictmentObjectList, message);
+                unexpectedFound, expectedNotFound, Arrays.asList(indictments), indictmentObjectList, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -385,8 +386,8 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
     }
 
-    private static String buildAssertionErrorMessage(String type, String constraintId, Collection<?> noneMatchedCollection,
-            Collection<?> invalidMatchedCollection, Collection<?> expectedCollection, Collection<?> actualCollection,
+    private static String buildAssertionErrorMessage(String type, String constraintId, Collection<?> unexpectedFound,
+            Collection<?> expectedNotFound, Collection<?> expectedCollection, Collection<?> actualCollection,
             String message) {
         String expectation = message != null ? message : "Broken expectation.";
         StringBuilder preformattedMessage = new StringBuilder("%s%n")
@@ -421,19 +422,19 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 params.add(actual);
             });
         }
-        if (!noneMatchedCollection.isEmpty()) {
+        if (!expectedNotFound.isEmpty()) {
             preformattedMessage.append("%24s%n");
-            params.add("No match:");
-            noneMatchedCollection.forEach(indictment -> {
+            params.add("Expected but not found:");
+            expectedNotFound.forEach(indictment -> {
                 preformattedMessage.append("%26s%s%n");
                 params.add("");
                 params.add(indictment);
             });
         }
-        if (!invalidMatchedCollection.isEmpty()) {
+        if (!unexpectedFound.isEmpty()) {
             preformattedMessage.append("%24s%n");
-            params.add("Invalid match:");
-            invalidMatchedCollection.forEach(indictment -> {
+            params.add("Unexpected but found:");
+            unexpectedFound.forEach(indictment -> {
                 preformattedMessage.append("%26s%s%n");
                 params.add("");
                 params.add(indictment);
