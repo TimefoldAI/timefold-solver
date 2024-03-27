@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -189,7 +188,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             throw new AssertionError(assertionMessage);
         }
 
-        List<Object> expectedNotFound = new LinkedList<>();
+        List<Object> expectedNotFound = new ArrayList<>(justificationCollection.size());
         for (Object justification : justifications) {
             // Test invalid match
             if (justificationCollection.stream().noneMatch(justification::equals)) {
@@ -232,7 +231,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             throw new AssertionError(assertionMessage);
         }
 
-        List<Object> expectedNotFound = new LinkedList<>();
+        List<Object> expectedNotFound = new ArrayList<>(indictmentObjectList.size());
         for (Object indictment : indictments) {
             // Test invalid match
             if (indictmentObjectList.stream().noneMatch(indictment::equals)) {
@@ -404,7 +403,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         String expectation = message != null ? message : "Broken expectation.";
         StringBuilder preformattedMessage = new StringBuilder("%s%n")
                 .append("%18s: %s%n");
-        List<Object> params = new LinkedList<>();
+        List<Object> params = new ArrayList<>();
         params.add(expectation);
         params.add(type);
         params.add(constraintId);
