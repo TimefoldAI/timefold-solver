@@ -157,6 +157,15 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, withPrecision(0.0));
 
+        termination.stepEnded(stepScope);
+
+        // time has run out
+        doReturn(START_TIME_MILLIS + 1001).when(clock).millis();
+        assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
+        assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, withPrecision(0.0));
+        assertThat(termination.isSolverTerminated(solverScope)).isFalse();
+        assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, withPrecision(0.0));
+
         termination.phaseEnded(phaseScope);
         termination.solvingEnded(solverScope);
     }
@@ -179,9 +188,18 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         termination.phaseStarted(phaseScope);
         termination.stepEnded(stepScope);
 
-        // time has not yet run out
+        // CH time has not yet run out
         doReturn(START_TIME_MILLIS + 500).when(clock).millis();
         doReturn(START_TIME_MILLIS + 500).when(phaseScope).getStartingSystemTimeMillis();
+        assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
+        assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, withPrecision(0.0));
+        assertThat(termination.isSolverTerminated(solverScope)).isFalse();
+        assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, withPrecision(0.0));
+
+        termination.stepEnded(stepScope);
+
+        // CH time has not yet run out
+        doReturn(START_TIME_MILLIS + 1001).when(clock).millis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, withPrecision(0.0));
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
@@ -197,9 +215,9 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         var lsStepScope = spy(new LocalSearchStepScope<>(lsPhaseScope));
 
         // second step - score has improved, but not beyond the threshold
-        doReturn(START_TIME_MILLIS + 1000).when(clock).millis();
-        doReturn(START_TIME_MILLIS + 1000).when(lsPhaseScope).getStartingSystemTimeMillis();
-        doReturn(START_TIME_MILLIS + 1000).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(START_TIME_MILLIS + 1501).when(clock).millis();
+        doReturn(START_TIME_MILLIS + 1501).when(lsPhaseScope).getStartingSystemTimeMillis();
+        doReturn(START_TIME_MILLIS + 1501).when(solverScope).getBestSolutionTimeMillis();
         doReturn(true).when(lsStepScope).getBestScoreImproved();
         doReturn(SimpleScore.of(5)).when(solverScope).getBestScore();
         termination.phaseStarted(lsPhaseScope);
@@ -211,8 +229,8 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.5, withPrecision(0.0));
 
         // third step - score has improved beyond the threshold
-        doReturn(START_TIME_MILLIS + 1001).when(clock).millis();
-        doReturn(START_TIME_MILLIS + 1001).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(START_TIME_MILLIS + 1502).when(clock).millis();
+        doReturn(START_TIME_MILLIS + 1502).when(solverScope).getBestSolutionTimeMillis();
         doReturn(SimpleScore.of(10)).when(solverScope).getBestScore();
         termination.stepEnded(lsStepScope);
 
@@ -221,7 +239,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.501, withPrecision(0.0));
 
-        doReturn(START_TIME_MILLIS + 1500).when(clock).millis();
+        doReturn(START_TIME_MILLIS + 2001).when(clock).millis();
         termination.stepEnded(lsStepScope);
         assertThat(termination.isPhaseTerminated(lsPhaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(lsPhaseScope)).isEqualTo(0.5, withPrecision(0.0));
@@ -229,7 +247,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, withPrecision(0.0));
 
         // fourth step - no more improvements
-        doReturn(START_TIME_MILLIS + 2001).when(clock).millis();
+        doReturn(START_TIME_MILLIS + 2502).when(clock).millis();
         termination.stepEnded(lsStepScope);
 
         assertThat(termination.isPhaseTerminated(lsPhaseScope)).isTrue();

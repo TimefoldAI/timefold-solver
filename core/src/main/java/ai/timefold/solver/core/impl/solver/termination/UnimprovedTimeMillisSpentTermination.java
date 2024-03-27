@@ -63,7 +63,7 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
     }
 
     private boolean isTerminated(long bestSolutionTimeMillis) {
-        if (!currentPhaseSendsBestSolutionEvents) {
+        if (!currentPhaseSendsBestSolutionEvents) { // This phase never terminates early.
             return false;
         }
         return getUnimprovedTimeMillisSpent(bestSolutionTimeMillis) >= unimprovedTimeMillisSpentLimit;

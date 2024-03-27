@@ -119,7 +119,7 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
     }
 
     private boolean isTerminated(long safeTimeMillis) {
-        if (!currentPhaseSendsBestSolutionEvents) {
+        if (!currentPhaseSendsBestSolutionEvents) { // This phase never terminates early.
             return false;
         }
         // It's possible that there is already an improving move in the forager
