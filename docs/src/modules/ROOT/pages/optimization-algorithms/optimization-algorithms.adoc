@@ -461,7 +461,7 @@ It is preffered to configure this termination on a specific `Phase` (such as ``<
 
 Several phases, such as construction heuristics, do not count towards this termination because
 they only trigger new best solution events when they are done.
-If such a phase is encountered, the termination is disabled and when the next phase is encountered,
+If such a phase is encountered, the termination is disabled and when the next phase is started,
 the termination is enabled again and the timer resets back to zero.
 In the most typical case, where a local search phase follows a construction heuristic phase,
 the termination will only trigger if the local search phase does not improve the best solution for the specified time.

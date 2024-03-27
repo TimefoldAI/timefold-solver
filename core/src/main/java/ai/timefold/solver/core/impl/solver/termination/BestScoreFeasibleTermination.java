@@ -18,7 +18,7 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
         this.timeGradientWeightFeasibleNumbers = timeGradientWeightFeasibleNumbers;
         if (timeGradientWeightFeasibleNumbers.length != this.feasibleLevelsSize - 1) {
             throw new IllegalStateException(
-                    "The timeGradientWeightNumbers (%s)'s length (%d) is not 1 less than the feasibleLevelsSize (%s)."
+                    "The timeGradientWeightNumbers (%s)'s length (%d) is not 1 less than the feasibleLevelsSize (%d)."
                             .formatted(Arrays.toString(timeGradientWeightFeasibleNumbers),
                                     timeGradientWeightFeasibleNumbers.length, scoreDefinition.getFeasibleLevelsSize()));
         }
