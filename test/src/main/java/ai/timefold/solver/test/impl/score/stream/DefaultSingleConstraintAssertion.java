@@ -165,14 +165,14 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         // No justifications
         if (emptyJustifications && !justificationCollection.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
-                    emptyList(), emptyList(), justificationCollection, message);
+                    emptyList(), emptyList(), Arrays.asList(justifications), justificationCollection, message);
             throw new AssertionError(assertionMessage);
         }
 
         // Empty justifications
         if (justificationCollection.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
-                    emptyList(), Arrays.asList(justifications), emptyList(), message);
+                    emptyList(), Arrays.asList(justifications), Arrays.asList(justifications), emptyList(), message);
             throw new AssertionError(assertionMessage);
         }
 
@@ -193,7 +193,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             return;
         }
         String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
-                noneMatchedList, invalidMatchList, justificationCollection, message);
+                noneMatchedList, invalidMatchList, Arrays.asList(justifications), justificationCollection, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -208,14 +208,14 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         Collection<Object> indictmentObjectList = indictmentCollection.stream().map(Indictment::getIndictedObject).toList();
         if (emptyIndictments && !indictmentObjectList.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
-                    emptyList(), emptyList(), indictmentObjectList, message);
+                    emptyList(), emptyList(), Arrays.asList(indictments), indictmentObjectList, message);
             throw new AssertionError(assertionMessage);
         }
 
         // Empty indictments
         if (indictmentObjectList.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
-                    emptyList(), Arrays.asList(indictments), emptyList(), message);
+                    emptyList(), Arrays.asList(indictments), Arrays.asList(indictments), emptyList(), message);
             throw new AssertionError(assertionMessage);
         }
 
@@ -236,7 +236,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             return;
         }
         String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
-                noneMatchedList, invalidMatchList, indictmentObjectList, message);
+                noneMatchedList, invalidMatchList, Arrays.asList(indictments), indictmentObjectList, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -386,7 +386,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     private static String buildAssertionErrorMessage(String type, String constraintId, Collection<?> noneMatchedCollection,
-            Collection<?> invalidMatchedCollection, Collection<?> actualCollection,
+            Collection<?> invalidMatchedCollection, Collection<?> expectedCollection, Collection<?> actualCollection,
             String message) {
         String expectation = message != null ? message : "Broken expectation.";
         StringBuilder preformattedMessage = new StringBuilder("%s%n")
@@ -395,53 +395,49 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         params.add(expectation);
         params.add(type);
         params.add(constraintId);
-        if (!noneMatchedCollection.isEmpty()) {
-            preformattedMessage.append("%22s%n");
-            preformattedMessage.append("%24s%n");
-            params.add("No match:");
-            params.add("Expected:");
-            noneMatchedCollection.forEach(indictment -> {
+        preformattedMessage.append("%24s%n");
+        params.add("Expected:");
+        if (expectedCollection.isEmpty()) {
+            preformattedMessage.append("%26s%s%n");
+            params.add("");
+            params.add("No " + type);
+        } else {
+            expectedCollection.forEach(actual -> {
                 preformattedMessage.append("%26s%s%n");
                 params.add("");
-                params.add(indictment);
+                params.add(actual);
             });
-            preformattedMessage.append("%24s%n");
-            params.add("Actual:");
+        }
+        preformattedMessage.append("%24s%n");
+        params.add("Actual:");
+        if (actualCollection.isEmpty()) {
+            preformattedMessage.append("%26s%s%n");
+            params.add("");
+            params.add("No " + type);
+        } else {
             actualCollection.forEach(actual -> {
                 preformattedMessage.append("%26s%s%n");
                 params.add("");
                 params.add(actual);
             });
         }
-        if (!invalidMatchedCollection.isEmpty() || (noneMatchedCollection.isEmpty() && !actualCollection.isEmpty())) {
-            preformattedMessage.append("%22s%n");
+        if (!noneMatchedCollection.isEmpty()) {
+            preformattedMessage.append("%24s%n");
+            params.add("No match:");
+            noneMatchedCollection.forEach(indictment -> {
+                preformattedMessage.append("%26s%s%n");
+                params.add("");
+                params.add(indictment);
+            });
+        }
+        if (!invalidMatchedCollection.isEmpty()) {
             preformattedMessage.append("%24s%n");
             params.add("Invalid match:");
-            params.add("Expected:");
-            if (invalidMatchedCollection.isEmpty()) {
+            invalidMatchedCollection.forEach(indictment -> {
                 preformattedMessage.append("%26s%s%n");
                 params.add("");
-                params.add("No " + type);
-            } else {
-                invalidMatchedCollection.forEach(indictment -> {
-                    preformattedMessage.append("%26s%s%n");
-                    params.add("");
-                    params.add(indictment);
-                });
-            }
-            preformattedMessage.append("%24s%n");
-            params.add("Actual:");
-            if (actualCollection.isEmpty()) {
-                preformattedMessage.append("%26s%s%n");
-                params.add("");
-                params.add("No " + type);
-            } else {
-                actualCollection.forEach(actual -> {
-                    preformattedMessage.append("%26s%s%n");
-                    params.add("");
-                    params.add(actual);
-                });
-            }
+                params.add(indictment);
+            });
         }
         return String.format(preformattedMessage.toString(), params.toArray());
     }
