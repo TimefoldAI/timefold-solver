@@ -7,10 +7,7 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 
-public class BooleanValueRange extends AbstractCountableValueRange<Boolean> {
-
-    public BooleanValueRange() {
-    }
+public final class BooleanValueRange extends AbstractCountableValueRange<Boolean> {
 
     @Override
     public long getSize() {

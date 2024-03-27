@@ -121,4 +121,13 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
         result = 31 * result + Arrays.hashCode(offsets);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "EntityOrderInfo{" +
+                "entities=" + Arrays.toString(entities) +
+                ", entityToEntityIndex=" + entityToEntityIndex +
+                ", offsets=" + Arrays.toString(offsets) +
+                '}';
+    }
 }

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-public class BigDecimalValueRange extends AbstractCountableValueRange<BigDecimal> {
+public final class BigDecimalValueRange extends AbstractCountableValueRange<BigDecimal> {
 
     private final BigDecimal from;
     private final BigDecimal to;

@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-public class CompositeCountableValueRange<T> extends AbstractCountableValueRange<T> {
+public final class CompositeCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
     private final List<? extends CountableValueRange<T>> childValueRangeList;
     private final long size;
