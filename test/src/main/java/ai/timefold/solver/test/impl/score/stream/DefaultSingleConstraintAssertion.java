@@ -64,6 +64,18 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
+    public SingleConstraintAssertion justifiesWithExactly(String message, ConstraintJustification... justifications) {
+        assertJustification(message, true, justifications);
+        return this;
+    }
+
+    @Override
+    public SingleConstraintAssertion indictsWithExactly(String message, Object... indictments) {
+        assertIndictments(message, true, indictments);
+        return this;
+    }
+
+    @Override
     public void penalizesBy(String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
@@ -187,7 +199,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         List<ConstraintJustification> unexpectedFound = emptyList();
         if (completeValidation) {
             unexpectedFound = justificationCollection.stream()
-                    .filter(justification -> Stream.of(justification).noneMatch(justification::equals))
+                    .filter(justification -> Stream.of(justifications).noneMatch(justification::equals))
                     .toList();
         }
         if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {

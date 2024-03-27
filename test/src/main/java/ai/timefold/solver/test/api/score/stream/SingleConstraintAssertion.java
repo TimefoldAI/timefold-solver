@@ -19,10 +19,8 @@ public interface SingleConstraintAssertion {
     SingleConstraintAssertion justifiesWith(String message, ConstraintJustification... justifications);
 
     /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given
      * {@link ConstraintJustification}.
-     * <p>
-     * The justification class types must match; otherwise it fails with no match.
      *
      * @param justifications the expected justifications.
      * @return never null
@@ -33,7 +31,29 @@ public interface SingleConstraintAssertion {
     }
 
     /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific indictments.
+     * As defined by {@link #justifiesWithExactly(ConstraintJustification...)}.
+     *
+     * @param justifications the expected justification.
+     * @param message sometimes null, description of the scenario being asserted
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    SingleConstraintAssertion justifiesWithExactly(String message, ConstraintJustification... justifications);
+
+    /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given
+     * {@link ConstraintJustification} and nothing else.
+     *
+     * @param justifications the expected justifications.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    default SingleConstraintAssertion justifiesWithExactly(ConstraintJustification... justifications) {
+        return justifiesWithExactly(null, justifications);
+    }
+
+    /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in the given indictments.
      *
      * @param indictments the expected indictments.
      * @return never null
@@ -52,6 +72,28 @@ public interface SingleConstraintAssertion {
      * @throws AssertionError when the expected penalty is not observed
      */
     SingleConstraintAssertion indictsWith(String message, Object... indictments);
+
+    /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in the given indictments and
+     * nothing else.
+     *
+     * @param indictments the expected indictments.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    default SingleConstraintAssertion indictsWithExactly(Object... indictments) {
+        return indictsWithExactly(null, indictments);
+    }
+
+    /**
+     * As defined by {@link #indictsWithExactly(Object...)}.
+     *
+     * @param message sometimes null, description of the scenario being asserted
+     * @param indictments the expected indictments.
+     * @return never null
+     * @throws AssertionError when the expected penalty is not observed
+     */
+    SingleConstraintAssertion indictsWithExactly(String message, Object... indictments);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific penalty.

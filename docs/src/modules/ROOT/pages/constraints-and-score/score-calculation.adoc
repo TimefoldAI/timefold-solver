@@ -1281,7 +1281,7 @@ Alternatively, you can use a `givenSolution(...)` method here and provide a plan
 
 [NOTE]
 ====
-You can also use methods `justifiesWith(...)` and `indictsWith(...)`
+You can also use methods `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`
 to validate the expected constraint justifications and indictments mapped by the constraint definition.
 ====
 
@@ -1300,7 +1300,7 @@ It will neither set nor update shadow variables.
 If the tested constraints depend on shadow variables,
 it is your responsibility to assign the correct values beforehand.
 
-When executing `justifiesWith(...)` and `indictsWith(...)`,
+When executing `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`,
 comparisons are made using the standard method `equals` on the fact problem instances.
 ====
 

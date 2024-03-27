@@ -399,7 +399,7 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
-    void justifiesPartialValidation() {
+    void justifies() {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         // No error
@@ -495,7 +495,7 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
-    void justifiesPartialValidationWithCustomMessage() {
+    void justifiesWithCustomMessage() {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
@@ -532,7 +532,7 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
-    void justifiesPartialValidationEmptyMatches() {
+    void justifiesEmptyMatches() {
         TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
@@ -553,13 +553,133 @@ class SingleConstraintAssertionTest {
                 .hasMessageContaining("Actual")
                 .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
                 .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
-                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]");
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]")
+                .hasMessageContaining("Unexpected but found:");
 
         assertThatCode(
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
                         .given(solution.getEntityList().toArray())
                         .justifiesWith(new TestFirstJustification("1")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("No Justification")
+                .hasMessageContaining("Expected but not found:");
+    }
+
+    @Test
+    void justifiesExactly() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // No error
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWithExactly(new TestFirstJustification("Generated Entity 0"),
+                                new TestFirstJustification("Generated Entity 1"),
+                                new TestFirstJustification("Generated Entity 2")))
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .justifiesWithExactly(new TestFirstJustification("Generated Entity 0"),
+                                new TestFirstJustification("Generated Entity 1"),
+                                new TestFirstJustification("Generated Entity 2")))
+                .doesNotThrowAnyException();
+
+        // Different justification
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWithExactly(new TestFirstJustification("2")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]")
+                .hasMessageContaining("Expected but not found:")
+                .hasMessageContaining("Unexpected but found:");
+    }
+
+    @Test
+    void justifiesExactlyWithCustomMessage() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWithExactly("Custom Message", new TestFirstJustification("2")))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]")
+                .hasMessageContaining("Expected but not found:")
+                .hasMessageContaining("Unexpected but found:");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .justifiesWithExactly("Custom Message", new TestFirstJustification("2")))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=2]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]")
+                .hasMessageContaining("Expected but not found:")
+                .hasMessageContaining("Unexpected but found:");
+    }
+
+    @Test
+    void justifiesExactlyEmptyMatches() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWithExactly())
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWithExactly())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("No Justification")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 1]")
+                .hasMessageContaining("TestFirstJustification[id=Generated Entity 2]")
+                .hasMessageContaining("Unexpected but found:");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .justifiesWithExactly(new TestFirstJustification("1")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=1]")
@@ -723,13 +843,149 @@ class SingleConstraintAssertionTest {
                 .hasMessageContaining("Actual")
                 .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 0')")
                 .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 1')")
-                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 2')");
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 2')")
+                .hasMessageContaining("Unexpected but found:");
 
         assertThatCode(
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
                         .given(solution.getEntityList().toArray())
                         .indictsWith(new TestFirstJustification("1")))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("TestFirstJustification[id=1]")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("No Indictment")
+                .hasMessageContaining("Expected but not found:");
+    }
+
+    @Test
+    void indictsWithExactly() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // No error
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWithExactly(solution.getEntityList().toArray()))
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWithExactly(solution.getEntityList().toArray()))
+                .doesNotThrowAnyException();
+
+        // Invalid indictment
+        TestdataConstraintVerifierFirstEntity badEntity =
+                new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWithExactly(badEntity))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString())
+                .hasMessageContaining("Expected but not found:");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWithExactly(badEntity))
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString())
+                .hasMessageContaining("Expected but not found:")
+                .hasMessageContaining("Unexpected but found:");
+    }
+
+    @Test
+    void indictsWithExactlyWithCustomMessage() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        TestdataConstraintVerifierFirstEntity badEntity =
+                new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWithExactly("Custom Message", badEntity))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString())
+                .hasMessageContaining("Expected but not found:")
+                .hasMessageContaining("Unexpected but found:");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .givenSolution(solution)
+                        .indictsWithExactly("Custom Message", badEntity))
+                .hasMessageContaining("Custom Message")
+                .hasMessageContaining(
+                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining(badEntity.toString())
+                .hasMessageContaining("Actual")
+                .hasMessageContaining(solution.getEntityList().get(0).toString())
+                .hasMessageContaining(solution.getEntityList().get(1).toString())
+                .hasMessageContaining(solution.getEntityList().get(2).toString())
+                .hasMessageContaining("Expected but not found:")
+                .hasMessageContaining("Unexpected but found:");
+    }
+
+    @Test
+    void indictsWithExactlyEmptyMatches() {
+        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWithExactly())
+                .doesNotThrowAnyException();
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWithExactly())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("No Indictment")
+                .hasMessageContaining("Actual")
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 0')")
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 1')")
+                .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 2')")
+                .hasMessageContaining("Unexpected but found:");
+
+        assertThatCode(
+                () -> constraintVerifierForJustification
+                        .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithNoJustifications)
+                        .given(solution.getEntityList().toArray())
+                        .indictsWithExactly(new TestFirstJustification("1")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=1]")
