@@ -56,7 +56,11 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         bestScoreImprovementHistoryQueue = new ArrayDeque<>();
-        solverSafeTimeMillis = solverScope.getBestSolutionTimeMillis() + unimprovedTimeMillisSpentLimit;
+        resetSolverSafeTimeMillis(solverScope);
+    }
+
+    void resetSolverSafeTimeMillis(SolverScope<Solution_> solverScope) {
+        solverSafeTimeMillis = clock.millis() + unimprovedTimeMillisSpentLimit;
     }
 
     @Override
@@ -84,6 +88,9 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         phaseSafeTimeMillis = -1L;
+        if (!currentPhaseSendsBestSolutionEvents) { // The next phase starts all over.
+            resetSolverSafeTimeMillis(phaseScope.getSolverScope());
+        }
     }
 
     @Override
@@ -109,11 +116,6 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
             }
             bestScoreImprovementHistoryQueue.add(new Pair<>(bestSolutionTimeMillis, bestScore));
         }
-    }
-
-    private long getUnimprovedTimeMillisSpent(long bestSolutionTimeMillis) {
-        long now = clock.millis();
-        return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
     }
 
     // ************************************************************************
