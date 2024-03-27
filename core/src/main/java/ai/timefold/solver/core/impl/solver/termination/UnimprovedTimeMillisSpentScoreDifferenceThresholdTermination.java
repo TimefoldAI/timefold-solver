@@ -88,9 +88,6 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        if (!currentPhaseSendsBestSolutionEvents) {
-            return;
-        }
         if (stepScope.getBestScoreImproved()) {
             SolverScope<Solution_> solverScope = stepScope.getPhaseScope().getSolverScope();
             long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
@@ -99,7 +96,7 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
                 Pair<Long, Score> bestScoreImprovement = it.next();
                 Score scoreDifference = bestScore.subtract(bestScoreImprovement.value());
                 boolean timeLimitNotYetReached = bestScoreImprovement.key()
-                        + unimprovedTimeMillisSpentLimit >= getUnimprovedTimeMillisSpent(bestSolutionTimeMillis);
+                        + unimprovedTimeMillisSpentLimit >= bestSolutionTimeMillis;
                 boolean scoreImprovedOverThreshold = scoreDifference.compareTo(unimprovedScoreDifferenceThreshold) >= 0;
                 if (scoreImprovedOverThreshold && timeLimitNotYetReached) {
                     it.remove();

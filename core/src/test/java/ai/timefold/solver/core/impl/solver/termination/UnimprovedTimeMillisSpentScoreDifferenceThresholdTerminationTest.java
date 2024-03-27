@@ -13,8 +13,6 @@ import java.time.Clock;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -35,7 +33,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
 
     @Test
     void scoreImproves_terminationIsPostponed() {
-        var solverScope = new SolverScope<TestdataSolution>();
+        var solverScope = spy(new SolverScope<TestdataSolution>());
         var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
         var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
         var clock = mock(Clock.class);
@@ -44,81 +42,77 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
                 SimpleScore.of(7), clock);
 
         // first step
-        when(clock.millis()).thenReturn(START_TIME_MILLIS);
-        when(phaseScope.getStartingSystemTimeMillis()).thenReturn(START_TIME_MILLIS);
-        when(solverScope.getBestSolutionTimeMillis()).thenReturn(START_TIME_MILLIS);
-        when(stepScope.getBestScoreImproved()).thenReturn(Boolean.TRUE);
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(0));
+        doReturn(START_TIME_MILLIS).when(clock).millis();
+        doReturn(START_TIME_MILLIS).when(phaseScope).getStartingSystemTimeMillis();
+        doReturn(START_TIME_MILLIS).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(true).when(stepScope).getBestScoreImproved();
+        doReturn(SimpleScore.ZERO).when(solverScope).getBestScore();
 
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
         termination.stepEnded(stepScope);
 
         // time has not yet run out
-        when(clock.millis()).thenReturn(START_TIME_MILLIS + 500L);
+        doReturn(START_TIME_MILLIS + 500).when(clock).millis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.5, withPrecision(0.0));
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.5, withPrecision(0.0));
 
         // second step - score has improved beyond the threshold => termination is postponed by another second
-        when(solverScope.getBestSolutionTimeMillis()).thenReturn(START_TIME_MILLIS + 500L);
-        when(stepScope.getBestScoreImproved()).thenReturn(Boolean.TRUE);
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(10));
+        doReturn(START_TIME_MILLIS + 500).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(SimpleScore.of(10)).when(solverScope).getBestScore();
 
         termination.stepEnded(stepScope);
 
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, withPrecision(0.0));
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, withPrecision(0.0));
 
-        when(clock.millis()).thenReturn(START_TIME_MILLIS + 1500L);
+        doReturn(START_TIME_MILLIS + 1500).when(clock).millis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, withPrecision(0.0));
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, withPrecision(0.0));
 
-        when(clock.millis()).thenReturn(START_TIME_MILLIS + 1501L);
+        doReturn(START_TIME_MILLIS + 1501).when(clock).millis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
     }
 
     @Test
     void scoreImprovesTooLate_terminates() {
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
-        AbstractPhaseScope<TestdataSolution> phaseScope = mock(LocalSearchPhaseScope.class);
-        AbstractStepScope<TestdataSolution> stepScope = mock(LocalSearchStepScope.class);
-        Clock clock = mock(Clock.class);
+        var solverScope = spy(new SolverScope<TestdataSolution>());
+        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
+        var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
+        var clock = mock(Clock.class);
 
-        Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<>(
-                1000L,
-                SimpleScore.of(7),
-                clock);
+        var termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<TestdataSolution>(1000L,
+                SimpleScore.of(7), clock);
         doReturn(solverScope).when(phaseScope).getSolverScope();
         doReturn(phaseScope).when(stepScope).getPhaseScope();
 
         // first step
-        when(clock.millis()).thenReturn(START_TIME_MILLIS);
-        when(phaseScope.getStartingSystemTimeMillis()).thenReturn(START_TIME_MILLIS);
-        when(solverScope.getBestSolutionTimeMillis()).thenReturn(START_TIME_MILLIS);
-        when(stepScope.getBestScoreImproved()).thenReturn(Boolean.TRUE);
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(0));
+        doReturn(START_TIME_MILLIS).when(clock).millis();
+        doReturn(START_TIME_MILLIS).when(phaseScope).getStartingSystemTimeMillis();
+        doReturn(START_TIME_MILLIS).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(true).when(stepScope).getBestScoreImproved();
+        doReturn(SimpleScore.ZERO).when(solverScope).getBestScore();
 
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
         termination.stepEnded(stepScope);
 
         // time has not yet run out
-        when(clock.millis()).thenReturn(START_TIME_MILLIS + 500L);
+        doReturn(START_TIME_MILLIS + 500).when(clock).millis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.5, withPrecision(0.0));
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.5, withPrecision(0.0));
 
         // second step - score has improved, but not beyond the threshold
-        when(clock.millis()).thenReturn(START_TIME_MILLIS + 1000L);
-        when(solverScope.getBestSolutionTimeMillis()).thenReturn(START_TIME_MILLIS + 1000L);
-        when(stepScope.getBestScoreImproved()).thenReturn(Boolean.TRUE);
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(5));
+        doReturn(START_TIME_MILLIS + 1000).when(clock).millis();
+        doReturn(START_TIME_MILLIS + 1000).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(SimpleScore.of(5)).when(solverScope).getBestScore();
         termination.stepEnded(stepScope);
 
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
@@ -127,13 +121,15 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, withPrecision(0.0));
 
         // third step - score has improved beyond the threshold, but too late
-        when(clock.millis()).thenReturn(START_TIME_MILLIS + 1001L);
-        when(solverScope.getBestSolutionTimeMillis()).thenReturn(START_TIME_MILLIS + 1001L);
-        when(stepScope.getBestScoreImproved()).thenReturn(Boolean.TRUE);
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(10));
+        doReturn(START_TIME_MILLIS + 1001).when(clock).millis();
+        doReturn(START_TIME_MILLIS + 1001).when(solverScope).getBestSolutionTimeMillis();
+        doReturn(SimpleScore.of(10)).when(solverScope).getBestScore();
         termination.stepEnded(stepScope);
 
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
+
+        termination.phaseEnded(phaseScope);
+        termination.solvingEnded(solverScope);
     }
 }
