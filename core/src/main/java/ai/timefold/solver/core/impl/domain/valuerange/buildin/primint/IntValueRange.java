@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-public class IntValueRange extends AbstractCountableValueRange<Integer> {
+public final class IntValueRange extends AbstractCountableValueRange<Integer> {
 
     private final int from;
     private final int to;

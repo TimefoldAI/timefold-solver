@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-public class TemporalValueRange<Temporal_ extends Temporal & Comparable<? super Temporal_>>
+public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? super Temporal_>>
         extends AbstractCountableValueRange<Temporal_> {
 
     private final Temporal_ from;
