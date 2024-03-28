@@ -18,10 +18,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -211,10 +213,10 @@ public class ConfigUtils {
             // Shallow clone due to modifications after calling inherit
             return new ArrayList<>(inheritedList);
         } else {
-            // The inheritedList should be before the originalList
-            List<T> mergedList = new ArrayList<>(inheritedList);
-            mergedList.addAll(originalList.stream().filter(v -> !mergedList.contains(v)).toList());
-            return mergedList;
+            // The inheritedMap should be before the originalMap
+            Set<T> mergedSet = new LinkedHashSet<>(inheritedList);
+            mergedSet.addAll(originalList);
+            return new ArrayList<>(mergedSet);
         }
     }
 
@@ -224,7 +226,6 @@ public class ConfigUtils {
         } else if (originalMap == null) {
             return inheritedMap;
         } else {
-            // The inheritedMap should be before the originalMap
             Map<K, T> mergedMap = new LinkedHashMap<>(inheritedMap);
             mergedMap.putAll(originalMap);
             return mergedMap;
