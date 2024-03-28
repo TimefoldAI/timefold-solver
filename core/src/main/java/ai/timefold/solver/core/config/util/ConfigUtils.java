@@ -18,10 +18,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -204,13 +206,26 @@ public class ConfigUtils {
         }
     }
 
+    public static <T> List<T> inheritUniqueMergeableListProperty(List<T> originalList, List<T> inheritedList) {
+        if (inheritedList == null) {
+            return originalList;
+        } else if (originalList == null) {
+            // Shallow clone due to modifications after calling inherit
+            return new ArrayList<>(inheritedList);
+        } else {
+            // The inheritedMap should be before the originalMap
+            Set<T> mergedSet = new LinkedHashSet<>(inheritedList);
+            mergedSet.addAll(originalList);
+            return new ArrayList<>(mergedSet);
+        }
+    }
+
     public static <K, T> Map<K, T> inheritMergeableMapProperty(Map<K, T> originalMap, Map<K, T> inheritedMap) {
         if (inheritedMap == null) {
             return originalMap;
         } else if (originalMap == null) {
             return inheritedMap;
         } else {
-            // The inheritedMap should be before the originalMap
             Map<K, T> mergedMap = new LinkedHashMap<>(inheritedMap);
             mergedMap.putAll(originalMap);
             return mergedMap;
