@@ -112,6 +112,25 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return valueCount.intValue();
     }
 
+    public int countPinned(Solution_ solution) {
+        if (!supportsPinning()) {
+            return 0;
+        }
+        var valueCount = new MutableLong(0);
+        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
+        solutionDescriptor.visitEntitiesByEntityClass(solution,
+                entityDescriptor.getEntityClass(), entity -> {
+                    if (!entityDescriptor.isMovable(null, entity)) {
+                        valueCount.add(getListSize(entity));
+                    } else {
+                        var firstUnpinnedIndex = getFirstUnpinnedIndex(entity);
+                        valueCount.add(firstUnpinnedIndex);
+                    }
+                    return false;
+                });
+        return valueCount.intValue();
+    }
+
     public InverseRelationShadowVariableDescriptor<Solution_> getInverseRelationShadowVariableDescriptor() {
         var entityDescriptor = getEntityDescriptor().getSolutionDescriptor().findEntityDescriptor(getElementType());
         if (entityDescriptor == null) {

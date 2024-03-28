@@ -3,10 +3,8 @@ package ai.timefold.solver.core.impl.constructionheuristic;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -43,23 +41,24 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        ConstructionHeuristicPhaseScope<Solution_> phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope);
+        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope);
         phaseStarted(phaseScope);
 
-        // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
-        // (When it exhausts all values, it will start over from the beginning.)
-        // To prevent that, we need to limit the number of steps to the number of unassigned values.
         var solutionDescriptor = solverScope.getSolutionDescriptor();
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        var supportsUnassignedValues = listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues();
+        var hasListVariable = listVariableDescriptor != null;
         var maxStepCount = -1;
-        if (supportsUnassignedValues) {
+        if (hasListVariable) {
+            // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
+            // (When it exhausts all values, it will start over from the beginning.)
+            // To prevent that, we need to limit the number of steps to the number of unassigned values.
             var workingSolution = phaseScope.getWorkingSolution();
-            maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
+            maxStepCount = listVariableDescriptor.countUnassigned(workingSolution)
+                    - listVariableDescriptor.countPinned(workingSolution);
         }
 
-        for (Placement<Solution_> placement : entityPlacer) {
-            ConstructionHeuristicStepScope<Solution_> stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
+        for (var placement : entityPlacer) {
+            var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
             decider.decideNextStep(stepScope, placement);
             if (stepScope.getStep() == null) {
@@ -86,7 +85,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
             if (phaseTermination.isPhaseTerminated(phaseScope)
-                    || (supportsUnassignedValues && stepScope.getStepIndex() >= maxStepCount)) {
+                    || (hasListVariable && stepScope.getStepIndex() >= maxStepCount)) {
                 break;
             }
         }
@@ -94,7 +93,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     }
 
     private void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
-        Move<Solution_> step = stepScope.getStep();
+        var step = stepScope.getStep();
         step.doMoveOnly(stepScope.getScoreDirector());
         predictWorkingStepScore(stepScope, step);
         solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
@@ -124,7 +123,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         entityPlacer.stepEnded(stepScope);
         decider.stepEnded(stepScope);
         if (logger.isDebugEnabled()) {
-            long timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
+            var timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
             logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}),"
                     + " picked move ({}).",
                     logIndentation,
@@ -152,6 +151,11 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
                 phaseScope.getBestScore(),
                 phaseScope.getPhaseScoreCalculationSpeed(),
                 phaseScope.getNextStepIndex());
+        var initScore = phaseScope.getBestScore().initScore();
+        if (initScore != 0) {
+            throw new IllegalStateException("Impossible state: Construction heuristic finished with a non-zero init score (%s)."
+                    .formatted(initScore));
+        }
     }
 
     @Override
