@@ -204,6 +204,20 @@ public class ConfigUtils {
         }
     }
 
+    public static <T> List<T> inheritUniqueMergeableListProperty(List<T> originalList, List<T> inheritedList) {
+        if (inheritedList == null) {
+            return originalList;
+        } else if (originalList == null) {
+            // Shallow clone due to modifications after calling inherit
+            return new ArrayList<>(inheritedList);
+        } else {
+            // The inheritedList should be before the originalList
+            List<T> mergedList = new ArrayList<>(inheritedList);
+            mergedList.addAll(originalList.stream().filter(v -> !mergedList.contains(v)).toList());
+            return mergedList;
+        }
+    }
+
     public static <K, T> Map<K, T> inheritMergeableMapProperty(Map<K, T> originalMap, Map<K, T> inheritedMap) {
         if (inheritedMap == null) {
             return originalMap;

@@ -182,9 +182,9 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
                 inheritedConfig.getInputSolutionFileList());
         problemStatisticEnabled = ConfigUtils.inheritOverwritableProperty(problemStatisticEnabled,
                 inheritedConfig.getProblemStatisticEnabled());
-        problemStatisticTypeList = ConfigUtils.inheritMergeableListProperty(problemStatisticTypeList,
+        problemStatisticTypeList = ConfigUtils.inheritUniqueMergeableListProperty(problemStatisticTypeList,
                 inheritedConfig.getProblemStatisticTypeList());
-        singleStatisticTypeList = ConfigUtils.inheritMergeableListProperty(singleStatisticTypeList,
+        singleStatisticTypeList = ConfigUtils.inheritUniqueMergeableListProperty(singleStatisticTypeList,
                 inheritedConfig.getSingleStatisticTypeList());
         return this;
     }

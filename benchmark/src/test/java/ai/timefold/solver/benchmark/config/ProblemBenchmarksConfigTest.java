@@ -46,4 +46,17 @@ class ProblemBenchmarksConfigTest {
         assertThat(problemBenchmarksConfig.determineSingleStatisticTypeList())
                 .containsExactly(SingleStatisticType.CONSTRAINT_MATCH_TOTAL_STEP_SCORE);
     }
+
+    @Test
+    void testDuplicatedDefaultMetrics() {
+        ProblemBenchmarksConfig benchmarksConfig = new ProblemBenchmarksConfig();
+        benchmarksConfig.withProblemStatisticTypeList(List.of(ProblemStatisticType.BEST_SCORE));
+        SolverBenchmarkConfig defaultConfig = new SolverBenchmarkConfig();
+        defaultConfig.withProblemBenchmarksConfig(benchmarksConfig);
+
+        SolverBenchmarkConfig inheritedConfig = new SolverBenchmarkConfig();
+        inheritedConfig.withProblemBenchmarksConfig(benchmarksConfig);
+        inheritedConfig.inherit(defaultConfig);
+        assertThat(inheritedConfig.getProblemBenchmarksConfig().getProblemStatisticTypeList()).hasSize(1);
+    }
 }
