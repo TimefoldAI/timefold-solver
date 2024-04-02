@@ -214,6 +214,7 @@ class TimefoldProcessor {
 
         // Step 2 - validate all SolverConfig definitions
         assertNoMemberAnnotationWithoutClassAnnotation(indexView);
+        assertNodeSharingDisabled(solverConfigMap);
         assertSolverConfigSolutionClasses(indexView, solverConfigMap);
         assertSolverConfigEntityClasses(indexView);
         assertSolverConfigConstraintClasses(indexView, solverConfigMap);
@@ -328,6 +329,22 @@ class TimefoldProcessor {
                 .map(AnnotationInstance::target)
                 .toList();
         assertTargetClasses(targetList, DotNames.PLANNING_SOLUTION);
+    }
+
+    private void assertNodeSharingDisabled(Map<String, SolverConfig> solverConfigMap) {
+        for (var entry : solverConfigMap.entrySet()) {
+            var solverConfig = entry.getValue();
+            if (solverConfig.getScoreDirectorFactoryConfig() != null &&
+                    Boolean.TRUE
+                            .equals(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamAutomaticNodeSharing())) {
+                throw new IllegalStateException("""
+                        SolverConfig %s enabled automatic node sharing via SolverConfig, which is not allowed.
+                        Enable automatic node sharing with the property %s instead."""
+                        .formatted(
+                                entry.getKey(),
+                                "quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true"));
+            }
+        }
     }
 
     private void assertSolverConfigEntityClasses(IndexView indexView) {
