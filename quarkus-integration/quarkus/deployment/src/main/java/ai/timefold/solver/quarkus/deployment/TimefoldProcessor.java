@@ -337,11 +337,12 @@ class TimefoldProcessor {
             if (solverConfig.getScoreDirectorFactoryConfig() != null &&
                     Boolean.TRUE
                             .equals(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamAutomaticNodeSharing())) {
-                throw new IllegalStateException(
-                        ("SolverConfig %s enabled automatic node sharing via SolverConfig, which is not allowed." +
-                                " Enable automatic node sharing with the property %s instead.")
-                                .formatted(entry.getKey(),
-                                        "quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true"));
+                throw new IllegalStateException("""
+                        SolverConfig %s enabled automatic node sharing via SolverConfig, which is not allowed.
+                        Enable automatic node sharing with the property %s instead."""
+                        .formatted(
+                                entry.getKey(),
+                                "quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true"));
             }
         }
     }
