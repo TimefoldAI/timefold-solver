@@ -11,8 +11,6 @@ public abstract class NearbyAutoConfigurationMoveSelectorConfig<Config_ extends 
         extends MoveSelectorConfig<Config_> {
 
     /**
-     * Enables the Nearby Selection autoconfiguration.
-     *
      * @return new instance with the Nearby Selection settings properly configured
      */
     public abstract Config_ enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random);

@@ -9,6 +9,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -88,6 +89,24 @@ public class QueuedEntityPlacerFactory<Solution_>
         } else {
             moveSelectorConfigList_ = config.getMoveSelectorConfigList();
         }
+
+        if (configPolicy.getNearbyDistanceMeterClass() != null) {
+            for (var selectorConfig : moveSelectorConfigList_) {
+                if (selectorConfig instanceof NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
+                    if (nearbySelectorConfig.hasNearbySelectionConfig()) {
+                        throw new IllegalArgumentException(
+                                """
+                                        The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
+                                        Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
+                                        .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
+                    }
+                    // Add a new configuration with Nearby Selection enabled
+                    moveSelectorConfigList_.add(nearbySelectorConfig.enableNearbySelectionForConstructionHeuristic(
+                            configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom()));
+                }
+            }
+        }
+
         List<MoveSelector<Solution_>> moveSelectorList = new ArrayList<>(moveSelectorConfigList_.size());
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList_) {
             MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig)

@@ -8,7 +8,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -17,7 +17,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "valueSelectorConfig",
         "destinationSelectorConfig"
 })
-public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorConfig<ListChangeMoveSelectorConfig> {
+public class ListChangeMoveSelectorConfig
+        extends NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig<ListChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "listChangeMoveSelector";
 
@@ -89,12 +90,26 @@ public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSel
     @Override
     public ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
+        return enableNearbySelection(distanceMeter, random, false);
+    }
+
+    @Override
+    public ListChangeMoveSelectorConfig enableNearbySelectionForConstructionHeuristic(
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
+        return enableNearbySelection(distanceMeter, random, true);
+    }
+
+    private ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            Random random, boolean onlyUnassigned) {
         ListChangeMoveSelectorConfig nearbyConfig = copyConfig();
         ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
         if (valueConfig == null) {
             valueConfig = new ValueSelectorConfig();
         }
         String valueSelectorId = addRandomSuffix("valueSelector", random);
+        if (onlyUnassigned) {
+            throw new UnsupportedOperationException();
+        }
         valueConfig.withId(valueSelectorId);
         DestinationSelectorConfig destinationConfig = nearbyConfig.getDestinationSelectorConfig();
         if (destinationConfig == null) {
@@ -119,4 +134,5 @@ public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSel
     public String toString() {
         return getClass().getSimpleName() + "(" + valueSelectorConfig + ", " + destinationSelectorConfig + ")";
     }
+
 }
