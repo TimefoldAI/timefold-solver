@@ -53,8 +53,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             // (When it exhausts all values, it will start over from the beginning.)
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
             var workingSolution = phaseScope.getWorkingSolution();
-            maxStepCount = listVariableDescriptor.countUnassigned(workingSolution)
-                    - listVariableDescriptor.countPinned(workingSolution);
+            maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
         }
 
         for (var placement : entityPlacer) {
