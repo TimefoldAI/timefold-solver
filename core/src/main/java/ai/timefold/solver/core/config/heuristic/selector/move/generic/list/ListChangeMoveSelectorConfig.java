@@ -6,9 +6,9 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -90,38 +90,13 @@ public class ListChangeMoveSelectorConfig
     @Override
     public ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
-        return enableNearbySelection(distanceMeter, random, false);
+        return NearbyUtil.enable(this, distanceMeter, random, false);
     }
 
     @Override
     public ListChangeMoveSelectorConfig enableNearbySelectionForConstructionHeuristic(
             Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
-        return enableNearbySelection(distanceMeter, random, true);
-    }
-
-    private ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random, boolean onlyUnassigned) {
-        ListChangeMoveSelectorConfig nearbyConfig = copyConfig();
-        ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
-        if (valueConfig == null) {
-            valueConfig = new ValueSelectorConfig();
-        }
-        String valueSelectorId = addRandomSuffix("valueSelector", random);
-        if (onlyUnassigned) {
-            throw new UnsupportedOperationException();
-        }
-        valueConfig.withId(valueSelectorId);
-        DestinationSelectorConfig destinationConfig = nearbyConfig.getDestinationSelectorConfig();
-        if (destinationConfig == null) {
-            destinationConfig = new DestinationSelectorConfig();
-        }
-        destinationConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                        .withMimicSelectorRef(valueSelectorId))
-                .withNearbyDistanceMeterClass(distanceMeter));
-        nearbyConfig.withValueSelectorConfig(valueConfig)
-                .withDestinationSelectorConfig(destinationConfig);
-        return nearbyConfig;
+        return NearbyUtil.enable(this, distanceMeter, random, true);
     }
 
     @Override

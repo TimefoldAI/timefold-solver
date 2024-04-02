@@ -15,12 +15,4 @@ public abstract class NearbyAutoConfigurationMoveSelectorConfig<Config_ extends 
      */
     public abstract Config_ enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random);
 
-    protected static String addRandomSuffix(String name, Random random) {
-        StringBuilder value = new StringBuilder(name);
-        value.append("-");
-        random.ints(97, 122) // ['a', 'z']
-                .limit(4) // 4 letters
-                .forEach(value::appendCodePoint);
-        return value.toString();
-    }
 }

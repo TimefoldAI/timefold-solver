@@ -9,9 +9,9 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
@@ -110,24 +110,7 @@ public class SwapMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorC
     @Override
     public SwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
-        SwapMoveSelectorConfig nearbyConfig = copyConfig();
-        EntitySelectorConfig entityConfig = nearbyConfig.getEntitySelectorConfig();
-        if (entityConfig == null) {
-            entityConfig = new EntitySelectorConfig();
-        }
-        String entitySelectorId = addRandomSuffix("entitySelector", random);
-        entityConfig.withId(entitySelectorId);
-        EntitySelectorConfig secondaryConfig = nearbyConfig.getSecondaryEntitySelectorConfig();
-        if (secondaryConfig == null) {
-            secondaryConfig = new EntitySelectorConfig();
-        }
-        secondaryConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                        .withMimicSelectorRef(entitySelectorId))
-                .withNearbyDistanceMeterClass(distanceMeter));
-        nearbyConfig.withEntitySelectorConfig(entityConfig)
-                .withSecondaryEntitySelectorConfig(secondaryConfig);
-        return nearbyConfig;
+        return NearbyUtil.enable(this, distanceMeter, random);
     }
 
     @Override
