@@ -151,11 +151,6 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
                 phaseScope.getBestScore(),
                 phaseScope.getPhaseScoreCalculationSpeed(),
                 phaseScope.getNextStepIndex());
-        var initScore = phaseScope.getBestScore().initScore();
-        if (initScore != 0) {
-            throw new IllegalStateException("Impossible state: Construction heuristic finished with a non-zero init score (%s)."
-                    .formatted(initScore));
-        }
     }
 
     @Override
