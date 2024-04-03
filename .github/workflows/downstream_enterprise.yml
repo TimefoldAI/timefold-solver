@@ -36,7 +36,7 @@ jobs:
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
       - name: Find the proper timefold-solver-enterprise repo and branch
         env:
-          CHAIN_USER: ${{ github.actor }}
+          CHAIN_USER: "TimefoldAI" # No forks of the enterprise repo are allowed.
           CHAIN_BRANCH: ${{ github.head_ref }}
           CHAIN_REPO: "timefold-solver-enterprise"
           CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
