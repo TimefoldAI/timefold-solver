@@ -59,13 +59,14 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
         if (valueSorterManner != ValueSorterManner.NONE && solverConfigPolicy.getNearbyDistanceMeterClass() != null) {
-            throw new IllegalStateException("""
-                    Auto-configured nearby selection does not support value sorting.
-                    Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @%s annotation.
-                    Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @%s annotation.
-                    Maybe remove constructionHeuristicType from your construction heuristics settings.
-                    Maybe disable auto-configured nearby selection by setting nearbyDistanceMeterClass to null in your solver config."""
-                    .formatted(PlanningEntity.class.getSimpleName(), PlanningVariable.class.getSimpleName()));
+            throw new IllegalStateException(
+                    """
+                            Auto-configured nearby selection does not support value sorting.
+                            Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @%s annotation.
+                            Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @%s annotation.
+                            Maybe remove constructionHeuristicType from your construction heuristics settings.
+                            Maybe disable auto-configured nearby selection by setting nearbyDistanceMeterClass to null in your solver config."""
+                            .formatted(PlanningEntity.class.getSimpleName(), PlanningVariable.class.getSimpleName()));
         }
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
                 .withReinitializeVariableFilterEnabled(true)
