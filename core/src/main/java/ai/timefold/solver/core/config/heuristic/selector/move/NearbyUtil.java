@@ -26,17 +26,6 @@ public final class NearbyUtil {
         return nearbyConfig;
     }
 
-    public static ChangeMoveSelectorConfig enable(ChangeMoveSelectorConfig changeMoveSelectorConfig,
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, String recordingSelectorId) {
-        var nearbyConfig = changeMoveSelectorConfig.copyConfig();
-        var entityConfig = new EntitySelectorConfig()
-                .withMimicSelectorRef(recordingSelectorId);
-        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), recordingSelectorId, distanceMeter);
-        nearbyConfig.withEntitySelectorConfig(entityConfig)
-                .withValueSelectorConfig(valueConfig);
-        return nearbyConfig;
-    }
-
     private static EntitySelectorConfig configureEntitySelector(EntitySelectorConfig entitySelectorConfig, Random random) {
         if (entitySelectorConfig == null) {
             entitySelectorConfig = new EntitySelectorConfig();
@@ -51,11 +40,27 @@ public final class NearbyUtil {
         if (valueSelectorConfig == null) {
             valueSelectorConfig = new ValueSelectorConfig();
         }
-        return valueSelectorConfig.withNearbySelectionConfig(
-                new NearbySelectionConfig()
-                        .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                .withMimicSelectorRef(recordingSelectorId))
-                        .withNearbyDistanceMeterClass(distanceMeter));
+        return valueSelectorConfig
+                .withNearbySelectionConfig(configureNearbySelectionWithEntity(recordingSelectorId, distanceMeter));
+    }
+
+    private static NearbySelectionConfig configureNearbySelectionWithEntity(String recordingSelectorId,
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
+        return new NearbySelectionConfig()
+                .withOriginEntitySelectorConfig(new EntitySelectorConfig()
+                        .withMimicSelectorRef(recordingSelectorId))
+                .withNearbyDistanceMeterClass(distanceMeter);
+    }
+
+    public static ChangeMoveSelectorConfig enable(ChangeMoveSelectorConfig changeMoveSelectorConfig,
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, String recordingSelectorId) {
+        var nearbyConfig = changeMoveSelectorConfig.copyConfig();
+        var entityConfig = new EntitySelectorConfig()
+                .withMimicSelectorRef(recordingSelectorId);
+        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), recordingSelectorId, distanceMeter);
+        nearbyConfig.withEntitySelectorConfig(entityConfig)
+                .withValueSelectorConfig(valueConfig);
+        return nearbyConfig;
     }
 
     public static SwapMoveSelectorConfig enable(SwapMoveSelectorConfig swapMoveSelectorConfig,
@@ -66,10 +71,7 @@ public final class NearbyUtil {
         if (secondaryConfig == null) {
             secondaryConfig = new EntitySelectorConfig();
         }
-        secondaryConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                        .withMimicSelectorRef(entityConfig.getId()))
-                .withNearbyDistanceMeterClass(distanceMeter));
+        secondaryConfig.withNearbySelectionConfig(configureNearbySelectionWithEntity(entityConfig.getId(), distanceMeter));
         nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withSecondaryEntitySelectorConfig(secondaryConfig);
         return nearbyConfig;
@@ -93,13 +95,18 @@ public final class NearbyUtil {
         if (destinationConfig == null) {
             destinationConfig = new DestinationSelectorConfig();
         }
-        destinationConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                        .withMimicSelectorRef(valueConfig.getId()))
-                .withNearbyDistanceMeterClass(distanceMeter));
+        destinationConfig.withNearbySelectionConfig(configureNearbySelectionWithValue(valueConfig.getId(), distanceMeter));
         nearbyConfig.withValueSelectorConfig(valueConfig)
                 .withDestinationSelectorConfig(destinationConfig);
         return nearbyConfig;
+    }
+
+    private static NearbySelectionConfig configureNearbySelectionWithValue(String recordingSelectorId,
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
+        return new NearbySelectionConfig()
+                .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                        .withMimicSelectorRef(recordingSelectorId))
+                .withNearbyDistanceMeterClass(distanceMeter);
     }
 
     public static ListChangeMoveSelectorConfig enable(ListChangeMoveSelectorConfig listChangeMoveSelectorConfig,
@@ -111,10 +118,7 @@ public final class NearbyUtil {
         if (destinationConfig == null) {
             destinationConfig = new DestinationSelectorConfig();
         }
-        destinationConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                        .withMimicSelectorRef(recordingSelectorId))
-                .withNearbyDistanceMeterClass(distanceMeter));
+        destinationConfig.withNearbySelectionConfig(configureNearbySelectionWithValue(recordingSelectorId, distanceMeter));
         nearbyConfig.withValueSelectorConfig(valueConfig)
                 .withDestinationSelectorConfig(destinationConfig);
         return nearbyConfig;
@@ -145,10 +149,8 @@ public final class NearbyUtil {
         if (secondaryValueSelectorConfig == null) {
             secondaryValueSelectorConfig = new ValueSelectorConfig();
         }
-        secondaryValueSelectorConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                        .withMimicSelectorRef(primaryValueSelectorConfig.getId()))
-                .withNearbyDistanceMeterClass(distanceMeter));
+        secondaryValueSelectorConfig.withNearbySelectionConfig(
+                configureNearbySelectionWithValue(primaryValueSelectorConfig.getId(), distanceMeter));
         return secondaryValueSelectorConfig;
     }
 
@@ -162,7 +164,7 @@ public final class NearbyUtil {
         return nearbyConfig;
     }
 
-    public static String addRandomSuffix(String name, Random random) {
+    private static String addRandomSuffix(String name, Random random) {
         var value = new StringBuilder(name);
         value.append("-");
         random.ints(97, 122) // ['a', 'z']
