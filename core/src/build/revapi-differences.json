@@ -80,6 +80,22 @@
           "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
           "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"constraintStreamAutomaticNodeSharing\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
           "justification": "Add support for automatic constraint stream node sharing outside of Quarkus for Timefold Solver Enterprise edition users."
+        },
+        {
+          "ignore": true,
+          "code": "java.class.nonFinalClassInheritsFromNewClass",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
+          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig>",
+          "justification": "Gets a special behavior for construction heuristics. Should not affect anyone."
+        },
+        {
+          "ignore": true,
+          "code": "java.class.nonFinalClassInheritsFromNewClass",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
+          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig>",
+          "justification": "Gets a special behavior for construction heuristics. Should not affect anyone."
         }
       ]
     }
