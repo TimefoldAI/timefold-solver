@@ -20,7 +20,18 @@ public final class NearbyUtil {
             Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
         var nearbyConfig = changeMoveSelectorConfig.copyConfig();
         var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig(), random);
-        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), entityConfig, distanceMeter);
+        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), entityConfig.getId(), distanceMeter);
+        nearbyConfig.withEntitySelectorConfig(entityConfig)
+                .withValueSelectorConfig(valueConfig);
+        return nearbyConfig;
+    }
+
+    public static ChangeMoveSelectorConfig enable(ChangeMoveSelectorConfig changeMoveSelectorConfig,
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, String recordingSelectorId) {
+        var nearbyConfig = changeMoveSelectorConfig.copyConfig();
+        var entityConfig = new EntitySelectorConfig()
+                .withMimicSelectorRef(recordingSelectorId);
+        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), recordingSelectorId, distanceMeter);
         nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withValueSelectorConfig(valueConfig);
         return nearbyConfig;
@@ -36,14 +47,14 @@ public final class NearbyUtil {
     }
 
     private static ValueSelectorConfig configureValueSelector(ValueSelectorConfig valueSelectorConfig,
-            EntitySelectorConfig entitySelectorConfig, Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
+            String recordingSelectorId, Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         if (valueSelectorConfig == null) {
             valueSelectorConfig = new ValueSelectorConfig();
         }
         return valueSelectorConfig.withNearbySelectionConfig(
                 new NearbySelectionConfig()
                         .withOriginEntitySelectorConfig(new EntitySelectorConfig()
-                                .withMimicSelectorRef(entitySelectorConfig.getId()))
+                                .withMimicSelectorRef(recordingSelectorId))
                         .withNearbyDistanceMeterClass(distanceMeter));
     }
 
@@ -68,7 +79,7 @@ public final class NearbyUtil {
             Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
         var nearbyConfig = tailChainSwapMoveSelectorConfig.copyConfig();
         var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig(), random);
-        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), entityConfig, distanceMeter);
+        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), entityConfig.getId(), distanceMeter);
         nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withValueSelectorConfig(valueConfig);
         return nearbyConfig;
@@ -151,7 +162,7 @@ public final class NearbyUtil {
         return nearbyConfig;
     }
 
-    private static String addRandomSuffix(String name, Random random) {
+    public static String addRandomSuffix(String name, Random random) {
         var value = new StringBuilder(name);
         value.append("-");
         random.ints(97, 122) // ['a', 'z']

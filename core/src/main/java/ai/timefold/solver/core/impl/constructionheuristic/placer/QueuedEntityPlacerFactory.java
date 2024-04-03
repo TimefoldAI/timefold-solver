@@ -89,26 +89,20 @@ public class QueuedEntityPlacerFactory<Solution_>
         } else {
             moveSelectorConfigList_ = config.getMoveSelectorConfigList();
         }
-
-        if (configPolicy.getNearbyDistanceMeterClass() != null) {
-            for (var selectorConfig : moveSelectorConfigList_) {
-                if (selectorConfig instanceof NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
-                    if (nearbySelectorConfig.hasNearbySelectionConfig()) {
-                        throw new IllegalArgumentException(
-                                """
-                                        The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
-                                        Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
-                                        .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
-                    }
-                    // Add a new configuration with Nearby Selection enabled
-                    moveSelectorConfigList_.add(nearbySelectorConfig.enableNearbySelectionForConstructionHeuristic(
-                            configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom(), entitySelectorConfig_.getId()));
-                }
-            }
-        }
-
         List<MoveSelector<Solution_>> moveSelectorList = new ArrayList<>(moveSelectorConfigList_.size());
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList_) {
+            if (configPolicy.getNearbyDistanceMeterClass() != null &&
+                    moveSelectorConfig instanceof NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
+                if (nearbySelectorConfig.hasNearbySelectionConfig()) {
+                    throw new IllegalArgumentException(
+                            """
+                                    The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
+                                    Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
+                                    .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
+                }
+                moveSelectorConfig = nearbySelectorConfig.enableNearbySelectionForConstructionHeuristic(
+                        configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom(), entitySelectorConfig_.getId());
+            }
             MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig)
                     .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
             moveSelectorList.add(moveSelector);
