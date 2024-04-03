@@ -3,8 +3,6 @@ package ai.timefold.solver.core.impl.constructionheuristic;
 import java.util.Objects;
 import java.util.Optional;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
@@ -58,15 +56,12 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         ValueSorterManner valueSorterManner = Objects.requireNonNullElse(
                 phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
-        if (valueSorterManner != ValueSorterManner.NONE && solverConfigPolicy.getNearbyDistanceMeterClass() != null) {
+        if (!valueSorterManner.isNonePossible() && solverConfigPolicy.getNearbyDistanceMeterClass() != null) {
             throw new IllegalStateException(
                     """
                             Auto-configured nearby selection does not support value sorting.
-                            Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @%s annotation.
-                            Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @%s annotation.
                             Maybe remove constructionHeuristicType from your construction heuristics settings.
-                            Maybe disable auto-configured nearby selection by setting nearbyDistanceMeterClass to null in your solver config."""
-                            .formatted(PlanningEntity.class.getSimpleName(), PlanningVariable.class.getSimpleName()));
+                            Maybe disable auto-configured nearby selection by setting nearbyDistanceMeterClass to null in your solver config.""");
         }
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
                 .withReinitializeVariableFilterEnabled(true)

@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -239,56 +241,60 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
                 .filter(Objects::nonNull)
                 .count();
         if (originSelectorCount == 0) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") is nearby selection but lacks an origin selector config."
-                    + " Set one of originEntitySelectorConfig, originSubListSelectorConfig or originValueSelectorConfig.");
+            throw new IllegalArgumentException("""
+                    The nearbySelectorConfig (%s) is nearby selection but lacks an origin selector config.
+                    Set one of originEntitySelectorConfig, originSubListSelectorConfig or originValueSelectorConfig."""
+                    .formatted(this));
         } else if (originSelectorCount > 1) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") has multiple origin selector configs but exactly one is expected."
-                    + " Set one of originEntitySelectorConfig, originSubListSelectorConfig or originValueSelectorConfig.");
+            throw new IllegalArgumentException("""
+                    The nearbySelectorConfig (%s) has multiple origin selector configs but exactly one is expected.
+                    Set one of originEntitySelectorConfig, originSubListSelectorConfig or originValueSelectorConfig."""
+                    .formatted(this));
         }
-        if (originEntitySelectorConfig != null &&
-                originEntitySelectorConfig.getMimicSelectorRef() == null) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") has an originEntitySelectorConfig (" + originEntitySelectorConfig
-                    + ") which has no MimicSelectorRef (" + originEntitySelectorConfig.getMimicSelectorRef() + "). "
-                    + "A nearby's original entity should always be the same as an entity selected earlier in the move.");
+        if (originEntitySelectorConfig != null && originEntitySelectorConfig.getMimicSelectorRef() == null) {
+            throw new IllegalArgumentException("""
+                    The nearbySelectorConfig (%s) has an originEntitySelectorConfig (%s) which has no mimicSelectorRef (%s).
+                    Nearby selection's original entity should always be the same as an entity selected earlier in the move."""
+                    .formatted(this, originEntitySelectorConfig, originEntitySelectorConfig.getMimicSelectorRef()));
         }
-        if (originSubListSelectorConfig != null &&
-                originSubListSelectorConfig.getMimicSelectorRef() == null) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") has an originSubListSelectorConfig (" + originSubListSelectorConfig
-                    + ") which has no MimicSelectorRef (" + originSubListSelectorConfig.getMimicSelectorRef() + "). "
-                    + "A nearby's original subList should always be the same as a subList selected earlier in the move.");
+        if (originSubListSelectorConfig != null && originSubListSelectorConfig.getMimicSelectorRef() == null) {
+            throw new IllegalArgumentException("""
+                    The nearbySelectorConfig (%s) has an originSubListSelectorConfig (%s) which has no mimicSelectorRef (%s).
+                    Nearby selection's original subList should always be the same as a subList selected earlier in the move."""
+                    .formatted(this, originSubListSelectorConfig, originSubListSelectorConfig.getMimicSelectorRef()));
         }
-        if (originValueSelectorConfig != null &&
-                originValueSelectorConfig.getMimicSelectorRef() == null) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") has an originValueSelectorConfig (" + originValueSelectorConfig
-                    + ") which has no MimicSelectorRef (" + originValueSelectorConfig.getMimicSelectorRef() + "). "
-                    + "A nearby's original value should always be the same as a value selected earlier in the move.");
+        if (originValueSelectorConfig != null && originValueSelectorConfig.getMimicSelectorRef() == null) {
+            throw new IllegalArgumentException("""
+                    The nearbySelectorConfig (%s) has an originValueSelectorConfig (%s) which has no mimicSelectorRef (%s).
+                    Nearby selection's original value should always be the same as a value selected earlier in the move."""
+                    .formatted(this, originValueSelectorConfig, originValueSelectorConfig.getMimicSelectorRef()));
         }
         if (nearbyDistanceMeterClass == null) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") is nearby selection but lacks a nearbyDistanceMeterClass (" + nearbyDistanceMeterClass + ").");
+            throw new IllegalArgumentException(
+                    "The nearbySelectorConfig (%s) enables nearby selection but lacks a nearbyDistanceMeterClass (%s)."
+                            .formatted(this, nearbyDistanceMeterClass));
         }
         if (resolvedSelectionOrder != SelectionOrder.ORIGINAL && resolvedSelectionOrder != SelectionOrder.RANDOM) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") with originEntitySelector (" + originEntitySelectorConfig
-                    + ") and originSubListSelector (" + originSubListSelectorConfig
-                    + ") and originValueSelector (" + originValueSelectorConfig
-                    + ") and nearbyDistanceMeterClass (" + nearbyDistanceMeterClass
-                    + ") has a resolvedSelectionOrder (" + resolvedSelectionOrder
-                    + ") that is not " + SelectionOrder.ORIGINAL + " or " + SelectionOrder.RANDOM + ".");
+            throw new IllegalArgumentException(
+                    """
+                            The nearbySelectorConfig (%s) with originEntitySelector (%s), originSubListSelector (%s), originValueSelector (%s) and nearbyDistanceMeterClass (%s) \
+                            has a resolvedSelectionOrder (%s) that is not %s or %s.
+                            Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @%s annotation.
+                            Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @%s annotation.
+                            Maybe disable nearby selection.
+                             """
+                            .formatted(this, originEntitySelectorConfig, originSubListSelectorConfig, originValueSelectorConfig,
+                                    nearbyDistanceMeterClass, resolvedSelectionOrder, SelectionOrder.ORIGINAL,
+                                    SelectionOrder.RANDOM, PlanningEntity.class.getSimpleName(),
+                                    PlanningVariable.class.getSimpleName()));
         }
         if (resolvedCacheType.isCached()) {
-            throw new IllegalArgumentException("The nearbySelectorConfig (" + this
-                    + ") with originEntitySelector (" + originEntitySelectorConfig
-                    + ") and originSubListSelector (" + originSubListSelectorConfig
-                    + ") and originValueSelector (" + originValueSelectorConfig
-                    + ") and nearbyDistanceMeterClass (" + nearbyDistanceMeterClass
-                    + ") has a resolvedCacheType (" + resolvedCacheType
-                    + ") that is cached.");
+            throw new IllegalArgumentException(
+                    """
+                            The nearbySelectorConfig (%s) with originEntitySelector (%s), originSubListSelector (%s), originValueSelector (%s) and nearbyDistanceMeterClass (%s) \
+                            has a resolvedCacheType (%s) that is cached."""
+                            .formatted(this, originEntitySelectorConfig, originSubListSelectorConfig, originValueSelectorConfig,
+                                    nearbyDistanceMeterClass, resolvedCacheType));
         }
     }
 

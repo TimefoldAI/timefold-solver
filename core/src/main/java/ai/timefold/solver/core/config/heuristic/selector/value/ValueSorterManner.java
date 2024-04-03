@@ -5,14 +5,28 @@ import jakarta.xml.bind.annotation.XmlEnum;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 /**
- * The manner of sorting a values for a {@link PlanningVariable}.
+ * The manner of sorting values for a {@link PlanningVariable}.
  */
 
 @XmlEnum
 public enum ValueSorterManner {
-    NONE,
-    INCREASING_STRENGTH,
-    INCREASING_STRENGTH_IF_AVAILABLE,
-    DECREASING_STRENGTH,
-    DECREASING_STRENGTH_IF_AVAILABLE;
+    NONE(true),
+    INCREASING_STRENGTH(false),
+    INCREASING_STRENGTH_IF_AVAILABLE(true),
+    DECREASING_STRENGTH(false),
+    DECREASING_STRENGTH_IF_AVAILABLE(true);
+
+    private final boolean nonePossible;
+
+    ValueSorterManner(boolean nonePossible) {
+        this.nonePossible = nonePossible;
+    }
+
+    /**
+     * @return true if {@link #NONE} is an option, such as when the other option is not available.
+     */
+    public boolean isNonePossible() {
+        return nonePossible;
+    }
+
 }
