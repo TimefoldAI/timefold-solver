@@ -14,6 +14,6 @@ public abstract class NearbyConstructionHeuristicAutoConfigurationMoveSelectorCo
      * @return new instance with the Nearby Selection settings properly configured
      */
     public abstract Config_ enableNearbySelectionForConstructionHeuristic(
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random);
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random, String recordingSelectorId);
 
 }

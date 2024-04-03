@@ -94,7 +94,7 @@ public class ChangeMoveSelectorConfig
 
     @Override
     public ChangeMoveSelectorConfig enableNearbySelectionForConstructionHeuristic(
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random, String recordingSelectorId) {
         return enableNearbySelection(distanceMeter, random);
     }
 

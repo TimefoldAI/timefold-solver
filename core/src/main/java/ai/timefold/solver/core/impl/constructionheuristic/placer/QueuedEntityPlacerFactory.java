@@ -102,7 +102,7 @@ public class QueuedEntityPlacerFactory<Solution_>
                     }
                     // Add a new configuration with Nearby Selection enabled
                     moveSelectorConfigList_.add(nearbySelectorConfig.enableNearbySelectionForConstructionHeuristic(
-                            configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom()));
+                            configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom(), entitySelectorConfig_.getId()));
                 }
             }
         }

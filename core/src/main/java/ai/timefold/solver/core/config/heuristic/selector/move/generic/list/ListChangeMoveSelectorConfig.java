@@ -90,13 +90,13 @@ public class ListChangeMoveSelectorConfig
     @Override
     public ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
-        return NearbyUtil.enable(this, distanceMeter, random, false);
+        return NearbyUtil.enable(this, distanceMeter, random);
     }
 
     @Override
     public ListChangeMoveSelectorConfig enableNearbySelectionForConstructionHeuristic(
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
-        return NearbyUtil.enable(this, distanceMeter, random, true);
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random, String recordingSelectorId) {
+        return NearbyUtil.enable(this, distanceMeter, recordingSelectorId);
     }
 
     @Override

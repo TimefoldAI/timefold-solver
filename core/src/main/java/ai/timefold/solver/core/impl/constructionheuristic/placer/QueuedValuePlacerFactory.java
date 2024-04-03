@@ -54,7 +54,7 @@ public class QueuedValuePlacerFactory<Solution_>
                                     .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
                 }
                 moveSelectorConfig_ = nearbySelectorConfig.enableNearbySelectionForConstructionHeuristic(
-                        configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom());
+                        configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom(), valueSelectorConfig_.getId());
             }
         }
 

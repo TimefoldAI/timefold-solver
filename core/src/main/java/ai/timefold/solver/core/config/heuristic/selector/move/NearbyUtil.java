@@ -75,12 +75,9 @@ public final class NearbyUtil {
     }
 
     public static ListChangeMoveSelectorConfig enable(ListChangeMoveSelectorConfig listChangeMoveSelectorConfig,
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random, boolean onlyUnassigned) {
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random) {
         var nearbyConfig = listChangeMoveSelectorConfig.copyConfig();
         var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), random);
-        if (onlyUnassigned) {
-            throw new UnsupportedOperationException();
-        }
         var destinationConfig = nearbyConfig.getDestinationSelectorConfig();
         if (destinationConfig == null) {
             destinationConfig = new DestinationSelectorConfig();
@@ -88,6 +85,24 @@ public final class NearbyUtil {
         destinationConfig.withNearbySelectionConfig(new NearbySelectionConfig()
                 .withOriginValueSelectorConfig(new ValueSelectorConfig()
                         .withMimicSelectorRef(valueConfig.getId()))
+                .withNearbyDistanceMeterClass(distanceMeter));
+        nearbyConfig.withValueSelectorConfig(valueConfig)
+                .withDestinationSelectorConfig(destinationConfig);
+        return nearbyConfig;
+    }
+
+    public static ListChangeMoveSelectorConfig enable(ListChangeMoveSelectorConfig listChangeMoveSelectorConfig,
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, String recordingSelectorId) {
+        var nearbyConfig = listChangeMoveSelectorConfig.copyConfig();
+        var valueConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef(recordingSelectorId);
+        var destinationConfig = nearbyConfig.getDestinationSelectorConfig();
+        if (destinationConfig == null) {
+            destinationConfig = new DestinationSelectorConfig();
+        }
+        destinationConfig.withNearbySelectionConfig(new NearbySelectionConfig()
+                .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                        .withMimicSelectorRef(recordingSelectorId))
                 .withNearbyDistanceMeterClass(distanceMeter));
         nearbyConfig.withValueSelectorConfig(valueConfig)
                 .withDestinationSelectorConfig(destinationConfig);
