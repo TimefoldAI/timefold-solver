@@ -47,7 +47,7 @@ jobs:
       # Clone timefold-solver-enterprise
       - name: Find the proper timefold-solver-enterprise repo and branch
         env:
-          CHAIN_USER: ${{ github.actor }}
+          CHAIN_USER: "TimefoldAI" # No forks of the enterprise repo are allowed.
           CHAIN_BRANCH: ${{ github.head_ref }}
           CHAIN_REPO: "timefold-solver-enterprise"
           CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
@@ -77,7 +77,7 @@ jobs:
       # Clone timefold-solver-benchmarks
       - name: Find the proper timefold-solver-benchmarks repo and branch
         env:
-          CHAIN_USER: ${{ github.actor }}
+          CHAIN_USER: "TimefoldAI" # No forks of the benchmarks repo are allowed.
           CHAIN_BRANCH: ${{ github.head_ref }}
           CHAIN_REPO: "timefold-solver-benchmarks"
           CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
