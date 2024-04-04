@@ -28,6 +28,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAc
  * A Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()} for {@link MoveTabuAcceptor}.
  * <p>
  * An implementation must extend {@link AbstractMove} to ensure backwards compatibility in future versions.
+ * It is highly recommended to override {@link #getPlanningEntities()} and {@link #getPlanningValues()},
+ * otherwise the resulting move will throw an exception when used with Tabu search.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see AbstractMove

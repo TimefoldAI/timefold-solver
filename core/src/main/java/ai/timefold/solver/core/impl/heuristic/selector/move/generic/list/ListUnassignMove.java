@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -13,6 +15,7 @@ public class ListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solution
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final Object sourceEntity;
     private final int sourceIndex;
+
     private Object movedValue;
 
     public ListUnassignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex) {
@@ -36,20 +39,26 @@ public class ListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solution
         return movedValue;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
+    @Override
+    public Collection<?> getPlanningEntities() {
+        return List.of(sourceEntity);
+    }
+
+    @Override
+    public Collection<?> getPlanningValues() {
+        return List.of(getMovedValue());
+    }
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return true;
+        return variableDescriptor.getElement(sourceEntity, sourceIndex) != null;
     }
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var listVariable = variableDescriptor.getValue(sourceEntity);
-        Object element = listVariable.get(sourceIndex);
+        var element = getMovedValue();
         // Remove an element from sourceEntity's list variable (at sourceIndex).
         innerScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
         innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
@@ -63,10 +72,6 @@ public class ListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solution
         return new ListUnassignMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(sourceEntity),
                 sourceIndex);
     }
-
-    // ************************************************************************
-    // Introspection methods
-    // ************************************************************************
 
     @Override
     public String getSimpleMoveTypeDescription() {

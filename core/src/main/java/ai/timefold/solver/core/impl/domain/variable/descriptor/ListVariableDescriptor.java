@@ -170,7 +170,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
                     "Impossible state: The index (%s) must be less than the size (%s) of the planning list variable (%s) of entity (%s)."
                             .formatted(index, values.size(), this, entity));
         }
-        return getValue(entity).get(index);
+        return values.get(index);
     }
 
     public Object setElement(Object entity, int index, Object element) {

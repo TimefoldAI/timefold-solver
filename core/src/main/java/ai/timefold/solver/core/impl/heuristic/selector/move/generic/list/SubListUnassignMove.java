@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -54,7 +54,10 @@ public class SubListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solut
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return true;
+        if (sourceIndex < 0) {
+            return false;
+        }
+        return variableDescriptor.getListSize(sourceEntity) >= getToIndex();
     }
 
     @Override
@@ -62,13 +65,14 @@ public class SubListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solut
         var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
         var sourceList = variableDescriptor.getValue(sourceEntity);
-        var subList = sourceList.subList(sourceIndex, sourceIndex + length);
+        var subList = sourceList.subList(sourceIndex, getToIndex());
+        planningValues = List.copyOf(subList);
 
         for (var element : subList) {
             innerScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
             innerScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
         }
-        innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
+        innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, getToIndex());
         subList.clear();
         innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
     }
@@ -79,10 +83,6 @@ public class SubListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solut
                 sourceIndex, length);
     }
 
-    // ************************************************************************
-    // Introspection methods
-    // ************************************************************************
-
     @Override
     public String getSimpleMoveTypeDescription() {
         return getClass().getSimpleName() + "(" + variableDescriptor.getSimpleEntityAndVariableName() + ")";
@@ -90,10 +90,7 @@ public class SubListUnassignMove<Solution_> extends AbstractSimplifiedMove<Solut
 
     @Override
     public Collection<Object> getPlanningEntities() {
-        // Use LinkedHashSet for predictable iteration order.
-        var entities = new LinkedHashSet<>(2);
-        entities.add(sourceEntity);
-        return entities;
+        return List.of(sourceEntity);
     }
 
     @Override
