@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -34,13 +36,19 @@ public final class ListAssignMove<Solution_> extends AbstractSimplifiedMove<Solu
         return planningValue;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
+    @Override
+    public Collection<?> getPlanningEntities() {
+        return List.of(destinationEntity);
+    }
+
+    @Override
+    public Collection<?> getPlanningValues() {
+        return List.of(planningValue);
+    }
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return true;
+        return destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
     }
 
     @Override
@@ -61,10 +69,6 @@ public final class ListAssignMove<Solution_> extends AbstractSimplifiedMove<Solu
         return new ListAssignMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(planningValue),
                 destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex);
     }
-
-    // ************************************************************************
-    // Introspection methods
-    // ************************************************************************
 
     @Override
     public String getSimpleMoveTypeDescription() {

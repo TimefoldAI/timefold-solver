@@ -53,7 +53,9 @@ class AllowsUnassignedValuesListVariableSolverTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
                                 .withAcceptorConfig(new LocalSearchAcceptorConfig()
-                                        .withMoveTabuSize(7))
+                                        .withEntityTabuSize(1)
+                                        .withValueTabuSize(1)
+                                        .withMoveTabuSize(1))
                                 .withForagerConfig(new LocalSearchForagerConfig()
                                         .withAcceptedCountLimit(100))
                                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(1000))
