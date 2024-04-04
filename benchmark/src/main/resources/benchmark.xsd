@@ -1199,7 +1199,7 @@
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>
@@ -1223,34 +1223,13 @@
   </xs:complexType>
       
   
-  <xs:complexType abstract="true" name="nearbyAutoConfigurationMoveSelectorConfig">
-            
-    
-    <xs:complexContent>
-                  
-      
-      <xs:extension base="tns:moveSelectorConfig">
-                        
-        
-        <xs:sequence/>
-                      
-      
-      </xs:extension>
-                
-    
-    </xs:complexContent>
-          
-  
-  </xs:complexType>
-      
-  
   <xs:complexType name="kOptListMoveSelectorConfig">
             
     
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>
@@ -1286,7 +1265,7 @@
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>
@@ -1349,7 +1328,7 @@
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>
@@ -1763,7 +1742,7 @@
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>
@@ -1814,7 +1793,7 @@
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>
@@ -1844,7 +1823,7 @@
     <xs:complexContent>
                   
       
-      <xs:extension base="tns:nearbyAutoConfigurationMoveSelectorConfig">
+      <xs:extension base="tns:moveSelectorConfig">
                         
         
         <xs:sequence>

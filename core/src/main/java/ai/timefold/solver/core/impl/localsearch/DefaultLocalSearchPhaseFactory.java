@@ -6,7 +6,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
@@ -187,7 +187,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     MoveSelectorFactory.create(phaseConfig.getMoveSelectorConfig());
 
             if (configPolicy.getNearbyDistanceMeterClass() != null
-                    && NearbyAutoConfigurationMoveSelectorConfig.class
+                    && NearbyAutoConfigurationEnabled.class
                             .isAssignableFrom(phaseConfig.getMoveSelectorConfig().getClass())
                     && !UnionMoveSelectorConfig.class.isAssignableFrom(phaseConfig.getMoveSelectorConfig().getClass())) {
                 // The move selector config is not a composite selector, but it accepts Nearby autoconfiguration.

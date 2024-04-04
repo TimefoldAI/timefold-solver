@@ -6,9 +6,11 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabledConstructionHeuristic;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -17,7 +19,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "valueSelectorConfig",
         "destinationSelectorConfig"
 })
-public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorConfig<ListChangeMoveSelectorConfig> {
+public class ListChangeMoveSelectorConfig
+        extends MoveSelectorConfig<ListChangeMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabledConstructionHeuristic<ListChangeMoveSelectorConfig>,
+        NearbyAutoConfigurationEnabled<ListChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "listChangeMoveSelector";
 
@@ -89,24 +94,13 @@ public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSel
     @Override
     public ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
-        ListChangeMoveSelectorConfig nearbyConfig = copyConfig();
-        ValueSelectorConfig valueConfig = nearbyConfig.getValueSelectorConfig();
-        if (valueConfig == null) {
-            valueConfig = new ValueSelectorConfig();
-        }
-        String valueSelectorId = addRandomSuffix("valueSelector", random);
-        valueConfig.withId(valueSelectorId);
-        DestinationSelectorConfig destinationConfig = nearbyConfig.getDestinationSelectorConfig();
-        if (destinationConfig == null) {
-            destinationConfig = new DestinationSelectorConfig();
-        }
-        destinationConfig.withNearbySelectionConfig(new NearbySelectionConfig()
-                .withOriginValueSelectorConfig(new ValueSelectorConfig()
-                        .withMimicSelectorRef(valueSelectorId))
-                .withNearbyDistanceMeterClass(distanceMeter));
-        nearbyConfig.withValueSelectorConfig(valueConfig)
-                .withDestinationSelectorConfig(destinationConfig);
-        return nearbyConfig;
+        return NearbyUtil.enable(this, distanceMeter, random);
+    }
+
+    @Override
+    public ListChangeMoveSelectorConfig enableNearbySelectionForConstructionHeuristic(
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random, String recordingSelectorId) {
+        return NearbyUtil.enable(this, distanceMeter, recordingSelectorId);
     }
 
     @Override
@@ -119,4 +113,5 @@ public class ListChangeMoveSelectorConfig extends NearbyAutoConfigurationMoveSel
     public String toString() {
         return getClass().getSimpleName() + "(" + valueSelectorConfig + ", " + destinationSelectorConfig + ")";
     }
+
 }

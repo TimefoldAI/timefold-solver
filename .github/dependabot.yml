@@ -4,6 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      time: '05:00' # Otherwise it picks a random time.
     open-pull-requests-limit: 10
     target-branch: "main"
     commit-message:
@@ -12,3 +13,4 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      time: '05:00' # Otherwise it picks a random time.

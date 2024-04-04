@@ -11,7 +11,7 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
@@ -34,7 +34,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "moveSelectorConfigList",
         "selectorProbabilityWeightFactoryClass"
 })
-public class UnionMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorConfig<UnionMoveSelectorConfig> {
+public class UnionMoveSelectorConfig
+        extends MoveSelectorConfig<UnionMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabled<UnionMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "unionMoveSelector";
 
@@ -172,11 +174,11 @@ public class UnionMoveSelectorConfig extends NearbyAutoConfigurationMoveSelector
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
         var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
         for (var selectorConfig : moveSelectorConfigList) {
-            if (selectorConfig instanceof NearbyAutoConfigurationMoveSelectorConfig<?> nearbySelectorConfig) {
+            if (selectorConfig instanceof NearbyAutoConfigurationEnabled<?> nearbySelectorConfig) {
                 if (UnionMoveSelectorConfig.class.isAssignableFrom(nearbySelectorConfig.getClass())) {
                     updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
                 } else {
-                    updatedMoveSelectorList.add(nearbySelectorConfig.copyConfig());
+                    updatedMoveSelectorList.add((MoveSelectorConfig) selectorConfig.copyConfig());
                     updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
                 }
             } else {
