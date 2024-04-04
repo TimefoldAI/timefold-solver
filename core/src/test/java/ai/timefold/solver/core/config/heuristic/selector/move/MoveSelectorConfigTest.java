@@ -36,7 +36,7 @@ class MoveSelectorConfigTest {
         // Default configuration
         ChangeMoveSelectorConfig config = new ChangeMoveSelectorConfig();
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         ChangeMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -51,7 +51,7 @@ class MoveSelectorConfigTest {
         config = new ChangeMoveSelectorConfig();
         config.withEntitySelectorConfig(new EntitySelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -69,7 +69,7 @@ class MoveSelectorConfigTest {
         // Default configuration
         SwapMoveSelectorConfig config = new SwapMoveSelectorConfig();
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         SwapMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -85,7 +85,7 @@ class MoveSelectorConfigTest {
         config = new SwapMoveSelectorConfig();
         config.withEntitySelectorConfig(new EntitySelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -104,7 +104,7 @@ class MoveSelectorConfigTest {
         // Default configuration
         TailChainSwapMoveSelectorConfig config = new TailChainSwapMoveSelectorConfig();
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         TailChainSwapMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -117,7 +117,7 @@ class MoveSelectorConfigTest {
         config = new TailChainSwapMoveSelectorConfig();
         config.withEntitySelectorConfig(new EntitySelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -133,7 +133,7 @@ class MoveSelectorConfigTest {
         // Default configuration
         ListChangeMoveSelectorConfig config = new ListChangeMoveSelectorConfig();
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         ListChangeMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -149,7 +149,7 @@ class MoveSelectorConfigTest {
         config = new ListChangeMoveSelectorConfig();
         config.withValueSelectorConfig(new ValueSelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -168,7 +168,7 @@ class MoveSelectorConfigTest {
         // Default configuration
         ListSwapMoveSelectorConfig config = new ListSwapMoveSelectorConfig();
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         ListSwapMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -182,7 +182,7 @@ class MoveSelectorConfigTest {
         config = new ListSwapMoveSelectorConfig();
         config.withValueSelectorConfig(new ValueSelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -199,7 +199,7 @@ class MoveSelectorConfigTest {
         // Default configuration
         KOptListMoveSelectorConfig config = new KOptListMoveSelectorConfig();
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         KOptListMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -212,7 +212,7 @@ class MoveSelectorConfigTest {
         config = new KOptListMoveSelectorConfig();
         config.withValueSelectorConfig(new ValueSelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -229,7 +229,7 @@ class MoveSelectorConfigTest {
         UnionMoveSelectorConfig config =
                 new UnionMoveSelectorConfig(List.of(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig()));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         UnionMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -268,7 +268,7 @@ class MoveSelectorConfigTest {
                                 new EntitySelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC)),
                         new SwapMoveSelectorConfig()));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
 
         assertThat(nearbyConfig).isNotNull();
@@ -314,7 +314,7 @@ class MoveSelectorConfigTest {
         UnionMoveSelectorConfig config =
                 new UnionMoveSelectorConfig(List.of(unionChangeSelectorConfig, unionSwapSelectorConfig));
         assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isTrue();
+        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
         UnionMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
         assertThat(nearbyConfig).isNotNull();
         assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
@@ -365,7 +365,7 @@ class MoveSelectorConfigTest {
                 new PillarSwapMoveSelectorConfig());
 
         for (MoveSelectorConfig<?> config : moveSelectorConfigList) {
-            assertThat(NearbyAutoConfigurationMoveSelectorConfig.class.isAssignableFrom(config.getClass())).isFalse();
+            assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isFalse();
             assertThat(config.hasNearbySelectionConfig()).isFalse();
         }
     }

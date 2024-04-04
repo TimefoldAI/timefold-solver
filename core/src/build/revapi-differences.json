@@ -16,62 +16,6 @@
         },
         {
           "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig>",
-          "justification": "Adding support for Nearby Selection autoconfiguration"
-        },
-        {
-          "ignore": true,
           "code": "java.annotation.attributeValueChanged",
           "old": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
           "new": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
@@ -80,22 +24,6 @@
           "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
           "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"constraintStreamAutomaticNodeSharing\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
           "justification": "Add support for automatic constraint stream node sharing outside of Quarkus for Timefold Solver Enterprise edition users."
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig>",
-          "justification": "Gets a special behavior for construction heuristics. Should not affect anyone."
-        },
-        {
-          "ignore": true,
-          "code": "java.class.nonFinalClassInheritsFromNewClass",
-          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
-          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
-          "superClass": "ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig<ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig>",
-          "justification": "Gets a special behavior for construction heuristics. Should not affect anyone."
         }
       ]
     }

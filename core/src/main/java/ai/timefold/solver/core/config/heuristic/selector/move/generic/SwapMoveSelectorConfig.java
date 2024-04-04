@@ -10,7 +10,8 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -20,7 +21,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "secondaryEntitySelectorConfig",
         "variableNameIncludeList"
 })
-public class SwapMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorConfig<SwapMoveSelectorConfig> {
+public class SwapMoveSelectorConfig
+        extends MoveSelectorConfig<SwapMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabled<SwapMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "swapMoveSelector";
 

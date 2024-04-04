@@ -7,7 +7,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -27,8 +27,8 @@ public class UnionMoveSelectorFactory<Solution_>
         var moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
             for (var selectorConfig : config.getMoveSelectorList()) {
-                if (selectorConfig instanceof NearbyAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
-                    if (nearbySelectorConfig.hasNearbySelectionConfig()) {
+                if (selectorConfig instanceof NearbyAutoConfigurationEnabled nearbySelectorConfig) {
+                    if (selectorConfig.hasNearbySelectionConfig()) {
                         throw new IllegalArgumentException(
                                 """
                                         The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).

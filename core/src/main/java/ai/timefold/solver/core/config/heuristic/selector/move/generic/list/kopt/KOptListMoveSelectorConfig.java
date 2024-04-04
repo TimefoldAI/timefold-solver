@@ -6,7 +6,8 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -18,7 +19,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "originSelectorConfig",
         "valueSelectorConfig"
 })
-public class KOptListMoveSelectorConfig extends NearbyAutoConfigurationMoveSelectorConfig<KOptListMoveSelectorConfig> {
+public class KOptListMoveSelectorConfig
+        extends MoveSelectorConfig<KOptListMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabled<KOptListMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "kOptListMoveSelector";
 

@@ -7,7 +7,9 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabledConstructionHeuristic;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -18,7 +20,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "destinationSelectorConfig"
 })
 public class ListChangeMoveSelectorConfig
-        extends NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig<ListChangeMoveSelectorConfig> {
+        extends MoveSelectorConfig<ListChangeMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabledConstructionHeuristic<ListChangeMoveSelectorConfig>,
+        NearbyAutoConfigurationEnabled<ListChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "listChangeMoveSelector";
 

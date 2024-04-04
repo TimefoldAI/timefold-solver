@@ -7,7 +7,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -21,7 +22,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
         "valueSelectorConfig"
 })
 public class TailChainSwapMoveSelectorConfig
-        extends NearbyAutoConfigurationMoveSelectorConfig<TailChainSwapMoveSelectorConfig> {
+        extends MoveSelectorConfig<TailChainSwapMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabled<TailChainSwapMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "tailChainSwapMoveSelector";
 

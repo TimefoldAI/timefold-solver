@@ -6,7 +6,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabledConstructionHeuristic;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -45,8 +45,8 @@ public class QueuedValuePlacerFactory<Solution_>
                         valueSelector.getVariableDescriptor())
                 : config.getMoveSelectorConfig();
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
-            if (moveSelectorConfig_ instanceof NearbyConstructionHeuristicAutoConfigurationMoveSelectorConfig nearbySelectorConfig) {
-                if (nearbySelectorConfig.hasNearbySelectionConfig()) {
+            if (moveSelectorConfig_ instanceof NearbyAutoConfigurationEnabledConstructionHeuristic nearbySelectorConfig) {
+                if (moveSelectorConfig_.hasNearbySelectionConfig()) {
                     throw new IllegalArgumentException(
                             """
                                     The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
