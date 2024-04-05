@@ -38,7 +38,7 @@ jobs:
           ref: ${{ github.head_ref }}
           path: ./timefold-quickstarts
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-      - name: Checkout timefold-quickstarts (main) # Checkout the development branch if the PR branch does not exist
+      - name: Checkout timefold-quickstarts (development) # Checkout the development branch if the PR branch does not exist
         if: steps.checkout-quickstarts.outcome != 'success'
         uses: actions/checkout@v4
         with:
