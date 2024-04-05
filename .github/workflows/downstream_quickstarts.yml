@@ -29,22 +29,24 @@ jobs:
 
       # Clone timefold-quickstarts
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
-      - name: Find the proper timefold-quickstarts repo and branch
-        env:
-          CHAIN_USER: ${{ github.actor }}
-          CHAIN_BRANCH: ${{ github.head_ref }}
-          CHAIN_REPO: "timefold-quickstarts"
-          CHAIN_DEFAULT_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
-        shell: bash
-        run: ./timefold-solver/.github/scripts/check_chain_repo.sh
-      - name: Checkout timefold-quickstarts
+      - name: Checkout timefold-quickstarts (PR) # Checkout the PR branch first, if it exists
+        id: checkout-quickstarts
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: ${{ github.actor }}/timefold-quickstarts
+          ref: ${{ github.head_ref }}
+          path: ./timefold-quickstarts
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-quickstarts (main) # Checkout the development branch if the PR branch does not exist
+        if: steps.checkout-quickstarts.outcome != 'success'
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.TARGET_CHAIN_USER }}/${{ env.TARGET_CHAIN_REPO }}
-          ref: ${{ env.TARGET_CHAIN_BRANCH }}
+          repository: TimefoldAI/timefold-quickstarts
+          ref: development
           path: ./timefold-quickstarts
-          fetch-depth: 0 # Otherwise merge in the next step will fail on account of not having history.
-      - name: Prevent stale fork of timefold-quickstarts
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Prevent stale fork of quickstarts
         env:
           BLESSED_REPO: "timefold-quickstarts"
           BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
