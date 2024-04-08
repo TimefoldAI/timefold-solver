@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -25,8 +24,8 @@ public final class ProbabilityValueSelector<Solution_>
     private final SelectionCacheType cacheType;
     private final SelectionProbabilityWeightFactory<Solution_, Object> probabilityWeightFactory;
 
-    protected NavigableMap<Double, Object> cachedEntityMap = null;
-    protected double probabilityWeightTotal = -1.0;
+    private NavigableMap<Double, Object> cachedEntityMap = null;
+    private double probabilityWeightTotal = -1.0;
 
     public ProbabilityValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType,
@@ -116,9 +115,9 @@ public final class ProbabilityValueSelector<Solution_>
             @Override
             public Object next() {
                 double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
-                Map.Entry<Double, Object> entry = cachedEntityMap.floorEntry(randomOffset);
                 // entry is never null because randomOffset < probabilityWeightTotal
-                return entry.getValue();
+                return cachedEntityMap.floorEntry(randomOffset)
+                        .getValue();
             }
 
             @Override

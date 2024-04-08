@@ -28,10 +28,14 @@ import ai.timefold.solver.quarkus.it.domain.TestdataStringLengthShadowSolution;
 @Path("/timefold/test")
 public class TimefoldTestResource {
 
-    @Inject
-    SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+    private final SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
 
-    private TestdataStringLengthShadowSolution generateProblem() {
+    @Inject
+    public TimefoldTestResource(SolverManager<TestdataStringLengthShadowSolution, Long> solverManager) {
+        this.solverManager = solverManager;
+    }
+
+    private static TestdataStringLengthShadowSolution generateProblem() {
         TestdataStringLengthShadowSolution planningProblem = new TestdataStringLengthShadowSolution();
         planningProblem.setEntityList(Arrays.asList(
                 new TestdataStringLengthShadowEntity(),

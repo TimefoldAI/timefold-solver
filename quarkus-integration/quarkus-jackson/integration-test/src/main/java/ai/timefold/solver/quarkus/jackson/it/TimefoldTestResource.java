@@ -13,8 +13,12 @@ import ai.timefold.solver.quarkus.jackson.it.domain.ITestdataPlanningSolution;
 @Path("/timefold/test")
 public class TimefoldTestResource {
 
+    private final SolverManager<ITestdataPlanningSolution, Long> solverManager;
+
     @Inject
-    SolverManager<ITestdataPlanningSolution, Long> solverManager;
+    public TimefoldTestResource(SolverManager<ITestdataPlanningSolution, Long> solverManager) {
+        this.solverManager = solverManager;
+    }
 
     @POST
     @Path("/solver-factory")

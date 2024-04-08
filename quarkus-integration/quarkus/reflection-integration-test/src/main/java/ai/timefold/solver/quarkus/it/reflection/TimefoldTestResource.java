@@ -17,8 +17,12 @@ import ai.timefold.solver.quarkus.it.reflection.domain.TestdataReflectionSolutio
 @Path("/timefold/test")
 public class TimefoldTestResource {
 
+    private final SolverManager<TestdataReflectionSolution, Long> solverManager;
+
     @Inject
-    SolverManager<TestdataReflectionSolution, Long> solverManager;
+    public TimefoldTestResource(SolverManager<TestdataReflectionSolution, Long> solverManager) {
+        this.solverManager = solverManager;
+    }
 
     @POST
     @Path("/solver-factory")

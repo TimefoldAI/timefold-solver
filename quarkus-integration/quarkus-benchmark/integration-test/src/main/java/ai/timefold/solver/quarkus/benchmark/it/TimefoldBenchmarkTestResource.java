@@ -16,8 +16,12 @@ import ai.timefold.solver.quarkus.benchmark.it.domain.TestdataStringLengthShadow
 @Path("/timefold/test")
 public class TimefoldBenchmarkTestResource {
 
+    private final PlannerBenchmarkFactory benchmarkFactory;
+
     @Inject
-    PlannerBenchmarkFactory benchmarkFactory;
+    public TimefoldBenchmarkTestResource(PlannerBenchmarkFactory benchmarkFactory) {
+        this.benchmarkFactory = benchmarkFactory;
+    }
 
     @POST
     @Path("/benchmark")

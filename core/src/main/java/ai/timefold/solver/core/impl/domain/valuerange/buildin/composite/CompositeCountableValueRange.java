@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -9,7 +10,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
@@ -26,10 +26,6 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             size += childValueRange.getSize();
         }
         this.size = size;
-    }
-
-    public List<? extends ValueRange<T>> getChildValueRangeList() {
-        return childValueRangeList;
     }
 
     @Override
@@ -104,8 +100,8 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
                 }
                 remainingIndex -= childSize;
             }
-            throw new IllegalStateException("Impossible state because index (" + index
-                    + ") is always less than the size (" + size + ").");
+            throw new NoSuchElementException("Impossible state because index (%d) is always less than the size (%d)."
+                    .formatted(index, size));
         }
 
     }

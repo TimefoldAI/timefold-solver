@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -28,31 +29,45 @@ import io.micrometer.core.instrument.Tags;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public class SolverScope<Solution_> {
-    protected Set<SolverMetric> solverMetricSet;
-    protected Tags monitoringTags;
-    protected int startingSolverCount;
-    protected Random workingRandom;
-    protected InnerScoreDirector<Solution_, ?> scoreDirector;
+
+    // Solution-derived fields have the potential for race conditions.
+    private final AtomicReference<ProblemSizeStatistics> problemSizeStatistics = new AtomicReference<>();
+    private final AtomicReference<Solution_> bestSolution = new AtomicReference<>();
+    private final AtomicReference<Score<?>> bestScore = new AtomicReference<>();
+    private final AtomicLong startingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
+    private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
+
+    private Set<SolverMetric> solverMetricSet;
+    private Tags monitoringTags;
+    private int startingSolverCount;
+    private Random workingRandom;
+    private InnerScoreDirector<Solution_, ?> scoreDirector;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
     /**
      * Used for capping CPU power usage in multithreaded scenarios.
      */
-    protected Semaphore runnableThreadSemaphore = null;
+    private Semaphore runnableThreadSemaphore = null;
 
-    protected volatile Long startingSystemTimeMillis;
-    protected volatile Long endingSystemTimeMillis;
-    protected long childThreadsScoreCalculationCount = 0;
+    private long childThreadsScoreCalculationCount = 0;
 
-    protected Score startingInitializedScore;
+    private Score<?> startingInitializedScore;
 
-    protected volatile ProblemSizeStatistics problemSizeStatistics;
-    protected volatile Solution_ bestSolution;
-    protected volatile Score bestScore;
-    protected Long bestSolutionTimeMillis;
+    private Long bestSolutionTimeMillis;
+
     /**
      * Used for tracking step score
      */
-    protected final Map<Tags, List<AtomicReference<Number>>> stepScoreMap = new ConcurrentHashMap<>();
+    private final Map<Tags, List<AtomicReference<Number>>> stepScoreMap = new ConcurrentHashMap<>();
+
+    private static AtomicLong resetAtomicLongTimeMillis(AtomicLong atomicLong) {
+        atomicLong.set(-1);
+        return atomicLong;
+    }
+
+    private static Long readAtomicLongTimeMillis(AtomicLong atomicLong) {
+        var value = atomicLong.get();
+        return value == -1 ? null : value;
+    }
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -115,11 +130,11 @@ public class SolverScope<Solution_> {
     }
 
     public Long getStartingSystemTimeMillis() {
-        return startingSystemTimeMillis;
+        return readAtomicLongTimeMillis(startingSystemTimeMillis);
     }
 
     public Long getEndingSystemTimeMillis() {
-        return endingSystemTimeMillis;
+        return readAtomicLongTimeMillis(endingSystemTimeMillis);
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
@@ -163,7 +178,7 @@ public class SolverScope<Solution_> {
     }
 
     public Solution_ getBestSolution() {
-        return bestSolution;
+        return bestSolution.get();
     }
 
     /**
@@ -173,15 +188,15 @@ public class SolverScope<Solution_> {
      * @param bestSolution never null
      */
     public void setBestSolution(Solution_ bestSolution) {
-        this.bestSolution = bestSolution;
+        this.bestSolution.set(bestSolution);
     }
 
     public Score getBestScore() {
-        return bestScore;
+        return bestScore.get();
     }
 
     public void setBestScore(Score bestScore) {
-        this.bestScore = bestScore;
+        this.bestScore.set(bestScore);
     }
 
     public Long getBestSolutionTimeMillis() {
@@ -201,37 +216,37 @@ public class SolverScope<Solution_> {
     }
 
     public void startingNow() {
-        startingSystemTimeMillis = System.currentTimeMillis();
-        endingSystemTimeMillis = null;
+        startingSystemTimeMillis.set(System.currentTimeMillis());
+        resetAtomicLongTimeMillis(endingSystemTimeMillis);
     }
 
     public Long getBestSolutionTimeMillisSpent() {
-        return bestSolutionTimeMillis - startingSystemTimeMillis;
+        return getBestSolutionTimeMillis() - getStartingSystemTimeMillis();
     }
 
     public void endingNow() {
-        endingSystemTimeMillis = System.currentTimeMillis();
+        endingSystemTimeMillis.set(System.currentTimeMillis());
     }
 
     public boolean isBestSolutionInitialized() {
-        return bestScore.isSolutionInitialized();
+        return getBestScore().isSolutionInitialized();
     }
 
     public long calculateTimeMillisSpentUpToNow() {
         long now = System.currentTimeMillis();
-        return now - startingSystemTimeMillis;
+        return now - getStartingSystemTimeMillis();
     }
 
     public long getTimeMillisSpent() {
-        return endingSystemTimeMillis - startingSystemTimeMillis;
+        return getEndingSystemTimeMillis() - getStartingSystemTimeMillis();
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
-        return problemSizeStatistics;
+        return problemSizeStatistics.get();
     }
 
     public void setProblemSizeStatistics(ProblemSizeStatistics problemSizeStatistics) {
-        this.problemSizeStatistics = problemSizeStatistics;
+        this.problemSizeStatistics.set(problemSizeStatistics);
     }
 
     /**
@@ -249,11 +264,13 @@ public class SolverScope<Solution_> {
 
     public void setWorkingSolutionFromBestSolution() {
         // The workingSolution must never be the same instance as the bestSolution.
-        scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(bestSolution));
+        scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
         SolverScope<Solution_> childThreadSolverScope = new SolverScope<>();
+        childThreadSolverScope.bestSolution.set(null);
+        childThreadSolverScope.bestScore.set(null);
         childThreadSolverScope.monitoringTags = monitoringTags;
         childThreadSolverScope.solverMetricSet = solverMetricSet;
         childThreadSolverScope.startingSolverCount = startingSolverCount;
@@ -261,11 +278,9 @@ public class SolverScope<Solution_> {
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
-        childThreadSolverScope.startingSystemTimeMillis = startingSystemTimeMillis;
-        childThreadSolverScope.endingSystemTimeMillis = null;
+        childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
+        resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
         childThreadSolverScope.startingInitializedScore = null;
-        childThreadSolverScope.bestSolution = null;
-        childThreadSolverScope.bestScore = null;
         childThreadSolverScope.bestSolutionTimeMillis = null;
         return childThreadSolverScope;
     }
