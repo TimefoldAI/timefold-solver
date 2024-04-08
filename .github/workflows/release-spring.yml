@@ -45,4 +45,4 @@ jobs:
           ../timefold-solver/.github/scripts/spring_initializr_bump_solver.sh
           git add $SPRING_INITIALIZR_YAML_FILE_PATH
           git commit -m "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" 
-          gh pr create --head $(git branch --show-current) --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body-file ../timefold-solver/.github/workflows/release-pr-spring-body.md
+          gh pr create --title "Upgrade to Timefold Solver $TIMEFOLD_SOLVER_VERSION" --body "Bumps Timefold Solver to the latest version. CC @triceo"
