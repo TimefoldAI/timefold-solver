@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
@@ -17,10 +16,6 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
     public NullAllowingCountableValueRange(CountableValueRange<T> childValueRange) {
         this.childValueRange = childValueRange;
         size = childValueRange.getSize() + 1L;
-    }
-
-    public ValueRange<T> getChildValueRange() {
-        return childValueRange;
     }
 
     @Override

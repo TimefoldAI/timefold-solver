@@ -22,7 +22,8 @@ public final class TriangularNumbers {
     }
 
     static double triangularRoot(int x) {
-        return (Math.sqrt(8L * x + 1) - 1) / 2;
+        double d = 8L * x + 1;
+        return (Math.sqrt(d) - 1) / 2;
     }
 
     private TriangularNumbers() {

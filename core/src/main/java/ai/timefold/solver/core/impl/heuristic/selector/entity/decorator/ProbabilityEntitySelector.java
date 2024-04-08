@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import java.util.Iterator;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -106,9 +105,9 @@ public final class ProbabilityEntitySelector<Solution_>
             @Override
             public Object next() {
                 double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
-                Map.Entry<Double, Object> entry = cachedEntityMap.floorEntry(randomOffset);
                 // entry is never null because randomOffset < probabilityWeightTotal
-                return entry.getValue();
+                return cachedEntityMap.floorEntry(randomOffset)
+                        .getValue();
             }
 
             @Override

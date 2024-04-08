@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -98,9 +97,9 @@ public class ProbabilityMoveSelector<Solution_> extends AbstractMoveSelector<Sol
             @Override
             public Move<Solution_> next() {
                 double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
-                Map.Entry<Double, Move<Solution_>> entry = cachedMoveMap.floorEntry(randomOffset);
                 // entry is never null because randomOffset < probabilityWeightTotal
-                return entry.getValue();
+                return cachedMoveMap.floorEntry(randomOffset)
+                        .getValue();
             }
 
             @Override
