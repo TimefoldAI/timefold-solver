@@ -64,13 +64,6 @@ jobs:
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           path: ./timefold-solver-enterprise
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-      - name: Prevent stale fork of timefold-solver-enterprise
-        env:
-          BLESSED_REPO: "timefold-solver-enterprise"
-          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
-        shell: bash
-        working-directory: ./timefold-solver-enterprise
-        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
 
       - name: Quickly build timefold-solver-enterprise
         working-directory: ./timefold-solver-enterprise
@@ -96,6 +89,7 @@ jobs:
           path: ./timefold-solver-benchmarks
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Prevent stale fork of timefold-solver-benchmarks
+        if: steps.checkout-solver-benchmarks.outcome == 'success' # Only run if not on the main line.
         env:
           BLESSED_REPO: "timefold-solver-benchmarks"
           BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
