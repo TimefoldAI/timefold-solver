@@ -22,18 +22,13 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
+          cache: 'maven'
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven to measure code coverage # The ENV variables are limited to the scope of the current step. Avoid adding sensitive ENV variables here as the tests could leak them.
         run: mvn -B clean install -Prun-code-coverage
       - name: Run analysis
