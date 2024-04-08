@@ -47,6 +47,7 @@ jobs:
           path: ./timefold-quickstarts
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Prevent stale fork of quickstarts
+        if: steps.checkout-solver-quickstarts.outcome == 'success' # Only run if not on the main line.
         env:
           BLESSED_REPO: "timefold-quickstarts"
           BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
