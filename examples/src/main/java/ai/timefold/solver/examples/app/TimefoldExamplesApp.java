@@ -25,7 +25,6 @@ import javax.swing.JTextArea;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.swingui.OpenBrowserAction;
 import ai.timefold.solver.examples.common.swingui.SolverAndPersistenceFrame;
-import ai.timefold.solver.examples.meetingscheduling.app.MeetingSchedulingApp;
 import ai.timefold.solver.examples.nurserostering.app.NurseRosteringApp;
 import ai.timefold.solver.examples.projectjobscheduling.app.ProjectJobSchedulingApp;
 import ai.timefold.solver.examples.taskassigning.app.TaskAssigningApp;
@@ -89,7 +88,6 @@ public class TimefoldExamplesApp extends JFrame {
         Stream.of(new NurseRosteringApp(),
                 new TaskAssigningApp(),
                 new ProjectJobSchedulingApp(),
-                new MeetingSchedulingApp(),
                 new TravelingTournamentApp(),
                 new TennisApp())
                 .map(this::createExampleButton)
