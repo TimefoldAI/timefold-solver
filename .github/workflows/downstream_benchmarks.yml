@@ -88,8 +88,7 @@ jobs:
           path: ./timefold-solver-benchmarks
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Checkout timefold-solver-benchmarks (main) # Checkout the main branch if the PR branch does not exist
-        id: checkout-solver-benchmarks
-        if: steps.checkout-solver-enterprise.outcome != 'success'
+        if: steps.checkout-solver-benchmarks.outcome != 'success'
         uses: actions/checkout@v4
         with:
           repository: TimefoldAI/timefold-solver-benchmarks
