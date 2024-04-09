@@ -69,8 +69,37 @@
               <outputFile>timefold-solver-docs.pdf</outputFile>
               <attributes>
                 <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
-                <source-highlighter>coderay</source-highlighter><!-- highlightjs does not work in PDF -->
+                <source-highlighter>coderay</source-highlighter>
               </attributes>
+              <logHandler>
+                <failIf>
+                  <severity>WARN</severity>
+                </failIf>
+              </logHandler>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-html</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <!-- Needs to be duplicated to avoid rendering each adoc separately -->
+              <sourceDocumentName>${source.document.name}</sourceDocumentName>
+              <outputDirectory>${docs.target.dir}/html</outputDirectory>
+              <outputFile>timefold-solver-docs.html</outputFile>
+              <attributes>
+                <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
+                <source-highlighter>coderay</source-highlighter>
+                <toc>left</toc>
+                <icons>font</icons>
+              </attributes>
+              <logHandler>
+                <failIf>
+                  <severity>WARN</severity>
+                </failIf>
+              </logHandler>
             </configuration>
           </execution>
         </executions>

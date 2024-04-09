@@ -1,0 +1,23 @@
+# This file is a template for antora.yml.
+# During a release, Maven substitutes the properties and stores result into target/antora-template.yml.
+# That file is then copied to src/modules/antora.yml and committed to Git on the release branch.
+# The timefold.ai website can then be refreshed from the release branch and/or tag.
+
+# This is a workaround to be able to build the docs from main branch,
+# because 1.9.0 tag has a critical docs bug and we don't want to re-release the solver just because of the docs.
+# Remove this file when releasing Solver 1.10.0.
+name: timefold-solver
+title: Timefold Solver 1.9.0
+version: latest
+asciidoc:
+  attributes:
+    timefold-solver-version: 1.9.0
+    java-version: 17
+    maven-version: 3.9.2
+    quarkus-version: 3.8.3
+    spring-boot-version: 3.2.4
+    logback-version: 1.5.3
+    exec-maven-plugin-version: 3.2.0
+    rewrite-maven-plugin-version: 5.28.0
+nav:
+  - modules/ROOT/nav.adoc
