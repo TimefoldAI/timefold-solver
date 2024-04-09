@@ -423,7 +423,7 @@ the arrival time at a customer for a vehicle can be calculated based on the prev
 image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
 
 When the customers for a vehicle change, the arrival time for each customer is automatically adjusted.
-For more information, see the xref:quickStart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
+For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
 
 From a score calculation perspective, a shadow variable is like any other planning variable.
 From an optimization perspective, Timefold Solver effectively only optimizes the genuine variables (and mostly ignores the shadow variables): it just assures that when a genuine variable changes, any dependent shadow variables are changed accordingly.
