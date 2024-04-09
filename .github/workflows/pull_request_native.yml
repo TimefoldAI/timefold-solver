@@ -1,8 +1,6 @@
 name: GraalVM Native
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
     paths-ignore:

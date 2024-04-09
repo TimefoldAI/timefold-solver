@@ -1,8 +1,6 @@
 name: Downstream - Timefold Quickstarts
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main, '*.x']
     paths-ignore:
