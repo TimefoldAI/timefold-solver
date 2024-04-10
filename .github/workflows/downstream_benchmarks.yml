@@ -72,7 +72,8 @@ jobs:
 
       # Clone timefold-solver-benchmarks
       - name: Checkout timefold-solver-benchmarks (PR) # Checkout the PR branch first, if it exists
-        id: checkout-solver-benchmarks
+        if: github.head_ref # Only true if this is a PR.
+        id: checkout-solver-benchmarks-pr
         uses: actions/checkout@v4
         continue-on-error: true
         with:
@@ -81,7 +82,7 @@ jobs:
           path: ./timefold-solver-benchmarks
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Checkout timefold-solver-benchmarks (main) # Checkout the main branch if the PR branch does not exist
-        if: steps.checkout-solver-benchmarks.outcome != 'success'
+        if: ${{ steps.checkout-solver-benchmarks-pr.outcome != 'success' }}
         uses: actions/checkout@v4
         with:
           repository: TimefoldAI/timefold-solver-benchmarks
@@ -89,7 +90,7 @@ jobs:
           path: ./timefold-solver-benchmarks
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Prevent stale fork of timefold-solver-benchmarks
-        if: steps.checkout-solver-benchmarks.outcome == 'success' # Only run if not on the main line.
+        if: ${{ steps.checkout-solver-benchmarks-pr.outcome == 'success' }}
         env:
           BLESSED_REPO: "timefold-solver-benchmarks"
           BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
