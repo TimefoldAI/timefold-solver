@@ -29,7 +29,6 @@ import ai.timefold.solver.examples.nurserostering.app.NurseRosteringApp;
 import ai.timefold.solver.examples.projectjobscheduling.app.ProjectJobSchedulingApp;
 import ai.timefold.solver.examples.taskassigning.app.TaskAssigningApp;
 import ai.timefold.solver.examples.tennis.app.TennisApp;
-import ai.timefold.solver.examples.travelingtournament.app.TravelingTournamentApp;
 
 public class TimefoldExamplesApp extends JFrame {
 
@@ -88,7 +87,6 @@ public class TimefoldExamplesApp extends JFrame {
         Stream.of(new NurseRosteringApp(),
                 new TaskAssigningApp(),
                 new ProjectJobSchedulingApp(),
-                new TravelingTournamentApp(),
                 new TennisApp())
                 .map(this::createExampleButton)
                 .forEach(panel::add);
