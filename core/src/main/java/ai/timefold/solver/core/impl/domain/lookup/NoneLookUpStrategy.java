@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
-public class NoneLookUpStrategy implements LookUpStrategy {
+public final class NoneLookUpStrategy implements LookUpStrategy {
 
     @Override
     public void addWorkingObject(Map<Object, Object> idToWorkingObjectMap, Object workingObject) {

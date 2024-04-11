@@ -28,6 +28,7 @@ import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.util.ConcurrentMemoization;
 
 /**
  * This class is thread-safe.
@@ -64,6 +65,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     /**
      * Used by GIZMO when it encounters an undeclared entity class, such as when an abstract planning entity is extended.
      */
+    @SuppressWarnings("unused")
     public Object gizmoFallbackDeepClone(Object originalValue, Map<Object, Object> originalToCloneMap) {
         if (originalValue == null) {
             return null;

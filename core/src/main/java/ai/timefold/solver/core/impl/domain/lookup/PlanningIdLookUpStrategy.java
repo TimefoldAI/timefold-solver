@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public class PlanningIdLookUpStrategy implements LookUpStrategy {
+public final class PlanningIdLookUpStrategy implements LookUpStrategy {
 
     private final MemberAccessor planningIdMemberAccessor;
 

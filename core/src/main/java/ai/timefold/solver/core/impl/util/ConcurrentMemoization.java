@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.solution.cloner;
+package ai.timefold.solver.core.impl.util;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -23,7 +23,9 @@ public final class ConcurrentMemoization<K, V> extends ConcurrentHashMap<K, V> {
         if (value != null) {
             return value;
         }
-        return super.computeIfAbsent(key, mappingFunction);
+        V newValue = mappingFunction.apply(key);
+        put(key, newValue);
+        return newValue;
     }
 
 }
