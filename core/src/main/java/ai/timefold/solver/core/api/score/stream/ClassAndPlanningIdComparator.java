@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.api.score.stream;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,15 +10,15 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 
-public final class ClassAndPlanningIdComparator implements Comparator<Object> {
+final class ClassAndPlanningIdComparator implements Comparator<Object> {
 
     private final MemberAccessorFactory memberAccessorFactory;
     private final DomainAccessType domainAccessType;
     private final boolean failFastIfNoPlanningId;
     private final Map<Class, MemberAccessor> decisionCache = new HashMap<>();
 
-    public ClassAndPlanningIdComparator(MemberAccessorFactory memberAccessorFactory,
-            DomainAccessType domainAccessType, boolean failFastIfNoPlanningId) {
+    ClassAndPlanningIdComparator(MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType,
+            boolean failFastIfNoPlanningId) {
         this.memberAccessorFactory = memberAccessorFactory;
         this.domainAccessType = domainAccessType;
         this.failFastIfNoPlanningId = failFastIfNoPlanningId;

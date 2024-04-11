@@ -56,7 +56,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory
 import ai.timefold.solver.core.impl.domain.common.accessor.ReflectionFieldMemberAccessor;
 import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.lookup.ClassAndPlanningIdComparator;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpStrategyResolver;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
@@ -179,7 +178,6 @@ public class SolutionDescriptor<Solution_> {
 
     private SolutionCloner<Solution_> solutionCloner;
     private boolean assertModelForCloning = false;
-    private Comparator<Object> classAndPlanningIdComparator;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -207,10 +205,8 @@ public class SolutionDescriptor<Solution_> {
         lowestEntityDescriptorMap.put(entityClass, entityDescriptor);
     }
 
-    public void processAnnotations(DescriptorPolicy descriptorPolicy,
-            List<Class<?>> entityClassList) {
+    public void processAnnotations(DescriptorPolicy descriptorPolicy, List<Class<?>> entityClassList) {
         domainAccessType = descriptorPolicy.getDomainAccessType();
-        classAndPlanningIdComparator = new ClassAndPlanningIdComparator(memberAccessorFactory, domainAccessType, false);
         processSolutionAnnotations(descriptorPolicy);
         ArrayList<Method> potentiallyOverwritingMethodList = new ArrayList<>();
         // Iterate inherited members too (unlike for EntityDescriptor where each one is declared)
@@ -682,10 +678,6 @@ public class SolutionDescriptor<Solution_> {
 
     public SolutionCloner<Solution_> getSolutionCloner() {
         return solutionCloner;
-    }
-
-    public Comparator<Object> getClassAndPlanningIdComparator() {
-        return classAndPlanningIdComparator;
     }
 
     public void setAssertModelForCloning(boolean assertModelForCloning) {

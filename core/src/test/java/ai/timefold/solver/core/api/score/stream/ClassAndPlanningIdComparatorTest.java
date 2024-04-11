@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.api.score.stream;
 
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCompareToOrder;
 import static org.assertj.core.api.Assertions.assertThat;

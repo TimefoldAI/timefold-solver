@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.util.ConcurrentMemoization;
 /**
  * This class is thread-safe.
  */
-public class LookUpStrategyResolver {
+public final class LookUpStrategyResolver {
 
     private final LookUpStrategyType lookUpStrategyType;
     private final DomainAccessType domainAccessType;

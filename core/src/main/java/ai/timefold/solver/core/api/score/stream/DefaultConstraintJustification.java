@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.lookup.ClassAndPlanningIdComparator;
 
 /**
  * Default implementation of {@link ConstraintJustification}, returned by {@link ConstraintMatch#getJustification()}

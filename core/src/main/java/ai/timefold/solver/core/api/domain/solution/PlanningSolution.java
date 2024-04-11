@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 
 /**
@@ -70,8 +71,10 @@ public @interface PlanningSolution {
     }
 
     /**
+     * @deprecated When multi-threaded solving, ensure your domain classes use @{@link PlanningId} instead.
      * @return never null
      */
+    @Deprecated(forRemoval = true, since = "1.10.0")
     LookUpStrategyType lookUpStrategyType() default LookUpStrategyType.PLANNING_ID_OR_NONE;
 
 }
