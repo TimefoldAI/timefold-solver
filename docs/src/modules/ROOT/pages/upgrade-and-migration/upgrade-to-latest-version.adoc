@@ -52,15 +52,85 @@ Every upgrade note indicates how likely your code will be affected by that chang
 
 - icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
-- icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, unless you use internal classes.
+- icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, especially if you stick to public API.
 - icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 Kotlin users should translate the changes accordingly.
 
+=== Upgrade from 1.9.0 to 1.10.0
+
+.icon:info-circle[role=yellow] `LookupStrategyType` deprecated for removal
+[%collapsible%open]
+====
+`LookupStrategyType` is used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving]
+to specify how the solver should match entities and facts between parent and child score directors.
+The default value is `PLANNING_ID_OR_NONE`, which means that
+the solver will look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
+If the solver doesn't find anything with that ID, it will throw an exception.
+
+In a future version of _Timefold Solver_, we will remove the option of configuring the lookup strategy.
+The behavior will be fixed to the behavior explained above.
+To prepare for this change,
+remove the use of `@PlanningSolution.lookupStrategyType` and ensure that your planning entities and problem facts
+have a `@PlanningId`-annotated field.
+
+Before in `Timetable.java`:
+
+[source,java]
+----
+@PlanningSolution(lookUpStrategyType = LookUpStrategyType.PLANNING_ID_OR_NONE)
+public class Timetable {
+    ...
+}
+----
+
+After in `Timetable.java`:
+
+[source,java]
+----
+@PlanningSolution
+public class Timetable {
+    ...
+}
+----
+
+Before in `Lesson.java`:
+
+[source,java]
+----
+@PlanningEntity
+public class Lesson {
+
+    private String id;
+    ...
+
+}
+----
+
+After in `Lesson.java`:
+
+[source,java]
+----
+@PlanningEntity
+public class Lesson {
+
+    @PlanningId
+    private String id;
+    ...
+
+}
+----
+
+
+====
+
+'''
+
 === Upgrade from 1.8.0 to 1.9.0
 
 .icon:info-circle[role=yellow] Removed several of the old examples
+[%collapsible%open]
 ====
 We have started the process of removing the ancient Swing-based examples.
 In the first wave, we have removed the following examples from the `examples` module:
@@ -69,12 +139,15 @@ In the first wave, we have removed the following examples from the `examples` mo
 - `conferencescheduling`,
 - `curriculumcourse`,
 - `examination`,
+- `flightcrewscheduling`,
 - `machinereassignment`,
-- `nqueens`
-- `tsp`
+- `meetingscheduling`,
+- `nqueens`,
+- `pas`,
+- `tsp`,
 - and `vehiclerouting`.
 
-You can find better, more modern implementations of `vehiclerouting` and `conferencescheduling` in our quickstarts.
+You can find better, more modern implementations of many of these use cases in our quickstarts.
 The other examples on the list were removed without replacement as we didn't see sufficient traction.
 
 Going forward, our intention is to convert every other current example into a quickstart
