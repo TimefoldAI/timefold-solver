@@ -14,7 +14,7 @@ public final class ConcurrentMemoization<K, V> extends ConcurrentHashMap<K, V> {
     /**
      * An overridden implementation that heavily favors read access over write access speed.
      * This is thread-safe.
-     *
+     * <p>
      * {@inheritDoc}
      */
     @Override
@@ -23,9 +23,7 @@ public final class ConcurrentMemoization<K, V> extends ConcurrentHashMap<K, V> {
         if (value != null) {
             return value;
         }
-        V newValue = mappingFunction.apply(key);
-        put(key, newValue);
-        return newValue;
+        return super.computeIfAbsent(key, mappingFunction);
     }
 
 }
