@@ -27,7 +27,6 @@ import ai.timefold.solver.examples.common.swingui.OpenBrowserAction;
 import ai.timefold.solver.examples.common.swingui.SolverAndPersistenceFrame;
 import ai.timefold.solver.examples.nurserostering.app.NurseRosteringApp;
 import ai.timefold.solver.examples.projectjobscheduling.app.ProjectJobSchedulingApp;
-import ai.timefold.solver.examples.taskassigning.app.TaskAssigningApp;
 import ai.timefold.solver.examples.tennis.app.TennisApp;
 
 public class TimefoldExamplesApp extends JFrame {
@@ -85,7 +84,6 @@ public class TimefoldExamplesApp extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         Stream.of(new NurseRosteringApp(),
-                new TaskAssigningApp(),
                 new ProjectJobSchedulingApp(),
                 new TennisApp())
                 .map(this::createExampleButton)
