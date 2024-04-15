@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
@@ -42,17 +41,18 @@ public final class LookUpStrategyResolver {
                 return new ImmutableLookUpStrategy();
             }
             return switch (lookUpStrategyType) {
-                case PLANNING_ID_OR_NONE:
-                    MemberAccessor memberAccessor1 =
+                case PLANNING_ID_OR_NONE -> {
+                    var memberAccessor =
                             ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
-                    if (memberAccessor1 == null) {
+                    if (memberAccessor == null) {
                         yield new NoneLookUpStrategy();
                     }
-                    yield new PlanningIdLookUpStrategy(memberAccessor1);
-                case PLANNING_ID_OR_FAIL_FAST:
-                    MemberAccessor memberAccessor2 =
+                    yield new PlanningIdLookUpStrategy(memberAccessor);
+                }
+                case PLANNING_ID_OR_FAIL_FAST -> {
+                    var memberAccessor =
                             ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
-                    if (memberAccessor2 == null) {
+                    if (memberAccessor == null) {
                         throw new IllegalArgumentException("The class (" + objectClass
                                 + ") does not have a @" + PlanningId.class.getSimpleName() + " annotation,"
                                 + " but the lookUpStrategyType (" + lookUpStrategyType + ") requires it.\n"
@@ -60,8 +60,9 @@ public final class LookUpStrategyResolver {
                                 + " or change the @" + PlanningSolution.class.getSimpleName() + " annotation's "
                                 + LookUpStrategyType.class.getSimpleName() + ".");
                     }
-                    yield new PlanningIdLookUpStrategy(memberAccessor2);
-                case EQUALITY:
+                    yield new PlanningIdLookUpStrategy(memberAccessor);
+                }
+                case EQUALITY -> {
                     Method equalsMethod;
                     Method hashCodeMethod;
                     try {
@@ -81,8 +82,8 @@ public final class LookUpStrategyResolver {
                                 + " overrides the hashCode() method.");
                     }
                     yield new EqualsLookUpStrategy();
-                case NONE:
-                    yield new NoneLookUpStrategy();
+                }
+                case NONE -> new NoneLookUpStrategy();
             };
         });
     }
