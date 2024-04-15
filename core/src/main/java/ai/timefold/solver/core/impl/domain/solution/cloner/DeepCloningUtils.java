@@ -29,6 +29,7 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.Score;
@@ -94,7 +95,7 @@ public final class DeepCloningUtils {
                 || isFieldADeepCloneProperty(field, owningClass);
     }
 
-    static boolean isImmutable(Class<?> clz) {
+    public static boolean isImmutable(Class<?> clz) {
         if (clz.isPrimitive() || Score.class.isAssignableFrom(clz)) {
             return true;
         } else if (clz.isRecord() || clz.isEnum()) {
@@ -103,6 +104,20 @@ public final class DeepCloningUtils {
                         The class (%s) is annotated with @%s, but it is immutable.
                         Deep-cloning enums and records is not supported."""
                         .formatted(clz.getName(), DeepPlanningClone.class.getSimpleName()));
+            } else if (clz.isAnnotationPresent(PlanningId.class)) {
+                throw new IllegalStateException("""
+                        The class (%s) is annotated with @%s, but it is immutable.
+                        Immutable objects do not need @%s."""
+                        .formatted(clz.getName(), PlanningId.class.getSimpleName(), PlanningId.class.getSimpleName()));
+            }
+            return true;
+        } else if (PlanningImmutable.class.isAssignableFrom(clz)) {
+            if (PlanningCloneable.class.isAssignableFrom(clz)) {
+                throw new IllegalStateException("""
+                        The class (%s) implements %s, but it is %s.
+                        Immutable objects can not be cloned."""
+                        .formatted(clz.getName(), PlanningCloneable.class.getSimpleName(),
+                                PlanningImmutable.class.getSimpleName()));
             }
             return true;
         }

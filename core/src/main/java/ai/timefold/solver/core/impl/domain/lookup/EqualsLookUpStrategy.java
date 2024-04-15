@@ -4,7 +4,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 
-public class EqualsLookUpStrategy implements LookUpStrategy {
+public final class EqualsLookUpStrategy implements LookUpStrategy {
 
     @Override
     public void addWorkingObject(Map<Object, Object> idToWorkingObjectMap, Object workingObject) {

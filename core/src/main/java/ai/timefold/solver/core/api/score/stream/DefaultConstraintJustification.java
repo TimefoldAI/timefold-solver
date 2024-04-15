@@ -2,15 +2,11 @@ package ai.timefold.solver.core.api.score.stream;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.lookup.ClassAndPlanningIdComparator;
 
 /**
  * Default implementation of {@link ConstraintJustification}, returned by {@link ConstraintMatch#getJustification()}
@@ -45,7 +41,6 @@ public final class DefaultConstraintJustification
 
     private final Score<?> impact;
     private final List<Object> facts;
-    private Comparator<Object> classAndIdPlanningComparator;
 
     private DefaultConstraintJustification(Score<?> impact, List<Object> facts) {
         this.impact = impact;
@@ -79,26 +74,23 @@ public final class DefaultConstraintJustification
 
     @Override
     public int hashCode() {
-        return Objects.hash(facts);
+        return facts.hashCode();
     }
 
     @Override
     public int compareTo(DefaultConstraintJustification other) {
-        List<?> justificationList = this.getFacts();
-        List<?> otherJustificationList = other.getFacts();
+        var justificationList = this.getFacts();
+        var otherJustificationList = other.getFacts();
         if (justificationList != otherJustificationList) {
             if (justificationList.size() != otherJustificationList.size()) {
                 return Integer.compare(justificationList.size(), otherJustificationList.size());
-            } else {
-                Comparator<Object> comparator = getClassAndIdPlanningComparator(other);
-                for (int i = 0; i < justificationList.size(); i++) {
-                    Object left = justificationList.get(i);
-                    Object right = otherJustificationList.get(i);
-                    if (left != right) {
-                        int comparison = comparator.compare(left, right);
-                        if (comparison != 0) {
-                            return comparison;
-                        }
+            } else { // Both lists have the same size.
+                for (var i = 0; i < justificationList.size(); i++) {
+                    var left = justificationList.get(i);
+                    var right = otherJustificationList.get(i);
+                    var comparison = compareElements(left, right);
+                    if (comparison != 0) { // Element at position i differs between the two lists.
+                        return comparison;
                     }
                 }
             }
@@ -106,28 +98,28 @@ public final class DefaultConstraintJustification
         return 0;
     }
 
-    private Comparator<Object> getClassAndIdPlanningComparator(DefaultConstraintJustification other) {
-        /*
-         * The comparator performs some expensive operations, which can be cached.
-         * For optimal performance, this cache (MemberAccessFactory) needs to be shared between comparators.
-         * In order to prevent the comparator from being shared in a static field creating a de-facto memory leak,
-         * we cache the comparator inside this class, and we minimize the number of instances that will be created
-         * by creating the comparator when none of the constraint matches already carry it,
-         * and we store it in both.
-         */
-        if (classAndIdPlanningComparator != null) {
-            return classAndIdPlanningComparator;
-        } else if (other.classAndIdPlanningComparator != null) {
-            return other.classAndIdPlanningComparator;
+    private static int compareElements(Object left, Object right) {
+        if (left == right) {
+            return 0;
+        } else if (left == null) {
+            return -1;
+        } else if (right == null) {
+            return 1;
         } else {
-            /*
-             * FIXME Using reflection will break Quarkus once we don't open up classes for reflection any more.
-             * Use cases which need to operate safely within Quarkus should use SolutionDescriptor's MemberAccessorFactory.
-             */
-            classAndIdPlanningComparator =
-                    new ClassAndPlanningIdComparator(new MemberAccessorFactory(), DomainAccessType.REFLECTION, false);
-            other.classAndIdPlanningComparator = classAndIdPlanningComparator;
-            return classAndIdPlanningComparator;
+            // Left and right are different, not equal and not null.
+            var leftClass = left.getClass();
+            var rightClass = right.getClass();
+            if (leftClass != rightClass) { // Different classes; compare by class name.
+                return leftClass.getCanonicalName().compareTo(rightClass.getCanonicalName());
+            }
+            // Both are instances of the same class.
+            if (left instanceof Comparable comparable) {
+                return comparable.compareTo(right);
+            } else if (Objects.equals(left, right)) { // They are not comparable, but at least they're equal.
+                return 0;
+            } else { // Nothing to compare by; use hash code for consistent ordering.
+                return Integer.compare(left.hashCode(), right.hashCode());
+            }
         }
     }
 

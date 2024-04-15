@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.solution.cloner;
+package ai.timefold.solver.core.impl.util;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -14,7 +14,7 @@ public final class ConcurrentMemoization<K, V> extends ConcurrentHashMap<K, V> {
     /**
      * An overridden implementation that heavily favors read access over write access speed.
      * This is thread-safe.
-     *
+     * <p>
      * {@inheritDoc}
      */
     @Override

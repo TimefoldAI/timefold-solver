@@ -1,23 +1,6 @@
 package ai.timefold.solver.core.impl.domain.lookup;
 
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.MonthDay;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
@@ -25,52 +8,25 @@ import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
+import ai.timefold.solver.core.impl.util.ConcurrentMemoization;
 
 /**
  * This class is thread-safe.
  */
-public class LookUpStrategyResolver {
+public final class LookUpStrategyResolver {
 
     private final LookUpStrategyType lookUpStrategyType;
     private final DomainAccessType domainAccessType;
-
     private final MemberAccessorFactory memberAccessorFactory;
-
-    private final ConcurrentMap<Class<?>, LookUpStrategy> decisionCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, LookUpStrategy> decisionCache = new ConcurrentMemoization<>();
 
     public LookUpStrategyResolver(DescriptorPolicy descriptorPolicy, LookUpStrategyType lookUpStrategyType) {
         this.lookUpStrategyType = lookUpStrategyType;
         this.domainAccessType = descriptorPolicy.getDomainAccessType();
         this.memberAccessorFactory = descriptorPolicy.getMemberAccessorFactory();
-        decisionCache.put(Boolean.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Byte.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Short.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Integer.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Long.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Float.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Double.class, new ImmutableLookUpStrategy());
-        decisionCache.put(BigInteger.class, new ImmutableLookUpStrategy());
-        decisionCache.put(BigDecimal.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Character.class, new ImmutableLookUpStrategy());
-        decisionCache.put(String.class, new ImmutableLookUpStrategy());
-        decisionCache.put(UUID.class, new ImmutableLookUpStrategy());
-
-        decisionCache.put(Instant.class, new ImmutableLookUpStrategy());
-        decisionCache.put(LocalDateTime.class, new ImmutableLookUpStrategy());
-        decisionCache.put(LocalTime.class, new ImmutableLookUpStrategy());
-        decisionCache.put(LocalDate.class, new ImmutableLookUpStrategy());
-        decisionCache.put(MonthDay.class, new ImmutableLookUpStrategy());
-        decisionCache.put(YearMonth.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Year.class, new ImmutableLookUpStrategy());
-        decisionCache.put(OffsetDateTime.class, new ImmutableLookUpStrategy());
-        decisionCache.put(OffsetTime.class, new ImmutableLookUpStrategy());
-        decisionCache.put(ZonedDateTime.class, new ImmutableLookUpStrategy());
-        decisionCache.put(ZoneOffset.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Duration.class, new ImmutableLookUpStrategy());
-        decisionCache.put(Period.class, new ImmutableLookUpStrategy());
     }
 
     /**
@@ -81,21 +37,22 @@ public class LookUpStrategyResolver {
      */
     public LookUpStrategy determineLookUpStrategy(Object object) {
         return decisionCache.computeIfAbsent(object.getClass(), objectClass -> {
-            if (objectClass.isEnum()) {
+            if (DeepCloningUtils.isImmutable(objectClass)) {
                 return new ImmutableLookUpStrategy();
             }
-            switch (lookUpStrategyType) {
-                case PLANNING_ID_OR_NONE:
-                    MemberAccessor memberAccessor1 =
+            return switch (lookUpStrategyType) {
+                case PLANNING_ID_OR_NONE -> {
+                    var memberAccessor =
                             ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
-                    if (memberAccessor1 == null) {
-                        return new NoneLookUpStrategy();
+                    if (memberAccessor == null) {
+                        yield new NoneLookUpStrategy();
                     }
-                    return new PlanningIdLookUpStrategy(memberAccessor1);
-                case PLANNING_ID_OR_FAIL_FAST:
-                    MemberAccessor memberAccessor2 =
+                    yield new PlanningIdLookUpStrategy(memberAccessor);
+                }
+                case PLANNING_ID_OR_FAIL_FAST -> {
+                    var memberAccessor =
                             ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
-                    if (memberAccessor2 == null) {
+                    if (memberAccessor == null) {
                         throw new IllegalArgumentException("The class (" + objectClass
                                 + ") does not have a @" + PlanningId.class.getSimpleName() + " annotation,"
                                 + " but the lookUpStrategyType (" + lookUpStrategyType + ") requires it.\n"
@@ -103,8 +60,9 @@ public class LookUpStrategyResolver {
                                 + " or change the @" + PlanningSolution.class.getSimpleName() + " annotation's "
                                 + LookUpStrategyType.class.getSimpleName() + ".");
                     }
-                    return new PlanningIdLookUpStrategy(memberAccessor2);
-                case EQUALITY:
+                    yield new PlanningIdLookUpStrategy(memberAccessor);
+                }
+                case EQUALITY -> {
                     Method equalsMethod;
                     Method hashCodeMethod;
                     try {
@@ -123,13 +81,10 @@ public class LookUpStrategyResolver {
                                 + ") overrides equals() but neither it nor any superclass"
                                 + " overrides the hashCode() method.");
                     }
-                    return new EqualsLookUpStrategy();
-                case NONE:
-                    return new NoneLookUpStrategy();
-                default:
-                    throw new IllegalStateException("The lookUpStrategyType (" + lookUpStrategyType
-                            + ") is not implemented.");
-            }
+                    yield new EqualsLookUpStrategy();
+                }
+                case NONE -> new NoneLookUpStrategy();
+            };
         });
     }
 

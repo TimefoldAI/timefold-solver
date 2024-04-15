@@ -2,7 +2,8 @@ package ai.timefold.solver.core.impl.domain.lookup;
 
 import java.util.Map;
 
-public interface LookUpStrategy {
+public sealed interface LookUpStrategy
+        permits EqualsLookUpStrategy, ImmutableLookUpStrategy, NoneLookUpStrategy, PlanningIdLookUpStrategy {
 
     void addWorkingObject(Map<Object, Object> idToWorkingObjectMap, Object workingObject);
 
