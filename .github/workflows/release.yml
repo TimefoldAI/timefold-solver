@@ -54,7 +54,7 @@ jobs:
 
       # Need Maven 3.9.0+ to recognize MAVEN_ARGS.
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.5
+        uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.9.3
 
