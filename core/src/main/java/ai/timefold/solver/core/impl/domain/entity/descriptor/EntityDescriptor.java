@@ -309,6 +309,12 @@ public class EntityDescriptor<Solution_> {
                     Maybe the annotation is defined on both the field and its getter."""
                     .formatted(entityClass, variableAnnotationClass.getSimpleName(), memberAccessor, duplicate));
         } else if (variableAnnotationClass.equals(PlanningVariable.class)) {
+            var type = memberAccessor.getType();
+            if (type.isArray()) {
+                throw new IllegalStateException("""
+                        The entityClass (%s) has a @%s annotated member (%s) that is of an array type."""
+                        .formatted(entityClass, PlanningVariable.class.getSimpleName(), memberAccessor));
+            }
             var variableDescriptor = new BasicVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredGenuineVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PlanningListVariable.class)) {
