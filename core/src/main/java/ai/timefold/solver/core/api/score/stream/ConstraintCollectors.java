@@ -1963,15 +1963,20 @@ public final class ConstraintCollectors {
     /**
      * Creates a constraint collector that returns {@link ConcurrentUsageInfo} about the first fact.
      *
-     * For instance, {@code [Shift from=2, to=4] [Shift from=3, to=5] [Shift from=6, to=7] [Shift from=7, to=8]}
+     * For instance, {@code [Equipment from=2, to=4] [Equipment from=3, to=5] [Equipment from=6, to=7] [Equipment from=7, to=8]}
      * returns the following information:
      *
      * <pre>
      * {@code
-     * IntervalClusters: [[Shift from=2, to=4] [Shift from=3, to=5]], [[Shift from=6, to=7] [Shift from=7, to=8]]
+     * ConcurrentUsage: [minConcurrentUsage: 1, maxConcurrentUsage: 2,
+     *                  [Equipment from=2, to=4] [Equipment from=3, to=5]],
+     *                  [minConcurrentUsage: 1, maxConcurrentUsage: 1,
+     *                  [Equipment from=6, to=7] [Equipment from=7, to=8]]
      * Breaks: [[Break from=5, to=6, length=1]]
      * }
      * </pre>
+     *
+     * This can be used to ensure a limited resource is not over-assigned.
      *
      * @param startMap Maps the fact to its start
      * @param endMap Maps the fact to its end

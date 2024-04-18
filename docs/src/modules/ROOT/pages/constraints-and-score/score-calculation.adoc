@@ -804,6 +804,52 @@ and `matches` contains 6 matches, then the `weight` penalty will be `6`.
 If the number of consecutive matches is `4`,
 then the sequence is not violating the league requirement, and we can filter it out.
 
+
+[#collectorsConcurrentUsage]
+==== Concurrent usage collectors
+
+Certain constraints requires tracking concurrent usage of a resource.
+If the maximum concurrent capacity of the resource is unknown at the time of writing the constraints, you can implement this pattern using the `ConstraintCollectors.concurrentUsage(...)` collector:
+
+[source,java,options="nowrap"]
+----
+Constraint doNotOverAssignEquipment(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(Equipment.class)
+        .join(Job.class, Joiners.equal(Equipment::getId, Job::getRequiredEquipmentId))
+        .collect((equipment, job) -> equipment, ConstraintCollectors.concurrentUsage((equipment, job) -> job,
+                          Job::getStart,
+                          Job::getEnd,
+                          (a, b) -> b - a))
+        .flattenLast(ConcurrentUsageInfo::getConcurrentUsages)
+        .filter((equipment, concurrentUsage) -> concurrentUsage.getMaximumConcurrentUsage() > equipment.getCapacity())
+        .penalize(HardSoftScore.ONE_HARD, (equipment, concurrentUsage) -> concurrentUsage.getMaximumConcurrentUsage() - equipment.getCapacity())
+        .asConstraint("Concurrent equipment usage over capacity");
+}
+----
+
+Let's take a closer look at the crucial part of this constraint:
+
+[source,java,options="nowrap"]
+----
+        .collect((equipment, job) -> equipment, ConstraintCollectors.concurrentUsage((equipment, job) -> job,
+                          Job::getStart,
+                          Job::getEnd,
+                          (a, b) -> b - a))
+        .flattenLast(ConcurrentUsageInfo::getConcurrentUsages)
+        .filter((equipment, concurrentUsage) -> concurrentUsage.getMaximumConcurrentUsage() > equipment.getCapacity())
+----
+
+The `groupBy()` building block groups all jobs by required equipment, and for every such pair it creates a `ConcurrentUsageInfo` instance.
+Any overlapping jobs will be put into the same `ConcurrentUsage` cluster.
+
+The `ConcurrentUsageInfo` then has several useful methods to not only get the list of resource usage, but also to get any and all breaks between resource usage.
+In this case, we are only interested in the resource usage, and we use <<constraintStreamsFlattening,flattening>> to convert each to its own tuple.
+
+Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the violation amount for each concurrent usage.
+For example, if the equipment has a `capacity` of `3`, and the `maximumConcurrentUsage` of the `resource` is `5`, then `violationAmount` will be `2`.
+If the amount is `0`, then the equipment is not being used over its capacity and we can filter the tuple out.
+
+
 [#collectorsConditional]
 ==== Conditional collectors
 
