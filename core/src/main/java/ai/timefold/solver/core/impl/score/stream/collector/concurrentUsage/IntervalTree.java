@@ -1,23 +1,26 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
 
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+
 public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
 
-    private final Function<Interval_, Point_> startMapping;
-    private final Function<Interval_, Point_> endMapping;
+    private final Function<? super Interval_, ? extends Point_> startMapping;
+    private final Function<? super Interval_, ? extends Point_> endMapping;
     private final TreeSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
-    private final ConsecutiveIntervalInfoImpl<Interval_, Point_, Difference_> consecutiveIntervalData;
+    private final ConcurrentUsageInfoImpl<Interval_, Point_, Difference_> consecutiveIntervalData;
 
-    public IntervalTree(Function<Interval_, Point_> startMapping, Function<Interval_, Point_> endMapping,
-            BiFunction<Point_, Point_, Difference_> differenceFunction) {
+    public IntervalTree(Function<? super Interval_, ? extends Point_> startMapping,
+            Function<? super Interval_, ? extends Point_> endMapping,
+            BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
         this.startMapping = startMapping;
         this.endMapping = endMapping;
         this.splitPointSet = new TreeSet<>();
-        this.consecutiveIntervalData = new ConsecutiveIntervalInfoImpl<>(splitPointSet, differenceFunction);
+        this.consecutiveIntervalData = new ConcurrentUsageInfoImpl<>(splitPointSet, differenceFunction);
     }
 
     public Interval<Interval_, Point_> getInterval(Interval_ intervalValue) {
@@ -47,27 +50,27 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
     public boolean add(Interval<Interval_, Point_> interval) {
         var startSplitPoint = interval.getStartSplitPoint();
         var endSplitPoint = interval.getEndSplitPoint();
-        boolean isChanged;
+        var anyChanged = false;
 
         var flooredStartSplitPoint = splitPointSet.floor(startSplitPoint);
         if (flooredStartSplitPoint == null || !flooredStartSplitPoint.equals(startSplitPoint)) {
             splitPointSet.add(startSplitPoint);
             startSplitPoint.createCollections();
-            isChanged = startSplitPoint.addIntervalStartingAtSplitPoint(interval);
+            anyChanged |= startSplitPoint.addIntervalStartingAtSplitPoint(interval);
         } else {
-            isChanged = flooredStartSplitPoint.addIntervalStartingAtSplitPoint(interval);
+            anyChanged |= flooredStartSplitPoint.addIntervalStartingAtSplitPoint(interval);
         }
 
         var ceilingEndSplitPoint = splitPointSet.ceiling(endSplitPoint);
         if (ceilingEndSplitPoint == null || !ceilingEndSplitPoint.equals(endSplitPoint)) {
             splitPointSet.add(endSplitPoint);
             endSplitPoint.createCollections();
-            isChanged |= endSplitPoint.addIntervalEndingAtSplitPoint(interval);
+            anyChanged |= endSplitPoint.addIntervalEndingAtSplitPoint(interval);
         } else {
-            isChanged |= ceilingEndSplitPoint.addIntervalEndingAtSplitPoint(interval);
+            anyChanged |= ceilingEndSplitPoint.addIntervalEndingAtSplitPoint(interval);
         }
 
-        if (isChanged) {
+        if (true || anyChanged) {
             consecutiveIntervalData.addInterval(interval);
         }
         return true;
@@ -97,7 +100,7 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
         return true;
     }
 
-    public ConsecutiveIntervalInfoImpl<Interval_, Point_, Difference_> getConsecutiveIntervalData() {
+    public ConcurrentUsageInfo<Interval_, Point_, Difference_> getConsecutiveIntervalData() {
         return consecutiveIntervalData;
     }
 }

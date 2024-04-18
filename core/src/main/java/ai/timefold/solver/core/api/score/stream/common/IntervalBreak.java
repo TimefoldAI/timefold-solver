@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.api;
+package ai.timefold.solver.core.api.score.stream.common;
 
 /**
  * An IntervalBreak is a gap between two consecutive interval clusters. For instance,
@@ -11,12 +11,12 @@ public interface IntervalBreak<Interval_, Point_ extends Comparable<Point_>, Dif
     /**
      * @return never null, the interval cluster leading directly into this
      */
-    IntervalCluster<Interval_, Point_, Difference_> getPreviousIntervalCluster();
+    ConcurrentUsage<Interval_, Point_, Difference_> getPreviousConcurrentUsage();
 
     /**
      * @return never null, the interval cluster immediately following this
      */
-    IntervalCluster<Interval_, Point_, Difference_> getNextIntervalCluster();
+    ConcurrentUsage<Interval_, Point_, Difference_> getNextConcurrentUsage();
 
     /**
      * Return the end of the sequence before this break. For the
@@ -24,8 +24,8 @@ public interface IntervalBreak<Interval_, Point_ extends Comparable<Point_>, Dif
      *
      * @return never null, the item this break is directly after
      */
-    default Point_ getPreviousIntervalClusterEnd() {
-        return getPreviousIntervalCluster().getEnd();
+    default Point_ getPreviousConcurrentUsageEnd() {
+        return getPreviousConcurrentUsage().getEnd();
     };
 
     /**
@@ -34,13 +34,13 @@ public interface IntervalBreak<Interval_, Point_ extends Comparable<Point_>, Dif
      *
      * @return never null, the item this break is directly before
      */
-    default Point_ getNextIntervalClusterStart() {
-        return getNextIntervalCluster().getStart();
+    default Point_ getNextConcurrentUsageStart() {
+        return getNextConcurrentUsage().getStart();
     }
 
     /**
      * Return the length of the break, which is the difference
-     * between {@link #getNextIntervalClusterStart()} and {@link #getPreviousIntervalClusterEnd()}. For the
+     * between {@link #getNextConcurrentUsageStart()} and {@link #getPreviousConcurrentUsageEnd()}. For the
      * break between 6 and 10, this will return 4.
      *
      * @return never null, the length of this break

@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
@@ -214,6 +215,16 @@ public class InnerQuadConstraintCollectors {
     public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
             toConsecutiveSequences(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return new ConsecutiveSequencesQuadConstraintCollector<>(resultMap, indexMap);
+    }
+
+    public static <A, B, C, D, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<Interval_, Point_, Difference_>>
+            consecutiveUsages(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Interval_> mapper,
+                    Function<? super Interval_, ? extends Point_> startMap,
+                    Function<? super Interval_, ? extends Point_> endMap,
+                    BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
+        return new ConcurrentUsageQuadConstraintCollector<>(mapper, startMap, endMap,
+                differenceFunction);
     }
 
     public static <A, B, C, D, Intermediate_, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_>

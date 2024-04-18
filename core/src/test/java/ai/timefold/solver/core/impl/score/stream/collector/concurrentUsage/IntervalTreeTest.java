@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,8 +11,8 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.examples.common.experimental.api.IntervalBreak;
-import ai.timefold.solver.examples.common.experimental.api.IntervalCluster;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsage;
 
 import org.junit.jupiter.api.Test;
 
@@ -77,18 +77,24 @@ class IntervalTreeTest {
         tree.add(b);
         tree.add(c);
 
-        IterableList<IntervalCluster<TestInterval, Integer, Integer>> clusterList =
-                new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        var clusterList =
+                new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(3);
 
         assertThat(clusterList.get(0)).containsExactly(new TestInterval(0, 2));
         assertThat(clusterList.get(0).hasOverlap()).isFalse();
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(1)).containsExactly(new TestInterval(3, 4));
         assertThat(clusterList.get(1).hasOverlap()).isFalse();
+        assertThat(clusterList.get(1).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(1).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(2)).containsExactly(new TestInterval(5, 7));
         assertThat(clusterList.get(2).hasOverlap()).isFalse();
+        assertThat(clusterList.get(2).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(2).getMaximumConcurrentUsage()).isEqualTo(1);
 
         verifyBreaks(tree);
     }
@@ -103,11 +109,13 @@ class IntervalTreeTest {
         tree.add(b);
         tree.add(c);
 
-        IterableList<IntervalCluster<TestInterval, Integer, Integer>> clusterList =
-                new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        var clusterList =
+                new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(1);
 
         assertThat(clusterList.get(0)).containsExactly(new TestInterval(0, 2), new TestInterval(2, 4), new TestInterval(4, 7));
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(1);
         verifyBreaks(tree);
     }
 
@@ -120,12 +128,16 @@ class IntervalTreeTest {
         tree.add(a);
         tree.add(b);
 
-        IterableList<IntervalCluster<TestInterval, Integer, Integer>> clusterList =
-                new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        var clusterList =
+                new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(2);
 
         assertThat(clusterList.get(0)).containsExactly(a.getValue(), a.getValue());
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(2);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(2);
         assertThat(clusterList.get(1)).containsExactly(b.getValue());
+        assertThat(clusterList.get(1).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(1).getMaximumConcurrentUsage()).isEqualTo(1);
         verifyBreaks(tree);
     }
 
@@ -146,8 +158,8 @@ class IntervalTreeTest {
 
         tree.remove(b);
 
-        IterableList<IntervalCluster<TestInterval, Integer, Integer>> clusterList =
-                new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        var clusterList =
+                new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(2);
 
         assertThat(clusterList.get(0)).containsExactly(new TestInterval(0, 2));
@@ -201,18 +213,24 @@ class IntervalTreeTest {
         tree.add(e);
         tree.add(removedInterval2);
 
-        IterableList<IntervalCluster<TestInterval, Integer, Integer>> clusterList =
-                new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        var clusterList =
+                new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(3);
 
         assertThat(clusterList.get(0)).containsExactly(a.getValue(), removedTestInterval1, c.getValue());
         assertThat(clusterList.get(0).hasOverlap()).isTrue();
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(2);
 
         assertThat(clusterList.get(1)).containsExactly(d.getValue());
         assertThat(clusterList.get(1).hasOverlap()).isFalse();
+        assertThat(clusterList.get(1).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(1).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(2)).containsExactly(e.getValue(), removedTestInterval2);
         assertThat(clusterList.get(2).hasOverlap()).isTrue();
+        assertThat(clusterList.get(2).getMinimumConcurrentUsage()).isEqualTo(2);
+        assertThat(clusterList.get(2).getMaximumConcurrentUsage()).isEqualTo(2);
 
         verifyBreaks(tree);
 
@@ -222,17 +240,23 @@ class IntervalTreeTest {
 
         tree.remove(removedInterval1);
 
-        clusterList = new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        clusterList = new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(3);
 
         assertThat(clusterList.get(0)).containsExactly(a.getValue(), c.getValue());
         assertThat(clusterList.get(0).hasOverlap()).isFalse();
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(1)).containsExactly(d.getValue());
         assertThat(clusterList.get(1).hasOverlap()).isFalse();
+        assertThat(clusterList.get(1).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(1).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(2)).containsExactly(e.getValue(), removedTestInterval2);
         assertThat(clusterList.get(2).hasOverlap()).isTrue();
+        assertThat(clusterList.get(2).getMinimumConcurrentUsage()).isEqualTo(2);
+        assertThat(clusterList.get(2).getMaximumConcurrentUsage()).isEqualTo(2);
 
         verifyBreaks(tree);
 
@@ -241,35 +265,45 @@ class IntervalTreeTest {
         removedTestInterval2.setEnd(4);
 
         tree.remove(removedInterval2);
-        clusterList = new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        clusterList = new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(3);
 
         assertThat(clusterList.get(0)).containsExactly(a.getValue(), c.getValue());
         assertThat(clusterList.get(0).hasOverlap()).isFalse();
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(1)).containsExactly(d.getValue());
         assertThat(clusterList.get(1).hasOverlap()).isFalse();
+        assertThat(clusterList.get(1).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(1).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(2)).containsExactly(e.getValue());
         assertThat(clusterList.get(2).hasOverlap()).isFalse();
+        assertThat(clusterList.get(2).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(2).getMaximumConcurrentUsage()).isEqualTo(1);
 
         verifyBreaks(tree);
         Interval<TestInterval, Integer> g = tree.getInterval(new TestInterval(6, 7));
         tree.add(g);
-        clusterList = new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
+        clusterList = new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
         assertThat(clusterList).hasSize(2);
 
         assertThat(clusterList.get(0)).containsExactly(a.getValue(), c.getValue());
         assertThat(clusterList.get(0).hasOverlap()).isFalse();
+        assertThat(clusterList.get(0).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(0).getMaximumConcurrentUsage()).isEqualTo(1);
 
         assertThat(clusterList.get(1)).containsExactly(d.getValue(), g.getValue(), e.getValue());
         assertThat(clusterList.get(1).hasOverlap()).isFalse();
+        assertThat(clusterList.get(1).getMinimumConcurrentUsage()).isEqualTo(1);
+        assertThat(clusterList.get(1).getMaximumConcurrentUsage()).isEqualTo(1);
     }
 
-    public void verifyBreaks(IntervalTree<TestInterval, Integer, Integer> tree) {
-        IterableList<IntervalCluster<TestInterval, Integer, Integer>> clusterList =
-                new IterableList<>(tree.getConsecutiveIntervalData().getIntervalClusters());
-        IterableList<IntervalBreak<TestInterval, Integer, Integer>> breakList =
+    void verifyBreaks(IntervalTree<TestInterval, Integer, Integer> tree) {
+        var clusterList =
+                new IterableList<>(tree.getConsecutiveIntervalData().getConcurrentUsages());
+        var breakList =
                 new IterableList<>(tree.getConsecutiveIntervalData().getBreaks());
 
         if (clusterList.size() == 0) {
@@ -277,24 +311,22 @@ class IntervalTreeTest {
         }
         assertThat(breakList).hasSize(clusterList.size() - 1);
         for (int i = 0; i < clusterList.size() - 1; i++) {
-            assertThat(breakList.get(i).getPreviousIntervalCluster()).isSameAs(clusterList.get(i));
-            assertThat(breakList.get(i).getNextIntervalCluster()).isSameAs(clusterList.get(i + 1));
-            assertThat(breakList.get(i).getPreviousIntervalClusterEnd()).isEqualTo(clusterList.get(i).getEnd());
-            assertThat(breakList.get(i).getNextIntervalClusterStart()).isEqualTo(clusterList.get(i + 1).getStart());
+            assertThat(breakList.get(i).getPreviousSequenceEnd()).isEqualTo(clusterList.get(i).getEnd());
+            assertThat(breakList.get(i).getNextSequenceStart()).isEqualTo(clusterList.get(i + 1).getStart());
             assertThat(breakList.get(i).getLength()).isEqualTo(clusterList.get(i + 1).getStart() - clusterList.get(i).getEnd());
         }
     }
 
-    private static int intervalBreakCompare(IntervalBreak<TestInterval, Integer, Integer> a,
-            IntervalBreak<TestInterval, Integer, Integer> b) {
+    private static int intervalBreakCompare(Break<Integer, Integer> a,
+            Break<Integer, Integer> b) {
         if (a == b) {
             return 0;
         }
         if (a == null || b == null) {
             return (a == null) ? -1 : 1;
         }
-        boolean out = intervalClusterCompare(a.getPreviousIntervalCluster(), b.getPreviousIntervalCluster()) == 0 &&
-                intervalClusterCompare(a.getNextIntervalCluster(), b.getNextIntervalCluster()) == 0 &&
+        boolean out = Objects.equals(a.getPreviousSequenceEnd(), b.getPreviousSequenceEnd()) &&
+                Objects.equals(a.getNextSequenceStart(), b.getNextSequenceStart()) &&
                 Objects.equals(a.getLength(), b.getLength());
 
         if (out) {
@@ -303,8 +335,8 @@ class IntervalTreeTest {
         return a.hashCode() - b.hashCode();
     }
 
-    private static int intervalClusterCompare(IntervalCluster<TestInterval, Integer, Integer> a,
-            IntervalCluster<TestInterval, Integer, Integer> b) {
+    private static int intervalClusterCompare(ConcurrentUsage<TestInterval, Integer, Integer> a,
+            ConcurrentUsage<TestInterval, Integer, Integer> b) {
         if (a == b) {
             return 0;
         }
@@ -312,15 +344,17 @@ class IntervalTreeTest {
             return (a == null) ? -1 : 1;
         }
 
-        if (!(a instanceof IntervalClusterImpl) || !(b instanceof IntervalClusterImpl)) {
+        if (!(a instanceof ConcurrentUsageImpl) || !(b instanceof ConcurrentUsageImpl)) {
             throw new IllegalArgumentException("Expected (" + a + ") and (" + b + ") to both be IntervalClusterImpl");
         }
 
-        IntervalClusterImpl<TestInterval, Integer, Integer> first = (IntervalClusterImpl<TestInterval, Integer, Integer>) a;
-        IntervalClusterImpl<TestInterval, Integer, Integer> second = (IntervalClusterImpl<TestInterval, Integer, Integer>) b;
+        var first = (ConcurrentUsageImpl<TestInterval, Integer, Integer>) a;
+        var second = (ConcurrentUsageImpl<TestInterval, Integer, Integer>) b;
 
         boolean out = first.getStartSplitPoint().compareTo(second.getStartSplitPoint()) == 0 &&
-                first.getEndSplitPoint().compareTo(second.getEndSplitPoint()) == 0;
+                first.getEndSplitPoint().compareTo(second.getEndSplitPoint()) == 0 &&
+                first.getMinimumConcurrentUsage() == second.getMinimumConcurrentUsage() &&
+                first.getMaximumConcurrentUsage() == second.getMaximumConcurrentUsage();
         if (out) {
             return 0;
         }
@@ -385,14 +419,14 @@ class IntervalTreeTest {
                 // Recompute all interval clusters
                 IntervalSplitPoint<TestInterval, Integer> previous = null;
                 IntervalSplitPoint<TestInterval, Integer> current = splitPoints.isEmpty() ? null : splitPoints.first();
-                List<IntervalClusterImpl<TestInterval, Integer, Integer>> intervalClusterList = new ArrayList<>();
+                List<ConcurrentUsageImpl<TestInterval, Integer, Integer>> intervalClusterList = new ArrayList<>();
                 List<IntervalBreakImpl<TestInterval, Integer, Integer>> breakList = new ArrayList<>();
                 while (current != null) {
-                    intervalClusterList.add(new IntervalClusterImpl<>(splitPoints, (a, b) -> a - b, current));
+                    intervalClusterList.add(new ConcurrentUsageImpl<>(splitPoints, (a, b) -> a - b, current));
                     if (previous != null) {
-                        IntervalClusterImpl<TestInterval, Integer, Integer> before =
+                        ConcurrentUsageImpl<TestInterval, Integer, Integer> before =
                                 intervalClusterList.get(intervalClusterList.size() - 2);
-                        IntervalClusterImpl<TestInterval, Integer, Integer> after =
+                        ConcurrentUsageImpl<TestInterval, Integer, Integer> after =
                                 intervalClusterList.get(intervalClusterList.size() - 1);
                         breakList.add(new IntervalBreakImpl<>(before, after, after.getStart() - before.getEnd()));
                     }
@@ -402,7 +436,7 @@ class IntervalTreeTest {
 
                 // Verify the mutable version matches the recompute version
                 verifyBreaks(tree);
-                assertThat(tree.getConsecutiveIntervalData().getIntervalClusters())
+                assertThat(tree.getConsecutiveIntervalData().getConcurrentUsages())
                         .as(op + " interval " + interval + " to " + old)
                         .usingElementComparator(IntervalTreeTest::intervalClusterCompare)
                         .containsExactlyElementsOf(intervalClusterList);
@@ -416,8 +450,8 @@ class IntervalTreeTest {
 
     private String formatIntervalTree(IntervalTree<TestInterval, Integer, Integer> intervalTree) {
         List<List<TestInterval>> listOfIntervalClusters = new ArrayList<>();
-        for (IntervalCluster<TestInterval, Integer, Integer> cluster : intervalTree.getConsecutiveIntervalData()
-                .getIntervalClusters()) {
+        for (ConcurrentUsage<TestInterval, Integer, Integer> cluster : intervalTree.getConsecutiveIntervalData()
+                .getConcurrentUsages()) {
             List<TestInterval> intervalsInCluster = new ArrayList<>();
             for (TestInterval interval : cluster) {
                 intervalsInCluster.add(interval);

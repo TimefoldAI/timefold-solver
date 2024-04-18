@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
 
 import java.util.function.Function;
 
@@ -7,7 +7,8 @@ public final class Interval<Interval_, Point_ extends Comparable<Point_>> {
     private final IntervalSplitPoint<Interval_, Point_> startSplitPoint;
     private final IntervalSplitPoint<Interval_, Point_> endSplitPoint;
 
-    public Interval(Interval_ value, Function<Interval_, Point_> startMapping, Function<Interval_, Point_> endMapping) {
+    public Interval(Interval_ value, Function<? super Interval_, ? extends Point_> startMapping,
+            Function<? super Interval_, ? extends Point_> endMapping) {
         this.value = value;
         var start = startMapping.apply(value);
         var end = endMapping.apply(value);

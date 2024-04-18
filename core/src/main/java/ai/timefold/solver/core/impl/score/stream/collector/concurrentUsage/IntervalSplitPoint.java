@@ -1,20 +1,18 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
 
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeSet;
-import java.util.stream.IntStream;
 
 public class IntervalSplitPoint<Interval_, Point_ extends Comparable<Point_>>
         implements Comparable<IntervalSplitPoint<Interval_, Point_>> {
     final Point_ splitPoint;
     Map<Interval_, Integer> startIntervalToCountMap;
     Map<Interval_, Integer> endIntervalToCountMap;
-    TreeSet<Interval<Interval_, Point_>> intervalsStartingAtSplitPointSet;
-    TreeSet<Interval<Interval_, Point_>> intervalsEndingAtSplitPointSet;
+    TreeMultiSet<Interval<Interval_, Point_>> intervalsStartingAtSplitPointSet;
+    TreeMultiSet<Interval<Interval_, Point_>> intervalsEndingAtSplitPointSet;
 
     public IntervalSplitPoint(Point_ splitPoint) {
         this.splitPoint = splitPoint;
@@ -23,10 +21,10 @@ public class IntervalSplitPoint<Interval_, Point_ extends Comparable<Point_>>
     protected void createCollections() {
         startIntervalToCountMap = new IdentityHashMap<>();
         endIntervalToCountMap = new IdentityHashMap<>();
-        intervalsStartingAtSplitPointSet = new TreeSet<>(
+        intervalsStartingAtSplitPointSet = new TreeMultiSet<>(
                 Comparator.<Interval<Interval_, Point_>, Point_> comparing(Interval::getEnd)
                         .thenComparingInt(interval -> System.identityHashCode(interval.getValue())));
-        intervalsEndingAtSplitPointSet = new TreeSet<>(
+        intervalsEndingAtSplitPointSet = new TreeMultiSet<>(
                 Comparator.<Interval<Interval_, Point_>, Point_> comparing(Interval::getStart)
                         .thenComparingInt(interval -> System.identityHashCode(interval.getValue())));
     }
@@ -75,8 +73,7 @@ public class IntervalSplitPoint<Interval_, Point_ extends Comparable<Point_>>
 
     public Iterator<Interval_> getValuesStartingFromSplitPointIterator() {
         return intervalsStartingAtSplitPointSet.stream()
-                .flatMap(interval -> IntStream.range(0, startIntervalToCountMap.get(interval.getValue()))
-                        .mapToObj(index -> interval.getValue()))
+                .map(Interval::getValue)
                 .iterator();
     }
 

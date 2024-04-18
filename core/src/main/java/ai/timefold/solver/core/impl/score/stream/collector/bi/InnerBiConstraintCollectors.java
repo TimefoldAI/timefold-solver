@@ -22,6 +22,7 @@ import java.util.function.ToLongBiFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
@@ -206,6 +207,16 @@ public class InnerBiConstraintCollectors {
     public static <A, B, Result_> BiConstraintCollector<A, B, ?, SequenceChain<Result_, Integer>>
             toConsecutiveSequences(BiFunction<A, B, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return new ConsecutiveSequencesBiConstraintCollector<>(resultMap, indexMap);
+    }
+
+    public static <A, B, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<Interval_, Point_, Difference_>>
+            consecutiveUsages(BiFunction<? super A, ? super B, ? extends Interval_> mapper,
+                    Function<? super Interval_, ? extends Point_> startMap,
+                    Function<? super Interval_, ? extends Point_> endMap,
+                    BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
+        return new ConcurrentUsageBiConstraintCollector<>(mapper, startMap, endMap,
+                differenceFunction);
     }
 
     public static <A, B, Intermediate_, Result_> BiConstraintCollector<A, B, ?, Result_>

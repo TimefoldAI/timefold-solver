@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Period;
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
@@ -1953,6 +1955,258 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, SequenceChain<Result_, Integer>>
             toConsecutiveSequences(QuadFunction<A, B, C, D, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return InnerQuadConstraintCollectors.toConsecutiveSequences(resultMap, indexMap);
+    }
+
+    // *****************************************************************
+    // concurrentUsage
+    // *****************************************************************
+    /**
+     * Creates a constraint collector that returns {@link ConcurrentUsageInfo} about the first fact.
+     *
+     * For instance, {@code [Shift from=2, to=4] [Shift from=3, to=5] [Shift from=6, to=7] [Shift from=7, to=8]}
+     * returns the following information:
+     *
+     * <pre>
+     * {@code
+     * IntervalClusters: [[Shift from=2, to=4] [Shift from=3, to=5]], [[Shift from=6, to=7] [Shift from=7, to=8]]
+     * Breaks: [[Break from=5, to=6, length=1]]
+     * }
+     * </pre>
+     *
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param differenceFunction Computes the difference between two points. The second argument is always
+     *        larger than the first (ex: {@link Duration#between}
+     *        or {@code (a,b) -> b - a}).
+     * @param <A> type of the first mapped fact
+     * @param <PointType_> type of the fact endpoints
+     * @param <DifferenceType_> type of difference between points
+     * @return never null
+     */
+    public static <A, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
+            UniConstraintCollector<A, ?, ConcurrentUsageInfo<A, PointType_, DifferenceType_>>
+            concurrentUsage(Function<A, PointType_> startMap, Function<A, PointType_> endMap,
+                    BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
+        return InnerUniConstraintCollectors.consecutiveUsages(ConstantLambdaUtils.identity(), startMap, endMap,
+                differenceFunction);
+    }
+
+    /**
+     * Specialized version of {@link #concurrentUsage(Function,Function,BiFunction)} for
+     * {@link Temporal} types.
+     *
+     * @param <A> type of the first mapped fact
+     * @param <PointType_> temporal type of the endpoints
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @return never null
+     */
+    public static <A, PointType_ extends Temporal & Comparable<PointType_>>
+            UniConstraintCollector<A, ?, ConcurrentUsageInfo<A, PointType_, Duration>>
+            concurrentUsageByTime(Function<A, PointType_> startMap, Function<A, PointType_> endMap) {
+        return concurrentUsage(startMap, endMap, Duration::between);
+    }
+
+    /**
+     * Specialized version of {@link #concurrentUsage(Function,Function,BiFunction)} for Long.
+     *
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @return never null
+     */
+    public static <A> UniConstraintCollector<A, ?, ConcurrentUsageInfo<A, Long, Long>>
+            concurrentUsage(ToLongFunction<A> startMap, ToLongFunction<A> endMap) {
+        return concurrentUsage(startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsage(Function,Function,BiFunction)}.
+     *
+     * @param intervalMap Maps both facts to an item in the cluster
+     * @param startMap Maps the item to its start
+     * @param endMap Maps the item to its end
+     * @param differenceFunction Computes the difference between two points. The second argument is always
+     *        larger than the first (ex: {@link Duration#between}
+     *        or {@code (a,b) -> b - a}).
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @param <PointType_> type of the item endpoints
+     * @param <DifferenceType_> type of difference between points
+     * @return never null
+     */
+    public static <A, B, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
+            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<IntervalType_, PointType_, DifferenceType_>>
+            concurrentUsage(BiFunction<A, B, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
+                    Function<IntervalType_, PointType_> endMap,
+                    BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
+        return InnerBiConstraintCollectors.consecutiveUsages(intervalMap, startMap, endMap, differenceFunction);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsageByTime(Function,Function)}.
+     *
+     * @param intervalMap Maps the three facts to an item in the cluster
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @param <PointType_> temporal type of the endpoints
+     * @return never null
+     */
+    public static <A, B, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
+            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<IntervalType_, PointType_, Duration>>
+            concurrentUsageByTime(BiFunction<A, B, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
+        return concurrentUsage(intervalMap, startMap, endMap, Duration::between);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsage(ToLongFunction, ToLongFunction)}.
+     *
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @return never null
+     */
+    public static <A, B, IntervalType_>
+            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<IntervalType_, Long, Long>>
+            concurrentUsage(BiFunction<A, B, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
+                    ToLongFunction<IntervalType_> endMap) {
+        return concurrentUsage(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsage(Function,Function,BiFunction)}.
+     *
+     * @param intervalMap Maps the three facts to an item in the cluster
+     * @param startMap Maps the item to its start
+     * @param endMap Maps the item to its end
+     * @param differenceFunction Computes the difference between two points. The second argument is always
+     *        larger than the first (ex: {@link Duration#between}
+     *        or {@code (a,b) -> b - a}).
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @param <PointType_> type of the item endpoints
+     * @param <DifferenceType_> type of difference between points
+     * @return never null
+     */
+    public static <A, B, C, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
+            TriConstraintCollector<A, B, C, ?, ConcurrentUsageInfo<IntervalType_, PointType_, DifferenceType_>>
+            concurrentUsage(TriFunction<A, B, C, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
+                    Function<IntervalType_, PointType_> endMap,
+                    BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
+        return InnerTriConstraintCollectors.consecutiveUsages(intervalMap, startMap, endMap, differenceFunction);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsageByTime(Function,Function)}.
+     *
+     * @param intervalMap Maps the three facts to an item in the cluster
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @param <PointType_> temporal type of the endpoints
+     * @return never null
+     */
+    public static <A, B, C, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
+            TriConstraintCollector<A, B, C, ?, ConcurrentUsageInfo<IntervalType_, PointType_, Duration>>
+            concurrentUsageByTime(TriFunction<A, B, C, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
+        return concurrentUsage(intervalMap, startMap, endMap, Duration::between);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsage(ToLongFunction, ToLongFunction)}.
+     *
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @return never null
+     */
+    public static <A, B, C, IntervalType_>
+            TriConstraintCollector<A, B, C, ?, ConcurrentUsageInfo<IntervalType_, Long, Long>>
+            concurrentUsage(TriFunction<A, B, C, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
+                    ToLongFunction<IntervalType_> endMap) {
+        return concurrentUsage(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsage(Function,Function,BiFunction)}.
+     *
+     * @param intervalMap Maps the four facts to an item in the cluster
+     * @param startMap Maps the item to its start
+     * @param endMap Maps the item to its end
+     * @param differenceFunction Computes the difference between two points. The second argument is always
+     *        larger than the first (ex: {@link Duration#between}
+     *        or {@code (a,b) -> b - a}).
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <D> type of the fourth mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @param <PointType_> type of the item endpoints
+     * @param <DifferenceType_> type of difference between points
+     * @return never null
+     */
+    public static <A, B, C, D, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
+            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<IntervalType_, PointType_, DifferenceType_>>
+            concurrentUsage(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap,
+                    BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
+        return InnerQuadConstraintCollectors.consecutiveUsages(intervalMap, startMap, endMap, differenceFunction);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsageByTime(Function,Function)}.
+     *
+     * @param intervalMap Maps the three facts to an item in the cluster
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <D> type of the fourth mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @param <PointType_> temporal type of the endpoints
+     * @return never null
+     */
+    public static <A, B, C, D, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
+            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<IntervalType_, PointType_, Duration>>
+            concurrentUsageByTime(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
+        return concurrentUsage(intervalMap, startMap, endMap, Duration::between);
+    }
+
+    /**
+     * As defined by {@link #concurrentUsage(ToLongFunction, ToLongFunction)}.
+     *
+     * @param startMap Maps the fact to its start
+     * @param endMap Maps the fact to its end
+     * @param <A> type of the first mapped fact
+     * @param <B> type of the second mapped fact
+     * @param <C> type of the third mapped fact
+     * @param <D> type of the fourth mapped fact
+     * @param <IntervalType_> type of the item in the cluster
+     * @return never null
+     */
+    public static <A, B, C, D, IntervalType_>
+            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<IntervalType_, Long, Long>>
+            concurrentUsage(QuadFunction<A, B, C, D, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
+                    ToLongFunction<IntervalType_> endMap) {
+        return concurrentUsage(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
     }
 
     private ConstraintCollectors() {

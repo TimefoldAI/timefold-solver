@@ -1,24 +1,28 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
 
 import java.util.Iterator;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.examples.common.experimental.api.IntervalCluster;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsage;
 
-final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements IntervalCluster<Interval_, Point_, Difference_> {
+final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        implements ConcurrentUsage<Interval_, Point_, Difference_> {
 
     private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
-    private final BiFunction<Point_, Point_, Difference_> differenceFunction;
+    private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
     private IntervalSplitPoint<Interval_, Point_> startSplitPoint;
     private IntervalSplitPoint<Interval_, Point_> endSplitPoint;
 
     private int count;
+    private int minimumOverlap;
+    private int maximumOverlap;
     private boolean hasOverlap;
 
-    IntervalClusterImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
-            BiFunction<Point_, Point_, Difference_> differenceFunction, IntervalSplitPoint<Interval_, Point_> start) {
+    ConcurrentUsageImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+            BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
+            IntervalSplitPoint<Interval_, Point_> start) {
         if (start == null) {
             throw new IllegalArgumentException("start (" + start + ") is null");
         }
@@ -30,14 +34,20 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
         this.endSplitPoint = start;
         this.differenceFunction = differenceFunction;
         this.count = 0;
+        this.minimumOverlap = Integer.MAX_VALUE;
+        this.maximumOverlap = Integer.MIN_VALUE;
         var activeIntervals = 0;
         var anyOverlap = false;
         var current = start;
         do {
             this.count += current.intervalsStartingAtSplitPointSet.size();
             activeIntervals += current.intervalsStartingAtSplitPointSet.size() - current.intervalsEndingAtSplitPointSet.size();
-            if (activeIntervals > 1) {
-                anyOverlap = true;
+            if (activeIntervals > 0) {
+                minimumOverlap = Math.min(minimumOverlap, activeIntervals);
+                maximumOverlap = Math.max(maximumOverlap, activeIntervals);
+                if (activeIntervals > 1) {
+                    anyOverlap = true;
+                }
             }
             current = splitPointSet.higher(current);
         } while (activeIntervals > 0 && current != null);
@@ -45,14 +55,19 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
         this.endSplitPoint = (current != null) ? splitPointSet.lower(current) : splitPointSet.last();
     }
 
-    IntervalClusterImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
-            BiFunction<Point_, Point_, Difference_> differenceFunction, IntervalSplitPoint<Interval_, Point_> start,
-            IntervalSplitPoint<Interval_, Point_> end, int count, boolean hasOverlap) {
+    ConcurrentUsageImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+            BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
+            IntervalSplitPoint<Interval_, Point_> start,
+            IntervalSplitPoint<Interval_, Point_> end, int count,
+            int minimumOverlap, int maximumOverlap,
+            boolean hasOverlap) {
         this.splitPointSet = splitPointSet;
         this.startSplitPoint = start;
         this.endSplitPoint = end;
         this.differenceFunction = differenceFunction;
         this.count = count;
+        this.minimumOverlap = minimumOverlap;
+        this.maximumOverlap = maximumOverlap;
         this.hasOverlap = hasOverlap;
     }
 
@@ -75,14 +90,16 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
         if (interval.getEndSplitPoint().compareTo(endSplitPoint) > 0) {
             endSplitPoint = splitPointSet.ceiling(interval.getEndSplitPoint());
         }
+        minimumOverlap = -1;
+        maximumOverlap = -1;
         count++;
     }
 
-    Iterable<IntervalClusterImpl<Interval_, Point_, Difference_>> removeInterval(Interval<Interval_, Point_> interval) {
+    Iterable<ConcurrentUsageImpl<Interval_, Point_, Difference_>> removeInterval(Interval<Interval_, Point_> interval) {
         return IntervalClusterIterator::new;
     }
 
-    void mergeIntervalCluster(IntervalClusterImpl<Interval_, Point_, Difference_> laterIntervalCluster) {
+    void mergeIntervalCluster(ConcurrentUsageImpl<Interval_, Point_, Difference_> laterIntervalCluster) {
         if (endSplitPoint.compareTo(laterIntervalCluster.startSplitPoint) > 0) {
             hasOverlap = true;
         }
@@ -90,6 +107,8 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
             endSplitPoint = laterIntervalCluster.endSplitPoint;
         }
         count += laterIntervalCluster.count;
+        minimumOverlap = -1;
+        maximumOverlap = -1;
         hasOverlap |= laterIntervalCluster.hasOverlap;
     }
 
@@ -108,6 +127,37 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
         return hasOverlap;
     }
 
+    private void recalculateMinimumAndMaximumOverlap() {
+        var current = startSplitPoint;
+        var activeIntervals = 0;
+        minimumOverlap = Integer.MAX_VALUE;
+        maximumOverlap = Integer.MIN_VALUE;
+        do {
+            activeIntervals += current.intervalsStartingAtSplitPointSet.size() - current.intervalsEndingAtSplitPointSet.size();
+            if (activeIntervals > 0) {
+                minimumOverlap = Math.min(minimumOverlap, activeIntervals);
+                maximumOverlap = Math.max(maximumOverlap, activeIntervals);
+            }
+            current = splitPointSet.higher(current);
+        } while (activeIntervals > 0 && current != null);
+    }
+
+    @Override
+    public int getMinimumConcurrentUsage() {
+        if (minimumOverlap == -1) {
+            recalculateMinimumAndMaximumOverlap();
+        }
+        return minimumOverlap;
+    }
+
+    @Override
+    public int getMaximumConcurrentUsage() {
+        if (maximumOverlap == -1) {
+            recalculateMinimumAndMaximumOverlap();
+        }
+        return maximumOverlap;
+    }
+
     @Override
     public Point_ getStart() {
         return startSplitPoint.splitPoint;
@@ -124,18 +174,43 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ConcurrentUsageImpl<?, ?, ?> that))
+            return false;
+        return count == that.count &&
+                getMinimumConcurrentUsage() == that.getMinimumConcurrentUsage()
+                && getMaximumConcurrentUsage() == that.getMaximumConcurrentUsage()
+                && hasOverlap == that.hasOverlap && Objects.equals(
+                        splitPointSet, that.splitPointSet)
+                && Objects.equals(startSplitPoint,
+                        that.startSplitPoint)
+                && Objects.equals(endSplitPoint, that.endSplitPoint);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(splitPointSet, startSplitPoint, endSplitPoint, count,
+                getMinimumConcurrentUsage(), getMaximumConcurrentUsage(), hasOverlap);
+    }
+
+    @Override
     public String toString() {
-        return "IntervalCluster{" +
-                "startSplitPoint=" + startSplitPoint +
-                ", endSplitPoint=" + endSplitPoint +
+        return "ConcurrentUsage {" +
+                "start=" + startSplitPoint +
+                ", end=" + endSplitPoint +
                 ", count=" + count +
+                ", minimumOverlap=" + getMinimumConcurrentUsage() +
+                ", maximumOverlap=" + getMaximumConcurrentUsage() +
                 ", hasOverlap=" + hasOverlap +
+                ", set=" + splitPointSet +
                 '}';
     }
 
     // TODO: Make this incremental by only checking between the interval's start and end points
     private final class IntervalClusterIterator
-            implements Iterator<IntervalClusterImpl<Interval_, Point_, Difference_>> {
+            implements Iterator<ConcurrentUsageImpl<Interval_, Point_, Difference_>> {
 
         private IntervalSplitPoint<Interval_, Point_> current = getStart(startSplitPoint);
 
@@ -153,22 +228,27 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
         }
 
         @Override
-        public IntervalClusterImpl<Interval_, Point_, Difference_> next() {
+        public ConcurrentUsageImpl<Interval_, Point_, Difference_> next() {
             IntervalSplitPoint<Interval_, Point_> start = current;
             IntervalSplitPoint<Interval_, Point_> end;
             int activeIntervals = 0;
+            minimumOverlap = Integer.MAX_VALUE;
+            maximumOverlap = Integer.MIN_VALUE;
             count = 0;
             boolean anyOverlap = false;
             do {
                 count += current.intervalsStartingAtSplitPointSet.size();
                 activeIntervals +=
                         current.intervalsStartingAtSplitPointSet.size() - current.intervalsEndingAtSplitPointSet.size();
-                if (activeIntervals > 1) {
-                    anyOverlap = true;
+                if (activeIntervals > 0) {
+                    minimumOverlap = Math.min(minimumOverlap, activeIntervals);
+                    maximumOverlap = Math.max(maximumOverlap, activeIntervals);
+                    if (activeIntervals > 1) {
+                        anyOverlap = true;
+                    }
                 }
                 current = splitPointSet.higher(current);
             } while (activeIntervals > 0 && current != null);
-            hasOverlap = anyOverlap;
 
             if (current != null) {
                 end = splitPointSet.lower(current);
@@ -176,8 +256,10 @@ final class IntervalClusterImpl<Interval_, Point_ extends Comparable<Point_>, Di
             } else {
                 end = splitPointSet.last();
             }
+            hasOverlap = anyOverlap;
 
-            return new IntervalClusterImpl<>(splitPointSet, differenceFunction, start, end, count, hasOverlap);
+            return new ConcurrentUsageImpl<>(splitPointSet, differenceFunction, start, end, count,
+                    minimumOverlap, maximumOverlap, hasOverlap);
         }
     }
 }

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.collector;
+package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;

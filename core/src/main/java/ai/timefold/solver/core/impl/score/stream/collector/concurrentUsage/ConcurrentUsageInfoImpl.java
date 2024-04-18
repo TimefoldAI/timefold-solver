@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
 
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -7,20 +7,20 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.examples.common.experimental.api.ConsecutiveIntervalInfo;
-import ai.timefold.solver.examples.common.experimental.api.IntervalBreak;
-import ai.timefold.solver.examples.common.experimental.api.IntervalCluster;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsage;
+import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
 
-public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConsecutiveIntervalInfo<Interval_, Point_, Difference_> {
+public final class ConcurrentUsageInfoImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        implements ConcurrentUsageInfo<Interval_, Point_, Difference_> {
 
-    private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, IntervalClusterImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToCluster;
+    private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, ConcurrentUsageImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToCluster;
     private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
     private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, IntervalBreakImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToNextBreak;
-    private final BiFunction<Point_, Point_, Difference_> differenceFunction;
+    private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
 
-    public ConsecutiveIntervalInfoImpl(TreeSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
-            BiFunction<Point_, Point_, Difference_> differenceFunction) {
+    public ConcurrentUsageInfoImpl(TreeSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+            BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
         this.clusterStartSplitPointToCluster = new TreeMap<>();
         this.clusterStartSplitPointToNextBreak = new TreeMap<>();
         this.splitPointSet = splitPointSet;
@@ -78,8 +78,8 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
             var nextBreak = clusterStartSplitPointToNextBreak.get(firstIntersectedIntervalCluster.getStartSplitPoint());
             if (nextBreak != null) {
                 nextBreak.setPreviousCluster(firstIntersectedIntervalCluster);
-                nextBreak.setLength(differenceFunction.apply(nextBreak.getPreviousIntervalClusterEnd(),
-                        nextBreak.getNextIntervalClusterStart()));
+                nextBreak.setLength(differenceFunction.apply(nextBreak.getPreviousSequenceEnd(),
+                        nextBreak.getNextSequenceStart()));
             }
         }
     }
@@ -90,7 +90,7 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
         //     -----
         //----       -----
         var startSplitPoint = splitPointSet.floor(interval.getStartSplitPoint());
-        var newCluster = new IntervalClusterImpl<>(splitPointSet, differenceFunction, startSplitPoint);
+        var newCluster = new ConcurrentUsageImpl<>(splitPointSet, differenceFunction, startSplitPoint);
         clusterStartSplitPointToCluster.put(startSplitPoint, newCluster);
 
         // If there a cluster after this interval, add a new break
@@ -116,7 +116,7 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
     }
 
     private void removeSpannedBreaksAndUpdateIntersectedBreaks(Interval<Interval_, Point_> interval,
-            IntervalClusterImpl<Interval_, Point_, Difference_> intervalCluster) {
+            ConcurrentUsageImpl<Interval_, Point_, Difference_> intervalCluster) {
         var firstBreakSplitPointBeforeInterval = Objects.requireNonNullElseGet(
                 clusterStartSplitPointToNextBreak.floorKey(interval.getStartSplitPoint()), interval::getStartSplitPoint);
         var intersectedIntervalBreakMap = clusterStartSplitPointToNextBreak.subMap(firstBreakSplitPointBeforeInterval, true,
@@ -127,11 +127,11 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
         }
 
         var clusterBeforeFirstIntersectedBreak =
-                (IntervalClusterImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.firstEntry().getValue()
-                        .getPreviousIntervalCluster());
+                (ConcurrentUsageImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.firstEntry().getValue()
+                        .getPreviousConcurrentUsage());
         var clusterAfterFinalIntersectedBreak =
-                (IntervalClusterImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.lastEntry().getValue()
-                        .getNextIntervalCluster());
+                (ConcurrentUsageImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.lastEntry().getValue()
+                        .getNextConcurrentUsage());
 
         // All breaks that are not the first or last intersected breaks will
         // be removed (as interval span them)
@@ -151,8 +151,8 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
                 var finalBreak = intersectedIntervalBreakMap.lastEntry().getValue();
                 finalBreak.setPreviousCluster(intervalCluster);
                 finalBreak.setLength(
-                        differenceFunction.apply(finalBreak.getPreviousIntervalClusterEnd(),
-                                finalBreak.getNextIntervalClusterStart()));
+                        differenceFunction.apply(finalBreak.getPreviousSequenceEnd(),
+                                finalBreak.getNextSequenceStart()));
                 intersectedIntervalBreakMap.clear();
                 clusterStartSplitPointToNextBreak.put(intervalCluster.getStartSplitPoint(), finalBreak);
             }
@@ -165,25 +165,25 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
             var previousBreak = previousBreakEntry.getValue();
             previousBreak.setNextCluster(intervalCluster);
             previousBreak.setLength(
-                    differenceFunction.apply(previousBreak.getPreviousIntervalClusterEnd(), intervalCluster.getStart()));
+                    differenceFunction.apply(previousBreak.getPreviousSequenceEnd(), intervalCluster.getStart()));
             intersectedIntervalBreakMap.clear();
             clusterStartSplitPointToNextBreak
-                    .put(((IntervalClusterImpl<Interval_, Point_, Difference_>) (previousBreak
-                            .getPreviousIntervalCluster())).getStartSplitPoint(), previousBreak);
+                    .put(((ConcurrentUsageImpl<Interval_, Point_, Difference_>) (previousBreak
+                            .getPreviousConcurrentUsage())).getStartSplitPoint(), previousBreak);
         } else {
             // Case: interval does not span either the first or final break
             // Ex:
             //     ---------
             //----  ------   -----
             var finalBreak = intersectedIntervalBreakMap.lastEntry().getValue();
-            finalBreak.setLength(differenceFunction.apply(finalBreak.getPreviousIntervalClusterEnd(),
-                    finalBreak.getNextIntervalClusterStart()));
+            finalBreak.setLength(differenceFunction.apply(finalBreak.getPreviousSequenceEnd(),
+                    finalBreak.getNextSequenceStart()));
 
             var previousBreakEntry = intersectedIntervalBreakMap.firstEntry();
             var previousBreak = previousBreakEntry.getValue();
             previousBreak.setNextCluster(intervalCluster);
             previousBreak.setLength(
-                    differenceFunction.apply(previousBreak.getPreviousIntervalClusterEnd(), intervalCluster.getStart()));
+                    differenceFunction.apply(previousBreak.getPreviousSequenceEnd(), intervalCluster.getStart()));
 
             intersectedIntervalBreakMap.clear();
             clusterStartSplitPointToNextBreak.put(previousBreakEntry.getKey(), previousBreak);
@@ -201,17 +201,17 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
 
         var previousBreak = (previousBreakEntry != null) ? previousBreakEntry.getValue() : null;
         var previousIntervalCluster = (previousBreak != null)
-                ? (IntervalClusterImpl<Interval_, Point_, Difference_>) previousBreak.getPreviousIntervalCluster()
+                ? (ConcurrentUsageImpl<Interval_, Point_, Difference_>) previousBreak.getPreviousConcurrentUsage()
                 : null;
 
         for (var newIntervalCluster : intervalCluster.removeInterval(interval)) {
             if (previousBreak != null) {
                 previousBreak.setNextCluster(newIntervalCluster);
-                previousBreak.setLength(differenceFunction.apply(previousBreak.getPreviousIntervalCluster().getEnd(),
+                previousBreak.setLength(differenceFunction.apply(previousBreak.getPreviousConcurrentUsage().getEnd(),
                         newIntervalCluster.getStart()));
                 clusterStartSplitPointToNextBreak
-                        .put(((IntervalClusterImpl<Interval_, Point_, Difference_>) previousBreak
-                                .getPreviousIntervalCluster()).getStartSplitPoint(), previousBreak);
+                        .put(((ConcurrentUsageImpl<Interval_, Point_, Difference_>) previousBreak
+                                .getPreviousConcurrentUsage()).getStartSplitPoint(), previousBreak);
             }
             previousBreak = new IntervalBreakImpl<>(newIntervalCluster, null, null);
             previousIntervalCluster = newIntervalCluster;
@@ -235,19 +235,38 @@ public final class ConsecutiveIntervalInfoImpl<Interval_, Point_ extends Compara
     }
 
     @Override
-    public Iterable<IntervalCluster<Interval_, Point_, Difference_>> getIntervalClusters() {
+    public Iterable<ConcurrentUsage<Interval_, Point_, Difference_>> getConcurrentUsages() {
         return (Iterable) clusterStartSplitPointToCluster.values();
     }
 
     @Override
-    public Iterable<IntervalBreak<Interval_, Point_, Difference_>> getBreaks() {
+    public Iterable<Break<Point_, Difference_>> getBreaks() {
         return (Iterable) clusterStartSplitPointToNextBreak.values();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ConcurrentUsageInfoImpl<?, ?, ?> that))
+            return false;
+        return Objects.equals(clusterStartSplitPointToCluster,
+                that.clusterStartSplitPointToCluster)
+                && Objects.equals(splitPointSet,
+                        that.splitPointSet)
+                && Objects.equals(clusterStartSplitPointToNextBreak,
+                        that.clusterStartSplitPointToNextBreak);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clusterStartSplitPointToCluster, splitPointSet, clusterStartSplitPointToNextBreak);
     }
 
     @Override
     public String toString() {
         return "Clusters {" +
-                "intervalClusters=" + getIntervalClusters() +
+                "intervalClusters=" + getConcurrentUsages() +
                 ", breaks=" + getBreaks() +
                 '}';
     }
