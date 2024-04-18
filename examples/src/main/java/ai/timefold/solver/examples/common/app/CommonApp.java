@@ -49,7 +49,6 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 
     /**
      * Some examples are not compatible with every native LookAndFeel.
-     * For example, NurseRosteringPanel is incompatible with Mac.
      */
     public static void prepareSwingEnvironment() {
         SwingUncaughtExceptionHandler.register();

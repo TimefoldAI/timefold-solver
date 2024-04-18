@@ -25,7 +25,6 @@ import javax.swing.JTextArea;
 import ai.timefold.solver.examples.common.app.CommonApp;
 import ai.timefold.solver.examples.common.swingui.OpenBrowserAction;
 import ai.timefold.solver.examples.common.swingui.SolverAndPersistenceFrame;
-import ai.timefold.solver.examples.nurserostering.app.NurseRosteringApp;
 import ai.timefold.solver.examples.tennis.app.TennisApp;
 
 public class TimefoldExamplesApp extends JFrame {
@@ -82,8 +81,7 @@ public class TimefoldExamplesApp extends JFrame {
         JPanel panel = new JPanel(new GridLayout(0, 3, 5, 5));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        Stream.of(new NurseRosteringApp(),
-                new TennisApp())
+        Stream.of(new TennisApp())
                 .map(this::createExampleButton)
                 .forEach(panel::add);
 

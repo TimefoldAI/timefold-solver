@@ -757,34 +757,23 @@ If performance is a concern, avoid these collectors.
 [#collectorsConsecutive]
 ==== Consecutive collectors
 
-Certain constraints, such as maximum consecutive working days for an employee,
-require ordering those shifts in sequences and penalizing sequences exceeding a certain threshold.
+Certain constraints, such as maximum consecutive working days for an employee
+or the number of matches played at home in a sports league,
+require ordering those shifts or matches in sequences and penalizing sequences exceeding a certain threshold.
 If those sequences can be of arbitrary length unknown at the time of writing the constraints,
 you can implement this pattern using the `ConstraintCollectors.consecutive(...)` collector:
 
 [source,java,options="nowrap"]
 ----
-Constraint consecutiveWorkingDays(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(MinMaxContractLine.class)
-        .filter(minMaxContractLine ->
-                minMaxContractLine.getContractLineType() == ContractLineType.CONSECUTIVE_WORKING_DAYS
-                        && minMaxContractLine.isEnabled())
-        .join(ShiftAssignment.class,
-                Joiners.equal(ContractLine::getContract, ShiftAssignment::getContract))
-        .groupBy((contract, shift) -> shift.getEmployee(),
-                (contract, shift) -> contract,
-                ConstraintCollectors.toConsecutiveSequences(
-                        (contract, shift) -> shift.getShiftDate(),
-                        ShiftDate::getDayIndex))
-        .flattenLast(SequenceChain::getConsecutiveSequences)
-        .map((employee, contract, shifts) -> employee,
-                (employee, contract, shifts) -> contract,
-                (employee, contract, shifts) -> contract.getViolationAmount(shifts.getLength()))
-        .filter((contract, employee, violationAmount) -> violationAmount != 0)
-        .penalize(HardSoftScore.ONE_SOFT,
-                (contract, employee, violationAmount) -> violationAmount)
-        .indictWith((contract, employee, violationAmount) -> Arrays.asList(employee, contract))
-        .asConstraint("consecutiveWorkingDays");
+Constraint multipleConsecutiveHomeMatches(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Match.class)
+                .join(Team.class, equal(Match::getHomeTeam, Function.identity()))
+                .groupBy((match, team) -> team,
+                        ConstraintCollectors.toConsecutiveSequences((match, team) -> match.getRound(), Round::getIndex))
+                .flattenLast(SequenceChain::getConsecutiveSequences)
+                .filter((team, matches) -> matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
+                .penalize(HardSoftScore.ONE_HARD, (team, matches) -> matches.getCount())
+                .asConstraint("4 or more consecutive home matches");
 }
 ----
 
@@ -792,35 +781,28 @@ Let's take a closer look at the crucial part of this constraint:
 
 [source,java,options="nowrap"]
 ----
-.groupBy((contract, shift) -> shift.getEmployee(),
-        (contract, shift) -> contract,
-        ConstraintCollectors.toConsecutiveSequences(
-                (contract, shift) -> shift.getShiftDate(),
-                ShiftDate::getDayIndex))
+.groupBy((match, team) -> team,
+        ConstraintCollectors.toConsecutiveSequences((match, team) -> match.getRound(), Round::getIndex))
 .flattenLast(SequenceChain::getConsecutiveSequences)
-.map((employee, contract, shifts) -> employee,
-        (employee, contract, shifts) -> contract,
-        (employee, contract, shifts) -> contract.getViolationAmount(shifts.getLength()))
-.filter((contract, employee, violationAmount) -> violationAmount != 0)
+.filter((team, matches) -> matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
 ----
 
-The `groupBy()` building block groups all shifts by employee and contract,
+The `groupBy()` building block groups all matches by team,
 and for every such pair it creates a `SequenceChain` instance.
-The shifts will be put into sequence by their date,
-and the day index will be used to identify consecutive sequences and breaks between them.
-Imagine the collector putting each shift on a number line,
-where the number is the day index of the shift.
+The matches will be put into sequence by round date,
+and the round index will be used to identify consecutive sequences and breaks between them.
+Imagine the collector putting each match on a number line,
+where the number is the round day index of the match.
 
-The `SequenceChain` then has several useful methods to not only get the list of shifts,
-but also to get any and all breaks between those shifts.
-In this case, we are only interested in the sequences of shifts themselves,
+The `SequenceChain` then has several useful methods to not only get the list of matches,
+but also to get any and all breaks between those matches.
+In this case, we are only interested in the sequences of matches themselves,
 and we use <<constraintStreamsFlattening,flattening>> to convert each to its own tuple.
 
-Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the violation amount for each sequence.
-For example, if the contract says that an employee can work at most 5 consecutive days,
-and `shifts` contains 6 shifts, then `violationAmount` will be `1`.
-If the amount is `0`, then the sequence is not violating the contract and we can filter it out.
-
+Finally, if a league requires that a team can play at most 5 consecutive matches (`MAX_CONSECUTIVE_MATCHES`) in home,
+and `matches` contains 6 matches, then the `weight` penalty will be `6`.
+If the number of consecutive matches is `4`,
+then the sequence is not violating the league requirement, and we can filter it out.
 
 [#collectorsConditional]
 ==== Conditional collectors
