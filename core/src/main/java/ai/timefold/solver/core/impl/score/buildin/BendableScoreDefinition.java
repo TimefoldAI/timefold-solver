@@ -88,7 +88,7 @@ public class BendableScoreDefinition extends AbstractBendableScoreDefinition<Ben
 
     @Override
     public BendableScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, BendableScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.getTrendLevels();
+        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
         int[] hardScores = new int[hardLevelsSize];
         for (int i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (trendLevels[i] == InitializingScoreTrendLevel.ONLY_DOWN)
@@ -106,7 +106,7 @@ public class BendableScoreDefinition extends AbstractBendableScoreDefinition<Ben
 
     @Override
     public BendableScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, BendableScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.getTrendLevels();
+        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
         int[] hardScores = new int[hardLevelsSize];
         for (int i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (trendLevels[i] == InitializingScoreTrendLevel.ONLY_UP)

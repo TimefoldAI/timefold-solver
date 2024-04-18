@@ -53,7 +53,7 @@ public class HardSoftScoreDefinition extends AbstractScoreDefinition<HardSoftSco
 
     @Override
     public HardSoftScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, HardSoftScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.getTrendLevels();
+        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
         return HardSoftScore.ofUninitialized(0,
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Integer.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.softScore() : Integer.MAX_VALUE);
@@ -61,7 +61,7 @@ public class HardSoftScoreDefinition extends AbstractScoreDefinition<HardSoftSco
 
     @Override
     public HardSoftScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, HardSoftScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.getTrendLevels();
+        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
         return HardSoftScore.ofUninitialized(0,
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Integer.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.softScore() : Integer.MIN_VALUE);

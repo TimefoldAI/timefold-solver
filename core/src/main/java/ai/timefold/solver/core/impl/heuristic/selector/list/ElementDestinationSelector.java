@@ -97,14 +97,10 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();
             }
-            // If the list variable allows unassigned values, add the option of unassigning.
-            var stream = listVariableDescriptor.allowsUnassignedValues() ? Stream.of(ElementLocation.unassigned())
-                    : Stream.<ElementLocation> empty();
             // Start with the first unpinned value of each entity, or zero if no pinning.
             // Entity selector is guaranteed to return only unpinned entities.
-            stream = Stream.concat(stream,
-                    StreamSupport.stream(entitySelector.spliterator(), false)
-                            .map(entity -> ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity))));
+            Stream<ElementLocation> stream = StreamSupport.stream(entitySelector.spliterator(), false)
+                    .map(entity -> ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity)));
             // Filter guarantees that we only get values that are actually in one of the lists.
             // Value selector guarantees only unpinned values.
             stream = Stream.concat(stream,
@@ -114,7 +110,11 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                                     ? Stream.of(locationInList)
                                     : Stream.empty())
                             .map(locationInList -> ElementLocation.of(locationInList.entity(), locationInList.index() + 1)));
-            return (Iterator<ElementLocation>) stream.iterator();
+            // If the list variable allows unassigned values, add the option of unassigning.
+            if (listVariableDescriptor.allowsUnassignedValues()) {
+                stream = Stream.concat(stream, Stream.of(ElementLocation.unassigned()));
+            }
+            return stream.iterator();
         }
     }
 
@@ -137,7 +137,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     public Iterator<Object> endingIterator() {
-        EntityIndependentValueSelector<Solution_> effectiveValueSelector = getEffectiveValueSelector();
+        var effectiveValueSelector = getEffectiveValueSelector();
         return Stream.concat(
                 StreamSupport.stream(Spliterators.spliterator(entitySelector.endingIterator(),
                         entitySelector.getSize(), 0), false),
@@ -148,14 +148,8 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ElementDestinationSelector<?> that = (ElementDestinationSelector<?>) o;
-        return randomSelection == that.randomSelection
+        return o instanceof ElementDestinationSelector<?> that
+                && randomSelection == that.randomSelection
                 && Objects.equals(entitySelector, that.entitySelector)
                 && Objects.equals(valueSelector, that.valueSelector);
     }
