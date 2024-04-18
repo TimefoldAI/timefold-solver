@@ -104,11 +104,6 @@
       <artifactId>timefold-solver-test</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- External dependencies -->
-    <dependency>
-      <groupId>org.jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-    </dependency>
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
