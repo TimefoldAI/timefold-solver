@@ -1088,17 +1088,17 @@ Advanced configuration:
 ----
     <pillarChangeMoveSelector>
       <subPillarType>SEQUENCE</subPillarType>
-      <subPillarSequenceComparatorClass>ai.timefold.solver.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
+      <subPillarSequenceComparatorClass>...ShiftComparator</subPillarSequenceComparatorClass>
       ... <!-- Normal selector properties -->
       <pillarSelector>
         <entitySelector>
-          <entityClass>...ShiftAssignment</entityClass>
+          <entityClass>...Shift</entityClass>
           ...
         </entitySelector>
         <minimumSubPillarSize>1</minimumSubPillarSize>
         <maximumSubPillarSize>1000</maximumSubPillarSize>
       </pillarSelector>
-      <valueSelector variableName="room">
+      <valueSelector variableName="employee">
         ...
       </valueSelector>
     </pillarChangeMoveSelector>
@@ -1131,11 +1131,11 @@ Advanced configuration:
 ----
     <pillarSwapMoveSelector>
       <subPillarType>SEQUENCE</subPillarType>
-      <subPillarSequenceComparatorClass>ai.timefold.solver.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
+      <subPillarSequenceComparatorClass>...ShiftComparator</subPillarSequenceComparatorClass>
       ... <!-- Normal selector properties -->
       <pillarSelector>
         <entitySelector>
-          <entityClass>...ShiftAssignment</entityClass>
+          <entityClass>...Shift</entityClass>
           ...
         </entitySelector>
         <minimumSubPillarSize>1</minimumSubPillarSize>
@@ -1188,7 +1188,8 @@ Therefore a `pillarSelector` only supports <<justInTimeRandomSelection,JIT rando
 
 Sub pillars can be sorted with a `Comparator`. A sequential sub pillar is a continuous subset of its sorted base pillar.
 
-For example if a nurse has shifts on Monday (`M`), Tuesday (`T`), and Wednesday (`W`), they are a pillar and only the following are its sequential sub pillars: `[M], [T], [W], [M, T], [T, W], [M, T, W]`.
+For example, if an employee has shifts on Monday (`M`), Tuesday (`T`), and Wednesday (`W`),
+they are a pillar and only the following are its sequential sub pillars: `[M], [T], [W], [M, T], [T, W], [M, T, W]`.
 But `[M, W]` is not a sub pillar in this case, as there is a gap on Tuesday.
 
 Sequential sub pillars apply to both <<pillarChangeMoveSelector,Pillar change move>> and
@@ -1210,7 +1211,7 @@ An advanced configuration looks like this:
     <pillar...MoveSelector>
       ...
       <subPillarType>SEQUENCE</subPillarType>
-      <subPillarSequenceComparatorClass>ai.timefold.solver.examples.nurserostering.domain.ShiftAssignmentComparator</subPillarSequenceComparatorClass>
+      <subPillarSequenceComparatorClass>...ShiftComparator</subPillarSequenceComparatorClass>
       <pillarSelector>
         ...
         <minimumSubPillarSize>1</minimumSubPillarSize>
@@ -1220,7 +1221,9 @@ An advanced configuration looks like this:
     </pillar...MoveSelector>
 ----
 
-In this case, the entity being operated on need not be `Comparable`. The given `subPillarSequenceComparatorClass` is used to establish the sequence instead. Also, the size of the sub pillars is limited in length of up to 1000 entities.
+In this case, the entity being operated on need not be `Comparable`.
+The given `subPillarSequenceComparatorClass` is used to establish the sequence instead.
+Also, the size of the sub pillars is limited in length of up to 1000 entities.
 
 [#listMoveSelectors]
 ==== Move selectors for list variables

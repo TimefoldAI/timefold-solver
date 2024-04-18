@@ -86,7 +86,7 @@ image::constraints-and-score/overview/scoreWeighting.png[align="center"]
 Score weighting is easy in use cases where you can __put a price tag on everything__.
 In that case, the positive constraints maximize revenue and the negative constraints minimize expenses, so together they maximize profit.
 Alternatively, score weighting is also often used to create social xref:constraints-and-score/performance.adoc#fairnessScoreConstraints[fairness].
-For example, a nurse, who requests a free day, pays a higher weight on New Years eve than on a normal day.
+For example, an employee, who requests a free day, pays a higher weight on New Years eve than on a normal day.
 
 The weight of a constraint match can depend on the planning entities involved.
 For example, in vehicle routing,
@@ -111,8 +111,8 @@ Most use cases use a `Score` with `int` weights, such as xref:constraints-and-sc
 
 Sometimes a score constraint outranks another score constraint, no matter how many times the latter is broken.
 In that case, those score constraints are in different levels.
-For example, a nurse cannot do two shifts at the same time (due to the constraints of physical reality),
-so this outranks all nurse happiness constraints.
+For example, an employee cannot do two shifts at the same time (due to the constraints of physical reality),
+so this outranks all employee happiness constraints.
 
 Most use cases have only two score levels, hard and soft.
 The levels of two scores are compared lexicographically.

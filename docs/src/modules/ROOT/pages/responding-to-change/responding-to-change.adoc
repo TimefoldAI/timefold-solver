@@ -144,7 +144,8 @@ Immutable past time periods.
 It contains only pinned entities.
 +
 ** Recent historic entities can also affect score constraints that apply to movable entities.
-For example, in nurse rostering, a nurse that has worked the last three historic weekends in a row should not be assigned to three more weekends in a row, because she requires a one free weekend per month.
+For example, in employee rostering, an employee that has worked the last three historic weekends in a row
+should not be assigned to three more weekends in a row, because he requires a one free weekend per month.
 ** Do not load all historic entities in memory:
 even though pinned entities do not affect solving performance, they can cause out of memory problems when the data grows to years.
 Only load those that might still affect the current constraints with a good safety margin.
@@ -155,7 +156,8 @@ Upcoming time periods that have been published.
 They contain only <<pinnedPlanningEntities,pinned>> and/or <<nonvolatileReplanning,semi-movable>> planning entities.
 +
 ** The published schedule has been shared with the business.
-For example, in nurse rostering, the nurses will use this schedule to plan their personal lives, so they require a publish notice of for example 3 weeks in advance.
+For example, in employee rostering, the employees will use this schedule to plan their personal lives,
+so they require a publish notice of for example 3 weeks in advance.
 Normal planning will not change that part of schedule.
 +
 Changing that schedule later is disruptive, but were exceptions force us to do them anyway (for example someone calls in sick), do change this part of the planning while minimizing disruption with <<nonvolatileReplanning,non-disruptive replanning>>.
@@ -167,10 +169,11 @@ They contain movable planning entities, except for any that are pinned for other
 +
 ** The first part of the draft, called _the final draft_, will be published, so these planning entities can change one last time.
 The publishing frequency, for example once per week, determines the number of time periods that change from _draft_ to _published_.
-** The latter time periods of the _draft_ are likely change again in later planning efforts, especially if some of the problem facts change by then (for example nurse Ann doesn't want to work on one of those days).
+** The latter time periods of the _draft_ are likely change again in later planning efforts,
+especially if some of the problem facts change by then (for example employee Ann can't work on one of those days).
 +
 Despite that these latter planning entities might still change a lot, we can't leave them out for later, because we would risk _painting ourselves into a corner_.
-For example, in employee rostering we could have all our rare skilled employees working the last 5 days of the week that gets published,
+For example, in employee rostering, we could have all our rare skilled employees working the last 5 days of the week that gets published,
 which won't reduce the score of that week, but will make it impossible for us to deliver a feasible schedule the next week.
 So the draft length needs to be longer than the part that will be published first.
 ** That draft part is usually not shared with the business yet, because it is too volatile and it would only raise false expectations.
@@ -226,20 +229,19 @@ the lecture will not be assigned to another period or room (even if the current 
 Alternatively, to pin some planning entities down, add a `PinningFilter` that returns `true` if an entity is pinned, and `false` if it is movable.
 This is more flexible and more verbose than the `@PlanningPin` approach.
 
-For example on the nurse rostering example:
+For example, on the employee scheduling quickstart:
 
 . Add the `PinningFilter`:
 +
 [source,java,options="nowrap"]
 ----
-public class ShiftAssignmentPinningFilter implements PinningFilter<NurseRoster, ShiftAssignment> {
+public class ShiftPinningFilter implements PinningFilter<EmployeeSchedule, Shift> {
 
     @Override
-    public boolean accept(NurseRoster nurseRoster, ShiftAssignment shiftAssignment) {
-        ShiftDate shiftDate = shiftAssignment.getShift().getShiftDate();
-        return nurseRoster.getNurseRosterInfo().isInPlanningWindow(shiftDate);
+    public boolean accept(EmployeeSchedule employeeSchedule, Shift shift) {
+        ScheduleState scheduleState = employeeSchedule.getScheduleState();
+        return !scheduleState.isDraft(shift);
     }
-
 }
 ----
 
@@ -247,8 +249,8 @@ public class ShiftAssignmentPinningFilter implements PinningFilter<NurseRoster, 
 +
 [source,java,options="nowrap"]
 ----
-@PlanningEntity(pinningFilter = ShiftAssignmentPinningFilter.class)
-public class ShiftAssignment {
+@PlanningEntity(pinningFilter = ShiftPinningFilter.class)
+public class Shift {
     ...
 }
 ----
@@ -581,25 +583,25 @@ The Recommended Fit API requires one uninitialized entity to be present in the s
 
 [source,java,options="nowrap"]
 ----
-NurseRoster nurseRoster = ...; // Our planning solution.
-ShiftAssignment unassignedShift = new ShiftAssignment(...); // A new shift needs to be assigned.
-nurseRoster.getShiftAssignmentList().add(unassignedShift);
+EmployeeSchedule employeeSchedule = ...; // Our planning solution.
+Shift unassignedShift = new Shift(...); // A new shift needs to be assigned.
+employeeSchedule.getShifts().add(unassignedShift);
 ----
 
 The `SolutionManager` is then used to retrieve the recommended fit for the uninitialized entity:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<NurseRoster, HardSoftScore> solutionManager = ...;
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
 List<RecommendedFit<Employee, HardSoftScore>> recommendations =
-    solutionManager.recommendFit(nurseRoster, unassignedShift, ShiftAssignment::getEmployee);
+    solutionManager.recommendFit(employeeSchedule, unassignedShift, Shift::getEmployee);
 ----
 
 Breaking this down, we have:
 
-- `nurseRoster`, the planning solution.
+- `employeeSchedule`, the planning solution.
 - `unassignedShift`, the uninitialized entity, which is part of the planning solution.
-- `ShiftAssignment::getEmployee`, a function extracting the planning variable from the entity,
+- `Shift::getEmployee`, a function extracting the planning variable from the entity,
 also called a "proposition function".
 - `List<RecommendedFit<Employee, HardSoftScore>>`, the list of recommended employees to assign to the shift,
 in the order of decreasing preference.
@@ -656,12 +658,12 @@ Consider the following example:
 
 [source,java,options="nowrap"]
 ----
-SolutionManager<NurseRoster, HardSoftScore> solutionManager = ...;
-List<RecommendedFit<Employee, HardSoftScore>> recommendations =
-    solutionManager.recommendFit(nurseRoster, unassignedShift, shift -> shift);
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
+List<RecommendedFit<Shift, HardSoftScore>> recommendations =
+    solutionManager.recommendFit(employeeSchedule, unassignedShift, shift -> shift);
 ----
 
-The proposition function (`shift -> shift`) returns the entire `ShiftAssignment` entity.
+The proposition function (`shift -> shift`) returns the entire `Shift` entity.
 Because of the behavior described above,
 every `RecommendedFit` in the `recommendations` list will point to the same `unassignedShift`,
 and its `employee` variable will be `null`.
