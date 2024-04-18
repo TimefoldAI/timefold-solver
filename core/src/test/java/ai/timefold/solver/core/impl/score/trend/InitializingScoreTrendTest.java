@@ -10,7 +10,7 @@ class InitializingScoreTrendTest {
 
     @Test
     void parseTrend() {
-        assertThat(InitializingScoreTrend.parseTrend("ONLY_DOWN/ANY/ONLY_UP", 3).getTrendLevels())
+        assertThat(InitializingScoreTrend.parseTrend("ONLY_DOWN/ANY/ONLY_UP", 3).trendLevels())
                 .containsExactly(
                         InitializingScoreTrendLevel.ONLY_DOWN,
                         InitializingScoreTrendLevel.ANY,

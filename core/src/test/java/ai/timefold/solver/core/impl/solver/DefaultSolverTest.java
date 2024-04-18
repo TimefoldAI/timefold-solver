@@ -1061,6 +1061,39 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solveWithAllowsUnassignedValuesListVariableAndOnlyDown() {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withInitializingScoreTrend("ONLY_DOWN")
+                .withEasyScoreCalculatorClass(MinimizeUnassignedEntitiesEasyScoreCalculator.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataAllowsUnassignedValuesListSolution.class,
+                TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class)
+                .withScoreDirectorFactory(scoreDirectorFactoryConfig)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solverFactory = SolverFactory.<TestdataAllowsUnassignedValuesListSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var value1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
+        var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
+        var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
+        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(Arrays.asList(value1, value2, value3, value4));
+
+        var bestSolution = solver.solve(solution);
+        assertSoftly(softly -> {
+            // Everything is assigned, even though ONLY_DOWN caused the CH to pick the first selected move.
+            // Checks for a bug where NoChangeMove would be generated first, meaning nothing would get assigned.
+            softly.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(4));
+            var firstEntity = bestSolution.getEntityList().get(0);
+            softly.assertThat(firstEntity.getValueList()).hasSize(4);
+        });
+
+    }
+
+    @Test
     void constructionHeuristicAllocateToValueFromQueue() {
         SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         ConstructionHeuristicPhaseConfig phaseConfig = new ConstructionHeuristicPhaseConfig()
@@ -1297,6 +1330,19 @@ class DefaultSolverTest {
         @Override
         public SimpleScore calculateScore(Object solution) {
             return new MaximizeUnusedEntitiesEasyScoreCalculator().calculateScore(solution).negate();
+        }
+    }
+
+    public static final class MinimizeUnassignedEntitiesEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataAllowsUnassignedValuesListSolution, SimpleScore> {
+
+        @Override
+        public SimpleScore calculateScore(TestdataAllowsUnassignedValuesListSolution solution) {
+            int i = 0;
+            for (TestdataAllowsUnassignedValuesListEntity entity : solution.getEntityList()) {
+                i += entity.getValueList().size();
+            }
+            return SimpleScore.of(i);
         }
     }
 

@@ -60,7 +60,7 @@ public class HardMediumSoftLongScoreDefinition extends AbstractScoreDefinition<H
     @Override
     public HardMediumSoftLongScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardMediumSoftLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.getTrendLevels();
+        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
         return HardMediumSoftLongScore.ofUninitialized(0,
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Long.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.mediumScore() : Long.MAX_VALUE,
@@ -70,7 +70,7 @@ public class HardMediumSoftLongScoreDefinition extends AbstractScoreDefinition<H
     @Override
     public HardMediumSoftLongScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardMediumSoftLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.getTrendLevels();
+        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
         return HardMediumSoftLongScore.ofUninitialized(0,
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Long.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.mediumScore() : Long.MIN_VALUE,
