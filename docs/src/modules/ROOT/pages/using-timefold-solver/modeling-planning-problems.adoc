@@ -1179,10 +1179,10 @@ To allow a planning value to be unassigned, set `allowsUnassignedValues` to ``tr
 
 [source,java,options="nowrap"]
 ----
-    @PlanningListVariable(..., allowsUnassignedValues = true)
-    public Worker getWorker() {
-        return worker;
-    }
+@PlanningListVariable(allowsUnassignedValues = true)
+public List<Customer> getCustomers() {
+    return customers;
+}
 ----
 
 [NOTE]
@@ -1207,15 +1207,15 @@ One way to deal with this is to filter the entity selector of the placer in the 
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   ...
   <constructionHeuristic>
-    <queuedEntityPlacer>
-      <entitySelector id="entitySelector1">
+    <queuedValuePlacer>
+      <valueSelector id="selector1">
         <filterClass>...</filterClass>
-      </entitySelector>
-    </queuedEntityPlacer>
+      </valueSelector>
+    </queuedValuePlacer>
     ...
-    <changeMoveSelector>
-      <entitySelector mimicSelectorRef="entitySelector1" />
-    </changeMoveSelector>
+    <listChangeMoveSelector>
+      <valueSelector mimicSelectorRef="selector1" />
+    </listChangeMoveSelector>
     ...
   </constructionHeuristic>
  ...
