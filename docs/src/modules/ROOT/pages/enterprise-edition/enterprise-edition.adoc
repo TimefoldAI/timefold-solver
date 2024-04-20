@@ -11,7 +11,7 @@ You are allowed to use Timefold Solver Enterprise Edition for evaluation and dev
 but to use it in production,
 you are required to https://timefold.ai/company/contact/[purchase a license].
 For a high-level overview of the differences between Timefold offerings,
-see http://timefold.ai/pricing[Timefold Pricing].
+see https://timefold.ai/pricing[Timefold Pricing].
 
 Unlike Timefold Solver Community Edition,
 the Enterprise Edition is not open-source.
