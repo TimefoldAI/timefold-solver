@@ -32,7 +32,7 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
@@ -1070,8 +1070,8 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void consecutiveUsage() {
-        BiConstraintCollector<Integer, Integer, ?, ConcurrentUsageInfo<Interval, Integer, Integer>> collector =
-                ConstraintCollectors.concurrentUsage(Interval::new,
+        BiConstraintCollector<Integer, Integer, ?, ConnectedRangeChain<Interval, Integer, Integer>> collector =
+                ConstraintCollectors.toConnectedRanges(Interval::new,
                         Interval::start,
                         Interval::end, (a, b) -> b - a);
         var container = collector.supplier().get();

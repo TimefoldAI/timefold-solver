@@ -1,23 +1,22 @@
-package ai.timefold.solver.core.impl.score.stream.collector.tri;
+package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
-import ai.timefold.solver.core.impl.score.stream.collector.ConcurrentUsageCalculator;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.impl.score.stream.collector.ConnectedRangesCalculator;
 
-final class ConcurrentUsageTriConstraintCollector<A, B, C, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+final class ConnectedRangesUniConstraintCollector<A, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Interval_, ConcurrentUsageInfo<Interval_, Point_, Difference_>, ConcurrentUsageCalculator<Interval_, Point_, Difference_>> {
+        ObjectCalculatorUniCollector<A, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
 
     private final Function<? super Interval_, ? extends Point_> startMap;
     private final Function<? super Interval_, ? extends Point_> endMap;
     private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
 
-    public ConcurrentUsageTriConstraintCollector(TriFunction<? super A, ? super B, ? super C, ? extends Interval_> mapper,
+    public ConnectedRangesUniConstraintCollector(Function<? super A, ? extends Interval_> mapper,
             Function<? super Interval_, ? extends Point_> startMap, Function<? super Interval_, ? extends Point_> endMap,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
         super(mapper);
@@ -27,15 +26,15 @@ final class ConcurrentUsageTriConstraintCollector<A, B, C, Interval_, Point_ ext
     }
 
     @Override
-    public Supplier<ConcurrentUsageCalculator<Interval_, Point_, Difference_>> supplier() {
-        return () -> new ConcurrentUsageCalculator<>(startMap, endMap, differenceFunction);
+    public Supplier<ConnectedRangesCalculator<Interval_, Point_, Difference_>> supplier() {
+        return () -> new ConnectedRangesCalculator<>(startMap, endMap, differenceFunction);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ConcurrentUsageTriConstraintCollector<?, ?, ?, ?, ?, ?> that))
+        if (!(o instanceof ConnectedRangesUniConstraintCollector<?, ?, ?, ?> that))
             return false;
         if (!super.equals(o))
             return false;

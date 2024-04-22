@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
+package ai.timefold.solver.core.impl.score.stream.collector.connectedRanges;
 
 import java.util.function.Function;
 

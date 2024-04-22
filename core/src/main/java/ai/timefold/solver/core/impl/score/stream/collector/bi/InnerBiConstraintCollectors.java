@@ -22,7 +22,7 @@ import java.util.function.ToLongBiFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
@@ -210,12 +210,12 @@ public class InnerBiConstraintCollectors {
     }
 
     public static <A, B, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<Interval_, Point_, Difference_>>
-            consecutiveUsages(BiFunction<? super A, ? super B, ? extends Interval_> mapper,
+            BiConstraintCollector<A, B, ?, ConnectedRangeChain<Interval_, Point_, Difference_>>
+            toConnectedRanges(BiFunction<? super A, ? super B, ? extends Interval_> mapper,
                     Function<? super Interval_, ? extends Point_> startMap,
                     Function<? super Interval_, ? extends Point_> endMap,
                     BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
-        return new ConcurrentUsageBiConstraintCollector<>(mapper, startMap, endMap,
+        return new ConnectedRangesBiConstraintCollector<>(mapper, startMap, endMap,
                 differenceFunction);
     }
 

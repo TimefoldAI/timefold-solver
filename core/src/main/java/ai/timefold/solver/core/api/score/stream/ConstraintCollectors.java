@@ -37,7 +37,7 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
@@ -1958,10 +1958,10 @@ public final class ConstraintCollectors {
     }
 
     // *****************************************************************
-    // concurrentUsage
+    // toConnectedRanges
     // *****************************************************************
     /**
-     * Creates a constraint collector that returns {@link ConcurrentUsageInfo} about the first fact.
+     * Creates a constraint collector that returns {@link ConnectedRangeChain} about the first fact.
      *
      * For instance, {@code [Equipment from=2, to=4] [Equipment from=3, to=5] [Equipment from=6, to=7] [Equipment from=7, to=8]}
      * returns the following information:
@@ -1989,15 +1989,15 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
-            UniConstraintCollector<A, ?, ConcurrentUsageInfo<A, PointType_, DifferenceType_>>
-            concurrentUsage(Function<A, PointType_> startMap, Function<A, PointType_> endMap,
+            UniConstraintCollector<A, ?, ConnectedRangeChain<A, PointType_, DifferenceType_>>
+            toConnectedRanges(Function<A, PointType_> startMap, Function<A, PointType_> endMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerUniConstraintCollectors.consecutiveUsages(ConstantLambdaUtils.identity(), startMap, endMap,
+        return InnerUniConstraintCollectors.toConnectedRanges(ConstantLambdaUtils.identity(), startMap, endMap,
                 differenceFunction);
     }
 
     /**
-     * Specialized version of {@link #concurrentUsage(Function,Function,BiFunction)} for
+     * Specialized version of {@link #toConnectedRanges(Function,Function,BiFunction)} for
      * {@link Temporal} types.
      *
      * @param <A> type of the first mapped fact
@@ -2007,26 +2007,26 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, PointType_ extends Temporal & Comparable<PointType_>>
-            UniConstraintCollector<A, ?, ConcurrentUsageInfo<A, PointType_, Duration>>
-            concurrentUsageByTime(Function<A, PointType_> startMap, Function<A, PointType_> endMap) {
-        return concurrentUsage(startMap, endMap, Duration::between);
+            UniConstraintCollector<A, ?, ConnectedRangeChain<A, PointType_, Duration>>
+            toConnectedRangesByTime(Function<A, PointType_> startMap, Function<A, PointType_> endMap) {
+        return toConnectedRanges(startMap, endMap, Duration::between);
     }
 
     /**
-     * Specialized version of {@link #concurrentUsage(Function,Function,BiFunction)} for Long.
+     * Specialized version of {@link #toConnectedRanges(Function,Function,BiFunction)} for Long.
      *
      * @param startMap Maps the fact to its start
      * @param endMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @return never null
      */
-    public static <A> UniConstraintCollector<A, ?, ConcurrentUsageInfo<A, Long, Long>>
-            concurrentUsage(ToLongFunction<A> startMap, ToLongFunction<A> endMap) {
-        return concurrentUsage(startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+    public static <A> UniConstraintCollector<A, ?, ConnectedRangeChain<A, Long, Long>>
+            toConnectedRanges(ToLongFunction<A> startMap, ToLongFunction<A> endMap) {
+        return toConnectedRanges(startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
     }
 
     /**
-     * As defined by {@link #concurrentUsage(Function,Function,BiFunction)}.
+     * As defined by {@link #toConnectedRanges(Function,Function,BiFunction)}.
      *
      * @param intervalMap Maps both facts to an item in the cluster
      * @param startMap Maps the item to its start
@@ -2042,15 +2042,15 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
-            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<IntervalType_, PointType_, DifferenceType_>>
-            concurrentUsage(BiFunction<A, B, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
+            BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, PointType_, DifferenceType_>>
+            toConnectedRanges(BiFunction<A, B, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
                     Function<IntervalType_, PointType_> endMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerBiConstraintCollectors.consecutiveUsages(intervalMap, startMap, endMap, differenceFunction);
+        return InnerBiConstraintCollectors.toConnectedRanges(intervalMap, startMap, endMap, differenceFunction);
     }
 
     /**
-     * As defined by {@link #concurrentUsageByTime(Function,Function)}.
+     * As defined by {@link #toConnectedRangesByTime(Function,Function)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
      * @param startMap Maps the fact to its start
@@ -2062,14 +2062,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
-            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<IntervalType_, PointType_, Duration>>
-            concurrentUsageByTime(BiFunction<A, B, IntervalType_> intervalMap,
+            BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
+            toConnectedRangesByTime(BiFunction<A, B, IntervalType_> intervalMap,
                     Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
-        return concurrentUsage(intervalMap, startMap, endMap, Duration::between);
+        return toConnectedRanges(intervalMap, startMap, endMap, Duration::between);
     }
 
     /**
-     * As defined by {@link #concurrentUsage(ToLongFunction, ToLongFunction)}.
+     * As defined by {@link #toConnectedRanges(ToLongFunction, ToLongFunction)}.
      *
      * @param startMap Maps the fact to its start
      * @param endMap Maps the fact to its end
@@ -2079,14 +2079,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, IntervalType_>
-            BiConstraintCollector<A, B, ?, ConcurrentUsageInfo<IntervalType_, Long, Long>>
-            concurrentUsage(BiFunction<A, B, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
+            BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, Long, Long>>
+            toConnectedRanges(BiFunction<A, B, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
                     ToLongFunction<IntervalType_> endMap) {
-        return concurrentUsage(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+        return toConnectedRanges(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
     }
 
     /**
-     * As defined by {@link #concurrentUsage(Function,Function,BiFunction)}.
+     * As defined by {@link #toConnectedRanges(Function,Function,BiFunction)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
      * @param startMap Maps the item to its start
@@ -2103,15 +2103,15 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
-            TriConstraintCollector<A, B, C, ?, ConcurrentUsageInfo<IntervalType_, PointType_, DifferenceType_>>
-            concurrentUsage(TriFunction<A, B, C, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
+            TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, PointType_, DifferenceType_>>
+            toConnectedRanges(TriFunction<A, B, C, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
                     Function<IntervalType_, PointType_> endMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerTriConstraintCollectors.consecutiveUsages(intervalMap, startMap, endMap, differenceFunction);
+        return InnerTriConstraintCollectors.toConnectedRanges(intervalMap, startMap, endMap, differenceFunction);
     }
 
     /**
-     * As defined by {@link #concurrentUsageByTime(Function,Function)}.
+     * As defined by {@link #toConnectedRangesByTime(Function,Function)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
      * @param startMap Maps the fact to its start
@@ -2124,14 +2124,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
-            TriConstraintCollector<A, B, C, ?, ConcurrentUsageInfo<IntervalType_, PointType_, Duration>>
-            concurrentUsageByTime(TriFunction<A, B, C, IntervalType_> intervalMap,
+            TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
+            toConnectedRangesByTime(TriFunction<A, B, C, IntervalType_> intervalMap,
                     Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
-        return concurrentUsage(intervalMap, startMap, endMap, Duration::between);
+        return toConnectedRanges(intervalMap, startMap, endMap, Duration::between);
     }
 
     /**
-     * As defined by {@link #concurrentUsage(ToLongFunction, ToLongFunction)}.
+     * As defined by {@link #toConnectedRanges(ToLongFunction, ToLongFunction)}.
      *
      * @param startMap Maps the fact to its start
      * @param endMap Maps the fact to its end
@@ -2142,14 +2142,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, IntervalType_>
-            TriConstraintCollector<A, B, C, ?, ConcurrentUsageInfo<IntervalType_, Long, Long>>
-            concurrentUsage(TriFunction<A, B, C, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
+            TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, Long, Long>>
+            toConnectedRanges(TriFunction<A, B, C, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
                     ToLongFunction<IntervalType_> endMap) {
-        return concurrentUsage(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+        return toConnectedRanges(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
     }
 
     /**
-     * As defined by {@link #concurrentUsage(Function,Function,BiFunction)}.
+     * As defined by {@link #toConnectedRanges(Function,Function,BiFunction)}.
      *
      * @param intervalMap Maps the four facts to an item in the cluster
      * @param startMap Maps the item to its start
@@ -2167,15 +2167,15 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, D, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
-            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<IntervalType_, PointType_, DifferenceType_>>
-            concurrentUsage(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
+            QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, PointType_, DifferenceType_>>
+            toConnectedRanges(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
                     Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerQuadConstraintCollectors.consecutiveUsages(intervalMap, startMap, endMap, differenceFunction);
+        return InnerQuadConstraintCollectors.toConnectedRanges(intervalMap, startMap, endMap, differenceFunction);
     }
 
     /**
-     * As defined by {@link #concurrentUsageByTime(Function,Function)}.
+     * As defined by {@link #toConnectedRangesByTime(Function,Function)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
      * @param startMap Maps the fact to its start
@@ -2189,14 +2189,14 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, D, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
-            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<IntervalType_, PointType_, Duration>>
-            concurrentUsageByTime(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
+            QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
+            toConnectedRangesByTime(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
                     Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
-        return concurrentUsage(intervalMap, startMap, endMap, Duration::between);
+        return toConnectedRanges(intervalMap, startMap, endMap, Duration::between);
     }
 
     /**
-     * As defined by {@link #concurrentUsage(ToLongFunction, ToLongFunction)}.
+     * As defined by {@link #toConnectedRanges(ToLongFunction, ToLongFunction)}.
      *
      * @param startMap Maps the fact to its start
      * @param endMap Maps the fact to its end
@@ -2208,10 +2208,10 @@ public final class ConstraintCollectors {
      * @return never null
      */
     public static <A, B, C, D, IntervalType_>
-            QuadConstraintCollector<A, B, C, D, ?, ConcurrentUsageInfo<IntervalType_, Long, Long>>
-            concurrentUsage(QuadFunction<A, B, C, D, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
+            QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, Long, Long>>
+            toConnectedRanges(QuadFunction<A, B, C, D, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
                     ToLongFunction<IntervalType_> endMap) {
-        return concurrentUsage(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+        return toConnectedRanges(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
     }
 
     private ConstraintCollectors() {

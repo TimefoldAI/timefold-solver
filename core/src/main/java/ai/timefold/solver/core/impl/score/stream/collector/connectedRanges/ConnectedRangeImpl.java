@@ -1,14 +1,14 @@
-package ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage;
+package ai.timefold.solver.core.impl.score.stream.collector.connectedRanges;
 
 import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsage;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 
-final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConcurrentUsage<Interval_, Point_, Difference_> {
+final class ConnectedRangeImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        implements ConnectedRange<Interval_, Point_, Difference_> {
 
     private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
     private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
@@ -20,7 +20,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
     private int maximumOverlap;
     private boolean hasOverlap;
 
-    ConcurrentUsageImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+    ConnectedRangeImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
             IntervalSplitPoint<Interval_, Point_> start) {
         if (start == null) {
@@ -55,7 +55,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
         this.endSplitPoint = (current != null) ? splitPointSet.lower(current) : splitPointSet.last();
     }
 
-    ConcurrentUsageImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+    ConnectedRangeImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
             IntervalSplitPoint<Interval_, Point_> start,
             IntervalSplitPoint<Interval_, Point_> end, int count,
@@ -95,11 +95,11 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
         count++;
     }
 
-    Iterable<ConcurrentUsageImpl<Interval_, Point_, Difference_>> removeInterval(Interval<Interval_, Point_> interval) {
+    Iterable<ConnectedRangeImpl<Interval_, Point_, Difference_>> removeInterval(Interval<Interval_, Point_> interval) {
         return IntervalClusterIterator::new;
     }
 
-    void mergeIntervalCluster(ConcurrentUsageImpl<Interval_, Point_, Difference_> laterIntervalCluster) {
+    void mergeIntervalCluster(ConnectedRangeImpl<Interval_, Point_, Difference_> laterIntervalCluster) {
         if (endSplitPoint.compareTo(laterIntervalCluster.startSplitPoint) > 0) {
             hasOverlap = true;
         }
@@ -118,7 +118,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     @Override
-    public int size() {
+    public int getContainedRangeCount() {
         return count;
     }
 
@@ -143,7 +143,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     @Override
-    public int getMinimumConcurrentUsage() {
+    public int getMinimumOverlap() {
         if (minimumOverlap == -1) {
             recalculateMinimumAndMaximumOverlap();
         }
@@ -151,7 +151,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     @Override
-    public int getMaximumConcurrentUsage() {
+    public int getMaximumOverlap() {
         if (maximumOverlap == -1) {
             recalculateMinimumAndMaximumOverlap();
         }
@@ -177,11 +177,11 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ConcurrentUsageImpl<?, ?, ?> that))
+        if (!(o instanceof ConnectedRangeImpl<?, ?, ?> that))
             return false;
         return count == that.count &&
-                getMinimumConcurrentUsage() == that.getMinimumConcurrentUsage()
-                && getMaximumConcurrentUsage() == that.getMaximumConcurrentUsage()
+                getMinimumOverlap() == that.getMinimumOverlap()
+                && getMaximumOverlap() == that.getMaximumOverlap()
                 && hasOverlap == that.hasOverlap && Objects.equals(
                         splitPointSet, that.splitPointSet)
                 && Objects.equals(startSplitPoint,
@@ -192,7 +192,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
     @Override
     public int hashCode() {
         return Objects.hash(splitPointSet, startSplitPoint, endSplitPoint, count,
-                getMinimumConcurrentUsage(), getMaximumConcurrentUsage(), hasOverlap);
+                getMinimumOverlap(), getMaximumOverlap(), hasOverlap);
     }
 
     @Override
@@ -201,8 +201,8 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
                 "start=" + startSplitPoint +
                 ", end=" + endSplitPoint +
                 ", count=" + count +
-                ", minimumOverlap=" + getMinimumConcurrentUsage() +
-                ", maximumOverlap=" + getMaximumConcurrentUsage() +
+                ", minimumOverlap=" + getMinimumOverlap() +
+                ", maximumOverlap=" + getMaximumOverlap() +
                 ", hasOverlap=" + hasOverlap +
                 ", set=" + splitPointSet +
                 '}';
@@ -210,7 +210,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
 
     // TODO: Make this incremental by only checking between the interval's start and end points
     private final class IntervalClusterIterator
-            implements Iterator<ConcurrentUsageImpl<Interval_, Point_, Difference_>> {
+            implements Iterator<ConnectedRangeImpl<Interval_, Point_, Difference_>> {
 
         private IntervalSplitPoint<Interval_, Point_> current = getStart(startSplitPoint);
 
@@ -228,7 +228,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
         }
 
         @Override
-        public ConcurrentUsageImpl<Interval_, Point_, Difference_> next() {
+        public ConnectedRangeImpl<Interval_, Point_, Difference_> next() {
             IntervalSplitPoint<Interval_, Point_> start = current;
             IntervalSplitPoint<Interval_, Point_> end;
             int activeIntervals = 0;
@@ -258,7 +258,7 @@ final class ConcurrentUsageImpl<Interval_, Point_ extends Comparable<Point_>, Di
             }
             hasOverlap = anyOverlap;
 
-            return new ConcurrentUsageImpl<>(splitPointSet, differenceFunction, start, end, count,
+            return new ConnectedRangeImpl<>(splitPointSet, differenceFunction, start, end, count,
                     minimumOverlap, maximumOverlap, hasOverlap);
         }
     }

@@ -32,7 +32,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -990,8 +990,8 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void consecutiveUsage() {
-        UniConstraintCollector<Interval, ?, ConcurrentUsageInfo<Interval, Integer, Integer>> collector =
-                ConstraintCollectors.concurrentUsage(
+        UniConstraintCollector<Interval, ?, ConnectedRangeChain<Interval, Integer, Integer>> collector =
+                ConstraintCollectors.toConnectedRanges(
                         Interval::start,
                         Interval::end, (a, b) -> b - a);
         var container = collector.supplier().get();

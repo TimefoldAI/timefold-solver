@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
 abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_>
-        permits AverageReferenceTriCollector, ConcurrentUsageTriConstraintCollector, ConsecutiveSequencesTriConstraintCollector,
+        permits AverageReferenceTriCollector, ConnectedRangesTriConstraintCollector, ConsecutiveSequencesTriConstraintCollector,
         CountDistinctIntTriCollector, CountDistinctLongTriCollector, SumReferenceTriCollector {
     protected final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 

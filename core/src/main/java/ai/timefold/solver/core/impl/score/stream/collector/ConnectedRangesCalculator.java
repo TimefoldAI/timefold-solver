@@ -3,15 +3,15 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
-import ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage.IntervalTree;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.impl.score.stream.collector.connectedRanges.IntervalTree;
 
-public final class ConcurrentUsageCalculator<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ObjectCalculator<Interval_, ConcurrentUsageInfo<Interval_, Point_, Difference_>> {
+public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        implements ObjectCalculator<Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>> {
 
     private final IntervalTree<Interval_, Point_, Difference_> context;
 
-    public ConcurrentUsageCalculator(Function<? super Interval_, ? extends Point_> startMap,
+    public ConnectedRangesCalculator(Function<? super Interval_, ? extends Point_> startMap,
             Function<? super Interval_, ? extends Point_> endMap,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
         this.context = new IntervalTree<>(
@@ -31,8 +31,8 @@ public final class ConcurrentUsageCalculator<Interval_, Point_ extends Comparabl
     }
 
     @Override
-    public ConcurrentUsageInfo<Interval_, Point_, Difference_> result() {
-        return context.getConsecutiveIntervalData();
+    public ConnectedRangeChain<Interval_, Point_, Difference_> result() {
+        return context.getConnectedRangeChain();
     }
 
 }

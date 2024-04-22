@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.concurrentUsage.IntervalTree;
+import ai.timefold.solver.core.impl.score.stream.collector.connectedRanges.IntervalTree;
 import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
 import org.junit.jupiter.api.Test;
@@ -122,13 +122,13 @@ public abstract class AbstractConstraintCollectorsTest {
                 });
     }
 
-    protected ConcurrentUsageInfo<Interval, Integer, Integer> buildConsecutiveUsage(Interval... data) {
+    protected ConnectedRangeChain<Interval, Integer, Integer> buildConsecutiveUsage(Interval... data) {
         return Arrays.stream(data).collect(
                 () -> new IntervalTree<>(Interval::start, Interval::end, (a, b) -> b - a),
                 (tree, datum) -> tree.add(tree.getInterval(datum)),
                 (a, b) -> {
                     throw new UnsupportedOperationException();
-                }).getConsecutiveIntervalData();
+                }).getConnectedRangeChain();
     }
 
     public record Interval(int start, int end) {

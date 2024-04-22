@@ -20,7 +20,7 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.common.ConcurrentUsageInfo;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
@@ -197,12 +197,12 @@ public class InnerUniConstraintCollectors {
     }
 
     public static <A, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-            UniConstraintCollector<A, ?, ConcurrentUsageInfo<Interval_, Point_, Difference_>>
-            consecutiveUsages(Function<? super A, ? extends Interval_> mapper,
+            UniConstraintCollector<A, ?, ConnectedRangeChain<Interval_, Point_, Difference_>>
+            toConnectedRanges(Function<? super A, ? extends Interval_> mapper,
                     Function<? super Interval_, ? extends Point_> startMap,
                     Function<? super Interval_, ? extends Point_> endMap,
                     BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
-        return new ConcurrentUsageUniConstraintCollector<>(mapper, startMap, endMap,
+        return new ConnectedRangesUniConstraintCollector<>(mapper, startMap, endMap,
                 differenceFunction);
     }
 
