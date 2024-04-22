@@ -91,7 +91,7 @@ Java::
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.acme</groupId>
-  <artifactId>timefold-solver-quarkus-vehicle-routing-quickstart</artifactId>
+  <artifactId>vehicle-routing</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
@@ -183,7 +183,7 @@ Kotlin::
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.acme</groupId>
-  <artifactId>timefold-solver-quarkus-vehicle-routing-quickstart</artifactId>
+  <artifactId>vehicle-routing</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>

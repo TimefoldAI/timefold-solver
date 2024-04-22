@@ -87,7 +87,7 @@ Your `pom.xml` file has the following content:
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.acme</groupId>
-  <artifactId>timefold-solver-quarkus-school-timetabling-quickstart</artifactId>
+  <artifactId>school-timetabling</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
