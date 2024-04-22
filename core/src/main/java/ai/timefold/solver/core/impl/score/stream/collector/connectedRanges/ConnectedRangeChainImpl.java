@@ -4,7 +4,6 @@ import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
@@ -19,7 +18,7 @@ public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<
     private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, RangeGapImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToNextBreak;
     private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
 
-    public ConnectedRangeChainImpl(TreeSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+    public ConnectedRangeChainImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
         this.clusterStartSplitPointToCluster = new TreeMap<>();
         this.clusterStartSplitPointToNextBreak = new TreeMap<>();

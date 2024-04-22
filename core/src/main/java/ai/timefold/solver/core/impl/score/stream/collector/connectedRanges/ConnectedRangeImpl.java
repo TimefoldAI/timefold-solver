@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.connectedRanges;
 
 import java.util.Iterator;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
@@ -229,6 +230,9 @@ final class ConnectedRangeImpl<Interval_, Point_ extends Comparable<Point_>, Dif
 
         @Override
         public ConnectedRangeImpl<Interval_, Point_, Difference_> next() {
+            if (current == null) {
+                throw new NoSuchElementException();
+            }
             IntervalSplitPoint<Interval_, Point_> start = current;
             IntervalSplitPoint<Interval_, Point_> end;
             int activeIntervals = 0;

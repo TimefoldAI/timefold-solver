@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.connectedRanges;
 
 import java.util.Iterator;
+import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -11,7 +12,7 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
 
     private final Function<? super Interval_, ? extends Point_> startMapping;
     private final Function<? super Interval_, ? extends Point_> endMapping;
-    private final TreeSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
+    private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
     private final ConnectedRangeChainImpl<Interval_, Point_, Difference_> consecutiveIntervalData;
 
     public IntervalTree(Function<? super Interval_, ? extends Point_> startMapping,

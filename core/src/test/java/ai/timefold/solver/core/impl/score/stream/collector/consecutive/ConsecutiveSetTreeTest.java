@@ -124,17 +124,17 @@ class ConsecutiveSetTreeTest {
         tree.remove(duplicateValue);
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        assertThat(breakList).hasSize(0);
+        assertThat(breakList).isEmpty();
 
         tree.remove(duplicateValue);
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        assertThat(breakList).hasSize(0);
+        assertThat(breakList).isEmpty();
 
         tree.remove(duplicateValue);
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(2);
-        assertThat(tree.getBreaks()).hasSize(0);
+        assertThat(tree.getBreaks()).isEmpty();
     }
 
     @Test
@@ -180,7 +180,7 @@ class ConsecutiveSetTreeTest {
 
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(8);
-        assertThat(tree.getBreaks()).hasSize(0);
+        assertThat(tree.getBreaks()).isEmpty();
     }
 
     @Test
@@ -241,7 +241,7 @@ class ConsecutiveSetTreeTest {
         assertThat(sequenceList).hasSize(1);
 
         assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        assertThat(tree.getBreaks()).hasSize(0);
+        assertThat(tree.getBreaks()).isEmpty();
     }
 
     @Test
@@ -267,7 +267,7 @@ class ConsecutiveSetTreeTest {
 
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(6);
-        assertThat(tree.getBreaks()).hasSize(0);
+        assertThat(tree.getBreaks()).isEmpty();
 
         // mimic changing planning variable
         start.set(3);
@@ -275,7 +275,7 @@ class ConsecutiveSetTreeTest {
         tree.remove(start);
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(5);
-        assertThat(tree.getBreaks()).hasSize(0);
+        assertThat(tree.getBreaks()).isEmpty();
     }
 
     @Test
