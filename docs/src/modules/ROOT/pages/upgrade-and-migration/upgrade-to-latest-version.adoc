@@ -144,6 +144,43 @@ public class Lesson {
 
 '''
 
+=== Upgrade from 1.9.0 to 1.10.0
+
+.icon:info-circle[role=yellow] Removed the `examples` module
+[%collapsible%open]
+====
+We have finished the process of removing the Swing-based examples.
+The legacy examples from the solver codebase have been removed entirely.
+
+You can find better, more modern implementations of many of these use cases in our quickstarts, including:
+
+- `bed-allocation`,
+- `conference-scheduling`,
+- `employee-scheduling`,
+- `facility-location`,
+- `flight-crew-scheduling`,
+- `food-packaging`,
+- `maintenance-scheduling`,
+- `meeting-scheduling`,
+- `order-picking`,
+- `project-job-scheduling`,
+- `school-timetabling`,
+- `sports-league-scheduling`,
+- `task-assigning`,
+- `tournament-scheduling`,
+- and `vehicle-routing`.
+====
+
+.icon:info-circle[role=yellow] Simplified the quickstarts artifact names
+[%collapsible%open]
+====
+We have simplified and renamed all quickstarts `artifactId` names.
+For example, the old artifact name `timefold-solver-quarkus-vehicle-routing-quickstart` became `vehicle-routing`.
+
+====
+
+'''
+
 === Upgrade from 1.8.0 to 1.9.0
 
 .icon:info-circle[role=yellow] Removed several of the old examples
