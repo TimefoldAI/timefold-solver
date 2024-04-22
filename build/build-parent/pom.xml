@@ -49,7 +49,7 @@
     <version.exec.plugin>3.2.0</version.exec.plugin>
     <version.enforcer.plugin>3.4.1</version.enforcer.plugin>
     <version.jacoco.plugin>0.8.12</version.jacoco.plugin>
-    <version.jar.plugin>3.4.0</version.jar.plugin>
+    <version.jar.plugin>3.4.1</version.jar.plugin>
     <version.jaxb2.plugin>3.2.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sonar.plugin>3.11.0.3922</version.sonar.plugin>
