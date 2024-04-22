@@ -88,7 +88,7 @@ Your `pom.xml` file has the following content:
     </parent>
 
     <groupId>org.acme</groupId>
-    <artifactId>timefold-solver-spring-boot-school-timetabling-quickstart</artifactId>
+    <artifactId>spring-boot-school-timetabling</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
