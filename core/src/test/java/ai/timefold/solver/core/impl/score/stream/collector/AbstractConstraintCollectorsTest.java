@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.connectedRanges.IntervalTree;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.IntervalTree;
 import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
 import org.junit.jupiter.api.Test;

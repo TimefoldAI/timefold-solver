@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.collector.connectedRanges;
+package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

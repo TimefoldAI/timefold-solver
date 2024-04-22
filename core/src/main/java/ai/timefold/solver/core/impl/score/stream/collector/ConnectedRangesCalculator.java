@@ -4,7 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
-import ai.timefold.solver.core.impl.score.stream.collector.connectedRanges.IntervalTree;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.IntervalTree;
 
 public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements ObjectCalculator<Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>> {
