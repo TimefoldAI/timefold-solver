@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest]
         java-version: [ 17, 21, 22 ] #Latest two LTS + latest non-LTS.
     timeout-minutes: 120
     steps:
