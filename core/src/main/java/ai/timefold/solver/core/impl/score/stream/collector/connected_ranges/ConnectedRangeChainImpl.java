@@ -60,7 +60,7 @@ public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<
         // Merge all the intersected interval clusters into the first intersected
         // interval cluster
         intersectedIntervalClusterMap.tailMap(oldStartSplitPoint, false).values()
-                .forEach(firstIntersectedIntervalCluster::mergeIntervalCluster);
+                .forEach(firstIntersectedIntervalCluster::mergeConnectedRange);
 
         // Remove all the intersected interval clusters after the first intersected
         // one, since they are now merged in the first
@@ -127,10 +127,10 @@ public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<
 
         var clusterBeforeFirstIntersectedBreak =
                 (ConnectedRangeImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.firstEntry().getValue()
-                        .getPreviousConcurrentUsage());
+                        .getPreviousConnectedRange());
         var clusterAfterFinalIntersectedBreak =
                 (ConnectedRangeImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.lastEntry().getValue()
-                        .getNextConcurrentUsage());
+                        .getNextConnectedRange());
 
         // All breaks that are not the first or last intersected breaks will
         // be removed (as interval span them)
@@ -168,7 +168,7 @@ public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<
             intersectedIntervalBreakMap.clear();
             clusterStartSplitPointToNextBreak
                     .put(((ConnectedRangeImpl<Interval_, Point_, Difference_>) (previousBreak
-                            .getPreviousConcurrentUsage())).getStartSplitPoint(), previousBreak);
+                            .getPreviousConnectedRange())).getStartSplitPoint(), previousBreak);
         } else {
             // Case: interval does not span either the first or final break
             // Ex:
@@ -200,17 +200,22 @@ public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<
 
         var previousBreak = (previousBreakEntry != null) ? previousBreakEntry.getValue() : null;
         var previousIntervalCluster = (previousBreak != null)
-                ? (ConnectedRangeImpl<Interval_, Point_, Difference_>) previousBreak.getPreviousConcurrentUsage()
+                ? (ConnectedRangeImpl<Interval_, Point_, Difference_>) previousBreak.getPreviousConnectedRange()
                 : null;
 
-        for (var newIntervalCluster : intervalCluster.removeInterval(interval)) {
+        var iterator = new ConnectedSubrangeIterator<>(splitPointSet,
+                intervalCluster.getStartSplitPoint(),
+                intervalCluster.getEndSplitPoint(),
+                differenceFunction);
+        while (iterator.hasNext()) {
+            var newIntervalCluster = iterator.next();
             if (previousBreak != null) {
                 previousBreak.setNextCluster(newIntervalCluster);
-                previousBreak.setLength(differenceFunction.apply(previousBreak.getPreviousConcurrentUsage().getEnd(),
+                previousBreak.setLength(differenceFunction.apply(previousBreak.getPreviousConnectedRange().getEnd(),
                         newIntervalCluster.getStart()));
                 clusterStartSplitPointToNextBreak
                         .put(((ConnectedRangeImpl<Interval_, Point_, Difference_>) previousBreak
-                                .getPreviousConcurrentUsage()).getStartSplitPoint(), previousBreak);
+                                .getPreviousConnectedRange()).getStartSplitPoint(), previousBreak);
             }
             previousBreak = new RangeGapImpl<>(newIntervalCluster, null, null);
             previousIntervalCluster = newIntervalCluster;

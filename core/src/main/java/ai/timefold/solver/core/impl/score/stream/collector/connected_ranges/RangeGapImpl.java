@@ -16,11 +16,11 @@ final class RangeGapImpl<Interval_, Point_ extends Comparable<Point_>, Differenc
         this.length = length;
     }
 
-    public ConnectedRange<Interval_, Point_, Difference_> getPreviousConcurrentUsage() {
+    ConnectedRange<Interval_, Point_, Difference_> getPreviousConnectedRange() {
         return previousCluster;
     }
 
-    public ConnectedRange<Interval_, Point_, Difference_> getNextConcurrentUsage() {
+    ConnectedRange<Interval_, Point_, Difference_> getNextConnectedRange() {
         return nextCluster;
     }
 

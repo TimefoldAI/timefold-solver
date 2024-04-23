@@ -45,7 +45,7 @@ public final class IntervalTree<Interval_, Point_ extends Comparable<Point_>, Di
     }
 
     public Iterator<Interval_> iterator() {
-        return new IntervalTreeIterator<>(splitPointSet);
+        return new ContainedRangeIterator<>(splitPointSet);
     }
 
     public boolean add(Interval<Interval_, Point_> interval) {

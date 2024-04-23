@@ -2,12 +2,12 @@ package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
 import java.util.Iterator;
 
-final class IntervalTreeIterator<Interval_, Point_ extends Comparable<Point_>> implements Iterator<Interval_> {
+final class ContainedRangeIterator<Interval_, Point_ extends Comparable<Point_>> implements Iterator<Interval_> {
 
     private final Iterator<IntervalSplitPoint<Interval_, Point_>> splitPointSetIterator;
     private Iterator<Interval_> splitPointValueIterator;
 
-    IntervalTreeIterator(Iterable<IntervalSplitPoint<Interval_, Point_>> splitPointSet) {
+    ContainedRangeIterator(Iterable<IntervalSplitPoint<Interval_, Point_>> splitPointSet) {
         this.splitPointSetIterator = splitPointSet.iterator();
         if (splitPointSetIterator.hasNext()) {
             splitPointValueIterator = splitPointSetIterator.next().getValuesStartingFromSplitPointIterator();
