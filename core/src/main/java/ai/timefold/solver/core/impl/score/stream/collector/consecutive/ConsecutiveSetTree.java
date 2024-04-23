@@ -274,11 +274,11 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
             bag.setStart(itemMap.higherKey(item));
             startItemToSequence.remove(sequenceStart);
             var extendedBreak = startItemToPreviousBreak.remove(sequenceStart);
-            var firstItem = bag.firstItem;
-            startItemToSequence.put(firstItem, bag);
+            var bagFirstItem = bag.firstItem;
+            startItemToSequence.put(bagFirstItem, bag);
             if (extendedBreak != null) {
                 extendedBreak.updateLength();
-                startItemToPreviousBreak.put(firstItem, extendedBreak);
+                startItemToPreviousBreak.put(bagFirstItem, extendedBreak);
             }
             return;
         }

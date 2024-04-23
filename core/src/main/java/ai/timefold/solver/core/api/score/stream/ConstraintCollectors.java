@@ -1963,23 +1963,24 @@ public final class ConstraintCollectors {
     /**
      * Creates a constraint collector that returns {@link ConnectedRangeChain} about the first fact.
      *
-     * For instance, {@code [Equipment from=2, to=4] [Equipment from=3, to=5] [Equipment from=6, to=7] [Equipment from=7, to=8]}
+     * For instance, {@code [Equipment fromInclusive=2, toExclusive=4] [Equipment fromInclusive=3, toExclusive=5]
+     *                      [Equipment fromInclusive=6, toExclusive=7] [Equipment fromInclusive=7, toExclusive=8]}
      * returns the following information:
      *
      * <pre>
      * {@code
-     * ConcurrentUsage: [minConcurrentUsage: 1, maxConcurrentUsage: 2,
-     *                  [Equipment from=2, to=4] [Equipment from=3, to=5]],
+     * ConnectedRanges: [minOverlap: 1, maxOverlap: 2,
+     *                  [Equipment fromInclusive=2, toExclusive=4] [Equipment fromInclusive=3, toExclusive=5]],
      *                  [minConcurrentUsage: 1, maxConcurrentUsage: 1,
-     *                  [Equipment from=6, to=7] [Equipment from=7, to=8]]
+     *                  [Equipment fromInclusive=6, toExclusive=7] [Equipment fromInclusive=7, toExclusive=8]]
      * Breaks: [[Break from=5, to=6, length=1]]
      * }
      * </pre>
      *
      * This can be used to ensure a limited resource is not over-assigned.
      *
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param differenceFunction Computes the difference between two points. The second argument is always
      *        larger than the first (ex: {@link Duration#between}
      *        or {@code (a,b) -> b - a}).
@@ -1990,9 +1991,10 @@ public final class ConstraintCollectors {
      */
     public static <A, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
             UniConstraintCollector<A, ?, ConnectedRangeChain<A, PointType_, DifferenceType_>>
-            toConnectedRanges(Function<A, PointType_> startMap, Function<A, PointType_> endMap,
+            toConnectedRanges(Function<A, PointType_> startInclusiveMap, Function<A, PointType_> endExclusiveMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerUniConstraintCollectors.toConnectedRanges(ConstantLambdaUtils.identity(), startMap, endMap,
+        return InnerUniConstraintCollectors.toConnectedRanges(ConstantLambdaUtils.identity(), startInclusiveMap,
+                endExclusiveMap,
                 differenceFunction);
     }
 
@@ -2002,35 +2004,35 @@ public final class ConstraintCollectors {
      *
      * @param <A> type of the first mapped fact
      * @param <PointType_> temporal type of the endpoints
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @return never null
      */
     public static <A, PointType_ extends Temporal & Comparable<PointType_>>
             UniConstraintCollector<A, ?, ConnectedRangeChain<A, PointType_, Duration>>
-            toConnectedRangesByTime(Function<A, PointType_> startMap, Function<A, PointType_> endMap) {
-        return toConnectedRanges(startMap, endMap, Duration::between);
+            toConnectedTemporalRanges(Function<A, PointType_> startInclusiveMap, Function<A, PointType_> endExclusiveMap) {
+        return toConnectedRanges(startInclusiveMap, endExclusiveMap, Duration::between);
     }
 
     /**
      * Specialized version of {@link #toConnectedRanges(Function,Function,BiFunction)} for Long.
      *
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @return never null
      */
     public static <A> UniConstraintCollector<A, ?, ConnectedRangeChain<A, Long, Long>>
-            toConnectedRanges(ToLongFunction<A> startMap, ToLongFunction<A> endMap) {
-        return toConnectedRanges(startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+            toConnectedRanges(ToLongFunction<A> startInclusiveMap, ToLongFunction<A> endExclusiveMap) {
+        return toConnectedRanges(startInclusiveMap::applyAsLong, endExclusiveMap::applyAsLong, (a, b) -> b - a);
     }
 
     /**
      * As defined by {@link #toConnectedRanges(Function,Function,BiFunction)}.
      *
      * @param intervalMap Maps both facts to an item in the cluster
-     * @param startMap Maps the item to its start
-     * @param endMap Maps the item to its end
+     * @param startInclusiveMap Maps the item to its start
+     * @param endExclusiveMap Maps the item to its end
      * @param differenceFunction Computes the difference between two points. The second argument is always
      *        larger than the first (ex: {@link Duration#between}
      *        or {@code (a,b) -> b - a}).
@@ -2043,18 +2045,20 @@ public final class ConstraintCollectors {
      */
     public static <A, B, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
             BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, PointType_, DifferenceType_>>
-            toConnectedRanges(BiFunction<A, B, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
-                    Function<IntervalType_, PointType_> endMap,
+            toConnectedRanges(BiFunction<A, B, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startInclusiveMap,
+                    Function<IntervalType_, PointType_> endExclusiveMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerBiConstraintCollectors.toConnectedRanges(intervalMap, startMap, endMap, differenceFunction);
+        return InnerBiConstraintCollectors.toConnectedRanges(intervalMap, startInclusiveMap, endExclusiveMap,
+                differenceFunction);
     }
 
     /**
-     * As defined by {@link #toConnectedRangesByTime(Function,Function)}.
+     * As defined by {@link #toConnectedTemporalRanges(Function,Function)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <IntervalType_> type of the item in the cluster
@@ -2063,16 +2067,17 @@ public final class ConstraintCollectors {
      */
     public static <A, B, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
             BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
-            toConnectedRangesByTime(BiFunction<A, B, IntervalType_> intervalMap,
-                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
-        return toConnectedRanges(intervalMap, startMap, endMap, Duration::between);
+            toConnectedTemporalRanges(BiFunction<A, B, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startInclusiveMap,
+                    Function<IntervalType_, PointType_> endExclusiveMap) {
+        return toConnectedRanges(intervalMap, startInclusiveMap, endExclusiveMap, Duration::between);
     }
 
     /**
      * As defined by {@link #toConnectedRanges(ToLongFunction, ToLongFunction)}.
      *
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <IntervalType_> type of the item in the cluster
@@ -2080,17 +2085,17 @@ public final class ConstraintCollectors {
      */
     public static <A, B, IntervalType_>
             BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, Long, Long>>
-            toConnectedRanges(BiFunction<A, B, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
-                    ToLongFunction<IntervalType_> endMap) {
-        return toConnectedRanges(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+            toConnectedRanges(BiFunction<A, B, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startInclusiveMap,
+                    ToLongFunction<IntervalType_> endExclusiveMap) {
+        return toConnectedRanges(intervalMap, startInclusiveMap::applyAsLong, endExclusiveMap::applyAsLong, (a, b) -> b - a);
     }
 
     /**
      * As defined by {@link #toConnectedRanges(Function,Function,BiFunction)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
-     * @param startMap Maps the item to its start
-     * @param endMap Maps the item to its end
+     * @param startInclusiveMap Maps the item to its start
+     * @param endExclusiveMap Maps the item to its end
      * @param differenceFunction Computes the difference between two points. The second argument is always
      *        larger than the first (ex: {@link Duration#between}
      *        or {@code (a,b) -> b - a}).
@@ -2104,18 +2109,20 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
             TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, PointType_, DifferenceType_>>
-            toConnectedRanges(TriFunction<A, B, C, IntervalType_> intervalMap, Function<IntervalType_, PointType_> startMap,
-                    Function<IntervalType_, PointType_> endMap,
+            toConnectedRanges(TriFunction<A, B, C, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startInclusiveMap,
+                    Function<IntervalType_, PointType_> endExclusiveMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerTriConstraintCollectors.toConnectedRanges(intervalMap, startMap, endMap, differenceFunction);
+        return InnerTriConstraintCollectors.toConnectedRanges(intervalMap, startInclusiveMap, endExclusiveMap,
+                differenceFunction);
     }
 
     /**
-     * As defined by {@link #toConnectedRangesByTime(Function,Function)}.
+     * As defined by {@link #toConnectedTemporalRanges(Function,Function)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
@@ -2125,16 +2132,17 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
             TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
-            toConnectedRangesByTime(TriFunction<A, B, C, IntervalType_> intervalMap,
-                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
-        return toConnectedRanges(intervalMap, startMap, endMap, Duration::between);
+            toConnectedTemporalRanges(TriFunction<A, B, C, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startInclusiveMap,
+                    Function<IntervalType_, PointType_> endExclusiveMap) {
+        return toConnectedRanges(intervalMap, startInclusiveMap, endExclusiveMap, Duration::between);
     }
 
     /**
      * As defined by {@link #toConnectedRanges(ToLongFunction, ToLongFunction)}.
      *
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
@@ -2143,17 +2151,17 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, IntervalType_>
             TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, Long, Long>>
-            toConnectedRanges(TriFunction<A, B, C, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
-                    ToLongFunction<IntervalType_> endMap) {
-        return toConnectedRanges(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+            toConnectedRanges(TriFunction<A, B, C, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startInclusiveMap,
+                    ToLongFunction<IntervalType_> endExclusiveMap) {
+        return toConnectedRanges(intervalMap, startInclusiveMap::applyAsLong, endExclusiveMap::applyAsLong, (a, b) -> b - a);
     }
 
     /**
      * As defined by {@link #toConnectedRanges(Function,Function,BiFunction)}.
      *
      * @param intervalMap Maps the four facts to an item in the cluster
-     * @param startMap Maps the item to its start
-     * @param endMap Maps the item to its end
+     * @param startInclusiveMap Maps the item to its start
+     * @param endExclusiveMap Maps the item to its end
      * @param differenceFunction Computes the difference between two points. The second argument is always
      *        larger than the first (ex: {@link Duration#between}
      *        or {@code (a,b) -> b - a}).
@@ -2169,17 +2177,18 @@ public final class ConstraintCollectors {
     public static <A, B, C, D, IntervalType_, PointType_ extends Comparable<PointType_>, DifferenceType_ extends Comparable<DifferenceType_>>
             QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, PointType_, DifferenceType_>>
             toConnectedRanges(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
-                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap,
+                    Function<IntervalType_, PointType_> startInclusiveMap, Function<IntervalType_, PointType_> endExclusiveMap,
                     BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
-        return InnerQuadConstraintCollectors.toConnectedRanges(intervalMap, startMap, endMap, differenceFunction);
+        return InnerQuadConstraintCollectors.toConnectedRanges(intervalMap, startInclusiveMap, endExclusiveMap,
+                differenceFunction);
     }
 
     /**
-     * As defined by {@link #toConnectedRangesByTime(Function,Function)}.
+     * As defined by {@link #toConnectedTemporalRanges(Function,Function)}.
      *
      * @param intervalMap Maps the three facts to an item in the cluster
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
@@ -2190,16 +2199,17 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
             QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
-            toConnectedRangesByTime(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
-                    Function<IntervalType_, PointType_> startMap, Function<IntervalType_, PointType_> endMap) {
-        return toConnectedRanges(intervalMap, startMap, endMap, Duration::between);
+            toConnectedTemporalRanges(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
+                    Function<IntervalType_, PointType_> startInclusiveMap,
+                    Function<IntervalType_, PointType_> endExclusiveMap) {
+        return toConnectedRanges(intervalMap, startInclusiveMap, endExclusiveMap, Duration::between);
     }
 
     /**
      * As defined by {@link #toConnectedRanges(ToLongFunction, ToLongFunction)}.
      *
-     * @param startMap Maps the fact to its start
-     * @param endMap Maps the fact to its end
+     * @param startInclusiveMap Maps the fact to its start
+     * @param endExclusiveMap Maps the fact to its end
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
@@ -2209,9 +2219,10 @@ public final class ConstraintCollectors {
      */
     public static <A, B, C, D, IntervalType_>
             QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, Long, Long>>
-            toConnectedRanges(QuadFunction<A, B, C, D, IntervalType_> intervalMap, ToLongFunction<IntervalType_> startMap,
-                    ToLongFunction<IntervalType_> endMap) {
-        return toConnectedRanges(intervalMap, startMap::applyAsLong, endMap::applyAsLong, (a, b) -> b - a);
+            toConnectedRanges(QuadFunction<A, B, C, D, IntervalType_> intervalMap,
+                    ToLongFunction<IntervalType_> startInclusiveMap,
+                    ToLongFunction<IntervalType_> endExclusiveMap) {
+        return toConnectedRanges(intervalMap, startInclusiveMap::applyAsLong, endExclusiveMap::applyAsLong, (a, b) -> b - a);
     }
 
     private ConstraintCollectors() {
