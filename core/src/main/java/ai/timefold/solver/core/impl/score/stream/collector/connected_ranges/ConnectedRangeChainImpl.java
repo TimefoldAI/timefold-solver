@@ -76,7 +76,7 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
                     firstIntersectedConnectedRange);
             var nextGap = startSplitPointToNextGap.get(firstIntersectedConnectedRange.getStartSplitPoint());
             if (nextGap != null) {
-                nextGap.setPreviousCluster(firstIntersectedConnectedRange);
+                nextGap.setPreviousConnectedRange(firstIntersectedConnectedRange);
                 nextGap.setLength(differenceFunction.apply(nextGap.getPreviousRangeEnd(),
                         nextGap.getNextRangeStart()));
             }
@@ -149,7 +149,7 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
                 //   -----------
                 //----  ------   -----
                 var finalGap = intersectedRangeGapMap.lastEntry().getValue();
-                finalGap.setPreviousCluster(connectedRange);
+                finalGap.setPreviousConnectedRange(connectedRange);
                 finalGap.setLength(
                         differenceFunction.apply(finalGap.getPreviousRangeEnd(),
                                 finalGap.getNextRangeStart()));
@@ -163,7 +163,7 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
             //----   -----   -----
             var previousGapEntry = intersectedRangeGapMap.firstEntry();
             var previousGap = previousGapEntry.getValue();
-            previousGap.setNextCluster(connectedRange);
+            previousGap.setNextConnectedRange(connectedRange);
             previousGap.setLength(
                     differenceFunction.apply(previousGap.getPreviousRangeEnd(), connectedRange.getStart()));
             intersectedRangeGapMap.clear();
@@ -181,7 +181,7 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
 
             var previousGapEntry = intersectedRangeGapMap.firstEntry();
             var previousGap = previousGapEntry.getValue();
-            previousGap.setNextCluster(connectedRange);
+            previousGap.setNextConnectedRange(connectedRange);
             previousGap.setLength(
                     differenceFunction.apply(previousGap.getPreviousRangeEnd(), connectedRange.getStart()));
 
@@ -211,7 +211,7 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
         while (iterator.hasNext()) {
             var newConnectedRange = iterator.next();
             if (previousGap != null) {
-                previousGap.setNextCluster(newConnectedRange);
+                previousGap.setNextConnectedRange(newConnectedRange);
                 previousGap.setLength(differenceFunction.apply(previousGap.getPreviousConnectedRange().getEnd(),
                         newConnectedRange.getStart()));
                 startSplitPointToNextGap
@@ -224,15 +224,15 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
         }
 
         if (nextConnectedRangeEntry != null && previousGap != null) {
-            previousGap.setNextCluster(nextConnectedRangeEntry.getValue());
+            previousGap.setNextConnectedRange(nextConnectedRangeEntry.getValue());
             previousGap.setLength(differenceFunction.apply(previousConnectedRange.getEnd(),
                     nextConnectedRangeEntry.getValue().getStart()));
             startSplitPointToNextGap.put(previousConnectedRange.getStartSplitPoint(),
                     previousGap);
         } else if (previousGapEntry != null && previousGap == previousGapEntry.getValue()) {
-            // i.e. range was the last range in the cluster,
+            // i.e. range was the last range in the connected range,
             // (previousGap == previousGapEntry.getValue()),
-            // and there is no range cluster after it
+            // and there is no connected range after it
             // (previousGap != null as previousGapEntry != null,
             // so it must be the case nextConnectedRangeEntry == null)
             startSplitPointToNextGap.remove(previousGapEntry.getKey());

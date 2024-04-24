@@ -5,33 +5,33 @@ import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 
 final class RangeGapImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements RangeGap<Point_, Difference_> {
-    private ConnectedRange<Range_, Point_, Difference_> previousCluster;
-    private ConnectedRange<Range_, Point_, Difference_> nextCluster;
+    private ConnectedRange<Range_, Point_, Difference_> previousConnectedRange;
+    private ConnectedRange<Range_, Point_, Difference_> nextConnectedRange;
     private Difference_ length;
 
-    RangeGapImpl(ConnectedRange<Range_, Point_, Difference_> previousCluster,
-            ConnectedRange<Range_, Point_, Difference_> nextCluster, Difference_ length) {
-        this.previousCluster = previousCluster;
-        this.nextCluster = nextCluster;
+    RangeGapImpl(ConnectedRange<Range_, Point_, Difference_> previousConnectedRange,
+            ConnectedRange<Range_, Point_, Difference_> nextConnectedRange, Difference_ length) {
+        this.previousConnectedRange = previousConnectedRange;
+        this.nextConnectedRange = nextConnectedRange;
         this.length = length;
     }
 
     ConnectedRange<Range_, Point_, Difference_> getPreviousConnectedRange() {
-        return previousCluster;
+        return previousConnectedRange;
     }
 
     ConnectedRange<Range_, Point_, Difference_> getNextConnectedRange() {
-        return nextCluster;
+        return nextConnectedRange;
     }
 
     @Override
     public Point_ getPreviousRangeEnd() {
-        return previousCluster.getEnd();
+        return previousConnectedRange.getEnd();
     }
 
     @Override
     public Point_ getNextRangeStart() {
-        return nextCluster.getStart();
+        return nextConnectedRange.getStart();
     }
 
     @Override
@@ -39,12 +39,12 @@ final class RangeGapImpl<Range_, Point_ extends Comparable<Point_>, Difference_ 
         return length;
     }
 
-    void setPreviousCluster(ConnectedRange<Range_, Point_, Difference_> previousCluster) {
-        this.previousCluster = previousCluster;
+    void setPreviousConnectedRange(ConnectedRange<Range_, Point_, Difference_> previousConnectedRange) {
+        this.previousConnectedRange = previousConnectedRange;
     }
 
-    void setNextCluster(ConnectedRange<Range_, Point_, Difference_> nextCluster) {
-        this.nextCluster = nextCluster;
+    void setNextConnectedRange(ConnectedRange<Range_, Point_, Difference_> nextConnectedRange) {
+        this.nextConnectedRange = nextConnectedRange;
     }
 
     void setLength(Difference_ length) {
