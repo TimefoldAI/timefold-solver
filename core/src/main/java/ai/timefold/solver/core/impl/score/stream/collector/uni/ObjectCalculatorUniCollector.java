@@ -9,8 +9,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
 abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
         implements UniConstraintCollector<A, Calculator_, Output_>
-        permits AverageReferenceUniCollector, ConsecutiveSequencesUniConstraintCollector, CountDistinctIntUniCollector,
-        CountDistinctLongUniCollector, SumReferenceUniCollector {
+        permits AverageReferenceUniCollector, ConnectedRangesUniConstraintCollector, ConsecutiveSequencesUniConstraintCollector,
+        CountDistinctIntUniCollector, CountDistinctLongUniCollector, SumReferenceUniCollector {
 
     protected final Function<? super A, ? extends Input_> mapper;
 

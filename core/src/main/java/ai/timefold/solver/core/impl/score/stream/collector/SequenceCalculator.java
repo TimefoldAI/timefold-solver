@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
+import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
 public final class SequenceCalculator<Result_>
         implements ObjectCalculator<Result_, SequenceChain<Result_, Integer>> {

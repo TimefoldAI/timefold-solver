@@ -10,8 +10,9 @@ import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
 abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
         implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
-        permits AverageReferenceQuadCollector, ConsecutiveSequencesQuadConstraintCollector, CountDistinctIntQuadCollector,
-        CountDistinctLongQuadCollector, SumReferenceQuadCollector {
+        permits AverageReferenceQuadCollector, ConnectedRangesQuadConstraintCollector,
+        ConsecutiveSequencesQuadConstraintCollector, CountDistinctIntQuadCollector, CountDistinctLongQuadCollector,
+        SumReferenceQuadCollector {
 
     protected final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper;
 

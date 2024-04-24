@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
@@ -213,6 +214,16 @@ public class InnerTriConstraintCollectors {
     public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, SequenceChain<Result_, Integer>>
             toConsecutiveSequences(TriFunction<A, B, C, Result_> resultMap, ToIntFunction<Result_> indexMap) {
         return new ConsecutiveSequencesTriConstraintCollector<>(resultMap, indexMap);
+    }
+
+    public static <A, B, C, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+            TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<Interval_, Point_, Difference_>>
+            toConnectedRanges(TriFunction<? super A, ? super B, ? super C, ? extends Interval_> mapper,
+                    Function<? super Interval_, ? extends Point_> startMap,
+                    Function<? super Interval_, ? extends Point_> endMap,
+                    BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
+        return new ConnectedRangesTriConstraintCollector<>(mapper, startMap, endMap,
+                differenceFunction);
     }
 
     public static <A, B, C, Intermediate_, Result_> TriConstraintCollector<A, B, C, ?, Result_>

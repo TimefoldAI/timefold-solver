@@ -1,4 +1,4 @@
-package ai.timefold.solver.examples.common.experimental.impl;
+package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
 import java.util.Iterator;
 import java.util.Objects;

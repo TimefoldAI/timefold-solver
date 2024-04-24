@@ -30,6 +30,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -1069,6 +1070,34 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResultRecursive(collector, container, buildSequenceChain());
+    }
+
+    @Override
+    @Test
+    public void consecutiveUsage() {
+        TriConstraintCollector<Integer, Integer, ?, ?, ConnectedRangeChain<Interval, Integer, Integer>> collector =
+                ConstraintCollectors.toConnectedRanges((a, b, c) -> new Interval(a, b),
+                        Interval::start,
+                        Interval::end, (a, b) -> b - a);
+        var container = collector.supplier().get();
+        // Add first value, sequence is [(1,3)]
+        Runnable firstRetractor = accumulate(collector, container, 1, 3, null);
+        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
+        // Add second value, sequence is [(1,3),(2,4)]
+        Runnable secondRetractor = accumulate(collector, container, 2, 4, null);
+        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
+        // Add third value, same as the second. Sequence is [{1,1},2}]
+        Runnable thirdRetractor = accumulate(collector, container, 2, 4, null);
+        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4), new Interval(2, 4)));
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertResult(collector, container, buildConsecutiveUsage());
     }
 
     @Override

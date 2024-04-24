@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.collector;
+package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -8,6 +8,7 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
@@ -43,7 +44,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     private ComparableValue<Value_, Point_> lastItem;
 
     public ConsecutiveSetTree(BiFunction<Point_, Point_, Difference_> differenceFunction,
-            BiFunction<Difference_, Difference_, Difference_> sumFunction, Difference_ maxDifference,
+            BinaryOperator<Difference_> sumFunction, Difference_ maxDifference,
             Difference_ zeroDifference) {
         this.differenceFunction = differenceFunction;
         this.sequenceLengthFunction = (first, last) -> sumFunction.apply(maxDifference, differenceFunction.apply(first, last));
@@ -273,11 +274,11 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
             bag.setStart(itemMap.higherKey(item));
             startItemToSequence.remove(sequenceStart);
             var extendedBreak = startItemToPreviousBreak.remove(sequenceStart);
-            var firstItem = bag.firstItem;
-            startItemToSequence.put(firstItem, bag);
+            var bagFirstItem = bag.firstItem;
+            startItemToSequence.put(bagFirstItem, bag);
             if (extendedBreak != null) {
                 extendedBreak.updateLength();
-                startItemToPreviousBreak.put(firstItem, extendedBreak);
+                startItemToPreviousBreak.put(bagFirstItem, extendedBreak);
             }
             return;
         }
@@ -352,7 +353,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                 '}';
     }
 
-    private final static class ValueCount<Value_> {
+    private static final class ValueCount<Value_> {
 
         private final Value_ value;
         private int count;
