@@ -5,23 +5,22 @@
 
 Timefold Solver Enterprise Edition is a commercial product that offers additional features,
 such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
-These features are essential to scale out to very large datasets.
+These features are essential to scale out to huge datasets.
 
-You are allowed to use Timefold Solver Enterprise Edition for evaluation and development,
-but to use it in production,
-you are required to https://timefold.ai/company/contact/[purchase a license].
+Unlike Timefold Solver Community Edition, the Enterprise Edition is not open-source.
+You are allowed to use Timefold Solver Enterprise Edition for evaluation and development.
+Please contact https://timefold.ai/contact[contact Timefold]
+to obtain the credentials necessary to start your evaluation.
+
 For a high-level overview of the differences between Timefold offerings,
 see https://timefold.ai/pricing[Timefold Pricing].
-
-Unlike Timefold Solver Community Edition,
-the Enterprise Edition is not open-source.
 
 
 [#switchToEnterpriseEdition]
 == Switch to Enterprise Edition
 
-In order to switch from Timefold Solver Community Edition to Enterprise Edition,
-first reference the Enterprise Edition Maven repository in your project.
+To switch from Timefold Solver Community Edition to Enterprise Edition,
+first reference the Enterprise Edition Maven repository in your project:
 
 [tabs]
 ====
@@ -44,6 +43,26 @@ Add the following repository to your `pom.xml`:
   ...
 </project>
 ----
+
+Then create `.m2/settings.xml` in your home directory with the following content:
+
+[source,xml,options="nowrap"]
+----
+<settings>
+  ...
+  <servers>
+    <server>
+      <!-- Replace "my_username" and "my_password" with credentials obtained from a Timefold representative. -->
+      <id>timefold-solver-enterprise</id>
+      <username>my_username</username>
+      <password>my_password</password>
+    </server>
+  </servers>
+  ...
+</settings>
+----
+
+See https://maven.apache.org/settings.html[Settings Reference] for more information on Maven settings.
 --
 Gradle::
 +
@@ -56,14 +75,21 @@ repositories {
   mavenCentral()
   maven {
     url "https://timefold.jfrog.io/artifactory/releases/"
+    credentials { // Replace "my_username" and "my_password" with credentials obtained from a Timefold representative.
+        username "my_username"
+        password "my_password"
+    }
+    authentication {
+        basic(BasicAuthentication)
+    }
   }
 }
 ----
 --
 ====
 
-Having done that the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
-as shown in the table below.
+Having done the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
+as shown in the following table:
 
 |===
 |Community Edition|Enterprise Edition

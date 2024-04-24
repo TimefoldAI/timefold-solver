@@ -56,9 +56,26 @@ Every upgrade note indicates how likely your code will be affected by that chang
 - icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
 
 The upgrade recipe often lists the changes as they apply to Java code.
-Kotlin users should translate the changes accordingly.
+We kindly ask Kotlin and Python users to translate the changes accordingly.
 
 === Upgrade from 1.9.0 to 1.10.0
+
+.icon:eye[] Enterprise Edition Maven Repository will soon require authentication
+[%collapsible%open]
+====
+Timefold customers newly need to authenticate to access the Enterprise Edition Maven Repository.
+If you are a Timefold customer, you should have received your credentials from Timefold by now.
+If you haven't, we kindly ask that you https://timefold.ai/contact[contact us].
+
+If you are not a Timefold customer and you wish to retain your access to the Enterprise Edition Maven Repository,
+you can https://timefold.ai/contact[contact us] to start your evaluation.
+There are https://timefold.ai/pricing[many benefits] to being a Timefold customer.
+
+For more information on setting up the Enterprise Edition Maven Repository,
+see xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[the Enterprise Edition documentation].
+====
+
+'''
 
 .icon:info-circle[role=yellow] `LookupStrategyType` deprecated for removal
 [%collapsible%open]
