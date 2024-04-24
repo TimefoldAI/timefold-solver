@@ -7,58 +7,23 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 
-final class ConnectedRangeImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConnectedRange<Interval_, Point_, Difference_> {
+final class ConnectedRangeImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        implements ConnectedRange<Range_, Point_, Difference_> {
 
-    private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
+    private final NavigableSet<RangeSplitPoint<Range_, Point_>> splitPointSet;
     private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
-    private IntervalSplitPoint<Interval_, Point_> startSplitPoint;
-    private IntervalSplitPoint<Interval_, Point_> endSplitPoint;
+    private RangeSplitPoint<Range_, Point_> startSplitPoint;
+    private RangeSplitPoint<Range_, Point_> endSplitPoint;
 
     private int count;
     private int minimumOverlap;
     private int maximumOverlap;
     private boolean hasOverlap;
 
-    ConnectedRangeImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+    ConnectedRangeImpl(NavigableSet<RangeSplitPoint<Range_, Point_>> splitPointSet,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
-            IntervalSplitPoint<Interval_, Point_> start) {
-        if (start == null) {
-            throw new IllegalArgumentException("start (" + start + ") is null");
-        }
-        if (differenceFunction == null) {
-            throw new IllegalArgumentException("differenceFunction (" + differenceFunction + ") is null");
-        }
-        this.splitPointSet = splitPointSet;
-        this.startSplitPoint = start;
-        this.endSplitPoint = start;
-        this.differenceFunction = differenceFunction;
-        this.count = 0;
-        this.minimumOverlap = Integer.MAX_VALUE;
-        this.maximumOverlap = Integer.MIN_VALUE;
-        var activeIntervals = 0;
-        var anyOverlap = false;
-        var current = start;
-        do {
-            this.count += current.intervalsStartingAtSplitPointSet.size();
-            activeIntervals += current.intervalsStartingAtSplitPointSet.size() - current.intervalsEndingAtSplitPointSet.size();
-            if (activeIntervals > 0) {
-                minimumOverlap = Math.min(minimumOverlap, activeIntervals);
-                maximumOverlap = Math.max(maximumOverlap, activeIntervals);
-                if (activeIntervals > 1) {
-                    anyOverlap = true;
-                }
-            }
-            current = splitPointSet.higher(current);
-        } while (activeIntervals > 0 && current != null);
-        this.hasOverlap = anyOverlap;
-        this.endSplitPoint = (current != null) ? splitPointSet.lower(current) : splitPointSet.last();
-    }
-
-    ConnectedRangeImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
-            BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
-            IntervalSplitPoint<Interval_, Point_> start,
-            IntervalSplitPoint<Interval_, Point_> end, int count,
+            RangeSplitPoint<Range_, Point_> start,
+            RangeSplitPoint<Range_, Point_> end, int count,
             int minimumOverlap, int maximumOverlap,
             boolean hasOverlap) {
         this.splitPointSet = splitPointSet;
@@ -71,50 +36,58 @@ final class ConnectedRangeImpl<Interval_, Point_ extends Comparable<Point_>, Dif
         this.hasOverlap = hasOverlap;
     }
 
-    IntervalSplitPoint<Interval_, Point_> getStartSplitPoint() {
+    static <Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+            ConnectedRangeImpl<Range_, Point_, Difference_>
+            getConnectedRangeStartingAt(NavigableSet<RangeSplitPoint<Range_, Point_>> splitPointSet,
+                    BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction,
+                    RangeSplitPoint<Range_, Point_> start) {
+        return new ConnectedSubrangeIterator<>(splitPointSet, start, splitPointSet.last(), differenceFunction).next();
+    }
+
+    RangeSplitPoint<Range_, Point_> getStartSplitPoint() {
         return startSplitPoint;
     }
 
-    IntervalSplitPoint<Interval_, Point_> getEndSplitPoint() {
+    RangeSplitPoint<Range_, Point_> getEndSplitPoint() {
         return endSplitPoint;
     }
 
-    void addInterval(Interval<Interval_, Point_> interval) {
-        if (interval.getEndSplitPoint().compareTo(getStartSplitPoint()) > 0
-                && interval.getStartSplitPoint().compareTo(getEndSplitPoint()) < 0) {
+    void addRange(Range<Range_, Point_> range) {
+        if (range.getEndSplitPoint().compareTo(getStartSplitPoint()) > 0
+                && range.getStartSplitPoint().compareTo(getEndSplitPoint()) < 0) {
             hasOverlap = true;
         }
-        if (interval.getStartSplitPoint().compareTo(startSplitPoint) < 0) {
-            startSplitPoint = splitPointSet.floor(interval.getStartSplitPoint());
+        if (range.getStartSplitPoint().compareTo(startSplitPoint) < 0) {
+            startSplitPoint = splitPointSet.floor(range.getStartSplitPoint());
         }
-        if (interval.getEndSplitPoint().compareTo(endSplitPoint) > 0) {
-            endSplitPoint = splitPointSet.ceiling(interval.getEndSplitPoint());
+        if (range.getEndSplitPoint().compareTo(endSplitPoint) > 0) {
+            endSplitPoint = splitPointSet.ceiling(range.getEndSplitPoint());
         }
         minimumOverlap = -1;
         maximumOverlap = -1;
         count++;
     }
 
-    Iterable<ConnectedRangeImpl<Interval_, Point_, Difference_>> getNewConnectedRanges(
-            final NavigableSet<IntervalSplitPoint<Interval_, Point_>> newSplitPointSet) {
+    Iterable<ConnectedRangeImpl<Range_, Point_, Difference_>> getNewConnectedRanges(
+            final NavigableSet<RangeSplitPoint<Range_, Point_>> newSplitPointSet) {
         return () -> new ConnectedSubrangeIterator<>(newSplitPointSet, startSplitPoint, endSplitPoint, differenceFunction);
     }
 
-    void mergeConnectedRange(ConnectedRangeImpl<Interval_, Point_, Difference_> laterIntervalCluster) {
-        if (endSplitPoint.compareTo(laterIntervalCluster.startSplitPoint) > 0) {
+    void mergeConnectedRange(ConnectedRangeImpl<Range_, Point_, Difference_> laterConnectedRange) {
+        if (endSplitPoint.compareTo(laterConnectedRange.startSplitPoint) > 0) {
             hasOverlap = true;
         }
-        if (endSplitPoint.compareTo(laterIntervalCluster.endSplitPoint) < 0) {
-            endSplitPoint = laterIntervalCluster.endSplitPoint;
+        if (endSplitPoint.compareTo(laterConnectedRange.endSplitPoint) < 0) {
+            endSplitPoint = laterConnectedRange.endSplitPoint;
         }
-        count += laterIntervalCluster.count;
+        count += laterConnectedRange.count;
         minimumOverlap = -1;
         maximumOverlap = -1;
-        hasOverlap |= laterIntervalCluster.hasOverlap;
+        hasOverlap |= laterConnectedRange.hasOverlap;
     }
 
     @Override
-    public Iterator<Interval_> iterator() {
+    public Iterator<Range_> iterator() {
         return new ContainedRangeIterator<>(splitPointSet.subSet(startSplitPoint, true, endSplitPoint, true));
     }
 
@@ -130,17 +103,17 @@ final class ConnectedRangeImpl<Interval_, Point_ extends Comparable<Point_>, Dif
 
     private void recalculateMinimumAndMaximumOverlap() {
         var current = startSplitPoint;
-        var activeIntervals = 0;
+        var activeRangeCount = 0;
         minimumOverlap = Integer.MAX_VALUE;
         maximumOverlap = Integer.MIN_VALUE;
         do {
-            activeIntervals += current.intervalsStartingAtSplitPointSet.size() - current.intervalsEndingAtSplitPointSet.size();
-            if (activeIntervals > 0) {
-                minimumOverlap = Math.min(minimumOverlap, activeIntervals);
-                maximumOverlap = Math.max(maximumOverlap, activeIntervals);
+            activeRangeCount += current.rangesStartingAtSplitPointSet.size() - current.rangesEndingAtSplitPointSet.size();
+            if (activeRangeCount > 0) {
+                minimumOverlap = Math.min(minimumOverlap, activeRangeCount);
+                maximumOverlap = Math.max(maximumOverlap, activeRangeCount);
             }
             current = splitPointSet.higher(current);
-        } while (activeIntervals > 0 && current != null);
+        } while (activeRangeCount > 0 && current != null);
     }
 
     @Override
@@ -205,7 +178,6 @@ final class ConnectedRangeImpl<Interval_, Point_ extends Comparable<Point_>, Dif
                 ", minimumOverlap=" + getMinimumOverlap() +
                 ", maximumOverlap=" + getMaximumOverlap() +
                 ", hasOverlap=" + hasOverlap +
-                ", set=" + splitPointSet +
                 '}';
     }
 

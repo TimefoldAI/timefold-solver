@@ -9,7 +9,7 @@ package ai.timefold.solver.core.api.score.stream.common;
  */
 public interface RangeGap<Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
     /**
-     * Return the end of the sequence before this gap.
+     * Return the end of the {@link ConnectedRange} before this gap.
      * For the gap between 6 and 10, this will return 6.
      *
      * @return never null, the item this gap is directly after
@@ -17,7 +17,7 @@ public interface RangeGap<Point_ extends Comparable<Point_>, Difference_ extends
     Point_ getPreviousRangeEnd();
 
     /**
-     * Return the start of the sequence after this gap.
+     * Return the start of the {@link ConnectedRange} after this gap.
      * For the gap between 6 and 10, this will return 10.
      *
      * @return never null, the item this gap is directly before

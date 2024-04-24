@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.IntervalTree;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.ConnectedRangeTracker;
 import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
 import org.junit.jupiter.api.Test;
@@ -124,8 +124,8 @@ public abstract class AbstractConstraintCollectorsTest {
 
     protected ConnectedRangeChain<Interval, Integer, Integer> buildConsecutiveUsage(Interval... data) {
         return Arrays.stream(data).collect(
-                () -> new IntervalTree<>(Interval::start, Interval::end, (a, b) -> b - a),
-                (tree, datum) -> tree.add(tree.getInterval(datum)),
+                () -> new ConnectedRangeTracker<>(Interval::start, Interval::end, (a, b) -> b - a),
+                (tree, datum) -> tree.add(tree.getRange(datum)),
                 (a, b) -> {
                     throw new UnsupportedOperationException();
                 }).getConnectedRangeChain();

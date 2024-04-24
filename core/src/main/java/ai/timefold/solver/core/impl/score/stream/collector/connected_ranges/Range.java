@@ -2,21 +2,21 @@ package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
 import java.util.function.Function;
 
-public final class Interval<Interval_, Point_ extends Comparable<Point_>> {
-    private final Interval_ value;
-    private final IntervalSplitPoint<Interval_, Point_> startSplitPoint;
-    private final IntervalSplitPoint<Interval_, Point_> endSplitPoint;
+public final class Range<Range_, Point_ extends Comparable<Point_>> {
+    private final Range_ value;
+    private final RangeSplitPoint<Range_, Point_> startSplitPoint;
+    private final RangeSplitPoint<Range_, Point_> endSplitPoint;
 
-    public Interval(Interval_ value, Function<? super Interval_, ? extends Point_> startMapping,
-            Function<? super Interval_, ? extends Point_> endMapping) {
+    public Range(Range_ value, Function<? super Range_, ? extends Point_> startMapping,
+            Function<? super Range_, ? extends Point_> endMapping) {
         this.value = value;
         var start = startMapping.apply(value);
         var end = endMapping.apply(value);
-        this.startSplitPoint = new IntervalSplitPoint<>(start);
-        this.endSplitPoint = (start == end) ? this.startSplitPoint : new IntervalSplitPoint<>(end);
+        this.startSplitPoint = new RangeSplitPoint<>(start);
+        this.endSplitPoint = (start == end) ? this.startSplitPoint : new RangeSplitPoint<>(end);
     }
 
-    public Interval_ getValue() {
+    public Range_ getValue() {
         return value;
     }
 
@@ -28,11 +28,11 @@ public final class Interval<Interval_, Point_ extends Comparable<Point_>> {
         return endSplitPoint.splitPoint;
     }
 
-    public IntervalSplitPoint<Interval_, Point_> getStartSplitPoint() {
+    public RangeSplitPoint<Range_, Point_> getStartSplitPoint() {
         return startSplitPoint;
     }
 
-    public IntervalSplitPoint<Interval_, Point_> getEndSplitPoint() {
+    public RangeSplitPoint<Range_, Point_> getEndSplitPoint() {
         return endSplitPoint;
     }
 
@@ -42,7 +42,7 @@ public final class Interval<Interval_, Point_ extends Comparable<Point_>> {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        Interval<?, ?> that = (Interval<?, ?>) o;
+        Range<?, ?> that = (Range<?, ?>) o;
         return value == that.value;
     }
 
@@ -53,7 +53,7 @@ public final class Interval<Interval_, Point_ extends Comparable<Point_>> {
 
     @Override
     public String toString() {
-        return "Interval{" +
+        return "Range{" +
                 "value=" + value +
                 ", start=" + getStart() +
                 ", end=" + getEnd() +

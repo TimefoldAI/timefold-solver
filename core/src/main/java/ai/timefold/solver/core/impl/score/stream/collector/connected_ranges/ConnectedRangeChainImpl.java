@@ -10,242 +10,243 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 
-public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ConnectedRangeChain<Interval_, Point_, Difference_> {
+public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        implements ConnectedRangeChain<Range_, Point_, Difference_> {
 
-    private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, ConnectedRangeImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToCluster;
-    private final NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet;
-    private final NavigableMap<IntervalSplitPoint<Interval_, Point_>, RangeGapImpl<Interval_, Point_, Difference_>> clusterStartSplitPointToNextBreak;
+    private final NavigableMap<RangeSplitPoint<Range_, Point_>, ConnectedRangeImpl<Range_, Point_, Difference_>> startSplitPointToConnectedRange;
+    private final NavigableSet<RangeSplitPoint<Range_, Point_>> splitPointSet;
+    private final NavigableMap<RangeSplitPoint<Range_, Point_>, RangeGapImpl<Range_, Point_, Difference_>> startSplitPointToNextGap;
     private final BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction;
 
-    public ConnectedRangeChainImpl(NavigableSet<IntervalSplitPoint<Interval_, Point_>> splitPointSet,
+    public ConnectedRangeChainImpl(NavigableSet<RangeSplitPoint<Range_, Point_>> splitPointSet,
             BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
-        this.clusterStartSplitPointToCluster = new TreeMap<>();
-        this.clusterStartSplitPointToNextBreak = new TreeMap<>();
+        this.startSplitPointToConnectedRange = new TreeMap<>();
+        this.startSplitPointToNextGap = new TreeMap<>();
         this.splitPointSet = splitPointSet;
         this.differenceFunction = differenceFunction;
     }
 
-    void addInterval(Interval<Interval_, Point_> interval) {
-        var intersectedIntervalClusterMap = clusterStartSplitPointToCluster
-                .subMap(Objects.requireNonNullElseGet(clusterStartSplitPointToCluster.floorKey(interval.getStartSplitPoint()),
-                        interval::getStartSplitPoint), true, interval.getEndSplitPoint(), true);
+    void addRange(Range<Range_, Point_> range) {
+        var intersectedConnectedRangeMap = startSplitPointToConnectedRange
+                .subMap(Objects.requireNonNullElseGet(startSplitPointToConnectedRange.floorKey(range.getStartSplitPoint()),
+                        range::getStartSplitPoint), true, range.getEndSplitPoint(), true);
 
-        // Case: the interval cluster before this interval does not intersect this interval
-        if (!intersectedIntervalClusterMap.isEmpty()
-                && intersectedIntervalClusterMap.firstEntry().getValue().getEndSplitPoint()
-                        .isBefore(interval.getStartSplitPoint())) {
-            // Get the tail map after the first cluster
-            intersectedIntervalClusterMap = intersectedIntervalClusterMap.subMap(intersectedIntervalClusterMap.firstKey(),
-                    false, intersectedIntervalClusterMap.lastKey(), true);
+        // Case: the connected range before this range does not intersect this range
+        if (!intersectedConnectedRangeMap.isEmpty()
+                && intersectedConnectedRangeMap.firstEntry().getValue().getEndSplitPoint()
+                        .isBefore(range.getStartSplitPoint())) {
+            // Get the tail map after the first connected range
+            intersectedConnectedRangeMap = intersectedConnectedRangeMap.subMap(intersectedConnectedRangeMap.firstKey(),
+                    false, intersectedConnectedRangeMap.lastKey(), true);
         }
 
-        if (intersectedIntervalClusterMap.isEmpty()) {
-            // Interval does not intersect anything
+        if (intersectedConnectedRangeMap.isEmpty()) {
+            // Range does not intersect anything
             // Ex:
             //     -----
             //----       -----
-            createNewIntervalCluster(interval);
+            createNewConnectedRange(range);
             return;
         }
 
-        // Interval intersect at least one cluster
+        // Range intersect at least one connected range
         // Ex:
         //      -----------------
         //  ------  ------  ---   ----
-        var firstIntersectedIntervalCluster = intersectedIntervalClusterMap.firstEntry().getValue();
-        var oldStartSplitPoint = firstIntersectedIntervalCluster.getStartSplitPoint();
-        firstIntersectedIntervalCluster.addInterval(interval);
+        var firstIntersectedConnectedRange = intersectedConnectedRangeMap.firstEntry().getValue();
+        var oldStartSplitPoint = firstIntersectedConnectedRange.getStartSplitPoint();
+        firstIntersectedConnectedRange.addRange(range);
 
-        // Merge all the intersected interval clusters into the first intersected
-        // interval cluster
-        intersectedIntervalClusterMap.tailMap(oldStartSplitPoint, false).values()
-                .forEach(firstIntersectedIntervalCluster::mergeConnectedRange);
+        // Merge all the intersected connected range into the first intersected
+        // connected range
+        intersectedConnectedRangeMap.tailMap(oldStartSplitPoint, false).values()
+                .forEach(firstIntersectedConnectedRange::mergeConnectedRange);
 
-        // Remove all the intersected interval clusters after the first intersected
+        // Remove all the intersected connected ranges after the first intersected
         // one, since they are now merged in the first
-        intersectedIntervalClusterMap.tailMap(oldStartSplitPoint, false).clear();
-        removeSpannedBreaksAndUpdateIntersectedBreaks(interval, firstIntersectedIntervalCluster);
+        intersectedConnectedRangeMap.tailMap(oldStartSplitPoint, false).clear();
+        removeSpannedGapsAndUpdateIntersectedGaps(range, firstIntersectedConnectedRange);
 
-        // If the first intersected interval cluster start after the interval,
-        // we need to make the interval start point the key for this interval
-        // cluster in the map
-        if (oldStartSplitPoint.isAfter(firstIntersectedIntervalCluster.getStartSplitPoint())) {
-            clusterStartSplitPointToCluster.remove(oldStartSplitPoint);
-            clusterStartSplitPointToCluster.put(firstIntersectedIntervalCluster.getStartSplitPoint(),
-                    firstIntersectedIntervalCluster);
-            var nextBreak = clusterStartSplitPointToNextBreak.get(firstIntersectedIntervalCluster.getStartSplitPoint());
-            if (nextBreak != null) {
-                nextBreak.setPreviousCluster(firstIntersectedIntervalCluster);
-                nextBreak.setLength(differenceFunction.apply(nextBreak.getPreviousRangeEnd(),
-                        nextBreak.getNextRangeStart()));
+        // If the first intersected connected range starts after the range,
+        // we need to make the range start point the key for this connected range
+        // in the map
+        if (oldStartSplitPoint.isAfter(firstIntersectedConnectedRange.getStartSplitPoint())) {
+            startSplitPointToConnectedRange.remove(oldStartSplitPoint);
+            startSplitPointToConnectedRange.put(firstIntersectedConnectedRange.getStartSplitPoint(),
+                    firstIntersectedConnectedRange);
+            var nextGap = startSplitPointToNextGap.get(firstIntersectedConnectedRange.getStartSplitPoint());
+            if (nextGap != null) {
+                nextGap.setPreviousCluster(firstIntersectedConnectedRange);
+                nextGap.setLength(differenceFunction.apply(nextGap.getPreviousRangeEnd(),
+                        nextGap.getNextRangeStart()));
             }
         }
     }
 
-    private void createNewIntervalCluster(Interval<Interval_, Point_> interval) {
-        // Interval does not intersect anything
+    private void createNewConnectedRange(Range<Range_, Point_> range) {
+        // Range does not intersect anything
         // Ex:
         //     -----
         //----       -----
-        var startSplitPoint = splitPointSet.floor(interval.getStartSplitPoint());
-        var newCluster = new ConnectedRangeImpl<>(splitPointSet, differenceFunction, startSplitPoint);
-        clusterStartSplitPointToCluster.put(startSplitPoint, newCluster);
+        var startSplitPoint = splitPointSet.floor(range.getStartSplitPoint());
+        var newConnectedRange =
+                ConnectedRangeImpl.getConnectedRangeStartingAt(splitPointSet, differenceFunction, startSplitPoint);
+        startSplitPointToConnectedRange.put(startSplitPoint, newConnectedRange);
 
-        // If there a cluster after this interval, add a new break
-        // between this interval and the next cluster
-        var nextClusterEntry = clusterStartSplitPointToCluster.higherEntry(startSplitPoint);
-        if (nextClusterEntry != null) {
-            var nextCluster = nextClusterEntry.getValue();
-            var difference = differenceFunction.apply(newCluster.getEnd(), nextCluster.getStart());
-            var newBreak = new RangeGapImpl<>(newCluster, nextCluster, difference);
-            clusterStartSplitPointToNextBreak.put(startSplitPoint, newBreak);
+        // If there is a connected range after this range, add a new gap
+        // between this range and the next connected range
+        var nextConnectedRangeEntry = startSplitPointToConnectedRange.higherEntry(startSplitPoint);
+        if (nextConnectedRangeEntry != null) {
+            var nextConnectedRange = nextConnectedRangeEntry.getValue();
+            var difference = differenceFunction.apply(newConnectedRange.getEnd(), nextConnectedRange.getStart());
+            var newGap = new RangeGapImpl<>(newConnectedRange, nextConnectedRange, difference);
+            startSplitPointToNextGap.put(startSplitPoint, newGap);
         }
 
-        // If there a cluster before this interval, add a new break
-        // between this interval and the previous cluster
-        // (this will replace the old break, if there was one)
-        var previousClusterEntry = clusterStartSplitPointToCluster.lowerEntry(startSplitPoint);
-        if (previousClusterEntry != null) {
-            var previousCluster = previousClusterEntry.getValue();
-            var difference = differenceFunction.apply(previousCluster.getEnd(), newCluster.getStart());
-            var newBreak = new RangeGapImpl<>(previousCluster, newCluster, difference);
-            clusterStartSplitPointToNextBreak.put(previousClusterEntry.getKey(), newBreak);
+        // If there is a connected range before this range, add a new gap
+        // between this range and the previous connected range
+        // (this will replace the old gap, if there was one)
+        var previousConnectedRangeEntry = startSplitPointToConnectedRange.lowerEntry(startSplitPoint);
+        if (previousConnectedRangeEntry != null) {
+            var previousConnectedRange = previousConnectedRangeEntry.getValue();
+            var difference = differenceFunction.apply(previousConnectedRange.getEnd(), newConnectedRange.getStart());
+            var newGap = new RangeGapImpl<>(previousConnectedRange, newConnectedRange, difference);
+            startSplitPointToNextGap.put(previousConnectedRangeEntry.getKey(), newGap);
         }
     }
 
-    private void removeSpannedBreaksAndUpdateIntersectedBreaks(Interval<Interval_, Point_> interval,
-            ConnectedRangeImpl<Interval_, Point_, Difference_> intervalCluster) {
-        var firstBreakSplitPointBeforeInterval = Objects.requireNonNullElseGet(
-                clusterStartSplitPointToNextBreak.floorKey(interval.getStartSplitPoint()), interval::getStartSplitPoint);
-        var intersectedIntervalBreakMap = clusterStartSplitPointToNextBreak.subMap(firstBreakSplitPointBeforeInterval, true,
-                interval.getEndSplitPoint(), true);
+    private void removeSpannedGapsAndUpdateIntersectedGaps(Range<Range_, Point_> range,
+            ConnectedRangeImpl<Range_, Point_, Difference_> connectedRange) {
+        var firstGapSplitPointBeforeRange = Objects.requireNonNullElseGet(
+                startSplitPointToNextGap.floorKey(range.getStartSplitPoint()), range::getStartSplitPoint);
+        var intersectedRangeGapMap = startSplitPointToNextGap.subMap(firstGapSplitPointBeforeRange, true,
+                range.getEndSplitPoint(), true);
 
-        if (intersectedIntervalBreakMap.isEmpty()) {
+        if (intersectedRangeGapMap.isEmpty()) {
             return;
         }
 
-        var clusterBeforeFirstIntersectedBreak =
-                (ConnectedRangeImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.firstEntry().getValue()
+        var connectedRangeBeforeFirstIntersectedGap =
+                (ConnectedRangeImpl<Range_, Point_, Difference_>) (intersectedRangeGapMap.firstEntry().getValue()
                         .getPreviousConnectedRange());
-        var clusterAfterFinalIntersectedBreak =
-                (ConnectedRangeImpl<Interval_, Point_, Difference_>) (intersectedIntervalBreakMap.lastEntry().getValue()
+        var connectedRangeAfterFinalIntersectedGap =
+                (ConnectedRangeImpl<Range_, Point_, Difference_>) (intersectedRangeGapMap.lastEntry().getValue()
                         .getNextConnectedRange());
 
-        // All breaks that are not the first or last intersected breaks will
-        // be removed (as interval span them)
-        if (!interval.getStartSplitPoint()
-                .isAfter(clusterBeforeFirstIntersectedBreak.getEndSplitPoint())) {
-            if (!interval.getEndSplitPoint().isBefore(clusterAfterFinalIntersectedBreak.getStartSplitPoint())) {
-                // Case: interval spans all breaks
+        // All gaps that are not the first or last intersected gap will
+        // be removed (as the range spans them)
+        if (!range.getStartSplitPoint()
+                .isAfter(connectedRangeBeforeFirstIntersectedGap.getEndSplitPoint())) {
+            if (!range.getEndSplitPoint().isBefore(connectedRangeAfterFinalIntersectedGap.getStartSplitPoint())) {
+                // Case: range spans all gaps
                 // Ex:
                 //   -----------
                 //----  ------ -----
-                intersectedIntervalBreakMap.clear();
+                intersectedRangeGapMap.clear();
             } else {
-                // Case: interval span first break, but does not span the final break
+                // Case: range span first gap, but does not span the final gap
                 // Ex:
                 //   -----------
                 //----  ------   -----
-                var finalBreak = intersectedIntervalBreakMap.lastEntry().getValue();
-                finalBreak.setPreviousCluster(intervalCluster);
-                finalBreak.setLength(
-                        differenceFunction.apply(finalBreak.getPreviousRangeEnd(),
-                                finalBreak.getNextRangeStart()));
-                intersectedIntervalBreakMap.clear();
-                clusterStartSplitPointToNextBreak.put(intervalCluster.getStartSplitPoint(), finalBreak);
+                var finalGap = intersectedRangeGapMap.lastEntry().getValue();
+                finalGap.setPreviousCluster(connectedRange);
+                finalGap.setLength(
+                        differenceFunction.apply(finalGap.getPreviousRangeEnd(),
+                                finalGap.getNextRangeStart()));
+                intersectedRangeGapMap.clear();
+                startSplitPointToNextGap.put(connectedRange.getStartSplitPoint(), finalGap);
             }
-        } else if (!interval.getEndSplitPoint().isBefore(clusterAfterFinalIntersectedBreak.getStartSplitPoint())) {
-            // Case: interval span final break, but does not span the first break
+        } else if (!range.getEndSplitPoint().isBefore(connectedRangeAfterFinalIntersectedGap.getStartSplitPoint())) {
+            // Case: range span final gap, but does not span the first gap
             // Ex:
             //     -----------
             //----   -----   -----
-            var previousBreakEntry = intersectedIntervalBreakMap.firstEntry();
-            var previousBreak = previousBreakEntry.getValue();
-            previousBreak.setNextCluster(intervalCluster);
-            previousBreak.setLength(
-                    differenceFunction.apply(previousBreak.getPreviousRangeEnd(), intervalCluster.getStart()));
-            intersectedIntervalBreakMap.clear();
-            clusterStartSplitPointToNextBreak
-                    .put(((ConnectedRangeImpl<Interval_, Point_, Difference_>) (previousBreak
-                            .getPreviousConnectedRange())).getStartSplitPoint(), previousBreak);
+            var previousGapEntry = intersectedRangeGapMap.firstEntry();
+            var previousGap = previousGapEntry.getValue();
+            previousGap.setNextCluster(connectedRange);
+            previousGap.setLength(
+                    differenceFunction.apply(previousGap.getPreviousRangeEnd(), connectedRange.getStart()));
+            intersectedRangeGapMap.clear();
+            startSplitPointToNextGap
+                    .put(((ConnectedRangeImpl<Range_, Point_, Difference_>) (previousGap
+                            .getPreviousConnectedRange())).getStartSplitPoint(), previousGap);
         } else {
-            // Case: interval does not span either the first or final break
+            // Case: range does not span either the first or final gap
             // Ex:
             //     ---------
             //----  ------   -----
-            var finalBreak = intersectedIntervalBreakMap.lastEntry().getValue();
-            finalBreak.setLength(differenceFunction.apply(finalBreak.getPreviousRangeEnd(),
-                    finalBreak.getNextRangeStart()));
+            var finalGap = intersectedRangeGapMap.lastEntry().getValue();
+            finalGap.setLength(differenceFunction.apply(finalGap.getPreviousRangeEnd(),
+                    finalGap.getNextRangeStart()));
 
-            var previousBreakEntry = intersectedIntervalBreakMap.firstEntry();
-            var previousBreak = previousBreakEntry.getValue();
-            previousBreak.setNextCluster(intervalCluster);
-            previousBreak.setLength(
-                    differenceFunction.apply(previousBreak.getPreviousRangeEnd(), intervalCluster.getStart()));
+            var previousGapEntry = intersectedRangeGapMap.firstEntry();
+            var previousGap = previousGapEntry.getValue();
+            previousGap.setNextCluster(connectedRange);
+            previousGap.setLength(
+                    differenceFunction.apply(previousGap.getPreviousRangeEnd(), connectedRange.getStart()));
 
-            intersectedIntervalBreakMap.clear();
-            clusterStartSplitPointToNextBreak.put(previousBreakEntry.getKey(), previousBreak);
-            clusterStartSplitPointToNextBreak.put(intervalCluster.getStartSplitPoint(), finalBreak);
+            intersectedRangeGapMap.clear();
+            startSplitPointToNextGap.put(previousGapEntry.getKey(), previousGap);
+            startSplitPointToNextGap.put(connectedRange.getStartSplitPoint(), finalGap);
         }
     }
 
-    void removeInterval(Interval<Interval_, Point_> interval) {
-        var intervalClusterEntry = clusterStartSplitPointToCluster.floorEntry(interval.getStartSplitPoint());
-        var intervalCluster = intervalClusterEntry.getValue();
-        clusterStartSplitPointToCluster.remove(intervalClusterEntry.getKey());
-        var previousBreakEntry = clusterStartSplitPointToNextBreak.lowerEntry(intervalClusterEntry.getKey());
-        var nextIntervalClusterEntry = clusterStartSplitPointToCluster.higherEntry(intervalClusterEntry.getKey());
-        clusterStartSplitPointToNextBreak.remove(intervalClusterEntry.getKey());
+    void removeRange(Range<Range_, Point_> range) {
+        var connectedRangeEntry = startSplitPointToConnectedRange.floorEntry(range.getStartSplitPoint());
+        var connectedRange = connectedRangeEntry.getValue();
+        startSplitPointToConnectedRange.remove(connectedRangeEntry.getKey());
+        var previousGapEntry = startSplitPointToNextGap.lowerEntry(connectedRangeEntry.getKey());
+        var nextConnectedRangeEntry = startSplitPointToConnectedRange.higherEntry(connectedRangeEntry.getKey());
+        startSplitPointToNextGap.remove(connectedRangeEntry.getKey());
 
-        var previousBreak = (previousBreakEntry != null) ? previousBreakEntry.getValue() : null;
-        var previousIntervalCluster = (previousBreak != null)
-                ? (ConnectedRangeImpl<Interval_, Point_, Difference_>) previousBreak.getPreviousConnectedRange()
+        var previousGap = (previousGapEntry != null) ? previousGapEntry.getValue() : null;
+        var previousConnectedRange = (previousGap != null)
+                ? (ConnectedRangeImpl<Range_, Point_, Difference_>) previousGap.getPreviousConnectedRange()
                 : null;
 
         var iterator = new ConnectedSubrangeIterator<>(splitPointSet,
-                intervalCluster.getStartSplitPoint(),
-                intervalCluster.getEndSplitPoint(),
+                connectedRange.getStartSplitPoint(),
+                connectedRange.getEndSplitPoint(),
                 differenceFunction);
         while (iterator.hasNext()) {
-            var newIntervalCluster = iterator.next();
-            if (previousBreak != null) {
-                previousBreak.setNextCluster(newIntervalCluster);
-                previousBreak.setLength(differenceFunction.apply(previousBreak.getPreviousConnectedRange().getEnd(),
-                        newIntervalCluster.getStart()));
-                clusterStartSplitPointToNextBreak
-                        .put(((ConnectedRangeImpl<Interval_, Point_, Difference_>) previousBreak
-                                .getPreviousConnectedRange()).getStartSplitPoint(), previousBreak);
+            var newConnectedRange = iterator.next();
+            if (previousGap != null) {
+                previousGap.setNextCluster(newConnectedRange);
+                previousGap.setLength(differenceFunction.apply(previousGap.getPreviousConnectedRange().getEnd(),
+                        newConnectedRange.getStart()));
+                startSplitPointToNextGap
+                        .put(((ConnectedRangeImpl<Range_, Point_, Difference_>) previousGap
+                                .getPreviousConnectedRange()).getStartSplitPoint(), previousGap);
             }
-            previousBreak = new RangeGapImpl<>(newIntervalCluster, null, null);
-            previousIntervalCluster = newIntervalCluster;
-            clusterStartSplitPointToCluster.put(newIntervalCluster.getStartSplitPoint(), newIntervalCluster);
+            previousGap = new RangeGapImpl<>(newConnectedRange, null, null);
+            previousConnectedRange = newConnectedRange;
+            startSplitPointToConnectedRange.put(newConnectedRange.getStartSplitPoint(), newConnectedRange);
         }
 
-        if (nextIntervalClusterEntry != null && previousBreak != null) {
-            previousBreak.setNextCluster(nextIntervalClusterEntry.getValue());
-            previousBreak.setLength(differenceFunction.apply(previousIntervalCluster.getEnd(),
-                    nextIntervalClusterEntry.getValue().getStart()));
-            clusterStartSplitPointToNextBreak.put(previousIntervalCluster.getStartSplitPoint(),
-                    previousBreak);
-        } else if (previousBreakEntry != null && previousBreak == previousBreakEntry.getValue()) {
-            // i.e. interval was the last interval in the cluster,
-            // (previousBreak == previousBreakEntry.getValue()),
-            // and there is no interval cluster after it
-            // (previousBreak != null as previousBreakEntry != null,
-            // so it must be the case nextIntervalClusterEntry == null)
-            clusterStartSplitPointToNextBreak.remove(previousBreakEntry.getKey());
+        if (nextConnectedRangeEntry != null && previousGap != null) {
+            previousGap.setNextCluster(nextConnectedRangeEntry.getValue());
+            previousGap.setLength(differenceFunction.apply(previousConnectedRange.getEnd(),
+                    nextConnectedRangeEntry.getValue().getStart()));
+            startSplitPointToNextGap.put(previousConnectedRange.getStartSplitPoint(),
+                    previousGap);
+        } else if (previousGapEntry != null && previousGap == previousGapEntry.getValue()) {
+            // i.e. range was the last range in the cluster,
+            // (previousGap == previousGapEntry.getValue()),
+            // and there is no range cluster after it
+            // (previousGap != null as previousGapEntry != null,
+            // so it must be the case nextConnectedRangeEntry == null)
+            startSplitPointToNextGap.remove(previousGapEntry.getKey());
         }
     }
 
     @Override
-    public Iterable<ConnectedRange<Interval_, Point_, Difference_>> getConnectedRanges() {
-        return (Iterable) clusterStartSplitPointToCluster.values();
+    public Iterable<ConnectedRange<Range_, Point_, Difference_>> getConnectedRanges() {
+        return (Iterable) startSplitPointToConnectedRange.values();
     }
 
     @Override
     public Iterable<RangeGap<Point_, Difference_>> getGaps() {
-        return (Iterable) clusterStartSplitPointToNextBreak.values();
+        return (Iterable) startSplitPointToNextGap.values();
     }
 
     @Override
@@ -254,24 +255,24 @@ public final class ConnectedRangeChainImpl<Interval_, Point_ extends Comparable<
             return true;
         if (!(o instanceof ConnectedRangeChainImpl<?, ?, ?> that))
             return false;
-        return Objects.equals(clusterStartSplitPointToCluster,
-                that.clusterStartSplitPointToCluster)
+        return Objects.equals(startSplitPointToConnectedRange,
+                that.startSplitPointToConnectedRange)
                 && Objects.equals(splitPointSet,
                         that.splitPointSet)
-                && Objects.equals(clusterStartSplitPointToNextBreak,
-                        that.clusterStartSplitPointToNextBreak);
+                && Objects.equals(startSplitPointToNextGap,
+                        that.startSplitPointToNextGap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(clusterStartSplitPointToCluster, splitPointSet, clusterStartSplitPointToNextBreak);
+        return Objects.hash(startSplitPointToConnectedRange, splitPointSet, startSplitPointToNextGap);
     }
 
     @Override
     public String toString() {
-        return "Clusters {" +
-                "intervalClusters=" + getConnectedRanges() +
-                ", breaks=" + getGaps() +
+        return "ConnectedRangeChain {" +
+                "connectedRanges=" + getConnectedRanges() +
+                ", gaps=" + getGaps() +
                 '}';
     }
 }

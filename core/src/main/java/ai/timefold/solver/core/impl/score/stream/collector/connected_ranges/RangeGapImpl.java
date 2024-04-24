@@ -3,24 +3,24 @@ package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 
-final class RangeGapImpl<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+final class RangeGapImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements RangeGap<Point_, Difference_> {
-    private ConnectedRange<Interval_, Point_, Difference_> previousCluster;
-    private ConnectedRange<Interval_, Point_, Difference_> nextCluster;
+    private ConnectedRange<Range_, Point_, Difference_> previousCluster;
+    private ConnectedRange<Range_, Point_, Difference_> nextCluster;
     private Difference_ length;
 
-    RangeGapImpl(ConnectedRange<Interval_, Point_, Difference_> previousCluster,
-            ConnectedRange<Interval_, Point_, Difference_> nextCluster, Difference_ length) {
+    RangeGapImpl(ConnectedRange<Range_, Point_, Difference_> previousCluster,
+            ConnectedRange<Range_, Point_, Difference_> nextCluster, Difference_ length) {
         this.previousCluster = previousCluster;
         this.nextCluster = nextCluster;
         this.length = length;
     }
 
-    ConnectedRange<Interval_, Point_, Difference_> getPreviousConnectedRange() {
+    ConnectedRange<Range_, Point_, Difference_> getPreviousConnectedRange() {
         return previousCluster;
     }
 
-    ConnectedRange<Interval_, Point_, Difference_> getNextConnectedRange() {
+    ConnectedRange<Range_, Point_, Difference_> getNextConnectedRange() {
         return nextCluster;
     }
 
@@ -39,11 +39,11 @@ final class RangeGapImpl<Interval_, Point_ extends Comparable<Point_>, Differenc
         return length;
     }
 
-    void setPreviousCluster(ConnectedRange<Interval_, Point_, Difference_> previousCluster) {
+    void setPreviousCluster(ConnectedRange<Range_, Point_, Difference_> previousCluster) {
         this.previousCluster = previousCluster;
     }
 
-    void setNextCluster(ConnectedRange<Interval_, Point_, Difference_> nextCluster) {
+    void setNextCluster(ConnectedRange<Range_, Point_, Difference_> nextCluster) {
         this.nextCluster = nextCluster;
     }
 

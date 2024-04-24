@@ -5,12 +5,12 @@ package ai.timefold.solver.core.api.score.stream.common;
  * the union of all the ranges results in the range
  * [{@link #getStart()}, {@link #getEnd()}) without gaps.
  *
- * @param <Interval_> The type of range in the collection.
+ * @param <Range_> The type of range in the collection.
  * @param <Point_> The type of the start and end points for each range.
  * @param <Difference_> The type of difference between start and end points.
  */
-public interface ConnectedRange<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        extends Iterable<Interval_> {
+public interface ConnectedRange<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
+        extends Iterable<Range_> {
     /**
      * Get the number of ranges contained by this {@link ConnectedRange}.
      * 
