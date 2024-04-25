@@ -142,10 +142,6 @@ public class Lesson {
 
 ====
 
-'''
-
-=== Upgrade from 1.9.0 to 1.10.0
-
 .icon:info-circle[role=yellow] Removed the `examples` module
 [%collapsible%open]
 ====
