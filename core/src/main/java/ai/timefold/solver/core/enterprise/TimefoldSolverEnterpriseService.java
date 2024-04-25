@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -33,16 +34,28 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 public interface TimefoldSolverEnterpriseService {
 
+    String SOLVER_NAME = "Timefold Solver";
+    String COMMUNITY_NAME = "Community Edition";
+    String COMMUNITY_COORDINATES = "ai.timefold.solver:timefold-solver-core";
+    String ENTERPRISE_NAME = "Enterprise Edition";
+    String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
+    String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
+
     static String identifySolverVersion() {
-        var packaging = "Community Edition";
+        var packaging = COMMUNITY_NAME;
         try {
-            TimefoldSolverEnterpriseService.load();
-            packaging = "Enterprise Edition";
+            load();
+            packaging = ENTERPRISE_NAME;
         } catch (Exception e) {
             // No need to do anything, just checking if Enterprise exists.
         }
-        var version = SolverFactory.class.getPackage().getImplementationVersion();
-        return packaging + " " + (version == null ? "(Development snapshot)" : "v" + version);
+        var version = getVersionString(SolverFactory.class);
+        return packaging + " " + version;
+    }
+
+    private static String getVersionString(Class<?> clz) {
+        var version = clz.getPackage().getImplementationVersion();
+        return (version == null ? DEVELOPMENT_SNAPSHOT : "v" + version);
     }
 
     static TimefoldSolverEnterpriseService load() throws ClassNotFoundException, NoSuchMethodException,
@@ -54,16 +67,30 @@ public interface TimefoldSolverEnterpriseService {
     }
 
     static TimefoldSolverEnterpriseService loadOrFail(Feature feature) {
+        TimefoldSolverEnterpriseService service;
         try {
-            return load();
+            service = load();
         } catch (Exception cause) {
             throw new IllegalStateException("""
-                     %s requested but Timefold Solver Enterprise Edition not found on classpath
-                     Either add the ai.timefold.solver.enterprise:timefold-solver-enterprise-core dependency,
-                     or %s.
-                    "Note: Timefold Solver Enterprise Edition is a commercial product."""
-                    .formatted(feature.getName(), feature.getWorkaround()), cause);
+                    %s requested but %s %s not found on classpath.
+                    Either add the %s dependency, or %s.
+                    Note: %s %s is a commercial product. Visit https://timefold.ai to find out more."""
+                    .formatted(feature.getName(), SOLVER_NAME, ENTERPRISE_NAME, feature.getWorkaround(),
+                            ENTERPRISE_COORDINATES, SOLVER_NAME, ENTERPRISE_NAME),
+                    cause);
         }
+        var communityVersion = getVersionString(TimefoldSolverEnterpriseService.class);
+        var enterpriseVersion = getVersionString(service.getClass());
+        if (Objects.equals(communityVersion, enterpriseVersion)) { // Identical versions.
+            return service;
+        } else if (enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) { // Don't enforce when running Enterprise tests.
+            return service;
+        }
+        throw new IllegalStateException("""
+                Detected mismatch between versions of %s %s (%s) and %s (%s).
+                Ensure your project uses the same version of %s and %s dependencies."""
+                .formatted(SOLVER_NAME, COMMUNITY_NAME, communityVersion, ENTERPRISE_NAME, enterpriseVersion,
+                        COMMUNITY_COORDINATES, ENTERPRISE_COORDINATES));
     }
 
     Class<? extends ConstraintProvider>
