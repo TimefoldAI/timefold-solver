@@ -63,7 +63,6 @@
     <module>quarkus-integration</module>
     <module>tools</module>
     <module>migration</module><!-- TODO move to tools/migration -->
-    <module>examples</module>
   </modules>
 
   <build>
