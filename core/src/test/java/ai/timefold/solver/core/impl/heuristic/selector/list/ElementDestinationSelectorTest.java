@@ -181,7 +181,7 @@ class ElementDestinationSelectorTest {
                 solutionDescriptor.findEntityDescriptorOrFail(TestdataPinnedUnassignedValuesListEntity.class),
                 SelectionCacheType.PHASE, true);
         entitySelector.solvingStarted(solverScope);
-        entitySelector.phaseStarted(new LocalSearchPhaseScope<>(solverScope));
+        entitySelector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 
         var valueSelector = mockEntityIndependentValueSelector(
                 getPinnedAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),

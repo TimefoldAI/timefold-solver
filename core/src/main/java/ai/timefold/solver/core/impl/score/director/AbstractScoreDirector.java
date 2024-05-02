@@ -30,6 +30,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableLis
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -635,7 +636,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore) {
+    public void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint) {
         Score_ undoScore = calculateScore();
         if (!undoScore.equals(beforeMoveScore)) {
             logger.trace("        Corruption detected. Diagnosing...");
@@ -665,23 +666,32 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
             }
             String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
-            String corruptionMessage =
-                    """
-                            UndoMove corruption (%s): the beforeMoveScore (%s) is not the undoScore (%s) which is the uncorruptedScore (%s) of the workingSolution.
-                            %s
-                            1) Enable EnvironmentMode %s
-                            (if you haven't already) to fail-faster in case there's a score corruption or variable listener corruption.
-                            2) Check the Move.createUndoMove(...) method of the moveClass (%s).
-                            The move (%s) might have a corrupted undoMove (%s).
-                            3) Check your custom %ss (if you have any)
-                            for shadow variables that are used by score constraints that could cause
-                            the scoreDifference (%s).
-                            """
-                            .formatted(scoreDifference, beforeMoveScore, undoScore, undoScore,
-                                    corruptionDiagnosis,
-                                    EnvironmentMode.TRACKED_FULL_ASSERT,
-                                    move.getClass().getSimpleName(), move, undoMoveText,
-                                    VariableListener.class.getSimpleName(), scoreDifference);
+            String corruptionMessage = """
+                    UndoMove corruption (%s):
+                       the beforeMoveScore (%s) is not the undoScore (%s),
+                       which is the uncorruptedScore (%s) of the workingSolution.
+
+                    Corruption diagnosis:
+                    %s
+
+                    1) Enable EnvironmentMode %s (if you haven't already)
+                       to fail-faster in case of a score corruption or variable listener corruption.
+                       Let the solver run until it reaches the same point in its lifecycle (%s),
+                       even though it may take a very long time.
+                       If the solver throws an exception before reaching that point,
+                       there may be yet another problem that needs to be fixed.
+
+                    2) If you use custom moves, check the Move.createUndoMove(...) method of the custom move class (%s).
+                       The move (%s) might have a corrupted undoMove (%s).
+
+                    3) If you use custom %ss,
+                       check them for shadow variables that are used by score constraints
+                       that could cause the scoreDifference (%s)."""
+                    .formatted(scoreDifference, beforeMoveScore, undoScore, undoScore,
+                            corruptionDiagnosis,
+                            EnvironmentMode.TRACKED_FULL_ASSERT, executionPoint,
+                            move.getClass().getSimpleName(), move, undoMoveText,
+                            VariableListener.class.getSimpleName(), scoreDifference);
 
             if (trackingWorkingSolution) {
                 throw new UndoScoreCorruptionException(corruptionMessage,

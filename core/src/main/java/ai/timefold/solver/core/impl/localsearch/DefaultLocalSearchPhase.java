@@ -55,7 +55,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        LocalSearchPhaseScope<Solution_> phaseScope = new LocalSearchPhaseScope<>(solverScope);
+        LocalSearchPhaseScope<Solution_> phaseScope = new LocalSearchPhaseScope<>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
         if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_STEP)) {

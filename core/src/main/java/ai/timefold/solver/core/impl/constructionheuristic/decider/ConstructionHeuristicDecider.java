@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -135,11 +136,11 @@ public class ConstructionHeuristicDecider<Solution_> {
         });
         if (assertExpectedUndoMoveScore) {
             scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
-                    (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore());
+                    (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
+                    SolverLifecyclePoint.of(moveScope));
         }
         logger.trace("{}        Move index ({}), score ({}), move ({}).",
-                logIndentation,
-                moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getMove());
+                logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getMove());
     }
 
 }

@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ConstructionHeuristicStepScope<Solution_> extends AbstractStepScope<Solution_> {
+public final class ConstructionHeuristicStepScope<Solution_> extends AbstractStepScope<Solution_> {
 
     private final ConstructionHeuristicPhaseScope<Solution_> phaseScope;
 

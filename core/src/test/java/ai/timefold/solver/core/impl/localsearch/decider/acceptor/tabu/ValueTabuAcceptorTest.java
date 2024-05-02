@@ -13,7 +13,6 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 import org.junit.jupiter.api.Test;
@@ -22,23 +21,23 @@ class ValueTabuAcceptorTest {
 
     @Test
     void tabuSize() {
-        ValueTabuAcceptor acceptor = new ValueTabuAcceptor("");
-        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy(2));
+        var acceptor = new ValueTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
         acceptor.setAspirationEnabled(true);
 
-        TestdataValue v0 = new TestdataValue("v0");
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataValue v3 = new TestdataValue("v3");
-        TestdataValue v4 = new TestdataValue("v4");
+        var v0 = new TestdataValue("v0");
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var v4 = new TestdataValue("v4");
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(0));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope1 = buildMoveScope(stepScope0, v1);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope1 = buildMoveScope(stepScope0, v1);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, v0))).isTrue();
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, v2))).isTrue();
@@ -50,8 +49,8 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope2 = buildMoveScope(stepScope1, v2);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope2 = buildMoveScope(stepScope1, v2);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v1))).isFalse();
         assertThat(acceptor.isAccepted(moveScope2)).isTrue();
@@ -63,8 +62,8 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
 
-        LocalSearchStepScope<TestdataSolution> stepScope2 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope4 = buildMoveScope(stepScope2, v4);
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope4 = buildMoveScope(stepScope2, v4);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v1))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v2))).isFalse();
@@ -76,8 +75,8 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
-        LocalSearchStepScope<TestdataSolution> stepScope3 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope3 = buildMoveScope(stepScope3, v3);
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope3 = buildMoveScope(stepScope3, v3);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v1))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v2))).isFalse();
@@ -89,8 +88,8 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);
 
-        LocalSearchStepScope<TestdataSolution> stepScope4 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope1Again = buildMoveScope(stepScope4, v1);
+        var stepScope4 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope1Again = buildMoveScope(stepScope4, v1);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, v0))).isTrue();
         assertThat(acceptor.isAccepted(moveScope1Again)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, v2))).isTrue();
@@ -107,22 +106,22 @@ class ValueTabuAcceptorTest {
 
     @Test
     void tabuSizeMultipleEntitiesPerStep() {
-        ValueTabuAcceptor acceptor = new ValueTabuAcceptor("");
-        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy(2));
+        var acceptor = new ValueTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
         acceptor.setAspirationEnabled(true);
 
-        TestdataValue v0 = new TestdataValue("v0");
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataValue v3 = new TestdataValue("v3");
-        TestdataValue v4 = new TestdataValue("v4");
+        var v0 = new TestdataValue("v0");
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var v4 = new TestdataValue("v4");
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(0));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, v1))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, v2))).isTrue();
@@ -142,7 +141,7 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v0))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v1))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v2))).isFalse();
@@ -162,7 +161,7 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
 
-        LocalSearchStepScope<TestdataSolution> stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v0))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v1))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v2))).isFalse();
@@ -182,7 +181,7 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
-        LocalSearchStepScope<TestdataSolution> stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v1))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v2))).isTrue();
@@ -207,24 +206,24 @@ class ValueTabuAcceptorTest {
 
     @Test
     void aspiration() {
-        ValueTabuAcceptor acceptor = new ValueTabuAcceptor("");
-        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy(2));
+        var acceptor = new ValueTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
         acceptor.setAspirationEnabled(true);
 
-        TestdataValue v0 = new TestdataValue("v0");
-        TestdataValue v1 = new TestdataValue("v1");
+        var v0 = new TestdataValue("v0");
+        var v1 = new TestdataValue("v1");
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-100));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         stepScope0.setStep(buildMoveScope(stepScope0, v1).getMove());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -120, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -20, v0))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -120, v1))).isFalse();
@@ -238,16 +237,16 @@ class ValueTabuAcceptorTest {
         acceptor.phaseEnded(phaseScope);
     }
 
-    private <Solution_> LocalSearchMoveScope<Solution_> buildMoveScope(
+    private static <Solution_> LocalSearchMoveScope<Solution_> buildMoveScope(
             LocalSearchStepScope<Solution_> stepScope, TestdataValue... values) {
         return buildMoveScope(stepScope, 0, values);
     }
 
-    private <Solution_> LocalSearchMoveScope<Solution_> buildMoveScope(
+    private static <Solution_> LocalSearchMoveScope<Solution_> buildMoveScope(
             LocalSearchStepScope<Solution_> stepScope, int score, TestdataValue... values) {
-        Move move = mock(Move.class);
+        var move = mock(Move.class);
         when(move.getPlanningValues()).thenReturn(Arrays.asList(values));
-        LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, 0, move);
+        var moveScope = new LocalSearchMoveScope<Solution_>(stepScope, 0, move);
         moveScope.setScore(SimpleScore.of(score));
         return moveScope;
     }

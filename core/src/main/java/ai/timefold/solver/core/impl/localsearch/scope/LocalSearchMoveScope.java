@@ -7,20 +7,17 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractMoveScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class LocalSearchMoveScope<Solution_> extends AbstractMoveScope<Solution_> {
-
-    private final LocalSearchStepScope<Solution_> stepScope;
+public final class LocalSearchMoveScope<Solution_> extends AbstractMoveScope<Solution_> {
 
     private Boolean accepted = null;
 
     public LocalSearchMoveScope(LocalSearchStepScope<Solution_> stepScope, int moveIndex, Move<Solution_> move) {
-        super(moveIndex, move);
-        this.stepScope = stepScope;
+        super(stepScope, moveIndex, move);
     }
 
     @Override
     public LocalSearchStepScope<Solution_> getStepScope() {
-        return stepScope;
+        return (LocalSearchStepScope<Solution_>) super.getStepScope();
     }
 
     public Boolean getAccepted() {
@@ -30,9 +27,5 @@ public class LocalSearchMoveScope<Solution_> extends AbstractMoveScope<Solution_
     public void setAccepted(Boolean accepted) {
         this.accepted = accepted;
     }
-
-    // ************************************************************************
-    // Calculated methods
-    // ************************************************************************
 
 }

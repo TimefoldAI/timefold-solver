@@ -7,23 +7,16 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractMoveScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ConstructionHeuristicMoveScope<Solution_> extends AbstractMoveScope<Solution_> {
-
-    private final ConstructionHeuristicStepScope<Solution_> stepScope;
+public final class ConstructionHeuristicMoveScope<Solution_> extends AbstractMoveScope<Solution_> {
 
     public ConstructionHeuristicMoveScope(ConstructionHeuristicStepScope<Solution_> stepScope,
             int moveIndex, Move<Solution_> move) {
-        super(moveIndex, move);
-        this.stepScope = stepScope;
+        super(stepScope, moveIndex, move);
     }
 
     @Override
     public ConstructionHeuristicStepScope<Solution_> getStepScope() {
-        return stepScope;
+        return (ConstructionHeuristicStepScope<Solution_>) super.getStepScope();
     }
-
-    // ************************************************************************
-    // Calculated methods
-    // ************************************************************************
 
 }

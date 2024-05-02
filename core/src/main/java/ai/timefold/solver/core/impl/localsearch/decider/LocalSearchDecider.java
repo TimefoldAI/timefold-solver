@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -121,12 +122,11 @@ public class LocalSearchDecider<Solution_> {
         });
         if (assertExpectedUndoMoveScore) {
             scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
-                    (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore());
+                    (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
+                    SolverLifecyclePoint.of(moveScope));
         }
         logger.trace("{}        Move index ({}), score ({}), accepted ({}), move ({}).",
-                logIndentation,
-                moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getAccepted(),
-                moveScope.getMove());
+                logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getAccepted(), moveScope.getMove());
     }
 
     protected void pickMove(LocalSearchStepScope<Solution_> stepScope) {

@@ -29,7 +29,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
     @Test
     void solverTermination() {
         SolverScope<TestdataSolution> solverScope = spy(new SolverScope<>());
-        AbstractPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
+        AbstractPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         Clock clock = mock(Clock.class);
 
         Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
@@ -50,7 +50,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
     @Test
     void phaseTermination() {
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
-        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
+        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         Clock clock = mock(Clock.class);
 
         Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
@@ -76,7 +76,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
         Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
         termination.solvingStarted(solverScope);
 
-        AbstractPhaseScope<TestdataSolution> chPhaseScope = new ConstructionHeuristicPhaseScope<>(solverScope);
+        AbstractPhaseScope<TestdataSolution> chPhaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, 0);
         termination.phaseStarted(chPhaseScope);
 
         // During the construction heuristic, the unimproved termination should not trigger.
@@ -92,7 +92,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
 
         termination.phaseEnded(chPhaseScope);
 
-        AbstractPhaseScope<TestdataSolution> lsPhaseScope = new LocalSearchPhaseScope<>(solverScope);
+        AbstractPhaseScope<TestdataSolution> lsPhaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         termination.phaseStarted(lsPhaseScope);
 
         // When local search starts, the unimproved termination should start triggering,
@@ -114,7 +114,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
     @Test
     void phaseTerminationWithConstructionHeuristic() { // CH ignores unimproved time spent termination.
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
-        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope));
+        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
         Clock clock = mock(Clock.class);
 
         Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);

@@ -19,6 +19,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final SolverScope<Solution_> solverScope;
+    protected final int phaseIndex;
     protected final boolean phaseSendingBestSolutionEvents;
 
     protected Long startingSystemTimeMillis;
@@ -31,28 +32,34 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected int bestSolutionStepIndex;
 
     /**
-     * As defined by #AbstractPhaseScope(SolverScope, boolean),
+     * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
      * with the phaseSendingBestSolutionEvents parameter set to true.
      */
-    protected AbstractPhaseScope(SolverScope<Solution_> solverScope) {
-        this(solverScope, true);
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
+        this(solverScope, phaseIndex, true);
     }
 
     /**
      *
      * @param solverScope never null
+     * @param phaseIndex the index of the phase, >= 0
      * @param phaseSendingBestSolutionEvents set to false if the phase only sends one best solution event at the end,
      *        or none at all;
      *        this is typical for construction heuristics,
      *        whose result only matters when it reached its natural end.
      */
-    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, boolean phaseSendingBestSolutionEvents) {
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents) {
         this.solverScope = solverScope;
+        this.phaseIndex = phaseIndex;
         this.phaseSendingBestSolutionEvents = phaseSendingBestSolutionEvents;
     }
 
     public SolverScope<Solution_> getSolverScope() {
         return solverScope;
+    }
+
+    public int getPhaseIndex() {
+        return phaseIndex;
     }
 
     public boolean isPhaseSendingBestSolutionEvents() {
@@ -206,7 +213,7 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName(); // TODO add + "(" + phaseIndex + ")"
+        return getClass().getSimpleName() + "(" + phaseIndex + ")";
     }
 
 }

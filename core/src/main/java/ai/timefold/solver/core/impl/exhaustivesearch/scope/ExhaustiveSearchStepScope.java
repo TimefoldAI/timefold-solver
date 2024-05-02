@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ExhaustiveSearchStepScope<Solution_> extends AbstractStepScope<Solution_> {
+public final class ExhaustiveSearchStepScope<Solution_> extends AbstractStepScope<Solution_> {
 
     private final ExhaustiveSearchPhaseScope<Solution_> phaseScope;
 

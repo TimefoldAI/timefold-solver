@@ -13,18 +13,18 @@ import org.junit.jupiter.api.Test;
 class EntityRatioTabuSizeStrategyTest {
 
     @Test
-    void tabuSize() {
-        LocalSearchPhaseScope phaseScope = new LocalSearchPhaseScope(mock(SolverScope.class));
+    <Solution_> void tabuSize() {
+        var phaseScope = new LocalSearchPhaseScope<Solution_>(mock(SolverScope.class), 0);
         when(phaseScope.getWorkingEntityCount()).thenReturn(100);
-        LocalSearchStepScope stepScope = new LocalSearchStepScope(phaseScope);
-        assertThat(new EntityRatioTabuSizeStrategy(0.1).determineTabuSize(stepScope)).isEqualTo(10);
-        assertThat(new EntityRatioTabuSizeStrategy(0.5).determineTabuSize(stepScope)).isEqualTo(50);
+        var stepScope = new LocalSearchStepScope<>(phaseScope);
+        assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.1).determineTabuSize(stepScope)).isEqualTo(10);
+        assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.5).determineTabuSize(stepScope)).isEqualTo(50);
         // Rounding
-        assertThat(new EntityRatioTabuSizeStrategy(0.1051).determineTabuSize(stepScope)).isEqualTo(11);
-        assertThat(new EntityRatioTabuSizeStrategy(0.1049).determineTabuSize(stepScope)).isEqualTo(10);
+        assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.1051).determineTabuSize(stepScope)).isEqualTo(11);
+        assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.1049).determineTabuSize(stepScope)).isEqualTo(10);
         // Corner cases
-        assertThat(new EntityRatioTabuSizeStrategy(0.0000001).determineTabuSize(stepScope)).isEqualTo(1);
-        assertThat(new EntityRatioTabuSizeStrategy(0.9999999).determineTabuSize(stepScope)).isEqualTo(99);
+        assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.0000001).determineTabuSize(stepScope)).isEqualTo(1);
+        assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.9999999).determineTabuSize(stepScope)).isEqualTo(99);
     }
 
 }
