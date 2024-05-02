@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.testdata.util;
 
 import static java.util.Arrays.stream;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -80,7 +80,11 @@ public final class PlannerTestUtils {
         AtomicReference<Solution_> eventBestSolutionRef = new AtomicReference<>();
         solver.addEventListener(event -> eventBestSolutionRef.set(event.getNewBestSolution()));
         Solution_ finalBestSolution = solver.solve(problem);
-        assertEquals(bestSolutionEventExists ? finalBestSolution : null, eventBestSolutionRef.get());
+        if (bestSolutionEventExists) {
+            assertThat(eventBestSolutionRef).doesNotHaveNullValue();
+        } else {
+            assertThat(eventBestSolutionRef).hasNullValue();
+        }
         return finalBestSolution;
     }
 

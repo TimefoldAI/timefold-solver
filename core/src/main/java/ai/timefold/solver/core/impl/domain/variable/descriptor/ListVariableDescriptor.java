@@ -101,7 +101,6 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
 
     public int countUnassigned(Solution_ solution) {
         var valueCount = new MutableLong(getValueRangeSize(solution, null));
-        var entityDescriptor = getEntityDescriptor();
         var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
         solutionDescriptor.visitEntitiesByEntityClass(solution,
                 entityDescriptor.getEntityClass(), entity -> {
@@ -113,11 +112,12 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     public InverseRelationShadowVariableDescriptor<Solution_> getInverseRelationShadowVariableDescriptor() {
-        var entityDescriptor = getEntityDescriptor().getSolutionDescriptor().findEntityDescriptor(getElementType());
-        if (entityDescriptor == null) {
+        var inverseRelationEntityDescriptor =
+                getEntityDescriptor().getSolutionDescriptor().findEntityDescriptor(getElementType());
+        if (inverseRelationEntityDescriptor == null) {
             return null;
         }
-        var applicableShadowDescriptors = entityDescriptor.getShadowVariableDescriptors()
+        var applicableShadowDescriptors = inverseRelationEntityDescriptor.getShadowVariableDescriptors()
                 .stream()
                 .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor
                         && Objects.equals(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptorList().get(0),
@@ -131,7 +131,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
                     """
                             Instances of entityClass (%s) may be used in list variable (%s), but the class has more than one @%s-annotated field (%s).
                             Remove the annotations from all but one field."""
-                            .formatted(entityDescriptor.getEntityClass().getCanonicalName(),
+                            .formatted(inverseRelationEntityDescriptor.getEntityClass().getCanonicalName(),
                                     getSimpleEntityAndVariableName(),
                                     InverseRelationShadowVariable.class.getSimpleName(),
                                     applicableShadowDescriptors.stream()
@@ -150,7 +150,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     public List<Object> getValue(Object entity) {
         Object value = super.getValue(entity);
         if (value == null) {
-            throw new IllegalStateException("The planning list variable (" + this + ") of entity (" + entity + ") is null.");
+            throw new IllegalStateException("The planning list variable (%s) of entity (%s) is null."
+                    .formatted(this, entity));
         }
         return (List<Object>) value;
     }
