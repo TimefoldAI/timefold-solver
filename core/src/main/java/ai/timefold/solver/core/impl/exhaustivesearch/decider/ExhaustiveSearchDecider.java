@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepS
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.ManualEntityMimicRecorder;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -132,15 +133,15 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         moveNode.setUndoMove(undoMove);
         processMove(stepScope, moveNode);
         undoMove.doMoveOnly(scoreDirector);
+        var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());
         if (assertExpectedUndoMoveScore) {
             // In BRUTE_FORCE a stepScore can be null because it was not calculated
             if (stepScope.getStartingStepScore() != null) {
-                scoreDirector.assertExpectedUndoMoveScore(move, (Score_) stepScope.getStartingStepScore());
+                scoreDirector.assertExpectedUndoMoveScore(move, (Score_) stepScope.getStartingStepScore(), executionPoint);
             }
         }
         LOGGER.trace("{}        Move treeId ({}), score ({}), expandable ({}), move ({}).",
-                logIndentation,
-                moveNode.getTreeId(), moveNode.getScore(), moveNode.isExpandable(), moveNode.getMove());
+                logIndentation, executionPoint.treeId(), moveNode.getScore(), moveNode.isExpandable(), moveNode.getMove());
     }
 
     private <Score_ extends Score<Score_>> void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,

@@ -7,16 +7,16 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class CustomPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
+public final class CustomPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
 
     private CustomStepScope<Solution_> lastCompletedStepScope;
 
-    public CustomPhaseScope(SolverScope<Solution_> solverScope) {
-        this(solverScope, false);
+    public CustomPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
+        this(solverScope, phaseIndex, false);
     }
 
-    public CustomPhaseScope(SolverScope<Solution_> solverScope, boolean phaseSendsBestSolutionEvents) {
-        super(solverScope, phaseSendsBestSolutionEvents);
+    public CustomPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendsBestSolutionEvents) {
+        super(solverScope, phaseIndex, phaseSendsBestSolutionEvents);
         lastCompletedStepScope = new CustomStepScope<>(this, -1);
     }
 

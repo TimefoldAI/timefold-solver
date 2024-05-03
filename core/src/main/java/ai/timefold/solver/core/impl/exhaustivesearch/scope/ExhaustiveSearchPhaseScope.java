@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
+public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
 
     private List<ExhaustiveSearchLayer> layerList;
     private SortedSet<ExhaustiveSearchNode> expandableNodeQueue;
@@ -21,8 +21,8 @@ public class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseScope<So
 
     private ExhaustiveSearchStepScope<Solution_> lastCompletedStepScope;
 
-    public ExhaustiveSearchPhaseScope(SolverScope<Solution_> solverScope) {
-        super(solverScope, false);
+    public ExhaustiveSearchPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
+        super(solverScope, phaseIndex, false);
         lastCompletedStepScope = new ExhaustiveSearchStepScope<>(this, -1);
     }
 

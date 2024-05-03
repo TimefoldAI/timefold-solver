@@ -12,17 +12,21 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
  */
 public abstract class AbstractMoveScope<Solution_> {
 
+    protected final AbstractStepScope<Solution_> stepScope;
     protected final int moveIndex;
     protected final Move<Solution_> move;
 
     protected Score<?> score = null;
 
-    public AbstractMoveScope(int moveIndex, Move<Solution_> move) {
+    protected AbstractMoveScope(AbstractStepScope<Solution_> stepScope, int moveIndex, Move<Solution_> move) {
+        this.stepScope = stepScope;
         this.moveIndex = moveIndex;
         this.move = move;
     }
 
-    public abstract AbstractStepScope<Solution_> getStepScope();
+    public AbstractStepScope<Solution_> getStepScope() {
+        return stepScope;
+    }
 
     public int getMoveIndex() {
         return moveIndex;

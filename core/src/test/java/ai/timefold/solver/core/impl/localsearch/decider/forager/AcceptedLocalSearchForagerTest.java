@@ -209,9 +209,9 @@ class AcceptedLocalSearchForagerTest {
         forager.phaseEnded(phaseScope);
     }
 
-    private LocalSearchPhaseScope<TestdataSolution> createPhaseScope() {
+    private static LocalSearchPhaseScope<TestdataSolution> createPhaseScope() {
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
+        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(TestdataSolution.buildSolutionDescriptor());
         when(scoreDirector.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
@@ -225,7 +225,7 @@ class AcceptedLocalSearchForagerTest {
         return phaseScope;
     }
 
-    public LocalSearchMoveScope<TestdataSolution> createMoveScope(LocalSearchStepScope<TestdataSolution> stepScope,
+    public static LocalSearchMoveScope<TestdataSolution> createMoveScope(LocalSearchStepScope<TestdataSolution> stepScope,
             SimpleScore score, boolean accepted) {
         LocalSearchMoveScope<TestdataSolution> moveScope = new LocalSearchMoveScope<>(stepScope, 0, new DummyMove());
         moveScope.setScore(score);

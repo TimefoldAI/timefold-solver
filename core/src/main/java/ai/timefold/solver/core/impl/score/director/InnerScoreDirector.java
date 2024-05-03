@@ -28,6 +28,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
@@ -313,7 +314,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param move never null
      * @param beforeMoveScore never null
      */
-    void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore);
+    void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint);
 
     /**
      * Needs to be called after use because some implementations need to clean up their resources.

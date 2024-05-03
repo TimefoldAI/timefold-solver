@@ -45,7 +45,7 @@ import org.mockito.AdditionalAnswers;
 /**
  * @see PlannerAssert
  */
-public class PlannerTestUtils {
+public final class PlannerTestUtils {
 
     public static final int TERMINATION_STEP_COUNT_LIMIT = 10;
 
@@ -186,7 +186,7 @@ public class PlannerTestUtils {
      * @return never null
      */
     public static <Solution_> AbstractPhaseScope<Solution_> delegatingPhaseScope(SolverScope<Solution_> solverScope) {
-        return new AbstractPhaseScope<>(solverScope) {
+        return new AbstractPhaseScope<>(solverScope, 0) {
             @Override
             public AbstractStepScope<Solution_> getLastCompletedStepScope() {
                 return null;

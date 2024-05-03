@@ -35,7 +35,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
     @Test
     void scoreImproves_terminationIsPostponed() {
         var solverScope = spy(new SolverScope<TestdataSolution>());
-        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
+        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
         var clock = mock(Clock.class);
 
@@ -83,7 +83,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
     @Test
     void scoreImprovesTooLate_terminates() {
         var solverScope = spy(new SolverScope<TestdataSolution>());
-        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
+        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
         var clock = mock(Clock.class);
 
@@ -135,7 +135,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
     @Test
     void withConstructionHeuristic() { // CH ignores unimproved time spent termination.
         var solverScope = spy(new SolverScope<TestdataSolution>());
-        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope));
+        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
         var stepScope = spy(new ConstructionHeuristicStepScope<>(phaseScope));
         var clock = mock(Clock.class);
 
@@ -173,7 +173,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
     @Test
     void withConstructionHeuristicAndLocalSearch() { // CH ignores unimproved time spent termination.
         var solverScope = spy(new SolverScope<TestdataSolution>());
-        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope));
+        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
         var stepScope = spy(new ConstructionHeuristicStepScope<>(phaseScope));
         var clock = mock(Clock.class);
 
@@ -211,7 +211,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, withPrecision(0.0));
 
-        var lsPhaseScope = spy(new LocalSearchPhaseScope<>(solverScope));
+        var lsPhaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         var lsStepScope = spy(new LocalSearchStepScope<>(lsPhaseScope));
 
         // second step - score has improved, but not beyond the threshold

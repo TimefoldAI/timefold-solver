@@ -6,11 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,20 +16,19 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void typeStep() {
-        StepCountingHillClimbingAcceptor acceptor = new StepCountingHillClimbingAcceptor(2,
-                StepCountingHillClimbingType.STEP);
+        var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.STEP);
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
-        LocalSearchStepScope<TestdataSolution> lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
         // thresholdScore = -1000, lastCompletedStepScore = Integer.MIN_VALUE
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope0 = buildMoveScope(stepScope0, -500);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope0 = buildMoveScope(stepScope0, -500);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -800))).isTrue();
@@ -46,8 +43,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope0);
 
         // thresholdScore = -1000, lastCompletedStepScore = -500
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope1 = buildMoveScope(stepScope1, -700);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope1 = buildMoveScope(stepScope1, -700);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -900))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -2000))).isFalse();
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
@@ -62,8 +59,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope1);
 
         // thresholdScore = -700, lastCompletedStepScore = -700
-        LocalSearchStepScope<TestdataSolution> stepScope2 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope2 = buildMoveScope(stepScope1, -400);
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope2 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -700))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -2000))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -701))).isFalse();
@@ -78,8 +75,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope2);
 
         // thresholdScore = -700, lastCompletedStepScore = -400
-        LocalSearchStepScope<TestdataSolution> stepScope3 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope3 = buildMoveScope(stepScope1, -400);
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope3 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -900))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -700))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -701))).isFalse();
@@ -94,8 +91,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope3);
 
         // thresholdScore = -400 (not the best score of -200!), lastCompletedStepScore = -400
-        LocalSearchStepScope<TestdataSolution> stepScope4 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope4 = buildMoveScope(stepScope1, -300);
+        var stepScope4 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope4 = buildMoveScope(stepScope1, -300);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, -400))).isTrue();
         assertThat(acceptor.isAccepted(moveScope4)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, -500))).isFalse();
@@ -110,8 +107,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope4);
 
         // thresholdScore = -400, lastCompletedStepScore = -300
-        LocalSearchStepScope<TestdataSolution> stepScope5 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope5 = buildMoveScope(stepScope1, -300);
+        var stepScope5 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope5 = buildMoveScope(stepScope1, -300);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -301))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -400))).isTrue();
         assertThat(acceptor.isAccepted(moveScope5)).isTrue();
@@ -130,20 +127,19 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void typeEqualOrImprovingStep() {
-        StepCountingHillClimbingAcceptor acceptor = new StepCountingHillClimbingAcceptor(2,
-                StepCountingHillClimbingType.EQUAL_OR_IMPROVING_STEP);
+        var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.EQUAL_OR_IMPROVING_STEP);
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
-        LocalSearchStepScope<TestdataSolution> lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
         // thresholdScore = -1000, lastCompletedStepScore = Integer.MIN_VALUE
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope0 = buildMoveScope(stepScope0, -500);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope0 = buildMoveScope(stepScope0, -500);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -800))).isTrue();
@@ -158,8 +154,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope0);
 
         // thresholdScore = -1000, lastCompletedStepScore = -500
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope1 = buildMoveScope(stepScope1, -700);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope1 = buildMoveScope(stepScope1, -700);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -900))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -2000))).isFalse();
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
@@ -174,8 +170,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope1);
 
         // thresholdScore = -1000, lastCompletedStepScore = -700
-        LocalSearchStepScope<TestdataSolution> stepScope2 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope2 = buildMoveScope(stepScope1, -400);
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope2 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -700))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -2000))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, 1000))).isTrue();
@@ -191,8 +187,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope2);
 
         // thresholdScore = -400, lastCompletedStepScore = -400
-        LocalSearchStepScope<TestdataSolution> stepScope3 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope3 = buildMoveScope(stepScope1, -400);
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope3 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -900))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -401))).isFalse();
         assertThat(acceptor.isAccepted(moveScope3)).isTrue();
@@ -206,8 +202,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope3);
 
         // thresholdScore = -400, lastCompletedStepScore = -400
-        LocalSearchStepScope<TestdataSolution> stepScope4 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope4 = buildMoveScope(stepScope1, -300);
+        var stepScope4 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope4 = buildMoveScope(stepScope1, -300);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, -400))).isTrue();
         assertThat(acceptor.isAccepted(moveScope4)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, -500))).isFalse();
@@ -222,8 +218,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope4);
 
         // thresholdScore = -300, lastCompletedStepScore = -300
-        LocalSearchStepScope<TestdataSolution> stepScope5 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope5 = buildMoveScope(stepScope1, -300);
+        var stepScope5 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope5 = buildMoveScope(stepScope1, -300);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -301))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -400))).isFalse();
         assertThat(acceptor.isAccepted(moveScope5)).isTrue();
@@ -242,20 +238,19 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void typeImprovingStep() {
-        StepCountingHillClimbingAcceptor acceptor = new StepCountingHillClimbingAcceptor(2,
-                StepCountingHillClimbingType.IMPROVING_STEP);
+        var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.IMPROVING_STEP);
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
-        LocalSearchStepScope<TestdataSolution> lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
         // thresholdScore = -1000, lastCompletedStepScore = Integer.MIN_VALUE
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope0 = buildMoveScope(stepScope0, -500);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope0 = buildMoveScope(stepScope0, -500);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -800))).isTrue();
@@ -270,8 +265,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope0);
 
         // thresholdScore = -1000, lastCompletedStepScore = -500
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope1 = buildMoveScope(stepScope1, -700);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope1 = buildMoveScope(stepScope1, -700);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -900))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -2000))).isFalse();
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
@@ -286,8 +281,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope1);
 
         // thresholdScore = -1000, lastCompletedStepScore = -700
-        LocalSearchStepScope<TestdataSolution> stepScope2 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope2 = buildMoveScope(stepScope1, -400);
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope2 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -700))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -2000))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, 1000))).isTrue();
@@ -303,8 +298,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope2);
 
         // thresholdScore = -400, lastCompletedStepScore = -400
-        LocalSearchStepScope<TestdataSolution> stepScope3 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope3 = buildMoveScope(stepScope1, -400);
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope3 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -900))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, -401))).isFalse();
         assertThat(acceptor.isAccepted(moveScope3)).isTrue();
@@ -318,8 +313,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope3);
 
         // thresholdScore = -400, lastCompletedStepScore = -400
-        LocalSearchStepScope<TestdataSolution> stepScope4 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope4 = buildMoveScope(stepScope1, -300);
+        var stepScope4 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope4 = buildMoveScope(stepScope1, -300);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, -400))).isTrue();
         assertThat(acceptor.isAccepted(moveScope4)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, -500))).isFalse();
@@ -334,8 +329,8 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope4);
 
         // thresholdScore = -400, lastCompletedStepScore = -300
-        LocalSearchStepScope<TestdataSolution> stepScope5 = new LocalSearchStepScope<>(phaseScope);
-        LocalSearchMoveScope<TestdataSolution> moveScope5 = buildMoveScope(stepScope1, -300);
+        var stepScope5 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope5 = buildMoveScope(stepScope1, -300);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -301))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -400))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, -401))).isFalse();
@@ -356,13 +351,13 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
     @Test
     void zeroStepCountingHillClimbingSize() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new StepCountingHillClimbingAcceptor(0, StepCountingHillClimbingType.STEP));
+                .isThrownBy(() -> new StepCountingHillClimbingAcceptor<>(0, StepCountingHillClimbingType.STEP));
     }
 
     @Test
     void negativeStepCountingHillClimbingSize() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new StepCountingHillClimbingAcceptor(-1, StepCountingHillClimbingType.STEP));
+                .isThrownBy(() -> new StepCountingHillClimbingAcceptor<>(-1, StepCountingHillClimbingType.STEP));
     }
 
 }

@@ -6,11 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -19,21 +17,21 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void lateAcceptanceSize() {
-        SimulatedAnnealingAcceptor acceptor = new SimulatedAnnealingAcceptor();
+        var acceptor = new SimulatedAnnealingAcceptor<>();
         acceptor.setStartingTemperature(SimpleScore.of(200));
 
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
-        LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope);
-        LocalSearchStepScope<TestdataSolution> lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(SimpleScore.of(-1000));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
-        LocalSearchStepScope<TestdataSolution> stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         stepScope0.setTimeGradient(0.0);
         acceptor.stepStarted(stepScope0);
-        LocalSearchMoveScope<TestdataSolution> moveScope0 = buildMoveScope(stepScope0, -500);
+        var moveScope0 = buildMoveScope(stepScope0, -500);
         solverScope.setWorkingRandom(new TestRandom(0.3));
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -1300))).isFalse();
         solverScope.setWorkingRandom(new TestRandom(0.3));
@@ -47,10 +45,10 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
-        LocalSearchStepScope<TestdataSolution> stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
         stepScope1.setTimeGradient(0.5);
         acceptor.stepStarted(stepScope1);
-        LocalSearchMoveScope<TestdataSolution> moveScope1 = buildMoveScope(stepScope1, -800);
+        var moveScope1 = buildMoveScope(stepScope1, -800);
         solverScope.setWorkingRandom(new TestRandom(0.13));
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, -700))).isTrue();
         solverScope.setWorkingRandom(new TestRandom(0.14));
@@ -64,10 +62,10 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope1);
 
         solverScope.setWorkingRandom(new TestRandom(0.01, 0.01));
-        LocalSearchStepScope<TestdataSolution> stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
         stepScope2.setTimeGradient(1.0);
         acceptor.stepStarted(stepScope2);
-        LocalSearchMoveScope<TestdataSolution> moveScope2 = buildMoveScope(stepScope1, -400);
+        var moveScope2 = buildMoveScope(stepScope1, -400);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -800))).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -801))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -1200))).isFalse();
@@ -84,7 +82,7 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void negativeSimulatedAnnealingSize() {
-        SimulatedAnnealingAcceptor acceptor = new SimulatedAnnealingAcceptor();
+        var acceptor = new SimulatedAnnealingAcceptor<>();
         acceptor.setStartingTemperature(HardMediumSoftScore.of(1, -1, 2));
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
     }
