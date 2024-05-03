@@ -869,7 +869,7 @@ Set the property `timefold.solver.constraint-stream-automatic-node-sharing` to `
 +
 [source,properties,options="nowrap"]
 ----
-timefold.solver.constraint-stream-automatic-node=true
+timefold.solver.constraint-stream-automatic-node-sharing=true
 ----
 
 Quarkus::
