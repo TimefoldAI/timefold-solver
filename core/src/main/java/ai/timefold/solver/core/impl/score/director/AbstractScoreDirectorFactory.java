@@ -2,7 +2,10 @@ package ai.timefold.solver.core.impl.score.director;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
@@ -21,7 +24,8 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected SolutionDescriptor<Solution_> solutionDescriptor;
+    protected final SolutionDescriptor<Solution_> solutionDescriptor;
+    protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
 
     protected InitializingScoreTrend initializingScoreTrend;
 
@@ -32,6 +36,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     public AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = solutionDescriptor;
+        this.listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
     }
 
     @Override
@@ -104,6 +109,27 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
                         "Score corruption (" + score.subtract(uncorruptedScore).toShortString()
                                 + "): the solution's score (" + score + ") is not the uncorruptedScore ("
                                 + uncorruptedScore + ").");
+            }
+        }
+    }
+
+    public void validateEntity(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        if (listVariableDescriptor == null) { // Only basic variables.
+            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
+            if (entityDescriptor.isMovable(scoreDirector, entity)) {
+                return;
+            }
+            for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+                var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
+                if (basicVariableDescriptor.allowsUnassigned()) {
+                    continue;
+                }
+                var value = basicVariableDescriptor.getValue(entity);
+                if (value == null) {
+                    throw new IllegalStateException(
+                            "The entity (%s) has a variable (%s) pinned to null, even though unassigned values are not allowed."
+                                    .formatted(entity, basicVariableDescriptor.getVariableName()));
+                }
             }
         }
     }

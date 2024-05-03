@@ -38,9 +38,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
  * the <em>order</em> in which customers are visited and tasks are being worked on matters. Also, each customer
  * must be visited <em>once</em> and each task must be completed by <em>exactly one</em> employee.
  *
- * <p>
- * <strong>Overconstrained planning is currently not supported for list variables.</strong>
- *
  * @see PlanningPin
  * @see PlanningPinToIndex
  */
