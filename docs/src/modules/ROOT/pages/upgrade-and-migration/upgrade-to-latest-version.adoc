@@ -82,11 +82,12 @@ Read more about xref:using-timefold-solver/modeling-planning-problems.adoc#plann
 .icon:eye[] Enterprise Edition Maven Repository will soon require authentication
 [%collapsible%open]
 ====
-Timefold customers newly need to authenticate to access the Enterprise Edition Maven Repository.
-If you are a Timefold customer, you should have received your credentials from Timefold by now.
-If you haven't, we kindly ask that you https://timefold.ai/contact[contact us].
+Users of Enterprise Edition will soon need to authenticate to access Timefold's Maven Repository.
 
-If you are not a Timefold customer and you wish to retain your access to the Enterprise Edition Maven Repository,
+If you are a Timefold customer, a Timefold representative will reach out to you
+to give you the necessary credentials, as well as sufficient time to make the necessary changes.
+
+If you are not a Timefold customer and you wish to retain your access to the Enterprise Edition artifacts,
 you can https://timefold.ai/contact[contact us] to start your evaluation.
 There are https://timefold.ai/pricing[many benefits] to being a Timefold customer.
 
