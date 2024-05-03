@@ -42,8 +42,7 @@ Having done that, you can check the local changes and commit them.
 Note that none of the upgrade steps could be automatically applied,
 and it may still be worth your while to read the rest the upgrade recipe below.
 
-For the time being,
-Kotlin users need to follow the upgrade recipe and apply the steps manually.
+For the time being, Kotlin users need to follow the upgrade recipe and apply the steps manually.
 
 [#manualUpgrade]
 == Manual upgrade recipe
@@ -59,6 +58,26 @@ The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
 === Upgrade from 1.9.0 to 1.10.0
+
+.icon:info-circle[role=yellow] Pinning unassigned entities now fails fast, unless allowed
+[%collapsible%open]
+====
+The solver behavior has changed in the following situation:
+
+1. There is a planning entity with a `@PlanningVariable` that does not allow unassigned values.
+2. And that planning entity is pinned.
+3. And that variable is set to `null`, therefore unassigned.
+
+This situation is both unlikely and erroneous.
+The solver is asked to require all variables to be assigned, but at the same time one variable is forced unassigned.
+
+Before Timefold Solver 1.10.0, this would result in Construction Heuristics finishing with a negative `init` score.
+Starting with Timefold Solver 1.10.0, this situation will result in a runtime exception.
+
+Read more about xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[explicitly allowing unassigned values].
+====
+
+'''
 
 .icon:eye[] Enterprise Edition Maven Repository will soon require authentication
 [%collapsible%open]
@@ -82,15 +101,15 @@ see xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[th
 ====
 `LookupStrategyType` is used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving]
 to specify how the solver should match entities and facts between parent and child score directors.
-The default value is `PLANNING_ID_OR_NONE`, which means that
-the solver will look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
+The default value is `PLANNING_ID_OR_NONE`, which means
+that the solver will look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
 If the solver doesn't find anything with that ID, it will throw an exception.
 
 In a future version of _Timefold Solver_, we will remove the option of configuring the lookup strategy.
 The behavior will be fixed to the behavior explained above.
 To prepare for this change,
-remove the use of `@PlanningSolution.lookupStrategyType` and ensure that your planning entities and problem facts
-have a `@PlanningId`-annotated field.
+remove the use of `@PlanningSolution.lookupStrategyType`
+and ensure that your planning entities and problem facts have a `@PlanningId`-annotated field.
 
 Before in `Timetable.java`:
 
@@ -148,7 +167,7 @@ public class Lesson {
 We have finished the process of removing the Swing-based examples.
 The legacy examples from the solver codebase have been removed entirely.
 
-You can find better, more modern implementations of many of these use cases in our quickstarts, including:
+You can find better, more modern implementations of these use cases in our quickstarts, including:
 
 - `bed-allocation`,
 - `conference-scheduling`,
@@ -197,8 +216,8 @@ In the first wave, we have removed the following examples from the `examples` mo
 - `tsp`,
 - and `vehiclerouting`.
 
-You can find better, more modern implementations of many of these use cases in our quickstarts.
-The other examples on the list were removed without replacement as we didn't see sufficient traction.
+You can find better, more modern implementations of these use cases in our quickstarts.
+The other examples on the list were removed without a replacement as we didn't see sufficient traction.
 
 Going forward, our intention is to convert every other current example into a quickstart
 and remove the original Swing-based examples from the solver codebase entirely.
@@ -226,8 +245,7 @@ Finally, with the folding of these modules into `timefold-solver-core`,
 the solver no longer relies on `ServiceLoader`s to find implementations of Constraint Streams,
 or to find the Enterprise Edition.
 
-None of these changes are likely to affect you,
-unless you have chosen to depend on internal classes and modules.
+None of these changes are likely to affect you, unless you have chosen to depend on internal classes and modules.
 ====
 
 '''
@@ -237,18 +255,11 @@ unless you have chosen to depend on internal classes and modules.
 .icon:exclamation-triangle[role=red] Constraint Verifier: Check your tests if you use the planning list variable
 [%collapsible%open]
 ====
-In some cases,
-especially if you've reused our https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/food-packaging[Food Packaging quickstart],
-you may see your tests failing after the upgrade.
-This is due to a bug fix in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
-which now currently handles values not present in any list variable.
+In some cases, especially if you've reused our https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/food-packaging[Food Packaging quickstart], you may see your tests failing after the upgrade.
+This is due to a bug fix in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams], which now currently handles values not present in any list variable.
 
-If your code has a shadow entity
-whose xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable] is a planning list variable
-and your test leaves that reference `null`,
-the constraints will no longer take that shadow entity into account.
-This will result in `ConstraintVerifier` failing the test,
-as the expected number of penalties/rewards will no longer match the actual number.
+If your code has a shadow entity whose xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable] is a planning list variable and your test leaves that reference `null`, the constraints will no longer take that shadow entity into account.
+This will result in `ConstraintVerifier` failing the test, as the expected number of penalties/rewards will no longer match the actual number.
 
 You can solve this problem by manually assigning a value to the inverse relation shadow variable.
 
@@ -276,8 +287,7 @@ constraintVerifier.verifyThat(FoodPackagingConstraintProvider::dueDateTime)
     .penalizesBy(...);
 ----
 
-The aforementioned quickstart unfortunately did not follow our own guidance on the use of shadow variables,
-which is why it exposed this bug.
+The aforementioned quickstart unfortunately did not follow our own guidance on the use of shadow variables, which is why it exposed this bug.
 ====
 
 '''
@@ -286,8 +296,7 @@ which is why it exposed this bug.
 [%collapsible%open]
 ====
 To better align with the newly introduced support for
-xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables],
-several methods in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams]
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables], several methods in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams]
 which dealt with `null` variable values have been renamed.
 
 Before in `*ConstraintProvider.java`:
@@ -329,8 +338,7 @@ On `BiConstraintStream` and its `Tri` and `Quad` counterparts, the following met
 [%collapsible%open]
 ====
 To better align with the newly introduced support for
-xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables],
-the `nullable` attribute of `@PlanningVariable` has been renamed to `allowsUnassigned`.
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables], the `nullable` attribute of `@PlanningVariable` has been renamed to `allowsUnassigned`.
 
 Before in `*.java`:
 
@@ -354,8 +362,7 @@ private Bed bed;
 .icon:magic[] Constraint Verifier: assertion methods `message` argument comes first now
 [%collapsible%open]
 ====
-To better align with the newly introduced support for testing justifications and indictments,
-the assertion methods which accepted a `message` argument now have it as the first argument.
+To better align with the newly introduced support for testing justifications and indictments, the assertion methods which accepted a `message` argument now have it as the first argument.
 
 Before in `*ConstraintProviderTest.java`:
 
