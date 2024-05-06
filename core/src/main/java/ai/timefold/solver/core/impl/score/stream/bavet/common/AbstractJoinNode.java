@@ -51,12 +51,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
     protected final void insertOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        OutTuple_ outTuple = createOutTuple(leftTuple, rightTuple);
+        var outTuple = createOutTuple(leftTuple, rightTuple);
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-        ElementAwareListEntry<OutTuple_> outEntryLeft = outTupleListLeft.add(outTuple);
+        var outEntryLeft = outTupleListLeft.add(outTuple);
         outTuple.setStore(outputStoreIndexLeftOutEntry, outEntryLeft);
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-        ElementAwareListEntry<OutTuple_> outEntryRight = outTupleListRight.add(outTuple);
+        var outEntryRight = outTupleListRight.add(outTuple);
         outTuple.setStore(outputStoreIndexRightOutEntry, outEntryRight);
         propagationQueue.insert(outTuple);
     }
@@ -72,7 +72,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         // Propagate the update for downstream filters, matchWeighers, ...
         if (!isFiltering) {
-            for (OutTuple_ outTuple : outTupleListLeft) {
+            for (var outTuple : outTupleListLeft) {
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
@@ -89,7 +89,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void doUpdateOutTuple(OutTuple_ outTuple) {
-        TupleState state = outTuple.state;
+        var state = outTuple.state;
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
                     this + ") is in an unexpected state (" + outTuple.state + ").");
@@ -104,7 +104,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         if (!isFiltering) {
             // Propagate the update for downstream filters, matchWeighers, ...
-            for (OutTuple_ outTuple : outTupleListRight) {
+            for (var outTuple : outTupleListRight) {
                 setOutTupleRightFact(outTuple, rightTuple);
                 doUpdateOutTuple(outTuple);
             }
@@ -118,7 +118,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
 
     private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
             ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
-        OutTuple_ outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
+        var outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
                 insertOutTuple(leftTuple, rightTuple);
@@ -132,15 +132,19 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
-    private OutTuple_ findOutTuple(ElementAwareList<OutTuple_> outTupleList, ElementAwareList<OutTuple_> outList,
-            int outputStoreIndexOutEntry) {
+    private static <Tuple_ extends AbstractTuple> Tuple_ findOutTuple(ElementAwareList<Tuple_> outTupleList,
+            ElementAwareList<Tuple_> outList, int outputStoreIndexOutEntry) {
         // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead.
-        for (OutTuple_ outTuple : outTupleList) {
-            ElementAwareListEntry<OutTuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
-            ElementAwareList<OutTuple_> outEntryList = outEntry.getList();
+        var item = outTupleList.first();
+        while (item != null) {
+            // Creating list iterators here caused major GC pressure; therefore, we iterate over the entries directly.
+            var outTuple = item.getElement();
+            ElementAwareListEntry<Tuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
+            var outEntryList = outEntry.getList();
             if (outList == outEntryList) {
                 return outTuple;
             }
+            item = item.next();
         }
         return null;
     }
@@ -150,7 +154,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         outEntryLeft.remove();
         ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
-        TupleState state = outTuple.state;
+        var state = outTuple.state;
         if (!state.isActive()) {
             // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
