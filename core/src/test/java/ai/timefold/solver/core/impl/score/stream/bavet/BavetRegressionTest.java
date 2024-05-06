@@ -396,4 +396,76 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                 assertMatch(entity2));
     }
 
+    /**
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/828">Timefold Solver Github Issue 828</a>
+     */
+    @TestTemplate
+    public void concatSameTupleDeadAndAlive() {
+        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataEntity.class)
+                                        .filter(e -> e.getValue().getCode().equals("A"))
+                                        .concat(factory.forEach(TestdataEntity.class))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        });
+
+        TestdataSolution solution = TestdataSolution.generateSolution(2, 2);
+        TestdataEntity entity1 = solution.getEntityList().get(0);
+        TestdataEntity entity2 = solution.getEntityList().get(1);
+        TestdataValue valueA = solution.getValueList().get(0);
+        valueA.setCode("A");
+        TestdataValue valueB = solution.getValueList().get(1);
+        valueB.setCode("B");
+
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity1),
+                assertMatch(entity2));
+
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(valueB);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(valueA);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity2),
+                assertMatch(entity2));
+
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(valueA);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(valueB);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        // Do not recalculate score, since this is undo
+
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(valueA);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(valueB);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity2),
+                assertMatch(entity2));
+
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(valueB);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(valueA);
+        scoreDirector.afterVariableChanged(entity1, "value");
+
+        assertScore(scoreDirector,
+                assertMatch(entity1),
+                assertMatch(entity1),
+                assertMatch(entity2));
+    }
+
 }

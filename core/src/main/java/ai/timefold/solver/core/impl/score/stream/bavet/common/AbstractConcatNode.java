@@ -86,10 +86,6 @@ public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, Right
             return;
         }
         TupleState state = outTuple.state;
-        if (!state.isActive()) {
-            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.state + ").");
-        }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
@@ -127,10 +123,6 @@ public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, Right
             return;
         }
         TupleState state = outTuple.state;
-        if (!state.isActive()) {
-            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.state + ").");
-        }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
