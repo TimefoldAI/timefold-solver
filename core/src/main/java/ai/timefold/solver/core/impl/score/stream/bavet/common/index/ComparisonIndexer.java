@@ -12,21 +12,20 @@ import ai.timefold.solver.core.impl.score.stream.JoinerType;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
-        implements ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T> {
+        implements Indexer<T> {
 
     private final int propertyIndex;
-    private final Supplier<ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> downstreamIndexerSupplier;
+    private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Comparator<Key_> keyComparator;
     private final boolean hasOrEquals;
-    private final NavigableMap<Key_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> comparisonMap;
+    private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
-    public ComparisonIndexer(JoinerType comparisonJoinerType,
-            Supplier<ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> downstreamIndexerSupplier) {
+    public ComparisonIndexer(JoinerType comparisonJoinerType, Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this(comparisonJoinerType, 0, downstreamIndexerSupplier);
     }
 
     public ComparisonIndexer(JoinerType comparisonJoinerType, int propertyIndex,
-            Supplier<ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> downstreamIndexerSupplier) {
+            Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.propertyIndex = propertyIndex;
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
         /*
@@ -44,11 +43,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public ElementAwareListEntry<T>
-            put(ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties indexProperties, T tuple) {
+    public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-        ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T> downstreamIndexer = comparisonMap.get(indexKey);
+        var downstreamIndexer = comparisonMap.get(indexKey);
         if (downstreamIndexer == null) {
             downstreamIndexer = downstreamIndexerSupplier.get();
             comparisonMap.put(indexKey, downstreamIndexer);
@@ -57,22 +55,17 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public void remove(ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties indexProperties,
-            ElementAwareListEntry<T> entry) {
+    public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
         Key_ indexKey = indexProperties.toKey(propertyIndex);
-        ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T> downstreamIndexer =
-                getDownstreamIndexer(indexProperties, indexKey, entry);
+        var downstreamIndexer = getDownstreamIndexer(indexProperties, indexKey, entry);
         downstreamIndexer.remove(indexProperties, entry);
         if (downstreamIndexer.isEmpty()) {
             comparisonMap.remove(indexKey);
         }
     }
 
-    private ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T> getDownstreamIndexer(
-            ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties indexProperties, Key_ indexerKey,
-            ElementAwareListEntry<T> entry) {
-        ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T> downstreamIndexer =
-                comparisonMap.get(indexerKey);
+    private Indexer<T> getDownstreamIndexer(IndexProperties indexProperties, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+        var downstreamIndexer = comparisonMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException("Impossible state: the tuple (" + entry.getElement()
                     + ") with indexProperties (" + indexProperties
@@ -83,16 +76,15 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     // TODO clean up DRY
     @Override
-    public int size(ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties indexProperties) {
-        int mapSize = comparisonMap.size();
+    public int size(IndexProperties indexProperties) {
+        var mapSize = comparisonMap.size();
         if (mapSize == 0) {
             return 0;
         }
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         if (mapSize == 1) { // Avoid creation of the entry set and iterator.
-            Map.Entry<Key_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> entry =
-                    comparisonMap.firstEntry();
-            int comparison = keyComparator.compare(entry.getKey(), indexKey);
+            var entry = comparisonMap.firstEntry();
+            var comparison = keyComparator.compare(entry.getKey(), indexKey);
             if (comparison >= 0) { // Possibility of reaching the boundary condition.
                 if (comparison > 0 || !hasOrEquals) {
                     // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
@@ -101,10 +93,9 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             }
             return entry.getValue().size(indexProperties);
         } else {
-            int size = 0;
-            for (Map.Entry<Key_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> entry : comparisonMap
-                    .entrySet()) {
-                int comparison = keyComparator.compare(entry.getKey(), indexKey);
+            var size = 0;
+            for (var entry : comparisonMap.entrySet()) {
+                var comparison = keyComparator.compare(entry.getKey(), indexKey);
                 if (comparison >= 0) { // Possibility of reaching the boundary condition.
                     if (comparison > 0 || !hasOrEquals) {
                         // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
@@ -119,21 +110,18 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public void forEach(ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties indexProperties,
-            Consumer<T> tupleConsumer) {
-        int size = comparisonMap.size();
+    public void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer) {
+        var size = comparisonMap.size();
         if (size == 0) {
             return;
         }
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         if (size == 1) { // Avoid creation of the entry set and iterator.
-            Map.Entry<Key_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> entry =
-                    comparisonMap.firstEntry();
+            var entry = comparisonMap.firstEntry();
             visitEntry(indexProperties, tupleConsumer, indexKey, entry);
         } else {
-            for (Map.Entry<Key_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> entry : comparisonMap
-                    .entrySet()) {
-                boolean boundaryReached = visitEntry(indexProperties, tupleConsumer, indexKey, entry);
+            for (var entry : comparisonMap.entrySet()) {
+                var boundaryReached = visitEntry(indexProperties, tupleConsumer, indexKey, entry);
                 if (boundaryReached) {
                     return;
                 }
@@ -141,11 +129,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         }
     }
 
-    private boolean visitEntry(ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties indexProperties,
-            Consumer<T> tupleConsumer,
-            Key_ indexKey, Map.Entry<Key_, ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer<T>> entry) {
+    private boolean visitEntry(IndexProperties indexProperties, Consumer<T> tupleConsumer, Key_ indexKey,
+            Map.Entry<Key_, Indexer<T>> entry) {
         // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
-        int comparison = keyComparator.compare(entry.getKey(), indexKey);
+        var comparison = keyComparator.compare(entry.getKey(), indexKey);
         if (comparison >= 0) { // Possibility of reaching the boundary condition.
             if (comparison > 0 || !hasOrEquals) {
                 // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
