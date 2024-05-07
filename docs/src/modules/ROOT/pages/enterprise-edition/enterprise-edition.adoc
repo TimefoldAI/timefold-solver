@@ -1030,3 +1030,52 @@ public class MyConstraintProvider implements ConstraintProvider {
 This transformation means that debugging breakpoints placed inside the original `ConstraintProvider` will not be honored in the transformed `ConstraintProvider`.
 
 From the above, you can see how this feature allows building blocks to share functionally equivalent parents, without needing the `ConstraintProvider` to be written in an awkward way.
+
+
+[#throttlingBestSolutionEvents]
+=== Throttling best solution events in `SolverManager`
+
+This feature helps you avoid overloading your system with best solution events,
+especially in the early phase of the solving process when the solver is typically improving the solution very rapidly.
+
+To enable event throttling, use `ThrottlingBestSolutionConsumer` when starting a new `SolverJob` using `SolverManager`:
+
+[source,java,options="nowrap"]
+----
+...
+import ai.timefold.solver.enterprise.core.api.ThrottlingBestSolutionConsumer;
+import java.time.Duration;
+...
+
+public class TimetableService {
+
+    private SolverManager<Timetable, Long> solverManager;
+
+    public String solve(Timetable problem) {
+        Consumer<Timetable> bestSolutionConsumer = ThrottlingBestSolutionConsumer.of(
+            solution -> {
+               // Your custom event handling code goes here.
+            },
+            Duration.ofSeconds(1)); // Throttle to 1 event per second.
+
+        String jobId = ...;
+        solverManager.solveBuilder()
+                .withProblemId(jobId)
+                .withProblem(problem)
+                .withBestSolutionConsumer(bestSolutionConsumer)
+                .run(); // Start the solver job and listen to best solutions, with throttling.
+        return jobId;
+    }
+
+}
+----
+
+This will ensure that your system will never receive more than one best solution event per second.
+Some other important points to note:
+
+- If multiple events arrive during the pre-defined 1-second interval, only the last event will be delivered.
+- When the `SolverJob` terminates, the last event received will be delivered regardless of the throttle,
+unless it was already delivered before.
+- If your consumer throws an exception, we will still count the event as delivered.
+- If the system is too occupied to start and execute new threads,
+event delivery will be delayed until a thread can be started.
