@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -8,14 +10,13 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
-public final class MinMaxUndoableActionable<Result_, Property_>
-        implements UndoableActionable<Result_, Result_> {
-
+public final class MinMaxUndoableActionable<Result_, Property_> implements UndoableActionable<Result_, Result_> {
     private final boolean isMin;
-    private final NavigableMap<Property_, ItemCount<Result_>> propertyToItemCountMap;
+    private final NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap;
     private final Function<? super Result_, ? extends Property_> propertyFunction;
 
-    private MinMaxUndoableActionable(boolean isMin, NavigableMap<Property_, ItemCount<Result_>> propertyToItemCountMap,
+    private MinMaxUndoableActionable(boolean isMin,
+            NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap,
             Function<? super Result_, ? extends Property_> propertyFunction) {
         this.isMin = isMin;
         this.propertyToItemCountMap = propertyToItemCountMap;
@@ -39,29 +40,30 @@ public final class MinMaxUndoableActionable<Result_, Property_>
     }
 
     public static <Result, Property extends Comparable<? super Property>> MinMaxUndoableActionable<Result, Property>
-            minCalculator(Function<? super Result, ? extends Property> propertyMapper) {
+            minCalculator(
+                    Function<? super Result, ? extends Property> propertyMapper) {
         return new MinMaxUndoableActionable<>(true, new TreeMap<>(), propertyMapper);
     }
 
     public static <Result, Property extends Comparable<? super Property>> MinMaxUndoableActionable<Result, Property>
-            maxCalculator(Function<? super Result, ? extends Property> propertyMapper) {
+            maxCalculator(
+                    Function<? super Result, ? extends Property> propertyMapper) {
         return new MinMaxUndoableActionable<>(false, new TreeMap<>(), propertyMapper);
     }
 
     @Override
     public Runnable insert(Result_ item) {
         Property_ key = propertyFunction.apply(item);
-        var value = propertyToItemCountMap.get(key);
-        if (value == null) {
-            value = new ItemCount<>(item, new MutableInt());
-            propertyToItemCountMap.put(key, value);
-        }
-        var count = value.count;
+        Map<Result_, MutableInt> itemCountMap = propertyToItemCountMap.computeIfAbsent(key, ignored -> new LinkedHashMap<>());
+        MutableInt count = itemCountMap.computeIfAbsent(item, ignored -> new MutableInt());
         count.increment();
 
         return () -> {
             if (count.decrement() == 0) {
-                propertyToItemCountMap.remove(key);
+                itemCountMap.remove(item);
+                if (itemCountMap.isEmpty()) {
+                    propertyToItemCountMap.remove(key);
+                }
             }
         };
     }
@@ -71,11 +73,11 @@ public final class MinMaxUndoableActionable<Result_, Property_>
         if (propertyToItemCountMap.isEmpty()) {
             return null;
         }
-        var itemCount = isMin ? propertyToItemCountMap.firstEntry().getValue() : propertyToItemCountMap.lastEntry().getValue();
-        return itemCount.item;
+        return isMin ? getFirstKey(propertyToItemCountMap.firstEntry().getValue())
+                : getFirstKey(propertyToItemCountMap.lastEntry().getValue());
     }
 
-    private record ItemCount<Item_>(Item_ item, MutableInt count) {
+    private static <Key_> Key_ getFirstKey(Map<Key_, ?> map) {
+        return map.keySet().iterator().next();
     }
-
 }
