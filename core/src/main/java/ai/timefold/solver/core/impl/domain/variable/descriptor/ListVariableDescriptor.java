@@ -93,10 +93,9 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     public Class<?> getElementType() {
-        return ConfigUtils.extractCollectionGenericTypeParameterStrictly(
-                "entityClass", entityDescriptor.getEntityClass(),
-                variableMemberAccessor.getType(), variableMemberAccessor.getGenericType(),
-                PlanningListVariable.class, variableMemberAccessor.getName());
+        return ConfigUtils.extractGenericTypeParameterStrictly("entityClass", entityDescriptor.getEntityClass(),
+                variableMemberAccessor.getType(), variableMemberAccessor.getGenericType(), PlanningListVariable.class,
+                variableMemberAccessor.getName());
     }
 
     public int countUnassigned(Solution_ solution) {

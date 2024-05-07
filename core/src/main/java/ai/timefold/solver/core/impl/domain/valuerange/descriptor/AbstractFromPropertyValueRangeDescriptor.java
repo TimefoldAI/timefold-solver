@@ -63,9 +63,8 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     + ", an array or a " + ValueRange.class.getSimpleName() + ".");
         }
         if (collectionWrapping) {
-            Class<?> collectionElementClass = ConfigUtils.extractCollectionGenericTypeParameterStrictly(
-                    "solutionClass or entityClass", memberAccessor.getDeclaringClass(),
-                    memberAccessor.getType(), memberAccessor.getGenericType(),
+            Class<?> collectionElementClass = ConfigUtils.extractGenericTypeParameterStrictly("solutionClass or entityClass",
+                    memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
                     ValueRangeProvider.class, memberAccessor.getName());
             if (!variableDescriptor.acceptsValueType(collectionElementClass)) {
                 throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()

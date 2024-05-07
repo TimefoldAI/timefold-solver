@@ -331,9 +331,7 @@ public class SolutionDescriptor<Solution_> {
                                     + "Maybe the member (" + memberName + ") should return a typed "
                                     + Collection.class.getSimpleName() + ".");
                         }
-                        elementType = ConfigUtils.extractCollectionGenericTypeParameterLeniently(
-                                "solutionClass", solutionClass,
-                                type, genericType,
+                        elementType = ConfigUtils.extractGenericTypeParameter("solutionClass", solutionClass, type, genericType,
                                 null, member.getName()).orElse(Object.class);
                     } else {
                         elementType = type.getComponentType();
@@ -588,10 +586,10 @@ public class SolutionDescriptor<Solution_> {
         Stream<Class<?>> problemFactOrEntityClassStream = concat(entityClassStream, factClassStream);
         Stream<Class<?>> factCollectionClassStream = problemFactCollectionMemberAccessorMap.values()
                 .stream()
-                .map(accessor -> ConfigUtils.extractCollectionGenericTypeParameterLeniently(
-                        "solutionClass", getSolutionClass(),
-                        accessor.getType(), accessor.getGenericType(), ProblemFactCollectionProperty.class,
-                        accessor.getName()).orElse(Object.class));
+                .map(accessor -> ConfigUtils
+                        .extractGenericTypeParameter("solutionClass", getSolutionClass(), accessor.getType(),
+                                accessor.getGenericType(), ProblemFactCollectionProperty.class, accessor.getName())
+                        .orElse(Object.class));
         problemFactOrEntityClassStream = concat(problemFactOrEntityClassStream, factCollectionClassStream);
         // Add constraint configuration, if configured.
         if (constraintConfigurationDescriptor != null) {
@@ -932,12 +930,9 @@ public class SolutionDescriptor<Solution_> {
             }
         }
         for (MemberAccessor entityCollectionMemberAccessor : entityCollectionMemberAccessorMap.values()) {
-            Optional<Class<?>> optionalTypeParameter = ConfigUtils.extractCollectionGenericTypeParameterLeniently(
-                    "solutionClass", entityCollectionMemberAccessor.getDeclaringClass(),
-                    entityCollectionMemberAccessor.getType(),
-                    entityCollectionMemberAccessor.getGenericType(),
-                    null,
-                    entityCollectionMemberAccessor.getName());
+            Optional<Class<?>> optionalTypeParameter = ConfigUtils.extractGenericTypeParameter("solutionClass",
+                    entityCollectionMemberAccessor.getDeclaringClass(), entityCollectionMemberAccessor.getType(),
+                    entityCollectionMemberAccessor.getGenericType(), null, entityCollectionMemberAccessor.getName());
             boolean collectionGuaranteedToContainOnlyGivenEntityType = optionalTypeParameter
                     .map(entityClass::isAssignableFrom)
                     .orElse(false);

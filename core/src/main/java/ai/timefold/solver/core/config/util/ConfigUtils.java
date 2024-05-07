@@ -60,8 +60,7 @@ public class ConfigUtils {
      * @return new instance of clazz
      */
     public static <T> T newInstance(Object configBean, String propertyName, Class<T> clazz) {
-        return ConfigUtils.newInstance(() -> (configBean == null ? "?" : configBean.getClass().getSimpleName()),
-                propertyName, clazz);
+        return newInstance(() -> (configBean == null ? "?" : configBean.getClass().getSimpleName()), propertyName, clazz);
     }
 
     /**
@@ -266,7 +265,7 @@ public class ConfigUtils {
         if (b == null) {
             return a;
         }
-        return ConfigUtils.mergeProperty(a, b);
+        return mergeProperty(a, b);
     }
 
     public static boolean isEmptyCollection(Collection<?> collection) {
@@ -388,69 +387,50 @@ public class ConfigUtils {
         return annotationClass;
     }
 
-    public static Class<?> extractCollectionGenericTypeParameterStrictly(
-            String parentClassConcept, Class<?> parentClass,
-            Class<?> type, Type genericType,
-            Class<? extends Annotation> annotationClass, String memberName) {
-        return extractCollectionGenericTypeParameter(
-                parentClassConcept, parentClass,
-                type, genericType,
-                annotationClass, memberName).orElseThrow(
-                        () -> new IllegalArgumentException("The " + parentClassConcept + " (" + parentClass + ") has a "
-                                + (annotationClass == null ? "auto discovered"
-                                        : "@" + annotationClass.getSimpleName() + " annotated")
-                                + " member (" + memberName
-                                + ") with a member type (" + type
-                                + ") which has no generic parameters.\n"
-                                + "Maybe the member (" + memberName + ") should return a parameterized "
-                                + type.getSimpleName()
-                                + "."));
+    public static Class<?> extractGenericTypeParameterStrictly(String parentClassConcept, Class<?> parentClass, Class<?> type,
+            Type genericType, Class<? extends Annotation> annotationClass, String memberName) {
+        return extractGenericTypeParameter(parentClassConcept, parentClass, type, genericType, annotationClass, memberName)
+                .orElseThrow(() -> new IllegalArgumentException("""
+                        The %s (%s) has a %s member (%s) with a member type (%s) which has no generic parameters.
+                        Maybe the member (%s) should return a parameterized %s."""
+                        .formatted(parentClassConcept, parentClass,
+                                annotationClass == null ? "auto discovered"
+                                        : "@" + annotationClass.getSimpleName() + " annotated",
+                                memberName, type, memberName, type.getSimpleName())));
     }
 
-    public static Optional<Class<?>> extractCollectionGenericTypeParameterLeniently(
-            String parentClassConcept, Class<?> parentClass,
-            Class<?> type, Type genericType,
-            Class<? extends Annotation> annotationClass, String memberName) {
-        return extractCollectionGenericTypeParameter(
-                parentClassConcept, parentClass,
-                type, genericType,
-                annotationClass, memberName);
-    }
-
-    private static Optional<Class<?>> extractCollectionGenericTypeParameter(
-            String parentClassConcept, Class<?> parentClass,
-            Class<?> type, Type genericType,
-            Class<? extends Annotation> annotationClass, String memberName) {
-        if (!(genericType instanceof ParameterizedType)) {
+    public static Optional<Class<?>> extractGenericTypeParameter(String parentClassConcept, Class<?> parentClass, Class<?> type,
+            Type genericType, Class<? extends Annotation> annotationClass, String memberName) {
+        if (!(genericType instanceof ParameterizedType parameterizedType)) {
             return Optional.empty();
         }
-        ParameterizedType parameterizedType = (ParameterizedType) genericType;
         Type[] typeArguments = parameterizedType.getActualTypeArguments();
         if (typeArguments.length != 1) {
-            throw new IllegalArgumentException("The " + parentClassConcept + " (" + parentClass + ") has a "
-                    + (annotationClass == null ? "auto discovered" : "@" + annotationClass.getSimpleName() + " annotated")
-                    + " member (" + memberName
-                    + ") with a member type (" + type
-                    + ") which is a parameterized collection with an unsupported number of generic parameters ("
-                    + typeArguments.length + ").");
+            throw new IllegalArgumentException("""
+                    The %s (%s) has a %s member (%s) with a member type (%s) which is a parameterized collection \
+                    with an unsupported number of generic parameters (%s)."""
+                    .formatted(parentClassConcept, parentClass,
+                            annotationClass == null ? "auto discovered" : "@" + annotationClass.getSimpleName() + " annotated",
+                            memberName, type, typeArguments.length));
         }
         Type typeArgument = typeArguments[0];
         if (typeArgument instanceof ParameterizedType parameterizedType1) {
-            // Remove the type parameters so it can be cast to a Class
+            // Remove the type parameters, so it can be cast to a Class.
             typeArgument = parameterizedType1.getRawType();
         }
         if (typeArgument instanceof WildcardType wildcardType) {
             Type[] upperBounds = wildcardType.getUpperBounds();
             if (upperBounds.length > 1) {
-                // Multiple upper bounds is impossible in traditional Java
-                // Other JVM languages or future java versions might enabling triggering this
-                throw new IllegalArgumentException("The " + parentClassConcept + " (" + parentClass + ") has a "
-                        + (annotationClass == null ? "auto discovered" : "@" + annotationClass.getSimpleName() + " annotated")
-                        + " member (" + memberName
-                        + ") with a member type (" + type
-                        + ") which is a parameterized collection with a wildcard type argument ("
-                        + typeArgument + ") that has multiple upper bounds (" + Arrays.toString(upperBounds) + ").\n"
-                        + "Maybe don't use wildcards with multiple upper bounds for the member (" + memberName + ").");
+                // Multiple upper bounds are impossible in traditional Java.
+                // Other JVM languages or future java versions might enable triggering this.
+                throw new IllegalArgumentException("""
+                        The %s (%s) has a %s  member (%s) with a member type (%s) which is a parameterized collection \
+                        with a wildcard type argument (%s) that has multiple upper bounds (%s).
+                        Maybe don't use wildcards with multiple upper bounds for the member (%s)."""
+                        .formatted(parentClassConcept, parentClass,
+                                annotationClass == null ? "auto discovered"
+                                        : "@" + annotationClass.getSimpleName() + " annotated",
+                                memberName, type, typeArgument, Arrays.toString(upperBounds), memberName));
             }
             if (upperBounds.length == 0) {
                 typeArgument = Object.class;
@@ -458,18 +438,18 @@ public class ConfigUtils {
                 typeArgument = upperBounds[0];
             }
         }
-        if (typeArgument instanceof Class class1) {
+        if (typeArgument instanceof Class<?> class1) {
             return Optional.of(class1);
         } else if (typeArgument instanceof ParameterizedType parameterizedType1) {
             // Turns SomeGenericType<T> into SomeGenericType.
             return Optional.of((Class<?>) parameterizedType1.getRawType());
         } else {
-            throw new IllegalArgumentException("The " + parentClassConcept + " (" + parentClass + ") has a "
-                    + (annotationClass == null ? "auto discovered" : "@" + annotationClass.getSimpleName() + " annotated")
-                    + " member (" + memberName
-                    + ") with a member type (" + type
-                    + ") which is a parameterized collection with a type argument (" + typeArgument
-                    + ") that is not a class or interface.");
+            throw new IllegalArgumentException("""
+                    The %s (%s) has a %s member (%s) with a member type (%s) which is a parameterized collection \
+                    with a type argument (%s) that is not a class or interface."""
+                    .formatted(parentClassConcept, parentClass,
+                            annotationClass == null ? "auto discovered" : "@" + annotationClass.getSimpleName() + " annotated",
+                            memberName, type, typeArgument));
         }
     }
 
@@ -566,10 +546,6 @@ public class ConfigUtils {
 
     public static String abbreviate(List<String> list) {
         return abbreviate(list, 3);
-    }
-
-    public static boolean isNativeImage() {
-        return System.getProperty("org.graalvm.nativeimage.imagecode") != null;
     }
 
     // ************************************************************************

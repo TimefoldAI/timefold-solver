@@ -60,10 +60,10 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         Class<?> sourceClass;
         if (Collection.class.isAssignableFrom(variablePropertyType)) {
             Type genericType = variableMemberAccessor.getGenericType();
-            sourceClass = ConfigUtils.extractCollectionGenericTypeParameterLeniently(
-                    "entityClass", entityDescriptor.getEntityClass(),
-                    variablePropertyType, genericType,
-                    InverseRelationShadowVariable.class, variableMemberAccessor.getName()).orElse(Object.class);
+            sourceClass = ConfigUtils
+                    .extractGenericTypeParameter("entityClass", entityDescriptor.getEntityClass(), variablePropertyType,
+                            genericType, InverseRelationShadowVariable.class, variableMemberAccessor.getName())
+                    .orElse(Object.class);
             singleton = false;
         } else {
             sourceClass = variablePropertyType;
