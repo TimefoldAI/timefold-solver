@@ -86,6 +86,12 @@ public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, Right
             return;
         }
         TupleState state = outTuple.state;
+        if (!state.isActive()) {
+            // No fail fast for inactive tuples, since the same tuple can be
+            // passed twice if they are from the same source;
+            // @see BavetRegressionTest#concatSameTupleDeadAndAlive for an example.
+            return;
+        }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
@@ -123,6 +129,12 @@ public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, Right
             return;
         }
         TupleState state = outTuple.state;
+        if (!state.isActive()) {
+            // No fail fast for inactive tuples, since the same tuple can be
+            // passed twice if they are from the same source;
+            // @see BavetRegressionTest#concatSameTupleDeadAndAlive for an example.
+            return;
+        }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
