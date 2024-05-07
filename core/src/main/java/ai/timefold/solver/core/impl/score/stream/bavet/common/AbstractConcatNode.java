@@ -87,8 +87,10 @@ public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, Right
         }
         TupleState state = outTuple.state;
         if (!state.isActive()) {
-            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.state + ").");
+            // No fail fast for inactive tuples, since the same tuple can be
+            // passed twice if they are from the same source;
+            // @see BavetRegressionTest#concatSameTupleDeadAndAlive for an example.
+            return;
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
@@ -128,8 +130,10 @@ public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, Right
         }
         TupleState state = outTuple.state;
         if (!state.isActive()) {
-            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.state + ").");
+            // No fail fast for inactive tuples, since the same tuple can be
+            // passed twice if they are from the same source;
+            // @see BavetRegressionTest#concatSameTupleDeadAndAlive for an example.
+            return;
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
