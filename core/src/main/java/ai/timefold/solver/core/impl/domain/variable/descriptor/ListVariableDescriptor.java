@@ -93,7 +93,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     public Class<?> getElementType() {
-        return ConfigUtils.extractGenericTypeParameterStrictly("entityClass", entityDescriptor.getEntityClass(),
+        return ConfigUtils.extractGenericTypeParameterOrFail("entityClass", entityDescriptor.getEntityClass(),
                 variableMemberAccessor.getType(), variableMemberAccessor.getGenericType(), PlanningListVariable.class,
                 variableMemberAccessor.getName());
     }
