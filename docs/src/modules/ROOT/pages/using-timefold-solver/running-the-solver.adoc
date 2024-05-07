@@ -667,3 +667,16 @@ More advanced implementations push the best solutions directly to the UI or a me
 
 If the user is satisfied with the intermediate best solution
 and does not want to wait any longer for a better one, call `SolverManager.terminateEarly(problemId)`.
+
+[NOTE]
+====
+Best solution events may be triggered in a rapid succession,
+especially at the start of solving.
+
+Users of our xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition]
+may use the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[throttling feature]
+to limit the number of best solution events fired over any period of time.
+
+Community Edition users may implement their own throttling mechanism within the `Consumer` itself.
+====
+
