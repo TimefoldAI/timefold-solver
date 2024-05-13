@@ -1,15 +1,14 @@
 package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
+import static ai.timefold.solver.core.config.util.ConfigUtils.newInstance;
+
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -91,8 +90,8 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     }
 
     private MemberAccessor[] findAnonymousValueRangeMemberAccessors(DescriptorPolicy descriptorPolicy) {
-        boolean supportsValueRangeProviderFromEntity = !isListVariable();
-        Stream<MemberAccessor> applicableValueRangeProviderAccessors =
+        var supportsValueRangeProviderFromEntity = !isListVariable();
+        var applicableValueRangeProviderAccessors =
                 supportsValueRangeProviderFromEntity ? Stream.concat(
                         descriptorPolicy.getAnonymousFromEntityValueRangeProviderSet().stream(),
                         descriptorPolicy.getAnonymousFromSolutionValueRangeProviderSet().stream())
@@ -103,26 +102,23 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                      * For basic variable, the type is the type of the variable.
                      * For list variable, the type is List<X>, and we need to know X.
                      */
-                    Class<?> variableType =
+                    var variableType =
                             isListVariable() ? (Class<?>) ((ParameterizedType) variableMemberAccessor.getGenericType())
                                     .getActualTypeArguments()[0] : variableMemberAccessor.getType();
                     // We expect either ValueRange, Collection or an array.
-                    Type valueRangeType = valueRangeProviderAccessor.getGenericType();
+                    var valueRangeType = valueRangeProviderAccessor.getGenericType();
                     if (valueRangeType instanceof ParameterizedType parameterizedValueRangeType) {
-                        Class<?> rawType = (Class<?>) parameterizedValueRangeType.getRawType();
-                        if (!ValueRange.class.isAssignableFrom(rawType) && !Collection.class.isAssignableFrom(rawType)) {
-                            return false;
-                        }
-                        Type[] generics = parameterizedValueRangeType.getActualTypeArguments();
-                        if (generics.length != 1) {
-                            return false;
-                        }
-                        Class<?> valueRangeGenericType = (Class<?>) generics[0];
-                        return variableType.isAssignableFrom(valueRangeGenericType);
+                        return ConfigUtils
+                                .extractGenericTypeParameter("solutionClass",
+                                        entityDescriptor.getSolutionDescriptor().getSolutionClass(),
+                                        valueRangeProviderAccessor.getType(), parameterizedValueRangeType,
+                                        ValueRangeProvider.class, valueRangeProviderAccessor.getName())
+                                .map(variableType::isAssignableFrom)
+                                .orElse(false);
                     } else {
-                        Class<?> clz = (Class<?>) valueRangeType;
+                        var clz = (Class<?>) valueRangeType;
                         if (clz.isArray()) {
-                            Class<?> componentType = clz.getComponentType();
+                            var componentType = clz.getComponentType();
                             return variableType.isAssignableFrom(componentType);
                         }
                         return false;
@@ -137,7 +133,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         } else if (descriptorPolicy.hasFromEntityValueRangeProvider(valueRangeProviderRef)) {
             return descriptorPolicy.getFromEntityValueRangeProvider(valueRangeProviderRef);
         } else {
-            Collection<String> providerIds = descriptorPolicy.getValueRangeProviderIds();
+            var providerIds = descriptorPolicy.getValueRangeProviderIds();
             throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
                     + ") has a @" + PlanningVariable.class.getSimpleName()
                     + " annotated property (" + variableMemberAccessor.getName()
@@ -183,7 +179,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     + ") at the same time.");
         }
         if (strengthComparatorClass != null) {
-            Comparator<Object> strengthComparator = ConfigUtils.newInstance(this::toString,
+            Comparator<Object> strengthComparator = newInstance(this::toString,
                     "strengthComparatorClass", strengthComparatorClass);
             increasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.ASCENDING);
@@ -191,7 +187,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     SelectionSorterOrder.DESCENDING);
         }
         if (strengthWeightFactoryClass != null) {
-            SelectionSorterWeightFactory<Solution_, Object> strengthWeightFactory = ConfigUtils.newInstance(this::toString,
+            SelectionSorterWeightFactory<Solution_, Object> strengthWeightFactory = newInstance(this::toString,
                     "strengthWeightFactoryClass", strengthWeightFactoryClass);
             increasingStrengthSorter = new WeightFactorySelectionSorter<>(strengthWeightFactory,
                     SelectionSorterOrder.ASCENDING);
@@ -241,7 +237,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
      * is reinitializable if its value is {@code null}.
      */
     public boolean isReinitializable(Object entity) {
-        Object value = getValue(entity);
+        var value = getValue(entity);
         return value == null;
     }
 

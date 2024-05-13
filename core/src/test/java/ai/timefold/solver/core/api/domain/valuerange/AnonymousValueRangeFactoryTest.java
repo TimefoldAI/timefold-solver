@@ -77,7 +77,7 @@ class AnonymousValueRangeFactoryTest {
         assertThat(solution).isNotNull();
     }
 
-    private void assertEntity(SoftAssertions softly, TestdataAnonymousValueRangeEntity entity) {
+    private static void assertEntity(SoftAssertions softly, TestdataAnonymousValueRangeEntity entity) {
         softly.assertThat(entity.getNumberValue()).isNotNull();
         softly.assertThat(entity.getIntegerValue()).isNotNull();
         softly.assertThat(entity.getLongValue()).isNotNull();

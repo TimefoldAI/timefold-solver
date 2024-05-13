@@ -64,7 +64,7 @@ public class TestdataAnonymousListSolution extends TestdataObject {
     }
 
     @ValueRangeProvider
-    public List<Number> createNumberList() {
+    public List<? super Number> createNumberList() { // Test the wildcards too.
         return List.of(0, BigInteger.TEN);
     }
 
