@@ -849,6 +849,14 @@ Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the viol
 For example, if the equipment has a `capacity` of `3`, and the `maximumOverlap` of the `resource` is `5`, then `violationAmount` will be `2`.
 If the amount is `0`, then the equipment is not being used over its capacity and we can filter the tuple out.
 
+[#collectorsLoadBalance]
+==== Load balancing collectors
+
+Certain constraints require resource usage to be balanced across the solution.
+For example, employees should have mutually similar number of shifts.
+This can be achieved using the `ConstraintCollectors.loadBalance(...)` collector.
+
+For more, see xref:constraints-and-score/load-balancing-and-fairness.adoc[Load balancing and fairness].
 
 [#collectorsConditional]
 ==== Conditional collectors

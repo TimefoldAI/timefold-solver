@@ -108,10 +108,13 @@ public abstract class AbstractConstraintCollectorsTest {
     public abstract void toConsecutiveSequences();
 
     @Test
-    public abstract void consecutiveUsage();
+    public abstract void toConnectedRanges();
 
     @Test
     public abstract void collectAndThen();
+
+    @Test
+    public abstract void loadBalance();
 
     protected static SequenceChain<Integer, Integer> buildSequenceChain(Integer... data) {
         return Arrays.stream(data).collect(
@@ -122,7 +125,7 @@ public abstract class AbstractConstraintCollectorsTest {
                 });
     }
 
-    protected ConnectedRangeChain<Interval, Integer, Integer> buildConsecutiveUsage(Interval... data) {
+    protected static ConnectedRangeChain<Interval, Integer, Integer> buildConnectedRangeChain(Interval... data) {
         return Arrays.stream(data).collect(
                 () -> new ConnectedRangeTracker<>(Interval::start, Interval::end, (a, b) -> b - a),
                 (tree, datum) -> tree.add(tree.getRange(datum)),

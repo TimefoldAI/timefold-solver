@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
@@ -29,7 +30,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
 
     public UndoScoreImpacter changeSoftScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
-        BigDecimal softImpact = scoreLevelWeight.multiply(matchWeight);
+        var softImpact = ScoreUtil.multiply(scoreLevelWeight, matchWeight);
         parent.softScores[scoreLevel] = parent.softScores[scoreLevel].add(softImpact);
         UndoScoreImpacter undoScoreImpact =
                 () -> parent.softScores[scoreLevel] = parent.softScores[scoreLevel].subtract(softImpact);
@@ -43,7 +44,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
 
     public UndoScoreImpacter changeHardScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
-        BigDecimal hardImpact = scoreLevelWeight.multiply(matchWeight);
+        var hardImpact = ScoreUtil.multiply(scoreLevelWeight, matchWeight);
         parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].add(hardImpact);
         UndoScoreImpacter undoScoreImpact =
                 () -> parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].subtract(hardImpact);
@@ -57,23 +58,23 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
 
     public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
-        BigDecimal[] hardImpacts = new BigDecimal[hardScoreLevelCount];
-        BigDecimal[] softImpacts = new BigDecimal[softScoreLevelCount];
-        for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
-            BigDecimal hardImpact = constraintWeight.hardScore(hardScoreLevel).multiply(matchWeight);
+        var hardImpacts = new BigDecimal[hardScoreLevelCount];
+        var softImpacts = new BigDecimal[softScoreLevelCount];
+        for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
+            var hardImpact = ScoreUtil.multiply(constraintWeight.hardScore(hardScoreLevel), matchWeight);
             hardImpacts[hardScoreLevel] = hardImpact;
             parent.hardScores[hardScoreLevel] = parent.hardScores[hardScoreLevel].add(hardImpact);
         }
-        for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
-            BigDecimal softImpact = constraintWeight.softScore(softScoreLevel).multiply(matchWeight);
+        for (var softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
+            var softImpact = ScoreUtil.multiply(constraintWeight.softScore(softScoreLevel), matchWeight);
             softImpacts[softScoreLevel] = softImpact;
             parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].add(softImpact);
         }
         UndoScoreImpacter undoScoreImpact = () -> {
-            for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
+            for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
                 parent.hardScores[hardScoreLevel] = parent.hardScores[hardScoreLevel].subtract(hardImpacts[hardScoreLevel]);
             }
-            for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
+            for (var softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
                 parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].subtract(softImpacts[softScoreLevel]);
             }
         };

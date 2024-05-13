@@ -22,11 +22,13 @@ import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
-public class InnerQuadConstraintCollectors {
+public final class InnerQuadConstraintCollectors {
+
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double> average(
             ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         return new AverageIntQuadCollector<>(mapper);
@@ -231,6 +233,14 @@ public class InnerQuadConstraintCollectors {
             collectAndThen(QuadConstraintCollector<A, B, C, D, ?, Intermediate_> delegate,
                     Function<Intermediate_, Result_> mappingFunction) {
         return new AndThenQuadCollector<>(delegate, mappingFunction);
+    }
+
+    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, LoadBalance>
+            loadBalance(QuadFunction<A, B, C, D, Object> groupKey) {
+        return new LoadBalanceQuadCollector<>(groupKey);
+    }
+
+    private InnerQuadConstraintCollectors() {
     }
 
 }

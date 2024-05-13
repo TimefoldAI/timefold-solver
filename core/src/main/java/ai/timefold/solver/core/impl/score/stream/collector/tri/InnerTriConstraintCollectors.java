@@ -22,11 +22,13 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
-public class InnerTriConstraintCollectors {
+public final class InnerTriConstraintCollectors {
+
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double> average(
             ToIntTriFunction<? super A, ? super B, ? super C> mapper) {
         return new AverageIntTriCollector<>(mapper);
@@ -230,6 +232,13 @@ public class InnerTriConstraintCollectors {
             collectAndThen(TriConstraintCollector<A, B, C, ?, Intermediate_> delegate,
                     Function<Intermediate_, Result_> mappingFunction) {
         return new AndThenTriCollector<>(delegate, mappingFunction);
+    }
+
+    public static <A, B, C> TriConstraintCollector<A, B, C, ?, LoadBalance> loadBalance(TriFunction<A, B, C, Object> groupKey) {
+        return new LoadBalanceTriCollector<>(groupKey);
+    }
+
+    private InnerTriConstraintCollectors() {
     }
 
 }

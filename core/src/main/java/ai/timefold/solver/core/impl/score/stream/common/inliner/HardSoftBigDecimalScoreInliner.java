@@ -20,11 +20,11 @@ final class HardSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardSoft
     @Override
     public WeightedScoreImpacter<HardSoftBigDecimalScore, ?>
             buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
-        HardSoftBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
-        HardSoftBigDecimalScoreContext context = new HardSoftBigDecimalScoreContext(this, constraint, constraintWeight);
-        if (constraintWeight.softScore().equals(BigDecimal.ZERO)) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var context = new HardSoftBigDecimalScoreContext(this, constraint, constraintWeight);
+        if (constraintWeight.softScore().signum() == 0) {
             return WeightedScoreImpacter.of(context, HardSoftBigDecimalScoreContext::changeHardScoreBy);
-        } else if (constraintWeight.hardScore().equals(BigDecimal.ZERO)) {
+        } else if (constraintWeight.hardScore().signum() == 0) {
             return WeightedScoreImpacter.of(context, HardSoftBigDecimalScoreContext::changeSoftScoreBy);
         } else {
             return WeightedScoreImpacter.of(context, HardSoftBigDecimalScoreContext::changeScoreBy);

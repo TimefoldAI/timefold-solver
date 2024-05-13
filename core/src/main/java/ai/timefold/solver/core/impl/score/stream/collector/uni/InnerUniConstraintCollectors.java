@@ -21,11 +21,13 @@ import java.util.function.ToLongFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
-public class InnerUniConstraintCollectors {
+public final class InnerUniConstraintCollectors {
+
     public static <A> UniConstraintCollector<A, ?, Double> average(ToIntFunction<? super A> mapper) {
         return new AverageIntUniCollector<>(mapper);
     }
@@ -210,6 +212,13 @@ public class InnerUniConstraintCollectors {
             collectAndThen(UniConstraintCollector<A, ?, Intermediate_> delegate,
                     Function<Intermediate_, Result_> mappingFunction) {
         return new AndThenUniCollector<>(delegate, mappingFunction);
+    }
+
+    public static <A> UniConstraintCollector<A, ?, LoadBalance> loadBalance(Function<A, Object> groupKey) {
+        return new LoadBalanceUniCollector<>(groupKey);
+    }
+
+    private InnerUniConstraintCollectors() {
     }
 
 }

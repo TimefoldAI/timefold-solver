@@ -83,14 +83,14 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                         "If you're attempting to use a custom score, " +
                         "provide your " + AbstractScoreInliner.class.getSimpleName() + " implementation using the '" +
                         CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME + "' system property.\n" +
-                        "Note: support for custom scores will be removed in Timefold 2.0.");
+                        "Note: support for custom scores will be removed in Timefold Solver 2.0.");
             }
             try {
                 Class<?> customScoreInlinerClass = Class.forName(customScoreInlinerClassName);
                 if (!AbstractScoreInliner.class.isAssignableFrom(customScoreInlinerClass)) {
                     throw new IllegalStateException("Custom score inliner class (" + customScoreInlinerClassName +
                             ") does not extend " + AbstractScoreInliner.class.getCanonicalName() + ".\n" +
-                            "Note: support for custom scores will be removed in Timefold 2.0.");
+                            "Note: support for custom scores will be removed in Timefold Solver 2.0.");
                 }
                 return ((Class<ScoreInliner_>) customScoreInlinerClass).getConstructor()
                         .newInstance();
@@ -99,7 +99,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                 throw new IllegalStateException("Custom score inliner class (" + customScoreInlinerClassName +
                         ") can not be instantiated.\n" +
                         "Maybe add a no-arg public constructor?\n" +
-                        "Note: support for custom scores will be removed in Timefold 2.0.", cause);
+                        "Note: support for custom scores will be removed in Timefold Solver 2.0.", cause);
             }
         }
     }

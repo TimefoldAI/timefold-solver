@@ -255,6 +255,17 @@ public final class ScoreUtil {
         return shortString.toString();
     }
 
+    public static BigDecimal multiply(BigDecimal multiplicand, BigDecimal multiplier) { // Avoid excessive object creation.
+        if (multiplicand.signum() == 0 || multiplier.signum() == 0) {
+            return BigDecimal.ZERO;
+        } else if (multiplicand.equals(BigDecimal.ONE)) {
+            return multiplier;
+        } else if (multiplier.equals(BigDecimal.ONE)) {
+            return multiplicand;
+        }
+        return multiplicand.multiply(multiplier);
+    }
+
     private ScoreUtil() {
         // No external instances.
     }

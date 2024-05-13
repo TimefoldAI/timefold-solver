@@ -26,10 +26,10 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
     public static final HardSoftBigDecimalScore ONE_SOFT = new HardSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ONE);
 
     public static HardSoftBigDecimalScore parseScore(String scoreString) {
-        String[] scoreTokens = ScoreUtil.parseScoreTokens(HardSoftBigDecimalScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
-        int initScore = ScoreUtil.parseInitScore(HardSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
-        BigDecimal hardScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
-        BigDecimal softScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
+        var scoreTokens = ScoreUtil.parseScoreTokens(HardSoftBigDecimalScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
+        var initScore = ScoreUtil.parseInitScore(HardSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+        var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+        var softScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
         return ofUninitialized(initScore, hardScore, softScore);
     }
 
@@ -182,9 +182,14 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
 
     @Override
     public HardSoftBigDecimalScore multiply(double multiplicand) {
+        if (multiplicand == 0d) {
+            return ZERO;
+        } else if (multiplicand == 1d) {
+            return this;
+        }
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
+        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
         // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
         return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
@@ -194,9 +199,12 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
 
     @Override
     public HardSoftBigDecimalScore divide(double divisor) {
+        if (divisor == 1d) {
+            return this;
+        }
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal divisorBigDecimal = BigDecimal.valueOf(divisor);
+        var divisorBigDecimal = BigDecimal.valueOf(divisor);
         // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
         return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
@@ -208,7 +216,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
     public HardSoftBigDecimalScore power(double exponent) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal exponentBigDecimal = BigDecimal.valueOf(exponent);
+        var exponentBigDecimal = BigDecimal.valueOf(exponent);
         // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
         // TODO FIXME remove .intValue() so non-integer exponents produce correct results
         // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
@@ -253,7 +261,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         }
-        int hardScoreComparison = hardScore.compareTo(other.hardScore());
+        var hardScoreComparison = hardScore.compareTo(other.hardScore());
         if (hardScoreComparison != 0) {
             return hardScoreComparison;
         } else {

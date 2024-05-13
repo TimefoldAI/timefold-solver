@@ -21,7 +21,8 @@ import ai.timefold.solver.core.api.score.Score;
  * for the method types it doesn't support. The CS API guarantees no types are mixed. For example,
  * a {@link BigDecimal} parameter method won't be called on an instance built with an {@link IntImpactFunction}.
  */
-public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
+public sealed interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
+        permits BigDecimalWeightedScoreImpacter, IntWeightedScoreImpacter, LongWeightedScoreImpacter {
 
     static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, IntImpactFunction<Score_, Context_> impactFunction) {

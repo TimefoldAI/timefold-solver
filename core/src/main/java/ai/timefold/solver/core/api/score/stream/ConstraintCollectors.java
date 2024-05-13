@@ -36,8 +36,11 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
@@ -1960,6 +1963,7 @@ public final class ConstraintCollectors {
     // *****************************************************************
     // toConnectedRanges
     // *****************************************************************
+
     /**
      * Creates a constraint collector that returns {@link ConnectedRangeChain} about the first fact.
      *
@@ -2223,6 +2227,75 @@ public final class ConstraintCollectors {
                     ToLongFunction<IntervalType_> startInclusiveMap,
                     ToLongFunction<IntervalType_> endExclusiveMap) {
         return toConnectedRanges(intervalMap, startInclusiveMap::applyAsLong, endExclusiveMap::applyAsLong, (a, b) -> b - a);
+    }
+
+    // *****************************************************************
+    // loadBalance
+    // *****************************************************************
+
+    /**
+     * Returns a collector that calculates a load of given facts,
+     * and computes from it the relative unfairness of such load distribution.
+     * In employee scheduling,
+     * you may prefer all employees to work the same number of shifts as others;
+     * in that case, you would minimize the unfairness of such a solution.
+     * <p>
+     * The load for any particular fact is its number of occurrences in the stream.
+     * The relative unfairness is a result of applying a further unspecified formula to the individual loads.
+     * The greater the unfairness, the more unbalanced the load distribution is, skewing towards one fact or another.
+     * <p>
+     * For example:
+     * <ul>
+     * <li>{@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 30)]}
+     * skews towards age 30.</li>
+     * <li>{@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 25)]}
+     * is already more balanced, but ages 25 and 30 are still more present than age 20.</li>
+     * <li>{@code [Ann(age = 20), Beth(age = 21), Cathy(age = 22), David(age = 23), Eric(age = 24)]}
+     * is perfectly balanced, each age only appearing once.</li>
+     * <li>{@code [Ann(age = 20), Beth(age = 20), Cathy(age = 20), David(age = 20), Eric(age = 20)]}
+     * is also perfectly balanced, only ever seeing one age.</li>
+     * </ul>
+     * <p>
+     * This constraint collector will only ever produce one output tuple,
+     * carrying an instance of {@link LoadBalance}.
+     * <p>
+     * Using this collector requires the solution to use a {@link Score} which supports {@link BigDecimal} values,
+     * such as {@link HardSoftBigDecimalScore}.
+     * In constraints,
+     * use either {@link UniConstraintStream#penalizeBigDecimal(Score, Function)},
+     * {@link UniConstraintStream#penalizeConfigurable()}
+     * or their reward/impact bi/tri/quad counterparts.
+     *
+     * @param <A> type of the matched fact
+     * @param mappingFunction never null; maps the fact to a key for which load will be computed
+     * @return never null
+     * @see LoadBalance Details on the value returned by the collector.
+     */
+    public static <A> UniConstraintCollector<A, ?, LoadBalance> loadBalance(Function<A, Object> mappingFunction) {
+        return InnerUniConstraintCollectors.loadBalance(mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function)}.
+     */
+    public static <A, B> BiConstraintCollector<A, B, ?, LoadBalance> loadBalance(BiFunction<A, B, Object> mappingFunction) {
+        return InnerBiConstraintCollectors.loadBalance(mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function)}.
+     */
+    public static <A, B, C> TriConstraintCollector<A, B, C, ?, LoadBalance>
+            loadBalance(TriFunction<A, B, C, Object> mappingFunction) {
+        return InnerTriConstraintCollectors.loadBalance(mappingFunction);
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function)}.
+     */
+    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, LoadBalance>
+            loadBalance(QuadFunction<A, B, C, D, Object> mappingFunction) {
+        return InnerQuadConstraintCollectors.loadBalance(mappingFunction);
     }
 
     private ConstraintCollectors() {

@@ -31,6 +31,7 @@ import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -233,7 +234,6 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         int secondValueA = 4;
         int secondValueB = 5;
         int secondValueC = 1;
-        int secondSum = secondValueA + secondValueB + secondValueC;
         Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
         assertResult(collector, container, 16L);
         // Add third value, same as the second. We now have three values, two of which are the same.
@@ -1074,7 +1074,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
 
     @Override
     @Test
-    public void consecutiveUsage() {
+    public void toConnectedRanges() {
         TriConstraintCollector<Integer, Integer, ?, ?, ConnectedRangeChain<Interval, Integer, Integer>> collector =
                 ConstraintCollectors.toConnectedRanges((a, b, c) -> new Interval(a, b),
                         Interval::start,
@@ -1082,22 +1082,23 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         var container = collector.supplier().get();
         // Add first value, sequence is [(1,3)]
         Runnable firstRetractor = accumulate(collector, container, 1, 3, null);
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3)));
         // Add second value, sequence is [(1,3),(2,4)]
         Runnable secondRetractor = accumulate(collector, container, 2, 4, null);
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3), new Interval(2, 4)));
         // Add third value, same as the second. Sequence is [{1,1},2}]
         Runnable thirdRetractor = accumulate(collector, container, 2, 4, null);
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4), new Interval(2, 4)));
+        assertResult(collector, container,
+                buildConnectedRangeChain(new Interval(1, 3), new Interval(2, 4), new Interval(2, 4)));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3), new Interval(2, 4)));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3)));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, buildConsecutiveUsage());
+        assertResult(collector, container, buildConnectedRangeChain());
     }
 
     @Override
@@ -1130,6 +1131,37 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         assertResult(collector, container, 0);
     }
 
+    @Override
+    @Test
+    public void loadBalance() {
+        TriConstraintCollector<Integer, Integer, Integer, ?, LoadBalance> collector =
+                ConstraintCollectors.loadBalance((i, i2, i3) -> i + i2 + i3);
+        Object container = collector.supplier().get();
+
+        // Default state.
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Add first value, we have one now.
+        int firstValue = 4;
+        Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0);
+        assertUnfairness(collector, container, BigDecimal.ONE);
+        // Add second value, we have two now.
+        int secondValue = 1;
+        Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0);
+        assertUnfairness(collector, container, BigDecimal.valueOf(Math.sqrt(2)));
+        // Add third value, same as the second. We now have three values, two of which are the same.
+        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0);
+        assertUnfairness(collector, container, BigDecimal.valueOf(Math.sqrt(5)));
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.valueOf(Math.sqrt(2)));
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ONE);
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+    }
+
     private static <A, B, C, Container_, Result_> Runnable accumulate(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC) {
@@ -1152,6 +1184,14 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
                 .as("Collector (" + collector + ") did not produce expected result.")
                 .usingRecursiveComparison()
                 .ignoringFields("sourceTree", "indexFunction", "sequenceList", "startItemToSequence")
+                .isEqualTo(expectedResult);
+    }
+
+    private static <A, B, C, Container_> void assertUnfairness(
+            TriConstraintCollector<A, B, C, Container_, LoadBalance> collector, Object container, BigDecimal expectedResult) {
+        var actualResult = collector.finisher().apply((Container_) container);
+        assertThat(actualResult.unfairness())
+                .as("Collector (" + collector + ") did not produce expected result.")
                 .isEqualTo(expectedResult);
     }
 

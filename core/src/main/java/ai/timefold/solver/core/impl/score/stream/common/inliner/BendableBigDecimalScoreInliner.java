@@ -26,9 +26,9 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
     public WeightedScoreImpacter<BendableBigDecimalScore, ?>
             buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         Integer singleLevel = null;
-        BendableBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
-        for (int i = 0; i < constraintWeight.levelsSize(); i++) {
-            if (!constraintWeight.hardOrSoftScore(i).equals(BigDecimal.ZERO)) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        for (var i = 0; i < constraintWeight.levelsSize(); i++) {
+            if (constraintWeight.hardOrSoftScore(i).signum() != 0) {
                 if (singleLevel != null) {
                     singleLevel = null;
                     break;
@@ -37,18 +37,18 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
             }
         }
         if (singleLevel != null) {
-            boolean isHardScore = singleLevel < constraintWeight.hardLevelsSize();
-            int level = isHardScore ? singleLevel : singleLevel - constraintWeight.hardLevelsSize();
-            BendableBigDecimalScoreContext context = new BendableBigDecimalScoreContext(this, constraint, constraintWeight,
-                    hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
+            var isHardScore = singleLevel < constraintWeight.hardLevelsSize();
+            var level = isHardScore ? singleLevel : singleLevel - constraintWeight.hardLevelsSize();
+            var context = new BendableBigDecimalScoreContext(this, constraint, constraintWeight, hardScores.length,
+                    softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
             if (isHardScore) {
                 return WeightedScoreImpacter.of(context, BendableBigDecimalScoreContext::changeHardScoreBy);
             } else {
                 return WeightedScoreImpacter.of(context, BendableBigDecimalScoreContext::changeSoftScoreBy);
             }
         } else {
-            BendableBigDecimalScoreContext context = new BendableBigDecimalScoreContext(this, constraint, constraintWeight,
-                    hardScores.length, softScores.length);
+            var context = new BendableBigDecimalScoreContext(this, constraint, constraintWeight, hardScores.length,
+                    softScores.length);
             return WeightedScoreImpacter.of(context, BendableBigDecimalScoreContext::changeScoreBy);
         }
     }

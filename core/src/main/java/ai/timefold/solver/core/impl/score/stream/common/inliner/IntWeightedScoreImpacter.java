@@ -24,12 +24,18 @@ final class IntWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ exte
 
     @Override
     public UndoScoreImpacter impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        throw new UnsupportedOperationException("Impossible state: passing long into an int impacter.");
+        throw new UnsupportedOperationException("""
+                Passing long into an int impacter.
+                Maybe use penalize() instead of penalizeLong() in constraints?
+                Maybe switch to a *LongScore?""");
     }
 
     @Override
     public UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        throw new UnsupportedOperationException("Impossible state: passing BigDecimal into an int impacter.");
+        throw new UnsupportedOperationException("""
+                Passing BigDecimal into an int impacter.
+                Maybe use penalize() instead of penalizeBigDecimal() in constraints?
+                Maybe switch to a *BigDecimalScore?""");
     }
 
     @Override

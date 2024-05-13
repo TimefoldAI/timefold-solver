@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
+import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalScore, SimpleBigDecimalScoreInliner> {
@@ -14,7 +15,7 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
 
     public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<SimpleBigDecimalScore> constraintMatchSupplier) {
-        BigDecimal impact = constraintWeight.score().multiply(matchWeight);
+        BigDecimal impact = ScoreUtil.multiply(constraintWeight.score(), matchWeight);
         parent.score = parent.score.add(impact);
         UndoScoreImpacter undoScoreImpact = () -> parent.score = parent.score.subtract(impact);
         if (!constraintMatchEnabled) {

@@ -21,17 +21,16 @@ final class HardMediumSoftBigDecimalScoreInliner extends AbstractScoreInliner<Ha
     @Override
     public WeightedScoreImpacter<HardMediumSoftBigDecimalScore, ?>
             buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
-        HardMediumSoftBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
-        BigDecimal hardConstraintWeight = constraintWeight.hardScore();
-        BigDecimal mediumConstraintWeight = constraintWeight.mediumScore();
-        BigDecimal softConstraintWeight = constraintWeight.softScore();
-        HardMediumSoftBigDecimalScoreContext context =
-                new HardMediumSoftBigDecimalScoreContext(this, constraint, constraintWeight);
-        if (mediumConstraintWeight.equals(BigDecimal.ZERO) && softConstraintWeight.equals(BigDecimal.ZERO)) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var hardConstraintWeight = constraintWeight.hardScore();
+        var mediumConstraintWeight = constraintWeight.mediumScore();
+        var softConstraintWeight = constraintWeight.softScore();
+        var context = new HardMediumSoftBigDecimalScoreContext(this, constraint, constraintWeight);
+        if (mediumConstraintWeight.signum() == 0 && softConstraintWeight.signum() == 0) {
             return WeightedScoreImpacter.of(context, HardMediumSoftBigDecimalScoreContext::changeHardScoreBy);
-        } else if (hardConstraintWeight.equals(BigDecimal.ZERO) && softConstraintWeight.equals(BigDecimal.ZERO)) {
+        } else if (hardConstraintWeight.signum() == 0 && softConstraintWeight.signum() == 0) {
             return WeightedScoreImpacter.of(context, HardMediumSoftBigDecimalScoreContext::changeMediumScoreBy);
-        } else if (hardConstraintWeight.equals(BigDecimal.ZERO) && mediumConstraintWeight.equals(BigDecimal.ZERO)) {
+        } else if (hardConstraintWeight.signum() == 0 && mediumConstraintWeight.signum() == 0) {
             return WeightedScoreImpacter.of(context, HardMediumSoftBigDecimalScoreContext::changeSoftScoreBy);
         } else {
             return WeightedScoreImpacter.of(context, HardMediumSoftBigDecimalScoreContext::changeScoreBy);

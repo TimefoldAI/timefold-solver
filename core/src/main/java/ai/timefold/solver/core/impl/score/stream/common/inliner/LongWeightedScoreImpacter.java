@@ -30,7 +30,10 @@ final class LongWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ ext
 
     @Override
     public UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        throw new UnsupportedOperationException("Impossible state: passing BigDecimal into a long impacter.");
+        throw new UnsupportedOperationException("""
+                Passing BigDecimal into a long impacter.
+                Maybe use penalizeLong() instead of penalizeBigDecimal() in constraints?
+                Maybe switch to a *BigDecimalScore?""");
     }
 
     @Override

@@ -16,6 +16,7 @@
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[leveloffset=+1]
 ** xref:constraints-and-score/constraint-configuration.adoc[leveloffset=+1]
+** xref:constraints-and-score/load-balancing-and-fairness.adoc[leveloffset=+1]
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 * xref:optimization-algorithms/optimization-algorithms.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]

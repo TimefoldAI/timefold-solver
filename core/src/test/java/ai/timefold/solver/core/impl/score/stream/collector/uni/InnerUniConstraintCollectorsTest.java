@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -989,7 +990,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
 
     @Override
     @Test
-    public void consecutiveUsage() {
+    public void toConnectedRanges() {
         UniConstraintCollector<Interval, ?, ConnectedRangeChain<Interval, Integer, Integer>> collector =
                 ConstraintCollectors.toConnectedRanges(
                         Interval::start,
@@ -997,22 +998,23 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var container = collector.supplier().get();
         // Add first value, sequence is [(1,3)]
         Runnable firstRetractor = accumulate(collector, container, new Interval(1, 3));
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3)));
         // Add second value, sequence is [(1,3),(2,4)]
         Runnable secondRetractor = accumulate(collector, container, new Interval(2, 4));
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3), new Interval(2, 4)));
         // Add third value, same as the second. Sequence is [{1,1},2}]
         Runnable thirdRetractor = accumulate(collector, container, new Interval(2, 4));
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4), new Interval(2, 4)));
+        assertResult(collector, container,
+                buildConnectedRangeChain(new Interval(1, 3), new Interval(2, 4), new Interval(2, 4)));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3), new Interval(2, 4)));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
+        assertResult(collector, container, buildConnectedRangeChain(new Interval(1, 3)));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, buildConsecutiveUsage());
+        assertResult(collector, container, buildConnectedRangeChain());
     }
 
     @Override
@@ -1045,6 +1047,36 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         assertResult(collector, container, 0);
     }
 
+    @Override
+    @Test
+    public void loadBalance() {
+        UniConstraintCollector<Integer, ?, LoadBalance> collector = ConstraintCollectors.loadBalance(i -> i);
+        Object container = collector.supplier().get();
+
+        // Default state.
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Add first value, we have one now.
+        int firstValue = 4;
+        Runnable firstRetractor = accumulate(collector, container, firstValue);
+        assertUnfairness(collector, container, BigDecimal.ONE);
+        // Add second value, we have two now.
+        int secondValue = 1;
+        Runnable secondRetractor = accumulate(collector, container, secondValue);
+        assertUnfairness(collector, container, BigDecimal.valueOf(Math.sqrt(2)));
+        // Add third value, same as the second. We now have three values, two of which are the same.
+        Runnable thirdRetractor = accumulate(collector, container, secondValue);
+        assertUnfairness(collector, container, BigDecimal.valueOf(Math.sqrt(5)));
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.valueOf(Math.sqrt(2)));
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ONE);
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+    }
+
     private static <A, Container_, Result_> Runnable accumulate(
             UniConstraintCollector<A, Container_, Result_> collector, Object container, A value) {
         return collector.accumulator().apply((Container_) container, value);
@@ -1065,6 +1097,14 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
                 .as("Collector (" + collector + ") did not produce expected result.")
                 .usingRecursiveComparison()
                 .ignoringFields("sourceTree", "indexFunction", "sequenceList", "startItemToSequence")
+                .isEqualTo(expectedResult);
+    }
+
+    private static <A, Container_> void assertUnfairness(
+            UniConstraintCollector<A, Container_, LoadBalance> collector, Object container, BigDecimal expectedResult) {
+        var actualResult = collector.finisher().apply((Container_) container);
+        assertThat(actualResult.unfairness())
+                .as("Collector (" + collector + ") did not produce expected result.")
                 .isEqualTo(expectedResult);
     }
 

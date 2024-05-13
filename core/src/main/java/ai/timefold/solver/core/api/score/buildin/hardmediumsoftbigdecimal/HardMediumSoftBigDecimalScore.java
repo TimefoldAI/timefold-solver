@@ -41,14 +41,14 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
             new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE.negate());
 
     public static HardMediumSoftBigDecimalScore parseScore(String scoreString) {
-        String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
+        var scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
-        int initScore = ScoreUtil.parseInitScore(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
-        BigDecimal hardScore =
+        var initScore = ScoreUtil.parseInitScore(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+        var hardScore =
                 ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
-        BigDecimal mediumScore =
+        var mediumScore =
                 ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
-        BigDecimal softScore =
+        var softScore =
                 ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[3]);
         return ofUninitialized(initScore, hardScore, mediumScore, softScore);
     }
@@ -254,9 +254,14 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
 
     @Override
     public HardMediumSoftBigDecimalScore multiply(double multiplicand) {
+        if (multiplicand == 0d) {
+            return ZERO;
+        } else if (multiplicand == 1d) {
+            return this;
+        }
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
+        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
         // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
         return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
@@ -267,7 +272,10 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
 
     @Override
     public HardMediumSoftBigDecimalScore divide(double divisor) {
-        BigDecimal divisorBigDecimal = BigDecimal.valueOf(divisor);
+        if (divisor == 1d) {
+            return this;
+        }
+        var divisorBigDecimal = BigDecimal.valueOf(divisor);
         // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
         return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
@@ -278,7 +286,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
 
     @Override
     public HardMediumSoftBigDecimalScore power(double exponent) {
-        BigDecimal exponentBigDecimal = BigDecimal.valueOf(exponent);
+        var exponentBigDecimal = BigDecimal.valueOf(exponent);
         // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
         // TODO FIXME remove .intValue() so non-integer exponents produce correct results
         // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
@@ -296,7 +304,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
 
     @Override
     public HardMediumSoftBigDecimalScore zero() {
-        return HardMediumSoftBigDecimalScore.ZERO;
+        return ZERO;
     }
 
     @Override
@@ -326,11 +334,11 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         }
-        int hardScoreComparison = hardScore.compareTo(other.hardScore());
+        var hardScoreComparison = hardScore.compareTo(other.hardScore());
         if (hardScoreComparison != 0) {
             return hardScoreComparison;
         }
-        int mediumScoreComparison = mediumScore.compareTo(other.mediumScore());
+        var mediumScoreComparison = mediumScore.compareTo(other.mediumScore());
         if (mediumScoreComparison != 0) {
             return mediumScoreComparison;
         } else {
