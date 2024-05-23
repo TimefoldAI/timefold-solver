@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
 class MathUtilsTest {
@@ -195,15 +196,16 @@ class MathUtilsTest {
 
     @Test
     void testGetLogInBase() {
+        var tolerance = Offset.offset(0.000000000000001); // Without the tolerance, was breaking M3 Macs w/ JDK 21.0.3.
         for (int i = 2; i < 100; i++) {
             assertThat(MathUtils.getLogInBase(i, 1)).isZero();
-            assertThat(MathUtils.getLogInBase(i, i)).isEqualTo(1.0);
+            assertThat(MathUtils.getLogInBase(i, i)).isEqualTo(1.0, tolerance);
         }
-        assertThat(MathUtils.getLogInBase(2, 4)).isEqualTo(2.0);
-        assertThat(MathUtils.getLogInBase(2, 16)).isEqualTo(4.0);
-        assertThat(MathUtils.getLogInBase(4, 16)).isEqualTo(2.0);
-        assertThat(MathUtils.getLogInBase(3, 9)).isEqualTo(2.0);
-        assertThat(MathUtils.getLogInBase(3, 27)).isEqualTo(3.0);
-        assertThat(MathUtils.getLogInBase(9, 3)).isEqualTo(0.5);
+        assertThat(MathUtils.getLogInBase(2, 4)).isEqualTo(2.0, tolerance);
+        assertThat(MathUtils.getLogInBase(2, 16)).isEqualTo(4.0, tolerance);
+        assertThat(MathUtils.getLogInBase(4, 16)).isEqualTo(2.0, tolerance);
+        assertThat(MathUtils.getLogInBase(3, 9)).isEqualTo(2.0, tolerance);
+        assertThat(MathUtils.getLogInBase(3, 27)).isEqualTo(3.0, tolerance);
+        assertThat(MathUtils.getLogInBase(9, 3)).isEqualTo(0.5, tolerance);
     }
 }
