@@ -664,7 +664,7 @@ and averages all the service durations using the `ConstraintCollectors.average(.
 
 [source,java,options="nowrap"]
 ----
-private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
+private Constraint averageServiceDuration(ConstraintFactory constraintFactory) {
     return constraintFactory.forEach(Visit.class)
             .groupBy(Visit::getVehicle, average(Visit::getServiceDuration))
             .penalize(HardSoftScore.ONE_SOFT,
@@ -692,7 +692,7 @@ These collectors operate on values of properties which are `Comparable` (such as
 although there are also variants of these collectors which allow you to provide your own `Comparator`.
 
 The following code snippet first groups all visits by the vehicle that will be used,
-and finds the maximum in the group using the `ConstraintCollectors.sum(...)` collector.
+and finds the maximum in the group using the `ConstraintCollectors.max(...)` collector.
 
 [source,java,options="nowrap"]
 ----
@@ -761,7 +761,7 @@ Certain constraints, such as maximum consecutive working days for an employee
 or the number of matches played at home in a sports league,
 require ordering those shifts or matches in sequences and penalizing sequences exceeding a certain threshold.
 If those sequences can be of arbitrary length unknown at the time of writing the constraints,
-you can implement this pattern using the `ConstraintCollectors.consecutive(...)` collector:
+you can implement this pattern using the `ConstraintCollectors.toConsecutiveSequences(...)` collector:
 
 [source,java,options="nowrap"]
 ----
