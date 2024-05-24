@@ -660,16 +660,16 @@ The sum is collected in an `int`. Variants of this collector:
 To calculate the average of a particular property of all elements per group, use the `ConstraintCollectors.average(...)`
 collector.
 The following code snippet first groups all visits by the vehicle that will be used,
-and sums up all the service durations using the `ConstraintCollectors.sum(...)` collector.
+and averages all the service durations using the `ConstraintCollectors.average(...)` collector.
 
 [source,java,options="nowrap"]
 ----
 private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
     return constraintFactory.forEach(Visit.class)
-            .groupBy(Visit::getVehicle, sum(Visit::getServiceDuration))
+            .groupBy(Visit::getVehicle, average(Visit::getServiceDuration))
             .penalize(HardSoftScore.ONE_SOFT,
-                    (vehicle, totalServiceDuration) -> totalServiceDuration)
-            .asConstraint("totalServiceDuration");
+                    (vehicle, averageServiceDuration) -> averageServiceDuration)
+            .asConstraint("averageServiceDuration");
 }
 ----
 
