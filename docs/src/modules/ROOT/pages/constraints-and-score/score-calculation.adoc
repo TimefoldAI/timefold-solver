@@ -816,7 +816,7 @@ This can be achieved using the `ConstraintCollectors.toConnectedRanges(...)` col
 Constraint doNotOverAssignEquipment(ConstraintFactory constraintFactory) {
     return constraintFactory.forEach(Equipment.class)
         .join(Job.class, Joiners.equal(Equipment::getId, Job::getRequiredEquipmentId))
-        .collect((equipment, job) -> equipment, ConstraintCollectors.toConnectedRanges((equipment, job) -> job,
+        .groupBy((equipment, job) -> equipment, ConstraintCollectors.toConnectedRanges((equipment, job) -> job,
                           Job::getStart,
                           Job::getEnd,
                           (a, b) -> b - a))
@@ -831,7 +831,7 @@ Let's take a closer look at the crucial part of this constraint:
 
 [source,java,options="nowrap"]
 ----
-        .collect((equipment, job) -> equipment, ConstraintCollectors.toConnectedRanges((equipment, job) -> job,
+        .groupBy((equipment, job) -> equipment, ConstraintCollectors.toConnectedRanges((equipment, job) -> job,
                           Job::getStart,
                           Job::getEnd,
                           (a, b) -> b - a))
