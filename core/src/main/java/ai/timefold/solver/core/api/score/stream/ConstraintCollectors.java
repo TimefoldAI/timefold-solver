@@ -1895,7 +1895,7 @@ public final class ConstraintCollectors {
      * <pre>
      * {@code
      * Consecutive Lengths: 2, 1, 1
-     * Break Lengths: 1, 2
+     * Break Lengths: 2, 2
      * Consecutive Items: [[Shift slot=1] [Shift slot=2]], [[Shift slot=4]], [[Shift slot=6]]
      * }
      * </pre>
