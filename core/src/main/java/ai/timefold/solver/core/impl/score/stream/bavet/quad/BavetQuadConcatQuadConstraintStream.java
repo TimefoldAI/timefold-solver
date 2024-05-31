@@ -9,14 +9,11 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeQuadConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 
-public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
+public final class BavetQuadConcatQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         implements BavetConcatConstraintStream<Solution_> {
 
@@ -24,61 +21,7 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
     private final BavetAbstractConstraintStream<Solution_> rightParent;
     private final ConcatNodeConstructor<A, B, C, D> nodeConstructor;
 
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeUniConstraintStream<Solution_, A> leftParent,
-            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent) {
-        super(constraintFactory, leftParent.getRetrievalSemantics());
-        this.leftParent = leftParent;
-        this.rightParent = rightParent;
-        this.nodeConstructor = ConcatUniQuadNode::new;
-    }
-
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeBiConstraintStream<Solution_, A, B> leftParent,
-            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent) {
-        super(constraintFactory, leftParent.getRetrievalSemantics());
-        this.leftParent = leftParent;
-        this.rightParent = rightParent;
-        this.nodeConstructor = ConcatBiQuadNode::new;
-    }
-
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
-            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent) {
-        super(constraintFactory, leftParent.getRetrievalSemantics());
-        this.leftParent = leftParent;
-        this.rightParent = rightParent;
-        this.nodeConstructor = ConcatTriQuadNode::new;
-    }
-
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
-            BavetForeBridgeUniConstraintStream<Solution_, A> rightParent) {
-        super(constraintFactory, leftParent.getRetrievalSemantics());
-        this.leftParent = leftParent;
-        this.rightParent = rightParent;
-        this.nodeConstructor = ConcatQuadUniNode::new;
-    }
-
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
-            BavetForeBridgeBiConstraintStream<Solution_, A, B> rightParent) {
-        super(constraintFactory, leftParent.getRetrievalSemantics());
-        this.leftParent = leftParent;
-        this.rightParent = rightParent;
-        this.nodeConstructor = ConcatQuadBiNode::new;
-    }
-
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
-            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> rightParent) {
-        super(constraintFactory, leftParent.getRetrievalSemantics());
-        this.leftParent = leftParent;
-        this.rightParent = rightParent;
-        this.nodeConstructor = ConcatQuadTriNode::new;
-    }
-
-    public BavetConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+    public BavetQuadConcatQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> leftParent,
             BavetForeBridgeQuadConstraintStream<Solution_, A, B, C, D> rightParent) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
@@ -89,17 +32,7 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public boolean guaranteesDistinct() {
-        if (leftParent instanceof BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>
-                && rightParent instanceof BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>) {
-            // The two parents could have the same source; guarantee impossible.
-            return false;
-        }
-        /*
-         * Since one of the two parents is increasing in cardinality,
-         * it means its tuples must be distinct from the other parent's tuples.
-         * Therefore, the guarantee can be given is both of the parents give it.
-         */
-        return leftParent.guaranteesDistinct() && rightParent.guaranteesDistinct();
+        return false; // The two parents could have the same source; guarantee impossible.
     }
 
     // ************************************************************************
@@ -135,7 +68,7 @@ public final class BavetConcatQuadConstraintStream<Solution_, A, B, C, D>
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BavetConcatQuadConstraintStream<?, ?, ?, ?, ?> other = (BavetConcatQuadConstraintStream<?, ?, ?, ?, ?>) o;
+        BavetQuadConcatQuadConstraintStream<?, ?, ?, ?, ?> other = (BavetQuadConcatQuadConstraintStream<?, ?, ?, ?, ?>) o;
         /*
          * Bridge streams do not implement equality because their equals() would have to point back to this stream,
          * resulting in StackOverflowError.

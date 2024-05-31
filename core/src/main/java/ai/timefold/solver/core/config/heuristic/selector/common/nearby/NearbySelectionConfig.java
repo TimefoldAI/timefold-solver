@@ -281,8 +281,7 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
                             has a resolvedSelectionOrder (%s) that is not %s or %s.
                             Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @%s annotation.
                             Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @%s annotation.
-                            Maybe disable nearby selection.
-                             """
+                            Maybe disable nearby selection."""
                             .formatted(this, originEntitySelectorConfig, originSubListSelectorConfig, originValueSelectorConfig,
                                     nearbyDistanceMeterClass, resolvedSelectionOrder, SelectionOrder.ORIGINAL,
                                     SelectionOrder.RANDOM, PlanningEntity.class.getSimpleName(),

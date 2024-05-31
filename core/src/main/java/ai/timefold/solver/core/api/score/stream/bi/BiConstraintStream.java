@@ -1,5 +1,11 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -25,7 +31,6 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches two facts.
@@ -1069,12 +1074,34 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * For instance, if this stream consists of {@code [(A1, A2), (B1, B2), (C1, C2)]}
      * and the other stream consists of {@code [C, D, E]},
      * {@code this.concat(other)} will consist of {@code [(A1, A2), (B1, B2), (C1, C2), (C, null), (D, null), (E, null)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    BiConstraintStream<A, B> concat(UniConstraintStream<A> otherStream);
+    default BiConstraintStream<A, B> concat(UniConstraintStream<A> otherStream) {
+        return concat(otherStream, uniConstantNull());
+    }
+
+    /**
+     * Returns a new {@link BiConstraintStream} containing all the tuples of both this {@link BiConstraintStream}
+     * and the provided {@link UniConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by the result of the padding function.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2), (B1, B2), (C1, C2)]}
+     * and the other stream consists of {@code [C, D, E]},
+     * {@code this.concat(other, a -> null)} will consist of
+     * {@code [(A1, A2), (B1, B2), (C1, C2), (C, null), (D, null), (E, null)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunction never null, function to find the padding for the second fact
+     * @return never null
+     */
+    BiConstraintStream<A, B> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunction);
 
     /**
      * Returns a new {@link BiConstraintStream} containing all the tuples of both this {@link BiConstraintStream} and the
@@ -1084,7 +1111,9 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * <p>
      * For instance, if this stream consists of {@code [(A, 1), (B, 2), (C, 3)]} and the other stream consists of
      * {@code [(C, 3), (D, 4), (E, 5)]}, {@code this.concat(other)} will consist of
-     * {@code [(A, 1), (B, 2), (C, 3), (C, 3), (D, 4), (E, 5)]}. This operation can be thought of as an or between streams.
+     * {@code [(A, 1), (B, 2), (C, 3), (C, 3), (D, 4), (E, 5)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
@@ -1101,12 +1130,34 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, null), (B1, B2, null), (C1, C2, null), (C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    <C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream);
+    default <C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+        return concat(otherStream, biConstantNull());
+    }
+
+    /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link BiConstraintStream}
+     * and the provided {@link TriConstraintStream}.
+     * The {@link BiConstraintStream} tuples will be padded from the right by the result of the padding function.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2), (B1, B2), (C1, C2)]}
+     * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
+     * {@code this.concat(other, (a, b) -> null)} will consist of
+     * {@code [(A1, A2, null), (B1, B2, null), (C1, C2, null), (C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunction never null, function to find the padding for the third fact
+     * @return never null
+     */
+    <C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream, BiFunction<A, B, C> paddingFunction);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link BiConstraintStream}
@@ -1119,12 +1170,37 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, null, null), (B1, B2, null, null), (C1, C2, null, null),
      * (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    <C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
+    default <C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+        return concat(otherStream, biConstantNull(), biConstantNull());
+    }
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link BiConstraintStream}
+     * and the provided {@link QuadConstraintStream}.
+     * The {@link BiConstraintStream} tuples will be padded from the right by the results of the padding functions.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2), (B1, B2), (C1, C2)]}
+     * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
+     * {@code this.concat(other, (a, b) -> null, (a, b) -> null)} will consist of
+     * {@code [(A1, A2, null, null), (B1, B2, null, null), (C1, C2, null, null),
+     * (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @param paddingFunctionD never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    <C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
+            BiFunction<A, B, C> paddingFunctionC, BiFunction<A, B, D> paddingFunctionD);
 
     // ************************************************************************
     // Other operations
@@ -1175,7 +1251,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, ConstantLambdaUtils.biConstantOne());
+        return penalize(constraintWeight, biConstantOne());
     }
 
     /**
@@ -1184,7 +1260,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, ConstantLambdaUtils.biConstantOneLong());
+        return penalizeLong(constraintWeight, biConstantOneLong());
     }
 
     /**
@@ -1193,7 +1269,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(Score_ constraintWeight) {
-        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.biConstantOneBigDecimal());
+        return penalizeBigDecimal(constraintWeight, biConstantOneBigDecimal());
     }
 
     /**
@@ -1236,7 +1312,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default BiConstraintBuilder<A, B, ?> penalizeConfigurable() {
-        return penalizeConfigurable(ConstantLambdaUtils.biConstantOne());
+        return penalizeConfigurable(biConstantOne());
     }
 
     /**
@@ -1274,7 +1350,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, ConstantLambdaUtils.biConstantOne());
+        return reward(constraintWeight, biConstantOne());
     }
 
     /**
@@ -1317,7 +1393,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default BiConstraintBuilder<A, B, ?> rewardConfigurable() {
-        return rewardConfigurable(ConstantLambdaUtils.biConstantOne());
+        return rewardConfigurable(biConstantOne());
     }
 
     /**
@@ -1360,7 +1436,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, ConstantLambdaUtils.biConstantOne());
+        return impact(constraintWeight, biConstantOne());
     }
 
     /**
@@ -1401,7 +1477,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @return never null
      */
     default BiConstraintBuilder<A, B, ?> impactConfigurable() {
-        return impactConfigurable(ConstantLambdaUtils.biConstantOne());
+        return impactConfigurable(biConstantOne());
     }
 
     /**

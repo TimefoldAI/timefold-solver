@@ -1,34 +1,38 @@
-package ai.timefold.solver.core.impl.score.stream.bavet.uni;
+package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
 import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetConcatConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeTriConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 
-public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A>
+public final class BavetTriConcatTriConstraintStream<Solution_, A, B, C>
+        extends BavetAbstractTriConstraintStream<Solution_, A, B, C>
         implements BavetConcatConstraintStream<Solution_> {
 
-    private final BavetForeBridgeUniConstraintStream<Solution_, A> leftParent;
-    private final BavetForeBridgeUniConstraintStream<Solution_, A> rightParent;
+    private final BavetAbstractConstraintStream<Solution_> leftParent;
+    private final BavetAbstractConstraintStream<Solution_> rightParent;
+    private final ConcatNodeConstructor<A, B, C> nodeConstructor;
 
-    public BavetConcatUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetForeBridgeUniConstraintStream<Solution_, A> leftParent,
-            BavetForeBridgeUniConstraintStream<Solution_, A> rightParent) {
+    public BavetTriConcatTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> leftParent,
+            BavetForeBridgeTriConstraintStream<Solution_, A, B, C> rightParent) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
         this.leftParent = leftParent;
         this.rightParent = rightParent;
+        this.nodeConstructor = ConcatTriTriNode::new;
     }
 
     @Override
     public boolean guaranteesDistinct() {
-        return false;
+        return false; // The two parents could have the same source; guarantee impossible.
     }
 
     // ************************************************************************
@@ -44,14 +48,11 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        TupleLifecycle<UniTuple<A>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
+        TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         int leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         int rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new ConcatUniUniNode<>(downstream,
-                leftCloneStoreIndex,
-                rightCloneStoreIndex,
-                outputStoreSize);
+        var node = nodeConstructor.apply(downstream, leftCloneStoreIndex, rightCloneStoreIndex, outputStoreSize);
         buildHelper.addNode(node, this, leftParent, rightParent);
     }
 
@@ -67,7 +68,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BavetConcatUniConstraintStream<?, ?> other = (BavetConcatUniConstraintStream<?, ?>) o;
+        BavetTriConcatTriConstraintStream<?, ?, ?, ?> other = (BavetTriConcatTriConstraintStream<?, ?, ?, ?>) o;
         /*
          * Bridge streams do not implement equality because their equals() would have to point back to this stream,
          * resulting in StackOverflowError.
@@ -99,6 +100,13 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
     @Override
     public BavetAbstractConstraintStream<Solution_> getRightParent() {
         return rightParent;
+    }
+
+    private interface ConcatNodeConstructor<A, B, C> {
+
+        AbstractConcatNode<?, ?, ?> apply(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int leftCloneStoreIndex,
+                int rightCloneStoreIndex, int outputStoreSize);
+
     }
 
 }
