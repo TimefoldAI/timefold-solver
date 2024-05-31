@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
+import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
@@ -8,10 +9,13 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecyc
 final class ConcatQuadTriNode<A, B, C, D>
         extends AbstractConcatNode<QuadTuple<A, B, C, D>, TriTuple<A, B, C>, QuadTuple<A, B, C, D>> {
 
-    ConcatQuadTriNode(TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
+    private final TriFunction<A, B, C, D> paddingFunction;
+
+    ConcatQuadTriNode(TriFunction<A, B, C, D> paddingFunction, TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
             int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
+        this.paddingFunction = paddingFunction;
     }
 
     @Override
@@ -21,7 +25,12 @@ final class ConcatQuadTriNode<A, B, C, D>
 
     @Override
     protected QuadTuple<A, B, C, D> getOutTupleFromRight(TriTuple<A, B, C> rightTuple) {
-        return new QuadTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, null, outputStoreSize);
+        var factA = rightTuple.factA;
+        var factB = rightTuple.factB;
+        var factC = rightTuple.factC;
+        return new QuadTuple<>(factA, factB, factC,
+                paddingFunction.apply(factA, factB, factC),
+                outputStoreSize);
     }
 
     @Override

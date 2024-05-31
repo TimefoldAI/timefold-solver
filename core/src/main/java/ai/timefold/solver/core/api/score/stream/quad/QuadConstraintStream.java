@@ -1,7 +1,15 @@
 package ai.timefold.solver.core.api.score.stream.quad;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
@@ -24,7 +32,6 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches four facts.
@@ -851,12 +858,37 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * and the other stream consists of {@code [C, D, E]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C, null, null, null), (D, null, null, null), (E, null, null, null)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream);
+    default QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream) {
+        return concat(otherStream, uniConstantNull(), uniConstantNull(), uniConstantNull());
+    }
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link UniConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by the results of the padding functions.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4)]}
+     * and the other stream consists of {@code [C, D, E]},
+     * {@code this.concat(other, a -> null, a -> null, a -> null)} will consist of
+     * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C, null, null, null), (D, null, null, null), (E, null, null, null)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @param paddingFunctionD never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
+            Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
@@ -868,12 +900,36 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C1, C2, null, null), (D1, D2, null, null), (E1, E2, null, null)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream);
+    default QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream) {
+        return concat(otherStream, biConstantNull(), biConstantNull());
+    }
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link BiConstraintStream}.
+     * The {@link BiConstraintStream} tuples will be padded from the right by the results of the padding functions.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4)]}
+     * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
+     * {@code this.concat(other, (a, b) -> null, (a, b) -> null)} will consist of
+     * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C1, C2, null, null), (D1, D2, null, null), (E1, E2, null, null)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @param paddingFunctionD never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream, BiFunction<A, B, C> paddingFunctionC,
+            BiFunction<A, B, D> paddingFunctionD);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
@@ -885,12 +941,34 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C1, C2, C3, null), (D1, D2, D3, null), (E1, E2, E3, null)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream);
+    default QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream) {
+        return concat(otherStream, triConstantNull());
+    }
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
+     * and the provided {@link TriConstraintStream}.
+     * The {@link TriConstraintStream} tuples will be padded from the right by the result of the padding function.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4)]}
+     * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
+     * {@code this.concat(other, (a, b, c) -> null)} will consist of
+     * {@code [(A1, A2, A3, A4), (B1, B2, B3, B4), (C1, C2, C3, C4), (C1, C2, C3, null), (D1, D2, D3, null), (E1, E2, E3, null)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunction never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream, TriFunction<A, B, C, D> paddingFunction);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link QuadConstraintStream}
@@ -903,6 +981,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * and the other stream consists of {@code [(C, 3, -3, c), (D, 4, -4, d), (E, 5, -5, e)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A, 1, -1, a), (B, 2, -2, b), (C, 3, -3, c), (C, 3, -3, c), (D, 4, -4, d), (E, 5, -5,e)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
@@ -920,7 +999,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, ConstantLambdaUtils.quadConstantOne());
+        return penalize(constraintWeight, quadConstantOne());
     }
 
     /**
@@ -929,7 +1008,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeLong(Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, ConstantLambdaUtils.quadConstantOneLong());
+        return penalizeLong(constraintWeight, quadConstantOneLong());
     }
 
     /**
@@ -939,7 +1018,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
             penalizeBigDecimal(Score_ constraintWeight) {
-        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.quadConstantOneBigDecimal());
+        return penalizeBigDecimal(constraintWeight, quadConstantOneBigDecimal());
     }
 
     /**
@@ -982,7 +1061,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default QuadConstraintBuilder<A, B, C, D, ?> penalizeConfigurable() {
-        return penalizeConfigurable(ConstantLambdaUtils.quadConstantOne());
+        return penalizeConfigurable(quadConstantOne());
     }
 
     /**
@@ -1020,7 +1099,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, ConstantLambdaUtils.quadConstantOne());
+        return reward(constraintWeight, quadConstantOne());
     }
 
     /**
@@ -1063,7 +1142,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default QuadConstraintBuilder<A, B, C, D, ?> rewardConfigurable() {
-        return rewardConfigurable(ConstantLambdaUtils.quadConstantOne());
+        return rewardConfigurable(quadConstantOne());
     }
 
     /**
@@ -1106,7 +1185,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, ConstantLambdaUtils.quadConstantOne());
+        return impact(constraintWeight, quadConstantOne());
     }
 
     /**
@@ -1147,7 +1226,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     default QuadConstraintBuilder<A, B, C, D, ?> impactConfigurable() {
-        return impactConfigurable(ConstantLambdaUtils.quadConstantOne());
+        return impactConfigurable(quadConstantOne());
     }
 
     /**

@@ -1217,6 +1217,39 @@ Consider the following naive implementation without `concat`:
 An employee with no assigned shifts _wouldn't have been penalized_
 because no tuples were passed to the `groupBy` building block.
 
+[#constraintStreamsConcatPadding]
+==== Padding values
+
+Consider two constraint streams of different cardinalities like so:
+
+[source,java,options="nowrap"]
+----
+// All employees.
+UniConstraintStream<Employee> uniStream = constraintFactory.forEach(Employee.class);
+// Employees with a count of their shifts; some employees may have no shifts, therefore are not included.
+BiConstraintStream<Employee, Integer> biStream = constraintFactory.forEach(Employee.class)
+    .join(Shift.class, equal(Function.identity(), Shift::getEmployee))
+    .groupBy((employee, shift) -> employee, countBi());
+----
+
+By default, when concatenating these streams,
+the stream of lower cardinality will be padded with `null` values:
+
+[source,java,options="nowrap"]
+----
+// Employees from uniStream will have null as their shift count.
+BiConstraintStream<Employee, Integer> concatStream = uniStream.concat(biStream);
+----
+
+Instead of the `null` default,
+you can specify a padding value to use when padding the lower cardinality stream:
+
+[source,java,options="nowrap"]
+----
+// Employees from uniStream will have a zero as their shift count.
+BiConstraintStream<Employee, Integer> concatStream = uniStream.concat(biStream, employee -> 0);
+----
+
 [#constraintStreamsTesting]
 == Testing a constraint stream
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.uni;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.*;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Objects;
@@ -25,7 +27,6 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches one fact.
@@ -456,7 +457,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A exists
      */
     default UniConstraintStream<A> ifExistsOther(Class<A> otherClass) {
-        return ifExists(otherClass, Joiners.filtering(ConstantLambdaUtils.notEquals()));
+        return ifExists(otherClass, Joiners.filtering(notEquals()));
     }
 
     /**
@@ -540,7 +541,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         are true
      */
     default UniConstraintStream<A> ifExistsOther(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+        BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
@@ -644,7 +645,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         are true
      */
     default UniConstraintStream<A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+        BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
@@ -837,7 +838,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null, a stream that matches every A where a different A does not exist
      */
     default UniConstraintStream<A> ifNotExistsOther(Class<A> otherClass) {
-        return ifNotExists(otherClass, Joiners.filtering(ConstantLambdaUtils.notEquals()));
+        return ifNotExists(otherClass, Joiners.filtering(notEquals()));
     }
 
     /**
@@ -922,7 +923,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         {@link BiJoiner}s are true
      */
     default UniConstraintStream<A> ifNotExistsOther(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+        BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
@@ -1026,7 +1027,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *         {@link BiJoiner}s are true
      */
     default UniConstraintStream<A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering(ConstantLambdaUtils.notEquals());
+        BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
@@ -1578,12 +1579,34 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A, null), (B, null), (C, null), (C1, C2), (D1, D2), (E1, E2)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream);
+    default <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream) {
+        return concat(otherStream, uniConstantNull());
+    }
+
+    /**
+     * Returns a new {@link BiConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link BiConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by the result of the padding function.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
+     * {@code this.concat(other, a -> null)} will consist of
+     * {@code [(A, null), (B, null), (C, null), (C1, C2), (D1, D2), (E1, E2)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @return never null
+     */
+    <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream, Function<A, B> paddingFunctionB);
 
     /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
@@ -1595,12 +1618,36 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A, null), (B, null), (C, null), (C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream);
+    default <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+        return concat(otherStream, uniConstantNull(), uniConstantNull());
+    }
+
+    /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link TriConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by the result of the padding functions.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [(C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]},
+     * {@code this.concat(other, a -> null, a -> null)} will consist of
+     * {@code [(A, null), (B, null), (C, null), (C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @return never null
+     */
+    <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream, Function<A, B> paddingFunctionB,
+            Function<A, C> paddingFunctionC);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
@@ -1612,12 +1659,37 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A, null), (B, null), (C, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
+    default <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+        return concat(otherStream, uniConstantNull(), uniConstantNull(), uniConstantNull());
+    }
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
+     * and the provided {@link QuadConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by the result of the padding functions.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [A, B, C]}
+     * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
+     * {@code this.concat(other, a -> null, a -> null, a -> null)} will consist of
+     * {@code [(A, null), (B, null), (C, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @param paddingFunctionD never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
+            Function<A, B> paddingFunctionB, Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD);
 
     // ************************************************************************
     // Other operations
@@ -1690,7 +1762,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, ConstantLambdaUtils.uniConstantOne());
+        return penalize(constraintWeight, uniConstantOne());
     }
 
     /**
@@ -1699,7 +1771,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeLong(Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, ConstantLambdaUtils.uniConstantOneLong());
+        return penalizeLong(constraintWeight, uniConstantOneLong());
     }
 
     /**
@@ -1708,7 +1780,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeBigDecimal(Score_ constraintWeight) {
-        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.uniConstantOneBigDecimal());
+        return penalizeBigDecimal(constraintWeight, uniConstantOneBigDecimal());
     }
 
     /**
@@ -1751,7 +1823,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default UniConstraintBuilder<A, ?> penalizeConfigurable() {
-        return penalizeConfigurable(ConstantLambdaUtils.uniConstantOne());
+        return penalizeConfigurable(uniConstantOne());
     }
 
     /**
@@ -1789,7 +1861,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, ConstantLambdaUtils.uniConstantOne());
+        return reward(constraintWeight, uniConstantOne());
     }
 
     /**
@@ -1832,7 +1904,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default UniConstraintBuilder<A, ?> rewardConfigurable() {
-        return rewardConfigurable(ConstantLambdaUtils.uniConstantOne());
+        return rewardConfigurable(uniConstantOne());
     }
 
     /**
@@ -1875,7 +1947,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, ConstantLambdaUtils.uniConstantOne());
+        return impact(constraintWeight, uniConstantOne());
     }
 
     /**
@@ -1916,7 +1988,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @return never null
      */
     default UniConstraintBuilder<A, ?> impactConfigurable() {
-        return impactConfigurable(ConstantLambdaUtils.uniConstantOne());
+        return impactConfigurable(uniConstantOne());
     }
 
     /**
