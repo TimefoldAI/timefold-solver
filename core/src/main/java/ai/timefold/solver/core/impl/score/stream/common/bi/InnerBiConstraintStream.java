@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> {
 
@@ -92,7 +93,8 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b) -> a, (a, b) -> b);
+            return groupBy(ConstantLambdaUtils.biPickFirst(),
+                    ConstantLambdaUtils.biPickSecond());
         }
     }
 

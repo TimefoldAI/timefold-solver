@@ -47,7 +47,6 @@ import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.penta.PentaJoinerComber;
 import ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.quad.QuadConstraintBuilderImpl;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractConstraintStream<Solution_>
@@ -283,18 +282,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     // ************************************************************************
     // Operations with duplicate tuple possibility
     // ************************************************************************
-
-    @Override
-    public QuadConstraintStream<A, B, C, D> distinct() {
-        if (guaranteesDistinct()) {
-            return this;
-        } else {
-            return groupBy(ConstantLambdaUtils.quadPickFirst(),
-                    ConstantLambdaUtils.quadPickSecond(),
-                    ConstantLambdaUtils.quadPickThird(),
-                    ConstantLambdaUtils.quadPickFourth());
-        }
-    }
 
     @Override
     public QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
