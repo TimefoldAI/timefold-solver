@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.bi.BiJoinerComber;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
 
@@ -104,7 +105,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy(Function.identity());
+            return groupBy(ConstantLambdaUtils.identity());
         }
     }
 

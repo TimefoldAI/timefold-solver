@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A, B, C> {
 
@@ -94,7 +95,9 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b, c) -> a, (a, b, c) -> b, (a, b, c) -> c);
+            return groupBy(ConstantLambdaUtils.triPickFirst(),
+                    ConstantLambdaUtils.triPickSecond(),
+                    ConstantLambdaUtils.triPickThird());
         }
     }
 

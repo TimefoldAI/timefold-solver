@@ -16,6 +16,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStream<A, B, C, D> {
 
@@ -75,6 +76,18 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
             return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
             return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default QuadConstraintStream<A, B, C, D> distinct() {
+        if (guaranteesDistinct()) {
+            return this;
+        } else {
+            return groupBy(ConstantLambdaUtils.quadPickFirst(),
+                    ConstantLambdaUtils.quadPickSecond(),
+                    ConstantLambdaUtils.quadPickThird(),
+                    ConstantLambdaUtils.quadPickFourth());
         }
     }
 
