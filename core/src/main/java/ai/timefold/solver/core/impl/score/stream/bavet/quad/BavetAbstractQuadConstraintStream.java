@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
+import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultIndictedObjectsMapping;
+import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultJustificationMapping;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.function.BiFunction;
@@ -75,27 +78,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @SafeVarargs
     @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEach(otherClass), joiners);
-        } else {
-            // Calls fromUnfiltered() for backward compatibility only
-            return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
-    @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
-            PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
     public final <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
             PentaJoiner<A, B, C, D, E>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
@@ -103,27 +85,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @SafeVarargs
     @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifNotExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEach(otherClass), joiners);
-        } else {
-            // Calls fromUnfiltered() for backward compatibility only
-            return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
-    @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
-            PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
     public final <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
             PentaJoiner<A, B, C, D, E>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
@@ -471,12 +432,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     protected final PentaFunction<A, B, C, D, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
-        return InnerQuadConstraintStream.createDefaultJustificationMapping();
+        return createDefaultJustificationMapping();
     }
 
     @Override
     protected final QuadFunction<A, B, C, D, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return InnerQuadConstraintStream.createDefaultIndictedObjectsMapping();
+        return createDefaultIndictedObjectsMapping();
     }
 
 }

@@ -67,7 +67,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
     // ************************************************************************
 
     /**
-     * Create a new {@link BiConstraintStream} for every tuple of A, B, C and D where E exists for which the
+     * Create a new {@link QuadConstraintStream} for every tuple of A, B, C and D where E exists for which the
      * {@link PentaJoiner} is true (for the properties it extracts from the facts).
      * <p>
      * This method has overloaded methods with multiple {@link PentaJoiner} parameters.
@@ -156,9 +156,96 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
     <E> QuadConstraintStream<A, B, C, D> ifExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners);
 
     /**
-     * Create a new {@link BiConstraintStream} for every tuple of A, B, C and D where E exists for which the
+     * Create a new {@link QuadConstraintStream} for every tuple of A, B, C and D where E exists for which the
      * {@link PentaJoiner} is true (for the properties it extracts from the facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
+     * <p>
+     * This method has overloaded methods with multiple {@link PentaJoiner} parameters.
+     *
+     * @param otherStream never null
+     * @param joiner never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
+     *         {@link PentaJoiner} is true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner) {
+        return ifExists(otherStream, new PentaJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
+     *         {@link PentaJoiner}s are true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner1,
+            PentaJoiner<A, B, C, D, E> joiner2) {
+        return ifExists(otherStream, new PentaJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
+     *         {@link PentaJoiner}s are true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner1,
+            PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3) {
+        return ifExists(otherStream, new PentaJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param joiner4 never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
+     *         {@link PentaJoiner}s are true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner1,
+            PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3, PentaJoiner<A, B, C, D, E> joiner4) {
+        return ifExists(otherStream, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     * <p>
+     * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
+     * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
+     * Therefore, there are overloaded methods with up to 4 {@link PentaJoiner} parameters.
+     *
+     * @param otherStream never null
+     * @param joiners never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E exists for which the
+     *         {@link PentaJoiner}s are true
+     */
+    <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream, PentaJoiner<A, B, C, D, E>... joiners);
+
+    /**
+     * Create a new {@link QuadConstraintStream} for every tuple of A, B, C and D where E exists for which the
+     * {@link PentaJoiner} is true (for the properties it extracts from the facts).
+     * For classes annotated with {@link PlanningEntity},
      * this method also includes entities with null variables,
      * or entities that are not assigned to any list variable.
      * <p>
@@ -245,7 +332,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
             PentaJoiner<A, B, C, D, E>... joiners);
 
     /**
-     * Create a new {@link BiConstraintStream} for every tuple of A, B, C and D where E does not exist for which the
+     * Create a new {@link QuadConstraintStream} for every tuple of A, B, C and D where E does not exist for which the
      * {@link PentaJoiner} is true (for the properties it extracts from the facts).
      * <p>
      * This method has overloaded methods with multiple {@link PentaJoiner} parameters.
@@ -333,9 +420,94 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
     <E> QuadConstraintStream<A, B, C, D> ifNotExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners);
 
     /**
-     * Create a new {@link BiConstraintStream} for every tuple of A, B, C and D where E does not exist for which the
+     * Create a new {@link QuadConstraintStream} for every tuple of A, B, C and D where E does not exist for which the
      * {@link PentaJoiner} is true (for the properties it extracts from the facts).
-     * For classes annotated with {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity},
+     * <p>
+     * This method has overloaded methods with multiple {@link PentaJoiner} parameters.
+     *
+     * @param otherStream never null
+     * @param joiner never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
+     *         {@link PentaJoiner} is true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner) {
+        return ifNotExists(otherStream, new PentaJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
+     *         {@link PentaJoiner}s are true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2) {
+        return ifNotExists(otherStream, new PentaJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
+     *         {@link PentaJoiner}s are true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3) {
+        return ifNotExists(otherStream, new PentaJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param joiner4 never null
+     * @param <E> the type of the fifth matched fact
+     * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
+     *         {@link PentaJoiner}s are true
+     */
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
+            PentaJoiner<A, B, C, D, E> joiner1, PentaJoiner<A, B, C, D, E> joiner2, PentaJoiner<A, B, C, D, E> joiner3,
+            PentaJoiner<A, B, C, D, E> joiner4) {
+        return ifNotExists(otherStream, new PentaJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, PentaJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     * <p>
+     * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
+     * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
+     * Therefore, there are overloaded methods with up to 4 {@link PentaJoiner} parameters.
+     *
+     * @param <E> the type of the fifth matched fact
+     * @param otherStream never null
+     * @param joiners never null
+     * @return never null, a stream that matches every tuple of A, B, C and D where E does not exist for which the
+     *         {@link PentaJoiner}s are true
+     */
+    <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream, PentaJoiner<A, B, C, D, E>... joiners);
+
+    /**
+     * Create a new {@link QuadConstraintStream} for every tuple of A, B, C and D where E does not exist for which the
+     * {@link PentaJoiner} is true (for the properties it extracts from the facts).
+     * For classes annotated with {@link PlanningEntity},
      * this method also includes entities with null variables,
      * or entities that are not assigned to any list variable.
      * <p>
