@@ -31,6 +31,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches two facts.
@@ -1369,7 +1370,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
             BiFunction<A, B, C> paddingFunctionC, BiFunction<A, B, D> paddingFunctionD);
 
     // ************************************************************************
-    // Other operations
+    // expand
     // ************************************************************************
 
     /**
@@ -1672,6 +1673,41 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * If there is no {@link ConstraintConfiguration}, use {@link #impactBigDecimal(Score, BiFunction)} instead.
      */
     BiConstraintBuilder<A, B, ?> impactConfigurableBigDecimal(BiFunction<A, B, BigDecimal> matchWeigher);
+
+    // ************************************************************************
+    // complement
+    // ************************************************************************
+
+    /**
+     * As defined by {@link #complement(Class, Function)},
+     * where the padding function pads with null.
+     */
+    default BiConstraintStream<A, B> complement(Class<A> otherClass) {
+        return complement(otherClass, uniConstantNull());
+    }
+
+    /**
+     * Adds to the stream all instances of a given class which are not yet present in it.
+     * These instances must be present in the solution,
+     * which means the class needs to be either a planning entity or a problem fact.
+     * <p>
+     * The instances will be read from the first element of the input tuple.
+     * When an output tuple needs to be created for the newly inserted instances,
+     * the first element will be the new instance.
+     * The rest of the tuple will be padded with the result of the padding function,
+     * applied on the new instance.
+     *
+     * @param otherClass never null
+     * @param paddingFunction never null, function to find the padding for the second fact
+     * @return never null
+     */
+    default BiConstraintStream<A, B> complement(Class<A> otherClass, Function<A, B> paddingFunction) {
+        var firstStream = this;
+        var remapped = firstStream.map(ConstantLambdaUtils.biPickFirst());
+        var secondStream = getConstraintFactory().forEach(otherClass)
+                .ifNotExists(remapped, Joiners.equal());
+        return firstStream.concat(secondStream, paddingFunction);
+    }
 
     // ************************************************************************
     // Deprecated declarations

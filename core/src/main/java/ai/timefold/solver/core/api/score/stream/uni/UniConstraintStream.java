@@ -1856,7 +1856,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
             Function<A, B> paddingFunctionB, Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD);
 
     // ************************************************************************
-    // Other operations
+    // expand
     // ************************************************************************
 
     /**
@@ -1915,6 +1915,25 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      */
     <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_> expand(Function<A, ResultB_> mappingB,
             Function<A, ResultC_> mappingC, Function<A, ResultD_> mappingD);
+
+    // ************************************************************************
+    // complement
+    // ************************************************************************
+
+    /**
+     * Adds to the stream all instances of a given class which are not yet present in it.
+     * These instances must be present in the solution,
+     * which means the class needs to be either a planning entity or a problem fact.
+     *
+     * @param otherClass never null
+     * @return never null
+     */
+    default UniConstraintStream<A> complement(Class<A> otherClass) {
+        var firstStream = this;
+        var secondStream = getConstraintFactory().forEach(otherClass)
+                .ifNotExists(firstStream, Joiners.equal());
+        return firstStream.concat(secondStream);
+    }
 
     // ************************************************************************
     // Penalize/reward
