@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
@@ -28,8 +28,6 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.util.Pair;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 public record LineChart<X extends Number & Comparable<X>, Y extends Number & Comparable<Y>>(String id, String title,
@@ -51,7 +49,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
         if (values.isEmpty()) {
             return BigDecimal.ZERO;
         }
-        double min = Collections.min(values).doubleValue();
+        var min = Collections.min(values).doubleValue();
         if (min > 0) { // Always start with zero.
             return BigDecimal.ZERO;
         } else {
@@ -68,7 +66,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
         if (values.isEmpty()) {
             return BigDecimal.ZERO;
         }
-        double max = Collections.max(values).doubleValue();
+        var max = Collections.max(values).doubleValue();
         if (max < 0) { // Always start with zero.
             return BigDecimal.ZERO;
         } else {
@@ -121,7 +119,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public List<Pair<X, Y>> points(String label) {
-        Dataset<Y> dataset = datasets().stream().filter(d -> d.label().equals(label)).findFirst()
+        var dataset = datasets().stream().filter(d -> d.label().equals(label)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Dataset %s not found.".formatted(label)));
         return IntStream.range(0, dataset.data().size())
                 .filter(i -> dataset.data().get(i) != null)
@@ -131,8 +129,8 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
 
     static <N extends Number & Comparable<N>> boolean useLogarithmicProblemScale(List<N> seriesList) {
         NavigableSet<Double> valueSet = new TreeSet<>();
-        for (N dataItem : seriesList) {
-            double value = dataItem.doubleValue();
+        for (var dataItem : seriesList) {
+            var value = dataItem.doubleValue();
             if (value <= 0) { // Logarithm undefined.
                 return false;
             }
@@ -142,40 +140,37 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
             return false;
         }
         // If 60% of the points are in 20% of the value space, use a logarithmic scale.
-        double threshold = 0.2 * (valueSet.last() - valueSet.first());
-        int belowThresholdCount = valueSet.headSet(threshold).size();
+        var threshold = 0.2 * (valueSet.last() - valueSet.first());
+        var belowThresholdCount = valueSet.headSet(threshold).size();
         return belowThresholdCount >= (0.6 * valueSet.size());
     }
 
     static BigDecimal stepSize(BigDecimal min, BigDecimal max) {
         // Prevents ticks of ugly values.
         // For example, if the diff is 123_456_789, the step size will be 1_000_000.
-        double diff = max.subtract(min).abs().doubleValue();
-        if (diff == 0) {
+        var diff = max.subtract(min).abs();
+        if (diff.signum() == 0) {
             return BigDecimal.ONE;
-        } else if (diff == 1) {
-            return new BigDecimal("0.01");
         } else {
-            double nearestPowerOfTen = Math.pow(10, Math.round(Math.log10(diff)));
-            return BigDecimal.valueOf(nearestPowerOfTen)
-                    .divide(BigDecimal.valueOf(100));
+            var nearestPowerOfTen = (int) Math.round(Math.log10(diff.doubleValue()));
+            return BigDecimal.TEN.pow(nearestPowerOfTen - 2, MathContext.DECIMAL64);
         }
     }
 
     @Override
     public void writeToFile(Path parentFolder) {
-        File file = new File(parentFolder.toFile(), id() + ".js");
+        var file = new File(parentFolder.toFile(), id() + ".js");
         file.getParentFile().mkdirs();
 
-        Configuration freeMarkerCfg = BenchmarkReport.createFreeMarkerConfiguration();
+        var freeMarkerCfg = BenchmarkReport.createFreeMarkerConfiguration();
         freeMarkerCfg.setClassForTemplateLoading(getClass(), "");
 
-        String templateFilename = "chart-line.js.ftl";
+        var templateFilename = "chart-line.js.ftl";
         Map<String, Object> model = new HashMap<>();
         model.put("chart", this);
 
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-            Template template = freeMarkerCfg.getTemplate(templateFilename);
+            var template = freeMarkerCfg.getTemplate(templateFilename);
             template.process(model, writer);
         } catch (IOException e) {
             throw new IllegalArgumentException("Can not read templateFilename (" + templateFilename
@@ -227,13 +222,13 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
                 if (entries.size() < 3) {
                     return;
                 }
-                for (int i = 0; i < entries.size() - 2; i++) {
+                for (var i = 0; i < entries.size() - 2; i++) {
                     var entry1 = entries.get(i);
                     var entry2 = entries.get(i + 1);
                     if (!entry1.getValue().equals(entry2.getValue())) {
                         continue;
                     }
-                    Entry<X, Y> entry3 = entries.get(i + 2);
+                    var entry3 = entries.get(i + 2);
                     if (entry2.getValue().equals(entry3.getValue())) {
                         map.remove(entry2.getKey());
                     }
@@ -250,7 +245,7 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
             }
             // We need to merge all the keys after the down-sampling process to create a consistent X values list.
             // The xValues list size can be "MAX_CHART_WIDTH * data.size" in the worst case.
-            List<X> xValues = data.values().stream()
+            var xValues = data.values().stream()
                     .flatMap(k -> k.keySet().stream())
                     .distinct()
                     .sorted(Comparable::compareTo)
@@ -263,8 +258,8 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
             for (var entry : datasetMap.entrySet()) {
                 List<Y> datasetData = new ArrayList<>(xValues.size());
                 var dataset = entry.getValue();
-                for (X xValue : xValues) {
-                    Y yValue = dataset.get(xValue);
+                for (var xValue : xValues) {
+                    var yValue = dataset.get(xValue);
                     datasetData.add(yValue);
                 }
                 datasetList.add(new Dataset<>(entry.getKey(), datasetData, favoriteSet.contains(entry.getKey())));
@@ -286,14 +281,14 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
             if (datasetDataMap.size() <= sampleSize) {
                 return datasetDataMap;
             }
-            LinkedHashMap<X, Y> sampled = new LinkedHashMap<>(sampleSize);
+            var sampled = new LinkedHashMap<X, Y>(sampleSize);
             List<X> keys = new ArrayList<>(datasetDataMap.keySet());
 
             // Bucket size. Leave room for start and end data points
-            double every = (double) (datasetDataMap.size() - 2) / (double) (sampleSize - 2);
+            var every = (double) (datasetDataMap.size() - 2) / (double) (sampleSize - 2);
 
-            int a = 0; // Initially a is the first point in the triangle
-            int nextA = 0;
+            var a = 0; // Initially a is the first point in the triangle
+            var nextA = 0;
             Y maxAreaPoint = null;
             double maxArea;
             double area;
@@ -301,16 +296,16 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
             // Always add the first point
             datasetDataMap.entrySet().stream().findFirst().ifPresent(e -> sampled.put(e.getKey(), e.getValue()));
 
-            for (int i = 0; i < sampleSize - 2; i++) {
+            for (var i = 0; i < sampleSize - 2; i++) {
 
                 // Calculate point average for next bucket (containing c)
-                double avgX = 0.0D;
-                double avgY = 0.0D;
-                int avgRangeStart = (int) Math.floor((i + 1) * every) + 1;
-                int avgRangeEnd = (int) Math.floor((i + 2) * every) + 1;
+                var avgX = 0.0D;
+                var avgY = 0.0D;
+                var avgRangeStart = (int) Math.floor((i + 1) * every) + 1;
+                var avgRangeEnd = (int) Math.floor((i + 2) * every) + 1;
                 avgRangeEnd = Math.min(avgRangeEnd, datasetDataMap.size());
 
-                int avgRangeLength = avgRangeEnd - avgRangeStart;
+                var avgRangeLength = avgRangeEnd - avgRangeStart;
 
                 while (avgRangeStart < avgRangeEnd) {
                     avgX += keys.get(avgRangeStart).doubleValue();
@@ -321,12 +316,12 @@ public record LineChart<X extends Number & Comparable<X>, Y extends Number & Com
                 avgY /= avgRangeLength;
 
                 // Get the range for this bucket
-                int rangeOffs = (int) Math.floor(i * every) + 1;
-                int rangeTo = (int) Math.floor((i + 1) * every) + 1;
+                var rangeOffs = (int) Math.floor(i * every) + 1;
+                var rangeTo = (int) Math.floor((i + 1) * every) + 1;
 
                 // Point a
-                double pointAX = keys.get(a).doubleValue();
-                double pointAY = datasetDataMap.get(keys.get(a)).doubleValue();
+                var pointAX = keys.get(a).doubleValue();
+                var pointAY = datasetDataMap.get(keys.get(a)).doubleValue();
 
                 maxArea = -1;
 
