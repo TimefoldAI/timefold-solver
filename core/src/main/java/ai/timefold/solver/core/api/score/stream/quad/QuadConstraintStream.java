@@ -32,6 +32,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * A {@link ConstraintStream} that matches four facts.
@@ -1160,6 +1161,44 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * @return never null
      */
     QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
+
+    // ************************************************************************
+    // complement
+    // ************************************************************************
+
+    /**
+     * As defined by {@link #complement(Class, Function, Function, Function)},
+     * where the padding function pads with null.
+     */
+    default QuadConstraintStream<A, B, C, D> complement(Class<A> otherClass) {
+        return complement(otherClass, uniConstantNull(), uniConstantNull(), uniConstantNull());
+    }
+
+    /**
+     * Adds to the stream all instances of a given class which are not yet present in it.
+     * These instances must be present in the solution,
+     * which means the class needs to be either a planning entity or a problem fact.
+     * <p>
+     * The instances will be read from the first element of the input tuple.
+     * When an output tuple needs to be created for the newly inserted instances,
+     * the first element will be the new instance.
+     * The rest of the tuple will be padded with the results of the padding functions,
+     * applied on the new instance.
+     *
+     * @param otherClass never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @param paddingFunctionD never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    default QuadConstraintStream<A, B, C, D> complement(Class<A> otherClass, Function<A, B> paddingFunctionB,
+            Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD) {
+        var firstStream = this;
+        var remapped = firstStream.map(ConstantLambdaUtils.quadPickFirst());
+        var secondStream = getConstraintFactory().forEach(otherClass)
+                .ifNotExists(remapped, Joiners.equal());
+        return firstStream.concat(secondStream, paddingFunctionB, paddingFunctionC, paddingFunctionD);
+    }
 
     // ************************************************************************
     // Penalize/reward
