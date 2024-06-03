@@ -68,7 +68,7 @@ $ git clone {quickstarts-clone-url}
 +
 .. Download an {quickstarts-archive-url}[archive].
 
-. Find the solution in {hello-world-java-quickstart-url}[the `hello-world` directory].
+. Find the solution in {hello-world-java-quickstart-url}[the `java` directory].
 . Follow the instructions in the README file to run the application.
 
 == Prerequisites

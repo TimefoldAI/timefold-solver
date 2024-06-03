@@ -256,7 +256,7 @@ None of these changes are likely to affect you, unless you have chosen to depend
 .icon:exclamation-triangle[role=red] Constraint Verifier: Check your tests if you use the planning list variable
 [%collapsible%open]
 ====
-In some cases, especially if you've reused our https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/food-packaging[Food Packaging quickstart], you may see your tests failing after the upgrade.
+In some cases, especially if you've reused our https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/food-packaging[Food Packaging quickstart], you may see your tests failing after the upgrade.
 This is due to a bug fix in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams], which now currently handles values not present in any list variable.
 
 If your code has a shadow entity whose xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable] is a planning list variable and your test leaves that reference `null`, the constraints will no longer take that shadow entity into account.
