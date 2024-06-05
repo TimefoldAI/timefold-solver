@@ -99,6 +99,7 @@ Create the `Timeslot` class in `domain.py`:
 from dataclasses import dataclass
 from datetime import time
 
+
 @dataclass
 class Timeslot:
     day_of_week: str
@@ -106,7 +107,7 @@ class Timeslot:
     end_time: time
 
     def __str__(self):
-        return f'{self.day_of_week} {self.start_time}'
+        return f'{self.day_of_week} {self.start_time.strftime('%H:%M')}'
 ----
 --
 ====
@@ -186,6 +187,7 @@ Create the `Room` class in `domain.py`:
 [source,python]
 ----
 from dataclasses import dataclass
+
 
 @dataclass
 class Room:
@@ -351,6 +353,7 @@ Create the `Lesson` class in `domain.py`:
 from timefold.solver.domain import planning_entity, PlanningId, PlanningVariable
 from dataclasses import dataclass, field
 from typing import Annotated
+
 
 @planning_entity
 @dataclass

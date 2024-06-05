@@ -357,6 +357,7 @@ from timefold.solver.score import (constraint_provider, HardSoftScore, Joiners,
                                    ConstraintFactory, Constraint)
 from domain import Lesson
 
+
 @constraint_provider
 def school_timetabling_constraints(constraint_factory: ConstraintFactory):
     return [
@@ -364,37 +365,41 @@ def school_timetabling_constraints(constraint_factory: ConstraintFactory):
         room_conflict(constraint_factory),
         teacher_conflict(constraint_factory),
         student_group_conflict(constraint_factory),
+
         # Soft constraints are only implemented in the timefold-quickstarts code
     ]
+
 
 def room_conflict(constraint_factory: ConstraintFactory) -> Constraint:
     # A room can accommodate at most one lesson at the same time.
     return (constraint_factory
             # Select each pair of 2 different lessons ...
             .for_each_unique_pair(Lesson,
-                    # ... in the same timeslot ...
-                    Joiners.equal(lambda lesson: lesson.timeslot),
-                    # ... in the same room ...
-                    Joiners.equal(lambda lesson: lesson.room))
+                                  # ... in the same timeslot ...
+                                  Joiners.equal(lambda lesson: lesson.timeslot),
+                                  # ... in the same room ...
+                                  Joiners.equal(lambda lesson: lesson.room))
             # ... and penalize each pair with a hard weight.
             .penalize(HardSoftScore.ONE_HARD)
             .as_constraint("Room conflict"))
+
 
 def teacher_conflict(constraint_factory: ConstraintFactory) -> Constraint:
     # A teacher can teach at most one lesson at the same time.
     return (constraint_factory
             .for_each_unique_pair(Lesson,
-                    Joiners.equal(lambda lesson: lesson.timeslot),
-                    Joiners.equal(lambda lesson: lesson.teacher))
+                                  Joiners.equal(lambda lesson: lesson.timeslot),
+                                  Joiners.equal(lambda lesson: lesson.teacher))
             .penalize(HardSoftScore.ONE_HARD)
             .as_constraint("Teacher conflict"))
+
 
 def student_group_conflict(constraint_factory: ConstraintFactory) -> Constraint:
     # A student can attend at most one lesson at the same time.
     return (constraint_factory
             .for_each_unique_pair(Lesson,
-                    Joiners.equal(lambda lesson: lesson.timeslot),
-                    Joiners.equal(lambda lesson: lesson.student_group))
+                                  Joiners.equal(lambda lesson: lesson.timeslot),
+                                  Joiners.equal(lambda lesson: lesson.student_group))
             .penalize(HardSoftScore.ONE_HARD)
             .as_constraint("Student group conflict"))
 ----

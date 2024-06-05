@@ -127,8 +127,11 @@ from timefold.solver.score import HardSoftScore
 from dataclasses import dataclass, field
 from typing import Annotated
 
+
 @planning_solution
+@dataclass
 class Timetable:
+    id: str
     timeslots: Annotated[list[Timeslot],
                          ProblemFactCollectionProperty,
                          ValueRangeProvider]
@@ -137,8 +140,7 @@ class Timetable:
                      ValueRangeProvider]
     lessons: Annotated[list[Lesson],
                        PlanningEntityCollectionProperty]
-    score: Annotated[HardSoftScore | None,
-                     PlanningScore] = field(default=None)
+    score: Annotated[HardSoftScore, PlanningScore] = field(default=None)
 ----
 --
 ====

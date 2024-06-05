@@ -593,6 +593,8 @@ from timefold.solver.config import (SolverConfig, ScoreDirectorFactoryConfig,
 from timefold.solver import SolverFactory
 from domain import Lesson, Timeslot, Room, Timetable
 from constraints import school_timetabling_constraints
+from enum import Enum
+from datetime import time
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -613,15 +615,15 @@ def main():
             )
         ))
 
-        # Load the problem
-        problem = generate_demo_data(DemoData.SMALL)
+    # Load the problem
+    problem = generate_demo_data(DemoData.SMALL)
 
-        # Solve the problem
-        solver = solver_factory.build_solver()
-        solution = solver.solve(problem)
+    # Solve the problem
+    solver = solver_factory.build_solver()
+    solution = solver.solve(problem)
 
-        # Visualize the solution
-        print_timetable(solution)
+    # Visualize the solution
+    print_timetable(solution)
 
 def generate_demo_data(demo_data: 'DemoData') -> Timetable:
     timeslots = [
@@ -637,7 +639,7 @@ def generate_demo_data(demo_data: 'DemoData') -> Timetable:
         while True:
             yield str(current)
             current += 1
-    
+
     ids = id_generator()
     lessons.append(Lesson(next(ids), "Math", "A. Turing", "9th grade"))
     lessons.append(Lesson(next(ids), "Math", "A. Turing", "9th grade"))
@@ -669,12 +671,12 @@ def print_timetable(time_table: Timetable) -> None:
     timeslots = time_table.timeslots
     lessons = time_table.lessons
     lesson_map = {
-        (lesson.room.name, lesson.timeslot.day, lesson.timeslot.start_time): lesson
+        (lesson.room.name, lesson.timeslot.day_of_week, lesson.timeslot.start_time): lesson
         for lesson in lessons
         if lesson.room is not None and lesson.timeslot is not None
     }
     row_format ="|{:<15}" * (len(rooms) + 1) + "|"
-    sep_format = ("+" + ("-" * 15) + "+") * (len(rooms) + 1)
+    sep_format = "+" + ((("-" * 15) + "+") * (len(rooms) + 1))
 
     LOGGER.info(sep_format)
     LOGGER.info(row_format.format('', *[room.name for room in rooms]))
@@ -683,8 +685,8 @@ def print_timetable(time_table: Timetable) -> None:
     for timeslot in timeslots:
         def get_row_lessons():
             for room in rooms:
-                yield lesson_map.get((room.name, timeslot.day, timeslot.start_time),
-                                     Lesson('', '', ''))
+                yield lesson_map.get((room.name, timeslot.day_of_week, timeslot.start_time),
+                                     Lesson('', '', '', ''))
 
         row_lessons = [*get_row_lessons()]
         LOGGER.info(row_format.format(str(timeslot), *[lesson.subject for lesson in row_lessons]))
@@ -1015,23 +1017,23 @@ Create the `test_constraints.py` file with the following contents:
 [source,python]
 ----
 from timefold.solver.test import ConstraintVerifier
-from domain import Timetable, Lesson
+from domain import Timetable, Lesson, Room, Timeslot
 from constraints import school_timetabling_constraints, room_conflict
 from datetime import time
 
-ROOM1 = Room("Room1");
-TIMESLOT1 = Timeslot('MONDAY', time(12, 0));
-TIMESLOT2 = Timeslot('TUESDAY', time(12, 0));
+ROOM1 = Room("Room1")
+TIMESLOT1 = Timeslot("MONDAY", time(12, 0), time(13, 0))
+TIMESLOT2 = Timeslot("TUESDAY", time(12, 0), time(13, 0))
 
 constraint_verifier = ConstraintVerifier.build(school_timetabling_constraints, Timetable, Lesson)
 
 def test_room_conflict():
-    first_lesson = Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
-    conflicting_lesson = Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
-    non_conflicting_lesson = new Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+    first_lesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
+    conflicting_lesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
+    non_conflicting_lesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
     (constraint_verifier.verify_that(room_conflict)
         .given(first_lesson, conflicting_lesson, non_conflicting_lesson)
-        .penalizesBy(1))
+        .penalizes_by(1))
 ----
 --
 ====
