@@ -12,8 +12,10 @@ version: latest
 asciidoc:
   attributes:
     timefold-solver-version: 1.9.0
+    timefold-solver-python-version: 1.9.0b0
     java-version: 17
     maven-version: 3.9.2
+    python-version: '3.10'
     quarkus-version: 3.8.3
     spring-boot-version: 3.2.4
     logback-version: 1.5.3

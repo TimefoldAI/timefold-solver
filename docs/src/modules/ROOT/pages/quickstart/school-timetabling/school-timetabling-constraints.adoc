@@ -349,13 +349,13 @@ class TimeTableConstraintProvider : ConstraintProvider {
 Python::
 +
 --
-Create a `school_timetabling_constraints` function in `constraints.py`:
+Create a `school_timetabling_constraints` function in `src/hello_world/constraints.py`:
 
 [source,python]
 ----
 from timefold.solver.score import (constraint_provider, HardSoftScore, Joiners,
                                    ConstraintFactory, Constraint)
-from domain import Lesson
+from .domain import Lesson
 
 
 @constraint_provider

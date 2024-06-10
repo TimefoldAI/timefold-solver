@@ -116,7 +116,7 @@ data class Timetable (
 Python::
 +
 --
-Create the `Solution` class in `domain.py`:
+Create the `Solution` class in `src/hello_world/domain.py`:
 
 [source,python]
 ----

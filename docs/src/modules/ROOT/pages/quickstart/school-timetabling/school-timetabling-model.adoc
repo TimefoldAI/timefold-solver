@@ -92,7 +92,7 @@ data class Timeslot(
 Python::
 +
 --
-Create the `Timeslot` class in `domain.py`:
+Create the `Timeslot` class in `src/hello_world/domain.py`:
 
 [source,python]
 ----
@@ -182,7 +182,7 @@ data class Room(
 Python::
 +
 --
-Create the `Room` class in `domain.py`:
+Create the `Room` class in `src/hello_world/domain.py`:
 
 [source,python]
 ----
@@ -346,7 +346,7 @@ data class Lesson (
 Python::
 +
 --
-Create the `Lesson` class in `domain.py`:
+Create the `Lesson` class in `src/hello_world/domain.py`:
 
 [source,python]
 ----
