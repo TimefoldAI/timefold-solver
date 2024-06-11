@@ -90,7 +90,7 @@ Python::
 --
 * https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
 * https://www.python.org/downloads/[Python] {python-version}+
-* An IDE, such as https://www.jetbrains.com/pycharm/[IntelliJ PyCharm], VSCode or Eclipse
+* An IDE, such as https://www.jetbrains.com/pycharm/[IntelliJ PyCharm], https://code.visualstudio.com[VSCode] or https://www.eclipse.org[Eclipse]
 --
 ====
 
