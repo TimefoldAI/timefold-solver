@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -1009,5 +1010,37 @@ class SolverManagerTest {
         TestdataSolution result = solverJob.getFinalBestSolution();
         assertThat(result).isSameAs(inputProblem);
         assertThat(solverJob.isTerminatedEarly()).isTrue();
+    }
+
+    public static class CustomThreadFactory implements ThreadFactory {
+        private static final String CUSTOM_THREAD_NAME = "CustomThread";
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            return new Thread(runnable, CUSTOM_THREAD_NAME);
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    void threadFactoryIsUsed() throws ExecutionException, InterruptedException {
+        var threadCheckingPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
+                scoreDirector -> {
+                    if (!Thread.currentThread().getName().equals(CustomThreadFactory.CUSTOM_THREAD_NAME)) {
+                        fail("Custom thread factory not used");
+                    }
+                });
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(threadCheckingPhaseConfig, new ConstructionHeuristicPhaseConfig());
+
+        var solverManagerConfig = new SolverManagerConfig().withThreadFactoryClass(CustomThreadFactory.class);
+        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
+
+        var inputProblem = PlannerTestUtils.generateTestdataSolution("s1", 4);
+        var solverJob = solverManager.solve(1L, inputProblem);
+
+        TestdataSolution result = solverJob.getFinalBestSolution();
+        assertThat(result).isNotNull();
     }
 }
