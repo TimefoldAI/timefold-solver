@@ -82,7 +82,7 @@ Java / Kotlin::
 --
 * https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
 * https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 7+
-* An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], VSCode or Eclipse
+* An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], https://code.visualstudio.com[VSCode] or https://www.eclipse.org[Eclipse]
 --
 
 Python::
@@ -90,7 +90,7 @@ Python::
 --
 * https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
 * https://www.python.org/downloads/[Python] {python-version}+
-* An IDE, such as https://www.jetbrains.com/pycharm/[IntelliJ PyCharm], https://code.visualstudio.com[VSCode] or https://www.eclipse.org[Eclipse]
+* An IDE, such as https://www.jetbrains.com/pycharm/[IntelliJ PyCharm] or https://code.visualstudio.com[VSCode]
 --
 ====
 
