@@ -8,8 +8,10 @@ version: latest
 asciidoc:
   attributes:
     timefold-solver-version: ${project.version}
+    timefold-solver-python-version: ${project.version}b0
     java-version: ${maven.compiler.release}
     maven-version: ${maven.min.version}
+    python-version: '3.10'
     quarkus-version: ${version.io.quarkus}
     spring-boot-version: ${version.org.springframework.boot}
     logback-version: ${version.ch.qos.logback}

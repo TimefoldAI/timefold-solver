@@ -112,6 +112,37 @@ data class Timetable (
 }
 ----
 --
+
+Python::
++
+--
+Create the `Solution` class in `src/hello_world/domain.py`:
+
+[source,python]
+----
+from timefold.solver.domain import (planning_solution, PlanningEntityCollectionProperty,
+                                    ProblemFactCollectionProperty, ValueRangeProvider,
+                                    PlanningScore)
+from timefold.solver.score import HardSoftScore
+from dataclasses import dataclass, field
+from typing import Annotated
+
+
+@planning_solution
+@dataclass
+class Timetable:
+    id: str
+    timeslots: Annotated[list[Timeslot],
+                         ProblemFactCollectionProperty,
+                         ValueRangeProvider]
+    rooms: Annotated[list[Room],
+                     ProblemFactCollectionProperty,
+                     ValueRangeProvider]
+    lessons: Annotated[list[Lesson],
+                       PlanningEntityCollectionProperty]
+    score: Annotated[HardSoftScore, PlanningScore] = field(default=None)
+----
+--
 ====
 
 

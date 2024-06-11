@@ -88,6 +88,28 @@ data class Timeslot(
 }
 ----
 --
+
+Python::
++
+--
+Create the `Timeslot` class in `src/hello_world/domain.py`:
+
+[source,python]
+----
+from dataclasses import dataclass
+from datetime import time
+
+
+@dataclass
+class Timeslot:
+    day_of_week: str
+    start_time: time
+    end_time: time
+
+    def __str__(self):
+        return f'{self.day_of_week} {self.start_time.strftime('%H:%M')}'
+----
+--
 ====
 
 
@@ -154,6 +176,25 @@ data class Room(
     override fun toString(): String = name
 
 }
+----
+--
+
+Python::
++
+--
+Create the `Room` class in `src/hello_world/domain.py`:
+
+[source,python]
+----
+from dataclasses import dataclass
+
+
+@dataclass
+class Room:
+    name: str
+
+    def __str__(self):
+        return f'{self.name}'
 ----
 --
 ====
@@ -299,6 +340,30 @@ data class Lesson (
     override fun toString(): String = "$subject($id)"
 
 }
+----
+--
+
+Python::
++
+--
+Create the `Lesson` class in `src/hello_world/domain.py`:
+
+[source,python]
+----
+from timefold.solver.domain import planning_entity, PlanningId, PlanningVariable
+from dataclasses import dataclass, field
+from typing import Annotated
+
+
+@planning_entity
+@dataclass
+class Lesson:
+    id: Annotated[str, PlanningId]
+    subject: str
+    teacher: str
+    student_group: str
+    timeslot: Annotated[Timeslot | None, PlanningVariable] = field(default=None)
+    room: Annotated[Room | None, PlanningVariable] = field(default=None)
 ----
 --
 ====
