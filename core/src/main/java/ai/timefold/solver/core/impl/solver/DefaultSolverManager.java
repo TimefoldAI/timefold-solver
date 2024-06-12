@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,12 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
         this.solverFactory = solverFactory;
         validateSolverFactory();
         int parallelSolverCount = solverManagerConfig.resolveParallelSolverCount();
-        solverThreadPool = Executors.newFixedThreadPool(parallelSolverCount);
+        var threadFactory = Executors.defaultThreadFactory();
+        if (solverManagerConfig.getThreadFactoryClass() != null) {
+            threadFactory = ConfigUtils.newInstance(solverManagerConfig, "threadFactoryClass",
+                    solverManagerConfig.getThreadFactoryClass());
+        }
+        solverThreadPool = Executors.newFixedThreadPool(parallelSolverCount, threadFactory);
         problemIdToSolverJobMap = new ConcurrentHashMap<>(parallelSolverCount * 10);
     }
 
