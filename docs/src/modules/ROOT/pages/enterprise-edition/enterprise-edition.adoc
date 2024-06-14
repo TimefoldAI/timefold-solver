@@ -172,14 +172,19 @@ public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer
 ====
 `NearbyDistanceMeter` implementations are expected to be stateless.
 The solver may choose to reuse them in different contexts.
+
+The Nearby configuration is not enabled for the Construction Heuristics
+because the method will analyze all possible moves.
+Adding Nearby in this situation would only result in unnecessary costs
+involving the generation of the distance matrix and sorting operations without taking advantage of the feature.
 ====
 
 ==== Nearby selection with a list variable
 
 To quickly configure nearby selection with a planning list variable,
 add `nearbyDistanceMeterClass` element to your configuration file.
-The following enables nearby selection with a list variable,
-in both local search and construction heuristics:
+The following enables nearby selection with a list variable
+for the local search:
 
 [source,xml,options="nowrap"]
 ----
@@ -197,31 +202,6 @@ xref:optimization-algorithms/optimization-algorithms.adoc#swapMoveSelector[Swap]
 Change with Nearby,
 Swap with Nearby,
 and xref:optimization-algorithms/optimization-algorithms.adoc#kOptListMoveSelector[2-OPT] with Nearby.
-
-===== Advanced configuration for construction heuristics
-
-To customize the behavior of nearby construction heuristics,
-add `queuedValuePlacer` element,
-into it add a `listChangeMoveSelector` element,
-further into it add a `nearbySelection` element in the `destinationSelector` element
-and finally use xref:optimization-algorithms/optimization-algorithms.adoc#mimicSelection[mimic selection]
-to specify which destination should be near by the selection.
-
-[source,xml,options="nowrap"]
-----
-    <queuedValuePlacer>
-      <valueSelector id="valueSelector1"/>
-      <listChangeMoveSelector>
-        <valueSelector mimicSelectorRef="valueSelector1"/>
-        <destinationSelector>
-          <nearbySelection>
-            <originValueSelector mimicSelectorRef="valueSelector1"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </destinationSelector>
-      </listChangeMoveSelector>
-    </queuedValuePlacer>
-----
 
 ===== Advanced configuration for local search
 
@@ -278,8 +258,8 @@ to specify which destination, value, or subList should be near by the selection.
 
 To quickly configure nearby selection with a chained planning variable,
 add `nearbyDistanceMeterClass` element to your configuration file.
-The following enables nearby selection with a chained variable,
-in both local search and construction heuristics:
+The following enables nearby selection with a chained variable
+for the local search:
 
 [source,xml,options="nowrap"]
 ----
@@ -298,31 +278,6 @@ By default, the following move selectors are included:
 - Change with Nearby,
 - Swap with Nearby
 - and xref:optimization-algorithms/optimization-algorithms.adoc#tailChainSwapMoveSelector[Tail Chain Swap] with Nearby.
-
-===== Advanced configuration for construction heuristics
-
-To customize the behavior of nearby construction heuristics,
-add `queuedEntityPlacer` element,
-into it add a `changeMoveSelector` element,
-further into it add a `nearbySelection` element in the `valueSelector` element
-and finally use xref:optimization-algorithms/optimization-algorithms.adoc#mimicSelection[mimic selection]
-to specify which destination should be near by the selection.
-
-[source,xml,options="nowrap"]
-----
-    <queuedEntityPlacer>
-      <entitySelector id="entitySelector1"/>
-      <changeMoveSelector>
-        <entitySelector id="entitySelector1"/>
-        <valueSelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector1"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </valueSelector>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
-----
 
 ===== Advanced configuration for local search
 
