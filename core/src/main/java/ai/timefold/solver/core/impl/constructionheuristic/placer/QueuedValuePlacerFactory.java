@@ -6,7 +6,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabledConstructionHeuristic;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -44,19 +43,6 @@ public class QueuedValuePlacerFactory<Solution_>
                 ? buildChangeMoveSelectorConfig(configPolicy, valueSelectorConfig_.getId(),
                         valueSelector.getVariableDescriptor())
                 : config.getMoveSelectorConfig();
-        if (configPolicy.getNearbyDistanceMeterClass() != null) {
-            if (moveSelectorConfig_ instanceof NearbyAutoConfigurationEnabledConstructionHeuristic nearbySelectorConfig) {
-                if (moveSelectorConfig_.hasNearbySelectionConfig()) {
-                    throw new IllegalArgumentException(
-                            """
-                                    The selector configuration (%s) already includes the Nearby Selection setting, making it incompatible with the top-level property nearbyDistanceMeterClass (%s).
-                                    Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
-                                    .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
-                }
-                moveSelectorConfig_ = nearbySelectorConfig.enableNearbySelectionForConstructionHeuristic(
-                        configPolicy.getNearbyDistanceMeterClass(), configPolicy.getRandom(), valueSelectorConfig_.getId());
-            }
-        }
 
         MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
                 .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
