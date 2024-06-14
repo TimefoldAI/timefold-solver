@@ -56,14 +56,6 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         ValueSorterManner valueSorterManner = Objects.requireNonNullElse(
                 phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
-        if (!valueSorterManner.isNonePossible() && solverConfigPolicy.getNearbyDistanceMeterClass() != null) {
-            throw new IllegalStateException(
-                    """
-                            Auto-configured nearby selection does not support value sorting.
-                            Maybe remove constructionHeuristicType from your construction heuristics settings.
-                            Maybe remove valueSorterManner from your construction heuristics settings.
-                            Maybe disable auto-configured nearby selection by setting nearbyDistanceMeterClass to null in your solver config.""");
-        }
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
                 .withReinitializeVariableFilterEnabled(true)
                 .withInitializedChainedValueFilterEnabled(true)

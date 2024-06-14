@@ -9,7 +9,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
-import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabledConstructionHeuristic;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -21,8 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
 })
 public class ChangeMoveSelectorConfig
         extends MoveSelectorConfig<ChangeMoveSelectorConfig>
-        implements NearbyAutoConfigurationEnabledConstructionHeuristic<ChangeMoveSelectorConfig>,
-        NearbyAutoConfigurationEnabled<ChangeMoveSelectorConfig> {
+        implements NearbyAutoConfigurationEnabled<ChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "changeMoveSelector";
 
@@ -94,12 +92,6 @@ public class ChangeMoveSelectorConfig
     public ChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
-    }
-
-    @Override
-    public ChangeMoveSelectorConfig enableNearbySelectionForConstructionHeuristic(
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random, String recordingSelectorId) {
-        return NearbyUtil.enable(this, distanceMeter, recordingSelectorId);
     }
 
     @Override
