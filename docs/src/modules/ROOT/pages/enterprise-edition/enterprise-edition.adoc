@@ -406,7 +406,7 @@ In this section, we will focus on multi-threaded incremental solving and partiti
 
 [NOTE]
 ====
-A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` might cause congestion multi-threaded solving
+A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` might cause congestion
 and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
@@ -416,40 +416,31 @@ and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSp
 
 With this feature, the solver can run significantly faster, 
 getting you the right solution earlier.
-It is especially useful for large datasets, 
-where score calculation speed is the bottleneck.
+It has been designed to speed up the solver in cases where score calculation is the bottleneck.
+This typically happens when the constraints are computationally expensive,
+or when the dataset is large.
 
-The following table shows the observed score calculation speeds
-of the Vehicle Routing Problem and the Maintenance Scheduling Problem,
-as the number of threads increases:
-
-|===
-|Number of Threads |Vehicle Routing |Maintenance Scheduling
-
-|1
-|~ 22,000
-|~  6,000
-
-|2
-|~ 40,000
-|~ 11,000
-
-|4
-|~ 70,000
-|~ 19,000
-|===
-
-As we can see, the speed increases with the number of threads,
-but the scaling is not exactly linear due to the overhead of managing communication between multiple threads.
-Above 4 move threads,
-this overhead tends to dominate and therefore we do not recommend scaling over that threshold.
+- The sweet spot for this feature is when the score calculation speed is up to 10 thousand per second.
+In this case, we have observed the algorithm to scale linearly with the number of move threads.
+Every additional move thread will bring a speedup,
+albeit with diminishing returns.
+- For score calculation speeds on the order of 100 thousand per second,
+the algorithm no longer scales linearly,
+but using 4 to 8 move threads may still be beneficial.
+- For even higher score calculation speeds,
+the feature does not bring any benefit.
+At these speeds, score calculation is no longer the bottleneck.
+If the solver continues to underperform,
+perhaps you're suffering from xref:constraints-and-score/performance.adoc#scoreTrap[score traps]
+or you may benefit from xref:optimization-algorithms/optimization-algorithms.adoc#customMoves[custom moves]
+to help the solver escape local optima.
 
 [NOTE]
 ====
-These numbers are strongly dependent on move selector configuration,
+These guidelines are strongly dependent on move selector configuration,
 size of the dataset and performance of individual constraints.
-We believe they are indicative of the speedups you can expect from this feature,
-but your mileage may vary significantly.
+We recommend you benchmark your use case
+to determine the optimal number of move threads for your problem.
 ====
 
 ===== Enabling multi-threaded incremental solving
@@ -525,8 +516,10 @@ The following ``moveThreadCount``s are supported:
 * ``AUTO``: Let Timefold Solver decide how many move threads to run in parallel.
 On machines or containers with little or no CPUs, this falls back to the single threaded code.
 * Static number: The number of move threads to run in parallel.
-This can be `1` to enforce running the multi-threaded code with only 1 move thread
-(which is less efficient than `NONE`).
+
+It is counter-effective to set a `moveThreadCount`
+that is higher than the number of available CPU cores,
+as that will slow down the score calculation speed.
 
 [IMPORTANT]
 ====
@@ -536,11 +529,6 @@ Compute nodes with higher CPU core counts are typically more expensive to run
 and therefore you may end up paying more for the same result,
 even though the actual compute time needed will be less.
 ====
-
-It is counter-effective to set a `moveThreadCount`
-that is higher than the number of available CPU cores,
-as that will slow down the score calculation speed.
-One good reason to do it anyway, is to reproduce a bug of a high-end production machine.
 
 [NOTE]
 ====
@@ -558,15 +546,10 @@ There are additional parameters you can supply to your `solverConfig.xml`:
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <moveThreadCount>4</moveThreadCount>
-  <moveThreadBufferSize>10</moveThreadBufferSize>
   <threadFactoryClass>...MyAppServerThreadFactory</threadFactoryClass>
   ...
 </solver>
 ----
-
-The `moveThreadBufferSize` power tweaks the number of moves that are selected but won't be foraged.
-Setting it too low reduces performance, but setting it too high too.
-Unless you're deeply familiar with the inner workings of multi-threaded solving, don't configure this parameter.
 
 To run in an environment that doesn't like arbitrary thread creation,
 use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factory>>.
@@ -1034,3 +1017,10 @@ unless it was already delivered before.
 - If your consumer throws an exception, we will still count the event as delivered.
 - If the system is too occupied to start and execute new threads,
 event delivery will be delayed until a thread can be started.
+
+[NOTE]
+====
+If you are using the `ThrottlingBestSolutionConsumer` for intermediate best solutions
+together with a final best solution consumer,
+both these consumers will receive the final best solution.
+====
