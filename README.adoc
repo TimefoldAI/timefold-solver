@@ -26,6 +26,9 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 Timefold Solver is an optimization engine evolved from OptaPlanner.
 Developed by the original OptaPlanner team, our aim is to free the world of wasteful planning.
 
+This repository contains Timefold Solver for Java.
+We also have a version of https://github.com/TimefoldAI/timefold-solver-python[Timefold Solver for Python].
+
 == Get started with Timefold Solver
 
 * https://timefold.ai/docs[Read a Getting Started guide.]
@@ -51,13 +54,6 @@ $ cd timefold-solver
 +
 ----
 $ mvn clean install -Dquickly
-----
-
-. Run the examples:
-+
-----
-$ cd examples
-$ mvn exec:java
 ----
 
 
