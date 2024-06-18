@@ -11,6 +11,7 @@
     <incrementalScoreCalculatorClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
+  <nearbyDistanceMeterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyNearbyDistanceClass</nearbyDistanceMeterClass>
   <constructionHeuristic>
     <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
     <queuedEntityPlacer>

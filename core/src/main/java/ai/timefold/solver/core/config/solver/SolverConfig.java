@@ -704,6 +704,9 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         if (scoreDirectorFactoryConfig != null) {
             scoreDirectorFactoryConfig.visitReferencedClasses(classVisitor);
         }
+        if (nearbyDistanceMeterClass != null) {
+            classVisitor.accept(nearbyDistanceMeterClass);
+        }
         if (terminationConfig != null) {
             terminationConfig.visitReferencedClasses(classVisitor);
         }

@@ -35,6 +35,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
@@ -182,6 +183,7 @@ class SolverConfigTest {
         verify(classVisitor, atLeastOnce()).accept(DummyEasyScoreCalculator.class);
         verify(classVisitor, atLeastOnce()).accept(DummyConstraintProvider.class);
         verify(classVisitor, atLeastOnce()).accept(DummyIncrementalScoreCalculator.class);
+        verify(classVisitor, atLeastOnce()).accept(DummyNearbyDistanceClass.class);
         verify(classVisitor, atLeastOnce()).accept(DummyEntityFilter.class);
         verify(classVisitor, atLeastOnce()).accept(DummyValueFilter.class);
         verify(classVisitor, atLeastOnce()).accept(DummyChangeMoveFilter.class);
@@ -372,6 +374,14 @@ class SolverConfigTest {
     }
 
     public abstract static class DummyMoveListFactory implements MoveListFactory<TestdataSolution> {
+    }
+
+    public class DummyNearbyDistanceClass implements NearbyDistanceMeter<String, String> {
+
+        @Override
+        public double getNearbyDistance(String origin, String destination) {
+            return 0;
+        }
     }
 
 }
