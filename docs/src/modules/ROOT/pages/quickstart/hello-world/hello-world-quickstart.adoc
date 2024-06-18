@@ -251,7 +251,7 @@ name = "hello_world"
 version = "1.0.0"
 requires-python = ">= {python-version}"
 dependencies = [
-    "timefold-solver == {timefold-solver-python-version}",
+    "timefold == {timefold-solver-python-version}",
     "pytest == 8.2.2"
 ]
 
