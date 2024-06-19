@@ -624,12 +624,11 @@ from datetime import time
 import logging
 import logging.config
 
-from .domain import Lesson, Timeslot, Room, Timetable
-from .constraints import school_timetabling_constraints
+from .domain import *
+from .constraints import define_constraints
 
 logging.config.fileConfig('logging.conf')
 LOGGER = logging.getLogger('app')
-
 
 def main():
     solver_factory = SolverFactory.create(
@@ -637,7 +636,7 @@ def main():
             solution_class=Timetable,
             entity_class_list=[Lesson],
             score_director_factory_config=ScoreDirectorFactoryConfig(
-                constraint_provider_function=school_timetabling_constraints
+                constraint_provider_function=define_constraints
             ),
             termination_config=TerminationConfig(
                 # The solver runs only for 5 seconds on this small dataset.
@@ -658,12 +657,15 @@ def main():
 
 
 def generate_demo_data() -> Timetable:
+    days = ('MONDAY', 'TUESDAY')
     timeslots = [
         Timeslot(day, start, start.replace(hour=start.hour + 1))
-        for day in ('MONDAY', 'TUESDAY')
+        for day in days
         for start in (time(8, 30), time(9, 30), time(10, 30), time(13, 30), time(14, 30))
     ]
-    rooms = [Room(f'Room {name}') for name in ('A', 'B', 'C')]
+
+    room_ids = ('A', 'B', 'C')
+    rooms = [Room(f'Room {name}') for name in room_ids]
 
     lessons = []
 
@@ -701,6 +703,8 @@ def generate_demo_data() -> Timetable:
 
 def print_timetable(time_table: Timetable) -> None:
     LOGGER.info("")
+
+    column_width = 18
     rooms = time_table.rooms
     timeslots = time_table.timeslots
     lessons = time_table.lessons
@@ -709,8 +713,8 @@ def print_timetable(time_table: Timetable) -> None:
         for lesson in lessons
         if lesson.room is not None and lesson.timeslot is not None
     }
-    row_format ="|{:<15}" * (len(rooms) + 1) + "|"
-    sep_format = "+" + ((("-" * 15) + "+") * (len(rooms) + 1))
+    row_format = ("|{:<" + str(column_width) + "}") * (len(rooms) + 1) + "|"
+    sep_format = "+" + ((("-" * column_width) + "+") * (len(rooms) + 1))
 
     LOGGER.info(sep_format)
     LOGGER.info(row_format.format('', *[room.name for room in rooms]))
@@ -789,7 +793,7 @@ solver_factory = SolverFactory.create(
         solution_class=Timetable,
         entity_class_list=[Lesson],
         score_director_factory_config=ScoreDirectorFactoryConfig(
-            constraint_provider_function=school_timetabling_constraints
+            constraint_provider_function=define_constraints
         ),
         termination_config=TerminationConfig(
             # The solver runs only for 5 seconds on this small dataset.
@@ -1105,15 +1109,19 @@ Create the `tests/test_constraints.py` file with the following contents:
 [source,python]
 ----
 from timefold.solver.test import ConstraintVerifier
-from hello_world.domain import Timetable, Lesson, Room, Timeslot
-from hello_world.constraints import school_timetabling_constraints, room_conflict
 from datetime import time
 
+from hello_world.domain import *
+from hello_world.constraints import *
+
 ROOM1 = Room("Room1")
+ROOM2 = Room("Room2")
 TIMESLOT1 = Timeslot("MONDAY", time(12, 0), time(13, 0))
 TIMESLOT2 = Timeslot("TUESDAY", time(12, 0), time(13, 0))
+TIMESLOT3 = Timeslot("TUESDAY", time(13, 0), time(14, 0))
+TIMESLOT4 = Timeslot("TUESDAY", time(15, 0), time(16, 0))
 
-constraint_verifier = ConstraintVerifier.build(school_timetabling_constraints, Timetable, Lesson)
+constraint_verifier = ConstraintVerifier.build(define_constraints, Timetable, Lesson)
 
 def test_room_conflict():
     first_lesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
