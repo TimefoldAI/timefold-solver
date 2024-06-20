@@ -255,4 +255,28 @@ class DefaultLocalSearchPhaseTest {
         assertThat(solution).isNotNull();
     }
 
+    @Test
+    void failsFastWithUninitializedSolutionBasicVariable() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.withPhases(solverConfig.getPhaseConfigList().get(1)); // Remove construction heuristic.
+
+        var solution = PlannerTestUtils.generateTestdataSolution("s1", 2);
+
+        assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .hasMessageContaining("uninitialized entities");
+    }
+
+    @Test
+    void failsFastWithUninitializedSolutionListVariable() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolutionExternalized.class, TestdataListEntityExternalized.class);
+        solverConfig.withPhases(solverConfig.getPhaseConfigList().get(1)); // Remove construction heuristic.
+
+        var solution = TestdataListSolutionExternalized.generateUninitializedSolution(6, 2);
+
+        assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .hasMessageContaining("planning list variable")
+                .hasMessageContaining("unexpected unassigned values");
+    }
+
 }

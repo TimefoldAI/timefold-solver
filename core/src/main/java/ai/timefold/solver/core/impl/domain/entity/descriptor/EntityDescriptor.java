@@ -800,15 +800,6 @@ public class EntityDescriptor<Solution_> {
                         || effectiveMovableEntitySelectionFilter.accept(scoreDirector, entity));
     }
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     * @return true if the entity is initialized or pinned
-     */
-    public boolean isEntityInitializedOrPinned(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        return !isGenuine() || isInitialized(entity) || !isMovable(scoreDirector, entity);
-    }
-
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + entityClass.getName() + ")";
