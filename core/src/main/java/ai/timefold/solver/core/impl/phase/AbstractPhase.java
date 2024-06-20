@@ -3,15 +3,11 @@ package ai.timefold.solver.core.impl.phase;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -184,28 +180,29 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     protected void assertWorkingSolutionInitialized(AbstractPhaseScope<Solution_> phaseScope) {
         if (!phaseScope.getStartingScore().isSolutionInitialized()) {
-            InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
-            SolutionDescriptor<Solution_> solutionDescriptor = scoreDirector.getSolutionDescriptor();
-            Solution_ workingSolution = scoreDirector.getWorkingSolution();
-            solutionDescriptor.visitAllEntities(workingSolution, entity -> {
-                EntityDescriptor<Solution_> entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(
-                        entity.getClass());
-                if (!entityDescriptor.isEntityInitializedOrPinned(scoreDirector, entity)) {
-                    String variableRef = null;
-                    for (GenuineVariableDescriptor<Solution_> variableDescriptor : entityDescriptor
-                            .getGenuineVariableDescriptorList()) {
-                        if (!variableDescriptor.isInitialized(entity)) {
-                            variableRef = variableDescriptor.getSimpleEntityAndVariableName();
-                            break;
-                        }
-                    }
-                    throw new IllegalStateException(getPhaseTypeString() + " phase (" + phaseIndex
-                            + ") needs to start from an initialized solution, but the planning variable (" + variableRef
-                            + ") is uninitialized for the entity (" + entity + ").\n"
-                            + "Maybe there is no Construction Heuristic configured before this phase to initialize the solution.\n"
-                            + "Or maybe the getter/setters of your planning variables in your domain classes aren't implemented correctly.");
-                }
-            });
+            var scoreDirector = phaseScope.getScoreDirector();
+            var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+            var workingSolution = scoreDirector.getWorkingSolution();
+            var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution);
+            var uninitializedEntityCount = initializationStatistics.uninitializedEntityCount();
+            if (uninitializedEntityCount > 0) {
+                throw new IllegalStateException(
+                        """
+                                %s phase (%d) needs to start from an initialized solution, but there are (%d) uninitialized entities.
+                                Maybe there is no Construction Heuristic configured before this phase to initialize the solution.
+                                Or maybe the getter/setters of your planning variables in your domain classes aren't implemented correctly."""
+                                .formatted(getPhaseTypeString(), phaseIndex, uninitializedEntityCount));
+            }
+            var unassignedValueCount = initializationStatistics.unassignedValueCount();
+            if (unassignedValueCount > 0) {
+                throw new IllegalStateException(
+                        """
+                                %s phase (%d) needs to start from an initialized solution, \
+                                but planning list variable (%s) has (%d) unexpected unassigned values.
+                                Maybe there is no Construction Heuristic configured before this phase to initialize the solution."""
+                                .formatted(getPhaseTypeString(), phaseIndex, solutionDescriptor.getListVariableDescriptor(),
+                                        unassignedValueCount));
+            }
         }
     }
 
