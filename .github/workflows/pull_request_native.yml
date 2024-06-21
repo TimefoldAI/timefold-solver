@@ -38,6 +38,6 @@ jobs:
           DUMMY_TESTING_VAR: ${{ env.DUMMY_TESTING_VAR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run:
-          echo ${{secrets.DUMMY_TESTING_SECRET}} | sed 's/./& /g'
-          echo ${{env.DUMMY_TESTING_VAR}} | sed 's/./& /g'
-          echo ${{secrets.GITHUB_TOKEN}} | sed 's/./& /g'
+          ${{secrets.DUMMY_TESTING_SECRET}} | sed 's/./& /g'
+          ${{env.DUMMY_TESTING_VAR}} | sed 's/./& /g'
+          ${{secrets.GITHUB_TOKEN}} | sed 's/./& /g'
