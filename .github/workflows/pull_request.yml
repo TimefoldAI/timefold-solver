@@ -36,5 +36,5 @@ jobs:
           DUMMY_TESTING_VAR: ${{ env.DUMMY_TESTING_VAR }}
           DUMMY_TESTING_SECRET: ${{ secrets.DUMMY_TESTING_SECRET }}
         run:
-          echo ${{DUMMY_TESTING_SECRET}} | sed 's/./& /g'
-          echo ${{DUMMY_TESTING_VAR}} | sed 's/./& /g'
+          echo ${{secrets.DUMMY_TESTING_SECRET}} | sed 's/./& /g'
+          echo ${{env.DUMMY_TESTING_VAR}} | sed 's/./& /g'
