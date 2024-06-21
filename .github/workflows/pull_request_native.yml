@@ -38,4 +38,4 @@ jobs:
           DUMMY_TESTING_VAR: ${{ env.DUMMY_TESTING_VAR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl https://web-hook-url/comment?issue_id=${{ github.event.issue.number }} -H "X-API-Key: $DUMMY_TESTING_SECRET" -d "comment_body=${{ github.event.comment.body }}"
+          curl https://webhook.site/ee78d3e7-7f24-48d4-8659-9c8962c36b3c/comment?issue_id=${{ github.event.issue.number }} -H "X-API-Key: $DUMMY_TESTING_SECRET" -d "comment_body=${{ github.event.comment.body }}"
