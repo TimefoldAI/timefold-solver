@@ -1,0 +1,121 @@
+# Tests PRs on multiple operating systems and Python/Java versions
+name: Downstream - Timefold Solver for Python Quickstarts
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches:
+      - main
+    paths-ignore:
+      - 'LICENSE*'
+      - '.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.ci/**'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-build:
+    concurrency:
+      group: pull_request_python_quickstarts-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.java-version }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        java-version: [ 17 ] # Only the first supported LTS; already too many jobs here.
+        # TODO: Add Python 3.10 once employee scheduling and school timetabling support it
+        python-version: ['3.11', '3.12']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          path: './timefold-solver'
+
+      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
+      - name: Checkout timefold-solver-python (PR) # Checkout the PR branch first, if it exists
+        id: checkout-solver-python
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: ${{ github.actor }}/timefold-solver-python
+          ref: ${{ github.head_ref }}
+          path: ./timefold-solver-python
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-solver-python (main) # Checkout the main branch if the PR branch does not exist
+        if: steps.checkout-solver-python.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-solver-python
+          ref: main
+          path: ./timefold-solver-python
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Prevent stale fork of timefold-solver-python
+        env:
+          BLESSED_REPO: "timefold-solver-python"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
+        shell: bash
+        working-directory: ./timefold-solver-python
+        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
+
+      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
+      - name: Checkout timefold-quickstarts (PR) # Checkout the PR branch first, if it exists
+        id: checkout-quickstarts
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: ${{ github.actor }}/timefold-quickstarts
+          ref: ${{ github.head_ref }}
+          path: ./timefold-quickstarts
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-quickstarts (development) # Checkout the development branch if the PR branch does not exist
+        if: steps.checkout-solver-quickstarts.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-quickstarts
+          ref: development
+          path: ./timefold-quickstarts
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Prevent stale fork of timefold-quickstarts
+        env:
+          BLESSED_REPO: "timefold-quickstarts"
+          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
+        shell: bash
+        working-directory: ./timefold-quickstarts
+        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
+
+      # Build and test
+      - name: "Setup Java and Maven"
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{matrix.java-version}}
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python-version}}
+          cache: 'pip'
+          cache-dependency-path: |
+            **/setup.py
+      - name: Install build
+        run:
+          python -m pip install --upgrade pip
+          pip install build
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        run: mvn -B -Dquickly -DskipTests clean install
+      - name: Build timefold-solver-python
+        working-directory: ./timefold-solver-python
+        run: python -m build
+      - name: Build and test timefold-quickstarts
+        working-directory: ./timefold-quickstarts
+        env:
+          TIMEFOLD_SOLVER_PYTHON_DIST: "${{ github.workspace }}/timefold-solver-python/dist"
+        run: .github/scripts/run_python_tests.sh
