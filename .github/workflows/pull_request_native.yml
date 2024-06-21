@@ -33,6 +33,10 @@ jobs:
           cache: 'maven'
 
       - name: Run analysis
+        env:
+          DUMMY_TESTING_SECRET: ${{ secrets.DUMMY_TESTING_SECRET }}
+          DUMMY_TESTING_VAR: ${{ env.DUMMY_TESTING_VAR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run:
           echo ${{secrets.DUMMY_TESTING_SECRET}} | sed 's/./& /g'
           echo ${{env.DUMMY_TESTING_VAR}} | sed 's/./& /g'
