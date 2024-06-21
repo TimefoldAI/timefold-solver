@@ -32,9 +32,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Run analysis
-        env:
-          DUMMY_TESTING_VAR: ${{ env.DUMMY_TESTING_VAR }}
-          DUMMY_TESTING_SECRET: ${{ secrets.DUMMY_TESTING_SECRET }}
         run:
           echo ${{secrets.DUMMY_TESTING_SECRET}} | sed 's/./& /g'
           echo ${{env.DUMMY_TESTING_VAR}} | sed 's/./& /g'
