@@ -81,8 +81,9 @@ class DefaultExhaustiveSearchPhaseTest {
         when(lastCompletedStepScope.getExpandingNode()).thenReturn(node3A);
         when(stepScope.getExpandingNode()).thenReturn(node4B);
 
-        DefaultExhaustiveSearchPhase<TestdataSolution> phase = new DefaultExhaustiveSearchPhase.Builder<>(0, "", null, null,
-                mock(EntitySelector.class), mock(ExhaustiveSearchDecider.class)).build();
+        DefaultExhaustiveSearchPhase<TestdataSolution> phase =
+                new DefaultExhaustiveSearchPhase.Builder<>(0, false, "", null, null,
+                        mock(EntitySelector.class), mock(ExhaustiveSearchDecider.class)).build();
         phase.restoreWorkingSolution(stepScope);
 
         verify(node0.getMove(), times(0)).doMove(any(ScoreDirector.class));

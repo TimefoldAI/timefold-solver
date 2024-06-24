@@ -57,7 +57,8 @@ public abstract class AbstractPhaseScope<Solution_> {
      *        whose result only matters when it reached its natural end.
      * @param initializationPhase set to false if the phase does not return the initialized solution
      */
-    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents, boolean initializationPhase) {
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents,
+            boolean initializationPhase) {
         this.solverScope = solverScope;
         this.phaseIndex = phaseIndex;
         this.phaseSendingBestSolutionEvents = phaseSendingBestSolutionEvents;
