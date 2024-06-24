@@ -13,19 +13,21 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final ProblemId_ problemId;
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
+    private final Consumer<? super Solution_> initializedSolutionConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
+            Consumer<? super Solution_> finalBestSolutionConsumer, Consumer<? super Solution_> initializedSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             BestSolutionHolder<Solution_> bestSolutionHolder) {
         this.problemId = problemId;
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer == null ? finalBestSolution -> {
         } : finalBestSolutionConsumer;
+        this.initializedSolutionConsumer = initializedSolutionConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
     }
@@ -39,6 +41,27 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         bestSolutionHolder.set(bestSolution, isEveryProblemChangeProcessed);
         if (bestSolutionConsumer != null) {
             tryConsumeWaitingIntermediateBestSolution();
+        }
+    }
+
+    // Called on the Solver thread.
+    void consumeInitializedSolution(Solution_ initializedSolution) {
+        // TODO - Do we need to sync it?
+        try {
+            // Wait for the previous consumption to complete.
+            activeConsumption.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted when waiting for the final best solution consumption.");
+        }
+        if (initializedSolutionConsumer != null) {
+            try {
+                initializedSolutionConsumer.accept(initializedSolution);
+            } catch (Throwable throwable) {
+                exceptionHandler.accept(problemId, throwable);
+            } finally {
+                activeConsumption.release();
+            }
         }
     }
 

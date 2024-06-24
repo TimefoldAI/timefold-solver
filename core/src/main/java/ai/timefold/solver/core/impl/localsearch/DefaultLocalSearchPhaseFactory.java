@@ -44,8 +44,9 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     @Override
-    public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination) {
+    public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean initializationPhase,
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            Termination<Solution_> solverTermination) {
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         Termination<Solution_> phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         DefaultLocalSearchPhase.Builder<Solution_> builder =

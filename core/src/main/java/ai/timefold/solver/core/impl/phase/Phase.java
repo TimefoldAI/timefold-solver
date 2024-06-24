@@ -36,4 +36,10 @@ public interface Phase<Solution_> extends PhaseLifecycleListener<Solution_> {
 
     void solve(SolverScope<Solution_> solverScope);
 
+    /**
+     * Checks if a phase returns an initialized solution.
+     *
+     * @return true if the phase returns an initialized solution.
+     */
+    boolean isInitializationPhase();
 }

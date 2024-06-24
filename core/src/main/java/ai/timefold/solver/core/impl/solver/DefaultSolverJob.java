@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -43,6 +44,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private final Function<? super ProblemId_, ? extends Solution_> problemFinder;
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
+    private final Consumer<? super Solution_> initializedSolutionConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
 
     private volatile SolverStatus solverStatus;
@@ -59,6 +61,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
+            Consumer<? super Solution_> initializedSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
         this.problemId = problemId;
@@ -70,6 +73,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         this.problemFinder = problemFinder;
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer;
+        this.initializedSolutionConsumer = initializedSolutionConsumer;
         this.exceptionHandler = exceptionHandler;
         solverStatus = SolverStatus.SOLVING_SCHEDULED;
         terminatedLatch = new CountDownLatch(1);
@@ -103,11 +107,13 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             solverStatus = SolverStatus.SOLVING_ACTIVE;
             // Create the consumer thread pool only when this solver job is active.
             consumerSupport = new ConsumerSupport<>(getProblemId(), bestSolutionConsumer, finalBestSolutionConsumer,
-                    exceptionHandler, bestSolutionHolder);
+                    initializedSolutionConsumer, exceptionHandler, bestSolutionHolder);
 
             Solution_ problem = problemFinder.apply(problemId);
             // add a phase lifecycle listener that unlock the solver status lock when solving started
             solver.addPhaseLifecycleListener(new UnlockLockPhaseLifecycleListener());
+            // add a phase lifecycle listener which consumes the solution if a given phase returns an initialized solution
+            solver.addPhaseLifecycleListener(new InitializedSolutionPhaseListener(consumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
             final Solution_ finalBestSolution = solver.solve(problem);
             consumerSupport.consumeFinalBestSolution(finalBestSolution);
@@ -272,6 +278,25 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             // The solvingStarted event can be emitted as a result of addProblemChange().
             if (solverStatusModifyingLock.isLocked()) {
                 solverStatusModifyingLock.unlock();
+            }
+        }
+    }
+
+    /**
+     * A listener that consumes the solution from a phase only if the phase initializes the solution.
+     */
+    private final class InitializedSolutionPhaseListener extends PhaseLifecycleListenerAdapter<Solution_> {
+
+        private final ConsumerSupport<Solution_, ProblemId_> consumerSupport;
+
+        public InitializedSolutionPhaseListener(ConsumerSupport<Solution_, ProblemId_> consumerSupport) {
+            this.consumerSupport = consumerSupport;
+        }
+
+        @Override
+        public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+            if (phaseScope.isInitializationPhase()) {
+                consumerSupport.consumeInitializedSolution(phaseScope.getWorkingSolution());
             }
         }
     }

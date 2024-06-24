@@ -21,7 +21,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected final SolverScope<Solution_> solverScope;
     protected final int phaseIndex;
     protected final boolean phaseSendingBestSolutionEvents;
-
+    protected final boolean initializationPhase;
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
     protected Score startingScore;
@@ -40,6 +40,14 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     /**
+     * As defined by #AbstractPhaseScope(SolverScope, int, boolean, boolean)
+     * with the initializationPhase parameter set to false.
+     */
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents) {
+        this(solverScope, phaseIndex, phaseSendingBestSolutionEvents, false);
+    }
+
+    /**
      *
      * @param solverScope never null
      * @param phaseIndex the index of the phase, >= 0
@@ -47,11 +55,13 @@ public abstract class AbstractPhaseScope<Solution_> {
      *        or none at all;
      *        this is typical for construction heuristics,
      *        whose result only matters when it reached its natural end.
+     * @param initializationPhase set to false if the phase does not return the initialized solution
      */
-    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents) {
+    protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents, boolean initializationPhase) {
         this.solverScope = solverScope;
         this.phaseIndex = phaseIndex;
         this.phaseSendingBestSolutionEvents = phaseSendingBestSolutionEvents;
+        this.initializationPhase = initializationPhase;
     }
 
     public SolverScope<Solution_> getSolverScope() {
@@ -64,6 +74,10 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public boolean isPhaseSendingBestSolutionEvents() {
         return phaseSendingBestSolutionEvents;
+    }
+
+    public boolean isInitializationPhase() {
+        return initializationPhase;
     }
 
     public Long getStartingSystemTimeMillis() {

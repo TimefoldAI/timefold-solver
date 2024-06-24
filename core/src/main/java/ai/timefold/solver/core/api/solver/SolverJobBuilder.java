@@ -71,6 +71,16 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer);
 
     /**
+     * Sets the initialized solution consumer, which is called before starting the first
+     * {@link ai.timefold.solver.core.impl.localsearch.LocalSearchPhase} phase.
+     *
+     * @param initializedSolutionConsumer never null, called only once before starting the first Local Search phase
+     * @return this, never null
+     */
+    SolverJobBuilder<Solution_, ProblemId_>
+            withInitializedSolutionConsumer(Consumer<? super Solution_> initializedSolutionConsumer);
+
+    /**
      * Sets the custom exception handler.
      *
      * @param exceptionHandler never null, called if an exception or error occurs. If null it defaults to logging the

@@ -224,7 +224,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
 
         public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination,
                 LocalSearchDecider<Solution_> decider) {
-            super(phaseIndex, logIndentation, phaseTermination);
+            // By definition, the Local Search does not return an initialized solution
+            super(phaseIndex, false, logIndentation, phaseTermination);
             this.decider = decider;
         }
 
