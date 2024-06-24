@@ -46,15 +46,15 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     // Called on the Solver thread.
     void consumeInitializedSolution(Solution_ initializedSolution) {
-        // TODO - Do we need to sync it?
-        try {
-            // Wait for the previous consumption to complete.
-            activeConsumption.acquire();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted when waiting for the final best solution consumption.");
-        }
         if (initializedSolutionConsumer != null) {
+            // TODO - Do we need to sync it?
+            try {
+                // Wait for the previous consumption to complete.
+                activeConsumption.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Interrupted when waiting for the final best solution consumption.");
+            }
             try {
                 initializedSolutionConsumer.accept(initializedSolution);
             } catch (Throwable throwable) {
