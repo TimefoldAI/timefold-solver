@@ -234,11 +234,10 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
-        public Builder(int phaseIndex, boolean initializationPhase, String logIndentation,
-                Termination<Solution_> phaseTermination, Comparator<ExhaustiveSearchNode> nodeComparator,
-                EntitySelector<Solution_> entitySelector,
+        public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination,
+                Comparator<ExhaustiveSearchNode> nodeComparator, EntitySelector<Solution_> entitySelector,
                 ExhaustiveSearchDecider<Solution_> decider) {
-            super(phaseIndex, initializationPhase, logIndentation, phaseTermination);
+            super(phaseIndex, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;
             this.entitySelector = entitySelector;
             this.decider = decider;

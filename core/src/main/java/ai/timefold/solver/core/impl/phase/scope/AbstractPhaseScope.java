@@ -55,7 +55,9 @@ public abstract class AbstractPhaseScope<Solution_> {
      *        or none at all;
      *        this is typical for construction heuristics,
      *        whose result only matters when it reached its natural end.
-     * @param initializationPhase set to false if the phase does not return the initialized solution
+     * @param initializationPhase set to false if the phase does not return the initialized solution.
+     *        This flag is enabled for construction heuristics or custom commands that immediately precede the first local
+     *        search heuristic.
      */
     protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents,
             boolean initializationPhase) {

@@ -72,7 +72,8 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
 
     /**
      * Sets the initialized solution consumer, which is called before starting the first
-     * {@link ai.timefold.solver.core.impl.localsearch.LocalSearchPhase} phase.
+     * {@link ai.timefold.solver.core.impl.localsearch.LocalSearchPhase} or
+     * {@link ai.timefold.solver.core.impl.phase.custom.CustomPhase} phases.
      *
      * @param initializedSolutionConsumer never null, called only once before starting the first Local Search phase
      * @return this, never null

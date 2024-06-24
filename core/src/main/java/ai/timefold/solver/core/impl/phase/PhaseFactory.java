@@ -56,8 +56,10 @@ public interface PhaseFactory<Solution_> {
                             + "without a configured termination (" + previousPhaseConfig + ").");
                 }
             }
+            // The initialization phase can only be applied to construction heuristics or custom phases
             var isConstructionOrCustomPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())
                     || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
+            // The next phase must be a local search or a custom phase
             var isNextPhaseLocalSearchOrCustomPhase = phaseIndex + 1 < phaseConfigList.size()
                     && (LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass())
                             || CustomPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass()));

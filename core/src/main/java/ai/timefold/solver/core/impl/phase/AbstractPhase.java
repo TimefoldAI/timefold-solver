@@ -224,6 +224,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
+        protected Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
+            this(phaseIndex, false, logIndentation, phaseTermination);
+        }
+
         protected Builder(int phaseIndex, boolean initializationPhase, String logIndentation,
                 Termination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;

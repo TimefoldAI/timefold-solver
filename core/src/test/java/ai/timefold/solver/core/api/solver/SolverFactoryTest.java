@@ -194,7 +194,7 @@ class SolverFactoryTest {
     }
 
     @Test
-    void initializationPhases() {
+    void validateInitializationPhases() {
         // Default configuration
         SolverConfig solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
