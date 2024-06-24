@@ -12,11 +12,12 @@ public final class CustomPhaseScope<Solution_> extends AbstractPhaseScope<Soluti
     private CustomStepScope<Solution_> lastCompletedStepScope;
 
     public CustomPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
-        this(solverScope, phaseIndex, false);
+        this(solverScope, phaseIndex, false, false);
     }
 
-    public CustomPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendsBestSolutionEvents) {
-        super(solverScope, phaseIndex, phaseSendsBestSolutionEvents);
+    public CustomPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendsBestSolutionEvents,
+            boolean initializationPhase) {
+        super(solverScope, phaseIndex, phaseSendsBestSolutionEvents, initializationPhase);
         lastCompletedStepScope = new CustomStepScope<>(this, -1);
     }
 

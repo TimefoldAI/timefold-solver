@@ -135,7 +135,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
     @Test
     void withConstructionHeuristic() { // CH ignores unimproved time spent termination.
         var solverScope = spy(new SolverScope<TestdataSolution>());
-        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
+        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0, false));
         var stepScope = spy(new ConstructionHeuristicStepScope<>(phaseScope));
         var clock = mock(Clock.class);
 
@@ -173,7 +173,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
     @Test
     void withConstructionHeuristicAndLocalSearch() { // CH ignores unimproved time spent termination.
         var solverScope = spy(new SolverScope<TestdataSolution>());
-        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
+        var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0, false));
         var stepScope = spy(new ConstructionHeuristicStepScope<>(phaseScope));
         var clock = mock(Clock.class);
 

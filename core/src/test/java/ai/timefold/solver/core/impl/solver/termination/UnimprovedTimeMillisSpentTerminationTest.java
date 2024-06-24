@@ -76,7 +76,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
         Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
         termination.solvingStarted(solverScope);
 
-        AbstractPhaseScope<TestdataSolution> chPhaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, 0);
+        AbstractPhaseScope<TestdataSolution> chPhaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, 0, false);
         termination.phaseStarted(chPhaseScope);
 
         // During the construction heuristic, the unimproved termination should not trigger.
@@ -114,7 +114,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
     @Test
     void phaseTerminationWithConstructionHeuristic() { // CH ignores unimproved time spent termination.
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
-        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
+        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0, false));
         Clock clock = mock(Clock.class);
 
         Termination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);

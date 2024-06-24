@@ -45,6 +45,7 @@ public interface PhaseFactory<Solution_> {
             HeuristicConfigPolicy<Solution_> configPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> termination) {
         List<Phase<Solution_>> phaseList = new ArrayList<>(phaseConfigList.size());
+        boolean isPhaseSelected = false;
         for (int phaseIndex = 0; phaseIndex < phaseConfigList.size(); phaseIndex++) {
             var phaseConfig = phaseConfigList.get(phaseIndex);
             if (phaseIndex > 0) {
@@ -57,11 +58,17 @@ public interface PhaseFactory<Solution_> {
             }
             var isConstructionOrCustomPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())
                     || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
-            var isNextPhaseLocalSearch = phaseIndex + 1 < phaseConfigList.size()
-                    && LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass());
+            var isNextPhaseLocalSearchOrCustomPhase = phaseIndex + 1 < phaseConfigList.size()
+                    && (LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass())
+                            || CustomPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass()));
             PhaseFactory<Solution_> phaseFactory = PhaseFactory.create(phaseConfig);
-            var phase = phaseFactory.buildPhase(phaseIndex, isConstructionOrCustomPhase && isNextPhaseLocalSearch, configPolicy,
+            var phase = phaseFactory.buildPhase(phaseIndex,
+                    !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearchOrCustomPhase, configPolicy,
                     bestSolutionRecaller, termination);
+            // Ensure only one initialization phase is set
+            if (!isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearchOrCustomPhase) {
+                isPhaseSelected = true;
+            }
             phaseList.add(phase);
         }
         return phaseList;

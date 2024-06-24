@@ -41,7 +41,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
+        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex, initializationPhase);
         phaseStarted(phaseScope);
 
         var solutionDescriptor = solverScope.getSolutionDescriptor();

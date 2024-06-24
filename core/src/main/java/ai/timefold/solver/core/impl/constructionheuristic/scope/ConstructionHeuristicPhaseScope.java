@@ -11,8 +11,8 @@ public final class ConstructionHeuristicPhaseScope<Solution_> extends AbstractPh
 
     private ConstructionHeuristicStepScope<Solution_> lastCompletedStepScope;
 
-    public ConstructionHeuristicPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
-        super(solverScope, phaseIndex, false);
+    public ConstructionHeuristicPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean initializationPhase) {
+        super(solverScope, phaseIndex, false, initializationPhase);
         lastCompletedStepScope = new ConstructionHeuristicStepScope<>(this, -1);
     }
 
