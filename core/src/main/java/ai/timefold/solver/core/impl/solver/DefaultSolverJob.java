@@ -284,7 +284,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     /**
-     * A listener that consumes the solution from a phase only if the phase initializes the solution.
+     * A listener that consumes the solution from a phase only if the phase first initializes the solution.
      */
     private final class FirstInitializedSolutionPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
 

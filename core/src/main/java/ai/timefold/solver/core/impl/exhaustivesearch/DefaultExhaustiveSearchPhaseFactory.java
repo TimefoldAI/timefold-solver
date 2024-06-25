@@ -85,8 +85,8 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
 
         DefaultExhaustiveSearchPhase.Builder<Solution_> builder = new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex,
                 solverConfigPolicy.getLogIndentation(), phaseTermination,
-                nodeExplorationType_.buildNodeComparator(scoreBounderEnabled), entitySelector,
-                buildDecider(phaseConfigPolicy, entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled));
+                nodeExplorationType_.buildNodeComparator(scoreBounderEnabled), entitySelector, buildDecider(phaseConfigPolicy,
+                entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled));
 
         EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {

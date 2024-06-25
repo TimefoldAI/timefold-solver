@@ -8,8 +8,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.util.MutableReference;
-
 final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     private final ProblemId_ problemId;
@@ -19,8 +17,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
-    private final MutableReference<Solution_> firstInitializedSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
+    private Solution_ firstInitializedSolution;
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer, Consumer<? super Solution_> firstInitializedSolutionConsumer,
@@ -33,7 +31,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
-        this.firstInitializedSolutionHolder = new MutableReference<>(null);
+        this.firstInitializedSolution = null;
     }
 
     // Called on the Solver thread.
@@ -50,7 +48,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     // Called on the Solver thread.
     void consumeFirstInitializedSolution(Solution_ firstInitializedSolution) {
-        firstInitializedSolutionHolder.setValue(firstInitializedSolution);
+        this.firstInitializedSolution = firstInitializedSolution;
         // called on the Consumer thread
         scheduleFirstInitializedSolutionConsumption();
     }
@@ -135,7 +133,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
      */
     private void scheduleFirstInitializedSolutionConsumption() {
         CompletableFuture.runAsync(() -> {
-            if (firstInitializedSolutionConsumer != null && firstInitializedSolutionHolder.getValue() != null) {
+            if (firstInitializedSolutionConsumer != null && firstInitializedSolution != null) {
                 try {
                     // Wait for the previous consumption to complete.
                     // This call may block the consumer thread
@@ -145,9 +143,9 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                     throw new IllegalStateException("Interrupted when waiting for the first initialized solution consumption.");
                 }
                 try {
-                    firstInitializedSolutionConsumer.accept(firstInitializedSolutionHolder.getValue());
+                    firstInitializedSolutionConsumer.accept(firstInitializedSolution);
                     // Clear the solution holder
-                    firstInitializedSolutionHolder.setValue(null);
+                    firstInitializedSolution = null;
                 } catch (Throwable throwable) {
                     if (exceptionHandler != null) {
                         exceptionHandler.accept(problemId, throwable);
