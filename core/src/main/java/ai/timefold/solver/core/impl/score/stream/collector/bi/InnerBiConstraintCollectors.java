@@ -23,6 +23,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
@@ -223,6 +224,12 @@ public class InnerBiConstraintCollectors {
             collectAndThen(BiConstraintCollector<A, B, ?, Intermediate_> delegate,
                     Function<Intermediate_, Result_> mappingFunction) {
         return new AndThenBiCollector<>(delegate, mappingFunction);
+    }
+
+    public static <A, B, Balanced_> BiConstraintCollector<A, B, ?, LoadBalance<Balanced_>> loadBalance(
+            BiFunction<A, B, Balanced_> balancedItemFunction, ToLongBiFunction<A, B> loadFunction,
+            ToLongBiFunction<A, B> initialLoadFunction) {
+        return new LoadBalanceBiCollector<>(balancedItemFunction, loadFunction, initialLoadFunction);
     }
 
 }
