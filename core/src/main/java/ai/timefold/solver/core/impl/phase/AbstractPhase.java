@@ -229,7 +229,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
 
         protected Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
-                          Termination<Solution_> phaseTermination) {
+                Termination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
             this.triggerFirstInitializedSolutionEvent = triggerFirstInitializedSolutionEvent;
             this.logIndentation = logIndentation;

@@ -60,7 +60,7 @@ public abstract class AbstractPhaseScope<Solution_> {
      *        event. This flag is enabled for construction heuristics or custom commands that immediately precede the first
      *        local search heuristic.
      *
-     * @see Phase#triggersFirstInitializedSolutionEvent() 
+     * @see Phase#triggersFirstInitializedSolutionEvent()
      */
     protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents,
             boolean phaseInitializingFirstSolutionEvent) {
