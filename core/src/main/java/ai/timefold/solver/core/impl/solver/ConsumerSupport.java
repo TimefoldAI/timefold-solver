@@ -16,6 +16,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
+    private final Semaphore firstSolutionConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
     private Solution_ firstInitializedSolution;
@@ -48,8 +49,16 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     // Called on the Solver thread.
     void consumeFirstInitializedSolution(Solution_ firstInitializedSolution) {
-        this.firstInitializedSolution = firstInitializedSolution;
+        try {
+            // Called on the solver thread
+            // During the solving process, this lock is called once, and it won't block the Solver thread
+            firstSolutionConsumption.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted when waiting for the first initialized solution consumption.");
+        }
         // called on the Consumer thread
+        this.firstInitializedSolution = firstInitializedSolution;
         scheduleFirstInitializedSolutionConsumption();
     }
 
@@ -59,6 +68,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
             // Wait for the previous consumption to complete.
             // As the solver has already finished, holding the solver thread is not an issue.
             activeConsumption.acquire();
+            // Wait for the first solution consumption to complete
+            firstSolutionConsumption.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted when waiting for the final best solution consumption.");
@@ -69,11 +80,6 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         if (bestSolutionConsumer != null) {
             scheduleIntermediateBestSolutionConsumption();
         }
-        /**
-         * TODO - Do we need to ensure the first initialized solution is also consumed before the final solution?
-         * The first initialized solution consumer is always consumed before a local search phase, so I couldn't imagine
-         * a situation where the first solution consumption is missed.
-         */
         consumerExecutor.submit(() -> {
             try {
                 finalBestSolutionConsumer.accept(finalBestSolution);
@@ -87,6 +93,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                 // Cancel problem changes that arrived after the solver terminated.
                 bestSolutionHolder.cancelPendingChanges();
                 activeConsumption.release();
+                firstSolutionConsumption.release();
                 disposeConsumerThread();
             }
         });
@@ -128,31 +135,21 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     /**
      * Called on the Consumer thread.
-     * The call may be blocked while waiting for lock acquisition, but this is not a problem because it will block the
-     * Consumer thread instead of the Solver thread.
+     * Don't call without locking firstSolutionConsumption, because the consumption may not be executed before the final best
+     * solution is executed.
      */
     private void scheduleFirstInitializedSolutionConsumption() {
         CompletableFuture.runAsync(() -> {
-            if (firstInitializedSolutionConsumer != null && firstInitializedSolution != null) {
-                try {
-                    // Wait for the previous consumption to complete.
-                    // This call may block the consumer thread
-                    activeConsumption.acquire();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Interrupted when waiting for the first initialized solution consumption.");
-                }
-                try {
+            try {
+                if (firstInitializedSolutionConsumer != null && firstInitializedSolution != null) {
                     firstInitializedSolutionConsumer.accept(firstInitializedSolution);
-                    // Clear the solution holder
-                    firstInitializedSolution = null;
-                } catch (Throwable throwable) {
-                    if (exceptionHandler != null) {
-                        exceptionHandler.accept(problemId, throwable);
-                    }
-                } finally {
-                    activeConsumption.release();
                 }
+            } catch (Throwable throwable) {
+                if (exceptionHandler != null) {
+                    exceptionHandler.accept(problemId, throwable);
+                }
+            } finally {
+                firstSolutionConsumption.release();
             }
         }, consumerExecutor);
     }

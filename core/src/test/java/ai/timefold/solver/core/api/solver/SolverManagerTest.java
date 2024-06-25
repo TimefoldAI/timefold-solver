@@ -272,7 +272,9 @@ class SolverManagerTest {
 
         // Default configuration
         SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1L));
         solverManager = SolverManager
                 .create(solverConfig, new SolverManagerConfig());
         Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
