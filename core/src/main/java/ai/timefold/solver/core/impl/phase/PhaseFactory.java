@@ -59,16 +59,15 @@ public interface PhaseFactory<Solution_> {
             // The initialization phase can only be applied to construction heuristics or custom phases
             var isConstructionOrCustomPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())
                     || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
-            // The next phase must be a local search or a custom phase
-            var isNextPhaseLocalSearchOrCustomPhase = phaseIndex + 1 < phaseConfigList.size()
-                    && (LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass())
-                            || CustomPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass()));
+            // The next phase must be a local search
+            var isNextPhaseLocalSearch = phaseIndex + 1 < phaseConfigList.size()
+                    && LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass());
             PhaseFactory<Solution_> phaseFactory = PhaseFactory.create(phaseConfig);
             var phase = phaseFactory.buildPhase(phaseIndex,
-                    !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearchOrCustomPhase, configPolicy,
+                    !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch, configPolicy,
                     bestSolutionRecaller, termination);
             // Ensure only one initialization phase is set
-            if (!isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearchOrCustomPhase) {
+            if (!isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch) {
                 isPhaseSelected = true;
             }
             phaseList.add(phase);
@@ -86,7 +85,7 @@ public interface PhaseFactory<Solution_> {
         return (terminationConfig != null && terminationConfig.isConfigured());
     }
 
-    Phase<Solution_> buildPhase(int phaseIndex, boolean initializationPhase,
+    Phase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination);
 }

@@ -16,8 +16,8 @@ public final class CustomPhaseScope<Solution_> extends AbstractPhaseScope<Soluti
     }
 
     public CustomPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendsBestSolutionEvents,
-            boolean initializationPhase) {
-        super(solverScope, phaseIndex, phaseSendsBestSolutionEvents, initializationPhase);
+            boolean phaseInitializingFirstSolutionEvent) {
+        super(solverScope, phaseIndex, phaseSendsBestSolutionEvents, phaseInitializingFirstSolutionEvent);
         lastCompletedStepScope = new CustomStepScope<>(this, -1);
     }
 

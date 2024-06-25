@@ -60,8 +60,8 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public SolverJobBuilder<Solution_, ProblemId_>
-            withInitializedSolutionConsumer(Consumer<? super Solution_> initializedSolutionConsumer) {
-        this.initializedSolutionConsumer = Objects.requireNonNull(initializedSolutionConsumer,
+    withFirstInitializedSolutionConsumer(Consumer<? super Solution_> firstInitializedSolutionConsumer) {
+        this.initializedSolutionConsumer = Objects.requireNonNull(firstInitializedSolutionConsumer,
                 "Invalid initializedSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
     }

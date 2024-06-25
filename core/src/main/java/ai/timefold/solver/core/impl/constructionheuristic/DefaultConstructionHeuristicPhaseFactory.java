@@ -45,7 +45,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     @Override
-    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean initializationPhase,
+    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
         ConstructionHeuristicType constructionHeuristicType_ = Objects.requireNonNullElse(
@@ -72,7 +72,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
 
         DefaultConstructionHeuristicPhase.Builder<Solution_> builder = new DefaultConstructionHeuristicPhase.Builder<>(
                 phaseIndex,
-                initializationPhase,
+                triggerFirstInitializedSolutionEvent,
                 solverConfigPolicy.getLogIndentation(),
                 phaseTermination,
                 entityPlacer,

@@ -5,6 +5,7 @@ import java.util.Random;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -21,7 +22,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected final SolverScope<Solution_> solverScope;
     protected final int phaseIndex;
     protected final boolean phaseSendingBestSolutionEvents;
-    protected final boolean initializationPhase;
+    protected final boolean phaseInitializingFirstSolutionEvent;
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
     protected Score startingScore;
@@ -55,16 +56,18 @@ public abstract class AbstractPhaseScope<Solution_> {
      *        or none at all;
      *        this is typical for construction heuristics,
      *        whose result only matters when it reached its natural end.
-     * @param initializationPhase set to false if the phase does not return the initialized solution.
-     *        This flag is enabled for construction heuristics or custom commands that immediately precede the first local
-     *        search heuristic.
+     * @param phaseInitializingFirstSolutionEvent set to false if the phase does not trigger the first initialized solution
+     *        event. This flag is enabled for construction heuristics or custom commands that immediately precede the first
+     *        local search heuristic.
+     *
+     * @see Phase#triggersFirstInitializedSolutionEvent() 
      */
     protected AbstractPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex, boolean phaseSendingBestSolutionEvents,
-            boolean initializationPhase) {
+            boolean phaseInitializingFirstSolutionEvent) {
         this.solverScope = solverScope;
         this.phaseIndex = phaseIndex;
         this.phaseSendingBestSolutionEvents = phaseSendingBestSolutionEvents;
-        this.initializationPhase = initializationPhase;
+        this.phaseInitializingFirstSolutionEvent = phaseInitializingFirstSolutionEvent;
     }
 
     public SolverScope<Solution_> getSolverScope() {
@@ -79,8 +82,8 @@ public abstract class AbstractPhaseScope<Solution_> {
         return phaseSendingBestSolutionEvents;
     }
 
-    public boolean isInitializationPhase() {
-        return initializationPhase;
+    public boolean isPhaseInitializingFirstSolutionEvent() {
+        return phaseInitializingFirstSolutionEvent;
     }
 
     public Long getStartingSystemTimeMillis() {

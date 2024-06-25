@@ -41,7 +41,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex, initializationPhase);
+        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex, triggerFirstInitializedSolutionEvent);
         phaseStarted(phaseScope);
 
         var solutionDescriptor = solverScope.getSolutionDescriptor();
@@ -170,10 +170,10 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public Builder(int phaseIndex, boolean initializationPhase, String logIndentation,
+        public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
                 Termination<Solution_> phaseTermination,
                 EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
-            super(phaseIndex, initializationPhase, logIndentation, phaseTermination);
+            super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
         }

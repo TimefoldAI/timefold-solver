@@ -266,7 +266,7 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
-    void solveWithInitializedSolutionConsumer() throws ExecutionException, InterruptedException {
+    void solveWithFirstInitializedSolutionConsumer() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
         Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
 
@@ -281,7 +281,7 @@ class SolverManagerTest {
         SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(hasInitializedSolution.booleanValue()).isTrue();
@@ -299,7 +299,7 @@ class SolverManagerTest {
         solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(hasInitializedSolution.booleanValue()).isFalse();
@@ -320,7 +320,7 @@ class SolverManagerTest {
         solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(o -> initializedSolution)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .withFinalBestSolutionConsumer(ignore -> {
                 })
                 .run();
@@ -344,7 +344,7 @@ class SolverManagerTest {
         solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(hasInitializedSolution.booleanValue()).isTrue();
@@ -369,7 +369,7 @@ class SolverManagerTest {
         solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(hasInitializedSolution.booleanValue()).isTrue();
@@ -382,7 +382,7 @@ class SolverManagerTest {
                         new ConstructionHeuristicPhaseConfig(),
                         new CustomPhaseConfig()
                                 .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                    assertThat(hasInitializedSolution.booleanValue()).isTrue();
+                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
                                 })),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
@@ -395,7 +395,7 @@ class SolverManagerTest {
         solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(hasInitializedSolution.booleanValue()).isTrue();
@@ -411,7 +411,7 @@ class SolverManagerTest {
                                 })),
                         new CustomPhaseConfig()
                                 .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                    assertThat(hasInitializedSolution.booleanValue()).isTrue();
+                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
                                 })))
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
@@ -423,11 +423,10 @@ class SolverManagerTest {
         solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
         solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isTrue();
-        hasInitializedSolution.setFalse();
+        assertThat(hasInitializedSolution.booleanValue()).isFalse();
     }
 
     @Test

@@ -32,7 +32,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertStepScoreFromScratch;
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
-    protected final boolean initializationPhase;
+    protected final boolean triggerFirstInitializedSolutionEvent;
 
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
@@ -46,7 +46,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
-        initializationPhase = builder.initializationPhase;
+        triggerFirstInitializedSolutionEvent = builder.triggerFirstInitializedSolutionEvent;
     }
 
     public int getPhaseIndex() {
@@ -80,8 +80,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public abstract String getPhaseTypeString();
 
     @Override
-    public boolean isInitializationPhase() {
-        return initializationPhase;
+    public boolean triggersFirstInitializedSolutionEvent() {
+        return triggerFirstInitializedSolutionEvent;
     }
 
     // ************************************************************************
@@ -216,7 +216,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected abstract static class Builder<Solution_> {
 
         private final int phaseIndex;
-        private final boolean initializationPhase;
+        private final boolean triggerFirstInitializedSolutionEvent;
         private final String logIndentation;
         private final Termination<Solution_> phaseTermination;
 
@@ -228,10 +228,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             this(phaseIndex, false, logIndentation, phaseTermination);
         }
 
-        protected Builder(int phaseIndex, boolean initializationPhase, String logIndentation,
-                Termination<Solution_> phaseTermination) {
+        protected Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
+                          Termination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
-            this.initializationPhase = initializationPhase;
+            this.triggerFirstInitializedSolutionEvent = triggerFirstInitializedSolutionEvent;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;
         }
