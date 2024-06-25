@@ -36,7 +36,7 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
         CustomPhaseScope<Solution_> phaseScope =
-                new CustomPhaseScope<>(solverScope, phaseIndex, false, triggerFirstInitializedSolutionEvent);
+                new CustomPhaseScope<>(solverScope, phaseIndex, false);
         phaseStarted(phaseScope);
         for (CustomPhaseCommand<Solution_> customPhaseCommand : customPhaseCommandList) {
             solverScope.checkYielding();

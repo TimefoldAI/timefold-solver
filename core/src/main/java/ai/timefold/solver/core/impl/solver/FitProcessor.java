@@ -47,7 +47,7 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
         var solverScope = new SolverScope<Solution_>();
         solverScope.setWorkingRandom(new Random(0)); // We will evaluate every option; random does not matter.
         solverScope.setScoreDirector(scoreDirector);
-        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, -1, false);
+        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, -1);
         var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
         entityPlacer.solvingStarted(solverScope);
         entityPlacer.phaseStarted(phaseScope);

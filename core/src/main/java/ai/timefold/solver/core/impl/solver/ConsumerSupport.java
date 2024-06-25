@@ -8,6 +8,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.impl.util.MutableReference;
+
 final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     private final ProblemId_ problemId;
@@ -17,6 +19,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
+    private final MutableReference<Solution_> firstInitializedSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
@@ -30,6 +33,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
+        this.firstInitializedSolutionHolder = new MutableReference<>(null);
     }
 
     // Called on the Solver thread.
@@ -45,10 +49,10 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     }
 
     // Called on the Solver thread.
-    void consumeFirstInitializedSolution(Solution_ initializedSolution) {
-        if (firstInitializedSolutionConsumer != null) {
-            firstInitializedSolutionConsumer.accept(initializedSolution);
-        }
+    void consumeFirstInitializedSolution(Solution_ firstInitializedSolution) {
+        firstInitializedSolutionHolder.setValue(firstInitializedSolution);
+        // called on the Consumer thread
+        scheduleFirstInitializedSolutionConsumption();
     }
 
     // Called on the Solver thread after Solver#solve() returns.
@@ -67,6 +71,11 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         if (bestSolutionConsumer != null) {
             scheduleIntermediateBestSolutionConsumption();
         }
+        /**
+         * TODO - Do we need to ensure the first initialized solution is also consumed before the final solution?
+         * The first initialized solution consumer is always consumed before a local search phase, so I couldn't imagine
+         * a situation where the first solution consumption is missed.
+         */
         consumerExecutor.submit(() -> {
             try {
                 finalBestSolutionConsumer.accept(finalBestSolution);
@@ -112,6 +121,37 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                         exceptionHandler.accept(problemId, throwable);
                     }
                     bestSolutionContainingProblemChanges.completeProblemChangesExceptionally(throwable);
+                } finally {
+                    activeConsumption.release();
+                }
+            }
+        }, consumerExecutor);
+    }
+
+    /**
+     * Called on the Consumer thread.
+     * The call may be blocked while waiting for lock acquisition, but this is not a problem because it will block the
+     * Consumer thread instead of the Solver thread.
+     */
+    private void scheduleFirstInitializedSolutionConsumption() {
+        CompletableFuture.runAsync(() -> {
+            if (firstInitializedSolutionConsumer != null && firstInitializedSolutionHolder.getValue() != null) {
+                try {
+                    // Wait for the previous consumption to complete.
+                    // This call may block the consumer thread
+                    activeConsumption.acquire();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted when waiting for the first initialized solution consumption.");
+                }
+                try {
+                    firstInitializedSolutionConsumer.accept(firstInitializedSolutionHolder.getValue());
+                    // Clear the solution holder
+                    firstInitializedSolutionHolder.setValue(null);
+                } catch (Throwable throwable) {
+                    if (exceptionHandler != null) {
+                        exceptionHandler.accept(problemId, throwable);
+                    }
                 } finally {
                     activeConsumption.release();
                 }
