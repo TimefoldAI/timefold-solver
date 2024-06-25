@@ -340,35 +340,3 @@ For example, move multiple items from the same container to another container.
 Not all score constraints have the same performance cost.
 Sometimes one score constraint can kill the score calculation performance outright.
 Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to do a one minute run and check what happens to the score calculation speed if you comment out all but one of the score constraints.
-
-
-[#fairnessScoreConstraints]
-== Fairness score constraints
-
-Some use cases have a business requirement to provide a fair schedule (usually as a soft score constraint), for example:
-
-* Fairly distribute the workload amongst the employees, to avoid envy.
-* Evenly distribute the workload amongst assets, to improve reliability.
-
-Implementing such a constraint can seem difficult (especially because there are different ways to formalize fairness), but usually the _squared workload_ implementation behaves most desirable.
-For each employee/asset, count the workload `w` and subtract `w²` from the score.
-
-image::constraints-and-score/performance/fairnessScoreConstraint.png[align="center"]
-
-As shown above, the _squared workload_ implementation guarantees that if you select two employees from a given solution and make their distribution between those two employees fairer, then the resulting new solution will have a better overall score.
-Do not just use the difference from the average workload, as that can lead to unfairness, as demonstrated below.
-
-image::constraints-and-score/performance/fairnessScoreConstraintPitfall.png[align="center"]
-
-
-[NOTE]
-====
-Instead of the _squared workload_, it is also possible to use the https://en.wikipedia.org/wiki/Variance[variance]
-(squared difference to the average) or the http://en.wikipedia.org/wiki/Standard_deviation[standard deviation]
-(square root of the variance).
-This has no effect on the score comparison, because the average will not change during planning.
-It is just more work to implement (because the average needs to be known) and trivially slower (because the calculation is a bit longer).
-====
-
-When the workload is perfectly balanced, the user often likes to see a `0` score, instead of the distracting `-34soft` in the image above (for the last solution which is almost perfectly balanced).
-To nullify this, either add the average multiplied by the number of entities to the score or instead show the variance or standard deviation in the UI.

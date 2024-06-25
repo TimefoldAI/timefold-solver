@@ -524,7 +524,6 @@ which is processed differently and does not suffer from this issue:
         ))
 ----
 
-
 [#constraintStreamsGroupingAndCollectors]
 === Grouping and collectors
 
@@ -849,6 +848,14 @@ Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the viol
 For example, if the equipment has a `capacity` of `3`, and the `maximumOverlap` of the `resource` is `5`, then `violationAmount` will be `2`.
 If the amount is `0`, then the equipment is not being used over its capacity and we can filter the tuple out.
 
+[#collectorsLoadBalance]
+==== Load balancing collectors
+
+Certain constraints require resource usage to be balanced across the solution.
+For example, employees should have mutually similar number of shifts.
+This can be achieved using the `ConstraintCollectors.loadBalance(...)` collector.
+
+For more, see xref:constraints-and-score/load-balancing-and-fairness.adoc[Load balancing and fairness].
 
 [#collectorsConditional]
 ==== Conditional collectors
@@ -1249,6 +1256,46 @@ you can specify a padding value to use when padding the lower cardinality stream
 // Employees from uniStream will have a zero as their shift count.
 BiConstraintStream<Employee, Integer> concatStream = uniStream.concat(biStream, employee -> 0);
 ----
+
+[#constraintStreamsComplement]
+=== Complementing a stream
+
+The <<constraintStreamsJoin,join building block>> provided by Constraint Streams is technically an inner join.
+What this means is that only the matches that are present in both streams are considered.
+For example, if you have a stream of `Employee` instances and a stream of `Shift` instances,
+joining `Shift` instances with `Employee` instances will only return shifts that are assigned to an employee.
+Employees without shifts will not be considered.
+
+In cases such as xref:constraints-and-score/load-bancing-and-fairness.adoc#loadBalancingAndFairness[load balancing],
+a similar situation happens where the `Shift` instances only refence the `Employee` instances assigned to them.
+For a properly balanced solution, you also need to include `Employee` instances that are not assigned to any shifts.
+
+This is where you can use the `complement` block as shown in the following example:
+
+[source,java,options="nowrap"]
+----
+    factory.forEach(Shift.class)
+        .groupBy(Shift::getEmployee, count())
+        .complement(Employee.class, employee -> 0)
+        .groupBy(loadBalance(...))
+----
+
+After the <<constraintStreamsGroupingAndCollectors,`groupBy` building block>>,
+the stream contains only employees with at least one shift assigned,
+and each carries a count of shifts assigned.
+The type of the stream is `BiConstraintStream<Employee, Integer>`.
+
+To add all the `Employee` instances that do not have any shift assigned,
+the `complement` building block is used.
+It looks at all the `Employee` instances already in the stream,
+and adds to the stream all known `Employee` instances that are not in the stream yet.
+For each of them, it assigns a value of `0` as the number of shifts assigned to that employee.
+The type of the stream is still `BiConstraintStream<Employee, Integer>`.
+
+This stream now contains all `Employee` instances, both with and without shifts assigned,
+and can be passed to the <<collectorsLoadBalance,load balancing constraint collector>>,
+which will compute the unfairness metric.
+
 
 [#constraintStreamsTesting]
 == Testing a constraint stream
